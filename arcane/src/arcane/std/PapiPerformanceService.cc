@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PapiPerformanceService.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Informations de performances utilisant PAPI.                              */
+/* Performance information using PAPI.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,10 +37,10 @@ namespace Arcane
 namespace
 {
 /*
- * Vérifie si PAPI_library_init() a été appelé et si ce n'est pas le cas,
- * appelle cette méthode.
+ * Checks if PAPI_library_init() has been called, and if not,
+ * calls this method.
  *
- * A noter que PAPI_library_init() ne peut être appelé qu'une seule fois.
+ * Note that PAPI_library_init() can only be called once.
  */
 void
 _checkInitPAPI()
@@ -66,9 +66,9 @@ ARCANE_REGISTER_SERVICE(PapiPerformanceService,
 /*---------------------------------------------------------------------------*/
 
 /*
- * TODO: Avec les threads, utiliser une instance par sous-domaine
- * et utiliser PAPI_register_thread et PAPI_unregister_thread.
- * (voir exemple papi overflow_pthreads.c).
+ * TODO: With threads, use one instance per subdomain
+ * and use PAPI_register_thread and PAPI_unregister_thread.
+ * (see example papi overflow_pthreads.c).
  */
 
 /*---------------------------------------------------------------------------*/
@@ -109,10 +109,10 @@ arcane_papi_handler(int EventSet, void *address, long_long overflow_vector, void
 {
   ARCANE_UNUSED(context);
   static bool is_in_handler = false;
-  // Sous Linux avec gcc, les exceptions utilisent la libunwind contenue
-  // dans gcc et cela peut provoquer des deadlocks avec notre utilisation
-  // si cet handler est appelé lors du dépilement d'une exception.
-  // Pour éviter ce problème, on ne fait rien tant qu'une exception est
+  // On Linux with gcc, exceptions use libunwind contained
+  // in gcc and this can cause deadlocks with our usage
+  // if this handler is called during exception unwinding.
+  // To avoid this problem, we do nothing as long as an exception is
   // active.
   if (Exception::hasPendingException()){
     cout << "** WARNING: PapiHandler in pending exception\n";
@@ -199,10 +199,10 @@ initialize()
   const int NB_EVENT = 3;
   int papi_events[NB_EVENT];
 
-  // L'évènement 0 doit toujours être le PAPI_TOT_CYC car on s'en sert
-  // pour les statistiques
+  // Event 0 must always be PAPI_TOT_CYC because we use it
+  // for statistics
   papi_events[0] = PAPI_TOT_CYC;
-  // TODO: regarder si ses évènements sont supportés par le proc
+  // TODO: check if these events are supported by the processor
   papi_events[1] = PAPI_RES_STL;
   papi_events[2] = PAPI_DP_OPS;
 
@@ -248,15 +248,15 @@ initialize()
     _printFlops();
   }
   else{
-    // Il ne faut pas que la période soit trop petite sinon on passe tout
-    // le temps dans le traitement de 'arcane_papi_handler'.
+    // We must not let the period be too small otherwise we spend
+    // all the time in the processing of 'arcane_papi_handler'.
     if (m_period<100000)
       m_period = 100000;
     for( Integer i=0; i<nb_event; ++i ){
       if (is_valid_event[i]){
         retval = PAPI_overflow(m_event_set, papi_events[i], m_period, 0, arcane_papi_handler);
         if (retval!=PAPI_OK){
-          // L'évènement PAPI_TOT_CYC est indispensable
+          // The PAPI_TOT_CYC event is indispensable
           if (i==0){
             fatal() << "** ERROR in papi_overflow i=" << i << " r=" << retval
                     << " msg=" << PAPI_strerror(retval);
@@ -268,7 +268,7 @@ initialize()
         }
       }
     }
-    info() << "Période de sampling: (en évènements) " << m_period;
+    info() << "Sampling period: (in events) " << m_period;
   }
 }
 
@@ -310,10 +310,10 @@ _printFlops()
   float proc_time = 0.0f;
   long long flpins = 0.0;
   float mflops = 0.0f;
-  // A partir de PAPI 6.0 il n'y a plus PAPI_flops mais à la place
-  // c'est 'PAPI_flops_rate' mais il y a un argument supplémentaire
-  // à mettre pour spécifier le type de flop à calculer (simple précision,
-  // double précision, ...)
+  // Starting from PAPI 6.0, there is no longer PAPI_flops but instead
+  // it is 'PAPI_flops_rate' but there is an additional argument
+  // to specify the type of flop to calculate (single precision,
+  // double precision, ...)
 #if PAPI_VERSION >= PAPI_VERSION_NUMBER(6,0,0,0)
   int retval = PAPI_flops_rate(PAPI_DP_OPS, &real_time, &proc_time, &flpins, &mflops);
 #else
@@ -420,13 +420,13 @@ class PapiTimerMng
   void start();
   Real stop(const char* msg);
 
-  //! Retourne le temps réel
+  //! Returns the real time
   Real _getRealTime() override
   {
     return stop("test");
   }
 
-  //! Positionne un timer réel
+  //! Sets a real timer
   void _setRealTime() override
   {
     if (!m_is_init){

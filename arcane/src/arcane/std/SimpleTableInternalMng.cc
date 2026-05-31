@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternalMng.cc                                   (C) 2000-2022 */
 /*                                                                           */
-/* Classe permettant de modifier facilement un SimpleTableInternal.          */
+/* Class allowing easy modification of a SimpleTableInternal.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -161,13 +161,13 @@ addElementInRow(Integer position, Real element)
   m_simple_table_internal->m_last_column = size_row;
 
   m_simple_table_internal->m_row_sizes[position]++;
-  // Il peut y avoir des élements sur la ligne d'après à la même colonne.
-  // Exemple : addElementInRow(position=L01, element=NEW):
+  // There may be elements in the row after in the same column.
+  // Example: addElementInRow(position=L01, element=NEW):
   // aaa|C00|C01|C02
   // L00|123|456|789
   // L01|147|NEW|
   // L02|159|753|852
-  // Il y a 753 donc la taille de la colonne reste égale à 3.
+  // There is 753 so the column size remains equal to 3.
   m_simple_table_internal->m_column_sizes[size_row] = std::max(position + 1, m_simple_table_internal->m_column_sizes[size_row]);
 
   return true;
@@ -228,7 +228,7 @@ addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool cre
 
   if (position)
     return addElementsInRow(position.value(), elements);
-  // Permet d'avoir un return bool (sinon on pourrait simplement faire addRow(row_name, elements)).
+  // Allows a bool return (otherwise we could simply call addRow(row_name, elements)).
   else if (create_if_not_exist)
     return addElementsInRow(addRow(row_name), elements);
   else
@@ -322,7 +322,7 @@ addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bo
 
   if (position)
     return addElementsInColumn(position.value(), elements);
-  // Permet d'avoir un return bool (sinon on pourrait simplement faire addColumn(column_name, elements)).
+  // Allows a bool return (otherwise we could simply call addColumn(column_name, elements)).
   else if (create_if_not_exist)
     return addElementsInColumn(addColumn(column_name), elements);
   else
@@ -347,7 +347,7 @@ editElementUp(Real element, bool update_last_position)
     return false;
   m_simple_table_internal->m_last_row--;
 
-  // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
+  // No need to adjust column size because we are sure that m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
   if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
     m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
 
@@ -382,7 +382,7 @@ editElementLeft(Real element, bool update_last_position)
     return false;
   m_simple_table_internal->m_last_column--;
 
-  // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
+  // No need to adjust row size because we are sure that m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
   if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
     m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
 
@@ -419,11 +419,11 @@ elementUp(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row - 1 < 0)
     return 0;
 
-  // Par rapport à editElementUp(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_row_sizes.
+  // Compared to editElementUp(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_row_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_row--;
-    // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
+    // No need to adjust the column size because we are sure that m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
     if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
       m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
     return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
@@ -438,8 +438,8 @@ elementDown(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row + 1 >= m_simple_table_internal->m_values.dim1Size())
     return 0;
 
-  // Par rapport à editElementDown(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_row_sizes.
+  // Compared to editElementDown(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_row_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_row++;
 
@@ -458,12 +458,12 @@ elementLeft(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column - 1 < 0)
     return 0;
 
-  // Par rapport à editElementLeft(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_column_sizes.
+  // Compared to editElementLeft(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_column_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_column--;
 
-    // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
+    // No need to adjust the row size because we are sure that m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
     if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
       m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
     return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
@@ -477,8 +477,8 @@ elementRight(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column + 1 >= m_simple_table_internal->m_values.dim2Size())
     return 0;
 
-  // Par rapport à editElementRight(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_column_sizes.
+  // Compared to editElementRight(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_column_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_column++;
 
@@ -782,7 +782,7 @@ void SimpleTableInternalMng::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
   if (simple_table_internal.isNull())
-    ARCANE_FATAL("La réference passée en paramètre est Null.");
+    ARCANE_FATAL("The reference passed as a parameter is Null.");
   m_simple_table_internal = simple_table_internal;
 }
 

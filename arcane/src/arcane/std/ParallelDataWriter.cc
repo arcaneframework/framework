@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelDataWriter.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Lecteur/Ecrivain de IData en parallèle.                                   */
+/* Parallel IData Reader/Writer.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,11 +52,11 @@ class ParallelDataWriter::Impl
  private:
 
   IParallelMng* m_parallel_mng = nullptr;
-  //! Tableau indiquant les rangs des process dont on recoit des infos
+  //! Array indicating the ranks of processes from which we receive information
   UniqueArray<Int32> m_ranks_to_send;
-  //! Tableau indiquant les rangs des process auxquels on envoie des infos
+  //! Array indicating the ranks of processes to which we send information
   UniqueArray<Int32> m_ranks_to_recv;
-  //TODO ne pas utiliser un tableau dimensionné au commSize()
+  //TODO do not use an array dimensioned by commSize()
   UniqueArray<UniqueArray<Int32>> m_indexes_to_send;
   UniqueArray<UniqueArray<Int32>> m_indexes_to_recv;
   Int32 m_nb_item = 0;
@@ -173,7 +173,7 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
   }
 
   if (m_gather_all){
-    // Le proc 0 récupère tout
+    // Process 0 gathers everything
     pm->allGatherVariable(keys,global_all_keys);
     pm->allGatherVariable(key_indexes,global_all_key_indexes);
     pm->allGatherVariable(key_ranks,global_all_key_ranks);
@@ -276,7 +276,7 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
       //info() << "END RECEIVE FROM A: NB_TO_RECEIVE " << nb_to_recv;
     }
 
-    // Traite les entités locales
+    // Processes local entities
     {
       const Int32 nb_local = m_local_indexes_to_send.size();
       for (Int32 z = 0; z < nb_local; ++z) {
@@ -336,7 +336,7 @@ getSortedValues(IData* data)
     sorted_data->serialize(serializer,m_indexes_to_recv[i],0);
   }
 
-  // Traite les données qui sont déjà présentes sur ce processeur.
+  // Processes data that is already present on this processor.
   {
     ConstArrayView<Int32> local_recv_indexes = m_local_indexes_to_recv;
     const Int32 nb_local_index = local_recv_indexes.size();

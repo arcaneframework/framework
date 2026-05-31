@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicReader.cc                                              (C) 2000-2024 */
 /*                                                                           */
-/* Lecture simple pour les protections/reprises.                             */
+/* Simple reader for checkpoints/restarts.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,10 +58,10 @@ initialize()
   info() << "BasicReader::initialize()";
 
   IParallelMng* pm = m_parallel_mng;
-  // Si un fichier 'arcane_acr_db.json' existe alors on lit les informations
-  // de ce fichier pour détecter entre autre le numéro de version. Il faut
-  // le faire avant de lire les informations telles que les méta-données
-  // de la protection car l'emplacement des ces dernières dépend de la version
+  // If an 'arcane_acr_db.json' file exists, read the information
+  // from this file to detect, among other things, the version number.
+  // This must be done before reading information such as the metadata
+  // of the checkpoint because its location depends on the version.
   String db_filename = String::concat(m_path, "/arcane_acr_db.json");
   Int32 has_db_file = 0;
   {
@@ -91,10 +91,10 @@ initialize()
            << " comparison_hash_algorithm=" << comparison_hash_algorithm_name;
   }
   else {
-    // Ancien format
-    // Le proc maitre lit le fichier 'infos.txt' et envoie les informations
-    // aux autres. Ce format ne permet d'avoir que le nombre de parties
-    // comme information.
+    // Old format
+    // The master process reads the 'infos.txt' file and sends the information
+    // to the others. This format only allows the number of parts
+    // as information.
     if (pm->isMasterIO()) {
       Integer nb_part = 0;
       String filename = String::concat(m_path, "/infos.txt");
@@ -140,9 +140,9 @@ _directReadVal(VariableMetaData* varmd, IData* data)
     
   bool is_item_variable = !varmd->itemFamilyName().null();
   Int32 nb_rank_to_read = m_nb_rank_to_read;
-  // S'il s'agit d'une variable qui n'est pas sur le maillage,
-  // il ne faut lire qu'un seul rang car il n'est pas
-  // certain que cette variable soit definie partout
+  // If it is a variable that is not on the mesh,
+  // only one rank must be read because it is not
+  // certain that this variable is defined everywhere
   if (!is_item_variable)
     if (nb_rank_to_read > 1)
       nb_rank_to_read = 1;
@@ -171,9 +171,9 @@ _directReadVal(VariableMetaData* varmd, IData* data)
     IData* full_written_data = nullptr;
 
     if (nb_rank_to_read == 0) {
-      // Rien à lire
-      // Il faut tout de même passer dans le reader parallèle
-      // pour assurer les opérations collectives
+      // Nothing to read
+      // However, we must pass through the parallel reader
+      // to ensure collective operations
       full_written_data = nullptr;
     }
     else if (nb_rank_to_read == 1) {
@@ -181,7 +181,7 @@ _directReadVal(VariableMetaData* varmd, IData* data)
       full_written_data = written_data[0];
     }
     else {
-      // Il faut créer une donnée qui contient l'union des written_data
+      // We must create a data object that contains the union of written_data
       Ref<IData> allocated_written_data = data->cloneEmptyRef();
       allocated_data.add(allocated_written_data);
       full_written_data = allocated_written_data.get();
@@ -213,9 +213,9 @@ _getReader(VariableMetaData* varmd)
 {
   Int32 nb_to_read = m_nb_rank_to_read;
 
-  // Pour la lecture, lors d'une reprise, le groupe (var->itemGroup())
-  // associé à la variable ainsi que la famille (var->itemFamily())
-  // n'existe pas encore. Il ne faut donc pas l'utiliser
+  // For reading, during a restart, the group (var->itemGroup())
+  // associated with the variable and the family (var->itemFamily())
+  // do not exist yet. Therefore, they should not be used.
   const String& var_group_name = varmd->itemGroupName();
   String group_full_name = varmd->meshName() + "_" + varmd->itemFamilyName() + "_" + var_group_name;
   auto ix = m_parallel_data_readers.find(group_full_name);
@@ -230,8 +230,8 @@ _getReader(VariableMetaData* varmd)
     for (Integer i = 0; i < nb_to_read; ++i) {
       m_global_readers[i]->readItemGroup(group_full_name, written_unique_ids[i], wanted_unique_ids);
     }
-    // Cela ne doit être actif que pour les comparaisons (pas en reprise car les groupes
-    // ne sont pas valides)
+    // This should only be active for comparisons (not during restarts because the groups
+    // are not valid)
     if (m_item_group_finder) {
       ItemGroup ig = m_item_group_finder->getWantedGroup(varmd);
       _fillUniqueIds(ig, wanted_unique_ids);
@@ -257,10 +257,11 @@ _getReader(VariableMetaData* varmd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit l'argument avec des couples (nom_de_variable,valeur du hash).
+ * \brief Fills the argument with pairs (variable_name, hash_value).
  *
- * Cela n'est valide que pour le rang 0
+ * This is only valid for rank 0
  */
 void BasicReader::
 fillComparisonHash(std::map<String, String>& comparison_hash_map)
@@ -366,11 +367,10 @@ _setRanksToRead()
     nb_to_read = m_nb_written_part;
   }
   else if (nb_rank < m_nb_written_part) {
-    // Il y a plus de fichiers que de processeurs.
-    // Un des processeurs doit donc lire au moins deux fichiers.
-    // Pour ceux dont c'est le cas, il faut que ces fichiers
-    // soient consécutifs pour que l'intervalle des uniqueId()
-    // des entités du processeur soient consécutifs
+    // There are more files than processors.
+    // Therefore, one of the processors must read at least two files.
+    // For those cases, these files must be consecutive so that the
+    // interval of uniqueId() of the processor's entities is consecutive
     Int32 nb_part_per_rank = m_nb_written_part / nb_rank;
     Int32 remaining_nb_part = m_nb_written_part - (nb_part_per_rank * nb_rank);
     first_to_read = nb_part_per_rank * my_rank;
@@ -387,7 +387,7 @@ _setRanksToRead()
   }
   else {
     if (my_rank >= m_nb_written_part) {
-      // Aucune partie à lire
+      // No part to read
       nb_to_read = 0;
     }
   }
@@ -405,14 +405,14 @@ _readOwnMetaDataAndCreateReader(Int32 rank)
   String main_filename = _getBasicVariableFile(m_version, m_path, rank);
   Ref<KeyValueTextReader> text_reader;
   if (m_version >= 3) {
-    // Si le rang est le même que m_forced_rank_to_read, alors on peut réutiliser
-    // le lecteur déjà créé.
+    // If the rank is the same as m_forced_rank_to_read, then the already created
+    // reader can be reused.
     if (rank == m_forced_rank_to_read)
       text_reader = m_forced_rank_to_read_text_reader;
     else {
       text_reader = makeRef(new KeyValueTextReader(traceMng(), main_filename, m_version));
-      // Il faut que ce lecteur ait le même gestionnaire de compression
-      // que celui déjà créé
+      // This reader must have the same compression manager
+      // as the one already created
       text_reader->setDataCompressor(m_forced_rank_to_read_text_reader->dataCompressor());
       text_reader->setHashAlgorithm(m_forced_rank_to_read_text_reader->hashAlgorithm());
     }

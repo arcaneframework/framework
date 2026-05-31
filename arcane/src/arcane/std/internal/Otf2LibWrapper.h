@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Otf2LibWrapper.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe qui encapsule les fonctions utiles de la lib Otf2.                 */
+/* Class that encapsulates the useful functions of the Otf2 library.         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_OTF2LIBWRAPPER_H
 #define ARCANE_STD_OTF2LIBWRAPPER_H
@@ -33,9 +33,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'encapsulation des fonctions de la librairie OTF2.
+ * \brief Wrapper class for OTF2 library functions.
  */
  class Otf2LibWrapper
 {
@@ -67,12 +68,12 @@ namespace Arcane
 	static OTF2_TimeStamp _postFlush(void* user_data, OTF2_FileType file_type, OTF2_LocationRef location);
 
  public:
-  // Une structure simple pour associer un nom de point d'entree avec un identifiant
+  // A simple structure to associate an entry point name with an identifier
 	struct EntryPointId {
 		EntryPointId(String name, Integer id) : m_name(name), m_id(id) {}
 		String m_name;
 		Integer m_id;
-		// Foncteur pour pouvoir faire un "heterogeneous lookup" sur le nom pour l'id
+		// Functor to allow "heterogeneous lookup" from name to ID
 		struct EntryPointIdCompare {
 			using is_transparent = void;
 			bool operator()(const EntryPointId& lhs, const EntryPointId& rhs) const
@@ -91,24 +92,24 @@ namespace Arcane
 	};
 
  private:
-  // Structure interne pour la gestion des indices et decalages...
+  // Internal structure for managing indices and offsets...
 	struct InternalIds {
-    uint32_t m_desc_offset;   // decalage des description pour les noms des op MPI
-		uint32_t m_empty_id;      // id pour la string vide
-		uint32_t m_thread_id;     // id pour le nom du thread CPU mappe sur le process MPI
-    uint32_t m_hostname_id;   // id pour le nom de la machine
-		uint32_t m_class_id;      // id pour la classe de la machine
-		uint32_t m_comm_world_id; // id pour le MPI_COMM_WOLRD
-		uint32_t m_mpi_id;        // id pour la string MPI
-		uint32_t m_comm_id;       // id pour la string du paradigm MPI
-		uint32_t m_win_id;        // id pour la string du paradigm MPI
-		uint32_t m_comm_self_id;  // id pour la string du comme self
-		uint32_t m_ep_id;         // id pour la string Entry Point
-		uint32_t m_sync_id;       // id pour la string Synchronize
-		uint32_t m_app_name;      // id pour le nom de l'application
-		uint32_t m_rank_offset;   // decalage pour les ranks MPI
+    uint32_t m_desc_offset;   // Offset for descriptions of MPI operation names
+		uint32_t m_empty_id;      // ID for the empty string
+		uint32_t m_thread_id;     // ID for the CPU thread name mapped to the MPI process
+    uint32_t m_hostname_id;   // ID for the machine name
+		uint32_t m_class_id;      // ID for the machine class
+		uint32_t m_comm_world_id; // ID for the MPI_COMM_WOLRD
+		uint32_t m_mpi_id;        // ID for the MPI string
+		uint32_t m_comm_id;       // ID for the MPI paradigm string
+		uint32_t m_win_id;        // ID for the MPI paradigm string
+		uint32_t m_comm_self_id;  // ID for the "comme self" string
+		uint32_t m_ep_id;         // ID for the Entry Point string
+		uint32_t m_sync_id;       // ID for the Synchronize string
+		uint32_t m_app_name;      // ID for the application name
+		uint32_t m_rank_offset;   // Offset for MPI ranks
 		std::set<EntryPointId, EntryPointId::EntryPointIdCompare> m_ep_id_set;
-		// Ensemble des noms des points d'entree et leur id
+		// Set of entry point names and their IDs
 	};
 
 	ISubDomain* m_sub_domain = nullptr;
@@ -130,4 +131,4 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

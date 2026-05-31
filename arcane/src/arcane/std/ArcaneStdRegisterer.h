@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneStdRegisterer.h                                       (C) 2000-2017 */
 /*                                                                           */
-/* Classe vide servant pour charger un symbole de cette bibliotheque.        */
+/* Empty class used to load a symbol from this library.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_ARCANESTDREGISTERER_H
 #define ARCANE_STD_ARCANESTDREGISTERER_H
@@ -44,4 +44,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicGenericWriter.cc                                       (C) 2000-2024 */
 /*                                                                           */
-/* Ecriture simple pour les protections/reprises.                            */
+/* Simple writing for checkpoints/recovery.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,7 +64,7 @@ void BasicGenericWriter::
 writeData(const String& var_full_name, const ISerializedData* sdata,
           const String& comparison_hash, bool is_save_values)
 {
-  //TODO: Verifier que initialize() a bien été appelé.
+  //TODO: Verify that initialize() has been called.
   auto var_data_info = m_variables_data_info.add(var_full_name, sdata);
   KeyValueTextWriter* writer = m_text_writer.get();
   var_data_info->setFileOffset(writer->fileOffset());
@@ -80,12 +80,12 @@ writeData(const String& var_full_name, const ISerializedData* sdata,
   if (is_save_values) {
     const void* ptr = sdata->constBytes().data();
 
-    // Si la variable est de type tableau à deux dimensions, sauve les
-    // tailles de la deuxième dimension par élément.
+    // If the variable is a two-dimensional array type, save the
+    // sizes of the second dimension per element.
     Int64ConstArrayView extents = sdata->extents();
     writer->setExtents(var_full_name, extents);
 
-    // Maintenant, sauve les valeurs si necessaire
+    // Now, save the values if necessary
     Int64 nb_base_element = sdata->nbBaseElement();
     if (nb_base_element != 0 && ptr) {
       writer->write(var_full_name, asBytes(sdata->constBytes()));
@@ -101,7 +101,7 @@ writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_uni
                SmallSpan<const Int64> wanted_unique_ids)
 {
   if (m_version >= 3) {
-    // Sauve les informations du groupe la base de données (clé,valeur)
+    // Save the group information to the database (key, value)
     {
       String written_uid_name = String("GroupWrittenUid:") + group_full_name;
       Int64 nb_written_uid = written_unique_ids.size();
@@ -120,14 +120,14 @@ writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_uni
   String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
   ofstream writer(filename.localstr(),std::ios::out | std::ios::binary);
 
-  // Sauve la liste des unique_ids écrits
+  // Save the list of written unique_ids
   {
     Integer nb_unique_id = written_unique_ids.size();
     binaryWrite(writer,asBytes(Span<const Int32>(&nb_unique_id, 1)));
     binaryWrite(writer,asBytes(written_unique_ids));
   }
 
-  // Sauve la liste des unique_ids souhaités par ce sous-domaine
+  // Save the list of desired unique_ids by this subdomain
   {
     Integer nb_unique_id = wanted_unique_ids.size();
     binaryWrite(writer,asBytes(Span<const Int32>(&nb_unique_id, 1)));
@@ -163,10 +163,10 @@ endWrite()
     }
   }
   if (m_version >= 3) {
-    // Ajoute la sauvegarde des meta-données au format JSON
+    // Adds the saving of metadata in JSON format
     XmlElement json_var(root, "variables-data-json", jsw.getBuffer());
 
-    // Sauve les méta-données dans la base de données.
+    // Save the metadata in the database.
     UniqueArray<Byte> bytes;
     xdoc->save(bytes);
     Int64 length = bytes.length();

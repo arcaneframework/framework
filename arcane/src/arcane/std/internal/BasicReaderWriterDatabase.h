@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicReaderWriterDatabase.h                                 (C) 2000-2023 */
 /*                                                                           */
-/* Base de donnée pour le service 'BasicReaderWriter'.                       */
+/* Database for the 'BasicReaderWriter' service.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_BASICREADERWRITERDATABASE_H
 #define ARCANE_STD_BASICREADERWRITERDATABASE_H
@@ -21,8 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Lorsqu'on sera certain que ce fichier n'est pas utilisé en dehors
-// de Arcane on pourra fusionner ces classes avec leur implémentation
+// TODO: Once we are certain that this file is not used outside of
+// Arcane, we can merge these classes with their implementation
 
 namespace Arcane
 {
@@ -35,15 +35,15 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * Utilisation d'un TextWriter avec écriture sous la forme (clé,valeur).
+ * Using a TextWriter with (key,value) format writing.
  *
- * Pour chaque valeur à écrire, il faut d'abord appeler setExtents() pour
- * positionner les dimensions de la donnée puis write() pour écrire les
- * valeurs. Cela est nécessaire pour conserver la compatibilité avec les
- * versions 1 et 2 du format où les données étaient écrites de manière
- * séquentielles.
+ * For each value to be written, setExtents() must first be called to
+ * position the data dimensions, and then write() must be called to write the
+ * values. This is necessary to maintain compatibility with versions 1 and 2 of the
+ * format, where data was written sequentially.
  */
 class KeyValueTextWriter
 : public TraceAccessor
@@ -78,9 +78,10 @@ class KeyValueTextWriter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ * \brief Text file writing class for backups/restorations
  */
 class KeyValueTextReader
 : public TraceAccessor

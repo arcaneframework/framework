@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneVerifierModule.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Module de vérification.                                                   */
+/* Verification module.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,7 +41,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Module de vérification.
+ * \brief Verification module.
  */
 class ArcaneVerifierModule
 : public ArcaneArcaneCeaVerifierObject
@@ -88,7 +88,7 @@ onInit()
 
   if (!platform::getEnvironmentVariable("ARCANE_VERIFY_SORTEDGROUP").null()){
     info() << "Add observer to check sorted groups before checkpoint";
-    // Ajoute un observer signalant les groupes non triés.
+    // Adds an observer signaling unsorted groups.
     m_observers.addObserver(this,
                             &ArcaneVerifierModule::_checkSortedGroups,
                             subDomain()->checkpointMng()->writeObservable());
@@ -101,7 +101,7 @@ onInit()
 void ArcaneVerifierModule::
 _checkSortedGroups()
 {
-  // Affiche la liste des groupes non triés.
+  // Displays the list of unsorted groups.
   Integer nb_sorted_group = 0;
   Integer nb_group = 0;
   auto check_sorted_func = [&](ItemGroup& g)
@@ -137,7 +137,7 @@ onExit()
     ServiceBuilder<IVerifierService> sf(subDomain());
 
     String verifier_service_name = options()->verifierServiceName();
-    // Autorise pour test une variable d'environnement pour surcharger le service
+    // Allows an environment variable for overriding the service for testing
     String env_service_name = platform::getEnvironmentVariable("ARCANE_VERIFIER_SERVICE");
     if (!env_service_name.null())
       verifier_service_name = env_service_name;
@@ -204,4 +204,3 @@ ARCANE_REGISTER_MODULE_ARCANECEAVERIFIER(ArcaneVerifierModule);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

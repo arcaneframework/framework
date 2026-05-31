@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneMeshConverter.cc                                      (C) 2000-2020 */
 /*                                                                           */
-/* Service de partitionnement externe du maillage.                           */
+/* External mesh partitioning service.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,8 +30,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de conversion de format du maillage.
- *
+ * \brief Mesh format conversion service.
  */
 class ArcaneMeshConverter
 : public ArcaneArcaneMeshConverterObject

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SodMeshGenerator.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Service de génération d'un maillage à-la 'sod'.                           */
+/* Service for generating a 'sod'-style mesh.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,9 +81,9 @@ class SodMeshGenerator::Impl
   Integer m_wanted_y;
   Integer m_wanted_z;
   UniqueArray<Integer> m_communicating_sub_domains;
-  bool m_zyx_generate; //!< \a true si on génère en z, puis y et enfin x
-  bool m_z_is_total; //!< \a true si z est le nombre total de couche pour l'ensemble des procs.
-  Real m_xyz_delta[3]; //!< \a les deltas
+  bool m_zyx_generate; //!< \a true if generating in z, then y, and finally x
+  bool m_z_is_total; //!< \a true if z is the total number of layers for all procs.
+  Real m_xyz_delta[3]; //!< \a the deltas
   int m_mesh_dimension;
   Real m_random_coef;
 
@@ -107,7 +107,7 @@ SodMeshGenerator(IPrimaryMesh* mesh,bool zyx)
 SodMeshGenerator::
 ~SodMeshGenerator()
 {
-  // Nécessaire pour std::unique_ptr.
+  // Necessary for std::unique_ptr.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -177,11 +177,12 @@ readOptions(XmlNode node)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Génère un UniqueId à partir des indices de bloc (x,y,z).
+ * \brief Generates a UniqueId from block indices (x,y,z).
  *
- * S'assure qu'il n'y aura pas de problèmes de débordement entre les Integer
- * et les Int64.
+ * Ensures there will be no overflow issues between Integer
+ * and Int64.
  */
 inline Int64
 _generateCellUniqueId(Integer x,Integer y,Integer z,Integer nb_y,
@@ -225,9 +226,9 @@ generateMesh(IPrimaryMesh* mesh)
   Integer nb_cell_z = m_wanted_z;
   info() << "nb x=" << nb_cell_x << " y=" << nb_cell_y << " z=" << nb_cell_z;
 
-  // Positionne des propriétés sur le maillage pour qu'il puisse connaître
-  // le nombre de mailles dans chaque direction. Cela est utilisé
-  // notammement par CartesianMesh.
+  // Positions properties on the mesh so that it can know
+  // the number of meshes in each direction. This is used
+  // notably by CartesianMesh.
   Properties* mesh_properties = mesh->properties();
   mesh_properties->setInt64("GlobalNbCellX",nb_cell_x);
   mesh_properties->setInt64("GlobalNbCellY",nb_cell_y);
@@ -295,9 +296,9 @@ generateMesh(IPrimaryMesh* mesh)
   Integer mesh_nb_node = CheckedConvert::multiply(nb_node_x,nb_node_y,nb_node_z);
   Integer mesh_nb_face = nb_face_x + nb_face_y + nb_face_z;
 
-  // Pour tester des uid>32bits, il suffit
-  // de changer ce multiplier et de le mettre
-  // par exemple a 1000000
+  // To test uid > 32 bits, it is enough
+  // to change this multiplier and set it
+  // for example to 1000000
   const Int64 uid_multiplier = 1;
   //const Int64 uid_multiplier = 12500000;
   
@@ -313,7 +314,7 @@ generateMesh(IPrimaryMesh* mesh)
 
   info() << "nb node_yz=" << nb_node_yz;
 
-  // Création des noeuds
+  // Creation of nodes
 
   Int64UniqueArray nodes_unique_id(mesh_nb_node);
 
@@ -322,9 +323,9 @@ generateMesh(IPrimaryMesh* mesh)
   Real ydelta = (m_xyz_delta[1]==0.0) ? ARCANE_REAL(0.02) : m_xyz_delta[1];
   Real zdelta = (m_xyz_delta[2]==0.0) ? ARCANE_REAL(0.02) : m_xyz_delta[2];
   Real xdelta = (m_xyz_delta[0]==0.0) ? ARCANE_REAL(1.0)/(Real)(nb_cell_x):m_xyz_delta[0];
-  // Le milieu pour determiner ZG et ZD
+  // The middle to determine ZG and ZD
   Real middle_x = ARCANE_REAL(0.5);
-  // Le milieu pour determiner HAUT et BAS
+  // The middle to determine TOP and BOTTOM
   Real middle_height = ARCANE_REAL((nb_cell_y/2)*ydelta);
   
   if (m_xyz_delta[0]!=0.0)
@@ -338,7 +339,7 @@ generateMesh(IPrimaryMesh* mesh)
   info() << "Xdelta=" << xdelta<< ", Ydelta=" << ydelta << ", Zdelta=" << zdelta;
   info() << "middle_x=" << middle_x<< ", middle_height=" << middle_height;
 
-  // Création des noeuds
+  // Node creation
   Integer nb_node_local_id = 0;
   if (m_zyx_generate==false){
     Integer node_local_id = 0;
@@ -361,8 +362,8 @@ generateMesh(IPrimaryMesh* mesh)
 					
           nodes_unique_id[node_local_id] = node_unique_id;
           Integer owner = my_part;
-          // S'il s'agit de la couche de noeud du dessus (z max),
-          // elle appartient au sous-domaine suivant
+          // If this is the top node layer (z max),
+          // it belongs to the next subdomain
           if (z==(nb_node_z-1) && !is_last_proc)
             owner = my_part+1;
 
@@ -396,8 +397,8 @@ generateMesh(IPrimaryMesh* mesh)
           
           nodes_unique_id[node_local_id] = node_unique_id;
           Integer owner = my_part;
-          // S'il s'agit de la couche de noeud du dessus (z max),
-          // elle appartient au sous-domaine suivant
+          // If this is the top node layer (z max),
+          // it belongs to the next subdomain
           if (z==(nb_node_z-1) && !is_last_proc) owner = my_part+1;
           nodes_infos.nocheckAdd(node_unique_id,NodeInfo(owner,Real3(nx,ny,nz)));
           //debug(Trace::High) << "Add coord uid=" << node_unique_id << " pos=" << Real3(nx,ny,nz);
@@ -410,12 +411,12 @@ generateMesh(IPrimaryMesh* mesh)
     nb_node_local_id = node_local_id;
   }
 
-  // Création des mailles
+  // Mesh creation
 
-  // Infos pour la création des mailles
-  // par maille: 1 pour son unique id,
-  //             1 pour son type,
-  //             8 pour chaque noeud
+  // Info for mesh creation
+  // per cell: 1 for its unique id,
+  //             1 for its type,
+  //             8 for each node
   Int64UniqueArray cells_infos(mesh_nb_cell*10);
 
   if (m_mesh_dimension==1){
@@ -542,7 +543,7 @@ generateMesh(IPrimaryMesh* mesh)
   
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {
-    // Remplit la variable contenant les coordonnées des noeuds
+    // Fills the variable containing node coordinates
     Int32UniqueArray nodes_local_id(nodes_unique_id.size());
     IItemFamily* family = mesh->itemFamily(IK_Node);
     family->itemsUniqueIdToLocalId(nodes_local_id,nodes_unique_id);
@@ -561,7 +562,7 @@ generateMesh(IPrimaryMesh* mesh)
     SodStandardGroupsBuilder groups_builder(traceMng());
     Real max_x = xdelta * nb_cell_x;
     Real max_y = ydelta * nb_cell_y;
-    // Dans le cas 2D, nb_cell_z et nb_cell_y sont swappés
+    // In the 2D case, nb_cell_z and nb_cell_y are swapped
     if (m_mesh_dimension==2){
       max_y = ydelta * Convert::toReal(total_para_cell_z);
       info()<< "[SodMeshGenerator::generateMesh]  max_y=" << max_y;
@@ -620,10 +621,8 @@ generateMesh(IPrimaryMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de génération d'un tube à choc en 3D.
+ * \brief 3D shock tube generation service.
  */
 class Sod3DMeshGenerator
 : public ArcaneSod3DMeshGeneratorObject

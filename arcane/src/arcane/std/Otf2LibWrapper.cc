@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Otf2LibWrapper.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe qui encapsule les fonctions utiles de la lib Otf2.                 */
+/* Class that encapsulates the useful functions of the Otf2 library.         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,7 +46,8 @@ uint64_t Otf2LibWrapper::s_epoch_start = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Constructeur.
+
+//! Constructor.
 Otf2LibWrapper::
 Otf2LibWrapper(ISubDomain* sub_domain)
 : m_sub_domain(sub_domain)
@@ -57,31 +58,33 @@ Otf2LibWrapper(ISubDomain* sub_domain)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Destructeur.
+
+//! Destructor.
 Otf2LibWrapper::
 ~Otf2LibWrapper()
 {
-	// Fermeture de l'archive
+	// Close the archive
 	if (m_archive)
 	  OTF2_Archive_Close(m_archive);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode d'initialisation. Permet de definir le chemin ou va se trouver l'archive ainsi que son nom
+
+//! Initialization method. Allows defining the path where the archive will be found, as well as its name
 void Otf2LibWrapper::
 init(const String& archive_name)
 {
-	// Alias sur le comm MPI
+	// Alias on the MPI comm
 	MPI_Comm* mpi_comm((MPI_Comm*)m_sub_domain->parallelMng()->getMPICommunicator());
 	if (!mpi_comm)
 		ARCANE_FATAL("Impossible d'initialiser la librairie Otf2 sans communicateur MPI");
 
-	// Initialisation du tableau des participants aux comm (i.e. les sub-domain id quoi...)
+	// Initialization of the array of participants in the comm (i.e., the sub-domain IDs, etc.)
 	m_comm_members.resize(m_sub_domain->nbSubDomain());
   std::iota(m_comm_members.begin(), m_comm_members.end(), 0);
 
-	// Verification de l'eventuelle existance des fichiers et suppression le cas echeant
+	// Check for the existence of files and delete them if necessary
 	String dir_name(m_sub_domain->listingDirectory().path() + "/" + archive_name);
 	String otf2_name(dir_name + ".otf2");
 	String def_name(dir_name + ".def");
@@ -90,13 +93,13 @@ init(const String& archive_name)
 		std::filesystem::remove_all(otf2_name.localstr());
 		std::filesystem::remove_all(def_name.localstr());
 	}
-	// Synchro avant d'ouvrir
+	// Sync before opening
 	MPI_Barrier(*mpi_comm);
 
-	// Sauvegarde du temps de debut pour recaler les enregistrements de chaque rang MPI
+	// Save the start time to synchronize the recordings of each MPI rank
 	s_epoch_start = getTime();
 
-	// Ouverture de l'archive
+	// Open the archive
 	m_archive = OTF2_Archive_Open(m_sub_domain->listingDirectory().path().localstr(),
 			                          archive_name.localstr(), OTF2_FILEMODE_WRITE,
 	                              1024 * 1024 /* event chunk size */,
@@ -105,21 +108,21 @@ init(const String& archive_name)
 	if (!m_archive)
 		ARCANE_FATAL("Impossible de creer l'archive OTF2");
 
-	// Attachement des callbacks
+	// Attaching the callbacks
 	OTF2_Archive_SetFlushCallbacks(m_archive, &m_flush_callbacks, NULL);
 	if (OTF2_MPI_Archive_SetCollectiveCallbacks(m_archive, *mpi_comm, MPI_COMM_NULL) != OTF2_SUCCESS)
 		ARCANE_FATAL("Probleme lors du positionnement des callbacks MPI pour la librairie OTF2");
 
-	// Init des fichiers d'event (pas encore crees)
+	// Initialize event files (not yet created)
 	OTF2_Archive_OpenEvtFiles(m_archive);
 
-	// Init du event writer
+	// Initialize the event writer
 	m_evt_writer = OTF2_Archive_GetEvtWriter(m_archive, m_sub_domain->subDomainId());
 
-	// Creation des ids pour les definitions de l'archive
+	// Creation of IDs for the archive definitions
 	_createOtf2Ids();
 
-	// DBG test du contenu du set
+	// DBG test of the set content
 	/*
 	m_sub_domain->traceMng()->info() << "===== EntryPointIdSet =====";
 	for (auto i : m_id.m_ep_id_set)
@@ -129,55 +132,57 @@ init(const String& archive_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode a appeler pour finaliser la creation de l'archive (i.e. on ne veut plus enregistrer plus d'evenements)
+
+//! Method to call to finalize the archive creation (i.e., we no longer want to record events)
 void Otf2LibWrapper::
 finalize()
 {
-	// Alias sur la comm
+	// Alias on the comm
 	MPI_Comm* mpi_comm((MPI_Comm*)m_sub_domain->parallelMng()->getMPICommunicator());
 
-	// Sauvegarde du temps de fin pour recaler les enregistrements de chaque rang MPI
+	// Save the end time to synchronize the recordings of each MPI rank
 	uint64_t epoch_end(getTime());
 
-	// Fermeture de ce qui est lie aux events
+	// Close what is related to events
 	OTF2_Archive_CloseEvtWriter(m_archive, m_evt_writer);
   OTF2_Archive_CloseEvtFiles(m_archive);
 
-	// Temporaire pour recuperer les timings globaux
+	// Temporary storage to retrieve global timings
 	uint64_t sync_epoch;
 
-	// Echanges pour avoir la fenetre temporelle globale
-	// Plus petit temps pour le debut
+	// Exchanges to get the global time window
+	// Smallest time for the start
 	/*
 	MPI_Reduce(&m_epoch_start, &sync_epoch, 1, OTF2_MPI_UINT64_T, MPI_MIN,
 			       m_sub_domain->parallelMng()->masterIORank(), *mpi_comm);
 	std::swap(m_epoch_start, sync_epoch);
-	 */
-	// Plus grand temps pour la fin
+	*/
+	// Largest time for the end
 	MPI_Reduce(&epoch_end, &sync_epoch, 1, OTF2_MPI_UINT64_T, MPI_MAX,
 			       m_sub_domain->parallelMng()->masterIORank(), *mpi_comm);
 	std::swap(epoch_end, sync_epoch);
 
-	// On finit de creer les definitions pour l'archive
+	// We finish creating the definitions for the archive
 	//_buildOtf2ClockAndStringDefinition(m_epoch_start, epoch_end);
 	_buildOtf2ClockAndStringDefinition(0, epoch_end);
 	_buildOtf2ParadigmAndSystemDefinition();
 	_buildOtf2LocationDefinition();
 	_buildOtf2RegionDefinition();
-	_buildOtf2GroupAndCommDefinition();  // L'ecriture effective se passe dans cette methode
+	_buildOtf2GroupAndCommDefinition();  // The effective writing happens in this method
 
-	// Synchro avant de fermer
+	// Sync before closing
 	MPI_Barrier(*mpi_comm);
 
-	// Fermeture du fichier archive
+	// Close the archive file
 	OTF2_Archive_Close(m_archive);
 	m_archive = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Accesseur sur le otf2 event writer interne.
-//! Incremente un compteur d'evenement interne a chaque appel.
+
+//! Accessor for the internal otf2 event writer.
+//! Increments an internal event counter on each call.
 OTF2_EvtWriter* Otf2LibWrapper::
 getEventWriter()
 {
@@ -187,7 +192,8 @@ getEventWriter()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Helper pour l'id d'un point d'entree via son nom.
+
+//! Helper for the ID of an entry point via its name.
 uint32_t Otf2LibWrapper::
 getEntryPointId(const String& ep_name) const
 {
@@ -199,7 +205,8 @@ getEntryPointId(const String& ep_name) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Helper sur le numero de rank MPI
+
+//! Helper for the MPI rank number
 int Otf2LibWrapper::
 getMpiRank() const
 {
@@ -208,7 +215,8 @@ getMpiRank() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Helper sur le nombre de rank MPI
+
+//! Helper for the number of MPI ranks
 int Otf2LibWrapper::
 getMpiNbRank() const
 {
@@ -217,7 +225,8 @@ getMpiNbRank() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Helper sur le nom de l'application
+
+//! Helper for the application name
 uint32_t Otf2LibWrapper::
 getApplicationNameId() const
 {
@@ -226,7 +235,8 @@ getApplicationNameId() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Helper sur la chaine de charactere "syncrhonize"
+
+//! Helper for the string "synchronize"
 uint32_t Otf2LibWrapper::
 getSynchronizeId() const
 {
@@ -235,7 +245,8 @@ getSynchronizeId() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Méthode interne statique pour recuperer le timestamp.
+
+//! Internal static method to retrieve the timestamp.
 OTF2_TimeStamp Otf2LibWrapper::
 getTime()
 {
@@ -248,7 +259,7 @@ getTime()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Méthode interne statique pour positionner la callback a appeler avant l'evenement a enregistrer
+//! Internal static method to set the callback to be called before the event is recorded
 OTF2_FlushType Otf2LibWrapper::
 _preFlush([[maybe_unused]] void* user_data, [[maybe_unused]] OTF2_FileType file_type,
 		      [[maybe_unused]] OTF2_LocationRef location, [[maybe_unused]] void* caller_data,
@@ -263,7 +274,7 @@ _preFlush([[maybe_unused]] void* user_data, [[maybe_unused]] OTF2_FileType file_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Méthode interne statique pour positionner la callback a appeler apres l'evenement a enregistrer
+//! Internal static method to set the callback to be called after the event is recorded
 OTF2_TimeStamp Otf2LibWrapper::
 _postFlush([[maybe_unused]] void* user_data, [[maybe_unused]] OTF2_FileType file_type,
            [[maybe_unused]] OTF2_LocationRef location)
@@ -275,83 +286,82 @@ _postFlush([[maybe_unused]] void* user_data, [[maybe_unused]] OTF2_FileType file
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode interne de creation des identifiants de nommage pour
-//! les definitions necessaires a l'archive OTF2.
-//! Doit etre appelee a l'init
+//! Internal method for creating naming identifiers for
+//! the definitions necessary for the OTF2 archive.
+//! Must be called in init
 void Otf2LibWrapper::
 _createOtf2Ids()
 {
-	// Les ids des noms des operations MPI sont cables sur la valeur de l'enum
-	// Leur description est decale d'autant
-	// On compteur pour incrementer les identifiants
+	// The IDs of the MPI operation names are linked to the enum value
+	// Their description is offset accordingly
+	// We use a counter to increment the identifiers
 	u_int32_t offset(static_cast<uint32_t>(eMpiName::NameOffset));
 	m_id.m_desc_offset = offset;
 
-	// On continu avec le reste, j'ai pas trouve d'idee geniale pour avoir un indice intelligent ...
+	// We continue with the rest; I haven't found a brilliant idea for a smart index...
 	offset *= 2;
-	// Chaine vide : 2 x eMpiName::NameOffset
+	// Empty string: 2 x eMpiName::NameOffset
 	m_id.m_empty_id = offset++;
-	// Nom du thread CPU mappe sur le process MPI : 2 x eMpiName::NameOffset + 1
+	// CPU thread name mapped to the MPI process: 2 x eMpiName::NameOffset + 1
 	m_id.m_thread_id = offset++;
-	// Nom de la machine : 2 x eMpiName::NameOffset + 2
+	// Machine name: 2 x eMpiName::NameOffset + 2
 	m_id.m_hostname_id = offset++;
-	// Classe de la machine... pas inspire... : 2 x eMpiName::NameOffset + 3
+	// Machine class... not inspired...: 2 x eMpiName::NameOffset + 3
 	m_id.m_class_id = offset++;
-	// MPI Communicator : 2 x eMpiName::NameOffset + 4
+	// MPI Communicator: 2 x eMpiName::NameOffset + 4
 	m_id.m_comm_world_id = offset++;
-	// MPI : 2 x eMpiName::NameOffset + 5
+	// MPI: 2 x eMpiName::NameOffset + 5
 	m_id.m_mpi_id = offset++;
-	// Comm id : 2 x eMpiName::NameOffset + 6
+	// Comm ID: 2 x eMpiName::NameOffset + 6
 	m_id.m_comm_id = offset++;
-	// Win id : 2 x eMpiName::NameOffset + 7
+	// Win ID: 2 x eMpiName::NameOffset + 7
 	m_id.m_win_id = offset++;
-	// MPI_COMM_SELF : 2 x eMpiName::NameOffset + 8
+	// MPI_COMM_SELF: 2 x eMpiName::NameOffset + 8
 	m_id.m_comm_self_id = offset++;
-	// Entry Point : 2 x eMpiName::NameOffset + 9
+	// Entry Point: 2 x eMpiName::NameOffset + 9
 	m_id.m_ep_id = offset++;
-  // Synchronize : 2 x eMpiName::NameOffset + 10
+  // Synchronize: 2 x eMpiName::NameOffset + 10
   m_id.m_sync_id = offset++;
-	// Application name : 2 x eMpiName::NameOffset + 11
+	// Application name: 2 x eMpiName::NameOffset + 11
 	m_id.m_app_name = offset++;
-	// On continu avec les noms des rangs MPI : a partir de 2 x eMpiName::NameOffset + 12
+	// We continue with the MPI rank names: starting from 2 x eMpiName::NameOffset + 12
 	m_id.m_rank_offset = offset;
 	offset += m_sub_domain->nbSubDomain();
 
-  // On termine avec les points d'entree : a partir de 2 x eMpiName::NameOffset + 12 + nbSubDomain()
+  // We finish with the entry points: starting from 2 x eMpiName::NameOffset + 12 + nbSubDomain()
   for (auto i : m_sub_domain->timeLoopMng()->usedTimeLoopEntryPoints()) {
-		// On ajoute la reference du point d'entree dans la table
-    // NOTE: L'identifiant utilisé doit être identique à celui dans
-    // Otf2MessagePassingProfilingService
+		// We add the entry point reference to the table
+    // NOTE: The ID used must be identical to the one in Otf2MessagePassingProfilingService
 		m_id.m_ep_id_set.emplace(EntryPointId(i->fullName(), offset));
-		// On incremente pour tout le monde
+		// We increment for everyone
 		offset++;
 	}
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode interne de creation de l'ensemble des chaines de caractres utilisees dans
-//! les definitions necessaires pour l'archive OTF2.
-//! Doit etre appelee au debut de l'archivage
+
+//! Internal method for creating the set of strings used in
+//! the definitions necessary for the OTF2 archive.
+//! Must be called at the beginning of archiving
 void Otf2LibWrapper::
 _buildOtf2ClockAndStringDefinition(uint64_t global_start_time, uint64_t global_end_time)
 {
 	/*
-	 * Seul le sous-domaine responsable des IOs va remplir cette structure OTF2
-	 * (parcequ'on ne sait pas trop ce qu'il y a la dessous, mais surement trop de char*)
-	 * et pour etre raccord sur les identifiants associes au nom des pts d'entree, on
-	 * communique le debut des ids des pts d'entree.
+	 * Only the sub-domain responsible for I/Os will fill this OTF2 structure
+	 * (because we don't know much about what's underneath, but probably too many chars*)
+	 * and to be consistent with the identifiers associated with the entry point names, we communicate the start of the entry point IDs.
 	 */
 
-	// Seul le sous-domaine responsable ecrit l'archive otf2
+	// Only the responsible sub-domain writes the otf2 archive
 	if (!m_sub_domain->parallelMng()->isMasterIO())
 		return;
 
-	// Recuperation de l'ecrivain
+	// Retrieval of the writer
 	m_global_def_writer = OTF2_Archive_GetGlobalDefWriter(m_archive);
 
-	// Definition des proprietes temporelles
-  // Un nouvel argument est disponible à partir de la version 3.0. Il s'agit du dernier argument
+	// Definition of temporal properties
+  // A new argument is available starting from version 3.0. It is the last argument
   // *  @param realtimeTimestamp A realtime timestamp of the `globalOffset` timestamp
   // *                           in nanoseconds since 1970-01-01T00:00 UTC. Use
   // *                           @eref{OTF2_UNDEFINED_TIMESTAMP} if no such
@@ -363,8 +373,8 @@ _buildOtf2ClockAndStringDefinition(uint64_t global_start_time, uint64_t global_e
 #endif
                                             );
 
-	// Definition de toutes les noms que l'on verra apparaitre dans les outils capables de lire l'archive otf2
-	// On commence par les noms des operations MPI
+	// Definition of all names that will appear in tools capable of reading the otf2 archive
+	// We start with the names of the MPI operations
 	OTF2_GlobalDefWriter_WriteString(m_global_def_writer,
 	                                 static_cast<uint32_t>(eMpiName::Bcast), MpiInfo(eMpiName::Bcast).name().localstr());
 	OTF2_GlobalDefWriter_WriteString(m_global_def_writer,
@@ -413,10 +423,10 @@ _buildOtf2ClockAndStringDefinition(uint64_t global_start_time, uint64_t global_e
 	                                 static_cast<uint32_t>(eMpiName::Testsome), MpiInfo(eMpiName::Testsome).name().localstr());
 	OTF2_GlobalDefWriter_WriteString(m_global_def_writer,
 	                                 static_cast<uint32_t>(eMpiName::Waitsome), MpiInfo(eMpiName::Waitsome).name().localstr());
-  // On compteur pour incrementer les identifiants
+  // We use a counter to increment the identifiers
   u_int32_t offset(static_cast<uint32_t>(eMpiName::NameOffset));
 
-  // On continu avec les descriptions de ces operations. On utilise la valeur du decalage du nb de champ de l'enum
+  // We continue with the descriptions of these operations. We use the offset value of the enum field count.
 	OTF2_GlobalDefWriter_WriteString(m_global_def_writer,
 	                                 static_cast<uint32_t>(eMpiName::Bcast) + offset, MpiInfo(eMpiName::Bcast).description().localstr());
 	OTF2_GlobalDefWriter_WriteString(m_global_def_writer,
@@ -507,8 +517,9 @@ _buildOtf2ClockAndStringDefinition(uint64_t global_start_time, uint64_t global_e
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode interne pour definir les regions a associer aux events otf2
-//! Doit etre appelee en fin d'archivage
+
+//! Internal method to define the regions associated with otf2 events
+//! Must be called at the end of archiving
 void Otf2LibWrapper::
 _buildOtf2ParadigmAndSystemDefinition()
 {
@@ -533,7 +544,8 @@ _buildOtf2ParadigmAndSystemDefinition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode interne pour ecrire la definition du systeme associee a l'archive otf2
+
+//! Internal method to write the system definition associated with the otf2 archive
 void Otf2LibWrapper::
 _buildOtf2LocationDefinition()
 {
@@ -566,8 +578,9 @@ _buildOtf2LocationDefinition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode interne pour definir les regions a associer aux events otf2
-//! Doit etre appelee en fin d'archivage
+
+//! Internal method to define the regions associated with otf2 events
+//! Must be called at the end of archiving
 void Otf2LibWrapper::
 _buildOtf2RegionDefinition()
 {
@@ -789,9 +802,10 @@ _buildOtf2RegionDefinition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Methode interne pour definir les regions a associer aux events otf2
-//! Doit etre appelee en fin d'archivage
-//! C'est cette methode qui ecrit effectivement les infos dans le fichier de def
+
+//! Internal method to define the regions associated with otf2 events
+//! Must be called at the end of archiving
+//! This method actually writes the info into the definition file
 void Otf2LibWrapper::
 _buildOtf2GroupAndCommDefinition()
 {

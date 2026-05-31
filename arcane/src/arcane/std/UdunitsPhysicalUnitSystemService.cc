@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UdunitsUnitSystem.h                                         (C) 2000-2014 */
 /*                                                                           */
-/* Gestion de système d'unité physique utilisant 'udunits2'.                 */
+/* Management of physical unit system using 'udunits2'.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,7 +54,7 @@ class UdunitsPhysicalUnit
                       const String& name)
   : m_unit(unit)
   {
-    // Pour garantir que la chaîne est allouée dynamiquement
+    // To ensure the string is dynamically allocated
     m_name = String::fromUtf8(name.utf8());
   }
 
@@ -165,7 +165,7 @@ class UdunitsPhysicalUnitSystem
 
   virtual IPhysicalUnitConverter* createConverter(IPhysicalUnit* from,IPhysicalUnit* to)
   {
-    // Normalement déjà créé.
+    // Normally already created.
     _checkCreateUnitSystem();
     UdunitsPhysicalUnit* from_unit = dynamic_cast<UdunitsPhysicalUnit*>(from);
     UdunitsPhysicalUnit* to_unit = dynamic_cast<UdunitsPhysicalUnit*>(to);
@@ -180,7 +180,7 @@ class UdunitsPhysicalUnitSystem
     _checkCreateUnitSystem();
     UdunitsPhysicalUnit* from_unit = _createUnit(from);
     UdunitsPhysicalUnit* to_unit = _createUnit(to);
-    //TODO: detruire les unites en cas d'erreur.
+    //TODO: destroy units in case of error.
     return _createConverter(from_unit,to_unit);
   }
 
@@ -199,7 +199,7 @@ class UdunitsPhysicalUnitSystem
 
   void _checkCreateUnitSystem()
   {
-    //TODO Ajouter lock...
+    //TODO Add lock...
     if (!m_unit_system)
       m_unit_system = ut_read_xml(0);
     if (!m_unit_system)
@@ -224,8 +224,9 @@ class UdunitsPhysicalUnitSystem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de gestion de système d'unité physique utilisant 'udunits2'.
+ * \brief Service for managing physical unit system using 'udunits2'.
  */
 class UdunitsUnitSystemService
 : public AbstractService

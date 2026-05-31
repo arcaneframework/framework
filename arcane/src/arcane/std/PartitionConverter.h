@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* PartitionConverter.h                                             (C) 2010 */
 /*                                                                           */
-/* Utilisation de ArrayConverter pour convertir les poids en flottants       */
-/* en poids en entier en les "scalant" correctement.                         */
+/* Use of ArrayConverter to convert weights from floats to integers by       */
+/* "scaling" them correctly.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_STD_PARTITIONCONVERTER_H
@@ -26,14 +26,10 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Conversion d'un tableau de flottants vers un tableau d'entiers/longs.
- * \abstract Cette classe gere le scaling de la facon suivante:
- * [0,W_max] --> [1,EW_max] avec Sum(EW) < "max"
+ * \brief Conversion of an array of floats to an array of integers/longs.
+ * \abstract This class manages the scaling in the following way:
+ * [0,W_max] --> [1,EW_max] with Sum(EW) < "max"
  */
 template<typename TypeA,typename TypeB>
 class PartitionConverter

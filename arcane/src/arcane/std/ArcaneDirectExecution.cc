@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneDirectExecution.cc                                    (C) 2000-2011 */
 /*                                                                           */
-/* Service d'exécution directe.                                              */
+/* Direct execution service.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,8 +28,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service d'exécution directe
+ * \brief Direct execution service
  */
 class ArcaneDirectExecution
 : public ArcaneArcaneDirectExecutionObject

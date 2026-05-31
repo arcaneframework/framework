@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SplitSDMeshPartitioner.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Partitioneur de maillage reprenant le fonctionnement de SplitSD.          */
+/* Mesh partitioner replicating the functionality of SplitSD.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_FILES_SPLITSDMESHPARTITIONER_H
 #define ARCANE_FILES_SPLITSDMESHPARTITIONER_H
@@ -36,31 +36,31 @@ ARCANE_BEGIN_NAMESPACE
 #define CHECK_MPI_PACK_ERR(ier) \
   if (ier != MPI_SUCCESS) { \
      switch (ier) { \
-     case MPI_ERR_COMM:InfoProc->m_service->pfatal()<<"erreur sur MPI_Pack de type MPI_ERR_COMM"; break; \
-     case MPI_ERR_TYPE: InfoProc->m_service->pfatal()<<"erreur sur MPI_Pack de type MPI_ERR_TYPE"; break; \
-     case MPI_ERR_COUNT: InfoProc->m_service->pfatal()<<"erreur sur MPI_Pack de type MPI_ERR_COUNT"; break; \
-     case MPI_ERR_ARG: InfoProc->m_service->pfatal()<<"erreur sur MPI_Pack de type MPI_ERR_ARG"; break; \
-     default: InfoProc->m_service->pfatal()<<"erreur sur MPI_Pack de type inconnu !"; \
+     case MPI_ERR_COMM:InfoProc->m_service->pfatal()<<"error on MPI_Pack of type MPI_ERR_COMM"; break; \
+     case MPI_ERR_TYPE: InfoProc->m_service->pfatal()<<"error on MPI_Pack of type MPI_ERR_TYPE"; break; \
+     case MPI_ERR_COUNT: InfoProc->m_service->pfatal()<<"error on MPI_Pack of type MPI_ERR_COUNT"; break; \
+     case MPI_ERR_ARG: InfoProc->m_service->pfatal()<<"error on MPI_Pack of type MPI_ERR_ARG"; break; \
+     default: InfoProc->m_service->pfatal()<<"error on MPI_Pack of unknown type !"; \
      } \
   }
 
 #ifndef CHECK_IF_NOT_NULL
 /** 
-  Macros qui fait le test comme quoi le pointeur en argument n'est pas nul
-  et qui fait appel à pfatal() si ce pointeur s'avère nul.
-  Cette macro est à utiliser après tout appel à l'une des fonctions utilisant la mémoire
+  Macros that test whether the pointer argument is not null
+  and calls pfatal() if this pointer turns out to be null.
+  This macro should be used after any call to a function using memory
   (malloc, calloc, realloc ...).
 
-  @memo   Teste si un pointeur n'est pas nul.
+  @memo   Tests if a pointer is not null.
 
-  @param  Ptr un pointeur
+  @param  Ptr a pointer
 
   @author  Eric Brière de l'Isle, ONERA, DRIS/SRL
 
 */
 #define CHECK_IF_NOT_NULL(Ptr) \
   if (Ptr==NULL) { \
-      InfoProc->m_service->pfatal()<<"Pointeur vaut nil, (On manque peut-etre de place memoire !!! )"; \
+      InfoProc->m_service->pfatal()<<"Pointer is null, (Perhaps we lack memory !!! )"; \
     }
 #endif
 
@@ -72,28 +72,28 @@ ARCANE_BEGIN_NAMESPACE
 #endif
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/**     Structure décrivant un processeur.
+/**     Structure describing a processor.
         @name  StrucInfoProc
 */
 typedef struct T_InfoProc
 {
 /*@{*/
-  /** Numéro du processeur, ce numéro est compris entre 0 et le nombre de processeurs moins un.*/
+  /** Processor number, this number is between 0 and the number of processors minus one.*/
   int      me;
-  /** Nombre total de processeurs, 
-      c'est le nombre maximum de processeurs que cette application 
-      peut utiliser lors d'une exécution.*/
+  /** Total number of processors, 
+      this is the maximum number of processors that this application 
+      can use during an execution.*/
   int      nbSubDomain;
-//   /** Numéro du processeur maître, 
-//       c'est sur ce processeur que sont faites l'agglomération, 
-//       l'insertion et le redécoupage.*/
+//   /** Master processor number, 
+//       this is the processor on which aggregation, 
+//       insertion and repartitioning are performed.*/
 //   int      NoMaitre;
-  /** Groupe de travail sous MPI 
-      (la définition d'un nouveau groupe permet de limiter la porté 
-      des messages utilisés).*/
+  /** MPI work group 
+      (defining a new group allows limiting the scope 
+      of the messages used).*/
   MPI_Comm              Split_Comm;
 
-  /// Pour la gestion des traces (messages, erreurs, fatal ...)
+  /// For trace management (messages, errors, fatal ...)
   Arcane::AbstractService*  m_service;
 
 /*@}*/
@@ -101,21 +101,21 @@ typedef struct T_InfoProc
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-    Structure pour le stockage des informations locales, pour éviter de les recalculer plusieurs fois.
-    Il s'agit essentiellement des noeuds sur les interfaces avec les différents domaines voisins.
-    EB, 2007. Simplification de StructureBlocEtendu
+    Structure for storing local information, to avoid recalculating it multiple times.
+    It essentially consists of nodes on the interfaces with different neighboring domains.
+    EB, 2007. Simplification of StructureBlocEtendu
 */
 
 
 typedef struct T_INTERFACE
 {
-  /**     Elément permettant de décrire une interface avec un seul bloc voisin        
+  /**     Element allowing the description of an interface with a single neighboring block        
 	  @name  StructureInterface
   */
 
-  /** Numero du domaine voisin commence a 0	*/
+  /** Neighboring domain number starts at 0	*/
   int                                 NoDomVois;
-  /** Liste Des Noeuds interface		*/
+  /** List of interface nodes		*/
   Arcane::UniqueArray<Arcane::Node>         ListeNoeuds;
 
 } StructureInterface;
@@ -123,68 +123,68 @@ typedef struct T_INTERFACE
 
 typedef struct T_BLOC_ETENDU
 {
-  /**     Elément permettant de décrire un bloc étendu et son environnement        
+  /**     Element allowing the description of an extended block and its environment        
 	  @name  StructureBlocEtendu
   */
 
-  /**      Nombre de mailles */
+  /**      Number of elements */
   Integer NbElements;
 
-  /**      Poids total du domaine */
+  /**      Total weight of the domain */
   double                             PoidsDom;
 
-  /**      Nombre d'interfaces  */
+  /**      Number of interfaces  */
   Integer NbIntf;
   
-  /**      Tableau de structures d'interfaces, une pour chacun des voisins du bloc en question  */
+  /**      Array of interface structures, one for each neighbor of the block in question  */
   StructureInterface*                Intf;
   
                
 } StructureBlocEtendu;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/**     Elément permettant de décrire une interface entre deux blocs.
+/**     Element allowing the description of an interface between two blocks.
         @name  StrucListeVoisMail
         @see   StrucListeDomMail         
 */
 typedef struct T_ListeVoisMail
 {
 /*@{*/
-  /** Numéro du domaine voisin (de 0 au nombre de processeurs moins un) */
+  /** Neighboring domain number (from 0 to the number of processors minus one) */
   int                 NoDomVois;
-  /** Nombre de noeuds dans l'interface commune */
+  /** Number of nodes in the common interface */
   int                 NbNoeudsInterface;
-  /** Quantité à transférer par cette interface */
+  /** Quantity to transfer through this interface */
   double              Delta;
-  /** Poids pour l'interface */
-//   int                 PoidsInterface;  pas de signification ici
+  /** Weight for the interface */
+//   int                 PoidsInterface;  no meaning here
 /*@}*/
 } StrucListeVoisMail;
 
-/**     Elément pour décrire un bloc dans la description globale du maillage.
+/**     Element to describe a block in the global mesh description.
         @name  StrucListeDomMail
         @see  StrucMaillage
 */
 typedef struct T_ListeDomMail
 {
 /*@{*/
-  /** Nombre d'éléments dans le domaine */
+  /** Number of elements in the domain */
   int                 NbElements;
-  /** Poids pour le domaine */
+  /** Weight for the domain */
   double              Poids;
-  /** Nombre de blocs voisins */
+  /** Number of neighboring blocks */
   int                 NbVoisins;
-  /** Liste de descripteurs pour les voisins */
+  /** List of descriptors for the neighbors */
   StrucListeVoisMail* ListeVoisins;
 /*@}*/
 } StrucListeDomMail;
 
-/**     Structure permettant la description globale du maillage.\\
+/**     Structure allowing the global description of the mesh.\\
 
-  {\em Remarque:} le stockage des numéros globaux inutilisés 
-  est effectué sur le processeur maître, 
-  le maître peut changer aussi est-ce transmis au nouveau 
-  maître lors de la mise à jour du maillage maître (\Ref{MAJMaillageMaitre}).
+  {\em Note:} the storage of unused global numbers 
+  is performed on the master processor, 
+  the master may also change, which is transmitted to the new 
+  master during the master mesh update (\Ref{MAJMaillageMaitre}).
 
   @name  StrucMaillage
   @see   main, MAJMaillageMaitre
@@ -192,21 +192,21 @@ typedef struct T_ListeDomMail
 typedef struct T_Maillage
 {
 /*@{*/
-  /** Nombre d'éléments dans le maillage global */
+  /** Number of elements in the global mesh */
   int                 NbElements;
-  /** Nombre d'éléments dans le maillage global */
+  /** Number of elements in the global mesh */
   double              Poids;
  
-  /** Nombre de blocs non vides */
+  /** Number of non-empty domains */
   int                 NbDomainesPleins;
-  /** Nombre de domaines total, c'est le nombre de processeurs attribués à cette session */
+  /** Total number of domains, this is the number of processors assigned to this session */
   int                 NbDomainesMax;
-  /** Liste (de taille NbDomainesMax) de descripteurs de blocs */
+  /** List (of size NbDomainesMax) of block descriptors */
   StrucListeDomMail*  ListeDomaines;
 
-  /** Nombre de processeurs dont le sous-domaine est vide */
+  /** Number of processors whose subdomain is empty */
   int                 NbProcsVides;
-//   /** Liste des processeurs sans sous-domaine */
+//   /** List of processors without a subdomain */
 //   int*                ListeNoProcsVides;
 
 /*@}*/
@@ -214,8 +214,8 @@ typedef struct T_Maillage
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Partitioneur de maillage inspiré de la bibliothèque SplitSD, développé 
- *  initialement à l'ONERA pour Dassault Aviation.
+ * \brief Mesh partitioner inspired by the SplitSD library, developed 
+ *  initially at ONERA for Dassault Aviation.
  */
 class SplitSDMeshPartitioner
 : public ArcaneSplitSDMeshPartitionerObject
@@ -240,46 +240,46 @@ class SplitSDMeshPartitioner
   }
 
  private:
-  /// initialisation des structures
+  /// initialization of structures
   void init(bool initial_partition, StrucInfoProc* &InfoProc, StructureBlocEtendu* &Domaine, StrucMaillage* &Maillage);
 
-  /// initialisation des poids (m_cells_weight => m_poids_aux_mailles)
+  /// initialization of weights (m_cells_weight => m_poids_aux_mailles)
   void initPoids(bool initial_partition);
 
-  /// libération mémoire des structures
+  /// memory freeing of structures
   void fin (StrucInfoProc* &InfoProc, StructureBlocEtendu* &Domaine, StrucMaillage* &Maillage);
 
-  /// mise à jour de la structure locale (noeuds sur les interfaces avec sous-domaines voisins)
+  /// update of the local structure (nodes on interfaces with neighboring subdomains)
   void MAJDomaine(StructureBlocEtendu* Domaine);
 
-  /// mise à jour de la structure sur le processeur 0
+  /// update of the structure on processor 0
   void MAJMaillageMaitre(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage);
 
-  /// fonction de vérification de la cohérence (réciprocité) des interfaces
+  /// consistency check (reciprocity) of the interfaces
   void verifMaillageMaitre(StrucMaillage* Maillage);
 
-  /// On utilise une méthode de parcours frontal pour aller d'un noeud surchargé vers les autres noeuds en mémorisant le chemin pour mettre à jour les Delta sur les interfaces.
+  /// We use a front-tracking method to go from an overloaded node to other nodes by memorizing the path to update the Deltas on the interfaces.
   void MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double tolerance);
-  /// fonction de décalage du Delta associé à une interface recherchée pour un couple, domaine et numéro de voisin, spécifié 
+  /// function to shift the Delta associated with a searched interface for a pair, domain, and neighbor number, specified 
   void MAJDelta(double don, int iDOmTmpPrec,int iDomTmp, StrucListeDomMail* ListeDomaines);
 
-  /// calcul un deltaMin en fonction des transferts locaux
+  /// calculates a deltaMin based on local transfers
   double CalculDeltaMin(StrucMaillage* Maillage, double deltaMin, int iterEquilibrage, int NbMaxIterEquil);
 
-  /// phase itérative pour équilibrer la charge
+  /// iterative phase to balance the load
   void Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage);
 
-  /// phase de transfert entre 2 domaines, MAJ des domaines
+  /// transfer phase between 2 domains, MAJ of domains
   void Equil2Dom(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int marqueNonVu,
 		 StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage, 
 		 int indDomCharge, int indDomVois, double Delta);
 
-  /// sélection d'éléments dans un domaine pour équilibrage entre 2 dom, en faisant un parcour frontal depuis l'interface
+  /// selection of elements in a domain for balancing between 2 domains, by performing a front-tracking from the interface
   void SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int marqueNonVu,
 		      StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, 
 		      double Delta, int indDomVois, Arcane::Array<Arcane::Cell>& ListeElements);
 
-  /// parcours frontal limité suivant le Delta (poids cumulés des éléments pris dans les fronts), retourne un en cas de blocage
+  /// limited front-tracking following the Delta (cumulative weight of elements taken in the fronts), returns an integer in case of blockage
   int ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements, 
 			    int marqueVu, int marqueNonVu,
 			    double Delta,
@@ -287,9 +287,9 @@ class SplitSDMeshPartitioner
 			    Arcane::Array<Arcane::Node>& FrontsNoeuds,  int* IndFrontsNoeuds,
 			    Arcane::Array<Arcane::Cell>& FrontsElements,int* IndFrontsElements);
   
-  /** lissage du dernier front obtenu par parcours frontal, 
-      de manière à intégrer dans ce front les éléments dont tous les noeuds
-      sont déjà pris dans les fronts précédents
+  /** smoothing of the last front obtained by front-tracking, 
+      in order to include in this front the elements whose all nodes
+      are already taken in previous fronts
   */
   void LissageDuFront (int* MasqueDesNoeuds, int* MasqueDesElements, 
 		       int marqueVu, int marqueNonVu,
@@ -297,15 +297,15 @@ class SplitSDMeshPartitioner
 		       Arcane::Array<Arcane::Node>& FrontsNoeuds,  int* IndFrontsNoeuds,
 		       Arcane::Array<Arcane::Cell>& FrontsElements,int* IndFrontsElements);
 
-  /// déplace des parties du sous-domaine lorsqu'elles sont trop petites et non connexes
+  /// makes the domain connected when parts are too small and not connected
   void ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage, double tolConnexite);
 
-  /// recherche le domaine voisin ayant le max de Faces en commun avec le groupe de mailles
+  /// searches for the neighboring domain having the max number of shared Faces with the set of meshes
   int getDomVoisMaxFace(Arcane::Array<Arcane::Cell>& ListeElements, int me);
 
-  /// création d'un tableau qui sert de masque sur les LocalId des noeuds
+  /// creation of an array that serves as a mask on the LocalId of nodes
   int* GetMasqueDesNoeuds(StrucInfoProc* InfoProc);
-  /// création d'un tableau qui sert de masque sur les LocalId des éléments
+  /// creation of an array that serves as a mask on the LocalId of elements
   int* GetMasqueDesElements(StrucInfoProc* InfoProc);
 
   void LibereInfoProc(StrucInfoProc* &InfoProc);
@@ -323,23 +323,23 @@ class SplitSDMeshPartitioner
 //   MPI_Request*  EnvoieIMessage(StrucInfoProc* InfoProc, int ToProc, int Tag, void* TabTMP, int TailleTMP);
   void* DiffuseMessage(StrucInfoProc* InfoProc, int FromProc, void* TabTMP, int TailleTMP);
   
-  // taille pour le transfert sans les noeuds, seulement la taille de ListeNoeuds
+  // size for transfer without nodes, only the size of ListeNoeuds
   int TailleDom(StructureBlocEtendu* Domaine);
-  // les données sont mise dans un tableau
+  // the data is put into an array
   void PackDom(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, void* TabTMP, int TailleTMP, MPI_Comm comm);
-  // les données sont extraite d'un tableau
+  // the data is extracted from an array
   void UnpackDom(void* TabTMP, int TailleTMP, MPI_Comm comm, StrucListeDomMail* DomMail);
   
-  // taille pour le transfert des numéros de domaine pour Equilibrage, et du Delta
+  // size for domain transfer for Balancing, and for Delta
   int TailleEquil();
-  // les données sont mise dans un tableau
+  // the data is put into an array
   void PackEquil(StrucInfoProc* InfoProc, int indDomCharge, int indDomVois, double Delta, void* TabTMP, int TailleTMP, MPI_Comm comm);
-  // les données sont extraite d'un tableau
+  // the data is extracted from an array
   void UnpackEquil(void* TabTMP, int TailleTMP, MPI_Comm comm, int* indDomCharge, int* indDomVois, double* Delta);
   
 
 private:
-  VariableCellReal m_poids_aux_mailles;    // poids que l'on calcul une fois par appel au rééquilibrage et qui suit les cellules
+  VariableCellReal m_poids_aux_mailles;    // weight calculated once per rebalancing call and follows the cells
 };
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -349,4 +349,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

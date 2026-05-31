@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MetisGraphGather.cc                                         (C) 2000-2024 */
 /*                                                                           */
-/* Regroupement de graphes de 'Parmetis'.                                    */
+/* Graph gathering for 'Parmetis'.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -78,23 +78,23 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
   const bool is_master_io = m_parallel_mng->isMasterIO();
   // buffers
   
-  UniqueArray<int> my_buffer; // pour les entrees des routines MPI
-  UniqueArray<int> buffer; // pour les sorties des routines MPI
-  UniqueArray<int> offset; // pour les gather
+  UniqueArray<int> my_buffer; // for the inputs of the MPI routines
+  UniqueArray<int> buffer; // for the outputs of the MPI routines
+  UniqueArray<int> offset; // for the gather
   
-  // nombre de sommets du graph complet
+  // number of vertices in the complete graph
 
   if (m_my_rank == io_rank) {
     graph.nb_vertices = CheckedConvert::toInt32(vtxdist[m_nb_rank]);
-    graph.have_vsize = my_graph.have_vsize; // on suppose que tous les processeurs ont la meme valeur
-    graph.have_adjwgt = my_graph.have_adjwgt; // on suppose que tous les processeurs ont la meme valeur
+    graph.have_vsize = my_graph.have_vsize; // it is assumed that all processors have the same value
+    graph.have_adjwgt = my_graph.have_adjwgt; // it is assumed that all processors have the same value
   } else {
     graph.nb_vertices = 0;
     graph.have_vsize = false;
     graph.have_adjwgt = false;
   }
 
-  // récupère les dimensions caractérisant la répartition du graphe sur les processeurs
+  // retrieves the dimensions characterizing the graph distribution across processors
 
   my_buffer.resize(2);
   if (m_my_rank == io_rank) {
@@ -102,8 +102,8 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     buffer.resize(2 * nb_rank);
   }
 
-  my_buffer[0] = my_graph.nb_vertices; // nb de sommets
-  my_buffer[1] = my_graph.adjncy.size(); // taille de la liste d'adjacences
+  my_buffer[0] = my_graph.nb_vertices; // number of vertices
+  my_buffer[1] = my_graph.adjncy.size(); // size of the adjacency list
 
   MPI_Gather((void*)my_buffer.data(), 2, MPI_INT, (void*)buffer.data(), 2, MPI_INT, io_rank, comm);
 
@@ -120,7 +120,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     }
   }
 
-  // retaille les buffers maintenant que les dimensions sont connues (le plus gros tableau est adjcny)
+  // resize the buffers now that the dimensions are known (the largest array is adjcny)
   
   int max_buffer_size = my_graph.nb_vertices * ncon;
   max_buffer_size = std::max(my_graph.adjncy.size(), max_buffer_size);
@@ -131,7 +131,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     buffer.resize(max_buffer_size);
   }
 
-  // Récupère la liste d'adjacences.
+  // Retrieves the adjacency list.
 
   if (is_master_io) {
     offset[0] = 0;
@@ -149,7 +149,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
 
   _convertVector(adjcny_size, buffer.constView(), graph.adjncy.view());
 
-  // Recupere la liste des poids aux arretes du graph.
+  // Retrieves the list of edge weights.
   
   if (my_graph.have_adjwgt) {
     if (is_master_io) {
@@ -165,10 +165,10 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     _convertVector(adjcny_size, buffer.constView(), graph.adjwgt.view());
   }
 
-  // Récupère la liste des index dans la liste d'adjacences.
-  // A cette étape, la liste récupérée n'est pas correcte, sauf le dernier indice.
-  // En effet les indexes par processeur ne sont pas les meme que les index
-  // dans la liste d'adjacences complete.
+  // Retrieves the list of indices in the adjacency list.
+  // At this stage, the retrieved list is not correct, except for the last index.
+  // In fact, the indices per processor are not the same as the indices
+  // in the complete adjacency list.
 
   if (is_master_io) {
     graph.xadj.resize(graph.nb_vertices + 1);
@@ -187,7 +187,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
 
   _convertVector(graph.nb_vertices, buffer.constView(), graph.xadj.view());
 
-  // Correction des index
+  // Index correction
 
   if (is_master_io) {
     int start_adjncy_index = 0;
@@ -202,7 +202,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     }
   }
 
-  // Récupère la liste des poids "memoire" aux sommets du graph.
+  // Retrieves the "memory" weights for the graph vertices.
 
   if (my_graph.have_vsize) {
     if (is_master_io) {
@@ -218,7 +218,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     _convertVector(graph.nb_vertices, buffer.constView(), graph.vsize.view());
   }
 
-  // Récupère la liste des numéros de sous-domaine d'un precedent partitionnement
+  // Retrieves the list of subdomain numbers from a previous partitioning
 
   if (is_master_io) {
     graph.part.resize(graph.nb_vertices);
@@ -235,7 +235,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
     _convertVector(graph.nb_vertices, buffer.constView(), graph.part.view());
   }
 
-  // Récupère la liste des poids aux sommets du graph. Il peut y en avoir plusieurs (ncon).
+  // Retrieves the list of weights for the graph vertices. There may be several (ncon).
 
   if (is_master_io) {
     graph.vwgt.resize(graph.nb_vertices * ncon);

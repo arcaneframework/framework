@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableDataInfo.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur les données d'une variable.                              */
+/* Variable data information.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_VARIABLEDATAINFO_H
@@ -31,8 +31,9 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur les données d'une variable.
+ * \brief Variable data information.
  */
 class VariableDataInfo
 {
@@ -106,8 +107,9 @@ class VariableDataInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Tableau associatif des données des variables.
+ * \brief Associative map of variable data.
  */
 class VariableDataInfoMap
 {
@@ -119,17 +121,17 @@ class VariableDataInfoMap
 
  public:
 
-  //! Ajoute une variable
+  //! Adds a variable
   Ref<VariableDataInfo> add(const String& full_name, const ISerializedData* sdata);
-  //! Ajoute une variable
+  //! Adds a variable
   Ref<VariableDataInfo> add(const String& full_name, const XmlNode& node);
-  //! Ajoute une variable
+  //! Adds a variable
   Ref<VariableDataInfo> add(const String& full_name, const JSONValue& jvalue);
 
-  //! Retourne la variable de nom \a full_name. Retourne null si non trouvé.
+  //! Returns the variable named \a full_name. Returns null if not found.
   Ref<VariableDataInfo> find(const String& full_name) const;
 
-  //@{ //! Itérateurs
+  //@{ //! Iterators
   const_iterator begin() const { return m_data_info_map.begin(); }
   const_iterator end() const { return m_data_info_map.end(); }
   //@}

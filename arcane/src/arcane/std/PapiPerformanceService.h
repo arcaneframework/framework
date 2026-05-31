@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PapiPerformanceService.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Informations de performances utilisant PAPI.                              */
+/* Performance information using PAPI.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_PAPIPERFORMANCESERVICE_H
 #define ARCANE_STD_PAPIPERFORMANCESERVICE_H
@@ -28,8 +28,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de profiling utilisant la bibliothèque PAPI.
+ * \brief Profiling service using the PAPI library.
  */
 class PapiPerformanceService
 : public AbstractService
@@ -79,4 +80,4 @@ class PapiPerformanceService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Otf2MessagePassingProfilingService.h                        (C) 2000-2025 */
 /*                                                                           */
-/* Informations de performances du "message passing" au format Otf2          */
+/* Performance information for "message passing" in Otf2 format              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_OTF2MESSAGEPASSINGPROFILINGSERVICE_H
 #define ARCANE_STD_INTERNAL_OTF2MESSAGEPASSINGPROFILINGSERVICE_H
@@ -37,7 +37,7 @@ namespace MP = ::Arccore::MessagePassing;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de profiling du "message passing" au format JSON.
+ * \brief Profiling service for "message passing" in JSON format.
  */
 class Otf2MessagePassingProfilingService
 : public AbstractService
@@ -75,4 +75,4 @@ class Otf2MessagePassingProfilingService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

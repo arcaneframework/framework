@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneLoadBalanceModule.cc                                  (C) 2000-2010 */
 /*                                                                           */
-/* Module d'équilibrage de charge.                                           */
+/* Load balancing module.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,7 +40,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Module d'équilibrage de charge
+ * \brief Load balancing module
  */
 class ArcaneLoadBalanceModule
 : public ArcaneArcaneLoadBalanceObject
@@ -62,8 +62,8 @@ class ArcaneLoadBalanceModule
  private:
 
   VariableScalarReal m_elapsed_computation_time;
-  /*! \brief Temps de calcul depuis le dernier équilibrage
-   * Note: cette valeur doit être synchronisée.
+  /*! \brief Computation time since the last balancing
+   * Note: this value must be synchronized.
    */
   Real m_computation_time;
 #ifdef OLD_LOADBALANCE
@@ -136,7 +136,7 @@ _checkInit()
 
   info() << "Load balance active with maximum unbalance: "
          << options()->maxImbalance();
-  // Indique au maillage qu'il peut évoluer
+  // Indicates to the mesh that it can evolve
   defaultMesh()->modifier()->setDynamic(true);
 }
 
@@ -167,7 +167,7 @@ checkLoadBalance()
     return;
 
   m_computation_time = 0;
-  info() << "Programme un repartitionnement du maillage";
+  info() << "Program a mesh repartitioning";
 #ifdef OLD_LOADBALANCE
   IMeshPartitioner* p = options()->partitioner();
   _computeWeights(p->computationTimes(),p->maximumComputationTime());
@@ -180,7 +180,7 @@ checkLoadBalance()
 /*---------------------------------------------------------------------------*/
 #ifdef OLD_LOADBALANCE
 /*!
- * \brief Calcule le poids de chaque maille et le range dans m_cells_weight
+ * \brief Calculates the weight of each mesh cell and stores it in m_cells_weight
  */
 void ArcaneLoadBalanceModule::
 _computeWeights(RealConstArrayView compute_times,Real max_compute_time)
@@ -197,8 +197,8 @@ _computeWeights(RealConstArrayView compute_times,Real max_compute_time)
   pm->allGather(IntegerConstArrayView(1,&nb_own_cell),global_nb_own_cell);
   //Integer total_nb_cell = 0;
 
-  // compute_times[0] contient le temps global (sans tracking)
-  // compute_times[1] contient le temps de tracking
+  // compute_times[0] contains the global time (without tracking)
+  // compute_times[1] contains the tracking time
   //Real max_compute_time = maximumComputationTime();
   //RealConstArrayView compute_times = computationTimes();
   bool has_compute_time = compute_times.size()!=0;
@@ -243,7 +243,7 @@ _computeWeights(RealConstArrayView compute_times,Real max_compute_time)
              << " v0=" << v0
              << " w=" << w;
     }
-    // Pour test si on a un deuxieme poids, le multiplie par i+1;
+    // For testing if we have a second weight, multiply it by i+1;
     for( Integer i=0; i<nb_weight; ++i ){
       m_cells_weight[(nb_weight*iitem->localId())+i] = (float)(w*((Real)(i+1)));
     }
@@ -274,22 +274,20 @@ _computeWeights(RealConstArrayView compute_times,Real max_compute_time)
 Real ArcaneLoadBalanceModule::
 _computeImbalance()
 {
-  //TODO: rendre la méthode compatible avec le retour-arrière
+  //TODO: make the method compatible with return-back
   ITimeStats* time_stats = subDomain()->timeStats();
   IParallelMng* pm = subDomain()->parallelMng();
 
-  // Temps écoulé depuis le début de l'exécution
+  // Elapsed time since the start of execution
   Real elapsed_computation_time = time_stats->elapsedTime(TP_Computation);
   Real computation_time = elapsed_computation_time - m_elapsed_computation_time();
 
   m_elapsed_computation_time = elapsed_computation_time;
 
   if (options()->statistics()){
-    // Optionnel:
-    // Récupère le temps de calcul de chaque sous-domaine pour en sortir
-    // les historiques.
-    // TODO: dans ce cas, le reduce standard pour le min et le max est
-    // inutilise -> le supprimer
+    // Optional:
+    // Retrieves the computation time of each subdomain to output the history.
+    // TODO: in this case, the standard reduce for min and max is unused -> delete it
     Integer nb_sub_domain = pm->commSize();
     RealUniqueArray compute_times(nb_sub_domain);
     Real my_time = computation_time;
@@ -302,9 +300,9 @@ _computeImbalance()
   Real reduce_times[2];
   reduce_times[0] = computation_time;
   reduce_times[1] = -computation_time;
-  // Tous les replicats doivent avoir les mêmes infos de temps pour tous lancer
-  // le repartitionnement (même si au final un seul réplica fait le repartionnement,
-  // l'opération de demande doit être collective)
+  // All replicas must have the same time information to start the partitioning
+  // (even if only one replica performs the partitioning in the end, the request
+  // operation must be collective)
   subDomain()->allReplicaParallelMng()->reduce(Parallel::ReduceMin,RealArrayView(2,reduce_times));
   Real min_computation_time = reduce_times[0];
   Real max_computation_time = -reduce_times[1];

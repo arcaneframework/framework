@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LibUnwindStackTraceService.cc                               (C) 2000-2025 */
 /*                                                                           */
-/* Service de trace des appels de fonctions utilisant 'libunwind'.           */
+/* Function call trace service using 'libunwind'.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -62,16 +62,16 @@ struct DebugSourceInfo
 
 #if defined(ARCANE_HAS_PACKAGE_DW)
 /*!
- * \brief Handler autour de 'libdw' pour récupérer les informations de debug.
+ * \brief Handler around 'libdw' to retrieve debug information.
  *
- * Cela permet de récupérer le nom du fichier source et la ligne correspondant
- * à une adresse mémoire.
+ * This allows retrieving the source file name and the line corresponding
+ * to a memory address.
  *
- * \note Cela ne fonctionne qu'avec GCC et pas avec Clang car ce dernier ne
- * sauve pas de la même manière les informations de debug.
+ * \note This only works with GCC and not with Clang because the latter
+ * does not save debug information in the same way.
  *
- * \warning Les appels aux fonctions de 'libdw' ne sont probablement pas
- * ré-entrant. Ils sont donc protégés par un mutex.
+ * \warning Calls to 'libdw' functions are probably not re-entrant. They are
+ * therefore protected by a mutex.
  */
 class DWHandler
 {
@@ -92,9 +92,9 @@ class DWHandler
   }
 
   /*!
-   * \brief Retourne le couple (ligne,colonne) correspondant à l'adresse \a func_address.
+   * \brief Returns the pair (line, column) corresponding to the address \a func_address.
    *
-   * Si aucune information de debug n'est trouvée, remplit (line,column) par (0,0)
+   * If no debug information is found, (line, column) is filled with (0,0)
    */
   DebugSourceInfo getInfo(unw_word_t func_address)
   {
@@ -118,7 +118,7 @@ class DWHandler
     if (dw_source_info) {
       int line = 0;
       int column = 0;
-      // ATTENTION : le pointeur retourné n'est plus valide si m_session est détruit.
+      // WARNING: the returned pointer is no longer valid if m_session is destroyed.
       const char* source_file = dwarf_linesrc(dw_source_info, nullptr, nullptr);
       dwarf_lineno(dw_source_info, &line);
       dwarf_linecol(dw_source_info, &column);
@@ -144,7 +144,7 @@ class DWHandler
     m_is_init = true;
 
     m_session = dwfl_begin(&m_callback);
-    // TODO: faire dwfl_end()
+    // TODO: call dwfl_end()
     if (!m_session)
       return;
 
@@ -156,7 +156,7 @@ class DWHandler
 
 #else
 
-// Implémentation vide si libdw n'est pas trouvé.
+// Empty implementation if libdw is not found.
 class DWHandler
 {
  public:
@@ -171,8 +171,9 @@ class DWHandler
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de trace des appels de fonctions utilisant la libunwind.
+ * \brief Function call trace service using libunwind.
  */
 class LibUnwindStackTraceService
 : public TraceAccessor
@@ -180,7 +181,7 @@ class LibUnwindStackTraceService
 {
  private:
 
-  //! Information sur une adresse mémoire.
+  //! Information about a memory address.
   struct ProcInfo
   {
    public:
@@ -192,19 +193,19 @@ class LibUnwindStackTraceService
 
    public:
 
-    //! Nom de la fonction
+    //! Function name
     const String& name() const { return m_name; }
-    //! Nom de la bibliothèque contenant la fonction. Peut-être nul.
+    //! Name of the library containing the function. May be null.
     const char* libraryFileName() const { return m_library_file_name; }
 
    public:
 
-    //! Nom (démanglé) de la procédure
+    //! Demangled procedure name
     String m_name;
-    //! Nom de la bibliothèque (.so ou .exe) dans laquelle se trouve la méthode
+    //! Name of the library (.so or .exe) where the method is located
     const char* m_library_file_name = nullptr;
-    //! Adresse de chargement de la bibliothèque.
-    //TODO: ne pas stocker cela pour chaque fonction.
+    //! Library load address.
+    //TODO: do not store this for every function.
     unw_word_t m_file_loaded_address = 0;
     unw_word_t m_base_ip = 0;
     DebugSourceInfo m_source_info;
@@ -233,7 +234,7 @@ class LibUnwindStackTraceService
 
  public:
 
-  //! Chaîne de caractère indiquant la pile d'appel
+  //! Character string indicating the call stack
   StackTrace stackTrace(int first_function) override;
   StackTrace stackTraceFunction(int function_index) override;
 
@@ -282,7 +283,7 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
     int r2 = dladdr(addr,&dl_info);
     if (r2!=0){
       const char* dli_fname = dl_info.dli_fname;
-      // Adresse de base de chargement du fichier.
+      // Base address of the file being loaded.
       void* dli_fbase = dl_info.dli_fbase;
       pi.m_library_file_name = dli_fname;
       pi.m_file_loaded_address = (unw_word_t)dli_fbase;
@@ -294,8 +295,8 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
   else
     pi.m_name = std::string_view(func_name_buf);
 
-  // Il faut faire 'ip-1' car l'adresse retournée par libunwind est celle
-  // de l'instruction de retour.
+  // We must use 'ip-1' because the address returned by libunwind is that
+  // of the return instruction.
   pi.m_source_info = m_dw_handler.getInfo(ip - 1);
 
   {
@@ -308,9 +309,10 @@ _getFuncInfo(unw_word_t ip,unw_cursor_t* cursor)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Récupère le nom de la fonction via dladdr.
- * \todo: rendre thread-safe
+ * \brief Retrieves the function name via dladdr.
+ * \todo: make thread-safe
  */
 LibUnwindStackTraceService::ProcInfo LibUnwindStackTraceService::
 _getFuncInfo(const void* addr)
@@ -327,7 +329,7 @@ _getFuncInfo(const void* addr)
   Dl_info dl_info;
   int r = dladdr(addr, &dl_info);
   if (r==0){
-    // Erreur dans dladdr.
+    // Error in dladdr.
     std::cout << "ERROR in dladdr\n";
     return ProcInfo("Unknown");
   }
@@ -375,7 +377,7 @@ _getGDBStack()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Chaîne de caractère indiquant la pile d'appel
+//! Character string indicating the call stack
 StackTrace LibUnwindStackTraceService::
 stackTrace(int first_function)
 {
@@ -427,10 +429,10 @@ stackTrace(int first_function)
   ISymbolizerService* ss = platform::getSymbolizerService();
 
   if (ss){
-    // Il faut mieux lire la pile d'appel de _backtrace() car
-    // la libunwind retourne l'adresse de retour pour chaque fonction
-    // ce qui provoque un décalage dans les infos des lignes du code
-    // source (on pointe vers la ligne après celle qu'on est en train d'exécuter).
+    // It is better to read the call stack from _backtrace() because
+    // libunwind returns the return address for each function
+    // which causes a shift in the source code line info
+    // (it points to the line after the one being executed).
     last_str = ss->stackTrace(backtrace_stack_frames.view());
   }
   else{
@@ -444,10 +446,11 @@ stackTrace(int first_function)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne la pile à d'appel actuelle.
+ * \brief Returns the current call stack.
  *
- * Les \a function_index premières fonctions de la pile sont ignorées.
+ * The first \a function_index functions of the stack are ignored.
  */
 StackTrace LibUnwindStackTraceService::
 stackTraceFunction(int function_index)
@@ -482,7 +485,7 @@ stackTraceFunction(int function_index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Pile d'appel via la fonction backtrace.
+//! Call stack via the backtrace function.
 FixedStackFrameArray LibUnwindStackTraceService::
 _backtraceStackFrame(int first_function)
 {
@@ -499,7 +502,7 @@ _backtraceStackFrame(int first_function)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Pile d'appel via la fonction backtrace.
+//! Call stack via the backtrace function.
 StackTrace LibUnwindStackTraceService::
 _backtraceStackTrace(const FixedStackFrameArray& stack_frames)
 {
@@ -524,15 +527,16 @@ _backtraceStackTrace(const FixedStackFrameArray& stack_frames)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Génère liste des noms de fichier et offset d'une pile d'appel.
+ * \brief Generates a list of file names and offsets for a call stack.
  *
- * Génère une chaîne de caractère contenant pour chaque adresse de
- * la pile d'appel \a stack_frames le nom du fichier contenant le symbol
- * et l'offset de cette adresse dans ce fichier.
+ * Generates a character string containing for each address in
+ * the call stack \a stack_frames the name of the file containing the symbol
+ * and the offset of this address in that file.
  *
- * Le format de sortie permet la lecture par des outils tels que addr2line
- * ou llmv-symbolizer.
+ * The output format allows reading by tools such as addr2line
+ * or llmv-symbolizer.
  */
 String LibUnwindStackTraceService::
 _generateFileAndOffset(const FixedStackFrameArray& stack_frames)
@@ -548,10 +552,10 @@ _generateFileAndOffset(const FixedStackFrameArray& stack_frames)
     message += (pinfo.libraryFileName() ? pinfo.libraryFileName() : "()");
     message += "  ";
     auto file_base_address = pinfo.m_file_loaded_address;
-    // Sous Linux (CentOS 6 et 7), l'adresse 0x400000 correspond à celle
-    // de chargement de  l'exécutable mais si on retranche cette adresse de celle
-    // de la fonction alors le symboliser ne fonctionne pas (que ce soit
-    // llvm-symbolize ou addr2line)
+    // On Linux (CentOS 6 and 7), the address 0x400000 corresponds to that
+    // of the executable load, but if we subtract this address from that
+    // of the function then the symbolizer does not work (whether it is
+    // llvm-symbolize or addr2line)
     if (file_base_address==0x400000)
       file_base_address = 0;
     intptr_t offset_ip = (ip - file_base_address);
@@ -602,13 +606,13 @@ class LLVMSymbolizerService
 
  private:
 
-  //! Vérifie que le chemin spécifié est valid
+  //! Checks that the specified path is valid
   void _checkValid()
   {
     if (m_is_check_done)
       return;
-    // Avant appel à cette méthode, m_llvm_symbolizer_path doit contenir
-    // le nom du répertoire dans lequel se trouve llvm-symbolizer.
+    // Before calling this method, m_llvm_symbolizer_path must contain
+    // the name of the directory where llvm-symbolizer is located.
     Directory dir(m_llvm_symbolizer_path);
     String fullpath = dir.file("llvm-symbolizer");
     Int64 length = platform::getFileLength(fullpath);
@@ -633,9 +637,9 @@ stackTrace(ConstArrayView<StackFrame> frames)
   if (!m_is_valid)
     return String();
   std::stringstream ostr;
-  // NOTE: le code ci dessous est similaire à
-  // LibUnwindStackTraceService::_generateFileAndOffset(). Il faudrait
-  // fusionner les deux.
+  // NOTE: the code below is similar to
+  // LibUnwindStackTraceService::_generateFileAndOffset(). It should
+  // merge the two.
   for( Integer i=0, n=frames.size(); i<n; ++i ){
     Dl_info dl_info;
     intptr_t addr = frames[i].address();
@@ -644,18 +648,18 @@ stackTrace(ConstArrayView<StackFrame> frames)
     intptr_t base_address = 0;
     if (r2!=0){
       dli_fname = dl_info.dli_fname;
-      // Adresse de base de chargement du fichier.
+      // File load base address.
       void* dli_fbase = dl_info.dli_fbase;
       intptr_t true_base = reinterpret_cast<intptr_t>(dli_fbase);
-      // Sous Linux (CentOS 6 et 7), l'adresse 0x400000 correspond à celle
-      // de chargement de l'exécutable, mais si on retranche cette adresse de celle
-      // de la fonction alors le symboliser ne fonctionne pas (que ce soit
-      // llvm-symbolize ou addr2line)
+      // On Linux (CentOS 6 and 7), the address 0x400000 corresponds to that
+      // of the executable load, but if we subtract this address from that
+      // of the function then the symbolizer does not work (whether it is
+      // llvm-symbolize or addr2line)
       if (true_base==0x400000)
         true_base = 0;
       base_address = addr - true_base;
     }
-    // TODO: écrire base_address en hexa pour pouvoir le relire avec addr2line
+    // TODO: write base_address in hex to be able to read it back with addr2line
     ostr << (dli_fname ? dli_fname : "??") << " " << base_address << '\n';
   }
 

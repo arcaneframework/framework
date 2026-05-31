@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableWriterHelper.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Classe permettant d'écrire un SimpleTableInternal dans un fichier.        */
-/* Simplifie l'utilisation de l'écrivain en gérant le multiprocessus et les  */
-/* noms des fichiers/dossiers.                                               */
+/* Class allowing writing a SimpleTableInternal to a file.                   */
+/* Simplifies the use of the writer by managing multiprocess and the names   */
+/* of files/directories.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,16 +55,16 @@ print(Integer rank)
 }
 
 /**
- * Méthode effectuant des opérations collectives.
+ * Method performing collective operations.
  */
 bool SimpleTableWriterHelper::
 writeFile(const Directory& root_directory, Integer rank)
 {
-  // Finalisation du nom et du répertoire du csv (si ce n'est pas déjà fait).
+  // Finalizing the name and directory of the csv (if not already done).
   _computeTableName();
   _computeOutputDirectory();
 
-  // Création du répertoire.
+  // Creating the directory.
   bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, root_directory);
   if (!result) {
     return false;
@@ -77,13 +77,13 @@ writeFile(const Directory& root_directory, Integer rank)
     return false;
   }
 
-  // Si l'on n'est pas le processus demandé, on return true.
-  // -1 = tout le monde écrit.
+  // If we are not the requested process, we return true.
+  // -1 = everyone writes.
   if (rank != -1 && m_simple_table_internal->m_parallel_mng->commRank() != rank)
     return true;
 
-  // Si l'on a rank == -1 et que isOneFileByRanksPermited() == false, alors il n'y a que le
-  // processus 0 qui doit écrire.
+  // If rank == -1 and isOneFileByRanksPermited() == false, then only process 0
+  // must write.
   if ((rank == -1 && !isOneFileByRanksPermited()) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
     return true;
 
@@ -91,7 +91,7 @@ writeFile(const Directory& root_directory, Integer rank)
 }
 
 /**
- * Méthode effectuant des opérations collectives.
+ * Method performing collective operations.
  */
 bool SimpleTableWriterHelper::
 writeFile(Integer rank)
@@ -243,7 +243,7 @@ void SimpleTableWriterHelper::
 setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
 {
   if (simple_table_reader_writer.isNull())
-    ARCANE_FATAL("La réference passée en paramètre est Null.");
+    ARCANE_FATAL("The reference passed as parameter is Null.");
   m_simple_table_reader_writer = simple_table_reader_writer;
   m_simple_table_internal = m_simple_table_reader_writer->internal();
 }
@@ -270,55 +270,55 @@ _computeOutputDirectory()
 }
 
 /**
- * @brief Méthode permettant de remplacer les symboles de nom par leur valeur.
+ * @brief Method allowing replacement of name symbols by their value.
  * 
- * @param name [IN] Le nom à modifier.
- * @param one_file_by_ranks_permited [OUT] True si le nom contient le symbole '\@proc_id\@'
- *                                   permettant de différencier les fichiers écrits par
- *                                   differents processus.
- * @return String Le nom avec les symboles remplacés.
+ * @param name [IN] The name to modify.
+ * @param one_file_by_ranks_permited [OUT] True if the name contains the symbol '\@proc_id\@'
+ *                                   allowing differentiation of files written by
+ *                                   different processes.
+ * @return String The name with the symbols replaced.
  */
 String SimpleTableWriterHelper::
 _computeName(String name, bool& one_file_by_ranks_permited)
 {
   one_file_by_ranks_permited = false;
 
-  // Permet de contourner le bug avec String::split() si le nom commence par '@'.
+  // Allows bypassing the bug with String::split() if the name starts with '@'.
   if (name.startsWith("@")) {
     name = "@" + name;
   }
 
   StringUniqueArray string_splited;
-  // On découpe la string là où se trouve les @.
+  // We split the string where the @ symbols are located.
   name.split(string_splited, '@');
 
-  // On traite les mots entre les "@".
+  // We process the words between the "@" symbols.
   if (string_splited.size() > 1) {
-    // On recherche "proc_id" dans le tableau (donc @proc_id@ dans le nom).
+    // We search for "proc_id" in the array (i.e., @proc_id@ in the name).
     std::optional<Integer> proc_id = string_splited.span().findFirst("proc_id");
-    // On remplace "@proc_id@" par l'id du proc.
+    // We replace "@proc_id@" with the process ID.
     if (proc_id) {
       string_splited[proc_id.value()] = String::fromNumber(m_simple_table_internal->m_parallel_mng->commRank());
       one_file_by_ranks_permited = true;
     }
-    // Il n'y a que un seul proc qui write.
+    // Only one process writes.
     else {
       one_file_by_ranks_permited = false;
     }
 
-    // On recherche "num_procs" dans le tableau (donc @num_procs@ dans le nom).
+    // We search for "num_procs" in the array (i.e., @num_procs@ in the name).
     std::optional<Integer> num_procs = string_splited.span().findFirst("num_procs");
-    // On remplace "@num_procs@" par l'id du proc.
+    // We replace "@num_procs@" with the process ID.
     if (num_procs) {
       string_splited[num_procs.value()] = String::fromNumber(m_simple_table_internal->m_parallel_mng->commSize());
     }
   }
 
-  // On recombine la chaine.
+  // We recombine the chain.
   StringBuilder combined = "";
   for (String str : string_splited) {
-    // Permet de contourner le bug avec String::split() s'il y a '@@@' dans le nom ou si le
-    // nom commence par '@' (en complément des premières lignes de la méthode).
+    // Allows bypassing the bug with String::split() if there is '@@@' in the name or if the
+    // name starts with '@' (in addition to the first lines of the method).
     if (str == "@")
       continue;
     combined.append(str);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RedisHashDatabase.cc                                        (C) 2000-2023 */
 /*                                                                           */
-/* Base de données de hash gérée par le système de fichier.                  */
+/* File system managed hash database.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,7 +48,7 @@ class RedisHashDatabase
 
   void writeValues(const HashDatabaseWriteArgs& args, HashDatabaseWriteResult& xresult) override
   {
-    // TODO: ne faire le write que si la clé n'est pas présente
+    // TODO: only write if the key is not present
     m_context->sendBuffer(args.hashValue(), args.values());
     xresult.setHashValueAsString(args.hashValue());
   }

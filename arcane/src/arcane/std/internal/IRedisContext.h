@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IRedisContext.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un contexte pour Redis.                                       */
+/* Interface for a Redis context.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_IREDISCONTEXT_H
 #define ARCANE_STD_INTERNAL_IREDISCONTEXT_H

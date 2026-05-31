@@ -1,49 +1,47 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <service name="Cartesian2DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Générateur de maillage cartésien 2D.
+    2D Cartesian mesh generator.
 
-    Si le découpage en X et Y n'est pas spécifié, il faut que le
-    nombre de sous-domaine soit un carré (1, 4, 9, 16, 25, ...)
+    If the division in X and Y is not specified, the number of
+    subdomains must be a perfect square (1, 4, 9, 16, 25, ...)
 
-    Si seul le découpage en X ou en Y est spécifié, il faut que cette
-    valeur spécifiée soit un diviseur du nombre de sous-domaine.
+    If only the division in X or Y is specified, this specified
+    value must be a divisor of the number of subdomains.
   </description>
     
   <interface name="Arcane::IMeshBuilder" />
 
   <options>
     <simple name="origin" type="real2" >
-      <description>Origine du maillage</description>
+      <description>Mesh origin</description>
       <userclass>User</userclass>
     </simple>
     <simple name="nb-part-x" type="integer" default="0" >
       <description>
-        Nombre de sous-domaine en X. Si absent ou si la
-        valeur '0' est specifiée,
-        alors le découpage en X est calculé dynamiquement
+        Number of subdomains in X. If absent or if the value '0' is specified,
+        the X division is calculated dynamically
       </description>
       <userclass>User</userclass>
     </simple>
     <simple name="nb-part-y" type="integer" default="0">
       <description>
-        Nombre de sous-domaine en Y. Si absent ou si la
-        valeur '0' est specifiée, alors le découpage en Y est calculé
-        dynamiquement
+        Number of subdomains in Y. If absent or if the value '0' is specified,
+        the Y division is calculated dynamically
       </description>
       <userclass>User</userclass>
     </simple>
 
     <simple name="generate-sod-groups" type="bool" default="false">
-      <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
+      <description>True if groups are generated for a sod test case (internal to Arcane)</description>
     </simple>
 
     <simple name="face-numbering-version" type="integer" default="4">
       <description>
-        Version de l'algorithme pour la numérotation des faces. La
-        version 1 correspond à la numérotation non structurée. La
-        version 4 correspond à la numérotation cartésienne.
+        Version of the algorithm for face numbering.
+        Version 1 corresponds to unstructured numbering.
+        Version 4 corresponds to Cartesian numbering.
       </description>
       <userclass>User</userclass>
     </simple>
@@ -51,11 +49,11 @@
     <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
       <userclass>User</userclass>
       <simple name="n" type="integer" >
-        <description>Nombre de mailles</description>
+        <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
       <simple name="length" type="real" >
-        <description>Longueur</description>
+        <description>Length</description>
         <userclass>User</userclass>
       </simple>
       <simple name="progression" type="real" default="1.0">
@@ -67,11 +65,11 @@
     <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
       <userclass>User</userclass>
       <simple name="n" type="integer" >
-        <description>Nombre de mailles</description>
+        <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
       <simple name="length" type="real" >
-        <description>Longueur</description>
+        <description>Length</description>
         <userclass>User</userclass>
       </simple>
       <simple name="progression" type="real" default="1.0">

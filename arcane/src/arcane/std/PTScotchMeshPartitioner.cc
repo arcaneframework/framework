@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PTScotchMeshPartitioner.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Partitioneur de maillage utilisant la bibliothèque 'PTScotch'.            */
+/* Mesh partitioner using the 'PTScotch' library.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ extern "C"
 #include "arcane/std/GraphDistributor.h"
 
 // TODO: supprimer les '#define' et utiliser des tests (if)
-// pour être sur que tout est compilé
+// to ensure everything compiles
 
 #define SCOTCH_SCALING
 // #define SCOTCH_MAPPING
@@ -68,8 +68,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Partitionneur de maillage utilisant la bibliothèque PtScotch.
+ * \brief Mesh partitioner using the PtScotch library.
  */
 class PTScotchMeshPartitioner
 : public ArcanePTScotchMeshPartitionerObject

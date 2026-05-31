@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ProfilingInfo.cc                                            (C) 2000-2023 */
 /*                                                                           */
-/* Informations de profiling.                                                */
+/* Profiling information.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,10 +66,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour récupérer les infos d'une pile d'appel.
+ * \brief Interface to retrieve call stack information.
  *
- * Il faut d'abord appeler fillStack() avant d'utiliser les autres méthodes.
+ * You must first call fillStack() before using the other methods.
  */
 class ProfInfos::IStackInfoProvider
 {
@@ -164,7 +165,7 @@ class ProfInfos::LibUnwindStackInfo
     return (intptr_t)m_proc_start[stack_index];
   }
  private:
-  // TODO: vérifier taille
+  // TODO: check size
   unw_cursor_t m_cursors[256];
   unw_word_t m_proc_start[256];
   Integer m_nb_index;
@@ -234,7 +235,7 @@ class ProfInfos::BacktraceStackInfo
     return (intptr_t)m_proc_start[stack_index];
   }
  private:
-  // TODO: vérifier taille
+  // TODO: check size
   std::array<Dl_info,256> m_dl_infos = { };
   std::array<intptr_t,256> m_proc_start = { };
   Integer m_nb_index;
@@ -353,9 +354,9 @@ extern void* prof_malloc_hook(size_t size,const void* caller);
 extern void prof_free_hook(void* ptr,const void* caller);
 extern void* prof_realloc_hook(void* __ptr,size_t __size,__const void*);
 
-// Ces fonctions ne doivent pas être statiques pour éviter une optimisation
-// de GCC 4.7.1 qui fait une boucle infinie dans prof_malloc_hook
-// (Note: clang 3.4 a le meme comportement)
+// These functions must not be static to avoid a GCC 4.7.1 optimization
+// that causes an infinite loop in prof_malloc_hook
+// (Note: clang 3.4 has the same behavior)
 extern ARCANE_STD_EXPORT void _pushHook()
 {
   __malloc_hook = my_old_malloc_hook;
@@ -430,12 +431,12 @@ void _profRestoreMallocHook()
 namespace
 {
 /*!
- * \brief Retourne le nom C++ de la méthode \a true_func_name.
+ * \brief Returns the C++ name of the method \a true_func_name.
  *
- * Le nom C++ est rangé dans le buffer \a demangled_buf de taille maximale
- * \a demangled_buf_len.
+ * The C++ name is stored in the buffer \a demangled_buf of maximum
+ * \a demangled_buf_len size.
  *
- * Retourne \a demangled_buf si le nom a pu être démanglé. Sinon retourne
+ * Returns \a demangled_buf if the name could be demangled. Otherwise, returns
  * \a true_func_name.
  */
 const char*
@@ -467,8 +468,8 @@ ProfInfos(ITraceMng* tm)
   for( Integer i=0; i<MAX_COUNTER; ++i )
     m_counters[i] = 0;
   if (platform::hasDotNETRuntime()){
-    // Pour l'instant, active uniquement si variable d'environnement
-    // positionnée.
+    // For now, only active if environment variable
+    // is set.
     if (!platform::getEnvironmentVariable("ARCANE_DOTNET_BACKTRACE").null()){
       m_mono_func_getter = new MonoFuncAddrGetter();
       if (!m_mono_func_getter->isValid()){
@@ -504,8 +505,8 @@ ProfInfos::
 ProfFuncInfo* ProfInfos::
 _getNextFuncInfo()
 {
-  // TODO: utiliser un atomic pour m_current_func_info lorsqu'il faudra le
-  // rendre thread-safe.
+  // TODO: use an atomic for m_current_func_info when it needs to be
+  // made thread-safe.
   ProfFuncInfo* fi = &m_func_info_buffer[m_current_func_info];
   fi->setIndex(m_current_func_info);
   ++m_current_func_info;
@@ -522,10 +523,10 @@ startProfiling()
   m_is_started = true;
   info() << "START PROFILING";
 #ifndef __clang__
-  //GG Si on utilise ces hook avec clang il part en boucle infini.
-  // Pour éviter cela, on le désactive et cela semble fonctionner.
-  // De toute facon ces hook sont obsolètes et il faudra penser à faire
-  // autrement.
+  // GG If we use these hooks with clang it goes into an infinite loop.
+  // To avoid this, we disable it and it seems to work.
+  // Anyway, these hooks are obsolete and we will need to think about
+  // doing something else.
   _profInitMallocHook();
 #endif
 
@@ -554,8 +555,8 @@ stopProfiling()
   m_is_started = false;
   _profRestoreMallocHook();
 
-  // TODO: comme on incrémente, ne faire que à partir de la dernière méthode
-  // dont le nom est inconnu.
+  // TODO: since we are incrementing, only do it starting from the last method
+  // whose name is unknown.
   ARCANE_CHECK_POINTER(m_func_info_provider);
   for( Int32 i=0, n=m_current_func_info; i<n; ++i ){
     ProfFuncInfo& pfi = m_func_info_buffer[i];
@@ -655,8 +656,8 @@ _storeAddress(void* address,bool is_counter0,int overflow_event[MAX_COUNTER],int
       for( int i=0; i<nb_overflow_event; ++i )
         ++ai.m_func_info->m_counters[ overflow_event[i] ];
       *func_already_added = true;
-      // Si on a déjà suffisamment d'évènements et que notre méthode
-      // dépasse les 1% du temps passé, conserve la pile associée.
+      // If we already have enough events and our method
+      // exceeds 1% of the time spent, keep the associated stack.
       if (m_total_event>m_nb_event_before_getting_stack){
         if ((ai.m_func_info->m_counters[0]*100)>m_total_event){
           ai.m_func_info->m_do_stack = true;
@@ -677,10 +678,10 @@ void ProfInfos::
 _addEvent(void* address,int overflow_event[MAX_COUNTER],int nb_overflow_event,
           IStackInfoProvider& stack_info,Integer function_depth)
 {
-  // Si on est dans un malloc, ne fait rien.
-  // TODO: il faudrait quand meme incrementer le compteur correspondant
-  // car dans ce cas le temps passé dans les malloc/realloc/free n'est pas pris en compte
-  // TODO: faire test atomic
+  // If we are in a malloc, do nothing.
+  // TODO: we should still increment the corresponding counter
+  // because in this case the time spent in malloc/realloc/free is not taken into account
+  // TODO: perform atomic test
   if (global_in_malloc!=0){
     //cout << "V=" <<global_in_malloc << '\n';
     return;
@@ -758,8 +759,9 @@ _addEvent(void* address,int overflow_event[MAX_COUNTER],int nb_overflow_event,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// NOTE: cette méthode n'est plus utilisée mais le mécanisme d'accès via mono
-// doit être intégré au code de libunwind ou backtrace.
+
+// NOTE: this method is no longer used but the access mechanism via mono
+// must be integrated into the libunwind or backtrace code.
 bool ProfInfos::
 _getFunc(void* addr,FuncAddrInfo& info)
 {
@@ -769,9 +771,9 @@ _getFunc(void* addr,FuncAddrInfo& info)
   info.func_name = "unknown";
   info.start_addr = 0;
   if (r!=0){
-    // Il est possible que dladdr ne retourne pas d'erreur mais ne trouve
-    // pas le symbole. Dans ce cas, essaie de voir s'il s'agit d'un
-    // symbole C#.
+    // It is possible that dladdr does not return an error but does not find
+    // the symbol. In this case, try to see if it is a
+    // C# symbol.
     info.start_addr = dl_info.dli_saddr;
     if (dl_info.dli_sname){
       info.func_name = dl_info.dli_sname;
@@ -926,9 +928,9 @@ printInfos(bool dump_file)
       ++index;
     }
   }
-  // TODO: Calculer ces informations lors de l'arrêt du profiling.
+  // TODO: Calculate this information when profiling stops.
   if (dump_file){
-    // Créée une liste des piles triée par nombre d'évènements décroissant.
+    // Create a list of stacks sorted by decreasing number of events.
     UniqueArray<SortedProfStackInfo> sorted_stacks;
     for( const auto& x : global_infos->m_stack_map ){
       const ProfStackInfo& psi = x.first;
@@ -1007,10 +1009,10 @@ getInfos(Int64Array& pkt)
   std::set<ProfFuncInfo*,ProfFuncComparer> sorted_func;
   _sortFunctions(sorted_func);
  
-  // On pousse l'index qui vaut zero
+  // We push the index which is zero
   pkt.add((Int64)index);
 
-  // Et on continue à remplir l'array
+  // And we continue filling the array
   for( ProfFuncInfo* pfi : sorted_func ){
     const char* func_name = pfi->m_func_name;
     const char* buf = _getDemangledName(func_name,demangled_func_name,NAME_BUF_SIZE);
@@ -1041,8 +1043,8 @@ getInfos(Int64Array& pkt)
 void ProfInfos::
 dumpJSON(JSONWriter& writer)
 {
-  // TODO: utiliser un identifiant pour les noms de fonction au lieu de
-  // mettre directement le nom de la méthode.
+  // TODO: use an identifier for function names instead of
+  // putting the method name directly.
 
   ProfInfos* global_infos = this;
 
@@ -1068,7 +1070,7 @@ dumpJSON(JSONWriter& writer)
   const size_t NAME_BUF_SIZE = 8192;
   char demangled_func_name[NAME_BUF_SIZE];
 
-  // Ecrit la liste des méthodes référencées et leur nom manglé et démanglé
+  // Writes the list of referenced methods and their mangled and demangled names
   {
     writer.writeKey("Functions");
     writer.beginArray();
@@ -1088,8 +1090,8 @@ dumpJSON(JSONWriter& writer)
     writer.endArray();
   }
 
-  // Ecrit la liste des méthodes triées par ordre décroissant des valeurs
-  // des compteurs.
+  // Writes the list of methods sorted by decreasing values
+  // of the counters.
   {
     Integer index = 0;
     writer.writeKey("SortedFuncTimes");
@@ -1111,7 +1113,7 @@ dumpJSON(JSONWriter& writer)
   }
 
   {
-    // Créée une liste des piles triée par nombre d'évènements décroissant.
+    // Create a list of stacks sorted by decreasing number of events.
     UniqueArray<SortedProfStackInfo> sorted_stacks;
     for( const auto& x : global_infos->m_stack_map ){
       const ProfStackInfo& psi = x.first;

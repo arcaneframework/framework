@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleMeshGenerator.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Service de génération de maillage 'Simple'.                               */
+/* 'Simple' mesh generation service.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_SIMPLEMESHGENERATOR_H
 #define ARCANE_STD_SIMPLEMESHGENERATOR_H
@@ -30,8 +30,9 @@ class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Générateur simple de chaque type d'entité de maillage.
+ * \brief Simple generator for each type of mesh entity.
  */
 class SimpleMeshGenerator
 : public TraceAccessor
@@ -66,9 +67,9 @@ public:
   Integer m_current_nb_cell = 0;
   typedef std::map<Real3,Integer> Real3Map;
   /*!
-   * \brief Mapping Coordonnées --> Indice unique.
-   * Pour la fusion automatique des noeuds aux mêmes coordonnées,
-   * utilise ce champ pour stocker les coordonnées déjà référencées.
+   * \brief Coordinates --> Unique index mapping.
+   * For automatic merging of nodes at the same coordinates,
+   * use this field to store the already referenced coordinates.
    */
   Real3Map m_coords_to_uid;
 
@@ -116,4 +117,4 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

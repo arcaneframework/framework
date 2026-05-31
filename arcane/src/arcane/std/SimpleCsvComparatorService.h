@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleCsvComparatorService.h                                (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de comparer un ISimpleTableOutput avec un fichier de   */
-/* référence en format csv.                                                  */
+/* Service for comparing an ISimpleTableOutput with a reference file in      */
+/* CSV format.                                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_SIMPLECSVCOMPARATORSERVICE_H
 #define ARCANE_STD_SIMPLECSVCOMPARATORSERVICE_H

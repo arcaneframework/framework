@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelDataReader.cc                                       (C) 2000-2024 */
 /*                                                                           */
-/* Lecteur de IData en parallèle.                                            */
+/* Parallel IData Reader.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,22 +35,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture parallèle.
+ * \brief Parallel reading.
  *
- * Une instance de cette classe est associée à un groupe du maillage.
+ * An instance of this class is associated with a mesh group.
  *
- * Pour pouvoir l'utiliser, chaque rang du IParallelMng doit spécifier:
- * - la liste des uid qu'il souhaite, à remplir dans wantedUniqueIds()
- * - la liste triée par ordre croissant des uids qui sont gérés par ce rang, à remplir
- * dans writtenUniqueIds().
- * Une fois ceci fait, il faut appeler la méthode sort() pour calculer
- * les infos dont on a besoin pour l'envoie et la réception des valeurs.
+ * To use it, each rank of IParallelMng must specify:
+ * - the list of uids it wants, to be filled in wantedUniqueIds()
+ * - the list sorted in ascending order of uids managed by this rank, to be filled
+ * in writtenUniqueIds().
+ * Once this is done, the sort() method must be called to calculate
+ * the information needed for sending and receiving values.
  *
- * L'instance est alors utilisable pour toutes les variables qui reposent
- * sur ce groupe et il faut appeler getSortedValues() pour récupérer
- * les valeurs pour une variable.
- * 
+ * The instance is then usable for all variables that rely
+ * on this group, and getSortedValues() must be called to retrieve
+ * the values for a variable.
  */
 class ParallelDataReader::Impl
 : public TraceAccessor
@@ -69,7 +69,7 @@ class ParallelDataReader::Impl
   IParallelMng* m_parallel_mng = nullptr;
 
   Int32UniqueArray m_data_to_send_ranks;
-  //TODO ne pas utiliser un tableau dimensionné au commSize()
+  //TODO do not use an array sized to commSize()
   UniqueArray<SharedArray<Int32>> m_data_to_send_local_indexes;
   UniqueArray<SharedArray<Int32>> m_data_to_recv_indexes;
   Int64UniqueArray m_written_unique_ids;
@@ -159,8 +159,8 @@ sort()
     Integer nb_written_uid = m_written_unique_ids.size();
       
     if (nb_written_uid!=0){
-      // Les uid écrits sont triés par ordre croissant.
-      // Le plus petit est donc le premier et le plus grand le dernier
+      // The written uids are sorted in ascending order.
+      // The smallest is therefore the first and the largest the last
       min_max_written_uid[0] = m_written_unique_ids[0];
       min_max_written_uid[1] = m_written_unique_ids[nb_written_uid-1];
     }
@@ -177,7 +177,7 @@ sort()
     for( Integer i=0; i<nb_wanted_uid; ++i ){
       Int64 uid = m_wanted_unique_ids[i];
       Int32 rank = -1;
-      //TODO: utiliser une dichotomie
+      //TODO: use a dichotomy
       for( Int32 irank=0; irank<nb_rank; ++irank ){
         if (uid>=global_min_max_uid[irank*2] && uid<=global_min_max_uid[(irank*2)+1]){
           rank = irank;
@@ -187,7 +187,7 @@ sort()
       if (rank==(-1))
         ARCANE_FATAL("Bad rank uid={0} uid_index={1}",uid,i);
 
-      // Il est inutile de s'envoyer les valeurs
+      // It is unnecessary to send the values
       if (rank!=my_rank){
         if (uids_list[rank].empty()){
           exchanger->addSender(rank);
@@ -242,7 +242,7 @@ sort()
     }
   }
 
-  // Traite les données qui sont déjà présentes sur ce processeur.
+  // Processes the data that is already present on this processor.
   {
     Int32Array& local_recv_indexes = m_data_to_recv_indexes[my_rank];
     Integer nb_local_index = local_recv_indexes.size();
@@ -268,7 +268,7 @@ getSortedValues(IData* written_data,IData* data)
   for( Integer i=0; i<nb_send; ++i ){
     exchanger->addSender(m_data_to_send_ranks[i]);
   }
-  //TODO utiliser version sans allGather() car on connait les receptionneurs
+  //TODO use version without allGather() since we know the receivers
   exchanger->initializeCommunicationsMessages();
 
   for( Integer i=0; i<nb_send; ++i ){
@@ -289,7 +289,7 @@ getSortedValues(IData* written_data,IData* data)
   Integer nb_wanted_uid = m_wanted_unique_ids.size();
   data->resize(nb_wanted_uid);
 
-  // Traite les données qui sont déjà présente sur ce processeur.
+  // Processes the data that is already present on this processor.
   {
     Integer my_rank = m_parallel_mng->commRank();
     ConstArrayView<Int32> local_recv_indexes = m_data_to_recv_indexes[my_rank];
@@ -336,7 +336,7 @@ _searchUniqueIdIndexes(Int64ConstArrayView recv_uids,
 
   for( Integer irecv=0; irecv<nb_to_recv; ++irecv ){
     Int64 my_uid = recv_uids[irecv];
-    // Comme les written_unique_ids sont triés, on peut utiliser une dichotomie
+    // Since written_unique_ids are sorted, we can use a dichotomy
     auto iter_end = written_unique_ids.end();
     auto iter_begin = written_unique_ids.begin();
     auto x2 = std::lower_bound(iter_begin, iter_end, my_uid);
@@ -344,7 +344,7 @@ _searchUniqueIdIndexes(Int64ConstArrayView recv_uids,
       ARCANE_FATAL("Can not find uid uid={0} (with binary_search)", my_uid);
     Int32 my_index = CheckedConvert::toInt32(x2 - iter_begin);
 
-    // Teste si la dichotomie est correcte
+    // Test if the dichotomy is correct
     if (written_unique_ids[my_index]!=my_uid)
       ARCANE_FATAL("INTERNAL: bad index for bissection "
                    "Index={0} uid={1} wuid={2} n={3}",

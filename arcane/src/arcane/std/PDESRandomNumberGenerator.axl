@@ -3,9 +3,9 @@
 
   <userclass>User</userclass>
   <description>
-    Genérateur de nombre (pseudo-)aléatoire basé sur un algorithme pseudo-DES.
+    Random (pseudo-)number generator based on a pseudo-DES algorithm.
 
-    Voir le livre :
+    See the book:
     
     Numerical Recipes in C
     The Art of Scientific Computing
@@ -21,7 +21,7 @@
     <simple name="initialSeed" type="int64" default="4294967297">
       <userclass>User</userclass>
       <description>
-        Graine initiale. Peut aussi être défini en paramètre lors de l'init.
+        Initial seed. Can also be defined as a parameter during initialization.
       </description>
     </simple>
   </options>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MetisWrapper.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Wrapper autour des appels de Parmetis.                                    */
+/* Wrapper around Parmetis calls.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_METISWRAPPER
 #define ARCANE_STD_METISWRAPPER
@@ -30,7 +30,7 @@ class IParallelMng;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Wrapper autour des appels de Parmetis.
+ * \brief Wrapper around Parmetis calls.
  */
 class MetisWrapper
 : public TraceAccessor
@@ -47,11 +47,11 @@ class MetisWrapper
  public:
 
   /*!
-   * \brief Simple wrapper autour de la routine ParMetis "ParMETIS_V3_PartKway".
+   * \brief Simple wrapper around the ParMetis routine "ParMETIS_V3_PartKway".
    * 
-   * Lorsque gather == true, le graph est regroupe sur 2 processeurs avant appel
-   * a ParMETIS_V3_PartKway. Lorsque print_digest == true, la signature des
-   * entrees / sorties de ParMETIS_V3_PartKway est affichee.
+   * When gather == true, the graph is grouped on 2 processors before calling
+   * ParMETIS_V3_PartKway. When print_digest == true, the signature of the
+   * inputs/outputs of ParMETIS_V3_PartKway is displayed.
    */
   int callPartKway(const bool print_digest, const bool gather,
                    idx_t* vtxdist, idx_t* xadj, idx_t* adjncy, idx_t* vwgt,
@@ -59,13 +59,12 @@ class MetisWrapper
                    real_t* tpwgts, real_t* ubvec, idx_t* options, idx_t* edgecut, idx_t* part);
 
   /*!
-   * \brief Simple wrapper autour de la routine ParMetis "ParMETIS_V3_AdaptiveRepart".
+   * \brief Simple wrapper around the ParMetis routine "ParMETIS_V3_AdaptiveRepart".
    * 
-   * Lorsque gather == true, le graph est regroupe sur 2 processeurs avant appel
-   * a ParMETIS_V3_AdaptiveRepart. Lorsque print_digest == true, la signature des
-   * entrees / sorties de ParMETIS_V3_AdaptiveRepart est affichee.
+   * When gather == true, the graph is grouped on 2 processors before calling
+   * ParMETIS_V3_AdaptiveRepart. When print_digest == true, the signature of the
+   * inputs/outputs of ParMETIS_V3_AdaptiveRepart is displayed.
    */
-
   int callAdaptiveRepart(const bool print_digest, const bool gather,
                          idx_t* vtxdist, idx_t* xadj, idx_t* adjncy, idx_t* vwgt,
                          idx_t* vsize, idx_t* adjwgt, idx_t* wgtflag, idx_t* numflag, idx_t* ncon,

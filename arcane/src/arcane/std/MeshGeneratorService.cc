@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshGeneratorService.cc                                     (C) 2000-2020 */
 /*                                                                           */
-/* Service de génération de maillage.                                        */
+/* Mesh generation service.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,8 +36,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de génération de maillages
+ * \brief Mesh generation service
  */
 class MeshGeneratorService
 : public AbstractService
@@ -97,26 +98,26 @@ readMeshFromFile(IPrimaryMesh* mesh,
   }
   if (gen_node.null()) return RTIrrelevant;
   XmlNode node;
-  // Recherche du 'cartesian' mesh generator
+  // Searching for the 'cartesian' mesh generator
   if (node.null()){
     node = gen_node.child("cartesian");
     if (!node.null())
       generator = new CartesianMeshGenerator(mesh);
   }
-  // Recherche du 'sod' mesh generator
+  // Searching for the 'sod' mesh generator
   if (node.null()){
     node = gen_node.child("sod");
     if (!node.null())
       generator = new SodMeshGenerator(mesh, node.attr("zyx").valueAsBoolean());
   }
-  // Recherche du 'simple' mesh generator
+  // Searching for the 'simple' mesh generator
   if (node.null()){
     node = gen_node.child("simple");
     if (!node.null())
       generator = new SimpleMeshGenerator(mesh);
   }
   if (!generator.get()){
-    warning() << "Type de générateur de maillage inconnu.";
+    warning() << "Unknown mesh generator type.";
     return RTIrrelevant;
   }
   if (generator->readOptions(node))

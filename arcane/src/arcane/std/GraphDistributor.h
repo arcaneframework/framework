@@ -36,8 +36,8 @@ namespace Arcane
  * \abstract By redistributing graph data, we can use smaller communicators to
  *           compute partitioning, which is better for efficiency.
  *
- * La classe doit être initialisée en appelant soit initWithOneRankPerNode(),
- * soit initWithMaxRank().
+ * The class must be initialized by calling either initWithOneRankPerNode()
+ * or initWithMaxRank().
  */
 class GraphDistributor
 {
@@ -290,9 +290,9 @@ class GraphDistributor
 
   IParallelMng* m_pm_ini = nullptr;
   Ref<IParallelMng> m_pm_sub;
-  Int32 m_targetSize = -1; // Taille du sous-communicateur
-  Int32 m_targetRank = -1; // Rang dans le sous-communicateur
-  bool m_skip = false; // Pas de redistribution
+  Int32 m_targetSize = -1; // Sub-communicator size
+  Int32 m_targetRank = -1; // Rank in the sub-communicator
+  bool m_skip = false; // No redistribution
   bool m_contribute = false;
   bool m_is_init = false;
 };

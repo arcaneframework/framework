@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorService.cc                         (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un générateur de nombres aléatoires LCG.                 */
-/* Inspiré du générateur de Quicksilver (LLNL) et des pages 302-304          */
-/* du livre :                                                                */
+/* Implementation of an LCG random number generator.                         */
+/* Inspired by the Quicksilver generator (LLNL) and pages 302-304            */
+/* of the book:                                                              */
 /*                                                                           */
 /*   Numerical Recipes in C                                                  */
 /*   The Art of Scientific Computing                                         */
@@ -69,11 +69,11 @@ neededSizeOfSeed()
   return m_size_of_seed;
 }
 
-// Les sauts négatifs sont supportés.
+// Negative leaps are supported.
 ByteUniqueArray PDESRandomNumberGeneratorService::
 generateRandomSeed(Integer leap)
 {
-  // Pas besoin de faire de saut si leap == 0.
+  // No need to leap if leap == 0.
   if (leap != 0) {
     _ran4(&m_seed, leap - 1);
   }
@@ -83,7 +83,7 @@ generateRandomSeed(Integer leap)
   return RNGSeedHelper(&spawned_seed).copy();
 }
 
-// Les sauts négatifs sont supportés.
+// Negative leaps are supported.
 ByteUniqueArray PDESRandomNumberGeneratorService::
 generateRandomSeed(ByteArrayView parent_seed, Integer leap)
 {
@@ -92,7 +92,7 @@ generateRandomSeed(ByteArrayView parent_seed, Integer leap)
   }
   Int64* i_seed = (Int64*)parent_seed.data();
 
-  // Pas besoin de faire de saut si leap == 0.
+  // No need to leap if leap == 0.
   if (leap != 0) {
     _ran4(i_seed, leap - 1);
   }
@@ -101,14 +101,14 @@ generateRandomSeed(ByteArrayView parent_seed, Integer leap)
   return RNGSeedHelper(&spawned_seed).copy();
 }
 
-// Les sauts négatifs sont supportés.
+// Negative leaps are supported.
 Real PDESRandomNumberGeneratorService::
 generateRandomNumber(Integer leap)
 {
   return _ran4(&m_seed, leap);
 }
 
-// Les sauts négatifs sont supportés.
+// Negative leaps are supported.
 Real PDESRandomNumberGeneratorService::
 generateRandomNumber(ByteArrayView seed, Integer leap)
 {
@@ -124,11 +124,11 @@ generateRandomNumber(ByteArrayView seed, Integer leap)
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Méthode permettant de découper un uint64 en deux uint32.
+ * @brief Method to split a uint64 into two uint32s.
  * 
- * @param uint64_in Le uint64 à découper en deux.
- * @param front_bits Les 32 bits de poids fort.
- * @param back_bits Les 32 bits de poids faible.
+ * @param uint64_in The uint64 to split into two.
+ * @param front_bits The 32 high-order bits.
+ * @param back_bits The 32 low-order bits.
  */
 void PDESRandomNumberGeneratorService::
 _breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits)
@@ -138,11 +138,11 @@ _breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits)
 }
 
 /**
- * @brief Méthode permettant de regrouper deux uint32 en un uint64.
+ * @brief Method to combine two uint32s into a uint64.
  * 
- * @param front_bits Les 32 bits de poids fort.
- * @param back_bits Les 32 bits de poids faible.
- * @return uint64_t Le uint64 reconstitué.
+ * @param front_bits The 32 high-order bits.
+ * @param back_bits The 32 low-order bits.
+ * @return uint64_t The reconstructed uint64.
  */
 uint64_t PDESRandomNumberGeneratorService::
 _reconstructUInt64(uint32_t front_bits, uint32_t back_bits)
@@ -162,15 +162,15 @@ _reconstructUInt64(uint32_t front_bits, uint32_t back_bits)
 }
 
 /**
- * @brief Algorithme Pseudo-DES du livre :
+ * @brief Pseudo-DES algorithm from the book:
  * Numerical Recipes in C
  * The Art of Scientific Computing
  * Second Edition
  * 
  * (Pages 302-303)
  * 
- * @param lword Moitié de gauche.
- * @param irword Moitié de droite.
+ * @param lword Left half.
+ * @param irword Right half.
  */
 void PDESRandomNumberGeneratorService::
 _psdes(uint32_t* lword, uint32_t* irword)
@@ -192,11 +192,10 @@ _psdes(uint32_t* lword, uint32_t* irword)
 }
 
 /**
- * @brief Méthode permettant de générer une nouvelle graine avec l'algorithme
- * pseudo-DES.
+ * @brief Method to generate a new seed using the pseudo-DES algorithm.
  * 
- * @param initial_number La graine "parent".
- * @return uint64_t La graine "enfant".
+ * @param initial_number The "parent" seed.
+ * @return uint64_t The "child" seed.
  */
 uint64_t PDESRandomNumberGeneratorService::
 _hashState(uint64_t initial_number)
@@ -211,18 +210,17 @@ _hashState(uint64_t initial_number)
 }
 
 /**
- * @brief Méthode permettant de générer des nombres pseudo-aléatoire
- * à partir d'une graine.
+ * @brief Method to generate pseudo-random numbers from a seed.
  * 
- * Inspiré de l'algorithme ran4 du livre :
+ * Inspired by the ran4 algorithm from the book:
  * Numerical Recipes in C
  * The Art of Scientific Computing
  * Second Edition
  * 
  * (Pages 303-304)
  * 
- * @param seed La graine.
- * @param leap Le saut.
+ * @param seed The seed.
+ * @param leap The leap.
  */
 Real PDESRandomNumberGeneratorService::
 _ran4(Int64* seed, Integer leap)

@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <service name="ArcaneCasePartitioner" type="caseoption" version="1.0" namespace-macro-name="ARCANE" >
  <name lang='fr'>partitionneur-cas</name>
   <userclass>User</userclass>
@@ -20,7 +20,7 @@
    <name lang='fr'>nb-partie-decoupees</name>
   <userclass>User</userclass>
    <description>
-Découpe le maillage en ce nombre de parties.
+Cuts the mesh into this number of parts.
    </description>
   </simple>
 
@@ -32,7 +32,7 @@ Découpe le maillage en ce nombre de parties.
    <name lang='fr'>bibliotheque</name>
   <userclass>User</userclass>
    <description>
-Nom de la bibliothèque à utiliser pour le partitionnement (Metis, Zoltan ou PTScotch)
+Name of the library to use for partitioning (Metis, Zoltan or PTScotch)
    </description>
   </simple>
 
@@ -46,11 +46,11 @@ Nom de la bibliothèque à utiliser pour le partitionnement (Metis, Zoltan ou PT
    <name lang='fr'>indivisible</name>
   <userclass>User</userclass>
    <description>
-Groupes d'entités à ne pas découper
+Groups of entities not to be cut
    </description>
   </extended>
 
-  <!-- Permet la création du fichier Correspondance (id globaux pour les nds et cells, par domaine) -->
+  <!-- Allows the creation of the Correspondence file (global IDs for nds and cells, per domain) -->
   <simple
    name = "create-correspondances"
    type     = "bool"
@@ -58,10 +58,10 @@ Groupes d'entités à ne pas découper
   >
    <name lang='fr'>correspondance</name>
   <userclass>User</userclass>
-   <description>Création du fichier Correspondance</description>
+   <description>Creation of the Correspondence file</description>
   </simple>
 
-  <!-- Nombre de couches de mailles fantomes -->
+  <!-- Number of ghost mesh layers -->
   <simple
    name = "nb-ghost-layer"
    type = "int32"
@@ -70,11 +70,11 @@ Groupes d'entités à ne pas découper
    <name lang='fr'>nb-couches-fantomes</name>
   <userclass>User</userclass>
    <description>
-Nombre de couches de mailles fantômes.
+Number of ghost mesh layers.
    </description>
   </simple>
 
-  <!-- Nom du service pour l'ecriture du maillage final -->
+  <!-- Name of the service for writing the final mesh -->
   <simple
    name = "writer-service-name"
    type = "string"
@@ -82,11 +82,11 @@ Nombre de couches de mailles fantômes.
    <name lang='fr'>nom-service-ecriture</name>
   <userclass>User</userclass>
    <description>
-Nom du service utilisé pour écrire les maillages en sortie.
+Name of the service used to write the output meshes.
    </description>
   </simple>
 
-  <!-- Nom du service pour l'ecriture du maillage final -->
+  <!-- Name of the service for writing the final mesh -->
   <simple
    name = "mesh-file-name-pattern"
    type = "string"
@@ -95,18 +95,18 @@ Nom du service utilisé pour écrire les maillages en sortie.
    <name lang='fr'>patron-nom-fichier-maillage</name>
   <userclass>User</userclass>
    <description>
-Patron utilisé pour générer le nom du fichier de maillage. La syntaxe est celle de la fonction C printf et le %d est remplacé par le numéro de la partie.
+Pattern used to generate the mesh file name. The syntax is that of the C printf function and %d is replaced by the part number.
    </description>
   </simple>
 
-  <!-- Fichier de sortie pour la non-régression -->
+  <!-- Output file for non-regression -->
   <!-- <service-instance
    name = "tool"
    type = "Arcane::IDirectExecution"
   >
    <name lang='fr'>tool</name>
    <description>
-Outil a executer
+Tool to execute
    </description>
   </service-instance>  -->
  </options>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LZ4DeflateService.h                                         (C) 2000-2021 */
 /*                                                                           */
-/* Service de compression utilisant la bibliothèque 'lz4'.                   */
+/* Compression service using the 'lz4' library.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de compression utilisant la bibliothèque 'LZ4'.
+ * \brief Compression service using the 'LZ4' library.
  */
 class LZ4DeflateService
 : public AbstractService
@@ -52,8 +53,8 @@ class LZ4DeflateService
   {
     Integer input_size = values.size();
     int dest_capacity = LZ4_compressBound(input_size);
-    // D'après la doc, il faut allouer au moins 1% de plus que la taille
-    // d'entrée plus encore 600 bytes
+    // According to the documentation, we must allocate at least 1% more than the
+    // input size plus another 600 bytes
     //Integer compressed_init_size = (Integer)(((Real)input_size) * 1.01) + 600;
     compressed_values.resize(dest_capacity);
     //compressed_values.copy(values);
@@ -98,8 +99,9 @@ class LZ4DeflateService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de compression utilisant la bibliothèque 'LZ4'.
+ * \brief Compression service using the 'LZ4' library.
  */
 class LZ4DataCompressor
 : public AbstractService
@@ -119,11 +121,11 @@ class LZ4DataCompressor
   Int64 minCompressSize() const override { return 512; }
   void compress(Span<const std::byte> values,Array<std::byte>& compressed_values) override
   {
-    // Même si supporte en théorie une taille de tableau sur 64 bits,
-    // l'algorithme 'LZ4' utilise des 'int' pour les tailles et de
-    // plus ne supporte pas les valeurs supérieures à LZ4_MAX_INPUT_SIZE.
+    // Although theoretically supporting an array size of 64 bits,
+    // the 'LZ4' algorithm uses 'int' for sizes and does not
+    // support values greater than LZ4_MAX_INPUT_SIZE.
     int input_size = _toInt(values.size());
-    // Vérifie qu'on ne dépasse pas LZ4_MAX_INPUT_SIZE
+    // Checks if we do not exceed LZ4_MAX_INPUT_SIZE
     if (input_size>LZ4_MAX_INPUT_SIZE)
       ARCANE_THROW(IOException,"Array is too large for LZ4: size={0} max={1}",input_size,LZ4_MAX_INPUT_SIZE);
 
@@ -163,7 +165,7 @@ class LZ4DataCompressor
  private:
   int _toInt(Int64 vsize)
   {
-    // Vérifie qu'on tient dans un 'int'.
+    // Checks if it fits in an 'int'.
     Int64 max_int_size = std::numeric_limits<int>::max();
     if (vsize>max_int_size)
       ARCANE_THROW(IOException,"Array is too large to fit in 'int' type: size={0} max={1}",vsize,max_int_size);

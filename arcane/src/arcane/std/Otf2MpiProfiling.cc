@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* Otf2MpiProfiling.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Implementation de l'interface IMpiProfiling permettant l'instrumentation  */
-/* au format OTF2                              .                             */
+/* Implementation of the IMpiProfiling interface allowing instrumentation    */
+/* in OTF2 format                              .                             */
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MessagePassingMpiEnum.h"
@@ -24,7 +24,8 @@ using namespace MessagePassing::Mpi;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Helper sur la fonction de taille de type MPI...
+
+// Helper for the MPI type size function...
 namespace
 {
 using ReturnType = Otf2MpiProfiling::ReturnType;
@@ -41,10 +42,11 @@ getSizeOfMpiType(MPI_Datatype datatype)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Constructeur.
-// Note : On ne passe pas le IMpiProfiling a decorer, on appel directement MPI
-// pour eviter un un autre appel inutile. Mais on peut facilement le changer le
-// cas echeant en rajoutant un IMpiProfiling dans les parametres du ctor.
+
+//! Constructor.
+// Note: We do not pass the IMpiProfiling to be decorated; we call MPI directly
+// to avoid another unnecessary call. But we can easily change this if necessary
+// by adding an IMpiProfiling to the ctor parameters.
 Otf2MpiProfiling::
 Otf2MpiProfiling(Otf2LibWrapper* otf2_wrapper)
 : m_otf2_wrapper(otf2_wrapper)
@@ -58,7 +60,7 @@ Otf2MpiProfiling(Otf2LibWrapper* otf2_wrapper)
 ReturnType Otf2MpiProfiling::
 broadcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_send(m_otf2_wrapper->getMpiRank()==root?getSizeOfMpiType(datatype)*count:0);
 	const uint64_t byte_recv(m_otf2_wrapper->getMpiRank()==root?0:getSizeOfMpiType(datatype)*count);
 
@@ -84,7 +86,7 @@ ReturnType Otf2MpiProfiling::
 gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
 	     int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_send(getSizeOfMpiType(sendtype) * sendcount);
 	const uint64_t byte_recv(m_otf2_wrapper->getMpiRank()==root?getSizeOfMpiType(recvtype)*recvcount:0);
 
@@ -110,7 +112,7 @@ ReturnType Otf2MpiProfiling::
 gatherVariable(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
                const int *recvcounts, const int *displs, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_send(getSizeOfMpiType(sendtype) * sendcount);
 	uint64_t byte_recv(0);
 
@@ -141,7 +143,7 @@ ReturnType Otf2MpiProfiling::
 allGather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
           int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_send(getSizeOfMpiType(sendtype) * sendcount);
 	const uint64_t byte_recv(getSizeOfMpiType(recvtype) * recvcount * m_otf2_wrapper->getMpiNbRank());
 
@@ -167,7 +169,7 @@ ReturnType Otf2MpiProfiling::
 allGatherVariable(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
                   const int *recvcounts, const int *displs, MPI_Datatype recvtype, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_send(getSizeOfMpiType(sendtype) * sendcount);
 	uint64_t byte_recv(0);
 
@@ -197,7 +199,7 @@ scatterVariable(const void *sendbuf, const int *sendcounts, const int *displs,
                 MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype,
                 int root, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_recv(getSizeOfMpiType(recvtype) * recvcount);
 	uint64_t byte_send(0);
 
@@ -316,7 +318,7 @@ reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
 ReturnType Otf2MpiProfiling::
 allReduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
-	// calcul des tailles des donnees echangees
+	// calculation of the sizes of the exchanged data
 	const uint64_t byte_send(getSizeOfMpiType(datatype) * count);
 	const uint64_t byte_recv(getSizeOfMpiType(datatype) * count);
 
@@ -387,8 +389,8 @@ iSend(const void *buf, int count, MPI_Datatype datatype, int dest, int tag,
   _doEventEnter(eMpiName::Isend);
 
 	int r = MPI_Isend(buf, count, datatype, dest, tag, comm, request);
-  // Comme OTF2 a besoin d'un entier, utilise la valeur fortran de la requête qui
-  // est garantie être un entier (contrairement à MPI_Request)
+  // Since OTF2 requires an integer, use the Fortran value of the request which
+  // is guaranteed to be an integer (unlike MPI_Request)
   uint64_t request_id = MPI_Request_c2f(*request);
 	OTF2_EvtWriter_MpiIsend(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                        dest, 0 /* comm region */, tag, getSizeOfMpiType(datatype) * count, request_id);
@@ -427,7 +429,7 @@ iRecv(void *buf, int count, MPI_Datatype datatype, int source, int tag,
 
 	int r = MPI_Irecv(buf, count, datatype, source, tag, comm, request);
 
-	// TODO: arriver a faire fonctionner ce truc...
+	// TODO: figure out how to make this thing work...
 //	OTF2_EvtWriter_MpiIrecv(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 //	                        source, 0 /* comm region */, tag, getSizeOfMpiType(datatype) * count, *request);
   _doEventLeave(eMpiName::Irecv);

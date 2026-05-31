@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HoneyCombMeshGenerator.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Service de génération de maillage hexagonal.                              */
+/* Hexagonal mesh generation service.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_HONEYCOMBMESHGENERATOR_H
 #define ARCANE_STD_HONEYCOMBMESHGENERATOR_H
@@ -34,7 +34,7 @@ class HoneyComb2DMeshGenerator
 {
  public:
 
-  //! Infos sur une ligne d'hexagone
+  //! Info about a line of hexagons
   class CellLineInfo;
 
  public:
@@ -66,7 +66,7 @@ class HoneyComb3DMeshGenerator
 {
  public:
 
-  //! Infos sur une ligne d'hexagone
+  //! Info about a line of hexagons
   class CellLineInfo;
 
  public:
@@ -100,4 +100,4 @@ class HoneyComb3DMeshGenerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TextWriter2.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain de données.                                                      */
+/* Data writer.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_TEXTWRITER2_H
 #define ARCANE_STD_INTERNAL_TEXTWRITER2_H
@@ -30,9 +30,10 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ * \brief Class for writing a text file for backups/restorations
  */
 class TextWriter2
 {

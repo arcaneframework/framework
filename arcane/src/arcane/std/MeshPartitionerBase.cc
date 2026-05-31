@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartitionerBase.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un partitionneur de maillage                             */
+/* Base class for a mesh partitioner                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -160,14 +160,14 @@ _createConstraintsLists(Int64MultiArray2& tied_uids)
 
 //   info()<<"tied_uids.dim1Size() = "<<tied_uids.dim1Size();
   for( Integer i=0, n=tied_uids.dim1Size(); i<n; ++i ){
-    // la liste d'uniqueId pour une contrainte
+    // the list of uniqueIds for one constraint
     Int64ConstArrayView uids(tied_uids[i]);
 
-    // cette même liste en localId, sachant que certaines mailles ne sont pas locales
+    // this same list in localId, knowing that some meshes are not local
     Int32UniqueArray lids(uids.size());
     cellFamily->itemsUniqueIdToLocalId(lids,uids,false);
 
-    // la liste locale en localId (sans les id des mailles sur d'autres procs)
+    // the local list in localId (without the ids of meshes on other procs)
     Int32UniqueArray lids_loc;
     lids_loc.reserve(lids.size());
     for( Integer j=0, js=lids.size(); j<js; ++j ){
@@ -176,18 +176,18 @@ _createConstraintsLists(Int64MultiArray2& tied_uids)
         lids_loc.add(lid);
     }
 
-    // le tableau avec les mailles de cette contrainte
+    // the array with the meshes of this constraint
     ItemVectorView items_view = cellFamily->view(lids_loc);
     SharedArray<Cell> cells;
     for ( Integer j=0, js=items_view.size(); j<js; j++)
       if (items_view[j].isOwn())
         cells.add(items_view[j].toCell());
 
-    // Les elements ne sont pas a cheval avec ce processeur
+    // The elements are not crossing this processor
     allLocal += (((cells.size() == 0)||
                   (cells.size() == uids.size()))?0:1);
 
-    // on ajoute ce tableau à la liste
+    // we add this array to the list
     if (!cells.empty())
       m_cells_with_constraints.add(cells);
   }
@@ -211,14 +211,14 @@ _initArrayCellsWithConstraints()
   if (!m_mesh->partitionConstraintMng())
     return;
 
-  // c'est ici qu'il faut récupérer les listes de listes de mailles
-  // avec comme contrainte de ne pas être séparé lors du repartitionnement
+  // here we must retrieve the lists of lists of meshes
+  // with the constraint of not being separated during repartitioning
 
-  // un tableau 2D avec les uniqueId des mailles
+  // a 2D array with the uniqueIds of the meshes
   Int64MultiArray2 tied_uids;
 
   // Compute tied_uids first because we cannot use this after redistribution
-  // Nota: It is correct to do so because ConstraintList is global, so not changed
+  // Note: It is correct to do so because ConstraintList is global, so not changed
   //       by the redistribution.
   m_mesh->partitionConstraintMng()->computeConstraintList(tied_uids);
   // Be sure that constraints are local !
@@ -258,7 +258,7 @@ _initFilterLidCells()
 {
   CellGroup all_cells = m_mesh->allCells();
 
-  // Mise en place d'un filtre sur les localId avec comme marque un eMarkCellWithConstraint
+  // Setting up a filter on the localId marked with eMarkCellWithConstraint
   m_filter_lid_cells.resize(m_mesh->cellFamily()->maxLocalId());
   m_filter_lid_cells.fill(eCellGhost);
 
@@ -298,9 +298,9 @@ _initUidRef()
 {
   _checkCreateVar();
   VariableCellInt64 uids_ref(*m_unique_id_reference);
-  // Mise en place d'un tableau d'indirection entre les cell et un uniqueId de référence
-  // permet de connaitre l'uid de la première maille de chacune des contraintes
-  // y compris pour les mailles fantômes
+  // Setting up an indirection array between cells and a reference uniqueId
+  // allows knowing the uid of the first mesh of each constraint
+  // including for ghost meshes
   ENUMERATE_CELL(icell, m_mesh->allCells()){
     uids_ref[icell] = icell->uniqueId();
   }
@@ -322,9 +322,9 @@ _initUidRef(VariableCellInteger& cell_renum_uid)
   _checkCreateVar();
   VariableCellInt64 uids_ref(*m_unique_id_reference);
 
-  // Mise en place d'un tableau d'indirection entre les cell et un uniqueId de référence
-  // permet de connaitre l'uid de la première maille de chacune des contraintes
-  // y compris pour les mailles fantômes
+  // Setting up an indirection array between cells and a reference uniqueId
+  // allows knowing the uid of the first mesh of each constraint
+  // including for ghost meshes
   ENUMERATE_CELL (icell, m_mesh->allCells()) {
     uids_ref[icell] = cell_renum_uid[icell];
   }
@@ -344,8 +344,8 @@ _initUidRef(VariableCellInteger& cell_renum_uid)
 void MeshPartitionerBase::
 _initLid2LidCompacted()
 {
-  // Construction du tableau d'indirection entre la numérotation locale pour toutes les mailles
-  // et une numérotation sans les mailles fantômes ni les mailles regroupées
+  // Construction of the indirection array between the local numbering for all meshes
+  // and a numbering without ghost meshes or grouped meshes
   Integer index = 0;
   m_local_id_2_local_id_compacted.resize(m_mesh->cellFamily()->maxLocalId());
   m_check.resize(m_mesh->cellFamily()->maxLocalId());
@@ -366,14 +366,16 @@ _initLid2LidCompacted()
       throw FatalErrorException(A_FUNCINFO,"Invalid filter value");
     }
   }
-  //  info()<<"m_local_id_2_local_id_compacted de 0 à "<<index-1;
+  //  info()<<"m_local_id_2_local_id_compacted from 0 to "<<index-1;
 }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 void MeshPartitionerBase::
 _initNbCellsWithConstraints()
 {
-  // Calcul le nombre de mailles internes en tenant compte des regroupement suivant les contraintes
+  // Calculate the number of internal meshes taking into account the grouping according to constraints
   m_nb_cells_with_constraints = m_mesh->ownCells().size();
   for (Integer i=0; i<m_cells_with_constraints.size(); ++i){
     m_nb_cells_with_constraints -= (m_cells_with_constraints[i].size()-1);
@@ -441,7 +443,7 @@ _addNgb(const Cell& cell, const Face& face,
   Real hg_contrib = 0;
   const VariableItemReal& commCost = m_lb_mng_internal->commCost(m_mesh);
   const float face_comm_cost = static_cast<float>(commCost[face]);
-  // Maille traditionnelle, on peut ajouter
+  // Traditional mesh, we can add
   if ((!special) &&(m_filter_lid_cells[cell.localId()] == eCellClassical))
     toAdd = true;
   else {
@@ -527,19 +529,19 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
 
   if (m_filter_lid_cells[cell.localId()] == eCellClassical){
     if (m_is_non_manifold_mesh && cell.hasFlags(ItemFlags::II_HasEdgeFor1DItems)) {
-      // En cas de maillage non manifold, la maille peut contenir
-      // des arêtes au lieu des faces. Si c'est le cas, on utilise les arêtes
-      // pour déterminer les voisines.
-      // Dans ce cas, on ne prend en compte que les voisines ayant
-      // aussi 'ItemFlags::II_HasEdgeFro1DItems' positionné.
+      // In the case of a non-manifold mesh, the mesh may contain
+      // edges instead of faces. If so, we use the edges
+      // to determine neighbors.
+      // In this case, we only consider neighbors that also have
+      // 'ItemFlags::II_HasEdgeFro1DItems' positioned.
       for (Edge sub_edge : cell.edges()) {
-        // on ne prend que les arêtes ayant une maille voisine
+        // only consider edges that have a neighboring mesh
         if (sub_edge.nbCell() >= 2) {
           for (Cell sub_cell : sub_edge.cells()) {
             if (sub_cell != cell && sub_cell.hasFlags(ItemFlags::II_HasEdgeFor1DItems)) {
               hg_contrib += 1.0;
               neighbourcells.add((*m_unique_id_reference)[sub_cell]);
-              // TODO: regarder la valeur qu'il faut ajouter pour les communications
+              // TODO: look at the value that needs to be added for communications
               if (ptrcommWeights)
                 (*ptrcommWeights).add(1.0f);
             }
@@ -550,9 +552,9 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
     else {
       for (Integer z = 0; z < cell.nbFace(); ++z) {
         Face face = cell.face(z);
-        // on ne prend que les faces ayant une maille voisine
+        // only consider faces that have a neighboring mesh
         if (face.nbCell() == 2) {
-          // recherche de la maille externe
+          // search for the external mesh
           Cell opposite_cell = (face.cell(0) != cell ? face.cell(0) : face.cell(1));
           hg_contrib += _addNgb(opposite_cell, face, neighbourcells, contrib, difficultNgb,
                                 ptrcommWeights, offset, lids);
@@ -577,11 +579,11 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
       // memUsed[j] = hg_contrib;
       for( Integer z=0; z<listCell[j].nbFace(); ++z ){
         const Face& face = listCell[j].face(z);
-        // on ne prend que les faces ayant une maille non marquée à eCellInAConstraint et avec une maille voisine
+        // only consider faces that have a mesh not marked as eCellInAConstraint and with a neighboring mesh
         if ((face.nbCell()==2)
             && (m_filter_lid_cells[face.cell(0).localId()] != eCellInAConstraint
                  || m_filter_lid_cells[face.cell(1).localId()] != eCellInAConstraint)){
-          // recherche de la maille externe
+          // search for the external mesh
           const Cell& opposite_cell = (m_filter_lid_cells[face.cell(0).localId()] != eCellInAConstraint?
                                        face.cell(0):face.cell(1));
           hg_contrib += _addNgb(opposite_cell, face,  neighbourcells, contrib, difficultNgb,
@@ -746,7 +748,7 @@ cellUsedWithWeakConstraints(std::pair<Int64,Int64>& paired_item)
 void MeshPartitionerBase::
 changeCellOwner(Item cell, VariableItemInt32& cells_new_owner, Int32 new_owner)
 {
-  // TODO à optimiser pour le cas où il y aurait plein de petites contraintes
+  // TODO to optimize for the case where there are many small constraints
 
   //info()<<"changeCellOwner "<<cell<<", new_owner = "<<new_owner;
   cells_new_owner[cell] = new_owner;
@@ -768,7 +770,7 @@ changeCellOwner(Item cell, VariableItemInt32& cells_new_owner, Int32 new_owner)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Fonctions utiles pour l'ancienne interface de partitionnement.
+// Utility functions for the old partitioning interface.
 
 void
 MeshPartitionerBase::setCellsWeight(ArrayView<float> weights,Integer nb_weight)
@@ -817,7 +819,7 @@ _clearCellWgt()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Fonction auxiliaire pour dumper le graphe.
+//! Auxiliary function to dump the graph.
 template <class ArrayType> Parallel::Request
 centralizePartInfo(String filename, IParallelMng *pm,
                    UniqueArray<ArrayType> data, String header, int step=1 )
@@ -910,7 +912,7 @@ MeshPartitionerBase::dumpObject(String filebase)
         &&(m_filter_lid_cells[icell->localId()]!=eCellReference))
       continue;
 
-    // on calcul un barycentre
+    // calculate a barycenter
     for( Integer z=0, zs = (*icell).nbNode(); z<zs; ++z ){
       const Node& node = (*icell).node(z);
       my_coords[i] += coords[node];

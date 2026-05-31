@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0" ?>
 
   <service name="SplitSDMeshPartitioner" parent-name="MeshPartitionerBase"
    type="caseoption">
     <name lang='fr'>metis</name>
     <description>
-     Partionneur de maillage SplitSD simplifié
+     Simplified SplitSD mesh partitioner
     </description>
-    
+
     <interface name="Arcane::IMeshPartitioner" inherited="false"/>
     <interface name="Arcane::IMeshPartitionerBase" inherited="false"/>
 

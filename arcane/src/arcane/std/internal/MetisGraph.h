@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MetisGraph.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Gestion d'un graphe de Metis.                                             */
+/* Management of a Metis graph.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_METISGRAPH
 #define ARCANE_STD_METISGRAPH

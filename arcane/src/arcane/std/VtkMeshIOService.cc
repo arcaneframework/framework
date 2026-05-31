@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtkMeshIOService.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
+/* Reading/Writing a mesh in legacy VTK format.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,41 +63,41 @@ using namespace Arcane::VtkUtils;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecteur des fichiers de maillage au format Vtk historique (legacy).
+ * \brief Mesh file reader for legacy VTK format.
  *
- * Il s'agit d'une version préliminaire qui ne supporte que les
- * DATASET de type STRUCTURED_GRID ou UNSTRUCTURED_GRID. De plus,
- * le lecteur et l'écrivain n'ont été que partiellement testés.
+ * This is a preliminary version that only supports
+ * DATASETs of type STRUCTURED_GRID or UNSTRUCTURED_GRID. Furthermore,
+ * the reader and writer have only been partially tested.
  *
- * L'en-tête du fichier vtk doit être:
+ * The VTK file header must be:
  * # vtk DataFile Version X.X
- * Où X.X est la version du fichier VTK (support des fichiers VTK <= 4.2).
+ * Where X.X is the VTK file version (support for VTK files <= 4.2).
  *
- * Il est possible de spécifier un ensemble de variables dans le fichier.
- * Dans ce cas, leurs valeurs sont lues en même temps que le maillage
- * et servent à initialiser les variables. Actuellement, seules les valeurs
- * aux mailles sont supportées.
+ * It is possible to specify a set of variables in the file.
+ * In this case, their values are read simultaneously with the mesh
+ * and are used to initialize the variables. Currently, only cell values
+ * are supported.
  *
- * Comme Vtk ne supporte pas la notion de groupe, il est possible
- * de spécifier un groupe comme étant une variable (CELL_DATA).
- * Par convention, si la variable commence par la chaine 'GROUP_', alors
- * il s'agit d'un groupe. La variable doit être déclarée comme suit:
+ * Since VTK does not support the concept of a group, it is possible
+ * to specify a group as a variable (CELL_DATA).
+ * By convention, if the variable starts with the string 'GROUP_', then
+ * it is a group. The variable must be declared as follows:
  * \begincode
  * CELL_DATA %n
  * SCALARS GROUP_%m int 1
  * LOOKUP_TABLE default
  * \endcode
- * avec %n le nombre de mailles, et %m le nom du groupe.
- * Une maille appartient au groupe si la valeur de la donnée est
- * différente de 0.
+ * with %n being the number of cells, and %m being the group name.
+ * A cell belongs to the group if the data value is
+ * different from 0.
  *
- * Actuellement, on NE peut PAS spécifier de groupes de points.
+ * Currently, point groups CANNOT be specified.
  *
- * Pour spécifier des groupes de faces, il faut un fichier vtk
- * additionnel, identique au fichier d'origine mais contenant la
- * description des faces au lieu des mailles. Par convention, si le
- * fichier courant lu s'appelle 'toto.vtk', le fichier décrivant les
- * faces sera 'toto.vtkfaces.vtk'. Ce fichier est optionnel.
+ * To specify face groups, a VTK file is required
+ * additional, identical to the original file but containing the
+ * description of the faces instead of the cells. By convention, if the
+ * currently read file is named 'toto.vtk', the file describing the
+ * faces will be 'toto.vtkfaces.vtk'. This file is optional.
  */
 class VtkMeshIOService
 : public TraceAccessor
@@ -208,22 +208,22 @@ class VtkFile
 
  private:
 
-  //! Le stream.
+  //! The stream.
   std::istream* m_stream = nullptr;
 
-  //! Y'a-t-il eu au moins une ligne lue.
+  //! Has at least one line been read.
   bool m_is_init;
 
-  //! Doit-on relire la même ligne.
+  //! Should the same line be reread.
   bool m_need_reread_current_line;
 
-  //! Est-on à la fin du fichier.
+  //! Is the end of the file reached.
   bool m_is_eof;
 
-  //! Est-ce un fichier contenant des données en binaire.
+  //! Is this a file containing binary data.
   bool m_is_binary_file;
 
-  //! Le buffer contenant la ligne lue.
+  //! The buffer containing the read line.
   char m_buf[BUFSIZE];
 };
 
@@ -231,9 +231,9 @@ class VtkFile
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de retourner la ligne présente dans le buffer.
+ * \brief Allows returning the line present in the buffer.
  *
- * \return le buffer contenant la dernière ligne lue
+ * \return the buffer containing the last line read
  */
 const char* VtkFile::
 getCurrentLine()
@@ -247,26 +247,25 @@ getCurrentLine()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de voir si la prochaine ligne est vide.
- *        
- * A la fin de cette méthode, le buffer contiendra la prochaine ligne
- * non vide. Le booléen m_need_reread_current_line permettera de demander à getNextLine
- * de renvoyer cette ligne qui n'a pas été lue.
- * 
- * \return true s'il y a une ligne vide, false sinon
+ * \brief Allows checking if the next line is empty.
+ *
+ * At the end of this method, the buffer will contain the next non-empty line. The boolean m_need_reread_current_line will allow getNextLine
+ * to return this line which has not been read.
+ *
+ * \return true if there is an empty line, false otherwise
  */
 bool VtkFile::
 isEmptyNextLine()
 {
   m_is_init = true;
 
-  // On veut que getNextLine lise une nouvelle ligne.
-  // (on met à false dans le cas où cette méthode serai
-  // appelée plusieurs fois à la suite).
+  // We want getNextLine to read a new line.
+  // (we set it to false in case this method is
+  // called multiple times in a row).
   m_need_reread_current_line = false;
 
-  // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
-  // de getNextLine, on envoie une erreur.
+  // If we reached the end of the file during the previous call to this method or
+  // getNextLine, we throw an error.
   if (m_is_eof) {
     ARCANE_THROW(IOException, "Unexpected EndOfFile");
   }
@@ -274,31 +273,31 @@ isEmptyNextLine()
   if (!m_stream->good())
     ARCANE_THROW(IOException, "Error when reading stream");
 
-  // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf
-  // mais le remplace par '\0'.
+  // getline stops (by default) at the char '\n' and does not include it in the buf
+  // but replaces it with '\0'.
   m_stream->getline(m_buf, sizeof(m_buf) - 1);
 
-  // Si on arrive au bout du fichier, on return true (pour dire oui, il y a une ligne vide,
-  // à l'appelant de gérer ça).
+  // If we reach the end of the file, we return true (to indicate yes, there is an empty line,
+  // for the caller to handle).
   if (m_stream->eof()) {
     m_is_eof = true;
     return true;
   }
 
-  // Sous Windows, une ligne vide commence par \r.
-  // getline remplace \n par \0, que ce soit sous Windows ou Linux.
+  // On Windows, an empty line starts with \r.
+  // getline replaces \n with \0, whether on Windows or Linux.
   if (m_buf[0] == '\r' || m_buf[0] == '\0') {
     getNextLine();
 
-    // On demande à ce que le prochain appel à getNextLine renvoie la ligne
-    // qui vient tout juste d'être bufferisée.
+    // We ask that the next call to getNextLine returns the line
+    // that was just buffered.
     m_need_reread_current_line = true;
     return true;
   }
   else {
     bool is_comment = true;
 
-    // On retire le commentaire, s'il y en a un, en remplaçant '#' par '\0'.
+    // We remove the comment, if there is one, by replacing '#' with '\0'.
     for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
       if (!isspace(m_buf[i]) && m_buf[i] != '#' && is_comment) {
         is_comment = false;
@@ -309,9 +308,9 @@ isEmptyNextLine()
       }
     }
 
-    // Si ce n'est pas un commentaire, on supprime juste le '\r' final (si windows).
+    // If it is not a comment, we just remove the final '\r' (if windows).
     if (!is_comment) {
-      // Supprime le '\r' final
+      // Remove the final '\r'
       for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
         if (m_buf[i] == '\r') {
           m_buf[i] = '\0';
@@ -320,8 +319,8 @@ isEmptyNextLine()
       }
     }
 
-    // Si c'était un commentaire, on recherche la prochaine ligne "valide"
-    // en appelant getNextLine.
+    // If it was a comment, we search for the next "valid" line
+    // by calling getNextLine.
     else {
       getNextLine();
     }
@@ -334,33 +333,33 @@ isEmptyNextLine()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de récupérer la prochaine ligne du fichier.
+ * \brief Allows retrieving the next line from the file.
  *
- * \return le buffer contenant la dernière ligne lue
+ * \return the buffer containing the last line read
  */
 const char* VtkFile::
 getNextLine()
 {
   m_is_init = true;
 
-  // On return le buffer actuel, si celui-ci n'a pas été utilisé.
+  // We return the current buffer, if it has not been used.
   if (m_need_reread_current_line) {
     m_need_reread_current_line = false;
     return getCurrentLine();
   }
 
-  // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
-  // de isEmptyNextLine, on envoie une erreur.
+  // If we reached the end of the file during the previous call to this method or
+  // isEmptyNextLine, we throw an error.
   if (m_is_eof) {
     ARCANE_THROW(IOException, "Unexpected EndOfFile");
   }
 
   while (m_stream->good()) {
-    // Le getline s'arrete (par défaut) au char '\n' et ne l'inclus pas dans le buf mais le remplace par '\0'.
+    // getline stops (by default) at the char '\n' and does not include it in the buf but replaces it with '\0'.
     m_stream->getline(m_buf, sizeof(m_buf) - 1);
 
-    // Si on arrive au bout du fichier, on return le buffer avec \0 au début (c'est à l'appelant d'appeler
-    // isEof() pour savoir si le fichier est fini ou non).
+    // If we reach the end of the file, we return the buffer with \0 at the beginning (it is up to the caller to call
+    // isEof() to know if the file is finished or not).
     if (m_stream->eof()) {
       m_is_eof = true;
       m_buf[0] = '\0';
@@ -369,12 +368,12 @@ getNextLine()
 
     bool is_comment = true;
 
-    // Sous Windows, une ligne vide commence par \r.
-    // getline remplace \n par \0, que ce soit sous Windows ou Linux.
+    // On Windows, an empty line starts with \r.
+    // getline replaces \n with \0, whether on Windows or Linux.
     if (m_buf[0] == '\0' || m_buf[0] == '\r')
       continue;
 
-    // On retire le commentaire, s'il y en a un, en remplaçant '#' par '\0'.
+    // We remove the comment, if there is one, by replacing '#' with '\0'.
     for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
       if (!isspace(m_buf[i]) && m_buf[i] != '#' && is_comment) {
         is_comment = false;
@@ -385,9 +384,9 @@ getNextLine()
       }
     }
 
-    // Si ce n'est pas un commentaire, on supprime juste le '\r' final (si windows).
+    // If it is not a comment, we just remove the final '\r' (if windows).
     if (!is_comment) {
-      // Supprime le '\r' final
+      // Remove the final '\r'
       for (int i = 0; i < BUFSIZE && m_buf[i] != '\0'; ++i) {
         if (m_buf[i] == '\r') {
           m_buf[i] = '\0';
@@ -404,9 +403,9 @@ getNextLine()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de récupérer le float qui suit.
+ * \brief Allows retrieving the following float.
  *
- * \return le float récupéré
+ * \return the retrieved float
  */
 float VtkFile::
 getFloat()
@@ -428,9 +427,9 @@ getFloat()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de récupérer le double qui suit.
+ * \brief Allows retrieving the next double.
  *
- * \return le double récupéré
+ * \return the retrieved double
  */
 double VtkFile::
 getDouble()
@@ -452,9 +451,9 @@ getDouble()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de récupérer le int qui suit.
+ * \brief Allows retrieving the next integer.
  *
- * \return le int récupéré
+ * \return the retrieved integer
  */
 int VtkFile::
 getInt()
@@ -476,9 +475,9 @@ getInt()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de récupérer le nombre binaire qui suit.
+ * \brief Allows retrieving the next binary number.
  *
- * \param value La référence vers la variable à remplir (le type de value nous renseigne sur le nombre d'octet à lire).
+ * \param value The reference to the variable to be filled (the type of value tells us the number of bytes to read).
  */
 template <class T>
 void VtkFile::
@@ -486,19 +485,19 @@ getBinary(T& value)
 {
   constexpr size_t sizeofT = sizeof(T);
 
-  // Le fichier VTK est en big endian et les CPU actuels sont en little endian.
+  // The VTK file is in big endian and current CPUs are in little endian.
   Byte big_endian[sizeofT];
   Byte little_endian[sizeofT];
 
-  // On lit les 'sizeofT' prochains octets que l'on met dans big_endian.
+  // We read the next 'sizeofT' bytes and put them into big_endian.
   m_stream->read((char*)big_endian, sizeofT);
 
-  // On transforme le big_endian en little_endian.
+  // We transform big_endian into little_endian.
   for (size_t i = 0; i < sizeofT; i++) {
     little_endian[sizeofT - 1 - i] = big_endian[i];
   }
 
-  // On 'cast' la liste d'octet en type 'T'.
+  // We 'cast' the byte array into type 'T'.
   T* conv = new (little_endian) T;
   value = *conv;
 }
@@ -507,13 +506,13 @@ getBinary(T& value)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de vérifier si expected_value == current_value.
+ * \brief Allows checking if expected_value == current_value.
  *
- * Permet de vérifier si expected_value correspond à current_value. 
- * Une exception est envoyée sinon.
+ * Allows checking if expected_value matches current_value.
+ * An exception is thrown otherwise.
  *
- * \param current_value la valeur référence
- * \param expected_value la valeur à comparer
+ * \param current_value the reference value
+ * \param expected_value the value to compare
  */
 void VtkFile::
 checkString(const String& current_value, const String& expected_value)
@@ -530,14 +529,14 @@ checkString(const String& current_value, const String& expected_value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Permet de vérifier si expected_value1 ou expected_value2 == current_value.
+ * \brief Allows checking if expected_value1 or expected_value2 == current_value.
  *
- * Permet de vérifier si expected_value1 ou expected_value2 correspond à current_value. 
- * Une exception est envoyée sinon.
+ * Allows checking if expected_value1 or expected_value2 matches current_value.
+ * An exception is thrown otherwise.
  *
- * \param current_value la valeur référence
- * \param expected_value1 la première valeur à comparer
- * \param expected_value2 la deuxième valeur à comparer
+ * \param current_value the reference value
+ * \param expected_value1 the first value to compare
+ * \param expected_value2 the second value to compare
  */
 void VtkFile::
 checkString(const String& current_value, const String& expected_value1, const String& expected_value2)
@@ -555,13 +554,13 @@ checkString(const String& current_value, const String& expected_value1, const St
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Permet de vérifier si expected_value == current_value.
+ * \brief Allows checking if expected_value == current_value.
  *
- * Permet de vérifier si expected_value correspond à current_value. 
- * 
- * \param current_value la valeur référence
- * \param expected_value la valeur à comparer
- * \return true si les valeurs sont égales, false sinon
+ * Allows checking if expected_value matches current_value.
+ *
+ * \param current_value the reference value
+ * \param expected_value the value to compare
+ * \return true if the values are equal, false otherwise
  */
 bool VtkFile::
 isEqualString(const String& current_value, const String& expected_value)
@@ -574,17 +573,14 @@ isEqualString(const String& current_value, const String& expected_value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Permet de débuter la lecture d'un fichier vtk.
+ * \brief Allows starting the reading of a vtk file.
  *
- * \param mesh Le maillage à remplir
- * \param file_name Le nom du fichier vtk (avec l'extension)
- * \param dir_name Le chemin du fichier
- * \param use_internal_partition Doit-on utiliser le partitionneur interne ou non
- * \return false si tout s'est bien passé, true sinon
+ * \param mesh The mesh to be filled
+ * \param file_name The name of the vtk file (with extension)
+ * \param dir_name The file path
+ * \param use_internal_partition Should the internal partitioner be used or not
+ * \return false if everything went well, true otherwise
  */
 bool VtkMeshIOService::
 readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bool use_internal_partition)
@@ -601,13 +597,13 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
   VtkFile vtk_file(&ifile);
   const char* buf = 0;
 
-  // Lecture de la description
-  // Lecture title.
+  // Reading the description
+  // Reading title.
   String title = vtk_file.getNextLine();
 
   info() << "Titre du fichier VTK : " << title.localstr();
 
-  // Lecture format.
+  // Reading format.
   String format = vtk_file.getNextLine();
 
   debug() << "Format du fichier VTK : " << format.localstr();
@@ -618,9 +614,9 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
 
   eMeshType mesh_type = VTK_MT_Unknown;
 
-  // Lecture du type de maillage
-  // TODO: en parallèle, avec use_internal_partition vrai, seul le processeur 0
-  // lit les données. Dans ce cas, inutile que les autres ouvrent le fichier.
+  // Reading the mesh type
+  // TODO: in parallel, with use_internal_partition true, only processor 0
+  // reads the data. In this case, it is unnecessary for others to open the file.
   {
     buf = vtk_file.getNextLine();
 
@@ -657,7 +653,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
     ret = _readUnstructuredGrid(mesh, vtk_file, use_internal_partition);
     debug() << "Lecture _readUnstructuredGrid OK";
     if (!ret) {
-      // Tente de lire le fichier des faces s'il existe
+      // Tries to read the faces file if it exists
       _readFacesMesh(mesh, file_name + "faces.vtk", dir_name, use_internal_partition);
       debug() << "Lecture _readFacesMesh OK";
     }
@@ -678,17 +674,17 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de lire un fichier vtk contenant une STRUCTURED_GRID.
+ * \brief Allows reading a vtk file containing a STRUCTURED_GRID.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param use_internal_partition Doit-on utiliser le partitionneur interne ou non
- * \return false si tout s'est bien passé, true sinon
+ * \param mesh The mesh to be filled
+ * \param vtk_file Reference to a VtkFile object
+ * \param use_internal_partition Should the internal partitioner be used or not
+ * \return false if everything went well, true otherwise
  */
 bool VtkMeshIOService::
 _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition)
 {
-  // Lecture du nombre de points: DIMENSIONS nx ny nz
+  // Reading the number of points: DIMENSIONS nx ny nz
   const char* buf = nullptr;
   Integer nb_node_x = 0;
   Integer nb_node_y = 0;
@@ -713,7 +709,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
   info() << " Infos: " << nb_node_x << " " << nb_node_y << " " << nb_node_z;
   Integer nb_node = nb_node_x * nb_node_y * nb_node_z;
 
-  // Lecture du nombre de points: POINTS nb float
+  // Reading the number of points: POINTS nb float
   std::string float_str;
   {
     buf = vtk_file.getNextLine();
@@ -753,12 +749,12 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
   Integer nb_cell = nb_cell_x * nb_cell_y * nb_cell_z;
   UniqueArray<Int32> cells_local_id(nb_cell);
 
-  // Creation du maillage
+  // Mesh creation
   {
     UniqueArray<Integer> nodes_unique_id(nb_node);
 
     info() << " NODE YZ = " << nb_node_yz;
-    // Création des noeuds
+    // Node creation
     //Integer nb_node_local_id = 0;
     {
       Integer node_local_id = 0;
@@ -778,20 +774,20 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
       //warning() << " NB NODE LOCAL ID=" << node_local_id;
     }
 
-    // Création des mailles
+    // Cell creation
 
-    // Infos pour la création des mailles
-    // par maille: 1 pour son unique id,
-    //             1 pour son type,
-    //             8 pour chaque noeud
+    // Info for cell creation
+    // per cell: 1 for its unique id,
+    //           1 for its type,
+    //           8 for each node
     UniqueArray<Int64> cells_infos(nb_cell * 10);
 
     {
       Integer cell_local_id = 0;
       Integer cells_infos_index = 0;
 
-      // Normalement ne doit pas arriver car les valeurs de nb_node_x et
-      // nb_node_y sont testées lors de la lecture.
+      // Normally should not happen because the values of nb_node_x and
+      // nb_node_y are tested during reading.
       if (nb_node_xy == 0)
         ARCANE_FATAL("Null value for nb_node_xy");
 
@@ -832,7 +828,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
     mesh->allocateCells(nb_cell, cells_infos, false);
     mesh->endAllocate();
 
-    // Positionne les coordonnées
+    // Positioning the coordinates
     {
       UniqueArray<Real3> coords(nb_node);
 
@@ -887,7 +883,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
     }
   }
 
-  // Créé les groupes de faces des côtés du parallélépipède
+  // Created the face groups for the sides of the cuboid
   {
     Int32UniqueArray xmin_surface_lid;
     Int32UniqueArray xmax_surface_lid;
@@ -946,7 +942,7 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
 
   _readMetadata(mesh, vtk_file);
 
-  // Maintenant, regarde s'il existe des données associées aux fichier
+  // Now, check if there is data associated with the file
   bool r = _readData(mesh, vtk_file, use_internal_partition, IK_Cell, cells_local_id, nb_node);
   if (r)
     return r;
@@ -958,11 +954,11 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Lecture des noeuds et de leur coordonnées.
+ * \brief Read nodes and their coordinates.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param node_coords L'array à remplir de coordonnées de nodes
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \param node_coords The array to fill with node coordinates
  */
 void VtkMeshIOService::
 _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_coords)
@@ -987,7 +983,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
 
   info() << "VTK file : number of nodes = " << nb_node;
 
-  // Lecture les coordonnées
+  // Read coordinates
   node_coords.resize(nb_node);
   {
     if (vtk_file.isEqualString(data_type_str, "int")) {
@@ -1025,15 +1021,15 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Lecture des mailles et de leur connectivité.
+ * \brief Read meshes and their connectivity.
  *
- * En retour, remplit \a cells_nb_node, \a cells_type et \a cells_connectivity.
- * 
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param cells_nb_node Nombre de nodes de chaque cell
- * \param cells_type Type de chaque cell
- * \param cells_connectivity Connectivités entre les cells
+ * Returns by filling \a cells_nb_node, \a cells_type, and \a cells_connectivity.
+ *
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \param cells_nb_node Number of nodes per cell
+ * \param cells_type Type of each cell
+ * \param cells_connectivity Connectivity between cells
  */
 void VtkMeshIOService::
 _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
@@ -1086,7 +1082,7 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
   _readMetadata(mesh, vtk_file);
 
-  // Lecture du type des mailles
+  // Read cell types
   {
     buf = vtk_file.getNextLine();
     std::istringstream iline(buf);
@@ -1115,12 +1111,13 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des metadata.
+ * \brief Read metadata.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \return false si tout s'est bien passé, true sinon
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \return false if everything went well, true otherwise
  */
 bool VtkMeshIOService::
 _readMetadata(IMesh* mesh, VtkFile& vtk_file)
@@ -1135,22 +1132,22 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
 
   // METADATA ?
   if (!vtk_file.isEqualString(meta, "METADATA")) {
-    // S'il n'y a pas de METADATA, on demande à ce que la ligne lue soit relue la prochaine fois.
+    // If there is no METADATA, we ask that the line read be reread next time.
     vtk_file.reReadSameLine();
     return false;
   }
 
-  // Tant qu'il n'y a pas de ligne vide, on lit.
+  // As long as there is no empty line, we read.
   while (!vtk_file.isEmptyNextLine() && !vtk_file.isEof()) {
   }
   return false;
 
-  // // Si l'on a besoin de faire quelque chose avec les METADATA un jour, voilà un code non testé.
+  // // If we need to do something with METADATA someday, here is untested code.
   // std::string trash;
   // Real trash_real;
   // const char* buf = vtk_file.getNextLine();
 
-  // // INFORMATION ou COMPONENT_NAMES
+  // // INFORMATION or COMPONENT_NAMES
   // std::istringstream iline(buf);
 
   // String name_str;
@@ -1223,12 +1220,12 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de lire un fichier vtk contenant une UNSTRUCTURED_GRID.
+ * \brief Allows reading a vtk file containing an UNSTRUCTURED_GRID.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param use_internal_partition Doit-on utiliser le partitionneur interne ou non
- * \return false si tout s'est bien passé, true sinon
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \param use_internal_partition Should we use the internal partitioner or not
+ * \return false if everything went well, true otherwise
  */
 bool VtkMeshIOService::
 _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition)
@@ -1240,7 +1237,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   UniqueArray<Real3> node_coords;
   UniqueArray<Int32> cells_local_id;
 
-  // Si on utilise le partitionneur interne, seul le sous-domaine lit le maillage
+  // If we use the internal partitioner, only the subdomain reads the mesh
   bool need_read = true;
 
   if (use_internal_partition)
@@ -1252,24 +1249,24 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   UnstructuredMeshAllocateBuildInfo mesh_build_info(mesh);
 
   if (need_read) {
-    // Lecture première partie du fichier (après header).
+    // Read the first part of the file (after header).
     _readNodesUnstructuredGrid(mesh, vtk_file, node_coords);
     debug() << "Lecture _readNodesUnstructuredGrid OK";
     nb_node = node_coords.size();
 
-    // Lecture des infos des mailles
-    // Lecture de la connectivité
+    // Read mesh info
+    // Read connectivity
     UniqueArray<Int32> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
     UniqueArray<ItemTypeId> cells_type;
     _readCellsUnstructuredGrid(mesh, vtk_file, cells_nb_node, cells_type, cells_connectivity);
-    debug() << "Lecture _readCellsUnstructuredGrid OK";
+    debug() << "Reading _readCellsUnstructuredGrid OK";
 
     nb_cell = cells_nb_node.size();
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
 
-    // Création des mailles
+    // Mesh creation
     mesh_build_info.preAllocate(nb_cell, nb_cell_node);
 
     {
@@ -1289,7 +1286,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
         connectivity_index += current_cell_nb_node;
       }
     }
-    // Vérifie qu'on n'a pas de mailles de différentes dimensions
+    // Check that there are no meshes of different dimensions
     Int32 nb_different_dim = 0;
     for (Int32 i = 0; i < 4; ++i)
       if (nb_cell_by_dimension[i] != 0) {
@@ -1301,7 +1298,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
                    nb_cell_by_dimension[0], nb_cell_by_dimension[1], nb_cell_by_dimension[2], nb_cell_by_dimension[3]);
   }
 
-  // Positionne la dimension du maillage.
+  // Sets the mesh dimension.
   {
     Integer wanted_dimension = mesh_dimension;
     wanted_dimension = mesh->parallelMng()->reduce(Parallel::ReduceMax, wanted_dimension);
@@ -1311,7 +1308,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
 
   mesh_build_info.allocateMesh();
 
-  // Positionne les coordonnées
+  // Positions the coordinates
   {
     VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
     ENUMERATE_NODE (inode, mesh->allNodes()) {
@@ -1320,9 +1317,9 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     }
   }
 
-  // Maintenant, regarde s'il existe des données associées aux fichier
+  // Now, check if there is data associated with the file
   bool r = _readData(mesh, vtk_file, use_internal_partition, IK_Cell, cells_local_id, nb_node);
-  debug() << "Lecture _readData OK";
+  debug() << "Reading _readData OK";
 
   return r;
 }
@@ -1331,12 +1328,12 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de lire le fichier truc.vtkfaces.vtk (s'il existe).
+ * \brief Allows reading the truc.vtkfaces.vtk file (if it exists).
  *
- * \param mesh Le maillage à remplir
- * \param file_name Le nom du fichier vtk (avec l'extension)
- * \param dir_name Le chemin du fichier
- * \param use_internal_partition Doit-on utiliser le partitionneur interne ou non
+ * \param mesh The mesh to fill
+ * \param file_name The vtk file name (with extension)
+ * \param dir_name The file path
+ * \param use_internal_partition Should the internal partitioner be used or not
  */
 void VtkMeshIOService::
 _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
@@ -1353,7 +1350,7 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
   VtkFile vtk_file(&ifile);
   const char* buf = 0;
 
-  // Lecture de la description
+  // Reading the description
   String title = vtk_file.getNextLine();
   info() << "Reading VTK file '" << file_name << "'";
   info() << "Title of VTK file: " << title;
@@ -1364,9 +1361,9 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
   }
 
   eMeshType mesh_type = VTK_MT_Unknown;
-  // Lecture du type de maillage
-  // TODO: en parallèle, avec use_internal_partition vrai, seul le processeur 0
-  // lit les données. Dans ce cas, inutile que les autres ouvre le fichier.
+  // Reading the mesh type
+  // TODO: in parallel, with use_internal_partition true, only processor 0
+  // reads the data. In this case, it is unnecessary for others to open the file.
   {
     buf = vtk_file.getNextLine();
     std::istringstream mesh_type_line(buf);
@@ -1392,22 +1389,22 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
 
     UniqueArray<Int32> faces_local_id;
 
-    // Si on utilise le partitionneur interne, seul le sous-domaine lit le maillage
+    // If we use the internal partitioner, only the subdomain reads the mesh
     bool need_read = true;
     if (use_internal_partition)
       need_read = (sid == 0);
 
     if (need_read) {
       {
-        // Lit des noeuds, mais ne conserve pas leur coordonnées car cela n'est
-        // pas nécessaire.
+        // Reads nodes, but does not keep their coordinates because it is
+        // not necessary.
         UniqueArray<Real3> node_coords;
         _readNodesUnstructuredGrid(mesh, vtk_file, node_coords);
         //nb_node = node_coords.size();
       }
 
-      // Lecture des infos des faces
-      // Lecture de la connectivité
+      // Reading face info
+      // Reading connectivity
       UniqueArray<Integer> faces_nb_node;
       UniqueArray<Int64> faces_connectivity;
       UniqueArray<ItemTypeId> faces_type;
@@ -1415,7 +1412,7 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
       nb_face = faces_nb_node.size();
       //nb_face_node = faces_connectivity.size();
 
-      // Il faut à partir de la connectivité retrouver les localId() des faces
+      // We must retrieve the localId() of the faces from the connectivity
       faces_local_id.resize(nb_face);
       {
         IMeshUtilities* mu = mesh->utilities();
@@ -1423,7 +1420,7 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
       }
     }
 
-    // Maintenant, regarde s'il existe des données associées aux fichiers
+    // Now, check if there is data associated with the files
     _readData(mesh, vtk_file, use_internal_partition, IK_Face, faces_local_id, 0);
   }
 }
@@ -1432,31 +1429,31 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Permet de lire les données complémentaires (POINT_DATA / CELL_DATA).
+ * \brief Allows reading supplementary data (POINT_DATA / CELL_DATA).
  *
- * \param mesh Le maillage à remplir
- * \param file_name Le nom du fichier vtk (avec l'extension)
- * \param use_internal_partition Doit-on utiliser le partitionneur interne ou non
- * \param cell_kind Type des cells du maillage
- * \param local_id Tableau contenant les local_id des cells
- * \param nb_node Nombre de nodes
- * \return false si tout s'est bien passé, true sinon
+ * \param mesh The mesh to fill
+ * \param file_name The vtk file name (with extension)
+ * \param use_internal_partition Should the internal partitioner be used or not
+ * \param cell_kind Type of mesh cells
+ * \param local_id Array containing the local_id of the cells
+ * \param nb_node Number of nodes
+ * \return false if everything went well, true otherwise
  */
 bool VtkMeshIOService::
 _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
           eItemKind cell_kind, Int32ConstArrayView local_id, Integer nb_node)
 {
-  // Seul le sous-domain maitre lit les valeurs. Par contre, les autres
-  // sous-domaines doivent connaitre la liste des variables et groupes créées.
-  // Si une donnée porte le nom 'GROUP_*', on considère qu'il s'agit d'un
-  // groupe
+  // Only the master subdomain reads the values. However, the other
+  // subdomains must know the list of variables and groups created.
+  // If a data item is named 'GROUP_*', it is considered a
+  // group
 
   IParallelMng* pm = mesh->parallelMng();
   IVariableMng* variable_mng = mesh->variableMng();
 
   Int32 sid = pm->commRank();
 
-  // Si pas de données, retourne immédiatement.
+  // If there is no data, return immediately.
   {
     Byte has_data = 1;
     if ((sid == 0) && vtk_file.isEof())
@@ -1464,7 +1461,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
 
     ByteArrayView bb(1, &has_data);
     pm->broadcast(bb, 0);
-    // Pas de data.
+    // No data.
     if (!has_data)
       return false;
   }
@@ -1485,7 +1482,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
       std::string data_str;
       iline >> data_str;
 
-      // Si l'on a un bloc "CELL_DATA".
+      // If we have a "CELL_DATA" block.
       if (VtkFile::isEqualString(data_str, "CELL_DATA")) {
         Integer nb_item = 0;
         iline >> ws >> nb_item;
@@ -1495,7 +1492,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
           error() << "Size expected = " << nb_cell_kind << " found = " << nb_item;
       }
 
-      // Si l'on a un bloc "POINT_DATA".
+      // If we have a "POINT_DATA" block.
       else if (VtkFile::isEqualString(data_str, "POINT_DATA")) {
         Integer nb_item = 0;
         iline >> ws >> nb_item;
@@ -1505,7 +1502,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
           error() << "Size expected = " << nb_node << " found = " << nb_item;
       }
 
-      // Si l'on a un bloc "FIELD".
+      // If we have a "FIELD" block.
       else if (VtkFile::isEqualString(data_str, "FIELD")) {
         std::string name_str;
         int nb_fields;
@@ -1556,7 +1553,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
             }
           }
 
-          // TODO : Voir un exemple si possible.
+          // TODO : See an example if possible.
           else {
             if (!VtkFile::isEqualString(type_str, "float") && !VtkFile::isEqualString(type_str, "double")) {
               error() << "Expecting 'float' or 'double' data type, found=" << type_str;
@@ -1579,7 +1576,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
       }
 
       else {
-        // Lecture des valeurs (bloc "CELL_DATA" ou "POINT_DATA")
+        // Reading the values (CELL_DATA or POINT_DATA block)
         if (reading_node || reading_cell) {
           std::string type_str;
           std::string s_name_str;
@@ -1611,7 +1608,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
               return true;
             }
 
-            // Pour lire LOOKUP_TABLE
+            // To read LOOKUP_TABLE
             buf = vtk_file.getNextLine();
 
             if (reading_node) {
@@ -1630,7 +1627,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
               return true;
             }
 
-            // Pour lire LOOKUP_TABLE
+            // To read LOOKUP_TABLE
             /*buf = */ vtk_file.getNextLine();
             if (reading_node) {
               fatal() << "Unable to read POINT_DATA: feature not implemented";
@@ -1671,7 +1668,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
       ScopedPtrT<IXmlDocumentHolder> doc(IXmlDocumentHolder::loadFromBuffer(bytes, "InternalBuffer", traceMng()));
       XmlNode doc_node = doc->documentNode();
 
-      // Lecture des variables
+      // Reading variables
       {
         XmlNodeList vars = doc_node.documentElement().children("cell-variable");
         for (XmlNode xnode : vars) {
@@ -1681,8 +1678,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
           variable_mng->_internalApi()->addAutoDestroyVariable(var);
         }
       }
-
-      // Lecture des groupes de mailles
+      // Reading cell groups
       {
         XmlNodeList vars = doc_node.documentElement().children("cell-group");
         IItemFamily* cell_family = mesh->itemFamily(cell_kind);
@@ -1693,7 +1689,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
         }
       }
 
-      // Lecture des groupes de noeuds
+      // Reading node groups
       {
         XmlNodeList vars = doc_node.documentElement().children("node-group");
         IItemFamily* node_family = mesh->nodeFamily();
@@ -1710,13 +1706,14 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Permet de créer un groupe de face de nom "name" et composé des
- * faces ayant les ids inclus dans "faces_lid".
+ * \brief Allows creating a face group named "name" composed of
+ * faces having the IDs included in "faces_lid".
  *
- * \param mesh Le maillage à remplir
- * \param name Le nom du groupe à créer
- * \param faces_lid Les ids des faces à inclure dans le groupe
+ * \param mesh The mesh to fill
+ * \param name The name of the group to create
+ * \param faces_lid The IDs of the faces to include in the group
  */
 void VtkMeshIOService::
 _createFaceGroup(IMesh* mesh, const String& name, Int32ConstArrayView faces_lid)
@@ -1729,18 +1726,19 @@ _createFaceGroup(IMesh* mesh, const String& name, Int32ConstArrayView faces_lid)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Permet de créer une variable aux mailles à partir des infos du fichier vtk.
+ * \brief Allows creating a cell variable from the information in the vtk file.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param var_name Le nom de la variable à créer
- * \param nb_cell Le nombre de cells
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \param var_name The name of the variable to create
+ * \param nb_cell The number of cells
  */
 void VtkMeshIOService::
 _readCellVariable(IMesh* mesh, VtkFile& vtk_file, const String& var_name, Integer nb_cell)
 {
-  //TODO Faire la conversion uniqueId() vers localId() correcte
+  //TODO Perform the correct conversion from uniqueId() to localId()
   info() << "Reading values for variable: " << var_name << " n=" << nb_cell;
   auto* var = new VariableCellReal(VariableBuildInfo(mesh, var_name));
   mesh->variableMng()->_internalApi()->addAutoDestroyVariable(var);
@@ -1755,15 +1753,16 @@ _readCellVariable(IMesh* mesh, VtkFile& vtk_file, const String& var_name, Intege
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Permet de créer un groupe d'item.
+ * \brief Allows creating an item group.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param name Le nom du groupe à créer
- * \param nb_item Nombre d'items à lire et à inclure dans le groupe
- * \param ik Type des items lus
- * \param local_id Tableau contenant les local_id des cells
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \param name The name of the group to create
+ * \param nb_item Number of items to read and include in the group
+ * \param ik Type of items read
+ * \param local_id Array containing the local_ids of the cells
  */
 void VtkMeshIOService::
 _readItemGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_item,
@@ -1787,19 +1786,20 @@ _readItemGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_it
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Permet de créer un groupe de node.
+ * \brief Allows creating a node group.
  *
- * \param mesh Le maillage à remplir
- * \param vtk_file Référence vers un objet VtkFile
- * \param name Le nom du groupe à créer
- * \param nb_item Nombre d'items à lire et à inclure dans le groupe
+ * \param mesh The mesh to fill
+ * \param vtk_file Reference to a VtkFile object
+ * \param name The name of the group to create
+ * \param nb_item Number of items to read and include in the group
  */
 void VtkMeshIOService::
 _readNodeGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_item)
 {
   IItemFamily* item_family = mesh->itemFamily(IK_Node);
-  info() << "Lecture infos groupes de noeuds pour le groupe: " << name;
+  info() << "Reading node group info for group: " << name;
 
   Int32UniqueArray ids;
   for (Integer i = 0; i < nb_item; ++i) {
@@ -1807,7 +1807,7 @@ _readNodeGroup(IMesh* mesh, VtkFile& vtk_file, const String& name, Integer nb_it
     if (v != 0)
       ids.add(i);
   }
-  info() << "Création groupe: " << name << " nb_element=" << ids.size();
+  info() << "Creating group: " << name << " nb_element=" << ids.size();
 
   item_family->createGroup(name, ids);
 
@@ -1853,25 +1853,24 @@ ARCANE_REGISTER_SERVICE(VtkLegacyMeshWriter,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecriture du maillage au Vtk.
+ * \brief Writing the mesh to VTK.
  *
- * Pour pouvoir sauver les informations à la fois des mailles et des faces
- * avec les groupes correspondants, on fait deux fichiers. Le premier
- * contient la connectivité et les groupes de mailles, le second la même
- * chose mais pour les faces.
+ * To save both mesh and face information along with their corresponding groups,
+ * two files are created. The first contains connectivity and cell groups, the
+ * second contains the same information but for faces.
  *
- * Seules les informations de connectivité et les groupes sont sauvés. Les
- * variables ne le sont pas.
+ * Only connectivity and groups are saved. Variables are not saved.
  *
- * Le type de DATASET est toujours UNSTRUCTURED_GRID, meme si le
- * maillage est structuré.
+ * The DATASET type is always UNSTRUCTURED_GRID, even if the
+ * mesh is structured.
  */
 bool VtkLegacyMeshWriter::
 writeMeshToFile(IMesh* mesh, const String& file_name)
 {
   String fname = file_name;
-  // Ajoute l'extension '.vtk' si elle n'y est pas.
+  // Append the '.vtk' extension if it is not present.
   if (!fname.endsWith(".vtk"))
     fname = fname + ".vtk";
   _writeMeshToFile(mesh, fname, IK_Cell);
@@ -1881,11 +1880,12 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecrit le maillage au format Vtk.
+ * \brief Writes the mesh in VTK format.
  *
- * \a cell_kind indique le genre des entités à sauver comme des mailles.
- * Cela peut-être IK_Cell ou IK_Face.
+ * \a cell_kind indicates the type of entities to save as meshes.
+ * This can be IK_Cell or IK_Face.
  */
 void VtkLegacyMeshWriter::
 _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
@@ -1905,7 +1905,7 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
   IItemFamily* cell_kind_family = mesh->itemFamily(cell_kind);
   Integer nb_cell_kind = cell_kind_family->nbItem();
 
-  // Sauve les nœuds
+  // Save nodes
   {
     ofile << "POINTS " << nb_node << " double\n";
     VariableNodeReal3& coords(mesh->toPrimaryMesh()->nodesCoordinates());
@@ -1919,7 +1919,7 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     }
   }
 
-  // Sauve les mailles ou faces
+  // Save cells or faces
   {
     Integer nb_node_cell_kind = nb_cell_kind;
     ENUMERATE_ITEMWITHNODES(iitem, cell_kind_family->allItems())
@@ -1937,11 +1937,11 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
       }
       ofile << '\n';
     }
-    // Le type doit être coherent avec celui de vtkCellType.h
+    // The type must be consistent with vtkCellType.h
     ofile << "CELL_TYPES " << nb_cell_kind << "\n";
     ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
       const ItemTypeInfo* iti = iitem->typeInfo();
-      // Regarde si le type est un polygone pour VTK (dimension 2 et plus de 4 noeuds)
+      // Check if the type is a polygon for VTK (dimension 2 and more than 4 nodes)
       int type = VTK_BAD_ARCANE_TYPE;
       if (iti->isPolygon())
         type = VTK_POLYGON;
@@ -1951,13 +1951,13 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     }
   }
 
-  // Si on est dans le maillage des mailles, sauve les groupes de noeuds.
+  // If we are in the cell mesh, save node groups.
   if (cell_kind == IK_Cell) {
     ofile << "POINT_DATA " << nb_node << "\n";
     _saveGroups(mesh->itemFamily(IK_Node), ofile);
   }
 
-  // Sauve les groupes de mailles
+  // Save cell groups
   ofile << "CELL_DATA " << nb_cell_kind << "\n";
   _saveGroups(mesh->itemFamily(cell_kind), ofile);
 }
@@ -1972,10 +1972,10 @@ _saveGroups(IItemFamily* family, std::ostream& ofile)
   UniqueArray<char> in_group_list(family->maxLocalId());
   for (ItemGroupCollection::Enumerator igroup(family->groups()); ++igroup;) {
     ItemGroup group = *igroup;
-    // Inutile de sauver le groupe de toutes les entités
+    // No need to save the group of all entities
     if (group == family->allItems())
       continue;
-    //HACK: a supprimer
+    //HACK: to be removed
     if (group.name() == "OuterFaces")
       continue;
     ofile << "SCALARS GROUP_" << group.name() << " int 1\n";

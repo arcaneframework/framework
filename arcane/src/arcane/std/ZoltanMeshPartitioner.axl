@@ -1,9 +1,9 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <service name="ZoltanMeshPartitioner" parent-name="MeshPartitionerBase" type="caseoption">
   <name lang='fr'>zoltan</name>
   <userclass>User</userclass>
   <description>
-    Partionneur de maillage Zoltan
+    Zoltan Mesh Partitioner
   </description>
     
   <interface name="Arcane::IMeshPartitioner" inherited="false"/>
@@ -22,7 +22,7 @@
       <name lang='fr'>mode-hypergraphe</name>
       <userclass>User</userclass>
       <description>
-        Vrai lorsque l'on souhaite utiliser la méthode hypergraphe, faux si l'on préfère la méthode géométrique (plus rapide mais moins bien réparti)
+        True when using the hypergraph method, false if preferring the geometric method (faster but less well distributed)
       </description> 
     </simple>
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicCheckpointService.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Service basique de protection/reprise.                                    */
+/* Basic protection/recovery service.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,8 +39,9 @@ using namespace Arcane::impl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Protection/reprise basique (version 1).
+ * \brief Basic protection/recovery (version 1).
  */
 class ArcaneBasicCheckpointService
 : public ArcaneArcaneBasicCheckpointObject
@@ -111,11 +112,12 @@ class ArcaneBasicCheckpointService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Protection/reprise basique (version 2).
+ * \brief Basic protection/recovery (version 2).
  *
- * Idem ArcaneBasicCheckpointService sauf qu'on utilise le
- * service ArcaneBasic2CheckpointReader pour la relecture.
+ * Same as ArcaneBasicCheckpointService except that it uses the
+ * ArcaneBasic2CheckpointReader service for reading.
  */
 class ArcaneBasic2CheckpointService
 : public ArcaneBasicCheckpointService
@@ -190,8 +192,8 @@ notifyBeginWrite()
   Ref<IDataCompressor> data_compressor;
   if (options()) {
     version = options()->formatVersion();
-    // N'utilise la compression qu'à partir de la version 3 car cela est
-    // incompatible avec les anciennes versions
+    // Only use compression from version 3 onwards because it is
+    // incompatible with older versions
     if (version >= 3) {
       data_compressor = options()->dataCompressor.instanceRef();
     }
@@ -231,8 +233,9 @@ notifyEndWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Relecture de protection (version 2).
+ * \brief Protection reading (version 2).
  */
 class ArcaneBasic2CheckpointReaderService
 : public AbstractService

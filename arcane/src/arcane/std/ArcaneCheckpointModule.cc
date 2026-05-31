@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneCheckpointModule.cc                                   (C) 2000-2020 */
 /*                                                                           */
-/* Module gérant les protections/reprises.                                   */
+/* Module managing protections/restorations.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module gérant les protections (mécanisme de protections/reprises).
+ * \brief Module managing protections (checkpoint/restart mechanism).
 */
 class ArcaneCheckpointModule
 : public ArcaneArcaneCheckpointObject
@@ -69,7 +70,7 @@ class ArcaneCheckpointModule
   String m_checkpoint_dirname;
 
  private:
-  
+
   void _doCheckpoint(bool save_history);
   void _dumpStats();
   void _getCheckpointService();
@@ -114,21 +115,20 @@ ArcaneCheckpointModule::
 void ArcaneCheckpointModule::
 checkpointInit()
 {
-  // Contrairement aux autres types de sortie, il faut remettre le temps
-  // CPU de la prochaine sortie à zéro car le temps CPU utilisé est de
-  // l'exécution courante.
+  // Unlike other output types, the CPU time for the next output must be reset
+  // to zero because the CPU time used belongs to the current execution.
   m_next_cpu_time = options()->frequencyCpu();
   info() << " -------------------------------------------";
   info() << "|            PROTECTION-REPRISE             |";
   info() << " -------------------------------------------";
   info() << " ";
-  //info() << " Utilise le service '" << options()->checkpointServiceName()
-  //     << "' pour les protections";
+  //info() << " Uses the service '" << options()->checkpointServiceName()
+  //     << "' for protections";
   info() << " ";
   m_output_checker.initialize();
   info() << " ";
-  // Si les protections sont actives, vérifie que le service spécifié
-  // existe bien
+  // If protections are active, check that the specified service
+  // exists
   if (options()->doDumpAtEnd()){
     info() << "Protection required at the end of computations";
     _getCheckpointService();
@@ -160,17 +160,17 @@ checkpointStartInit()
   m_next_iteration = 0;
   m_next_cpu_time = 0;
 
-  // Initialise le vérificateur de sortie. Il faut le faire ici si on
-  // veut sauver des choses à l'itération 1.
+  // Initializes the output checker. This must be done here if we
+  // want to save things at iteration 1.
   _checkHasOutput();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Opérations de fin de calcul
+ * \brief End-of-calculation operations
  *
- * - Effectue une protection de fin de calcul (si demandée)
+ * - Performs an end-of-calculation checkpoint (if requested)
  */
 void ArcaneCheckpointModule::
 checkpointExit()
@@ -192,7 +192,7 @@ checkpointExit()
 void ArcaneCheckpointModule::
 _dumpStats()
 {
-  // Affiche statistiques d'exécutions
+  // Displays execution statistics
   Real total_time = m_checkpoint_timer->totalTime();
   info() << "Total time spent in protection output (second): " << total_time;
   Integer nb_time = m_checkpoint_timer->nbActivated();
@@ -222,10 +222,11 @@ _setDirectoryName()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Effectue une protection.
+ * \brief Performs a checkpoint.
  *
- * Affiche le temps passé lors de l'écriture de la protection.
+ * Displays the time spent during checkpoint writing.
  */
 void ArcaneCheckpointModule::
 _doCheckpoint(bool save_history)
@@ -244,14 +245,14 @@ _doCheckpoint(bool save_history)
       m_checkpoint_writer->setBaseDirectoryName(m_checkpoint_dirname);
       info() << "****  Protection active at time " << checkpoint_time
              << " directory=" << m_checkpoint_dirname
-             <<" numéro " << nb_checkpoint << " ******";
+             <<" number " << nb_checkpoint << " ******";
       subDomain()->checkpointMng()->writeDefaultCheckpoint(m_checkpoint_writer);
     }
   }
-  info() << "Protection write time (second): "
+  info() << "Checkpoint write time (second): "
          << m_checkpoint_timer->lastActivationTime();
 
-  // Sauve les historiques
+  // Saves histories
   if (save_history)
     subDomain()->timeHistoryMng()->dumpHistory(true);
 }
@@ -276,9 +277,10 @@ _getCheckpointService()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie s'il faut faire une protection à cet instant et l'effectue
- * si nécessaire.
+ * \brief Checks if a checkpoint should be performed at this moment and
+ * performs it if necessary.
  */
 void ArcaneCheckpointModule::
 checkpointCheckAndWriteData()
@@ -288,16 +290,15 @@ checkpointCheckAndWriteData()
     return;
 
   info() << "Protection required.";
-  // TEMPORAIRE:
-  // Contrairement a la protection en fin d'execution, celle-ci a lieu
-  // dans à la fin de la boucle en temps, mais avant que le numéro
-  // d'itération ne soit incrémenté. Si on reprend à ce temps,
-  // le numéro d'itération ne sera pas bon. Pour corriger ce problème,
-  // on incrémente ce nombre avant la protection et on le remet
-  // à sa bonne valeur après.
-  // SDC : ce probleme n'est pas constaté. Il me semble que c'est bien le numérod
-  // de l'itération courante qu'il faut sauver. Changé pour un problème de restart 
-  // pour une application IFPEN (en interne Bugzilla 778.
+  // TEMPORARY:
+  // Unlike end-of-execution checkpointing, this occurs at the end of the
+  // time loop, but before the iteration number is incremented. If we resume
+  // at this time, the iteration number will be incorrect. To correct this
+  // problem, we increment this number before the checkpoint and reset it
+  // to the correct value afterward.
+  // SDC: this problem has not been observed. It seems to me that it is the
+  // current iteration number that must be saved. Changed for a restart issue
+  // in an IFPEN application (internally Bugzilla 778.
   //  m_global_iteration = m_global_iteration() + 1;
   _doCheckpoint(true);
   //  m_global_iteration = m_global_iteration() - 1;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DbgHelpStackTraceService.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Service de trace des appels de fonctions utilisant 'DbgHelp'.             */
+/* Function call tracing service using 'DbgHelp'.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,9 +28,9 @@
 #include <string>
 #include <iostream>
 
-// TODO: protéger les appels à Sym* car les méthodes ne sont pas thread-safe.
-// TODO: ne pas retourner le chemin complet des fichiers mais uniquement les
-// 3 ou 4 derniers.
+// TODO: protect Sym* calls because the methods are not thread-safe.
+// TODO: do not return the full file path but only the
+// last 3 or 4.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ private:
 void DbgHelpSymContainer::
 _getStack(int first_function, FixedStackFrameArray& frames)
 {
-  // Ajoute (+2) pour prendre en compte l'appel à cette méthode et celle du dessus.
+  // Adds (+2) to account for the call to this method and the one above it.
   PVOID addrs[FixedStackFrameArray::MAX_FRAME] = { 0 };
   USHORT nb_frame = CaptureStackBackTrace(first_function + 2, FixedStackFrameArray::MAX_FRAME, addrs, NULL);
   for (USHORT i = 0; i < nb_frame; i++) {
@@ -160,8 +160,9 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de trace des appels de fonctions utilisant 'DbgHelp'.
+ * \brief Function call tracing service using 'DbgHelp'.
  */
 class DbgHelpStackTraceService
 : public TraceAccessor
@@ -223,8 +224,9 @@ stackTraceFunction(int function_index)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de trace des appels de fonctions utilisant la libunwind.
+ * \brief Function call tracing service using libunwind.
  */
 class DbgHelpSymbolizerService
 : public TraceAccessor

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicReader.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Lecteur simple.                                                           */
+/* Simple reader.                                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_BASICREADER_H
@@ -27,8 +27,9 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecteur simple.
+ * \brief Simple reader.
  */
 class BasicReader
 : public BasicReaderWriterCommon
@@ -38,9 +39,9 @@ class BasicReader
  public:
 
   /*!
-    \brief  Interface pour retrouver le groupe associée à une variable à partir
-    de ces meta-données.
-  */
+   * \brief Interface to find the group associated with a variable based on
+   * this metadata.
+   */
   class IItemGroupFinder
   {
    public:
@@ -88,7 +89,7 @@ class BasicReader
   std::map<String, Ref<ParallelDataReader>> m_parallel_data_readers;
   UniqueArray<Ref<IGenericReader>> m_global_readers;
   IItemGroupFinder* m_item_group_finder;
-  Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Lecteur pour le premier rang à lire.
+  Ref<KeyValueTextReader> m_forced_rank_to_read_text_reader; //!< Reader for the first rank to read.
   Ref<IDataCompressor> m_data_compressor;
   Ref<IHashAlgorithm> m_comparison_hash_algorithm;
 

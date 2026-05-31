@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorService.cc                         (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un générateur de nombres aléatoires LCG.                 */
-/* Inspiré du générateur de Quicksilver (LLNL) et des pages 302-304          */
-/* du livre :                                                                */
+/* Implementation of an LCG random number generator.                         */
+/* Inspired by the Quicksilver generator (LLNL) and pages 302-304            */
+/* from the book:                                                            */
 /*                                                                           */
 /*   Numerical Recipes in C                                                  */
 /*   The Art of Scientific Computing                                         */

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* JsonMessagePassingProfilingService.cc                       (C) 2000-2022 */
 /*                                                                           */
-/* Informations de performances du "message passing" au format JSON          */
+/* Performance information for "message passing" in JSON format              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,13 +63,13 @@ JsonMessagePassingProfilingService::
 void JsonMessagePassingProfilingService::
 startProfiling()
 {
-  // creation du json writer
+  // creation of the json writer
   if (!m_json_writer) {
     m_json_writer = new JSONWriter(JSONWriter::FormatFlags::None);
     m_json_writer->beginObject();
   }
 
-  // Lorsqu'on lance le profiling on commence l'observation des evts du timeLoopMng
+  // When starting profiling, we begin observing the timeLoopMng events
   m_observer.addObserver(this, &JsonMessagePassingProfilingService::_updateFromBeginEntryPointEvt,
                          m_sub_domain->timeLoopMng()->observable(eTimeLoopEventType::BeginEntryPoint));
   m_observer.addObserver(this, &JsonMessagePassingProfilingService::_updateFromEndEntryPointEvt,
@@ -86,9 +86,9 @@ startProfiling()
 void JsonMessagePassingProfilingService::
 stopProfiling()
 {
-  // Arret des observations
+  // Stop observations
   m_observer.detachAll();
-  // On flush les infos
+  // We flush the information
   if (m_json_writer){
     _dumpCurrentIterationInJSON();
     m_json_writer->endObject();
@@ -120,21 +120,21 @@ _dumpCurrentIterationInJSON()
   if (m_ep_mpstat_col.empty())
     return;
 
-  // Numero d'iteration (decale d'un car le compteur s'incremente avant la notification)
+  // Iteration number (offset by one because the counter increments before the notification)
   JSONWriter::Object obj_it(*m_json_writer,
   		                      String::fromNumber(m_sub_domain->commonVariables().globalIteration() - 1));
-  // Par point d'entree
+  // Per entry point
   for (const auto &ep_mpstat : m_ep_mpstat_col) {
-  	// Alias sur les stats de msg passing pour ce pt d'entree
+  	// Alias for the message passing stats for this entry point
   	const auto& stats_(ep_mpstat.second.stats());
-  	// On ecrit le pt d'entree que s'il existe une stat de msg passing non nulle
+  	// We write the entry point only if there is a non-zero message passing stat
   	if (std::any_of(stats_.cbegin(), stats_.cend(), [&](const Arccore::MessagePassing::OneStat& os)
 	                                                  {return static_cast<bool>(os.nbMessage());})) {
-  		// Nom du point d'entree
+  		// Entry point name
       JSONWriter::Object obj_ep(*m_json_writer, ep_mpstat.first);
-      // Par stat msg passing
+      // Per message passing stat
       for (const auto &mpstat : stats_) {
-        // Stats message passing s'il y en a
+        // Message passing stats if they exist
         if (mpstat.nbMessage())
           Parallel::dumpJSON(*m_json_writer, mpstat, false);
       }
@@ -148,7 +148,7 @@ _dumpCurrentIterationInJSON()
 void JsonMessagePassingProfilingService::
 _updateFromBeginEntryPointEvt()
 {
-  // On arrive dans le pt d'entree, on s'assure que les stats sont remises a zero
+  // When entering the entry point, we ensure that the stats are reset to zero
   m_sub_domain->parallelMng()->stat()->toArccoreStat()->resetCurrentStat();
 }
 
@@ -158,14 +158,14 @@ _updateFromBeginEntryPointEvt()
 void JsonMessagePassingProfilingService::
 _updateFromEndEntryPointEvt()
 {
-  // On recupere le nom du pt d'entree
+  // We retrieve the entry point name
   const String& ep_name(m_sub_domain->timeLoopMng()->currentEntryPoint()->name());
   auto pos(m_ep_mpstat_col.find(ep_name));
-  // S'il n'y a pas encore de stats pour ce pt d'entree, on les crees
+  // If there are no stats yet for this entry point, we create them
   Arccore::MessagePassing::StatData stat_data(m_sub_domain->parallelMng()->stat()->toArccoreStat()->stats());
   if (pos == m_ep_mpstat_col.end())
     m_ep_mpstat_col.emplace(ep_name, stat_data);
-  else  // sinon, on merge les stats
+  else  // otherwise, we merge the stats
     pos->second.mergeAllData(stat_data);
 }
 
@@ -175,7 +175,7 @@ _updateFromEndEntryPointEvt()
 void JsonMessagePassingProfilingService::
 _updateFromBeginIterationEvt()
 {
-  // On commence avec une structure vide, puisqu'elle est dumpee a chq fin d'iteration
+  // We start with an empty structure, since it is dumped at the end of each iteration
   m_ep_mpstat_col.clear();
 }
 
@@ -185,7 +185,7 @@ _updateFromBeginIterationEvt()
 void JsonMessagePassingProfilingService::
 _updateFromEndIterationEvt()
 {
-  // On dump tout ce qu'on a enregistre pour cette iteration
+  // We dump everything we have recorded for this iteration
   if (m_json_writer)
     _dumpCurrentIterationInJSON();
 }

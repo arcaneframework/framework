@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicGenericReader.cc                                       (C) 2000-2024 */
 /*                                                                           */
-/* Lecture simple pour les protections/reprises.                             */
+/* Simple reading for protections/recoveries.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,9 +51,9 @@ BasicGenericReader(IApplication* app, Int32 version, Ref<KeyValueTextReader> tex
 void BasicGenericReader::
 initialize(const String& path, Int32 rank)
 {
-  // Dans le cas de la version 1 ou 2, on ne peut pas créer le KeyValueTextReader
-  // avant de lire les 'OwnMetaData' car ce sont ces dernières qui contiennent
-  // le numéro de version.
+  // In the case of version 1 or 2, we cannot create the KeyValueTextReader
+  // before reading 'OwnMetaData' because they contain
+  // the version number.
 
   m_path = path;
   m_rank = rank;
@@ -70,9 +70,9 @@ initialize(const String& path, Int32 rank)
       dc_name = m_text_reader->dataCompressor()->name();
     info(4) << "BasicGenericReader::initialize data_compressor=" << dc_name;
 
-    // Si on connait déjà la version et qu'elle est supérieure ou égale à 3
-    // alors les informations sont dans la base de données. Dans ce cas on lit
-    // directement les infos depuis cette base.
+    // If we already know the version and it is greater than or equal to 3
+    // then the information is in the database. In this case we read
+    // the info directly from this database.
     String main_filename = BasicReaderWriterCommon::_getBasicVariableFile(m_version, m_path, rank);
     Int64 meta_data_size = 0;
     String key_name = "Global:OwnMetadata";
@@ -98,16 +98,16 @@ initialize(const String& path, Int32 rank)
           << " version=" << version_id;
   if (version_id.null() || version_id == "1")
     // Version 1:
-    // - taille des dimensions sur 32 bits
+    // - dimension size in 32 bits
     m_version = 1;
   else if (version_id == "2")
     // Version 2:
-    // - taille des dimensions sur 64 bits
+    // - dimension size in 64 bits
     m_version = 2;
   else if (version_id == "3")
     // Version 3:
-    // - taille des dimensions sur 64 bits
-    // - 1 seul fichier pour toutes les meta-données
+    // - dimension size in 64 bits
+    // - only 1 file for all metadata
     m_version = 3;
   else
     ARCANE_FATAL("Unsupported version '{0}' (max=3)", version_id);
@@ -120,7 +120,7 @@ initialize(const String& path, Int32 rank)
   if (!hash_algorithm_name.null())
     hash_algorithm = BasicReaderWriterCommon::_createHashAlgorithm(m_application, hash_algorithm_name);
 
-  // Si disponible, essaie de relire les informations des variables au format JSON
+  // If available, try to reread the variable information in JSON format
   bool do_json = true;
   String json_variables_elem = root.child("variables-data-json").value();
   if (do_json && !json_variables_elem.empty()) {
@@ -145,9 +145,9 @@ initialize(const String& path, Int32 rank)
     m_text_reader = makeRef(new KeyValueTextReader(traceMng(), main_filename, m_version));
   }
 
-  // Il est possible qu'il y ait déjà un algorithme de compression spécifié.
-  // Il ne faut pas l'écraser si aucun n'est spécifié dans 'OwnMetadata'.
-  // (Normalement cela ne devrait pas arriver sauf incohérence).
+  // There might already be a compression algorithm specified.
+  // It should not be overwritten if none is specified in 'OwnMetadata'.
+  // (Normally this should not happen unless there is an inconsistency).
   if (deflater.get())
     m_text_reader->setDataCompressor(deflater);
   if (hash_algorithm.get())

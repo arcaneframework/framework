@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshGenerator.h                                            (C) 2000-2016 */
 /*                                                                           */
-/* Interface du service de génération de maillage.                           */
+/* Interface of the mesh generation service.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_IMESHGENERATOR_H
 #define ARCANE_STD_IMESHGENERATOR_H
@@ -46,7 +46,7 @@ class NodeInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'un générateur de maillage.
+ * \brief Interface of a mesh generator.
  */
 class IMeshGenerator
 {
@@ -66,4 +66,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

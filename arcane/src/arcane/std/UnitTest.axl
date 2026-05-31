@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
@@ -8,7 +8,7 @@
   <name lang='fr'>module-test-unitaire</name>
   <userclass>User</userclass>
   <description>
-    Module maître
+    Master module
   </description>
 
   <entry-points>
@@ -32,7 +32,7 @@
 
   <options>
 
-  <!-- Fichier de sortie pour la non-régression -->
+  <!-- Output file for non-regression -->
   <service-instance
    name = "test"
    type = "Arcane::IUnitTest"
@@ -41,7 +41,7 @@
   >
    <name lang='fr'>test</name>
    <userclass>User</userclass>
-   <description>Service de test</description>
+   <description>Test service</description>
   </service-instance>
 
   <service-instance
@@ -52,7 +52,7 @@
   >
    <name lang='fr'>xml-test</name>
    <userclass>User</userclass>
-   <description>Service de test avec un rapport XML</description>
+   <description>Test service with XML report</description>
   </service-instance>
 
  </options>

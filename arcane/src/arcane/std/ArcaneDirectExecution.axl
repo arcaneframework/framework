@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <service name="ArcaneDirectExecution" type="subdomain" version="1.0" namespace-macro-name="ARCANE" >
  <name lang='fr'>execution-directe</name>
  <userclass>User</userclass>
@@ -20,11 +20,11 @@
  <userclass>User</userclass>
   <name lang='fr'>ecrit-maillage</name>
   <description>
-Ecrit le maillage après génération des groupes liés au glissement. Utile seulement en debug.
+Writes the mesh after generating groups related to sliding. Useful only in debug.
   </description>
  </simple>
 
-  <!-- Fichier de sortie pour la non-régression -->
+  <!-- Output file for non-regression -->
   <service-instance
    name = "tool"
    type = "Arcane::IDirectExecution"
@@ -33,7 +33,7 @@ Ecrit le maillage après génération des groupes liés au glissement. Utile seu
   >
    <name lang='fr'>tool</name>
    <description>
-Outil a executer
+Tool to execute
    </description>
   </service-instance>
  </options>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TypesArcanePostProcessing.h                                 (C) 2000-2005 */
 /*                                                                           */
-/* Types du module de dépouillement.                                         */
+/* Types of the processing module.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_TYPESPOSTPROCESSING_H
 #define ARCANE_STD_TYPESPOSTPROCESSING_H
@@ -26,7 +26,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Types pour le module de post-traitement.
+ * \brief Types for the post-processing module.
  */
 class TypesArcanePostProcessing
 {
@@ -41,5 +41,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

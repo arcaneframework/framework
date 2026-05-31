@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FileHashDatabase.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Base de données de hash gérée par le système de fichier.                  */
+/* Hash database managed by the file system.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,26 +26,26 @@
 
 namespace Arcane
 {
-// TODO: ajouter information sur la version.
-// TODO: ajouter verrou pour la création des répertoires
+// TODO: add version information.
+// TODO: add lock for directory creation
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Base de donnée de hashs sous la forme d'un système de fichier.
+ * \brief Hash database implemented as a file system.
  *
- * L'implémentation est similaire à ce que peut faire 'git'.
+ * The implementation is similar to what 'git' can do.
  *
- * Pour chaque \a hash on écrit un fichier dont le nom sera le \a hash et
- * dont la valeur sera le tableau d'octets correspondant à ce \a hash.
- * Un fichier n'est donc écrit qu'une seule fois et sa valeur ne change
- * jamais: en écriture si le fichier existe déjà il n'est donc pas nécessaire
- * de l'écrire à nouveau.
+ * For each hash, we write a file whose name will be the hash and
+ * whose value will be the byte array corresponding to this hash.
+ * A file is therefore written only once and its value never changes:
+ * on write: if the file already exists, it is not necessary
+ * to write it again.
  *
- * Afin d'éviter d'avoir trop de \a hash dans le même répertoire, on créé deux
- * sous-répertoires. Le premier avec la première lettre du hash et le second avec
- * les deux lettres suivantes. Donc par exemple si le \a hash est '0a239fb4', alors
- * il sera dans le répertoire '0/a2/0a239fb4'.
+ * To avoid having too many hashes in the same directory, we create two
+ * subdirectories. The first with the first letter of the hash and the second with
+ * the next two letters. So for example, if the hash is '0a239fb4', then
+ * it will be in the directory '0/a2/0a239fb4'.
  */
 class FileHashDatabase
 : public TraceAccessor
@@ -53,7 +53,7 @@ class FileHashDatabase
 {
  public:
 
-  //! Nom du répertoire et du fichier contenant le hash
+  //! Name of the directory and file containing the hash
   struct DirFileInfo
   {
     String directory;
@@ -84,14 +84,14 @@ class FileHashDatabase
     DirFileInfo dirfile_info = _getDirFileInfo(hash_value);
     String base_name = dirfile_info.directory;
     String full_filename = dirfile_info.full_filename;
-    // TODO: sauver les répertoires créés dans une base pour ne pas le refaire à chaque fois.
-    // TODO: utiliser des verrous lors de la création des sous-répertoires pour éviter
-    // que deux processus le fassent en même temps
+    // TODO: save the created directories in a database so as not to do it every time.
+    // TODO: use locks when creating subdirectories to prevent
+    // two processes from doing it at the same time
     platform::recursiveCreateDirectory(base_name);
-    // Si le hash est déjà sauvé, ne fait rien
+    // If the hash is already saved, do nothing
     {
-      // TODO: il faudrait relire la valeur pour vérifier que tout est OK dans la base
-      // et aussi récupérer la taille du fichier pour garantir la cohérence.
+      // TODO: we should reread the value to verify that everything is OK in the database
+      // and also retrieve the file size to guarantee consistency.
       std::ifstream ifile(full_filename.localstr(), ios::binary);
       if (ifile.good()) {
         ++m_nb_write_cache;
@@ -99,7 +99,7 @@ class FileHashDatabase
         return;
       }
     }
-    // TODO: Ajouter verrou pour l'écriture si plusieurs processus écrivent en même temps
+    // TODO: Add lock for writing if multiple processes write at the same time
     {
       String full_filename = dirfile_info.full_filename;
       ofstream ofile(full_filename.localstr(), ios::binary);

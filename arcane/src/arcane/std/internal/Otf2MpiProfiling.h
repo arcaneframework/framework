@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* Otf2MpiProfiling.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Implementation de l'interface IMpiProfiling permettant l'instrumentation  */
-/* au format OTF2                              .                             */
+/* Implementation of the IMpiProfiling interface allowing instrumentation    */
+/* in OTF2 format.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_OTF2MPIPROFILING_H
 #define ARCANE_STD_INTERNAL_OTF2MPIPROFILING_H
@@ -31,18 +31,19 @@ using namespace MessagePassing::Mpi;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implementation de l'interface des operations MPI.
- * Decore chacun des appels MPI avec les fonctions de la librairie
- * Otf2 pour faire du profiling.
+ * \brief Implementation of the MPI operations interface.
+ * Decorates each MPI call with functions from the library
+ * Otf2 for profiling.
  */
 class Otf2MpiProfiling
 : public IMpiProfiling
 {
  public:
-  // Pour l'instant void pour des raisons de compatibilité mais devra à terme
-  // être IMpiProfiling::ReturnType
+  // For now void for compatibility reasons but will eventually have to
+  // be IMpiProfiling::ReturnType
   using ReturnType = void;
 
  public:
@@ -136,4 +137,4 @@ class Otf2MpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

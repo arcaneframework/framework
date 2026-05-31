@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TextReader.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain de données.                                                      */
+/* Data writer.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_TEXTREADER_H
 #define ARCANE_STD_TEXTREADER_H
@@ -30,10 +30,11 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
- * \deprecated Utiliser TextReader2 à la place
+ * \brief Class for writing a text file for backups/restorations
+ * \deprecated Use TextReader2 instead
  */
 class TextReader
 {

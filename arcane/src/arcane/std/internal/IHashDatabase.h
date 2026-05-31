@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IHashDatabase.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'une base de données de hash.                                  */
+/* Interface of a hash database.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_IHASHDATABASE_H
 #define ARCANE_STD_INTERNAL_IHASHDATABASE_H

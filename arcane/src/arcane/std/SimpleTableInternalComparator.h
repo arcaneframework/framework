@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternalComparator.h                             (C) 2000-2022 */
 /*                                                                           */
-/* Comparateur de SimpleTableInternal.                                       */
+/* SimpleTableInternal Comparator.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ class SimpleTableInternalComparator
   , m_epsilons_row()
   {
     if (sti_ref.isNull() || sti_to_compare.isNull())
-      ARCANE_FATAL("La réference passée en paramètre est Null.");
+      ARCANE_FATAL("The reference passed as a parameter is Null.");
   }
 
   SimpleTableInternalComparator()
@@ -142,6 +142,3 @@ class SimpleTableInternalComparator
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

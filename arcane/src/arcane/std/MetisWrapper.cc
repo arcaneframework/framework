@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MetisWrapper.cc                                             (C) 2000-2024 */
 /*                                                                           */
-/* Wrapper autour des appels de Parmetis.                                    */
+/* Wrapper around Parmetis calls.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,8 +46,9 @@ MetisWrapper(IParallelMng* pm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Appelle Metis en regroupant le graph sur 2 processeurs.
+ * \brief Calls Metis by grouping the graph onto 2 processors.
  */
 int MetisWrapper::
 _callMetisWith2Processors(const Int32 ncon, const bool need_part,
@@ -103,7 +104,7 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
     ierr = metis_call(metis_pm.get(), metis_graph_view, metis_vtxdist);
   }
 
-  // S'assure que tout le monde a la même valeur de l'erreur.
+  // Ensures everyone has the same error value.
   half_pm->broadcast(ArrayView<int>(1, &ierr), 0);
 
   metis_gather.scatterPart(half_vtxdist, metis_graph.part, my_graph.part);
@@ -128,11 +129,11 @@ callPartKway(const bool print_digest, const bool gather,
                            ArrayView<idx_t> graph_vtxdist)
   {
     MPI_Comm graph_comm = static_cast<MPI_Comm>(pm->communicator());
-    // NOTE GG: il peut arriver que ces deux pointeurs soient nuls s'il n'y a pas
-    // de voisins. Si tout le reste est cohérent cela ne pose pas de problèmes mais ParMetis
-    // n'aime pas les tableaux vides donc si c'est le cas on met un 0.
-    // TODO: il faudrait regarder en amont s'il ne vaudrait pas mieux mettre des valeurs
-    // dans ces deux tableaux au cas où.
+    // NOTE GG: it may happen that these two pointers are null if there are no
+    // neighbors. If everything else is consistent, this is not a problem, but ParMetis
+    // does not like empty arrays, so if that is the case, we put a 0.
+    // TODO: we should check upstream if it wouldn't be better to put values
+    // in these two arrays in case.
     idx_t null_idx = 0;
     idx_t* adjncy_data = graph.adjncy.data();
     idx_t* adjwgt_data = graph.adjwgt.data();
@@ -146,23 +147,23 @@ callPartKway(const bool print_digest, const bool gather,
                                 ubvec, options, edgecut, graph.part.data(), &graph_comm);
   };
 
-  // Version séquentielle utilisant directement Metis
-  // NOTE: Ce bout de code est le même que dans callAdaptativeRepart.
-  // Il faudrait mutualiser les deux.
+  // Sequential version using Metis directly
+  // NOTE: This piece of code is the same as in callAdaptiveRepart.
+  // We should centralize/abstract the two.
   MetisCall partkway_seq = [&](IParallelMng*, MetisGraphView graph,
                                ArrayView<idx_t> graph_vtxdist)
   {
     idx_t options2[METIS_NOPTIONS];
     METIS_SetDefaultOptions(options2);
     options2[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
-    options2[METIS_OPTION_UFACTOR] = 30; // TODO: a récupérer depuis les options de parmetis
-    options2[METIS_OPTION_NUMBERING] = 0; // 0 pour indiquer que les tableaux sont en C (indices commencent à 0)
+    options2[METIS_OPTION_UFACTOR] = 30; // TODO: retrieve from parmetis options
+    options2[METIS_OPTION_NUMBERING] = 0; // 0 to indicate that the arrays are in C (indices start at 0)
     options2[METIS_OPTION_MINCONN] = 0;
     options2[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
-    options2[METIS_OPTION_SEED] = 25; // TODO: pouvoir changer la graine
+    options2[METIS_OPTION_SEED] = 25; // TODO: be able to change the seed
     pwarning() << "MetisWrapper: using user 'imbalance_factor' is not yet implemented. Using defaut value 30";
 
-    // Le nombre de sommets du graph est dans le premier indice de graph_vtxdist
+    // The number of vertices of the graph is in the first index of graph_vtxdist
     idx_t nvtxs = graph_vtxdist[1];
     return METIS_PartGraphKway(&nvtxs /*graph_vtxdist.data()*/, ncon, graph.xadj.data(),
                                graph.adjncy.data(), graph.vwgt.data(), graph.vsize.data(),
@@ -189,17 +190,17 @@ callPartKway(const bool print_digest, const bool gather,
     String digest = d.computeInputDigest(false, 3, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
-      info() << "signature des entrees Metis = " << digest;
+      info() << "Metis input signature = " << digest;
     }
   }
   
   if (gather && nb_rank > 2) {
-    // Normalement c'est plus rapide ...
-    info() << "Partitioning metis : re-grouping " << nb_rank << " -> 2 rank";
+    // Normally this is faster ...
+    info() << "Partitioning metis: re-grouping " << nb_rank << " -> 2 ranks";
     ierr = _callMetisWith2Processors(nb_con, false, offset, my_graph, partkway);
   }
   else {
-    info() << "Partitioning metis : nb rank = " << nb_rank;
+    info() << "Partitioning metis: nb ranks = " << nb_rank;
     MetisCall& metis_call = (nb_rank == 1) ? partkway_seq : partkway;
     ierr = metis_call(m_parallel_mng, my_graph, offset);
   }
@@ -242,22 +243,22 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
                                       graph.part.data(), &graph_comm);
   };
 
-  // Version séquentielle utilisant directement Metis
-  // NOTE: Ce bout de code est le même que dans callPartKWay
-  // Il faudrait mutualiser les deux.
+  // Sequential version using Metis directly
+  // NOTE: This piece of code is the same as in callPartKWay
+  // We should centralize/abstract the two.
   MetisCall repart_seq_func = [&](IParallelMng*, MetisGraphView graph,
                                   ArrayView<idx_t> graph_vtxdist)
   {
     idx_t options2[METIS_NOPTIONS];
     METIS_SetDefaultOptions(options2);
     options2[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
-    options2[METIS_OPTION_UFACTOR] = 30; // TODO: a récupérer depuis les options de parmetis
-    options2[METIS_OPTION_NUMBERING] = 0; // 0 pour indiquer que les tableaux sont en C (indices commencent à 0)
+    options2[METIS_OPTION_UFACTOR] = 30; // TODO: retrieve from parmetis options
+    options2[METIS_OPTION_NUMBERING] = 0; // 0 to indicate that the arrays are in C (indices start at 0)
     options2[METIS_OPTION_MINCONN] = 0;
     options2[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
-    options2[METIS_OPTION_SEED] = 25; // TODO: pouvoir changer la graine
+    options2[METIS_OPTION_SEED] = 25; // TODO: be able to change the seed
     pwarning() << "MetisWrapper: using user 'imbalance_factor' is not yet implemented. Using defaut value 30";
-    // Le nombre de sommets du graph est dans le premier indice de graph_vtxdist
+    // The number of vertices of the graph is in the first index of graph_vtxdist
     idx_t nvtxs = graph_vtxdist[1];
     return METIS_PartGraphKway(&nvtxs /*graph_vtxdist.data()*/, ncon, graph.xadj.data(),
                                graph.adjncy.data(), graph.vwgt.data(), graph.vsize.data(),
@@ -287,16 +288,16 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
     String digest = d.computeInputDigest(true, 4, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
     if (my_rank == 0) {
-      info() << "signature des entrees Metis = " << digest;
+      info() << "Metis input signature = " << digest;
     }
   }
 
   if (gather && nb_rank > 2) {
-    info() << "Partionnement metis : regroupement " << nb_rank << " -> 2 processeurs";
+    info() << "Metis partitioning: regrouping " << nb_rank << " -> 2 processors";
     ierr = _callMetisWith2Processors(nb_con, true, offset, my_graph, repart_func);
   }
   else {
-    info() << "Partionnement metis : nb processeurs = " << nb_rank;
+    info() << "Metis partitioning: nb processors = " << nb_rank;
     MetisCall& metis_call = (nb_rank == 1) ? repart_seq_func : repart_func;
     ierr = metis_call(m_parallel_mng, my_graph, offset);
   }
@@ -305,7 +306,7 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
     MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
-      info() << "signature des sorties Metis = " << digest;
+      info() << "Metis output signature = " << digest;
     }
   }
   

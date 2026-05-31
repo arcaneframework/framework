@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshGenerator.cc                                   (C) 2000-2023 */
 /*                                                                           */
-/* Service de génération de maillage cartésien.                              */
+/* Cartesian mesh generation service.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_CARTESIAN_MESHGENERATOR_H
 #define ARCANE_STD_CARTESIAN_MESHGENERATOR_H
@@ -34,24 +34,24 @@ class CartesianMeshGeneratorBuildInfo
  public:
 
   int m_mesh_dimension = -1;
-  Real3 m_origine; // origine du maillage
-  RealUniqueArray m_bloc_lx; // longueurs en x
-  RealUniqueArray m_bloc_ly; // longueurs en y
-  RealUniqueArray m_bloc_lz; // longueurs en z
-  Int32UniqueArray m_bloc_nx; // nombre de mailles par bloc en x
-  Int32UniqueArray m_bloc_ny; // nombre de mailles par bloc en y
-  Int32UniqueArray m_bloc_nz; // nombre de mailles par bloc en z
-  RealUniqueArray m_bloc_px; // progressions par bloc en x
-  RealUniqueArray m_bloc_py; // progressions par bloc en y
-  RealUniqueArray m_bloc_pz; // progressions par bloc en z
-  Integer m_nsdx = 0; // nombre de sous-domaines en x
-  Integer m_nsdy = 0; // nombre de sous-domaines en y
-  Integer m_nsdz = 0; // nombre de sous-domaines en z
-  //! Indique si on génère les groupes pour un cas test de sod
+  Real3 m_origine; // mesh origin
+  RealUniqueArray m_bloc_lx; // lengths in x
+  RealUniqueArray m_bloc_ly; // lengths in y
+  RealUniqueArray m_bloc_lz; // lengths in z
+  Int32UniqueArray m_bloc_nx; // number of meshes per block in x
+  Int32UniqueArray m_bloc_ny; // number of meshes per block in y
+  Int32UniqueArray m_bloc_nz; // number of meshes per block in z
+  RealUniqueArray m_bloc_px; // progressions per block in x
+  RealUniqueArray m_bloc_py; // progressions per block in y
+  RealUniqueArray m_bloc_pz; // progressions per block in z
+  Integer m_nsdx = 0; // number of sub-domains in x
+  Integer m_nsdy = 0; // number of sub-domains in y
+  Integer m_nsdz = 0; // number of sub-domains in z
+  //! Indicates whether groups are generated for an SOD test case
   bool m_is_generate_sod_groups = false;
-  //! Version de l'algorithme de numérotation des faces
+  //! Version of the face numbering algorithm
   Int32 m_face_numbering_version = -1;
-  //! Version de l'algorithme de numérotation des arêtes
+  //! Version of the edge numbering algorithm
   Int32 m_edge_numbering_version = -1;
 
  public:
@@ -124,13 +124,13 @@ class CartesianMeshGenerator
  private:
 
   CartesianMeshGeneratorBuildInfo m_build_info;
-  RealUniqueArray m_bloc_ox; // origine bloc en x
-  RealUniqueArray m_bloc_oy; // origine bloc longueurs en y
-  RealUniqueArray m_bloc_oz; // origine bloc longueurs en z
-  Real3 m_l; // longueurs en x, y et z
-  Integer m_nx = 0; // nombre de mailles en x
-  Integer m_ny = 0; // nombre de mailles en y
-  Integer m_nz = 0; // nombre de mailles en z
+  RealUniqueArray m_bloc_ox; // block origin in x
+  RealUniqueArray m_bloc_oy; // block origin lengths in y
+  RealUniqueArray m_bloc_oz; // block origin lengths in z
+  Real3 m_l; // lengths in x, y, and z
+  Integer m_nx = 0; // number of meshes in x
+  Integer m_ny = 0; // number of meshes in y
+  Integer m_nz = 0; // number of meshes in z
 
  private:
 
@@ -145,4 +145,4 @@ class CartesianMeshGenerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

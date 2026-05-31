@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SodStandardGroupsBuilder.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Création des groupes pour les cas test de tube à choc de Sod.             */
+/* Creation of groups for Sod shock tube test cases.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -134,11 +134,11 @@ generateGroups(IMesh* mesh, Real3 min_pos, Real3 max_pos, Real middle_x, Real mi
     }
   }
 
-  // Détermine les couches ZG et ZD
+  // Determines the ZG and ZD layers
   if (do_zg_and_zd) {
     UniqueArray<Int32> zg_lid;
     UniqueArray<Int32> zd_lid;
-    const Real xlimit = middle_x; // Position séparant les deux zones ZG et ZD
+    const Real xlimit = middle_x; // Position separating the two ZG and ZD zones
     ENUMERATE_ (Cell, icell, mesh->allCells()) {
       bool is_in_zd = false;
       bool is_in_zg = false;
@@ -189,14 +189,14 @@ generateGroups(IMesh* mesh, Real3 min_pos, Real3 max_pos, Real middle_x, Real mi
     cell_family->createGroup("ZD",zd_lid);
   }
   
-  // Détermine les groupes ZD_HAUT et ZD_BAS
+  // Determines the ZD_HAUT and ZD_BAS groups
   if (do_zg_and_zd) {
     ItemGroup zdGroup = cell_family->findGroup("ZD");
     if (zdGroup.null())
       ARCANE_FATAL("Group 'ZD' has not been found!");
     UniqueArray<Int32> zd_bas_lid;
     UniqueArray<Int32> zd_haut_lid;
-    const Real height_limit = middle_height; // Position séparant les deux zones HAUT et BAS
+    const Real height_limit = middle_height; // Position separating the two HAUT and BAS zones
     ENUMERATE_CELL(icell, zdGroup){
       bool is_in_zd_bas = false;
       bool is_in_zd_haut = false;

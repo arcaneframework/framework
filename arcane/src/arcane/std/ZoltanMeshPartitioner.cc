@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ZoltanMeshPartitioner.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Partitioneur de maillage utilisant la bibliotheque Zoltan.                */
+/* Mesh partitioner using the Zoltan library.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@
 
 #include "arcane_internal_config.h"
 
-// Au cas ou on utilise mpich2 ou openmpi
+// In case we use mpich2 or openmpi
 #define MPICH_SKIP_MPICXX
 #define OMPI_SKIP_MPICXX
 #include <zoltan.h>
@@ -55,7 +55,7 @@
 
 #define ARCANE_DEBUG_ZOLTAN
 
-// GG: NOTE: L'implémentation actuelle ne supporte que les uniqueId() sur 32 bits.
+// GG: NOTE: The current implementation only supports uniqueId() on 32 bits.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,9 +75,11 @@ enum ZoltanModel
 };
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations pour le partitionnement avec Zoltan.
+ * \brief Information for partitioning with Zoltan.
  */
 class ZoltanInfo
   : public TraceAccessor
@@ -483,7 +485,7 @@ public:
       if (!zi->m_mesh_partitionner_base->cellUsedWithConstraints(*icell))
         continue;
 
-      // on calcul un barycentre
+      // we calculate a barycenter
 
       Real3 bar;
 
@@ -513,8 +515,9 @@ public:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Partitioneur de maillage utilisant la bibliotheque Zoltan.
+ * \brief Mesh partitioner using the Zoltan library.
  */
 class ZoltanMeshPartitioner
 : public ArcaneZoltanMeshPartitionerObject
@@ -608,9 +611,9 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   zz = Zoltan_Create(*(MPI_Comm*)getCommunicator());
 
   Zoltan_Set_Param(zz, "RCB_REUSE", "1"); // Try to do "repartitioning"
-  // option entre PHG et RCB (hypergraphe et coordonnee bissection)
+  // option between PHG and RCB (hypergraph and bissection coordinate)
 
-  // Anciennes valeurs par defaut si pas de variable d'environnement (cf OLD_HG)
+  // Old default values if no environment variable (cf OLD_HG)
   bool usePHG = true;
 
   String s = platform::getEnvironmentVariable("ZOLTAN_MODEL");
@@ -636,7 +639,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   }
 
   String algo = "HYPERGRAPH";
-  if (s == "MYHG" || s == "OLDHG" /* nuance avec OLD_HG ? */ || s == "DUALHG" || s == "GRAPH") {
+  if (s == "MYHG" || s == "OLDHG" /* nuance with OLD_HG? */ || s == "DUALHG" || s == "GRAPH") {
     algo = "HYPERGRAPH";
     usePHG = true;
   } else if (s == "RIB" || s== "HSFC") {
@@ -726,13 +729,13 @@ partitionMesh(bool initial_partition,Int32 nb_part)
     String s_phgOutputLevel(String::fromNumber(phgOutputLevel));
     Zoltan_Set_Param(zz, "PHG_OUTPUT_LEVEL", s_phgOutputLevel.localstr());
 
-    // Utilisation en debug
+    // Usage in debug
     Zoltan_Set_Param(zz, "CHECK_HYPERGRAPH", "0");  /* see User's Guide */
     String s_debugLevel(String::fromNumber(debugLevel));
     Zoltan_Set_Param(zz, "DEBUG_LEVEL", s_debugLevel.localstr());
 
-    // La methode par defaut (ipm) donne en theorie de meilleurs resultats
-    // mais elle semble des fois bloquer avec la version 2.0 de zoltan
+    // The default method (ipm) gives theoretically better results
+    // but it seems to sometimes block with Zoltan version 2.0
 
     Zoltan_Set_Param(zz, "PHG_COARSENING_METHOD", "IPM");
     //Zoltan_Set_Param(zz, "PHG_COARSEPARTITION_METHOD", "GREEDY");
@@ -835,18 +838,18 @@ partitionMesh(bool initial_partition,Int32 nb_part)
     info() <<"numExport = "<<numExport;
     for( Integer i=0; i<nb_export; ++i ){
       Item item = items_internal[ localIdWithConstraints(export_local_ids[i]) ];
-      // changement pour la maille ou tout le groupe s'il y a lieu
+      // change for the mesh or the whole group if necessary
       changeCellOwner(item, cells_new_owner, export_partitions[i]);
-      if (dump_infos) // ces infos ne tiennent pas compte des groupes/contraintes
+      if (dump_infos) // these infos do not take groups/constraints into account
         ofile << "EXPORT: uid=" << ItemPrinter(item) << " OLD=" << item.owner()
               << " NEW=" << cells_new_owner[item] << " PROC=" << exportProcs[i] << '\n';
     }
-    //     pinfo() << "Proc " << my_rank << " nombre de mailles changeant de domaine: "
+    //     pinfo() << "Proc " << my_rank << " number of meshes changing domain: "
     //             << nb_export << " changes=" << changes
     //             << " ZoltanMem=" << Zoltan_Memory_Usage(ZOLTAN_MEM_STAT_MAXIMUM);
   }
 
-  // Libere la memoire de zoltan_info
+  // Free the memory of zoltan_info
   zoltan_info = 0;
   if (dump_infos)
     ofile.close();
@@ -861,7 +864,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
 
   // Zoltan_Destroy(&zz);
 
-  // liberation des tableau temporaires
+  // release of temporary arrays
   freeConstraints();
 
   cells_new_owner.synchronize();

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Kdi.h                                                       (C) 2000-2025 */
 /*                                                                           */
-/* Post-traitement avec l'outil KDI.                                         */
+/* Post-processing with the KDI tool.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_KDI_H
 #define ARCANE_STD_INTERNAL_KDI_H
@@ -110,9 +110,9 @@ class KDIChunk
 
   void saveVTKHDF(const std::string _absfilename)
   {
-    // TODO On pourrait vérifier que l'on est partless au moins en 0.4.0
+    // TODO We could check that we are partless at least in 0.4.0
     KTRACE(m_trace, "KDIChunk:saveVTKHDF (...) IN");
-    // TODO Verifier que l'on est bien partless
+    // TODO Verify that we are indeed partless
     KASSERT(m_pInstanceChunk);
     PyObject* pArgs = Py_BuildValue("(O, z)", m_pInstanceChunk, _absfilename.c_str());
     KASSERT(pArgs);
@@ -124,10 +124,10 @@ class KDIChunk
   void saveVTKHDFCompute(const std::string _absfilename)
   {
     KTRACE(m_trace, "KDI KDIChunk saveVTKHDFCompute " << _absfilename);
-    // TODO On pourrait vérifier que l'on est partless au moins en 0.4.0
-    // TODO ON pourrait trouver une facon plus elegante d'activté des traitements ici KDIComputeMultiMilieux
+    // TODO We could check that we are partless at least in 0.4.0
+    // TODO We could find a more elegant way to activate the treatments here KDIComputeMultiMilieux
     KTRACE(m_trace, "KDIChunk:saveVTKHDFCompute (...) IN");
-    // TODO Verifier que l'on est bien partless
+    // TODO Verify that we are indeed partless
     KASSERT(m_pInstanceChunk);
     PyObject* pArgs = Py_BuildValue("(O, z)", m_pInstanceChunk, _absfilename.c_str());
     KASSERT(pArgs);
@@ -220,7 +220,7 @@ class KDIBase
     _simple_call("update_fields", pArgs);
     Py_DECREF(pArgs);
     KTRACE(m_trace, "KDIBase:update_fields OUT");
-    // TODO Ceci est une verole... il serait preferable que ce soit le retour de la fonction Python qui soit exploitee
+    // TODO This is a workaround... it would be preferable to use the return value of the Python function
     return _nameParentMesh + "/" + _nameField;
   }
 
@@ -235,7 +235,7 @@ class KDIBase
     _simple_call("update_sub", pArgs);
     Py_DECREF(pArgs);
     KTRACE(m_trace, "KDIBase:update_sub OUT");
-    // TODO Ceci est une verole... il serait preferable que ce soit le retour de la fonction Python qui soit exploitee
+    // TODO This is a workaround... it would be preferable to use the return value of the Python function
     return _nameParentMesh + "/submeshes" + _nameSubMesh;
   }
 
@@ -299,10 +299,10 @@ createBase(unsigned int _nb_parts, bool _trace = false)
   KTRACE(_trace, "KDI   FromString pValue=" << pValue);
   KTRACE(_trace, "KDI   Getenv PYTHONPATH=" << getenv("PYTHONPATH"));
   KTRACE(_trace, "KDI   Getenv KDI_DICTIONARY_PATH=" << getenv("KDI_DICTIONARY_PATH"));
-  // Si on a un plantage, c'est parce que les commandes :
+  // If there is a crash, it is because the commands:
   //      Py_Initialize();
   //      import_array();
-  // n'ont pas été exécutées avant.
+  // have not been executed before.
   PyObject* pModule = PyImport_Import(pValue);
   KTRACE(_trace, "KDI   Import ?");
   KTRACE(_trace, "KDI   pModule=" << pModule);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DumpWUCD.cc                                                 (C) 2000-2021 */
 /*                                                                           */
-/* Exportations des fichiers au format UCD.                                  */
+/* Exporting files in UCD format.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@
 
 namespace Arcane
 {
-// NOTE: Ce format ne fonctionne que en séquentiel
+// NOTE: This format only works in sequential mode
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,8 +60,9 @@ Integer code_tet[4]   = { 0, 1, 3, 2 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- \brief Ecriture au format UCD.
+ \brief Writing in UCD format.
 */
 class DumpWUCD
 : public TraceAccessor
@@ -113,18 +114,18 @@ class DumpWUCD
  private:
 
   static constexpr Integer m_max_digit = 5;
-  // Nombre de chiffres significatifs pour les afficher les réels.
+  // Number of significant figures for displaying real numbers.
   static constexpr Integer MAX_FLOAT_DIGIT = FloatInfo<Real>::maxDigit()+1;
 
   ISubDomain* m_sub_domain;
-  IMesh* m_mesh; //!< Maillage
-  Directory m_base_directory; //!< Nom du répertoire de stockage
-  RealUniqueArray m_times; //!< Liste des instants de temps
-  VariableList m_save_variables; //!< Liste des variables a exporter
+  IMesh* m_mesh; //!< Mesh
+  Directory m_base_directory; //!< Storage directory name
+  RealUniqueArray m_times; //!< List of time instances
+  VariableList m_save_variables; //!< List of variables to export
 
-  UniqueArray<Ref<OStringStream>> m_cell_streams; //!< Valeur des var. aux mailles
-  UniqueArray<Ref<OStringStream>> m_node_streams; //!< Valeur des var. aux noeuds
-  UniqueArray<Cell> m_managed_cells; //!< Liste des mailles gerees
+  UniqueArray<Ref<OStringStream>> m_cell_streams; //!< Variable values at cells
+  UniqueArray<Ref<OStringStream>> m_node_streams; //!< Variable values at nodes
+  UniqueArray<Cell> m_managed_cells; //!< List of managed cells
 };
 
 /*---------------------------------------------------------------------------*/
@@ -186,10 +187,11 @@ DumpWUCD::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables scalaires.
- * La variable est sauvegardee dans un flux different suivant son origine
- * (noeud ou maille). 
+ * \brief Saving scalar variables.
+ * The variable is saved in a different stream depending on its origin
+ * (node or cell). 
  */
 void DumpWUCD::
 writeVal(IVariable& v,ConstArrayView<Real> ptr)
@@ -218,10 +220,11 @@ writeVal(IVariable& v,ConstArrayView<Real> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables vectorielles.
- * La variable est sauvegardee dans un flux different suivant son origine
- * (noeud ou maille). 
+ * \brief Saving vector variables.
+ * The variable is saved in a different stream depending on its origin
+ * (node or cell). 
  */
 void DumpWUCD::
 writeVal(IVariable& v,ConstArrayView<Real3> ptr)
@@ -256,15 +259,16 @@ writeVal(IVariable& v,ConstArrayView<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Creation du fichier UCD (nomme UCD_<no_iteration>) et de son entete.
- * Cette entete contient :
- * <ul><li>nombre de noeuds, nombre de mailles...</li>
- * <li>coordonnees des noeuds</li>
- * <lidefinition des cellules</li></ul>
- * Notons que le format UCD impose que les donnees des noeuds precedent celles
- * des mailles. Les donnees des mailles sont donc ecrites dans un buffer 
- * temporaire et concatenees au fichier a la fin (methode writeEnd).
+ * \brief Creation of the UCD file (named UCD_<no_iteration>) and its header.
+ * This header contains:
+ * <ul><li>number of nodes, number of cells...</li>
+ * <li>node coordinates</li>
+ * <cell definition</li></ul>
+ * Note that the UCD format requires that node data precedes cell data
+ * of the cells. The cell data is therefore written into a temporary buffer
+ * and concatenated to the file at the end (writeEnd method).
  */
 void DumpWUCD::
 beginWrite()
@@ -274,9 +278,10 @@ beginWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Concatenation du flux contenant les donnees des mailles
- * au fichier principal.
+ * \brief Concatenation of the stream containing cell data
+ * to the main file.
  */
 void DumpWUCD::
 endWrite()
@@ -293,13 +298,13 @@ endWrite()
   String buf = m_base_directory.file(ostr.str());
   std::ofstream ucd_file(buf.localstr());
 
-  // Ajout de l'entete du fichier
-  // Comptage du nombre de donnees aux noeuds et aux mailles et de leurs 
-  // tailles. Les seules methodes "write" implementees sont :
+  // Adding the file header
+  // Counting the number of data for nodes and cells and their
+  // sizes. The only implemented "write" methods are:
   //    - void writeVal(IVariable& v,ConstArrayView<Real3> a)
   //    - void writeVal(IVariable& v,ConstArrayView<Real> a)
-  // Par consequent, les seules variables prises en compte sont de type
-  // "Real" et "Real3" et de dimension 1.
+  // Consequently, the only variables considered are of type
+  // "Real" and "Real3" and of dimension 1.
   IMesh* mesh = m_mesh;
   Integer nb_comp_node_data = 0;
   Integer nb_comp_cell_data = 0;
@@ -330,7 +335,7 @@ endWrite()
                 << " kind = IK_Node, type = DT_Real";
           nb_comp_node_data++;
           comp_node_data_size++;
-          ndata_size_stream() << " 1";  // 1 = taille du Real
+          ndata_size_stream() << " 1";  // 1 = size of Real
           ndata_name_stream() << name << ", Unknown" << '\n';
         }
         else if (kind == IK_Cell){
@@ -338,7 +343,7 @@ endWrite()
                 << " kind = IK_Cell, type = DT_Real";
           nb_comp_cell_data++;
           comp_cell_data_size++;
-          cdata_size_stream() << " 1"; // 1 = taille du Real1
+          cdata_size_stream() << " 1"; // 1 = size of Real1
           cdata_name_stream() << name << ", Unknown" << '\n';
         }
       }
@@ -348,7 +353,7 @@ endWrite()
                 << " kind = IK_Node, type = DT_Real3";
           nb_comp_node_data++;
           comp_node_data_size+=3;
-          ndata_size_stream() << " 3";  // 3 = taille du Real3
+          ndata_size_stream() << " 3";  // 3 = size of Real3
           ndata_name_stream() << name << ", Unknown" << '\n';
         }
         else if (kind == IK_Cell){
@@ -356,7 +361,7 @@ endWrite()
                 << " kind = IK_Cell, type = DT_Real3";
           nb_comp_cell_data++;
           comp_cell_data_size+=3;
-          cdata_size_stream() << " 3";  // 3 = taille du Real3
+          cdata_size_stream() << " 3";  // 3 = size of Real3
           cdata_name_stream() << name << ", Unknown" << '\n';
         }
       }
@@ -370,7 +375,7 @@ endWrite()
            << comp_node_data_size << " " 
            << comp_cell_data_size << " 0" << '\n';
 
-  // ajout des coordonnees des noeuds
+  // adding node coordinates
   ConstArrayView<Real3> node_coords = mesh->toPrimaryMesh()->nodesCoordinates().asArray();
   for( Integer i=0 ; i<nb_node ; i++){
     const Real3 node_coord = node_coords[i];
@@ -380,7 +385,7 @@ endWrite()
              << node_coord.z << '\n';
   }
 
-  // ajout de la description des mailles
+  // adding cell description
   for( Integer iz=0 ; iz<nb_managed_cell ; ++iz ){
     const Cell cell = m_managed_cells[iz];
     Integer id = cell.localId();
@@ -427,15 +432,15 @@ endWrite()
         ucd_file << " " << cell.node(code_tet[i]).localId()+1;
       break;
     default:
-      // ce cas ne peut pas arriver car filtrage dans le constructeur
+      // this case cannot happen because of filtering in the constructor
       break;
     }
 
     ucd_file << '\n';
   }
 
-  // ajout du nombre de donnees aux noeuds, de leur taille, de leur nom
-  // et des valeurs des variables
+  // adding the number of node data, their size, their name
+  // and the variable values
   if (nb_comp_node_data){
     ucd_file << nb_comp_node_data 
              << ndata_size_stream.str() 
@@ -445,7 +450,7 @@ endWrite()
       ucd_file << i+1 << m_node_streams[i]->str() << '\n';
   }
 
-  // idem pour les mailles
+  // same for cells
   if (nb_comp_cell_data){
     ucd_file << nb_comp_cell_data 
              << cdata_size_stream.str() 
@@ -481,8 +486,9 @@ endWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Post-traitement au format UCD.
+ * \brief Post-processing in UCD format.
  */
 class UCDPostProcessorService
 : public PostProcessorWriterBase

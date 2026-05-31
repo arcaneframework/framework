@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DumpWEnsight7.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Exportations des fichiers au format Ensight7 gold.                        */
+/* Exporting files in Ensight7 gold format.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,7 +53,7 @@
 #include <memory>
 #include <unordered_map>
 
-// TODO: Ajouter test avec des variables partielles
+// TODO: Add test with partial variables
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,34 +64,32 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- \brief Ecriture au format Ensight7.
+ \brief Writes in Ensight7 format.
  
- L'écriture est faite au format \a case de Ensight et en ASCII.
+ The writing is done in Ensight case format and in ASCII.
 
- Il y a deux mécanismes de sauvegardes suivant qu'on utilise l'aspect
- temporel ou pas. Le choix se fait en utilisant le tableau #m_times.
- S'il est vide, on fait alors un \a snapshot, c'est à dire juste une sortie
- des variables. S'il n'est pas vide, on fait alors une sortie \a temporelle
- et il contient une liste d'instants de temps et dans
- ce cas on effectue une sauvegarde en temps. On sauvegarde alors les
- variables à leur valeur actuelle en considérant qu'il s'agit de la derniere
- protection du tableau #m_times. Afin d'avoir des fichiers plus gros, on
- sauve #m_fileset_size protections par fichier.
+ There are two saving mechanisms depending on whether the temporal aspect is
+ used or not. The choice is made using the array #m_times.
+ If it is empty, a snapshot is taken, meaning just an output of the variables.
+ If it is not empty, a temporal output is performed, which contains a list of
+ time instants, and in this case, a time save is performed. The variables are
+ then saved at their current value, considering it to be the last protection
+ of the array #m_times. To have larger files, #m_fileset_size protections are
+ saved per file.
 
- Dans les deux cas, #m_base_directory contient le chemin et le répertoire où
- seront sauvegardées les variables.
+ In both cases, #m_base_directory contains the path and directory where the
+ variables will be saved.
  
- Le format \a case utilise un fichier pour décrire le cas
- (.case), un fichier pour décrire la géométrie (.geo) et un fichier par variable.
- Dans le cas d'une sauvegarde temporelle, il y a une géométrie et un fichier
- de variable par instant de temps. Dans ce cas, les noms des fichiers sont
- suffixés par le numéro de la protection. Par exemple, pour une variable
- \a Pression, le nom du fichier de sauvegarde dans le cas d'un snapshot est
- juste \a 'Pression'. Dans le cas d'une sauvegarde temporelle à la 4ème protection,
- le nom sera \a 'Pression000004'.
+ The case format uses one file to describe the case (.case), one file to
+ describe the geometry (.geo), and one file per variable.
+ In the case of a temporal save, there is one geometry and one variable file
+ per time instant. In this case, the file names are suffixed by the protection
+ number. For example, for a variable 'Pressure', the save file name in the case
+ of a snapshot is just 'Pressure'. In the case of a temporal save at the 4th
+ protection, the name will be 'Pressure000004'.
 
- Pour plus de précision dans le format Ensight case, se reporter à la
- notice d'utilisation de Ensight6 ou Ensight7.
+ For more precision in the Ensight case format, refer to the user manual for
+ Ensight6 or Ensight7.
  */
 class DumpWEnsight7
 : public DumpW
@@ -105,7 +103,7 @@ class DumpWEnsight7
  public:
 
   /*!
-   * \brief Correspondance entre le type des éléments ensight et Arcane.
+   * \brief Correspondence between Ensight element type and Arcane.
    */
   struct EnsightPart
   {
@@ -148,21 +146,21 @@ class DumpWEnsight7
 
    private:
 
-    int m_type; //!< Type Arcane de l'élément.
-    Integer m_nb_node; //!< Nombre de noeud
-    String m_name; //!< Nom Ensight de cet élément.
-    UniqueArray<Item> m_items; //!< Entités des éléments de ce type
+    int m_type; //!< Arcane type of the element.
+    Integer m_nb_node; //!< Number of nodes
+    String m_name; //!< Ensight name of this element.
+    UniqueArray<Item> m_items; //!< Entities of elements of this type
     UniqueArray<Integer> m_reindex;
   };
 
   /*!
-   * \brief Information pour partagé un groupe en éléments de même sous-type
+   * \brief Information to share a group into elements of the same subtype
    */
   struct GroupPartInfo
   {
    public:
 
-    //! Nombre de sous-types.
+    //! Number of subtypes.
     Integer nbType() const { return m_parts.size(); }
 
    public:
@@ -204,12 +202,12 @@ class DumpWEnsight7
 
    private:
 
-    ItemGroup m_group; //!< Groupe associé
-    Integer m_part_id; //!< Numéro de la partie
+    ItemGroup m_group; //!< Associated group
+    Integer m_part_id; //!< Part number
     UniqueArray<EnsightPart> m_parts;
     bool m_is_polygonal_type_registration_done = false;
     bool m_is_polyhedral_type_registration_done = false;
-    //! Variable pour stocker les types des items généraux (non typés)
+    //! Variable to store the types of general items (untyped)
     std::unique_ptr<VariableItemInt32> m_general_item_types = nullptr;
     using TypeId = int;
     std::unordered_map<TypeId, EnsightPart*> m_parts_map;// used to handle large number of extra types
@@ -226,9 +224,9 @@ class DumpWEnsight7
     {
       ItemTypeMng* item_type_mng = m_group.mesh()->itemTypeMng();
 
-      // NOTE: il est important que les éléments de type 'nfaced'
-      // et 'nsided' soient contigues car Ensight doit sauver
-      // ensemble leur valeurs
+      // NOTE: It is important that 'nfaced' type elements
+      // and 'nsided' are contiguous because Ensight must save
+      // their values together
       m_parts.reserve(ItemTypeMng::nbBasicItemType());
       m_parts.add(EnsightPart(IT_Line2, 2, "bar2")); // Bar
       m_parts.add(EnsightPart(IT_Triangle3, 3, "tria3")); // Triangle
@@ -237,10 +235,10 @@ class DumpWEnsight7
       m_parts.add(EnsightPart(IT_Hexagon6, 6, "nsided")); // Hexagone
       m_parts.add(EnsightPart(IT_Heptagon7, 7, "nsided")); // Heptagone
       m_parts.add(EnsightPart(IT_Octogon8, 8, "nsided")); // Octogone
-      // Recherche des autres types 'polygone'
+      // Search for other 'polygonal' types
       for (Integer i_type = ItemTypeMng::nbBuiltInItemType(); i_type < ItemTypeMng::nbBasicItemType(); ++i_type) {
         ItemTypeInfo* type_info = item_type_mng->typeFromId(i_type);
-        if (type_info->nbLocalNode() == type_info->nbLocalEdge()) { // Polygone trouvé
+        if (type_info->nbLocalNode() == type_info->nbLocalEdge()) { // Polygon found
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nsided"));
         }
       }
@@ -306,10 +304,10 @@ class DumpWEnsight7
       m_parts.add(EnsightPart(IT_Octaedron12, 12, "nfaced")); // Wedge8
       m_parts.add(EnsightPart(IT_Enneedron14, 14, "nfaced")); // Wedge9
       m_parts.add(EnsightPart(IT_Decaedron16, 16, "nfaced")); // Wedge10
-      // Recherche des autres types 'polyedre'
+      // Search for other 'polyhedral' types
       for (Integer i_type = ItemTypeMng::nbBuiltInItemType(); i_type < ItemTypeMng::nbBasicItemType(); ++i_type) {
         ItemTypeInfo* type_info = item_type_mng->typeFromId(i_type);
-        if (type_info->nbLocalNode() != type_info->nbLocalEdge()) { // Polyèdre trouvé
+        if (type_info->nbLocalNode() != type_info->nbLocalEdge()) { // Polyhedron found
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nfaced"));
         }
       }
@@ -351,14 +349,15 @@ class DumpWEnsight7
  public:
 
   /*!
-   * \brief Fonctor pour écrire une variable.
+   * \brief Functor for writing a variable.
  
-   Il s'agit de la classe de base des fonctor permettant de sauver une
-   variable sur les éléments d'un groupe donné. Les classes dérivées doivent
-   définir l'opérateur() avec comme unique paramètre l'identifiant de l'élément.
+   This is the base class of functors allowing a variable to be saved
+   on the elements of a given group. Derived classes must define the
+   operator() with the element identifier as the only parameter.
  
-   Par exemple, si on a un groupe de mailles contenant 3 mailles d'id 2, 5 et 9,
-   le fonctor sera appelé trois fois avec chacun de ses indices.
+   For example, if we have a mesh group containing 3 meshes with
+   IDs 2, 5, and 9, the functor will be called three times with each
+   of its indices.
 
    \sa WriteDouble, WriteReal3, WriteArrayDouble, WriteArrayReal3
   */
@@ -405,8 +404,8 @@ class DumpWEnsight7
   };
 
   /*!
-   * \brief Functor pour écrire une variable de type <tt>Real</tt>
-   */
+   * \brief Functor for writing a variable of type <tt>Real</tt>
+  */
   template <typename FromType>
   class WriteDouble
   : public WriteBase
@@ -451,8 +450,8 @@ class DumpWEnsight7
   };
 
   /*!
-   * \brief Functor pour écrire une variable de type <tt>Real</tt>
-   */
+   * \brief Functor for writing a variable of type <tt>Real</tt>
+  */
   template <typename FromType>
   class WriteArrayDouble
   : public WriteBase
@@ -501,11 +500,11 @@ class DumpWEnsight7
   };
 
   /*!
-   * \brief Functor pour écrire une variable de type <tt>Real2</tt>
+   * \brief Functor to write a variable of type <tt>Real2</tt>
    */
 
   /*!
-   * \brief Functor pour écrire une variable de type <tt>Real3</tt>
+   * \brief Functor to write a variable of type <tt>Real3</tt>
    */
   class WriteReal3
   : public WriteBase
@@ -586,7 +585,7 @@ class DumpWEnsight7
   };
 
   /*!
-   * \brief Functor pour écrire une variable de type <tt>Real3</tt>
+   * \brief Functor to write a variable of type <tt>Real3</tt>
    */
   class WriteArrayReal3
   : public WriteBase
@@ -726,37 +725,36 @@ class DumpWEnsight7
 
  private:
 
-  IMesh* m_mesh; //!< Maillage
-  IParallelMng* m_parallel_mng; //!< Gestionnaire du parallélisme
-  Directory m_base_directory; //!< Nom du répertoire de stockage
-  Directory m_part_directory; //!< Répertoire de stockage de l'itération courante
-  std::ofstream m_case_file; //!< Fichier décrivant le cas
-  std::ostringstream m_case_file_variables; //! description des variables sauvées
-  RealUniqueArray m_times; //!< Liste des instants de temps
-  VariableList m_save_variables; //!< Liste des variables a exporter
-  ItemGroupList m_save_groups; //!< Liste des groupes a exporter
-  GroupPartInfoList m_parts; //! Liste des parties
-  bool m_is_binary; //!< \a true si fichier au format binaire
-  bool m_is_master; //!< \a true si le processeur dirige la sortie
-  /*! \a true si les sorties sont parallèles avec un proc qui récupère les sorties
-   * des autres */
+  IMesh* m_mesh; //!< Mesh
+  IParallelMng* m_parallel_mng; //!< Parallelism manager
+  Directory m_base_directory; //!< Storage directory name
+  Directory m_part_directory; //!< Storage directory for the current iteration
+  std::ofstream m_case_file; //!< File describing the case
+  std::ostringstream m_case_file_variables; //! description of saved variables
+  RealUniqueArray m_times; //!< List of time instants
+  VariableList m_save_variables; //!< List of variables to export
+  ItemGroupList m_save_groups; //!< List of groups to export
+  GroupPartInfoList m_parts; //! List of parts
+  bool m_is_binary; //!< \a true if file is in binary format
+  bool m_is_master; //!< \a true if the processor manages the output
+  /*! \a true if outputs are parallel with a proc collecting the outputs
+   * from others */
   bool m_is_parallel_output;
   bool m_use_degenerated_hexa;
   bool m_force_first_geometry;
   bool m_save_uids;
-  //! Nombre total d'éléments de maillage de tous les groupes à sauver
+  //! Total number of mesh elements across all groups to be saved
   Integer m_total_nb_element;
-  Integer m_total_nb_group; //!< Nombre de groupes à sauver (== nombre de part)
-  /*!< \brief Nombre d'éléments dans un timeset
-   * Lorsqu'on sauve plusieurs instants de temps dans un fichier, on met
-   * au maximum \a m_fileset_size instants de temps dans un fichier et
-   * lorsque ce nombre est atteint, on utilise un autre fichier. */
+  Integer m_total_nb_group; //!< Number of groups to save (== number of parts)
+  /*!< \brief Number of elements in a timeset
+   * When saving multiple time instants in one file, a maximum of \a m_fileset_size time instants are placed in one file, and
+   * when this number is reached, another file is used. */
   Integer m_fileset_size;
 
  private:
  private:
 
-  //! Nombre maximum de chiffres pour indiquer le numéro de protection.
+  //! Maximum number of digits to indicate the protection number.
   static const Integer m_max_prots_digit = 6;
 
  private:
@@ -781,10 +779,10 @@ class DumpWEnsight7
   //! Template for writing variable as a real variable
   template <typename T>
   void _writeRealValT(IVariable& v, ConstArrayView<T> a);
-  //! Template for writing array variable as a array real variable
+  //! Template for writing array variable as an array real variable
   template <typename T>
   void _writeRealValT(IVariable& v, ConstArray2View<T> a);
-  //! Template for writing array variable as a array real variable
+  //! Template for writing array variable as an array real variable
   template <typename T>
   void _writeRealValT(IVariable& v, ConstMultiArray2View<T> a);
 };
@@ -870,43 +868,43 @@ DumpWEnsight7::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère un groupe d'un type donné et ses informations.
+ * \brief Retrieves a group of a given type and its information.
  *
  * \relates DumpWEnsight7
 
- Le paramètre template est soit un DumpWEnsight7::CellGroup,
- soit un DumpWEnsight7::FaceGroup.
+ The template parameter is either a DumpWEnsight7::CellGroup,
+ or a DumpWEnsight7::FaceGroup.
 
- Tout d'abord, parcours la liste des groupes (\a list_group) et récupère
- ceux du type T::GroupType. Ajoute ces groupes à la liste \a grp_list et
- leur donne un numéro \a partid. A noter que \a partid est passé par
- référence et est incrémenté dans cette fonction. Cet identifiant correspond
- au numéro de partie (part) dans ensight.
+ First, iterate through the list of groups (\a list_group) and retrieve
+ those of type T::GroupType. Add these groups to the list \a grp_list and
+ assign them a number \a partid. Note that \a partid is passed by
+ reference and is incremented in this function. This identifier corresponds
+ to the part number (part) in ensight.
 
- Ensuite, détermine pour chacun de ses groupes le nombre d'éléments de
- chaque sous type Ensight. Par exemple, pour un groupe de mailles, détermine
- le nombre de \e hexa8, le nombre de \e pyramid5, ...
+ Next, determine for each of its groups the number of elements of
+ each Ensight subtype. For example, for a mesh group, determine
+ the number of \e hexa8, the number of \e pyramid5, ...
 */
 void DumpWEnsight7::
 _computeGroupParts(ItemGroupList list_group, Integer& partid)
 {
   for (ItemGroupList::Enumerator i(list_group); ++i;) {
     ItemGroup grp(*i);
-    if (grp.null()) // Le groupe n'est pas du type souhaité.
+    if (grp.null()) // The group is not of the desired type.
       continue;
-    if (!grp.isOwn()) // Si possible, prend le groupe d'éléments propres
+    if (!grp.isOwn()) // If possible, take the own element group
       grp = grp.own();
-    // Depuis la 7.6 de Ensight, les groupes vides sont autorisés
-    // et ils sont nécessaires lorsque le maillage évolue au cours du temps
-    //if (grp.empty()) // Le groupe est vide
+    // Since Ensight 7.6, empty groups are allowed
+    // and they are necessary when the mesh evolves over time
+    //if (grp.empty()) // The group is empty
     //continue;
     GroupPartInfo* gpi = new GroupPartInfo(grp, partid, m_use_degenerated_hexa);
     m_parts.add(gpi);
     ++partid;
 
     GroupPartInfo& current_grp = *gpi;
-    // Il faut maintenant déterminer combien d'éléments de chaque type
-    // ensight (tria3, hexa8, ...) on a dans le groupe.
+    // Now we must determine how many elements of each type
+    // ensight (tria3, hexa8, ...) are in the group.
     // two versions: if extra item types are added switch to an optimized version
     // (a large amount of types may be added, equal to the number of elements)
     if (ItemTypeMng::nbBuiltInItemType() == ItemTypeMng::nbBasicItemType()) // no extra type
@@ -973,25 +971,24 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sauvegarde la connectivité des éléments d'un groupe.
+ * \brief Saves the connectivity of elements in a group.
  
  \relates DumpWEnsight7
 
- Sauve la connectivité des éléments du groupe \a ensight_grp. la difficulté
- vient du fait que Ensight nécessite qu'on sauve les éléments suivant leur
- type, c'est à dire les hexa d'un côté, les tétra de l'autre et ainsi
- de suite. \a ensight_grp.m_nb_sub_part[] contient pour le nombre d'éléments
- pour chaque types ensight. On parcours donc la liste des éléments du groupe
- autant de fois qu'il y a de types ensight possible (4 pour les mailles,
- 2 pour les faces) et à chaque passe on ne sauve que les éléments qui sont
- du bon type. C'est un peu fastidieux mais cela évite d'avoir à gérer une
- liste pour chaque sous-type.
+ Saves the connectivity of the elements in group \a ensight_grp. The difficulty
+ comes from the fact that Ensight requires that elements be saved according to their
+ type, that is, hexa on one side, tetra on the other, and so on.
+ \a ensight_grp.m_nb_sub_part[] contains the number of elements
+ for each ensight type. Therefore, we iterate through the list of elements of the group
+autant de fois qu'il y a de possible Ensight types (4 for meshes,
+2 for faces), and in each pass, we only save elements that are
+of the correct type. It is a bit tedious, but it avoids having to manage a
+list for each subtype.
 
- \param ofile flot de sortie
- \param nodes_index indice de chaque noeud dans le tableau des coordonnées
- de Ensight. 
- \param ensight_grp  groupe à sauver
- \param wf écrivain
+ \param ofile output stream
+ \param nodes_index index of each node in the Ensight coordinate array.
+ \param ensight_grp group to save
+ \param wf writer
 */
 void DumpWEnsight7::
 _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
@@ -1002,8 +999,8 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
   writeFileString(ofile, "part");
   writeFileInt(ofile, ensight_grp.partId());
   if (isParallelOutput()) {
-    // Dans le cas d'une sortie parallele, prefixe le nom du groupe par le
-    // numéro du CPU.
+    // In the case of parallel output, prefix the group name with the
+    // CPU number.
     std::ostringstream ostr;
     ostr << igrp.name().localstr() << "_CPU" << rank();
     writeFileString(ofile, ostr.str().c_str());
@@ -1028,7 +1025,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
     writeFileInt(ofile, nb_sub_part);
 
 #if 0
-    // Sauve les uniqueId() des entités
+    // Save the uniqueId() of the entities
     for( ConstArrayView<Item>::const_iter i(items); i(); ++i ){
       Item mi = *i;
       writeFileInt(ofile,mi.uniqueId()+1);
@@ -1036,13 +1033,13 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
 #endif
 
     if (type_name == "nfaced") {
-      // Traitement particulier pour les mailles non standards
-      // Comme nos faces ne sont pas orientées par rapport à une
-      // maille, on utilise la connectivité locale de chaque face.
-      // 1. Sauve le nombre de faces de chaque élément
+      // Special handling for non-standard meshes
+      // Since our faces are not oriented relative to a
+      // mesh, we use the local connectivity of each face.
+      // 1. Save the number of faces for each element
       {
         if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
-          // Tous les éléments ont le même nombre de faces
+          // All elements have the same number of faces
           Item mi = *items.data();
           Cell cell = mi.toCell();
           Integer nb_face = cell.nbFace();
@@ -1056,8 +1053,8 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
           }
         }
       }
-      // 2. Sauve pour chaque elément, le nombre de noeuds de chacune
-      //    de ces faces
+      // 2. Save for each element, the number of nodes for each
+      // of these faces
       if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
         for (Item mi : items) {
           const ItemTypeInfo* item_info = mi.typeInfo();
@@ -1074,8 +1071,8 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
           }
         }
       }
-      // 3. Sauve pour chaque face de chaque élément la liste de ces
-      //    noeuds
+      // 3. Save for each face of each element the list of these
+      // nodes
       if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
         for (Item item : items) {
           Cell cell(item.toCell());
@@ -1087,11 +1084,11 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
             Integer nb_node = local_face.nbNode();
             array_id.resize(nb_node);
             for (Integer y = 0; y < nb_node; ++y) {
-              // Inversion du sens des noeuds
-              // A priori, il y a un bug dans Ensight (7.4.1(g)) concernant les
-              // intersections de ce type d'éléments avec les objets
-              // Ensight (plan, sphere, ...). Quelle que soit l'orientation
-              // des faces retenues, le comportant n'est pas correcte.
+              // Node direction inversion
+              // A priori, there is a bug in Ensight (7.4.1(g)) concerning the
+              // intersections of this type of elements with Ensight
+              // objects (plane, sphere, ...). Regardless of the orientation
+              // of the retained faces, the behavior is not correct.
               array_id[y] = nodes_index[cell.node(local_face.node(y)).localId()];
             }
             writeFileArray(ofile, array_id);
@@ -1115,16 +1112,16 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       }
     }
     else if (type_name == "nsided") {
-      // Traitement particulier pour les faces à plus de 4 noeuds:
+      // Special handling for faces with more than 4 nodes:
 
-      // 1. Sauve pour chaque elément, le nombre de ses noeuds
+      // 1. Save for each element, the number of its nodes
       //cerr << "** NSIDED ELEMENT\n";
       for (Item mi : items) {
         ItemWithNodes e = mi.toItemWithNodes();
         Integer nb_node = e.nbNode();
         writeFileInt(ofile, nb_node);
       }
-      // 2. Sauve pour chaque elément la liste de ces noeuds
+      // 2. Save for each element the list of its nodes
       for (Item mi : items) {
         ItemWithNodes e = mi.toItemWithNodes();
         Integer nb_node = e.nbNode();
@@ -1136,14 +1133,14 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       }
     }
     else {
-      // Cas général
+      // General case
 
       Integer nb_node = type_info.nbNode();
       array_id.resize(nb_node);
 
-      // Sauvegarde les éléments.
+      // Save the elements.
 
-      // Sauve la connectivité des éléments
+      // Save the connectivity of the elements
       if (type_info.hasReindex()) {
         ConstArrayView<Integer> reindex = type_info.reindex();
         for (Item mi : items) {
@@ -1170,29 +1167,27 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Applique un fonctor sur les éléments d'un groupe.
+ * \brief Applies a functor to the elements of a group.
  
  \relates DumpWEnsight7
 
- Applique le fonctor \a from_func sur le groupe \a ensight_grp.
+ Applies the functor \a from_func to the group \a ensight_grp.
 
- Le fonctor doit dériver de WriteBase et est utilisé pour sauver
- une variable d'un type donné. Dans Ensight, les variables sont sauvées pour
- chaque partie et chaque type d'éléments (hexa8, ...). Le fonctionnement
- est similaire à celui de al sauvegarde de la géométrie (voir
- la fonction _ensightSaveGroup()). Il faut donc procéder de la même
- manière, à savoir itérer sur le groupe autant de fois qu'il y a de type
- d'élément et ne sauvegarde à une itération que les variables pour
- un élément de type donné.
+ The functor must derive from WriteBase and is used to save a variable of a
+ given type. In Ensight, variables are saved for each part and each element
+ type (hexa8, ...). The operation is similar to saving the geometry (see the
+ function _ensightSaveGroup()). Therefore, the same procedure must be followed:
+ iterate over the group as many times as there are element types, and in one
+ iteration, only save the variables for a given element type.
 
- \warning Cette fonction ne supportera pas le traitement des variables
- définies sur un groupe autre que l'ensemble des éléments.
+ \warning This function will not support the processing of variables defined
+ on a group other than the set of elements.
 
  \sa WriteFunctor
 
- \param ofile        flot de sortie
- \param ensight_grp  groupe
- \param from_func    fonctor
+ \param ofile output stream
+ \param ensight_grp group
+ \param from_func functor
 */
 void DumpWEnsight7::
 _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
@@ -1203,9 +1198,9 @@ _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
   writeFileString(ofile, "part");
   writeFileInt(ofile, ensight_grp.partId());
 
-  // Les éléments de même types (en particulier les 'nfaced', 'haxa8' ou 'nsided')
-  // doivent être écrits d'un seul bloc (donc label de type unifié).
-  // Par ailleurs, les données vectorielles doivent être entrelacés.
+  // Elements of the same type (especially 'nfaced', 'haxa8', or 'nsided')
+  // must be written in a single block (thus unified type label).
+  // Furthermore, vector data must be interleaved.
   String last_type_name;
   ScopedPtrT<WriteBase> func;
   for (Integer i = 0; i < ensight_grp.nbType(); ++i) {
@@ -1216,7 +1211,7 @@ _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       continue;
     String type_name = type_info.name();
     if (type_name != last_type_name) {
-      // Cloture la précédente écriture
+      // Close the previous write
       if (func.get()) {
         func->end();
         func->putValue(ofile);
@@ -1227,11 +1222,11 @@ _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       func->begin();
     }
 
-    // Sauvegarde les variables.
+    // Save the variables.
     func->write(items);
   }
 
-  // Cloture finale
+  // Final closure
   if (func.get()) {
     func->end();
     func->putValue(ofile);
@@ -1352,11 +1347,11 @@ _writeFileHeader(std::ostream& o, bool write_c_binary)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Abstraction d'un fichier de sortie pour ensight.
+ * \brief Abstraction of an output file for ensight.
  *
- * Dans le cas séquentiel, il s'agit réellement d'un fichier. Dans le cas
- * parallèle, il peut s'agir d'un fichier ou d'un flot mémoire suivant qu'on
- * est un processeur maître ou esclave.
+ * In the sequential case, it is actually a file. In the parallel case, it
+ * can be a file or a memory stream depending on whether it is a master or
+ * slave processor.
  */
 class DumpWEnsight7OutFile
 {
@@ -1377,7 +1372,7 @@ class DumpWEnsight7OutFile
         m_dw.warning() << "Unable to open file " << filename;
     }
     else {
-      // TODO attention fuites mémoires.
+      // TODO attention to memory leaks.
       m_stream = &m_strstream;
     }
     ARCANE_CHECK_PTR(m_stream);
@@ -1402,9 +1397,9 @@ class DumpWEnsight7OutFile
       if (m_is_master) {
         ARCANE_CHECK_PTR(m_filestream);
 
-        // Le maitre parcours tous les processeurs et demande pour chacun
-        // d'eux la taille de chaque sauvegarde et si elle n'est pas nulle,
-        // réceptionne le message.
+        // The master iterates through all processors and requests from each
+        // the size of each save, and if it is not zero,
+        // receives the message.
         Integer nb_proc = parallel_mng->commSize();
         UniqueArray<int> len_array(1);
         UniqueArray<Byte> str_array;
@@ -1424,17 +1419,17 @@ class DumpWEnsight7OutFile
       }
       else {
         ARCANE_CHECK_PTR(m_strstream);
-        // Un esclave envoie au processeur maître (actuellement le processeur 0)
-        // la taille de ses données puis ces données.
-        // Il faut bien prendre la longueur de la chaîne retournée par m_strstream
-        // et pas uniquement c_str() car le flux pouvant contenant des informations
-        // au format binaire, on s'arrêterait au premier zéro.
+        // A slave sends to the master processor (currently processor 0)
+        // the size of its data and then the data itself.
+        // It is important to take the length of the string returned by m_strstream
+        // and not just c_str() because the stream might contain information
+        // in binary format, and we would stop at the first zero.
         UniqueArray<int> len_array(1);
         std::string str = m_strstream.str();
         Integer len = arcaneCheckArraySize(str.length());
         UniqueArray<Byte> bytes(len);
         {
-          // Recopie dans bytes la chaîne \a str
+          // Copy the string \a str into bytes
           Integer index = 0;
           for (ConstIterT<std::string> i(str); i(); ++i, ++index)
             bytes[index] = *i;
@@ -1492,27 +1487,27 @@ beginWrite()
   if (is_parallel && m_is_parallel_output)
     m_is_master = parallel_mng->commRank() == 0;
 
-  // Détermine et créé le répertoire ou seront écrites les sorties
-  // de cette itération.
+  // Determines and creates the directory where the outputs will be written
+  // for this iteration.
   _buildPartDirectory();
 
   IMesh* mesh = m_mesh;
 
-  // Récupère la liste des groupes et leur donne à chacun un identifiant
-  // unique pour Ensight (part). Le numéro de l'identifiant débute à 2, le numéro 1
-  // est pour la liste des noeuds
+  // Retrieves the list of groups and assigns each a unique identifier
+  // unique for Ensight (part). The identifier number starts at 2, number 1
+  // is for the node list
   {
 
     ItemGroupList list_group;
-    // Si la liste des groupes à sauver est vide, sauve tous les groupes.
-    // Sinon, sauve uniquement les groupes spécifiés.
+    // If the list of groups to save is empty, save all groups.
+    // Otherwise, save only the specified groups.
     Integer nb_group = m_save_groups.count();
     if (nb_group == 0)
       list_group.clone(mesh->groups());
     else
       list_group.clone(m_save_groups);
-    // Regarde la liste des variables partielles, et ajoute leur groupe à la liste
-    // des groupes à sauver.
+    // Looks at the list of partial variables, and adds their group to the list
+    // of groups to save.
     for (VariableList::Enumerator ivar(m_save_variables); ++ivar;) {
       IVariable* var = *ivar;
       if (!var->isPartial())
@@ -1527,7 +1522,7 @@ beginWrite()
 
     _computeGroupParts(list_group, partid);
 
-    // Récupère le nombre total d'eléments dans les groupes.
+    // Retrieves the total number of elements in the groups.
     Integer total_nb_element = 0;
     m_total_nb_group = 0;
     for (auto i : m_parts) {
@@ -1540,7 +1535,7 @@ beginWrite()
     debug() << "Add nodes        " << mesh->nbNode();
   }
 
-  // Sauvegarde la géométrie au format Ensight7 gold
+  // Saves the geometry in Ensight7 gold format
   if (!(m_times.size() > 1 && m_force_first_geometry)) {
     String filename;
     _buildFileName("ensight.geo", filename);
@@ -1559,9 +1554,9 @@ beginWrite()
     IMesh* mesh = m_mesh;
     NodeGroup all_nodes = mesh->allNodes();
 
-    // Ce tableau sert pour chaque entité maille, face ou arête pour
-    // référencer ses noeuds par rapport au tableau de coordonnées
-    // utilisé par Ensight. Le premier élément de ce tableau à pour indice 1
+    // This array is used for each mesh entity, face, or edge to
+    // reference its nodes relative to the coordinate array
+    // used by Ensight. The first element of this array has index 1
     UniqueArray<Integer> all_nodes_index(mesh->itemFamily(IK_Node)->maxLocalId());
     all_nodes_index.fill(0);
 
@@ -1587,7 +1582,7 @@ beginWrite()
       writeFileInt(wf.stream(), all_nodes.size());
       wf.begin();
 
-      // Stocke les indices locaux pour Ensight
+      // Stores the local indices for Ensight
       {
         Integer ensight_index = 1;
         ENUMERATE_ITEM (i_item, all_nodes) {
@@ -1597,7 +1592,7 @@ beginWrite()
         }
       }
 
-      // Affiche les numéros unique des noeuds
+      // Displays the unique node numbers
 #if 0
       {
         ENUMERATE_ITEM(i_item,all_nodes){
@@ -1606,7 +1601,7 @@ beginWrite()
         }
       }
 #endif
-      // Affiche les coordonnées de chaque noeud
+      // Displays the coordinates of each node
       ENUMERATE_ITEM (i_item, all_nodes) {
         const Item& item = *i_item;
         wf.write(item.localId());
@@ -1627,7 +1622,7 @@ beginWrite()
 void DumpWEnsight7::
 endWrite()
 {
-  // Sauvegarde des identifiants uniques
+  // Saving unique identifiers
   if (m_save_uids) {
     VariableCellReal cell_uids(VariableBuildInfo(m_mesh, "CellUid", IVariable::PPrivate | IVariable::PTemporary));
     ENUMERATE_CELL (icell, m_mesh->allCells()) {
@@ -1639,8 +1634,8 @@ endWrite()
     cell_uid_var->notifyBeginWrite();
     write(cell_uid_var, cell_uid_var->data());
 
-    // GG: NOTE: je ne suis pas sur que cela fonctionne bien.
-    //TODO: supprimer l'utilisation de deux variables
+    // GG: NOTE: I am not sure this works well.
+    //TODO: remove the use of two variables
     VariableNodeInteger node_uids(VariableBuildInfo(m_mesh, "NodeUid", IVariable::PPrivate | IVariable::PTemporary));
     UniqueArray<Real> node_uids2(m_mesh->nodeFamily()->allItems().size());
     ENUMERATE_NODE (inode, m_mesh->allNodes()) {
@@ -1656,7 +1651,7 @@ endWrite()
 
   String buf = m_base_directory.file("ensight.case");
 
-  // Seul un processeur maître génère un fichier 'case'
+  // Only a master processor generates a 'case' file
   if (m_is_master) {
 
     m_case_file.open(buf.localstr());
@@ -1681,17 +1676,17 @@ endWrite()
     m_case_file << "\nVARIABLE\n";
     m_case_file << m_case_file_variables.str();
 
-    // Sauvegarde en temps. Pour paraview, il faut le mettre apres les variables
+    // Saving in time. For paraview, it must be placed after the variables
     m_case_file << "\nTIME\n";
     m_case_file << "time set:              1\n";
     m_case_file << "number of steps:       " << m_times.size() << '\n';
     m_case_file << "filename start number: 0\n";
     m_case_file << "filename increment:    1\n";
     m_case_file << "time values:\n";
-    // Faire attention de ne pas dépasser les 79 caractères par ligne
-    // autorisés par Ensight. Pour être sur, on n'écrit qu'un temps pas
-    // ligne. Les temps sont sauvés le maximum de chiffres significatifs
-    // car Ensight n'aime pas que deux temps soient égaux.
+    // Be careful not to exceed 79 characters per line
+    // allowed by Ensight. To be sure, we only write one time step
+    // per line. The times are saved with the maximum number of significant digits
+    // because Ensight does not like two times being equal.
     std::streamsize old_precision = m_case_file.precision(FloatInfo<Real>::maxDigit());
     for (Integer i = 0, is = m_times.size(); i < is; ++i)
       m_case_file << m_times[i] << '\n';
@@ -1726,16 +1721,17 @@ endWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie la validité de la variable à sauvegarder
+ * \brief Checks the validity of the variable to be saved
  *
- * Seules les variables aux noeuds, aux faces ou aux mailles sont traitées.
+ * Only variables at nodes, faces, or cells are processed.
  *
- * Seules les variables qui sont dans la liste #m_save_variable_list sont
- * sauvées. Si cette liste est vide, elle sont toutes sauvées.
+ * Only variables in the #m_save_variable_list are saved. If this list is
+ * empty, all are saved.
  *
- * \retval true si la variable est valide
- * \retval false sinon
+ * \retval true if the variable is valid
+ * \retval false otherwise
  */
 bool DumpWEnsight7::
 _isValidVariable(IVariable& v) const
@@ -1745,9 +1741,8 @@ _isValidVariable(IVariable& v) const
   eItemKind ik = v.itemKind();
   if (ik != IK_Cell && ik != IK_Node && ik != IK_Face)
     return false;
-  // Si une liste de variable est spécifiée, vérifie que la variable est dans
-  // cette liste. Si cette liste est vide, on sauve automatiquement toutes les
-  // variables.
+  // If a variable list is specified, check that the variable is in
+  // this list. If this list is empty, all are automatically saved.
   Integer nb_var = m_save_variables.count();
   if (nb_var != 0) {
     return m_save_variables.contains(&v);
@@ -1758,16 +1753,16 @@ _isValidVariable(IVariable& v) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construit le nom de fichier pour un nom de variable ou de maillage.
+ * \brief Constructs the filename for a variable or mesh name.
  *
- Construit le nom de fichier dans lequel sera sauvegardé une variable ou
- un maillage de nom \a name. Le nom du fichier est retourné dans \a filename.
+ Constructs the filename in which a variable or
+ mesh named \a name will be saved. The filename is returned in \a filename.
  
- Le numéro de la protection est insérée à la fin du fichier sous la forme d'un nombre
- formaté avec #m_max_prots_digit \a caractères. Par exemple, pour 'Pression'
- à l'itération 4 avec #m_max_prot_digit égal à 6, on obtiendra le
- fichier de nom 'Pression000004'.
- \todo changer la determination du nom de fichier et utiliser Directory.
+ The protection number is inserted at the end of the file in the form of a number
+ formatted with #m_max_prots_digit \a characters. For example, for 'Pressure'
+ at iteration 4 with #m_max_prot_digit equal to 6, we will get the
+ filename 'Pressure000004'.
+ \todo change the filename determination and use Directory.
 */
 void DumpWEnsight7::
 _buildFileName(const String& name, String& filename)
@@ -1787,7 +1782,7 @@ _buildFileName(const String& name, String& filename)
 
     {
       OStringStream ostr;
-      ostr().fill('0'); // Caractère de remplissage.
+      ostr().fill('0'); // Fill character.
       ostr().width(m_max_prots_digit);
       ostr() << current_time;
       fn_builder += ostr.str();
@@ -1820,14 +1815,14 @@ _isSameKindOfGroup(const ItemGroup& group, eItemKind item_kind)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Construit le répertoire où seront sauvées les variables.
+ * \brief Constructs the directory where the variables will be saved.
  *
- Si on souhaite les sorties sur plusieurs fichiers, le répertoire du bloc courant
- a pour nom 'bloc******'. Par exemple, pour le 4ème bloc, il s'agit de
+ If you want the outputs in multiple files, the directory of the current block
+ is named 'bloc******'. For example, for the 4th block, it is
  'bloc000004'.
 
- le numéro du bloc est insérée sous la forme d'un nombre
- formaté avec #m_max_prots_digit \a caractères. 
+ the block number is inserted in the form of a number
+ formatted with #m_max_prots_digit \a characters. 
 */
 void DumpWEnsight7::
 _buildPartDirectory()
@@ -1847,7 +1842,7 @@ _buildPartDirectory()
   if (has_prot) {
     OStringStream ostr;
     ostr() << "bloc";
-    ostr().fill('0'); // Caractère de remplissage.
+    ostr().fill('0'); // Fill character.
     ostr().width(m_max_prots_digit);
     ostr() << prot_index;
     //ostr() << '\0';
@@ -1874,10 +1869,10 @@ _writeWildcardFilename(std::ostream& ofile, const String& filename, char joker)
   else {
     ofile << " bloc";
     Integer nb_time = m_times.size();
-    // Si le nombre de temps est inférieur à la taille d'un fileset-set,
-    // il n'y a pas besoin de mettre une '*'. On peut directement
-    // mettre des zéros. Cela est aussi indispensable pour empêcher
-    // paraview de planter quand il relit ce genre de fichiers.
+    // If the number of times is less than the size of a fileset-set,
+    // there is no need to put a '*'. We can directly
+    // put zeros. This is also essential to prevent
+    // paraview from crashing when it rereads this type of files.
     if (nb_time <= m_fileset_size)
       joker = '0';
     for (Integer i = 0; i < m_max_prots_digit; ++i)
@@ -1917,8 +1912,9 @@ _fileOuttype() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables scalaires.
+ * \brief Saves scalar variables.
  */
 template <typename T>
 void DumpWEnsight7::
@@ -2012,8 +2008,9 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables tableau de dimension constante (par ligne) de scalaires
+ * \brief Saving constant dimension array variables (by row) of scalars
  */
 template <typename T>
 void DumpWEnsight7::
@@ -2108,8 +2105,9 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables tableau de dimension non constante (par ligne) scalaires.
+ * \brief Saving non-constant dimension array variables (by row) of scalars.
  */
 template <typename T>
 void DumpWEnsight7::
@@ -2126,8 +2124,9 @@ _writeRealValT(IVariable& v, ConstMultiArray2View<T> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables vectorielles.
+ * \brief Saving vector variables.
  */
 void DumpWEnsight7::
 writeVal(IVariable& v, ConstArrayView<Real3> ptr)
@@ -2213,8 +2212,9 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables tableau de vecteurs
+ * \brief Saving vector array variables
  */
 void DumpWEnsight7::
 writeVal(IVariable& v, ConstArray2View<Real3> ptr)
@@ -2306,8 +2306,9 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauvegarde des variables tableau de vecteurs
+ * \brief Saving vector array variables
  */
 void DumpWEnsight7::
 writeVal(IVariable& v, ConstMultiArray2View<Real3> ptr)
@@ -2323,8 +2324,9 @@ writeVal(IVariable& v, ConstMultiArray2View<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Post-traitement au format Ensight7.
+ * \brief Post-processing in Ensight7 format.
  */
 class Ensight7PostProcessorService
 : public PostProcessorWriterBase
@@ -2379,8 +2381,9 @@ notifyEndWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Post-traitement au format Ensight7.
+ * \brief Post-processing in Ensight7 format.
  */
 class Ensight7PostProcessorServiceV2
 : public ArcaneEnsight7PostProcessorObject

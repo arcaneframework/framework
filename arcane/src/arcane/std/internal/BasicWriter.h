@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicWriter.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain simple.                                                          */
+/* Simple writer.                                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_BASICWRITER_H
@@ -29,8 +29,9 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture/Ecriture simple.
+ * \brief Simple read/write.
  */
 class BasicWriter
 : public BasicReaderWriterCommon
@@ -43,7 +44,7 @@ class BasicWriter
 
  public:
 
-  //!@{ Implémentation de IDataWriter
+  //!@{ Implementation of IDataWriter
   void beginWrite(const VariableCollection& vars) override;
   void endWrite() override;
   void setMetaData(const String& meta_data) override;
@@ -52,19 +53,21 @@ class BasicWriter
 
  public:
 
-  //! Positionne le service de compression. Doit être appelé avant initialize()
+  //! Sets the compression service. Must be called before initialize()
   void setDataCompressor(Ref<IDataCompressor> data_compressor)
   {
     _checkNoInit();
     m_data_compressor = data_compressor;
   }
-  //! Positionne le service de calcul de hash pour la comparaison. Doit être appelé avant initialize()
+  //! Sets the hash calculation service for comparison. Must be called before
+  //! initialize()
   void setCompareHashAlgorithm(Ref<IHashAlgorithm> hash_algo)
   {
     _checkNoInit();
     m_compare_hash_algorithm = hash_algo;
   }
-  //! Indique si on sauve les valeurs des variables et des groupes. Si \a false, sauve uniquement les hash
+  //! Indicates whether to save the values of variables and groups. If false,
+  //! only saves the hashes
   void setSaveValues(bool v)
   {
     _checkNoInit();
@@ -77,7 +80,7 @@ class BasicWriter
   bool m_want_parallel = false;
   bool m_is_gather = false;
   bool m_is_init = false;
-  //! Indique si on sauve les valeurs
+  //! Indicates whether to save the values
   bool m_is_save_values = true;
   Int32 m_version = -1;
 

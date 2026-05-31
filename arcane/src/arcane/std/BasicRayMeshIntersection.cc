@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicRayMeshIntersection.cc                                 (C) 2000-2026 */
 /*                                                                           */
-/* Service basique de calcul d'intersection entre segments et maillage.      */
+/* Basic service for calculating intersection between segments and mesh.     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,17 +40,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul l'intersection d'un rayon avec un ensemble de triangles en 3D.
+ * \brief Calculates the intersection of a ray with a set of triangles in 3D.
  *
- * Un rayon est une demi-droite et est défini par son origine et sa direction.
- * Il faut positionner les rayons (via setRays()) et la liste des triangles
- * (via setTriangles()) puis appeler la méthode compute(). En retour, on
- * peut récupérer pour chaque rayon la distance (distances()) et le triangle intersecté
+ * A ray is a half-line and is defined by its origin and direction.
+ * You must position the rays (via setRays()) and the list of triangles
+ * (via setTriangles()) then call the compute() method. In return, you can
+ * retrieve the distance (distances()) and the intersected triangle
  * (intersectedTriangleIndexes()).
  *
- * Les vues passées en argument (setRays() et setTriangles()) ne doivent pas être
- * modifiées tant que l'instance existe.
+ * The views passed as arguments (setRays() and setTriangles()) must not be
+ * modified while the instance exists.
  */
 class RayTriangle3DIntersection
 : public TraceAccessor
@@ -62,7 +63,7 @@ class RayTriangle3DIntersection
   }
 
   /*!
-   * \brief Position la liste des rayons dont on souhaite calculer l'intersection.
+   * \brief Positions the list of rays for which intersection is desired.
    */
   void setRays(Real3ConstArrayView origins,Real3ConstArrayView directions)
   {
@@ -70,11 +71,11 @@ class RayTriangle3DIntersection
     m_rays_direction = directions;
   }
   /*!
-   * \brief Positionne la liste des triangles dont on souhaite calculer l'intersection
-   * avec les rayons. Le tableau \a indexes contient pour chaque triangle les indices
-   * dans le tableau \a coordinates de chaque sommet. Par exemple,
-   * indexes[0..2] contient les indices des sommets du 1er triangle, indexes[3..5]
-   * ceux du second.
+   * \brief Positions the list of triangles for which intersection is desired
+   * with the rays. The array \a indexes contains for each triangle the indices
+   * in the \a coordinates array of each vertex. For example,
+   * indexes[0..2] contains the indices of the vertices of the 1st triangle, indexes[3..5]
+   * those of the second.
    */
   void setTriangles(Real3ConstArrayView coordinates,Int32ConstArrayView indexes)
   {
@@ -82,19 +83,19 @@ class RayTriangle3DIntersection
     m_triangles_indexes = indexes;
   }
   /*!
-   * \brief Calcul l'intersection de chaque rayon avec la liste des triangles.
-   * Si un rayon intersecte plusieurs triangles, on concerve celui dont
-   * la distance par rapport à l'origine du rayon est la plus petite.
+   * \brief Calculates the intersection of each ray with the list of triangles.
+   * If a ray intersects multiple triangles, we keep the one whose
+   * distance from the ray origin is the smallest.
    */
   void compute();
   /*!
-   * \brief Distance de l'origine d'un rayon à son point d'intersection.
-   * Distance (exprimée relativivement à la norme de \a directions)
-   * du point d'intersection d'un rayon par rapport à son origine.
-   * Pour le rayon \a i, son point d'intersection est donc donnée
-   * par la formule (origins[i] + distances[i]*directions[i]).
-   * La distance est négative si le rayon n'intersecte aucun triangle.
-   * Ce tableau est remplit lors de l'appel à compute().
+   * \brief Distance from the origin of a ray to its intersection point.
+   * Distance (expressed relative to the norm of \a directions)
+   * of a ray's intersection point relative to its origin.
+   * For ray \a i, its intersection point is therefore given
+   * by the formula (origins[i] + distances[i]*directions[i]).
+   * The distance is negative if the ray does not intersect any triangle.
+   * This array is filled when compute() is called.
    */
   RealConstArrayView distances()
   {
@@ -102,11 +103,11 @@ class RayTriangle3DIntersection
   }
   
   /*!
-   * \brief Indices des triangles intersectés.
-   * Indice dans le tableau donnée par \a setTriangles() du triangle
-   * intersecté par chaque rayon. Cet indice vaut (-1) si un rayon
-   * n'intersecte pas un triangle. Ce tableau est remplit lors
-   * de l'appel à compute().
+   * \brief Indices of intersected triangles.
+   * Index in the array provided by \a setTriangles() of the triangle
+   * intersected by each ray. This index is -1 if a ray
+   * does not intersect a triangle. This array is filled when
+   * compute() is called.
    */
   Int32ConstArrayView intersectedTriangleIndexes()
   {
@@ -186,23 +187,24 @@ _compute2(Int32 triangle_id,Real3 p0,Real3 p1,Real3 p2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul l'intersection de la demi-droite [origin,direction)
- * avec le triangle (p0,p1,p2).
+ * \brief Calculates the intersection of the half-line [origin,direction)
+ * with the triangle (p0,p1,p2).
  *
- * La direction n'a pas besoin d'être normalisée.
+ * The direction does not need to be normalized.
  *
- * La position du point d'intersection est P = origin + t * direction
- * où \a t est la valeur retournée par cette fonction. Cette valeur
- * est négative si si aucun point d'intersection n'est trouvé.
+ * The position of the intersection point is P = origin + t * direction
+ * where \a t is the value returned by this function. This value
+ * is negative if no intersection point is found.
  */
 Real RayTriangle3DIntersection::
 checkIntersection(Real3 origin,
                   Real3 direction,
                   Real3 p0,Real3 p1,Real3 p2)
 {
-  // Cette routine s'inspire du code de la bibliothèque WildMagic
-  // dont la licence est ci-dessous.
+  // This routine is inspired by the code from the WildMagic library
+  // whose license is below.
   
   // Wild Magic Source Code
   // David Eberly
@@ -251,18 +253,18 @@ checkIntersection(Real3 origin,
     if (fDdE1xQ >= (Real)0.0)
     {
       Real diff = fDdN-(fDdQxE2 + fDdE1xQ);
-      // L'epsilon sert si le segment traverse par la face à proximité
-      // d'une des arêtes de la face. Dans ce cas, on considère qu'il
-      // y a intersection. Sans cela, à cause des arrondis numériques,
-      // un segment pourrait traverser le maillage en passant par une
-      // arête entre deux faces sans intersecter ces dernières.
+      // Epsilon is used if the segment passes through the face near
+      // one of the face edges. In this case, we consider there
+      // to be an intersection. Without this, due to numerical rounding,
+      // a segment could pass through the mesh by going through an
+      // edge between two faces without intersecting them.
       if (diff>=0.0 || diff>-ZERO_TOLERANCE)
       {
         // line intersects triangle, check if segment does
         Real fQdN = -fSign*math::dot(kDiff,kNormal);
         
-        // Comme il s'agit d'une demi-droite et pas d'un segment,
-        // il y a toujours intersection si \a t est positif.
+        // Since this is a half-line and not a segment,
+        // there is always an intersection if \a t is positive.
 #if 0
         Real fExtDdN = m_pkSegment->Extent*fDdN;
         if (-fExtDdN <= fQdN && fQdN <= fExtDdN)
@@ -434,8 +436,9 @@ class BasicRayFaceIntersector
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service basique de calcul d'intersection entre segments et maillage.
+ * \brief Basic service for calculating intersection between segments and mesh.
  */
 class BasicRayMeshIntersection
 : public BasicService
@@ -540,7 +543,7 @@ compute(Real3ConstArrayView segments_position,
   Real3UniqueArray faces_min_bb(max_face_local_id);
   Real3UniqueArray faces_max_bb(max_face_local_id);
 
-  // Calcule les bounding box
+  // Calculate the bounding boxes
   {
     ENUMERATE_FACE(iface,outer_faces){
       Int32 lid = iface.localId();
@@ -550,8 +553,8 @@ compute(Real3ConstArrayView segments_position,
         _checkBoundingBox(nodes_coordinates[inode],&face_min_bb,&face_max_bb);
       _checkBoundingBox(face_min_bb,&mesh_min_bounding_box,&mesh_max_bounding_box);
       _checkBoundingBox(face_max_bb,&mesh_min_bounding_box,&mesh_max_bounding_box);
-      //TODO: peut-etre ajouter un epsilon autour de le BB pour eviter
-      // les erreurs d'arrondi dans la determination de l'intersection
+      //TODO: maybe add an epsilon around the BB to avoid
+      // rounding errors in determining the intersection
       faces_min_bb[lid] = face_min_bb;
       faces_max_bb[lid] = face_max_bb;
     }
@@ -575,12 +578,12 @@ compute(Real3ConstArrayView segments_position,
     Int32 user_value = 0;
     ENUMERATE_FACE(iface,outer_faces){
       const Face& face = *iface;
-      // On ne traite que ses propres faces
+      // Only process its own faces
       if (!face.isOwn())
         continue;
       Int32 lid = face.localId();
-      // En 3D, cherche si intersection avec la bounding box.
-      // s'il n'y en a pas, inutile d'aller plus loin.
+      // In 3D, check for intersection with the bounding box.
+      // If there is none, there is no need to go further.
       bool is_bb = true;
       if (is_3d)
         is_bb = RayTriangle3DIntersection::checkBoundingBox(position,direction,faces_min_bb[lid],faces_max_bb[lid]);
@@ -645,15 +648,15 @@ compute(IItemFamily* ray_family,
         VariableParticleReal& distances,
         VariableParticleInt32& rays_face)
 {
-  // NOTE: rays_orig_face n'est pas utilisé.
+  // NOTE: rays_orig_face is not used.
 
   IMesh* mesh = ray_family->mesh();
   IParallelMng* pm = mesh->parallelMng();
   Int32 my_rank = pm->commRank();
-  // Suppose que les rayons sont compactés
+  // Assume that the rays are compacted
   Integer nb_local_ray = ray_family->allItems().size();
   //if (nb_local_ray!=ray_family->maxLocalId()){
-  //fatal() << "La famille de rayons doit être compactée nb=" << nb_local_ray
+  //fatal() << "The ray family must be compacted nb=" << nb_local_ray
   //          << " max_id=" << ray_family->maxLocalId();
   //}
   Integer global_nb_ray = pm->reduce(Parallel::ReduceSum,nb_local_ray);
@@ -661,9 +664,9 @@ compute(IItemFamily* ray_family,
     return;
   info() << "LOCAL_NB_RAY=" << nb_local_ray << " GLOBAL=" << global_nb_ray;
 
-  // Recopie dans un tableau local les informations d'entrée.
-  // Cela est toujours nécessaire car les particules ne sont pas forcément
-  // compactées et il peut y avoir des trous dans la numérotation.
+  // Copy input information into a local array.
+  // This is always necessary because particles are not necessarily
+  // compacted and there may be holes in the numbering.
   Real3UniqueArray local_positions(nb_local_ray);
   Real3UniqueArray local_directions(nb_local_ray);
 
@@ -685,7 +688,7 @@ compute(IItemFamily* ray_family,
       unique_ids[index] = (*iitem).uniqueId();
     }
 
-    // En parallèle, pour l'instant récupère les rayons des autres processeurs
+    // In parallel, currently retrieve rays from other processors
 
     Real3UniqueArray all_positions;
     pm->allGatherVariable(local_positions,all_positions);
@@ -707,7 +710,7 @@ compute(IItemFamily* ray_family,
     RealUniqueArray all_distances(global_nb_ray);
     Real3UniqueArray all_intersections(global_nb_ray);
     Int32UniqueArray all_faces(global_nb_ray);
-    // Mettre à (-1) les faces dont je ne suis pas le propriétaire
+    // Set faces that I am not the owner of to (-1)
     for( Integer z=0, zn=all_orig_faces.size(); z<zn; ++z ){
       if (all_owners[z]!=my_rank)
         all_orig_faces[z] = NULL_ITEM_LOCAL_ID;
@@ -754,7 +757,7 @@ compute(IItemFamily* ray_family,
       for( Integer i=0; i<nb_total_found; ++i ){
         const FoundInfo& fi = global_founds_info[i];
         Int32 owner = fi.owner;
-        // Il ne faut traiter que ses propres rayons
+        // Only process its own rays
         if (owner!=my_rank)
           continue;
         Int32 local_id = fi.local_id;
@@ -795,7 +798,7 @@ compute(IItemFamily* ray_family,
 
     compute(local_positions,local_directions,orig_faces,user_values,out_intersections,out_distances,out_faces);
 
-    // Recopie en sortie les valeurs dans les variables correspondantes.
+    // Copy values back to the corresponding variables in the output.
     ENUMERATE_PARTICLE(iitem,ray_family->allItems()){
       Integer index = iitem.index();
       intersections[iitem] = out_intersections[index];
@@ -805,7 +808,7 @@ compute(IItemFamily* ray_family,
 
   }
 
-  // Pour test, écrit les rayons et leur point d'impact.
+  // For testing, write the rays and their impact point.
   {
     Integer nb_new_ray = ray_family->nbItem();
     RealUniqueArray local_distances(nb_new_ray);

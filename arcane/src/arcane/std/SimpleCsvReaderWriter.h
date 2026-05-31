@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleCsvReaderWriter.h                                     (C) 2000-2022 */
 /*                                                                           */
-/* Classe permettant de lire et d'écrire un fichier au format csv.           */
+/* Class allowing reading and writing a file in CSV format.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,7 +43,7 @@ class SimpleCsvReaderWriter
   , m_scientific_notation(false)
   {
     if (simple_table_internal.isNull())
-      ARCANE_FATAL("La réference passée en paramètre est Null.");
+      ARCANE_FATAL("The reference passed as a parameter is Null.");
   }
 
   SimpleCsvReaderWriter()

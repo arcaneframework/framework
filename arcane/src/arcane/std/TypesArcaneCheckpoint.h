@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TypesArcaneCheckpoint.h                                     (C) 2000-2005 */
 /*                                                                           */
-/* Types du module ArcaneCheckpointModule.                                   */
+/* Types of the ArcaneCheckpointModule module.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_TYPESCHECKPOINT_H
 #define ARCANE_STD_TYPESCHECKPOINT_H
@@ -38,5 +38,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,19 +1,19 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de donnée concernant le module de post-processing -->
+<!-- Data set options concerning the post-processing module -->
 
 <module name="ArcanePostProcessing" version="1.0" xml:space="preserve">
   <name lang='fr'>arcane-post-traitement</name>
   <userclass>User</userclass>
   <description>
-    Options concernant les **sorties** pour le dépouillement.
+    Options concerning the **outputs** for data extraction.
 
-    Les sorties peuvent être effectués en fonction du nombre d'itérations
-    (options *periode-sortie*) ou en fonction du temps physique
-    (option *frequence-sortie*). Par exemple:
+    Outputs can be performed based on the number of iterations
+    (options *output-period*) or based on physical time
+    (option *output-frequency*). For example:
     ~~~~~~{.xml}
     <periode-sortie>5</periode-sortie>
     ~~~~~~
@@ -90,8 +90,7 @@
       <name lang='fr'>format-service</name>
       <userclass>User</userclass>
       <description>
-	Indique le type de bibliothèque à utiliser pour les sorties
-	de dépouillement.
+	Specifies the type of library to use for data extraction outputs.
       </description>
     </service-instance>
 
@@ -104,10 +103,7 @@
       <name lang='fr'>frequence-sortie</name>
       <userclass>User</userclass>
       <description>
-	Temps physique entre deux sorties. Si cette valeur vaut
-	zéro, aucune sortie n'est effectuée. Si cette option est
-	présente avec l'option *periode-sortie*, cette dernière
-	n'est pas prise en compte.
+	Physical time between two outputs. If this value is zero, no output is performed. If this option is present with the *output-period* option, the latter is not taken into account.
       </description>
     </simple>
 
@@ -119,8 +115,7 @@
       <name lang='fr'>periode-sortie</name>
       <userclass>User</userclass>
       <description>
-	Nombre d'itérations entre deux sorties. Si cette valeur vaut
-	zéro, aucune sortie au cours des itérations n'est effectuée.
+	Number of iterations between two outputs. If this value is zero, no output is performed during the iterations.
       </description>
     </simple>
 
@@ -132,8 +127,7 @@
       <name lang='fr'>periode-sortie-historique</name>
       <userclass>User</userclass>
       <description>
-	Nombre d'itérations entre deux sorties pour les historiques. Si cette valeur vaut
-	zéro, les sorties pour les historiques sont désactivées.
+	Number of iterations between two outputs for histories. If this value is zero, outputs for histories are disabled.
       </description>
     </simple>
 
@@ -145,8 +139,8 @@
       <name lang='fr'>compression-sortie-historique</name>
       <userclass>User</userclass>
       <description>
-	Evite de sauvegarder tous les points d'abcisse entre les périodes de l'option *output-history-period*.
-        Cela permet de faire baisser la consomation mémoire notamment lorsque le code effectue un grand nombre d'itérations.
+	Prevents saving all abscissa points between the periods of the *output-history-period* option.
+        This helps reduce memory consumption, especially when the code performs a large number of iterations.
       </description>
     </simple>
 
@@ -158,7 +152,7 @@
       <name lang='fr'>sauvegarde-initiale</name>
       <userclass>User</userclass>
       <description>
-	Si vrai, effectue une sortie en fin d'initialisation.
+	If true, performs an output at the end of initialization.
       </description>
     </simple>
 
@@ -170,8 +164,7 @@
       <name lang='fr'>sauvegarde-temps-final</name>
       <userclass>User</userclass>
       <description>
-	Si vrai, effectue une sortie en fin d'exécution lorsque
-	le temps final est atteint.
+	If true, performs an output at the end of execution when the final time is reached.
       </description>
     </simple>
 
@@ -183,10 +176,7 @@
       <name lang='fr'>sortie-fin-execution</name>
       <userclass>User</userclass>
       <description>
-	Si vrai, effectue une sortie de dépouillement en fin
-	d'exécution. La fin d'exécution n'est pas forcément identique au
-	temps final en cas d'utilisations de protections/reprises
-	ou si on spécifie un nombre maximum d'itérations lors de l'exécution.
+	If true, performs a data extraction output at the end of execution. The end of execution is not necessarily identical to the final time if protections/resumptions are used or if a maximum number of iterations is specified during execution.
       </description>
     </simple>
 
@@ -195,7 +185,7 @@
       <name lang='fr'>depouillement</name>
       <userclass>User</userclass>
       <description>
-	Liste des variables et des groupes à dépouiller.
+	List of variables and groups to extract.
       </description>
 	
       <!-- - - - - - variable - - - - - -->
@@ -207,10 +197,7 @@
 	<name lang='fr'>variable</name>
 	<userclass>User</userclass>
 	<description>
-	  Nom d'une variable à exporter. Il est possible de mettre
-	  plusieurs options de ce type pour exporter plusieurs
-	  variables. Si aucune variable n'est spécifiée, aucune
-	  sortie n'est effectuée.
+	  Name of a variable to export. It is possible to include multiple options of this type to export several variables. If no variable is specified, no output is performed.
 	</description>
       </simple>
 
@@ -222,19 +209,14 @@
 	<name lang='fr'>groupe</name>
 	<userclass>User</userclass>
 	<description>
-	  Groupe d'entité de maillage sur lequel on souhaite
-	  exporter des variables.  Il est possible de mettre
-	  plusieurs options de ce type pour exporter les variables
-	  sur plusieurs groupes. Si cette option n'est pas
-	  spécifiée, les variables sont sorties sur l'ensemble du
-	  maillage.
+	  Group of mesh entities on which you wish to export variables. It is possible to include multiple options of this type to export variables on several groups. If this option is not specified, the variables are output for the entire mesh.
 	</description>
       </extended>
     </complex>
     <complex type = "ExperimentalPythonPlugin" name="experimental-python-plugin" optional="true">
       <description>
-	Plugin python pour test.
-        AVERTISSEMENT: Cette option est expériementale
+	Python plugin for testing.
+        WARNING: This option is experimental
       </description>
       <service-instance name="external-plugin"
                         type="Arcane::IExternalPlugin"

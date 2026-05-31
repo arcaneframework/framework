@@ -1,4 +1,4 @@
-﻿arcane_find_package(VTKVersionHelper) # Pour obtenir VTK_PACKAGE_PREFIX qui varie en focntion des versions de VTK
+﻿arcane_find_package(VTKVersionHelper) # To get VTK_PACKAGE_PREFIX which varies depending on VTK versions
 set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan BZip2 LZ4 Otf2 DbgHelp HWLoc Hiredis zstd DW)
 set(PUBLIC_PKGS MPI ${VTK_PACKAGE_PREFIX}IOXML ${VTK_PACKAGE_PREFIX}IOLegacy)
 set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
@@ -8,16 +8,16 @@ foreach(package ${PKGS})
 endforeach()
 
 # ----------------------------------------------------------------------------
-# Pour l'instant n'active pas KDI car il n'y a pas d'installation disponibles
+# For now, KDI is not enabled because no installations are available
 
 option(ARCANE_ENABLE_KDI "Is KDI service enabled?" OFF)
 
 set(ARCANE_HAS_KDI FALSE)
 
-# Nécessite CMake 3.26 pour la détection de l'API stable de Python
-# NOTE: aout 2024. Cependant il semble que cette API stable ne soit pas
-# toujours bien détectée (la cible CMake associée ne contient rien)
-# On utilise donc la cible Python classique temporairement
+# Requires CMake 3.26 for detection of the stable Python API
+# NOTE: August 2024. However, it seems that this stable API is not
+# always properly detected (the associated CMake target contains nothing)
+# We are therefore using the classic Python target temporarily
 if (ARCANE_ENABLE_KDI)
   if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
     message(STATUS "Checking support for KDI Python")
@@ -53,7 +53,7 @@ endif()
 
 include(srcs.cmake)
 
-# Backward-cpp peut fonctionner avec d'autres lib. Voir pour les ajouter.
+# Backward-cpp can work with other libs. See to add them.
 if (DW_FOUND)
   list(APPEND ARCANE_SOURCES BackwardCppStackTraceService.cc)
 endif ()
@@ -104,9 +104,9 @@ if(HWLOC_FOUND)
 endif()
 if(OTF2_FOUND)
   if(TARGET Arccore::arccore_message_passing_mpi)
-    # Récupère le numéro de version de Otf2 et vérifie qu'il s'agit
-    # de la version 2.1.
-    # TODO: à terme mettre cette détection dans Arccon.
+    # Retrieves the Otf2 version number and checks if it is
+    # version 2.1.
+    # TODO: eventually put this detection in Arccon.
     find_file(_OTF_GEN_DEF NAMES otf2/OTF2_GeneralDefinitions.h HINTS ${OTF2_INCLUDE_DIRS})
     if(_OTF_GEN_DEF)
       set(OTF2_REQUIRED_VERSION "2.1")
@@ -189,14 +189,14 @@ if (TARGET Arccore::arccore_message_passing_mpi)
   target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
 endif()
 
-# Ne dépend pas de HDF5. C'était le cas jusqu'à la version 3 de Arcane.
-# Maintenant, les utilisateurs doivent directement ajouter 'arcane_hdf5'
+# Does not depend on HDF5. This was the case until Arcane version 3.
+# Now, users must directly add 'arcane_hdf5'
 #target_link_libraries(arcane_std PUBLIC $<TARGET_NAME_IF_EXISTS:Arcane::arcane_hdf5>)
 
 target_link_libraries(arcane_std PUBLIC arcane_impl arcane_core)
 
-# TODO: il semblerait qu'on ait besoin de rajouter stdc++fs pour que link passe avec le
-# std::filesystem du c++17 pour le moment, a enlever quand ce sera possible
+# TODO: it seems we need to add stdc++fs for the link to work with the
+# std::filesystem of C++17 for now, to be removed when possible
 if(OTF2_FOUND AND UNIX)
   target_link_libraries(arcane_std PUBLIC stdc++fs)
 endif()

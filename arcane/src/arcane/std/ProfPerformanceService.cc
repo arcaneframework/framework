@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ProfPerformanceService.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Informations de performances utilisant les signaux de profiling.          */
+/* Performance information using profiling signals.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,8 +24,8 @@
 
 #include "arcane/std/ProfilingInfo.h"
 
-// NOTE: Ce fichier nécessitant la libunwind, il n'est compilé que sur
-// les OS de style UNIX.
+// NOTE: Since this file requires libunwind, it is only compiled on
+// UNIX-style OS.
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
@@ -43,8 +43,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de profiling utilisant 'setitimer'.
+ * \brief Profiling service using 'setitimer'.
  */
 class ProfPerformanceService
 : public AbstractService
@@ -123,7 +124,7 @@ int nb_total = 0;
 
 ProfInfos* global_infos = nullptr;
 bool global_is_active = false;
-//! Temps du timer en micro-seconde
+//! Timer time in microseconds
 int global_timer_period = 10000;
 }
 
@@ -131,10 +132,10 @@ extern "C" void
 arcane_prof_handler()
 {
   static bool is_in_handler = false;
-  // Sous Linux avec gcc, les exceptions utilisent la libunwind contenue
-  // dans gcc et cela peut provoquer des deadlocks avec notre utilisation
-  // si cet handler est appelé lors du dépilement d'une exception.
-  // Pour éviter ce problème, on ne fait rien tant qu'une exception est
+  // On Linux with gcc, exceptions use libunwind contained
+  // in gcc, and this can cause deadlocks with our usage
+  // if this handler is called during exception unwinding.
+  // To avoid this problem, we do nothing as long as an exception is
   // active.
   if (Exception::hasPendingException()){
     cout << "** WARNING: ProfHandler in pending exception\n";
@@ -161,9 +162,9 @@ arcane_prof_handler()
     int current_func = 0;
     String message;
 
-    // Le 3 indique le nombre de fonctions avant la bonne
-    // (il y a cette fonction, puis le _arcaneProfilingSigFunc
-    // et le signal lui meme.
+    // 3 indicates the number of functions before the correct one
+    // (there is this function, then _arcaneProfilingSigFunc
+    // and the signal itself.
     while (unw_step(&cursor) > 0 && current_func<3) {
       //while (current_func<3) {
       //unw_step(&cursor);
@@ -194,9 +195,9 @@ _arcaneProfilingSigFunc(int signum)
     return;
   if (global_is_active){
     arcane_prof_handler();
-    // Il est préférable de positionner le timer une fois
-    // la fonction de profiling appelée car si le timer est petit,
-    // il peut se déclencher dans la boucle
+    // It is preferable to position the timer once
+    // the profiling function is called because if the timer is small,
+    // it can trigger in the loop
     _setTimer(global_timer_period);
   }
 }

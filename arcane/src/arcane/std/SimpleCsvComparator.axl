@@ -3,7 +3,7 @@
 
   <userclass>User</userclass>
   <description>
-    Service de comparaison de tableau au format CSV.
+    CSV format table comparison service.
   </description>
 
   <interface name="Arcane::ISimpleTableComparator" />

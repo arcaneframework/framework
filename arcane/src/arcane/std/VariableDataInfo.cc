@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableDataInfo.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur les données d'une variable.                              */
+/* Information about a variable's data.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,9 +28,9 @@
 namespace Arcane::impl
 {
 
-// TODO: utiliser version avec exception pour la lecture JSON si les
-// conversions ne sont pas valides (par exemple on attend un réel et on a
-// une chaîne de caractère.
+// TODO: use version with exception for JSON reading if the
+// conversions are not valid (for example, we expect a real number and we have
+// a character string.
 
 namespace
 {
@@ -135,7 +135,7 @@ VariableDataInfo(const String& full_name, const XmlNode& element)
   m_base_data_type = (eDataType)_readInteger(element, V_BASE_DATA_TYPE);
   m_memory_size = _readInt64(element, V_MEMORY_SIZE);
   m_file_offset = _readInt64(element, V_FILE_OFFSET);
-  // L'élément est nul si on repart d'une veille protection (avant Arcane 3.7)
+  // The element is null if we start from an old protection (before Arcane 3.7)
   XmlNode shape_attr = element.attr(V_SHAPE);
   if (!shape_attr.null()) {
     String shape_str = shape_attr.value();
@@ -147,7 +147,7 @@ VariableDataInfo(const String& full_name, const XmlNode& element)
     }
   }
   {
-    // L'attribut 'compare-hash' est nul si on repart d'une veille protection (avant Arcane 3.12)
+    // The 'compare-hash' attribute is null if we start from an old protection (before Arcane 3.12)
     XmlNode hash_attr = element.attr(V_COMPARISON_HASH);
     if (!hash_attr.null())
       m_comparison_hash_value = hash_attr.value();
@@ -161,7 +161,7 @@ VariableDataInfo::
 VariableDataInfo(const String& full_name, const JSONValue& jvalue)
 : m_full_name(full_name)
 {
-  // NOTE: Le format JSON n'est valide qu'à partir de la version 3.12 de Arcane.
+  // NOTE: The JSON format is only valid starting from Arcane version 3.12.
   m_nb_dimension = _readInteger(jvalue, V_NB_DIMENSION);
   m_dim1_size = _readInt64(jvalue, V_DIM1_SIZE);
   m_dim2_size = _readInt64(jvalue, V_DIM2_SIZE);
@@ -172,7 +172,7 @@ VariableDataInfo(const String& full_name, const JSONValue& jvalue)
   m_base_data_type = (eDataType)_readInteger(jvalue, V_BASE_DATA_TYPE);
   m_memory_size = _readInt64(jvalue, V_MEMORY_SIZE);
   m_file_offset = _readInt64(jvalue, V_FILE_OFFSET);
-  // L'élément est nul si on repart d'une veille protection (avant Arcane 3.7)
+  // The element is null if we start from an old protection (before Arcane 3.7)
   {
     String shape_str = jvalue.expectedChild(V_SHAPE).valueAsStringView();
     if (!shape_str.empty()) {

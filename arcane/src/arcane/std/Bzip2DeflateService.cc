@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Bzip2DeflateService.h                                       (C) 2000-2021 */
 /*                                                                           */
-/* Service de compression utilisant la bibliothèque 'bzip2'.                 */
+/* Compression service using the 'bzip2' library.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de compression utilisant la bibliothèque 'Bzip2'.
+ * \brief Compression service using the 'Bzip2' library.
  */
 class Bzip2DeflateService
 : public AbstractService
@@ -50,8 +51,8 @@ class Bzip2DeflateService
   void compress(ByteConstArrayView values,ByteArray& compressed_values) override
   {
     Integer input_size = values.size();
-    // D'après la doc, il faut allouer au moins 1% de plus que la taille
-    // d'entrée plus encore 600 bytes
+    // According to the documentation, we must allocate at least 1% more than the input size
+    // plus another 600 bytes
     Integer compressed_init_size = (Integer)(((Real)input_size) * 1.01) + 600;
     compressed_values.resize(compressed_init_size);
     //compressed_values.copy(values);
@@ -82,7 +83,7 @@ class Bzip2DeflateService
                                      workFactor);
     if (r!=BZ_OK)
       throw IOException(A_FUNCINFO,String::format("io error during compression r={0}",r));
-    // Attention overflow des Int32;
+    // Warning: Int32 overflow.
     Real ratio = 0.0;
     if (source_len>0)
       ratio = ((double)dest_len * 100.0 ) / (double)source_len;
@@ -99,8 +100,8 @@ class Bzip2DeflateService
     char* source = (char*)compressed_values.data();
     unsigned int source_len = (unsigned int)compressed_values.size();
 
-    // small vaut 1 si on souhaite economiser la memoire (mais c'est moins rapide)
-    // et 0 sinon.
+    // small is 1 if we want to save memory (but it is slower)
+    // and 0 otherwise.
     int small = 0;
     int verbosity = 1;
     int r = BZ2_bzBuffToBuffDecompress(dest,&dest_len,
@@ -115,8 +116,9 @@ class Bzip2DeflateService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de compression utilisant la bibliothèque 'Bzip2'.
+ * \brief Compression service using the 'Bzip2' library.
  */
 class Bzip2DataCompressor
 : public AbstractService
@@ -136,8 +138,8 @@ class Bzip2DataCompressor
   void compress(Span<const std::byte> values,Array<std::byte>& compressed_values) override
   {
     Int64 input_size = values.size();
-    // D'après la doc, il faut allouer au moins 1% de plus que la taille
-    // d'entrée plus encore 600 bytes
+    // According to the documentation, we must allocate at least 1% more than the input size
+    // plus another 600 bytes
     Integer compressed_init_size = (Integer)(((Real)input_size) * 1.01) + 600;
     compressed_values.resize(compressed_init_size);
 
@@ -161,7 +163,7 @@ class Bzip2DataCompressor
     if (r!=BZ_OK)
       ARCANE_THROW(IOException,"IO error during compression r={0}",r);
 
-    // Attention overflow des Int32;
+    // Warning: Int32 overflow.
     Real ratio = 0.0;
     if (source_len>0)
       ratio = ((double)dest_len * 100.0 ) / (double)source_len;
@@ -178,8 +180,8 @@ class Bzip2DataCompressor
     char* source = const_cast<char*>(reinterpret_cast<const char*>(compressed_values.data()));
     unsigned int source_len = _toUInt(compressed_values.size());
 
-    // small vaut 1 si on souhaite economiser la memoire (mais c'est moins rapide)
-    // et 0 sinon.
+    // small is 1 if we want to save memory (but it is slower)
+    // and 0 otherwise.
     int small = 0;
     int verbosity = 1;
     int r = BZ2_bzBuffToBuffDecompress(dest,&dest_len,
@@ -195,7 +197,7 @@ class Bzip2DataCompressor
  private:
   unsigned int _toUInt(Int64 vsize)
   {
-    // Vérifie qu'on tient dans un 'int'.
+    // Checks if it fits in an 'int'.
     Int64 max_uint_size = std::numeric_limits<unsigned int>::max();
     if (vsize>max_uint_size)
       ARCANE_THROW(IOException,"Array is too large to fit in 'unsigned int' type: size={0} max={1}",

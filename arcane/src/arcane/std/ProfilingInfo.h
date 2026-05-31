@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ProfilingInfo.h                                             (C) 2000-2024 */
 /*                                                                           */
-/* Structures d'informations pour le profiling.                              */
+/* Structures for profiling information.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_PROFILINGINFO_H
 #define ARCANE_STD_PROFILINGINFO_H
@@ -59,8 +59,8 @@ class ProfFuncInfo
   bool m_has_func_name;
  public:
   Int64 m_counters[MAX_COUNTER];
-  // TODO: Ne pas utiliser une taille max mais utiliser un buffer contenant
-  // tous les noms
+  // TODO: Do not use a max size but use a buffer containing
+  // all names
   char m_func_name[MAX_FUNC_LEN+10];
 };
 
@@ -119,15 +119,16 @@ static const int MAX_STATIC_ALLOC = 100000;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Allocateur static pour le profiling.
+ * \brief Static allocator for profiling.
  *
- * Comme les infos de profiling sont geres lors d'interruption
- * et peuvent survenir n'importe ou, il ne faut pas faire d'allocation
- * standard (new/malloc) mais utiliser un buffer statique.
- * NOTE: cet allocateur n'est valide que pour la classe ProfilingInfo
- * et ne doit pas être utilisé ailleurs.
+ * Since profiling information is managed during interruption
+ * and can occur anywhere, standard allocation
+ * (new/malloc) must not be used; instead, use a static buffer.
+ * NOTE: this allocator is only valid for the ProfilingInfo class
+ * and must not be used elsewhere.
  */
 template<typename _Tp>
 class StaticAlloc
@@ -167,7 +168,7 @@ class StaticAlloc
   { 
     //return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
     pointer p = &m_buf[m_buf_index];
-    //TODO: rendre atomic + verifier debordement
+    //TODO: make atomic + check overflow
     ++m_buf_index;
     if (m_buf_index>=(int)(0.9*MAX_STATIC_ALLOC))
       cout << "** WARNING: allocate near max memory\n";
@@ -177,8 +178,8 @@ class StaticAlloc
   }
   void deallocate(pointer, size_type)
   {
-    // Les deallocate ne sont pas utilisés car on ne doit pas supprimer des
-    // elements de la map
+    // Deallocations are not used because we must not delete
+    // elements from the map
     //::operator delete(__p);
   }
  private:
@@ -235,10 +236,10 @@ class ProfInfos
   ~ProfInfos();
  public:
   // IMPORTANT:
-  // les std::map ne doivent pas utiliser d'allocation dynamique
-  // car elles sont utilisées dans la methode addEvent() qui peut être
-  // appelée n'importe quand et donc dans un malloc/realloc/free
-  // et cela peut donc provoquer un blocage avec les thread.
+  // std::map must not use dynamic allocation
+  // because they are used in the addEvent() method which can be
+  // called at any time and thus in a malloc/realloc/free
+  // and this can therefore cause a deadlock with threads.
 #if defined(ARCCORE_OS_WIN32) || defined(ARCCORE_OS_MACOS)
   typedef std::map<void*,ProfAddrInfo> AddrMap;
   typedef std::map<Int64,ProfFuncInfo*> FuncMap;
@@ -307,4 +308,4 @@ class ProfInfos
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

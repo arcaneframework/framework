@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
@@ -7,7 +7,7 @@
  <name lang='en'>master-module</name>
  <name lang='fr'>module-maitre</name>
  <description>
-  Module maître
+  Master module
  </description>
 
     <entry-points>
@@ -19,7 +19,7 @@
 
  <options>
 
-  <!-- Fichier de sortie pour la non-régression -->
+  <!-- Output file for non-regression -->
   <service-instance
    name = "global-service"
    type = "Arcane::ITimeLoopService"
@@ -28,7 +28,7 @@
   >
    <name lang='fr'>service-global</name>
    <description>
-Service global utilisant la boucle en temps.
+Global service using the time loop.
    </description>
   </service-instance>
 

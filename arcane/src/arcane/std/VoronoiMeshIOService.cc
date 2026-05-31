@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VoronoiMeshIOService.cc                                     (C) 2000-2009 */
 /*                                                                           */
-/* Lecture/Ecriture d'un maillage voronoi. Format provisoire.                */
+/* Reading/Writing a Voronoi mesh. Provisional format.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,15 +54,16 @@ class VoronoiFile;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecteur des fichiers de maillage au format Voronoi interne IFP.
+ * \brief Reader for IFP internal Voronoi mesh files.
  *
- * Il s'agit d'une version préliminaire en attendant un format IFP unifié,
- * le lecteur et l'écrivain n'ont été que partiellement testés.
+ * This is a preliminary version pending a unified IFP format,
+ * the reader and writer have only been partially tested.
  *
- * Il est possible de spécifier un ensemble de variables dans le fichier.
- * Dans ce cas, leurs valeurs sont lues en même temps que le maillage
- * et servent à initialiser les variables.
+ * It is possible to specify a set of variables in the file.
+ * In this case, their values are read at the same time as the mesh
+ * and are used to initialize the variables.
  *
  */
 class VoronoiMeshIOService
@@ -114,7 +115,7 @@ public:
                       const String& dir_name,bool use_internal_partition);
 
 private:
-  //! Table des variables crées localement par lecture du maillage
+  //! Table of variables created locally by reading the mesh
   UniqueArray<VariableCellReal3 *> m_variables;
 };
 
@@ -228,8 +229,9 @@ VoronoiMeshIOService::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo Verifier plantage sous linux.
+ * \todo Verify crash under linux.
  */
 IMeshReader::eReturnType VoronoiMeshIOService::
 readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
@@ -274,12 +276,8 @@ _readMesh(IPrimaryMesh* mesh,const String& file_name,const String& dir_name,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Lecture des noeuds et de leur coordonnées.
+ * \brief Reading of nodes and their coordinates.
  */
 void VoronoiMeshIOService::
 _readNodesHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,Array<Real3>& node_coords)
@@ -302,7 +300,7 @@ _readNodesHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,Array<Real3>& node_co
 
   info() << " Info: " << nb_node;
 
-  // Lecture les coordonnées
+  // Reading coordinates
   node_coords.resize(nb_node);
   {
     for( Integer i=0; i<nb_node; ++i ){
@@ -316,10 +314,11 @@ _readNodesHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,Array<Real3>& node_co
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des mailles et de leur connectivité.
+ * \brief Reading of meshes and their connectivity.
  *
- * En retour, remplit \a cells_nb_node, \a cells_type et \a cells_connectivity.
+ * It fills \a cells_nb_node, \a cells_type, and \a cells_connectivity.
  */
 void VoronoiMeshIOService::
 _readCellsHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,
@@ -362,7 +361,7 @@ _readCellsHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,
       /* const Integer n_check = */ voronoi_file.getInteger();
       ItemTypeInfo* item_type = item_type_mng->typeFromId(internal_cell_type);
       is_mesh_2d = is_mesh_2d && (item_type->nbLocalEdge() == item_type->nbLocalFace());
-      // optimisable avec un cache local
+      // optimizable with a local cache
       const Integer n = item_type->nbLocalNode();
       cells_nb_node[i] = n;
       for( Integer j=0; j<n; ++j ){
@@ -390,7 +389,7 @@ _readHybridGrid(IPrimaryMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_p
   UniqueArray<Int64> cells_infos;
   UniqueArray<Integer> cells_local_id;
   UniqueArray<Integer> faces_local_id;
-  // Si on utilise le partitionneur interne, seul le sous-domaine lit le maillage
+  // If we use the internal partitioner, only the subdomain reads the mesh
   bool need_read = true;
   Integer mesh_dimension(-1);
   if (use_internal_partition)
@@ -400,8 +399,8 @@ _readHybridGrid(IPrimaryMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_p
     _readNodesHybridGrid(mesh,voronoi_file,node_coords);
     //nb_node = node_coords.size();
 
-    // Lecture des infos des mailles
-    // Lecture de la connectivité
+    // Reading mesh info
+    // Reading connectivity
     UniqueArray<Integer> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
     UniqueArray<Integer> cells_type;
@@ -410,11 +409,11 @@ _readHybridGrid(IPrimaryMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_p
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
 
-    // Création des mailles
-    // Infos pour la création des mailles
-    // par maille: 1 pour son unique id,
-    //             1 pour son type,
-    //             1 pour chaque noeud
+    // Mesh creation
+    // Info for mesh creation
+    // per cell: 1 for its unique id,
+    //             1 for its type,
+    //             1 for each node
     cells_infos.resize(nb_cell*2 + nb_cell_node);
     {
       Integer cells_infos_index = 0;
@@ -446,7 +445,7 @@ _readHybridGrid(IPrimaryMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_p
   mesh->allocateCells(nb_cell,cells_infos,false);
   mesh->endAllocate();
 
-  // Positionne les coordonnées
+  // Positions the coordinates
   {
     VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
     ENUMERATE_NODE(inode,mesh->allNodes()){
@@ -456,7 +455,7 @@ _readHybridGrid(IPrimaryMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_p
     }
   }
 
-  // Maintenant, regarde s'il existe des données associées aux fichier
+  // Now, check if there are data associated with the file
   bool r = _readData(mesh,voronoi_file,use_internal_partition,IK_Cell,cells_local_id);
   if (r)
     return r;
@@ -475,8 +474,8 @@ _readData(IMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_partition,
   ARCANE_UNUSED(use_internal_partition);
   ARCANE_UNUSED(local_ids);
 
-	// Seul le sous-domain maitre lit les valeurs. Par contre, les autres
-	// sous-domaines doivent connaitre la liste des variables
+	// Only the master subdomain reads the values. However, the other
+	// subdomains must know the list of variables
 	Integer sid = subDomain()->subDomainId();
 	Integer nb_cell_kind = mesh->nbItem(cell_kind);
 	if (sid==0){
@@ -497,7 +496,7 @@ _readData(IMesh* mesh,VoronoiFile& voronoi_file,bool use_internal_partition,
 void VoronoiMeshIOService::
 _readCellVariable(IMesh* mesh,VoronoiFile& voronoi_file,const String& var_name,Integer nb_cell)
 {
-  //TODO Faire la conversion uniqueId() vers localId() correcte
+  //TODO Perform the correct conversion from uniqueId() to localId()
   Real cx,cy,cz;
   info() << "Reading values for variable: " << var_name << " n=" << nb_cell;
   VariableCellReal3 * var = new VariableCellReal3(VariableBuildInfo(mesh,var_name));
@@ -520,7 +519,7 @@ _readItemGroup(IMesh* mesh,VoronoiFile& voronoi_file,const String& name,Integer 
                eItemKind ik,ConstArrayView<Integer> local_ids)
 {
   IItemFamily* item_family = mesh->itemFamily(ik);
-  info() << "Reading group inf for group: " << name;
+  info() << "Reading group info for group: " << name;
 
   IntegerUniqueArray ids;
   for( Integer i=0; i<nb_item; ++i ){

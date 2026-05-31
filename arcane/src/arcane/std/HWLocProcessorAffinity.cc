@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HWLocProcessorAffinity.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Gestion de l'affinité des processeurs via la bibiliothèque HWLOC.         */
+/* Management of processor affinity via the HWLOC library.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,7 +48,7 @@ class HWLocProcessorAffinityService
   {
   }
 
-  //<! Libère les ressources
+  //<! Frees resources
   ~HWLocProcessorAffinityService() override
   {
     if (m_topology)
@@ -84,8 +84,9 @@ class HWLocProcessorAffinityService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Recopie temporaire de 'hwloc_obj_snprintf' qui n'existe plus
-// à partir de la version 2.0 de hwloc
+
+// Temporary copy of 'hwloc_obj_snprintf' which no longer exists
+// starting from hwloc version 2.0
 static int
 _internal_hwloc_obj_snprintf(char* string, size_t size,
                              hwloc_obj* l, const char* _indexprefix, int verbose)
@@ -221,7 +222,7 @@ bindThread(Int32 cpu)
 
   hwloc_set_cpubind(m_topology, new_cpuset, flags | HWLOC_CPUBIND_THREAD);
 
-  // Regarde si bind ok
+  // Check if bind is ok
   hwloc_get_cpubind(m_topology, new_cpuset, 0 | HWLOC_CPUBIND_THREAD);
   char result_s[1024];
   hwloc_bitmap_snprintf(result_s, sizeof(result_s) - 1, new_cpuset);

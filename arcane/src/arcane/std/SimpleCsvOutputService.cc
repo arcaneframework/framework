@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleCsvOutputService.cc                                   (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un tableau au formet csv.   */
+/* Service allowing the construction and output of a table in CSV format.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

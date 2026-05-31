@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneCasePartitioner.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Service de partitionnement externe du maillage.                           */
+/* External mesh partitioning service.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -84,25 +84,24 @@ class ArcaneInitialPartitioner
   void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes) override;
 
  private:
-
-  //! Regroupe les mailles associées aux contraintes sur un même proc
+  //! Groups meshes associated with constraints on the same process
   void _mergeConstraints(ConstArrayView<IMesh*> meshes);
 
-  //! Affiche des statistiques sur le partitionnement
+  //! Prints statistics on the partitioning
   void _printStats(Integer nb_part,IMesh* mesh,VariableCellInt32& new_owners);
 
  public:
 
   ISubDomain* m_sub_domain = nullptr;
   ArcaneCasePartitioner* m_main = nullptr;
-  //! Stocke pour chaque maillage une variable indiquant pour chaque maille quelle partie la possède.
+  //! Stores for each mesh a variable indicating which partition each mesh belongs to.
   UniqueArray<TrueOwnerInfo> m_part_indexes;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de partitionnement externe du maillage.
+ * \brief External mesh partitioning service.
  */
 class ArcaneCasePartitioner
 : public ArcaneArcaneCasePartitionerObject
@@ -122,14 +121,13 @@ class ArcaneCasePartitioner
   bool isActive() const override { return true; }
 
  private:
-
-  //! Ouverture du fichier Correspondance (seulement sur le proc 0)
+  //! Opens the Correspondence file (only on proc 0)
   void _initCorrespondance(Int32 my_rank);
-  
-  //! Ecriture du fichier Correspondance
+
+  //! Writes the Correspondence file
   void _writeCorrespondance(Int32 rank, Int64Array& nodesUniqueId, Int64Array& cellsUniqueId);
 
-  //! Fermeture du fichier Correspondance (seulement sur le proc 0)
+  //! Closes the Correspondence file (only on proc 0)
   void _finalizeCorrespondance(Int32 my_rank);
 
 
@@ -144,7 +142,7 @@ class ArcaneCasePartitioner
   void _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new_mesh,
                        Integer nb_layer,Integer maxLocalIdCell, Integer maxLocalIdNode);
   void _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh,
-                       VariableCellInt32& true_cells_owner, VariableNodeInt32& true_nodes_owner, 
+                       VariableCellInt32& true_cells_owner, VariableNodeInt32& true_nodes_owner,
                        Int32Array& new_cells_local_id, Integer id_loc);
 };
 
@@ -168,7 +166,7 @@ _mergeConstraints(ConstArrayView<IMesh*> meshes)
   tm->info() << "Number of constraints = " << nb_contraintes;
   if (nb_contraintes==0)
     return;
- 
+
   IItemFamily* current_cell_family = mesh->cellFamily();
   VariableItemInt32& cells_new_owner(current_cell_family->itemsNewOwner());
   ENUMERATE_CELL(icell,current_cell_family->allItems()){
@@ -181,7 +179,7 @@ _mergeConstraints(ConstArrayView<IMesh*> meshes)
   mesh->partitionConstraintMng()->computeAndApplyConstraints();
 
   cells_new_owner.synchronize();
-  mesh->utilities()->changeOwnersFromCells();  
+  mesh->utilities()->changeOwnersFromCells();
   mesh->modifier()->setDynamic(true);
   bool compact = mesh->properties()->getBool("compact");
   mesh->properties()->setBool("compact", true);
@@ -241,19 +239,19 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
     VariableNodeInt32* p_true_nodes_owner = new VariableNodeInt32(VariableBuildInfo(mesh,"TrueNodesOwner"));
     m_part_indexes[i].m_true_cells_owner = p_true_cells_owner;
     m_part_indexes[i].m_true_nodes_owner = p_true_nodes_owner;
-    VariableCellInt32& true_cells_owner = *p_true_cells_owner;      
-    VariableNodeInt32& true_nodes_owner = *p_true_nodes_owner;      
+    VariableCellInt32& true_cells_owner = *p_true_cells_owner;
+    VariableNodeInt32& true_nodes_owner = *p_true_nodes_owner;
     IItemFamily* current_cell_family = mesh->cellFamily();
     IItemFamily* current_node_family = mesh->nodeFamily();
     VariableItemInt32& cells_new_owner(current_cell_family->itemsNewOwner());
     VariableItemInt32& nodes_new_owner(current_node_family->itemsNewOwner());
     bool is_dynamic = mesh->isDynamic();
     mesh->modifier()->setDynamic(true);
-    // Premier partitionnement (optionnel) pour donner un premier resultat correct
+    // First partitioning (optional) to provide an initial correct result
     //mesh_partitioner->partitionMesh(mesh);
     //mesh->exchangeItems(false);
-    
-    // Partitionnement final
+
+    // Final partitioning
     {
       sd->timeStats()->dumpTimeAndMemoryUsage(pm);
       Timer t(sd,"InitPartTimer",Timer::TimerReal);
@@ -283,8 +281,8 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
     mesh->properties()->setBool("compact", compact);
   }
 
-  // ajout d'une 2ème couche de mailles 
-  // il ne faut plus faire exchangeItems avec les 2 couches de mailles
+  // Adding a second layer of meshes
+  // We should no longer call exchangeItems with the two mesh layers
   IMesh* mesh = meshes[0];
   if (m_main->options()->nbGhostLayer()==2)
     mesh->updateGhostLayers(false);
@@ -371,12 +369,12 @@ _partitionMesh(Int32 nb_part)
   String pattern = options()->meshFileNamePattern();
   info() << "Mesh file pattern=" << pattern;
 
-  // Partitionne le maillage.
-  // En retour, \a cells_new_owner contient le numéro de la partie à laquelle
-  // chaque maille appartiendra. Pour sauver le fichier, il faut que toutes
-  // les mailles d'une partie soient sur le même sous-domaine. Pour cela,
-  // on stocke le numéro de la partie dans \a true_cells_owner, puis
-  // on échange le maillage.
+  // Partitions the mesh.
+  // In return, \a cells_new_owner contains the number of the partition to which
+  // each mesh will belong. To save the file, all
+  // meshes of a partition must be on the same subdomain. For this,
+  // we store the partition number in \a true_cells_owner, then
+  // we exchange the mesh.
   VariableCellInt32 true_cells_owner(*m_init_part->m_part_indexes[0].m_true_cells_owner);
   VariableNodeInt32 true_nodes_owner(*m_init_part->m_part_indexes[0].m_true_nodes_owner);
   IItemFamily* current_cell_family = mesh()->cellFamily();
@@ -395,16 +393,16 @@ _partitionMesh(Int32 nb_part)
   }
 
   new_mesh->setDimension(mesh()->dimension());
-  // Pour optimiser, il n'y a pas besoin de trier ni de compacter les entités.
+  // To optimize, there is no need to sort or compact the entities.
   new_mesh->properties()->setBool("compact",false);
   new_mesh->properties()->setBool("sort",false);
   new_mesh->modifier()->setDynamic(true);
   new_mesh->allocateCells(0,Int64ConstArrayView(),true);
 
-  // Si le maillage d'origine a des informations de génération de MSH,
-  // on les copie sur le nouveau maillage.
-  // TODO: regarder comment faire cela automatiquement, par exemple en ajoutant
-  // une méthode pour cloner le maillage.
+  // If the original mesh has MSH generation information,
+  // we copy it to the new mesh.
+  // TODO: look into how to do this automatically, for example by adding
+  // a method to clone the mesh.
   impl::MshMeshGenerationInfo* new_msh_mesh_info = nullptr;
   auto* msh_mesh_info = impl::MshMeshGenerationInfo::getReference(mesh(), false);
   if (msh_mesh_info){
@@ -415,36 +413,35 @@ _partitionMesh(Int32 nb_part)
   Int32 saved_nb_cell = 0;
   Int32 min_nb_cell = total_current_nb_cell;
   Int32 max_nb_cell = 0;
-  
+
   if (options()->createCorrespondances())
     _initCorrespondance(my_rank);
 
-  // recherche une fois pour toute les id max
+  // Searches for the maximum IDs once.
   Integer maxLocalIdCell = mesh()->cellFamily()->maxLocalId();
   Integer maxLocalIdNode = mesh()->nodeFamily()->maxLocalId();
 
-  // Force le propriétaire des entités au sous-domaine 0 car
-  // new_mesh utilise un parallelMng() séquentiel.
-  for( IItemFamily* family : mesh()->itemFamilies() ){
+  // Forces the owner of the entities to subdomain 0 because
+  // new_mesh uses a sequential parallelMng().
+  for (IItemFamily* family : mesh()->itemFamilies() ){
     ENUMERATE_ITEM(iitem,family->allItems()){
       iitem->mutableItemBase().setOwner(0,0);
     }
   }
-
-  // Pour chaque partie à traiter, créé un maillage
-  // contenant les entités de cette partie
-  // et le sauvegarde
+  // For each part to process, create a mesh
+  // containing the entities of that part
+  // and save it
   info() << "NbPart=" << nb_part << " my_rank=" << my_rank;
   for( Integer i=0; i<nb_part; ++i ){
     if ((i % nb_rank)!=my_rank){
       if (my_rank==0 && options()->createCorrespondances()){
-	
+
         info()<<"Receive on master to build correspondence file on sub-domain "<<i
               <<" sent from processor "<<i % nb_rank;
         Int32UniqueArray taillesTab(2);
         Int64UniqueArray nodesUniqueId;
         Int64UniqueArray cellsUniqueId;
-	
+
         pm->recv(taillesTab, i % nb_rank);
         nodesUniqueId.resize(taillesTab[0]);
         cellsUniqueId.resize(taillesTab[1]);
@@ -467,7 +464,7 @@ _partitionMesh(Int32 nb_part)
       }
     }
 
-    // sélectionne les mailles fantômes en plus si nécessaire
+    // select ghost layers additionally if necessary
     _addGhostLayers(current_all_cells,  cells_selected_for_new_mesh, options()->nbGhostLayer(), maxLocalIdCell, maxLocalIdNode);
 
     Int32UniqueArray cells_local_id;
@@ -484,7 +481,7 @@ _partitionMesh(Int32 nb_part)
     info() << "NB_CELL_TO_SERIALIZE=" << nb_cell_to_copy;
     new_mesh->modifier()->addCells(&buffer);
     new_mesh->modifier()->endUpdate();
-    // Pour mettre a jour les coordonnees
+    // To update coordinates
     //new_mesh->nodeFamily()->endUpdate();
     ItemInternalList new_cells = new_mesh->itemsInternal(IK_Cell);
     ItemInternalList current_cells = current_mesh->itemsInternal(IK_Cell);
@@ -506,11 +503,11 @@ _partitionMesh(Int32 nb_part)
 	//         info() << "Node=" << ItemPrinter(new_cell.node(z2)) << " coord=" << coord
 	//                << " orig_node=" << ItemPrinter(current_cell.node(z2));
         new_coordinates[new_cell.node(z2)] = coord;
-        // Positionne le propriétaire final du noeud
+        // Position the final owner of the node
         new_cell.node(z2).mutableItemBase().setOwner(true_nodes_owner[current_cell.node(z2)],0);
       }
     }
-    // Maintenant, il faut recopier les groupes
+    // Now, we must copy the groups
     {
       _computeGroups(current_mesh->nodeFamily(),new_mesh->nodeFamily());
       _computeGroups(current_mesh->edgeFamily(),new_mesh->edgeFamily());
@@ -533,8 +530,8 @@ _partitionMesh(Int32 nb_part)
       filename = sfilename;
     }
     else{
-      //ATTENTION potentiel debordement si pattern est trop long.
-      //Verifier aussi qu'il y a un %d. A terme, utiliser String::format()
+      // ATTENTION potential overflow if pattern is too long.
+      // Also check if there is a %d. Eventually, use String::format()
       char buf[4096];
       if (pattern.length()>128){
         pfatal() << "Pattern too long (max=128)";
@@ -549,10 +546,10 @@ _partitionMesh(Int32 nb_part)
         ARCANE_FATAL("Can not write mesh file '{0}'", filename);
     }
 
-    // Fichier Correspondance
+    // Correspondence File
     if (options()->createCorrespondances()){
       info()<<"Participation to build correspondence file on sub-domain "<<i;
-      
+
       Int32UniqueArray taillesTab;
       taillesTab.add(new_mesh->nodeFamily()->nbItem());
       taillesTab.add(new_mesh->cellFamily()->nbItem());
@@ -621,7 +618,7 @@ _initCorrespondance(Int32 my_rank)
   }
 
   m_sortiesCorrespondance << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n";
-  m_sortiesCorrespondance << "<!-- Correspondance file generated by Arcane/Decoupe3D V2 -->\n";
+  m_sortiesCorrespondance << "<!-- Correspondence file generated by Arcane/Decoupe3D V2 -->\n";
   m_sortiesCorrespondance << "\n<cpus>\n";
 }
 
@@ -638,7 +635,7 @@ _writeCorrespondance(Int32 rank, Int64Array& nodesUniqueId, Int64Array& cellsUni
 			  << "    <noeuds>" << "\n" << "    ";
   for( Integer i=0; i<nodesUniqueId.size(); ++i )
     m_sortiesCorrespondance <<nodesUniqueId[i]<< " ";
-  
+
   m_sortiesCorrespondance << "\n" << "    </noeuds>"
 			  << "\n"
 			  << "    <mailles>" << "\n"
@@ -665,16 +662,16 @@ _finalizeCorrespondance(Int32 my_rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recopie les groupes de la famille courante dans la nouvelle.
+ * \brief Recopy the groups of the current family into the new one.
  *
- * Le principe est le suivant:
- * 1. pour chaque genre d'entité, détermine la liste des localId()
- * des entités de ce genre dans le maillage d'origine.
- * 2. A partir de cette liste, construit un tableau indiquant
- * pour chaque localId() du maillage d'origine son localId() dans le nouveau
- * maillage (ou NULL_ITEM_LOCAL_ID si l'entité est absente).
- * 3. Parcours les groupes d'origine et construit
- * pour chacun la liste des entités à ajouter au nouveau maillage.
+ * The principle is as follows:
+ * 1. For each entity type, determine the list of localId()
+ * of entities of that type in the original mesh.
+ * 2. From this list, build an array indicating
+ * for each localId() of the original mesh its localId() in the new
+ * mesh (or NULL_ITEM_LOCAL_ID if the entity is absent).
+ * 3. Iterate through the original groups and build
+ * for each the list of entities to add to the new mesh.
  */
 void ArcaneCasePartitioner::
 _computeGroups(IItemFamily* current_family,IItemFamily* new_family)
@@ -695,7 +692,7 @@ _computeGroups(IItemFamily* current_family,IItemFamily* new_family)
     }
   }
   Int32UniqueArray items_lid(nb_new_item);
-  // Détermine le localId() dans le maillage d'origine des entités
+  // Determine the localId() in the original mesh of the entities
   current_family->itemsUniqueIdToLocalId(items_lid,new_items_uid);
 
   Int32UniqueArray items_current_to_new_local_id(current_family->maxLocalId());
@@ -723,7 +720,9 @@ _computeGroups(IItemFamily* current_family,IItemFamily* new_family)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/* \brief Ajoute au tableau de mailles le nombre de couches de mailles désiré
+
+/*!
+ * \brief Adds to the mesh array the desired number of mesh layers
  */
 void ArcaneCasePartitioner::
 _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new_mesh,
@@ -737,29 +736,28 @@ _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new
   Int32UniqueArray filtre_lid_node(maxLocalIdNode);
   filtre_lid_node.fill(0);
 
-  // on marque les mailles déjà sélectionnées
-  for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+  // mark the already selected cells
+  for (Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
     Cell cell = cells_selected_for_new_mesh[j];
     filtre_lid_cell[cell.localId()] = 1;
   }
 
-  // recherhe pour tous les noeuds associés aux mailles sélectionnées une mailles reliée
-  // à ce même noeud qui ne soit pas sélectionnée
-  for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+  // search for all nodes associated with selected cells a connected cell
+  // to this same node that is not selected
+  for (Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
     Cell cell = cells_selected_for_new_mesh[j];
 
     NodeVectorView nodes = cell.nodes();
     for( Integer k=0, ks=nodes.size(); k<ks; ++k){
       Node node = nodes[k];
       if (filtre_lid_node[node.localId()]==0){
-        // les mailles reliées par un noeud
+        // cells connected by a node
         CellVectorView cells_vois = node.cells();
 
         for( Integer i=0, is=cells_vois.size(); i<is; ++i ){
           Cell cell_vois = cells_vois[i];
           if (filtre_lid_cell[cell_vois.localId()]==0){
-
-            // ajoute la maille qui n'a pas encore été vue	    
+            // add the cell that has not yet been seen
             cells_selected_for_new_mesh.add(cell_vois);
 
             filtre_lid_cell[cell_vois.localId()] = 1;
@@ -768,16 +766,18 @@ _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new
         filtre_lid_node[node.localId()] = 1;
       }
     }
-  }  
+  }
 
-  // pour la deuxième couche (si besoin) il est plus simple de le faire récurcivement
-  _addGhostLayers(current_all_cells, cells_selected_for_new_mesh,  nbCouches-1, maxLocalIdCell,  maxLocalIdNode);  
+  // for the second layer (if needed) it is simpler to do it recursively
+  _addGhostLayers(current_all_cells, cells_selected_for_new_mesh,  nbCouches-1, maxLocalIdCell,  maxLocalIdNode);
 
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/* \brief Ajoute les groupes de mailles TOUT, LOCAL et MF_* en fonctions des groupes voisins
- *        Ajoute aussi le groupe de noeuds LOCALN (mais pas les NF_*)
+
+/*!
+ * \brief Adds the TOUT, LOCAL, and MF_* mesh groups based on neighbor groups
+ *        Also adds the LOCALN node group (but not the NF_*)
  */
 void ArcaneCasePartitioner::
 _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, VariableCellInt32& true_cells_owner,
@@ -785,21 +785,21 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
                 Int32Array& new_cells_local_id, Integer id_loc)
 {
   info()<<"ArcaneCasePartitioner::_addGhostGroups (id_loc = "<<id_loc<<")";
-  // il faut déterminer les groupes voisins existant
-  // on utilise un "map" pour stocker les différents sous-domaines qui apparaissent et le nombre de mailles dedans
+  // we must determine the existing neighbor groups
+  // we use a "map" to store the different sub-domains that appear and the number of cells in them
   std::map<Integer, Integer> dom_vois;
   for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
     Cell cell = cells_selected_for_new_mesh[j];
     dom_vois[true_cells_owner[cell]] += 1;
   }
-  
-  // on utilise une seconde map pour lister les mailles suivant le domaine de destination
+
+  // we use a second map to list the cells according to the destination domain
   std::map<Integer,SharedArray<Int32> > map_groupes;
   for (std::map<Integer, Integer>::const_iterator iter=dom_vois.begin(); iter!=dom_vois.end(); ++iter){
     Integer no_sous_dom = iter->first;
     Integer nb_mailles_sous_dom = iter->second;
 
-    // réservation de la mémoire pour les différentes listes
+    // memory reservation for the different lists
     Int32Array& tab = map_groupes[no_sous_dom];
     tab.reserve(nb_mailles_sous_dom);
   }
@@ -807,13 +807,13 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
   for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
     Cell cell = cells_selected_for_new_mesh[j];
     Integer no_sous_dom = true_cells_owner[cell];
-   
-    // remplissage des listes par sous-domaine
+
+    // filling the lists by sub-domain
     Int32Array & liste_lid = map_groupes[no_sous_dom];
     liste_lid.add(new_cells_local_id[j]);
   }
 
-  // création (si nécessaire) des différents groupes et on y met les mailles
+  // creation (if necessary) of the different groups and adding the cells to them
   for (std::map<Integer,SharedArray<Int32> >::iterator iter=map_groupes.begin(); iter!=map_groupes.end(); ++iter){
     Integer no_sous_dom = iter->first;
     Int32Array & liste_lid = iter->second;
@@ -826,13 +826,13 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
       nom_mf = nom_mf+no_sous_dom;
       groupe_loc = new_mesh->cellFamily()->findGroup(nom_mf, true);
     }
-    
+
     groupe_loc.addItems(liste_lid, false);
   }
 
-  // Faire le groupe LOCALN : noeuds locaux
+  // Create the LOCALN group: local nodes
   {
-    // TODO: Optimiser la maniere de construire ce groupe
+    // TODO: Optimize the way this group is built
     Int32UniqueArray liste_lid;
     Integer nbnodes = new_mesh->nodeFamily()->nbItem();
     liste_lid.reserve(nbnodes);
@@ -848,9 +848,9 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
   }
 
 
-  // le groupe avec toute les mailles
+  // the group with all cells
   ItemGroup groupe_glob = new_mesh->cellFamily()->findGroup("TOUT", true);
-  
+
   groupe_glob.addItems(new_cells_local_id, false);
 }
 /*---------------------------------------------------------------------------*/

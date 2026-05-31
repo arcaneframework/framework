@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcanePostProcessingModule.cc                               (C) 2000-2025 */
 /*                                                                           */
-/* Module de post-traitement.                                                */
+/* Post-processing module.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,13 +48,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Module de sortie pour le dépouillement.
+ * \brief Output module for post-processing.
  *
- * Lorsque ce module est connecté, ce module gère les sorties pour
- * le dépouillement.
+ * When this module is connected, it manages the outputs for
+ * post-processing.
  *
- * Si aucune variable n'est spécifiée, aucune sortie n'est effectuée. Le
- * champ #m_do_output est alors à faux.
+ * If no variable is specified, no output is performed. The
+ * #m_do_output field is then false.
  */
 class ArcanePostProcessingModule
 : public ArcaneArcanePostProcessingObject
@@ -81,15 +81,15 @@ class ArcanePostProcessingModule
 
   OutputChecker m_output_checker;
   OutputChecker m_history_output_checker;
-  VariableArrayReal m_times; //!< Instants de temps des sauvegardes
-  bool m_is_output_active = true; //!< \a true si les sorties sont actives
-  //! Indique si on réalise des sorties lors de cette itération
+  VariableArrayReal m_times; //!< Time points of saves
+  bool m_is_output_active = true; //!< \a true if outputs are active
+  //! Indicates if outputs are performed during this iteration
   bool m_is_output_at_current_iteration = false;
-  Directory m_output_directory; //!< Répertoire de sortie
-  bool m_output_dir_created = false; //!< \a true si répertoire créé.
-  VariableList m_variables;    //!< Liste des variables a exporter
-  ItemGroupList m_groups; //!< Liste des groupes à exporter
-  Timer* m_post_processor_timer = nullptr; //!< Timer pour le temps passé à écrire
+  Directory m_output_directory; //!< Output directory
+  bool m_output_dir_created = false; //!< \a true if directory created.
+  VariableList m_variables;    //!< List of variables to export
+  ItemGroupList m_groups; //!< List of groups to export
+  Timer* m_post_processor_timer = nullptr; //!< Timer for time spent writing
   bool m_is_plugin_initialized = false;
 
  private:
@@ -147,7 +147,7 @@ _readConfig()
   IMesh* mesh = subDomain()->defaultMesh();
 
   if (nb_var!=0){
-    std::set<String> used_variables; // Liste des variables déjà indiquées
+    std::set<String> used_variables; // List of variables already specified
     m_variables.clear();
     info() << " ";
     info() << "-- List of output variables (" << nb_var << " variables):";
@@ -176,7 +176,7 @@ _readConfig()
     m_is_output_active = false;
 
   if (nb_group!=0){
-    std::set<String> used_groups; // Liste des groupes déjà indiquées
+    std::set<String> used_groups; // List of groups already specified
     //m_group_list.resize(nb_group);
     info() << " ";
     info() << "-- List of output groups (" << nb_group << " groups):";
@@ -196,7 +196,7 @@ _readConfig()
     //m_group_list.resize(index);
   }
   else{
-    // Si aucun groupe spécifié, sauve uniquement l'ensemble des mailles.
+    // If no group is specified, only save the entire mesh.
     //m_groups.resize(1);
 
     //! AMR
@@ -241,7 +241,7 @@ postProcessingInit()
 
   _readConfig();
 
-  // Positionnement de l'option 'shrink' du timeHistoryMng depuis l'axl
+  // Positioning of the 'shrink' option of timeHistoryMng from the axl
   if (options()->outputHistoryShrink)
     subDomain()->timeHistoryMng()->setShrinkActive(options()->outputHistoryShrink);
 
@@ -271,13 +271,14 @@ postProcessingStartInit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de dépouillement en sortie de la boucle de calcul.
+ * \brief Post-processing information at the end of the calculation loop.
  *
- * Effectue une sortie pour le dépouillement si on est au temps final.
- * Cette sortie ne se fait qu'au temps final et garanti que le fichier
- * de dépouillement sera le même quel que soit le nombre de protections
- * reprises effectuées.
+ * Performs an output for post-processing if we are at the final time.
+ * This output is only done at the final time and guarantees that the file
+ * will be the same regardless of the number of protections
+ * performed.
  */
 void ArcanePostProcessingModule::
 postProcessingExit()
@@ -292,7 +293,7 @@ postProcessingExit()
     _saveAtTime(current_time);
   }
 
-  // Affiche les statistiques d'exécutions
+  // Displays execution statistics
   Real total_time = m_post_processor_timer->totalTime();
   info() << "Total time for post-processing analysis output (second): " << total_time;
   Integer nb_time = m_post_processor_timer->nbActivated();
@@ -306,8 +307,9 @@ postProcessingExit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie et écrit les valeurs pour le dépouillement.
+ * \brief Checks and writes the values for post-processing.
  */
 void ArcanePostProcessingModule::
 exportData()
@@ -320,8 +322,9 @@ exportData()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Point d'entrée en début d'itération.
+ * \brief Entry point at the beginning of an iteration.
  */
 void ArcanePostProcessingModule::
 exportDataStart()
@@ -330,19 +333,19 @@ exportDataStart()
   const CommonVariables& vc = sd->commonVariables();
 
   const Int32 global_iteration = vc.globalIteration();
-  // Écrit les valeurs du dépouillement pour l'initialisation.
+  // Writes the post-processing values for initialization.
   if (global_iteration == 0)
     _saveAtTime(0.0);
 
   m_is_output_at_current_iteration = false;
 
-  // Regarde s'il faut activer les historiques pour cette itération
+  // Checks if history should be activated for this iteration
   const Real old_time = vc.globalOldTime();
   const Real current_time = vc.globalTime();
   bool do_history_output = m_history_output_checker.check(old_time, current_time, global_iteration, 0);
   sd->timeHistoryMng()->setActive(do_history_output);
 
-  // Regarde si des sorties de post-traitement sont prévues pour cette itération
+  // Checks if post-processing outputs are planned for this iteration
   if (m_is_output_active) {
     bool do_at_current_iteration = m_output_checker.check(old_time, current_time, global_iteration, 0);
     if (do_at_current_iteration)
@@ -362,8 +365,8 @@ _saveAtTime(Real saved_time)
 
   IVariableMng* vm = subDomain()->variableMng();
 
-  // Ne sauvegarde pas si le temps actuel est le même que le précédent
-  // (Sinon ca fait planter Ensight...)
+  // Does not save if the current time is the same as the previous one
+  // (Otherwise, Ensight crashes...)
   if (size!=0 && math::isEqual(m_times[size-1],saved_time))
     return;
 
@@ -391,8 +394,9 @@ _saveAtTime(Real saved_time)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Supprime les tags des variables post-processées lors de cette itération.
+ * \brief Removes tags from variables post-processed during this iteration.
  */
 void ArcanePostProcessingModule::
 _resetCurrentIterationPostProcessing()
@@ -406,8 +410,9 @@ _resetCurrentIterationPostProcessing()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Marque les variables comme étant post-processées lors de cette itération.
+ * \brief Marks variables as post-processed during this iteration.
  */
 void ArcanePostProcessingModule::
 _markCurrentIterationPostProcessing()
@@ -425,8 +430,8 @@ _markCurrentIterationPostProcessing()
 void ArcanePostProcessingModule::
 _checkExternalPlugin()
 {
-  // Mode expérimental pour utiliser une fonction python.
-  // Il faut que wrapper C# soit actif et que le module 'pythonnet' soit installé.
+  // Experimental mode to use a python function.
+  // The C# wrapper must be active and the 'pythonnet' module must be installed.
   auto& plugin_option = options()->experimentalPythonPlugin;
   if (!plugin_option.isPresent())
     return;

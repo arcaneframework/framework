@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicReaderWriter.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Lecture/Ecriture simple.                                                  */
+/* Simple Reading/Writing.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_BASICREADERWRITER_H
@@ -83,7 +83,7 @@ class BasicVariableMetaData
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Lecteur générique.
+ * \brief Generic Reader.
  */
 class IGenericReader
 {
@@ -104,7 +104,7 @@ class IGenericReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation basique de \a IGenericReader
+ * \brief Basic implementation of \a IGenericReader
  */
 class BasicGenericReader
 : public TraceAccessor
@@ -112,8 +112,8 @@ class BasicGenericReader
 {
  public:
 
-  // Si 'version==-1', alors cela sera déterminé lors de
-  // l'initialisation.
+  // If 'version==-1', it will be determined during
+  // initialization.
   BasicGenericReader(IApplication* app, Int32 version, Ref<KeyValueTextReader> text_reader);
 
  public:
@@ -146,7 +146,7 @@ class BasicGenericReader
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Écrivain générique.
+ * \brief Generic Writer.
  */
 class IGenericWriter
 {
@@ -158,11 +158,11 @@ class IGenericWriter
 
   virtual void initialize(const String& path, Int32 rank) = 0;
   /*!
-   * \brief Sauve une variable.
-   * \param var_full_name Nom de la variable
-   * \param sdata valeurs sérialisées de la variable
-   * \param comparison_hash hash de comparaison (null si aucun)
-   * \param is_save_values Indique si on sauvegarde les valeurs.
+   * \brief Saves a variable.
+   * \param var_full_name Variable name
+   * \param sdata serialized values of the variable
+   * \param comparison_hash comparison hash (null if none)
+   * \param is_save_values Indicates if values are saved.
    */
   virtual void writeData(const String& var_full_name, const ISerializedData* sdata,
                          const String& comparison_hash,
@@ -210,7 +210,7 @@ class BasicGenericWriter
 class BasicReaderWriterCommon
 : public TraceAccessor
 {
-  // Pour accéder aux méthodes statiques
+  // To access static methods
   friend class BasicGenericReader;
   friend class BasicGenericWriter;
 

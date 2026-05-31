@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshGenerator.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Service de génération de maillage cartésien.                              */
+/* Cartesian mesh generation service.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ readOptionsFromXml(XmlNode cartesian_node)
   XmlNodeList ly_node_list = cartesian_node.children("ly");
   XmlNodeList lz_node_list = cartesian_node.children("lz");
 
-  // On vérifie qu'on a bien au moins trois données x, y & z et une origine
+  // Check that we have at least three x, y & z data and an origin
   if (origine_node.null())
     ARCANE_FATAL("No <origin> element found");
   if (lx_node_list.size() == 0)
@@ -82,13 +82,13 @@ readOptionsFromXml(XmlNode cartesian_node)
     ARCANE_FATAL("No <ly> elements found");
 
   String origine_value = origine_node.value();
-  // On récupère l'origine
+  // Retrieve the origin
   bool is_bad_origin = builtInGetValue(m_origine, origine_value);
 
-  // On regarde si on a un noeud en Z
+  // Check if we have a node in Z
   if (lz_node_list.size() == 0) {
     m_mesh_dimension = 2;
-    // En 2D, on autorise l'origine a avoir 2 composantes
+    // In 2D, we allow the origin to have 2 components
     if (is_bad_origin) {
       Real2 xy(0.0, 0.0);
       is_bad_origin = builtInGetValue(xy, origine_value);
@@ -104,10 +104,10 @@ readOptionsFromXml(XmlNode cartesian_node)
   if (is_bad_origin)
     ARCANE_FATAL("Element '{0}' : can not convert value '{1}' to type Real3", origine_node.xpathFullName(), origine_value);
 
-  // On récupère les longueurs des blocs, + true pour throw_exception
-  // On récupère aussi les nombres de mailles des blocs + true pour throw_exception
-  // On récupère aussi les progressions géométriques
-  // On met les progressions à 1.0 par défaut
+  // Retrieve the block lengths, + true for throw_exception
+  // Also retrieve the number of mesh cells per block + true for throw_exception
+  // Also retrieve the geometric progressions
+  // Default progressions to 1.0
   for (XmlNode& lx_node : lx_node_list) {
     m_bloc_lx.add(lx_node.valueAsReal(true));
     m_bloc_nx.add(lx_node.attr("nx", true).valueAsInteger(true));
@@ -135,7 +135,7 @@ readOptionsFromXml(XmlNode cartesian_node)
     }
   }
 
-  // On récupère les nombres de sous-domaines + throw_exception
+  // Retrieve the number of sub-domains + throw_exception
   String nsd_value = nsd_node.value();
   IntegerUniqueArray nsd;
   if (builtInGetValue(nsd, nsd_value))
@@ -202,6 +202,7 @@ setBuildInfo(const CartesianMeshGeneratorBuildInfo& build_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief readOptions
  */
@@ -213,7 +214,7 @@ _readOptions()
   m_mesh_dimension = m_build_info.m_mesh_dimension;
   Int32 nb_sub_domain = m_mesh->parallelMng()->commSize();
 
-  // On met les nombres de sous-domaines par défaut
+  // Set default number of sub-domains
   if (m_build_info.m_nsdx == 0 || nb_sub_domain == 1)
     m_build_info.m_nsdx = 1;
   if (m_build_info.m_nsdy == 0 || nb_sub_domain == 1)
@@ -221,7 +222,7 @@ _readOptions()
   if (m_build_info.m_nsdz == 0 || nb_sub_domain == 1)
     m_build_info.m_nsdz = 1;
 
-  // Synthèse des longueurs des blocs
+  // Sum up the block lengths
   m_l.x = m_l.y = m_l.z = 0.;
   for (int i = 0; i < m_build_info.m_bloc_lx.size(); i += 1)
     m_l.x += m_build_info.m_bloc_lx.at(i);
@@ -231,7 +232,7 @@ _readOptions()
     for (int i = 0; i < m_build_info.m_bloc_lz.size(); i += 1)
       m_l.z += m_build_info.m_bloc_lz.at(i);
 
-  // Synthèse des origines pour chaque bloc
+  // Sum up the origins for each block
   m_bloc_ox.add(m_build_info.m_origine.x);
   m_bloc_oy.add(m_build_info.m_origine.y);
   if (m_mesh_dimension == 3)
@@ -244,7 +245,7 @@ _readOptions()
     for (int i = 0; i < m_build_info.m_bloc_lz.size(); i += 1)
       m_bloc_oz.add(m_bloc_oz.at(i) + m_build_info.m_bloc_lz.at(i));
 
-  // Synthèse des nombres de mailles des blocs et en total
+  // Sum up the number of mesh cells per block and total
   m_nx = m_ny = m_nz = 0;
 
   for (int i = 0; i < m_build_info.m_bloc_nx.size(); ++i)
@@ -258,7 +259,7 @@ _readOptions()
   else
     m_nz += 1;
 
-  // On dump les infos récupérées jusque là
+  // Dump the information retrieved so far
   info() << " mesh_name=" << m_mesh->name();
   info() << " dimension=" << m_mesh_dimension;
   info() << " origin:" << m_build_info.m_origine;
@@ -275,7 +276,7 @@ _readOptions()
   info() << " decomposing the subdomains:" << m_build_info.m_nsdx << "x"
          << m_build_info.m_nsdy << "x" << m_build_info.m_nsdz;
 
-  // Vérification du nombre de sous domaines vs ce qui a été spécifié
+  // Check the number of subdomains vs what was specified
   if (m_build_info.m_nsdx * m_build_info.m_nsdy * m_build_info.m_nsdz != nb_sub_domain)
     ARCANE_FATAL("Specified partition {0}x{1}x{2} has to be equal to number of parts ({3})",
                  m_build_info.m_nsdx,m_build_info.m_nsdy,m_build_info.m_nsdz,nb_sub_domain);
@@ -333,10 +334,10 @@ inline Int32 ownNbCell(Int64 n, Integer nsd, int sd_offset)
 {
   Int64 q = n / nsd;
   Int64 r = n % nsd;
-  // Si on est en 'première approche', on a pas de reste
+  // If we are in 'first approach', there is no remainder
   if (r == 0)
     return CheckedConvert::toInt32(q);
-  // Sinon, le reste des mailles est réparti sur les derniers sous domaines
+  // Otherwise, the remainder of cells is distributed among the last subdomains
   if (sd_offset < (nsd - r))
     return CheckedConvert::toInt32(q);
   return CheckedConvert::toInt32(q + 1);
@@ -729,20 +730,20 @@ generateMesh()
   info() << " sd_y_cell_offset=" << sd_y_cell_offset;
   info() << " sd_z_cell_offset=" << sd_z_cell_offset;
 
-  // On calcule le premier node_local_id en fonction de notre sub_domain_id
+  // We calculate the first node_local_id based on our sub_domain_id
   Integer node_local_id = 0;
   Int64 node_unique_id_offset = 0;
   info() << " sdXOffset=" << sdXOffset()
          << " sdYOffset=" << sdYOffset()
          << " sdZOffset=" << sdZOffset();
-  // On calcule l'offset en x des node_unique_id
+  // We calculate the x offset of node_unique_id
   node_unique_id_offset += sd_x_node_offset.at(sdXOffset());
   info() << " node_unique_id_offset=" << node_unique_id_offset;
-  // On calcule l'offset en y des node_unique_id
+  // We calculate the y offset of node_unique_id
   node_unique_id_offset += (sd_y_node_offset.at(sdYOffset()));
   info() << " node_unique_id_offset=" << node_unique_id_offset;
   if (m_mesh_dimension == 3) {
-    // On calcule l'offset en z des node_unique_id
+    // We calculate the z offset of node_unique_id
     node_unique_id_offset += (sd_z_node_offset.at(sdZOffset()));
     info() << " node_unique_id_offset=" << node_unique_id_offset;
   }
@@ -757,13 +758,13 @@ generateMesh()
   }
   for (Int64 z = 0; z < own_nb_node_z; ++z) {
     if (m_mesh_dimension == 3) {
-      // On saute l'éventuelle dernière frontière bl coincidante avec les sd
-      // Et si on découvre une frontière bloc, on reset les origines
+      // Skip the possible last bl boundary coinciding with the sd
+      // And if we discover a block boundary, we reset the origins
       if (((z + 1) != own_nb_node_z) &&
           ((z * all_nb_node_xy + sd_z_node_offset.at(sdZOffset())) == (z_nbl + m_build_info.m_bloc_nz.at(z_ibl) * all_nb_node_xy))) {
         info() << " Creation hit z bloc boundarz: @ node " << z;
         z_nbl += m_build_info.m_bloc_nz.at(z_ibl) * all_nb_node_xy;
-        // On incrémente de bloc
+        // Increment by block
         z_ibl += 1;
         z_obl = 0;
       }
@@ -775,41 +776,41 @@ generateMesh()
     Integer y_obl = sd_y_obl.at(sdYOffset());
     Int64 y_nbl = sd_y_nbl.at(sdYOffset());
     for (Int64 y = 0; y < own_nb_node_y; ++y) {
-      // On saute l'éventuelle dernière frontière bl coincidante avec les sd
-      // Et si on découvre une frontière bloc, on reset les origines
+      // Skip the possible last bl boundary coinciding with the sd
+      // And if we discover a block boundary, we reset the origins
       if (((y + 1) != own_nb_node_y) &&
           ((y * all_nb_node_x + sd_y_node_offset.at(sdYOffset())) == (y_nbl + m_build_info.m_bloc_ny.at(y_ibl) * all_nb_node_x))) {
         info() << " Creation hit y bloc boundary: @ node " << y;
         y_nbl += m_build_info.m_bloc_ny.at(y_ibl) * all_nb_node_x;
-        // On incrémente de bloc
+        // Increment by block
         y_ibl += 1;
         y_obl = 0;
       }
       Real ny = nyDelta(y_obl, y_ibl);
-      // Récupération du numéro de bloc courant
+      // Retrieve the current block number
       Integer x_ibl = sd_x_ibl.at(sdXOffset());
-      // Récupération de l'offset dans le bloc courant
+      // Retrieve the offset within the current block
       Integer x_obl = sd_x_obl.at(sdXOffset());
-      // Récupération du nombre de noeuds dans le bloc courant
+      // Retrieve the number of nodes in the current block
       Int64 x_nbl = sd_x_nbl.at(sdXOffset());
       for (Int64 x = 0; x < own_nb_node_x; ++x) {
         Int64 node_unique_id = node_unique_id_offset + x + y * all_nb_node_x + z * all_nb_node_xy;
         nodes_unique_id[node_local_id] = node_unique_id;
         Int32 owner = m_my_mesh_part;
-        // Si on est pas sur sur un sd des bords
-        // Et si on touche aux noeuds des bords du sd de bord
+        // If we are not on a boundary sd
+        // And if we touch the edge nodes of the boundary sd
         if (((sdXOffset() + 1) != m_build_info.m_nsdx) && ((x + 1) == own_nb_node_x))
           owner += 1;
         if (((sdYOffset() + 1) != m_build_info.m_nsdy) && ((y + 1) == own_nb_node_y))
           owner += m_build_info.m_nsdx;
         if (((sdZOffset() + 1) != m_build_info.m_nsdz) && ((z + 1) == own_nb_node_z))
           owner += m_build_info.m_nsdx * m_build_info.m_nsdy;
-        // On saute l'éventuelle dernière frontière bl coincidante avec les sd
-        // Et si on découvre une frontière bloc, on reset les origines
+        // Skip the possible last bl boundary coinciding with the sd
+        // And if we discover a block boundary, we reset the origins
         if (((x + 1) != own_nb_node_x) && ((x + sd_x_node_offset.at(sdXOffset())) == (x_nbl + m_build_info.m_bloc_nx.at(x_ibl)))) {
           info() << " Creation hit x bloc boundary: @ node " << x;
           x_nbl += m_build_info.m_bloc_nx.at(x_ibl);
-          // On incrémente de bloc
+          // Increment by block
           x_ibl += 1;
           x_obl = 0;
         }
@@ -826,20 +827,20 @@ generateMesh()
     z_obl += 1;
   }
 
-  // Création des mailles
-  // Infos pour la création des mailles
-  // par maille: 1 pour son unique id,
-  //             1 pour son type,
-  //             8 pour chaque noeud
+  // Mesh creation
+  // Info for mesh creation
+  // per cell: 1 for its unique id,
+  //           1 for its type,
+  //           8 for each node
   Int64 cell_unique_id_offset = 0;
-  // On calcule l'offset en x des cell_unique_id
+  // We calculate the x offset of cell_unique_id
   cell_unique_id_offset += sd_x_cell_offset.at(sdXOffset());
   info() << "cell_unique_id_offset=" << cell_unique_id_offset;
-  // On calcule l'offset en y des cell_unique_id
+  // We calculate the y offset of cell_unique_id
   cell_unique_id_offset += sd_y_cell_offset.at(sdYOffset());
   info() << "cell_unique_id_offset=" << cell_unique_id_offset;
   if (m_mesh_dimension == 3) {
-    // On calcule l'offset en z des cell_unique_id
+    // We calculate the z offset of cell_unique_id
     cell_unique_id_offset += sd_z_cell_offset.at(sdZOffset());
     info() << "cell_unique_id_offset=" << cell_unique_id_offset;
   }
@@ -892,17 +893,17 @@ generateMesh()
   }
   nodes_coord_var.synchronize();
 
-  // Créé les groupes correspondants aux bords du maillage
-  // Si demandé, on créé aussi les groupes pour tester un tube à choc de Sod.
+  // Create groups corresponding to the mesh edges
+  // If requested, we also create groups to test a Sod shock tube.
   {
     SodStandardGroupsBuilder groups_builder(traceMng());
     Real3 origin = m_build_info.m_origine;
     Real3 length(m_l.x,m_l.y,m_l.z);
     Real3 max_pos = origin + length;
-    // TODO: Comme il peut y avoir des progressions geométriques il faut définir
-    // le milieu à partir de la position de la maille d'offset le milieu
-    // et pas à partir des coordonnées
-    // Calculer middle_x comme position du milieu
+    // TODO: Since there can be geometric progressions, we must define
+    // the middle based on the position of the offset mesh the middle
+    // and not from the coordinates
+    // Calculate middle_x as the middle position
     bool do_zg_and_zd = m_build_info.m_is_generate_sod_groups;
     Real middle_x = (origin.x + max_pos.x) / 2.0;
     Real middle_height = (origin.y + max_pos.y) / 2.0;
@@ -917,8 +918,9 @@ generateMesh()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de génération de maillage cartésien en 2D.
+ * \brief Service for 2D Cartesian mesh generation.
  */
 class Cartesian2DMeshGenerator
 : public ArcaneCartesian2DMeshGeneratorObject
@@ -961,7 +963,7 @@ class Cartesian2DMeshGenerator
   {
     info() << "Cartesian2DMeshGenerator: allocateMeshItems()";
     CartesianMeshGenerator g(pm);
-    // Regarde s'il faut calculer dynamiquement le découpage
+    // Check if the partitioning needs to be calculated dynamically
     auto [ x, y ] = _computePartition(pm,m_build_info.m_nsdx,m_build_info.m_nsdy);
     m_build_info.m_nsdx = x;
     m_build_info.m_nsdy = y;
@@ -977,14 +979,14 @@ class Cartesian2DMeshGenerator
   _computePartition(IPrimaryMesh* pm,Integer nb_x,Integer nb_y)
   {
     Int32 nb_part = pm->meshPartInfo().nbPart();
-    // En séquentiel, ne tient pas compte des valeurs de jeu de données.
+    // In sequential mode, it does not take into account the dataset values.
     if (nb_part==1)
       return {1,1};
-    // Si le découpage en X et en Y est spécifié, l'utilise directement.
+    // If the partitioning in X and Y is specified, use it directly.
     if (nb_x!=0 && nb_y!=0)
       return {nb_x, nb_y};
-    // Aucun découpage spécifié. Il faut que math::sqrt(nb_part)
-    // soit un entier
+    // No partitioning specified. math::sqrt(nb_part)
+    // must be an integer
     if (nb_x==0 && nb_y==0){
       double s = math::sqrt((double)(nb_part));
       Integer s_int = (Integer)(::floor(s));
@@ -993,7 +995,7 @@ class Cartesian2DMeshGenerator
                      nb_part,nb_part);
       return {s_int,s_int};
     }
-    // Ici, on a un des deux découpages qui n'est pas spécifié.
+    // Here, one of the two partitions is not specified.
     if (nb_x==0){
       if ( (nb_part % nb_y) != 0 )
         ARCANE_FATAL("Invalid number of Y part '{0}' for automatic partitioning: can not divide '{1}' by '{2}'",
@@ -1014,8 +1016,9 @@ ARCANE_REGISTER_SERVICE_CARTESIAN2DMESHGENERATOR(Cartesian2D,Cartesian2DMeshGene
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de génération de maillage cartésien en en 3D.
+ * \brief Service for 3D Cartesian mesh generation.
  */
 class Cartesian3DMeshGenerator
 : public ArcaneCartesian3DMeshGeneratorObject

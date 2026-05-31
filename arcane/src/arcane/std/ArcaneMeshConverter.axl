@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <service name="ArcaneMeshConverter" type="caseoption" version="1.0" namespace-macro-name="ARCANE" >
  <name lang='fr'>convertisseur-maillage</name>
  <userclass>User</userclass>
@@ -12,7 +12,7 @@
 
  <options>
       
-  <!-- Nom du service pour l'ecriture du maillage final -->
+  <!-- Service name for writing the final mesh -->
   <simple
    name = "writer-service-name"
    type = "string"
@@ -24,7 +24,7 @@ Nom du service utilisé pour écrire le maillages en sortie.
    </description>
   </simple>
 
-  <!-- Nom du service pour l'ecriture du maillage final -->
+  <!-- Service name for writing the final mesh -->
   <simple
    name = "file-name"
    type = "string"

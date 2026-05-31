@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* JsonMessagePassingProfilingService.h                        (C) 2000-2019 */
 /*                                                                           */
-/* Informations de performances du "message passing" au format JSON          */
+/* Performance information for "message passing" in JSON format              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_JSONMESSAGEPASSINGPROFILINGSERVICE_H
 #define ARCANE_STD_JSONMESSAGEPASSINGPROFILINGSERVICE_H
@@ -30,8 +30,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de profiling du "message passing" au format JSON.
+ * \brief JSON message passing profiling service.
  */
 class JsonMessagePassingProfilingService
 : public AbstractService
@@ -51,7 +52,7 @@ class JsonMessagePassingProfilingService
 
  private:
 
-  //! Liste des statistiques par point d'entree.
+  //! List of statistics per entry point.
   typedef std::map<String, Arccore::MessagePassing::StatData> StatDataMap;
 
  private:
@@ -81,4 +82,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

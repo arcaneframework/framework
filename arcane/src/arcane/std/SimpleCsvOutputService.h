@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleCsvOutputService.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un tableau au formet csv.   */
+/* Service for building and outputting a table in CSV format.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_SIMPLECSVOUTPUTSERVICE_H
 #define ARCANE_STD_SIMPLECSVOUTPUTSERVICE_H
@@ -374,6 +374,3 @@ class SimpleCsvOutputService
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

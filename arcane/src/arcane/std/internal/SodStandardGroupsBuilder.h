@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SodStandardGroupsBuilder.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Création des groupes pour les cas test de tube à choc de Sod.             */
+/* Creation of groups for Sod shock tube test cases.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_SODSTANDARDGROUPSBUILDER_H
 #define ARCANE_STD_INTERNAL_SODSTANDARDGROUPSBUILDER_H
@@ -25,13 +25,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour créer les groupes standards pour un tube à choc de sod.
+ * \brief Class for creating standard groups for a Sod shock tube.
  *
- * Les groupes créés sont les groupes de faces correspondants aux côtés du
- * maillages (XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX), les groupes de mailles à gauche (ZG)
- * et à droite (ZD) le long de l'axe des X et pour le groupe de droite
- * la partie en haut (ZD_HAUT) et en bas (ZD_BAS).
+ * The created groups are the face groups corresponding to the sides of the
+ * meshes (XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX), the left mesh groups (ZG)
+ * and right (ZD) along the X-axis, and for the right group
+ * the top part (ZD_HAUT) and the bottom part (ZD_BAS).
  *
  * \sa SodMeshGenerator
  */
@@ -47,11 +48,11 @@ class SodStandardGroupsBuilder
  public:
 
   /*!
-   * \brief Créé les groupes pour un initialiser un tube à choc de sod.
+   * \brief Creates the groups for initializing a Sod shock tube.
    *
-   * Les groupes correspondant aux frontières ((X|Y|Z)(MIN|MAX) sont toujours créés.
-   * Les autres groupes correspondant aux zones gauches et droites pour
-   * un tube à choc de Sod sont créés si \a do_zg_and_zd est vrai.
+   * The groups corresponding to the boundaries ((X|Y|Z)(MIN|MAX) are always created.
+   * The other groups corresponding to the left and right zones for
+   * a Sod shock tube are created if \a do_zg_and_zd is true.
    */
   void generateGroups(IMesh* mesh, Real3 min_pos, Real3 max_pos,
                       Real middle_x, Real middle_height, bool do_zg_and_zd);
@@ -69,4 +70,4 @@ class SodStandardGroupsBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

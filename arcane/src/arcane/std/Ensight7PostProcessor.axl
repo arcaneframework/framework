@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
   <!--  parent-name="PostProcessorService" -->
   <service name="Ensight7PostProcessor" parent-name="PostProcessorWriterBase"
@@ -6,7 +6,7 @@
     <name lang='fr'>post-processeur-ensight7</name>
   <userclass>User</userclass>
     <description>
-     Post Processeur au format Ensight7 Gold
+     Post Processor in Ensight7 Gold format
     </description>
     
     <interface name="Arcane::IPostProcessorWriter" inherited="false"/>
@@ -25,10 +25,11 @@
     <name lang='fr'>nb-temps-par-fichier</name>
   <userclass>User</userclass>
     <description>
-Indique le nombre maximum d'instants
-de temps à mettre dans un fichier. Si l'option vaut 10 par exemple, les 10 premières sorties
-seront dans un fichier, les 10 suivantes dans un second et ainsi de suite. Si
-cette valeur vaut 0, il y a un temps par fichier et par variable. A noter que le dans la version actuelle de VTK (4.4+), seuls ce type de fichiers sont supportés en lecture.
+Indicates the maximum number of time steps to put in a file. If the option is
+      10, for example, the first 10 outputs will be in one file, the next 10
+      in a second, and so on. If this value is 0, there is one timestep per
+      file and per variable. Note that in the current version of VTK (4.4+),
+      only this type of file is supported for reading.
     </description>
    </simple>
 
@@ -39,9 +40,9 @@ cette valeur vaut 0, il y a un temps par fichier et par variable. A noter que le
    >
   <userclass>User</userclass>
     <description>
-Mode de représentation des hexahèdres dégénérés.
-Si use-degenerated-hexa = true alors ceux-ci sont représentés comme des héxahèdres avec des sommets confondus, sinon
-utilise le mode nfaced de Ensight (qui n'est pas compatible avec Paraview).
+Mode of representation for degenerate hexahedrons.
+If use-degenerated-hexa = true, they are represented as hexahedrons with merged vertices; otherwise,
+Ensight's nfaced mode is used (which is not compatible with Paraview).
     </description>
    </simple>
   
@@ -55,7 +56,7 @@ utilise le mode nfaced de Ensight (qui n'est pas compatible avec Paraview).
   <userclass>User</userclass>
     <name lang='fr'>fichier-binaire</name>
     <description>
-Si vrai, le format de sauvegarde est binaire, sinon il est ASCII.
+If true, the save format is binary; otherwise, it is ASCII.
     </description>
    </simple>
 
@@ -68,7 +69,7 @@ Si vrai, le format de sauvegarde est binaire, sinon il est ASCII.
   <userclass>User</userclass>
     <name lang='fr'>force-premiere-geometie</name>
     <description>
-Si vrai, le format ne sauvegarde que la première géométrie.
+If true, the format only saves the first geometry.
     </description>
    </simple>
 
@@ -82,7 +83,7 @@ Si vrai, le format ne sauvegarde que la première géométrie.
   <userclass>User</userclass>
     <name lang='fr'>sauve-uids</name>
     <description>
-Si vrai, le format contient des propriétés supplémentaires 'Item'Uid identifiant les items portant des propriétés ('Item' étant Cell, Face, Edge, Node).
+If true, the format contains additional 'Item'Uid properties identifying items that carry properties ('Item' being Cell, Face, Edge, Node).
     </description>
    </simple>
   
@@ -95,8 +96,7 @@ Si vrai, le format contient des propriétés supplémentaires 'Item'Uid identifi
    >
     <name lang='fr'>regroupe-fichier</name>
     <description>
-Dans la version parallèle, true si on souhaite regrouper les fichiers de sorties
-dans un seul fichier 'case'.
+In the parallel version, true if you wish to group the output files into a single 'case' file.
     </description>
    </simple> -->
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IosFile.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Routines des Lecture/Ecriture d'un fichier.                               */
+/* File Read/Write Routines.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_SERVICES_H
 #define ARCANE_STD_INTERNAL_SERVICES_H
@@ -27,7 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Routines des Lecture/Ecriture d'un fichier.
+ * \brief File Read/Write Routines.
  */
 class IosFile
 {

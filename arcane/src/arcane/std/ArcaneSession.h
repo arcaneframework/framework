@@ -1,2 +1,2 @@
-// NOTE: La session est maintenant dans arcane/impl
+﻿// NOTE: The session is now in arcane/impl
 #include "arcane/impl/ArcaneSession.h"

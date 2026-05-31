@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HoneyCombMeshGenerator.cc                                   (C) 2000-2023 */
 /*                                                                           */
-/* Service de génération de maillage hexagonal.                              */
+/* Hexagonal mesh generation service.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,10 +34,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- *
- * \brief Classe d'aide pour générer un maillage séquentiel en se basant
- * sur la connectivité est les coordonnées des noeuds.
+ * \brief Helper class to generate a sequential mesh based
+ * on connectivity and node coordinates.
  */
 class SimpleSequentialMeshBuilder
 : public TraceAccessor
@@ -74,7 +74,7 @@ class SimpleSequentialMeshBuilder
 
  public:
 
-  //! Ajoute ou récupère l'uniqueId() du noeud de coordonnées \a coord.
+  //! Adds or retrieves the uniqueId() of the node with coordinates \a coord.
   Int32 addNode(Real3 coord)
   {
     auto p = m_nodes_coord_map.find(coord);
@@ -126,7 +126,7 @@ class SimpleSequentialMeshBuilder
   CoordMap m_nodes_coord_map;
   Int32 m_nb_cell = 0;
   UniqueArray<Int64> m_cells_infos;
-  //! Correspondante uid->coord pour les noeuds
+  //! uid->coord correspondence for nodes
   UniqueArray<Real3> m_nodes_coordinates;
 };
 
@@ -187,7 +187,7 @@ HoneyComb2DMeshGenerator(IPrimaryMesh* mesh)
 void HoneyComb2DMeshGenerator::
 _buildCells()
 {
-  // En parallèle, seul le rang 0 construit le maillage
+  // In parallel, only rank 0 builds the mesh
   IParallelMng* pm = m_mesh->parallelMng();
   if (pm->commRank() == 0)
     _buildCells2();
@@ -219,7 +219,7 @@ _buildCells2()
   Real2 u2(0.5 * pitch * math::sqrt(3.0), 0.5 * pitch);
   Real2 u3(pitch * 0.0, pitch * 1.0);
 
-  // Mailles au dessus du centre
+  // Meshes above the center
   for (Integer i = (-nb_ring + 1); i < 1; ++i) {
     Real x0 = u3[0] * i - u1[0] * (nb_ring - 1);
     Real y0 = u3[1] * i - u1[1] * (nb_ring - 1);
@@ -229,7 +229,7 @@ _buildCells2()
     cells_line_info.add(CellLineInfo(pos, nb_cell_in_line));
   }
 
-  // Mailles en dessous du centre
+  // Meshes below the center
   for (Integer i = 1; i < nb_ring; ++i) {
     Real x0{ u2[0] * i - u1[0] * (nb_ring - 1) };
     Real y0{ u2[1] * i - u1[1] * (nb_ring - 1) };
@@ -268,8 +268,9 @@ generateMesh(Real2 origin, Real pitch, Integer nb_ring)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de génération de maillage cartésien en 2D.
+ * \brief Service for generating a Cartesian mesh in 2D.
  */
 class HoneyComb2DMeshGeneratorService
 : public ArcaneHoneyComb2DMeshGeneratorObject
@@ -313,7 +314,7 @@ ARCANE_REGISTER_SERVICE_HONEYCOMB2DMESHGENERATOR(HoneyComb2D, HoneyComb2DMeshGen
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Infos sur une ligne d'hexagone
+//! Info about a line of hexagons
 class HoneyComb3DMeshGenerator::CellLineInfo
 {
  public:
@@ -354,7 +355,7 @@ generateMesh(Real2 origin, Real pitch, Integer nb_ring, ConstArrayView<Real> hei
   m_origin = origin;
   m_heights = heights;
 
-  // Vérifie qu'on a le bon nombre de valeurs et qu'elles sont croissantes
+  // Check that we have the correct number of values and that they are increasing
   const Integer nb_height = m_heights.size();
   if (nb_height < 2)
     ARCANE_FATAL("Bad number of heights '{0}' (minimum=2)", nb_height);
@@ -371,7 +372,7 @@ generateMesh(Real2 origin, Real pitch, Integer nb_ring, ConstArrayView<Real> hei
 void HoneyComb3DMeshGenerator::
 _buildCells()
 {
-  // En parallèle, seul le rang 0 construit le maillage
+  // In parallel, only rank 0 builds the mesh
   IParallelMng* pm = m_mesh->parallelMng();
   if (pm->commRank() == 0)
     _buildCells2();
@@ -406,7 +407,7 @@ _buildCells2()
   Real2 u3(pitch * 0.0, pitch * 1.0);
 
   for (Integer zz = 0; zz < (nb_height - 1); ++zz) {
-    // Mailles au dessus du centre
+    // Meshes above the center
     for (Integer i = (-nb_ring + 1); i < 1; ++i) {
       Real x0 = u3[0] * i - u1[0] * (nb_ring - 1);
       Real y0 = u3[1] * i - u1[1] * (nb_ring - 1);
@@ -416,7 +417,7 @@ _buildCells2()
       cells_line_info.add(CellLineInfo(pos, m_heights[zz], m_heights[zz + 1], nb_cell_in_line));
     }
 
-    // Mailles en dessous du centre
+    // Meshes below the center
     for (Integer i = 1; i < nb_ring; ++i) {
       Real x0{ u2[0] * i - u1[0] * (nb_ring - 1) };
       Real y0{ u2[1] * i - u1[1] * (nb_ring - 1) };
@@ -445,8 +446,9 @@ _buildCells2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de génération de maillage cartésien en 3D.
+ * \brief Service for generating a Cartesian mesh in 3D.
  */
 class HoneyComb3DMeshGeneratorService
 : public ArcaneHoneyComb3DMeshGeneratorObject

@@ -1,18 +1,18 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de donnée concernant le module d'équilibrage de la charge -->
+<!-- Data set options concerning the load balancing module -->
 
  <module name="ArcaneLoadBalance">
  <name lang='fr'>arcane-equilibrage-charge</name>
  <userclass>User</userclass>
  <description>
-   Informations sur l'équilibrage de charge.
+   Information about load balancing.
 
 <p>
-   Les options par défaut de ce module sont calculées pour des performances optimales. Il n'est à priori pas nécessaire de les changer. La seule option utile est l'activation ou non de l'équilibrage.
+   The default options for this module are calculated for optimal performance. It is not necessary to change them. The only useful option is whether or not to activate the balancing.
 </p>
  </description>
 
@@ -37,7 +37,7 @@
  <userclass>User</userclass>
    <name lang='fr'>partitionneur</name>
    <description>
-Service de partitionnement à utiliser
+Partitioning service to use
    </description>
   </service-instance>
 
@@ -49,7 +49,7 @@ Service de partitionnement à utiliser
    <name lang='fr'>actif</name>
    <userclass>User</userclass>
    <description>
-Vrai si l'équilibrage de charge est actif
+True if load balancing is active
    </description>
   </simple>
 
@@ -60,7 +60,7 @@ Vrai si l'équilibrage de charge est actif
   >
    <name lang='fr'>periode</name>
    <description>
-Nombre d'itérations entre deux vérifications du déséquilibre de charge
+Number of iterations between two checks of load imbalance
    </description>
   </simple>
 
@@ -71,9 +71,7 @@ Nombre d'itérations entre deux vérifications du déséquilibre de charge
   >
    <name lang='fr'>compacte</name>
    <description>
-Vrai si on recompacte les entités après chaque équilibrage pour qu'il n'y ait plus
-de trous dans la numéroration. Tous les modules ne supportant pas les trous dans la numérotation,
-il est préférable de laisser cette option à vrai.
+True if entities are recompacted after each balancing so that there are no gaps in the numbering. Since not all modules support gaps in numbering, it is preferable to leave this option as true.
    </description>
   </simple>
 
@@ -84,13 +82,7 @@ il est préférable de laisser cette option à vrai.
   >
    <name lang='fr'>desequilibre-maximal</name>
    <description>
-Déséquilibre maximal toléré avant de provoquer un rééquilibrage de la charge.
-Le déséquilibre est calculé en regardant le temps CPU consacré au calcul
-de chaque processeur. Il est égal au temps du processeur effectuant le plus
-de calcul moins le temps du processeurs effectuant le moins de calcul et divisé
-par ce derniner. Par conséquent, le déséquilibre vaut 0 lorsque tous les
-processeurs utilise le même temps CPU, 1 lorsque le processeur le plus chargé
-passe 2 fois plus de temps en calcul que le processeur le moins chargé.
+Maximum imbalance tolerated before triggering a load rebalancing. Imbalance is calculated by looking at the CPU time dedicated to calculating each processor. It is equal to the time of the processor performing the most calculations minus the time of the processor performing the least calculations, divided by the latter. Consequently, the imbalance is 0 when all processors use the same CPU time, and 1 when the most loaded processor spends twice as much time calculating as the least loaded processor.
    </description>
   </simple>
 
@@ -101,10 +93,7 @@ passe 2 fois plus de temps en calcul que le processeur le moins chargé.
   >
    <name lang='fr'>statistiques</name>
    <description>
-Vrai si on souhaite avoir des statistiques sur le temps de calcul de chaque sous-domaine.
-Les statistiques prennent la forme d'une courbe au cours du temps indiquant pour chaque sous-domaine
-le temps de calcul. Le nom de la courbe est de la forme 'SubDomainComputeTime%P' avec %P le numéro du
-sous-domaine.
+True if you want statistics on the computation time of each subdomain. The statistics take the form of a curve over time indicating the computation time for each subdomain. The curve name is in the form 'SubDomainComputeTime%P' where %P is the subdomain number.
    </description>
   </simple>
 
@@ -115,7 +104,7 @@ sous-domaine.
   >
    <name lang='fr'>temps-cpu-minimal</name>
    <description>
-Temps cpu minimal (en secondes) entre deux repartitionnements.
+Minimum CPU time (in seconds) between two repartitionings.
    </description>
   </simple>
 

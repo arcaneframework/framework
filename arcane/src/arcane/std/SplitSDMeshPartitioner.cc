@@ -5,12 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SplitSDMeshPartitioner.cc
-   
-   Partitioneur de maillage reprenant le fonctionnement (simplifié) de SplitSD 
-   utilisé à Dassault Aviation et développé à l'ONERA par EB en 1996-99     
-*/
-/*---------------------------------------------------------------------------*/
+/* SplitSDMeshPartitioner.cc                                   (C) 2000-2024 */
+/*                                                                           */
+/* Mesh partitioner reproducing the (simplified) functionality of SplitSD    */
+/* used at Dassault Aviation and developed at ONERA by EB in 1996-99         */
 /*---------------------------------------------------------------------------*/
 
 //#define DEBUG_PARTITIONER
@@ -61,29 +59,29 @@ SplitSDMeshPartitioner(const ServiceBuildInfo& sbi)
 void SplitSDMeshPartitioner::
 partitionMesh(bool initial_partition)
 {
-  info() << "Equilibrage de charge avec SplitSDMeshPartitioner";
+  info() << "Load balancing with SplitSDMeshPartitioner";
 
-  // on ne supporte pas les contraintes
-  // car on utilise le maillage Arcane pour les parcours frontaux, 
-  // il n'est donc pas prévu pour le moment de tenir compte des groupes 
-  // de mailles associées aux contraintes
+  // we do not support constraints
+  // because we use the Arcane mesh for frontal sweeps, 
+  // it is therefore not planned for the moment to take into account groups 
+  // of cells associated with constraints
   _initArrayCellsWithConstraints();
   if (haveConstraints())
-    throw FatalErrorException("SplitSDMeshPartitioner: On ne supporte pas les contraintes avec SplitSD");
+    throw FatalErrorException("SplitSDMeshPartitioner: Constraints are not supported with SplitSD");
 
-  // initialisation des structures internes
+  // initialization of internal structures
 
-  StrucInfoProc*       InfoProc = NULL;/* structure décrivant le processeur sur lequel tourne l'application */
-  StructureBlocEtendu*  Domaine = NULL;/* structure décrivant sommairement le bloc, c.a.d. la partie de la topologie localisée sur ce processeur */
-  StrucMaillage*       Maillage = NULL;/* structure décrivant sommairement le maillage global */
+  StrucInfoProc*       InfoProc = NULL;/* structure describing the processor on which the application runs */
+  StructureBlocEtendu*  Domaine = NULL;/* structure summarizing the block, i.e., the part of the topology localized on this processor */
+  StrucMaillage*       Maillage = NULL;/* structure summarizing the global mesh */
 
-  // initialisation des données propres au partitionneur, m_cells_weight doit être calculé
+  // initialization of partitioner-specific data, m_cells_weight must be calculated
   init(initial_partition, InfoProc, Domaine, Maillage);
 
-  // processus itératif de rééquilibrage de charge par déplacement d'éléments d'un sous-domaine à l'autre
+  // iterative load balancing process by moving elements from one subdomain to another
   Equilibrage(InfoProc, Domaine, Maillage); 
   
-  // on vide les structures
+  // we clear the structures
   fin(InfoProc, Domaine, Maillage);
 }
 /*---------------------------------------------------------------------------*/
@@ -96,22 +94,22 @@ init(bool initial_partition, StrucInfoProc* &InfoProc, StructureBlocEtendu* &Dom
   ISubDomain*   sd = subDomain();
   IParallelMng* pm = sd->parallelMng();
 
-  /* Initialisation memoire de InfoProc  */
+  /* Memory initialization of InfoProc  */
   InfoProc = new StrucInfoProc();
 
   InfoProc->me = sd->subDomainId();
   InfoProc->nbSubDomain = pm->commSize();
   InfoProc->m_service = this;
-  // MPI_Comm_dup(MPI_COMM_WORLD,&InfoProc->Split_Comm); /* Attribution d'un communicateur propre à notre partitioneur */
+  // MPI_Comm_dup(MPI_COMM_WORLD,&InfoProc->Split_Comm); /* Assignment of a communicator specific to our partitioner */
   InfoProc->Split_Comm = *(MPI_Comm*)getCommunicator();
   initConstraints();
 
-  // initialisation des poids aux mailles
+  // initialization of cell weights
   initPoids(initial_partition);
 #if 0
   if (!initial_partition){
     info() << "Initialize new owners";
-    // Initialise le new owner pour le cas où il n'y a pas besoin de rééquilibrer
+    // Initialise the new owner for the case where no rebalancing is needed
     IMesh* mesh = this->mesh();
     VariableItemInteger& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
     ENUMERATE_CELL(icell,mesh->ownCells()){
@@ -123,7 +121,7 @@ init(bool initial_partition, StrucInfoProc* &InfoProc, StructureBlocEtendu* &Dom
   }
 #endif
 
-  /* Initialisation memoire de Domaine */
+  /* Memory initialization of Domain */
   Domaine = new StructureBlocEtendu();
   
   Domaine->NbIntf     = 0;
@@ -133,7 +131,7 @@ init(bool initial_partition, StrucInfoProc* &InfoProc, StructureBlocEtendu* &Dom
 
   MAJDomaine(Domaine);
 
-  /* Initialisation memoire de Maillage */
+  /* Memory initialization of Mesh */
   Maillage = new StrucMaillage();
 
   Maillage->NbElements       = 0;
@@ -143,7 +141,7 @@ init(bool initial_partition, StrucInfoProc* &InfoProc, StructureBlocEtendu* &Dom
   Maillage->NbProcsVides     = 0;
   Maillage->Poids            = 0.0;
 
-  // on ne met à jour que sur le processeur maitre (le 0) la structure, en fonction de Domaine
+  // we only update the structure on the master processor (0), based on Domain
   MAJMaillageMaitre(InfoProc, Domaine, Maillage);
 }
 /*---------------------------------------------------------------------------*/
@@ -153,7 +151,7 @@ initPoids(bool initial_partition)
 {
   ARCANE_UNUSED(initial_partition);
 
-  /* récupération du poids aux mailles pour qu'il suivent les cellules */
+  /* retrieval of cell weights so that they follow the cells */
   IMesh* mesh = this->mesh();
   CellGroup own_cells = mesh->ownCells();
 //   if (initial_partition || m_cells_weight.empty())
@@ -163,7 +161,7 @@ initPoids(bool initial_partition)
 //     }
 //   else{
 //     Integer nb_weight = nbCellWeight();
-  SharedArray<float> cell_weights = cellsWeightsWithConstraints(1, true); // 1 poids seulement
+  SharedArray<float> cell_weights = cellsWeightsWithConstraints(1, true); // 1 weight only
   ENUMERATE_CELL(iitem,own_cells){
     m_poids_aux_mailles[iitem] = cell_weights[iitem.index()];
   }
@@ -198,13 +196,13 @@ MAJDomaine(StructureBlocEtendu* Domaine)
 
   int me = subDomain()->subDomainId();
 
-  // remplissage de Domaine->Intf, listes de noeuds par sous-domaine voisin
+  // filling Domaine->Intf, lists of nodes per neighboring subdomain
 
   IMesh* mesh = this->mesh();
-  FaceGroup all_faces = mesh->allFaces(); // faces sur ce processeur
+  FaceGroup all_faces = mesh->allFaces(); // faces on this processor
   debug() << " all_faces.size() = =" <<all_faces.size();
 
-  std::map<int, SharedArray<Face> > vois_faces; // liste des faces par sous-domaine voisin
+  std::map<int, SharedArray<Face> > vois_faces; // list of faces per neighboring subdomain
  
   ENUMERATE_FACE(i_item,all_faces){
     const Face face = *i_item;
@@ -212,17 +210,17 @@ MAJDomaine(StructureBlocEtendu* Domaine)
       int id1 = face.backCell().owner();
       int id2 = face.frontCell().owner();
       
-      if (id1 != id2){ // cas du voisinage avec un autre domaine
-        int idv = -1; // numéro du voisin
+      if (id1 != id2){ // case of neighborhood with another domain
+        int idv = -1; // neighbor number
         if (id1==me)
           idv = id2;
         else if (id2==me)
           idv = id1;
         else
           continue;
-        // info() << "idv = "<<idv<< " pour la face " <<face.uniqueId();
+        // info() << "idv = "<<idv<< " for the face " <<face.uniqueId();
 
-        // on ajoute l'indice de la face pour un sous-domaine
+        // we add the face index for a subdomain
         SharedArray<Face> &v_face = vois_faces[idv];
         v_face.add(face);
 
@@ -231,18 +229,18 @@ MAJDomaine(StructureBlocEtendu* Domaine)
   } // end ENUMERATE_FACE
 
   UniqueArray<int> filtreNoeuds(mesh->nodeFamily()->maxLocalId());
-  filtreNoeuds.fill(0); // initialisation du filtre
+  filtreNoeuds.fill(0); // initialization of the filter
   int marque = 0;
 
-  // pour chacun des sous-domaines voisins, on recherche les noeuds dans l'interface
-  // en évitant les doublons à l'aide du filtre sur le noeuds
+  // for each neighboring subdomain, we search for nodes in the interface
+  // avoiding duplicates using the node filter
 
   Domaine->NbIntf = arcaneCheckArraySize(vois_faces.size());
 
-  // les mailles sur ce proc (sans les mailles fantomes)
+  // cells on this proc (without ghost cells)
   Domaine->NbElements = mesh->ownCells().size();
 
-  // calcul du poids total d'un domaine => utilisation m_poids_aux_mailles
+  // calculation of the total weight of a domain => using m_cells_weight
   Domaine->PoidsDom = 0.0;
   CellGroup own_cells = mesh->ownCells();
   ENUMERATE_CELL(iitem,own_cells){
@@ -304,30 +302,30 @@ MAJDomaine(StructureBlocEtendu* Domaine)
 void SplitSDMeshPartitioner::
 MAJMaillageMaitre(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage)
 {
-  // prérequis: avoir fait un MAJDomaine avant de venir ici
+  // prerequisite: having done a MAJDomaine before coming here
 
 #ifdef ARCANE_DEBUG
   info() << "SplitSDMeshPartitioner::MAJMaillageMaitre(...)";  
   LibereMaillage(Maillage);
 #endif
 
-  void* TabTMP;    /* tableau pour les communications Domaine => Maillage->ListeDomaines[*] */
-  int   TailleTab; /* taille du tableau TabTMP (en octets) */
-  int   iDom;      /* indice de boucle sur les domaines */
+  void* TabTMP;    /* array for Domain => Mesh->ListeDomaines[*] communications */
+  int   TailleTab; /* size of the TabTMP array (in bytes) */
+  int   iDom;      /* loop index over domains */
 
-  /* on concentre l'information dans TabTMP */
+  /* we concentrate the information in TabTMP */
   TailleTab = TailleDom(Domaine);
   TabTMP =  malloc ((size_t) TailleTab);
       
   PackDom(InfoProc, Domaine,  TabTMP, TailleTab, InfoProc->Split_Comm);
   
 
-  /* on fait les envois vers le maitre, pour tous les domaines 
-     (sauf le maitre qui fait juste une copie) */
+  /* we send to the master, for all domains 
+     (except the master which just copies) */
   if (InfoProc->me == 0){
 #ifdef DEBUG
     info()<<"   ***************************";
-    info()<<"   * Avant MAJMaillageMaitre *";
+    info()<<"   * Before MAJMaillageMaitre *";
     AfficheMaillage (Maillage);
     info()<<"   ***************************";
 #endif
@@ -344,30 +342,30 @@ MAJMaillageMaitre(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
       
     UnpackDom(TabTMP, TailleTab, InfoProc->Split_Comm, &Maillage->ListeDomaines[0]);
   }
-  else { /* cas où ce n'est pas le maitre */
+  else { /* case where it is not the master */
     EnvoieMessage(InfoProc, 0, TAG_MAILLAGEMAITRE, TabTMP, TailleTab);      
   }
   
-  /* libération */
+  /* release */
   free (TabTMP); 
   TabTMP = NULL;
 
   /* --------- */
-  /* Réception */
+  /* Reception */
   /* --------- */
 
-  /* le maitre recoit toute les infos des autres noeuds (que lui même) */
+  /* the master receives all information from other nodes (including itself) */
   if (InfoProc->me == 0){
-    Maillage->NbDomainesPleins = 0;       /* on va compter le nombre de domaines pleins */
-    Maillage->NbProcsVides = 0;           /* on va compter le nombre de domaines vides */
-    Maillage->Poids = 0.0;                // poids total
-    Maillage->NbElements = 0;             // nombre d'éléments total dans le maillage
+    Maillage->NbDomainesPleins = 0;       /* we will count the number of full domains */
+    Maillage->NbProcsVides = 0;           /* we will count the number of empty domains */
+    Maillage->Poids = 0.0;                // total weight
+    Maillage->NbElements = 0;             // total number of elements in the mesh
 
-    /* on met les numéros les plus petits à la fin pour les utiliser en premier */
+    /* we put the smallest numbers at the end to use them first */
     for (iDom=InfoProc->nbSubDomain-1; iDom>=0; iDom--){
       if (iDom != 0){
 	      
-	TailleTab = 0; /* car on ne connait pas encore la taille */
+	TailleTab = 0; /* because we do not yet know the size */
 	TabTMP = RecoitMessage(InfoProc, iDom, TAG_MAILLAGEMAITRE, &TailleTab);
 	
 	UnpackDom(TabTMP, TailleTab, InfoProc->Split_Comm, &Maillage->ListeDomaines[iDom]);
@@ -375,7 +373,7 @@ MAJMaillageMaitre(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
 	free ((void*) TabTMP); TabTMP = NULL;
       }
 
-      /* on compte le nombre de domaines pleins et vides */
+      /* we count the number of full and empty domains */
       if (Maillage->ListeDomaines[iDom].NbElements != 0)
 	Maillage->NbDomainesPleins += 1;
       else
@@ -387,14 +385,14 @@ MAJMaillageMaitre(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
 
 #ifdef ARCANE_DEBUG
     info()<<"   ***************************";
-    info()<<"   * Apres MAJMaillageMaitre *";
+    info()<<"   * After MAJMaillageMaitre *";
 #ifdef DEBUG
     AfficheMaillage (Maillage);
 #endif
     info()<<"   ***************************";
     verifMaillageMaitre(Maillage);
 #endif
-  } /* end if me == maitre */
+  } /* end if me == master */
   
 }
 /*---------------------------------------------------------------------------*/
@@ -403,7 +401,7 @@ void SplitSDMeshPartitioner::
 verifMaillageMaitre(StrucMaillage* Maillage)
 {
 #ifdef ARCANE_DEBUG
-  info()<<"  on entre dans verifMaillageMaitre";
+  info()<<"  entering verifMaillageMaitre";
   
   StrucListeDomMail* ListeDomaines = Maillage->ListeDomaines;
   int NbDomaines = Maillage->NbDomainesPleins;
@@ -414,26 +412,26 @@ verifMaillageMaitre(StrucMaillage* Maillage)
       int NbNoeudsInterface = ListeDomaines[iDom].ListeVoisins[j].NbNoeudsInterface;
       int iVois = ListeDomaines[iDom].ListeVoisins[j].NoDomVois;
 
-      // recherche si le voisin existe et si le nombre de noeuds est identiques
+      // search if the neighbor exists and if the number of nodes is identical
       int k;
       for (k=0; k<ListeDomaines[iVois].NbVoisins && ListeDomaines[iVois].ListeVoisins[k].NoDomVois != iDom; k++)
       { }
       if (k==ListeDomaines[iVois].NbVoisins){
-        printf("on ne trouve pas le numéro de voisin \n");
-        printf("pour info: iDom = %d, iVois  = %d\n",iDom,iVois);
-        perror() << "verifMaillageMaitre en erreur sur le voisinage !!!";
+        printf("we cannot find the neighbor number \n");
+        printf("for info: iDom = %d, iVois  = %d\n",iDom,iVois);
+        perror() << "verifMaillageMaitre error on neighborhood !!!";
       }
       
       if (ListeDomaines[iVois].ListeVoisins[k].NbNoeudsInterface != NbNoeudsInterface){
-        printf("on ne trouve pas le même nombre de noeuds entre les voisins \n");
-        printf("pour info: iDom = %d, iVois  = %d, NbNoeudsInterface %d != %d\n"
+        printf("we do not find the same number of nodes between neighbors \n");
+        printf("for info: iDom = %d, iVois  = %d, NbNoeudsInterface %d != %d\n"
                ,iDom,iVois,NbNoeudsInterface,ListeDomaines[iVois].ListeVoisins[k].NbNoeudsInterface);
-        perror() << "verifMaillageMaitre en erreur sur le nombre de noeuds !!!";
+        perror() << "verifMaillageMaitre error on number of nodes !!!";
       }
     }
   }
 
-  info()<<"  on sort de verifMaillageMaitre";
+  info()<<"  leaving verifMaillageMaitre";
 #else
   ARCANE_UNUSED(Maillage);
 #endif
@@ -447,41 +445,41 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
   int NbDomaines = Maillage->NbDomainesPleins;
   
   int i;
-  int iDomDep; /* indice du domaine trop plein qui sert de départ aux parcours frontaux */
+  int iDomDep; /* index of the full domain that serves as the starting point for front sweeps */
   double PoidsMoyen;
 
   int tailleFP;
   int tailleFS;
   
-  int* FrontPrec; // front de noeuds du graphe (domaines)
+  int* FrontPrec; // front of nodes of the graph (domains)
   int* FrontSuiv;
   int* FrontTMP;
-  /* pour chacun des noeuds du graphe, donne le noeud précédent. 
-     Cela va permettre depuis un noeud donné lors du parcours frontal de trouver un cheminement vers le noeuds de départ */
+  /* for each node in the graph, gives the previous node. 
+     This will allow, from a given node during the front sweep, to find a path back to the starting node */
   int* ListeNoeudsPrec; 
 
-  int* FiltreDomaine; /* pour marquer les domaines à marqueDomVu, marqueDomNonVu ou marqueDomVide */
+  int* FiltreDomaine; /* to mark the domains as markedDomVu, markedDomNonVu, or markedDomVide */
   int marqueDomVu    =  1;
   int marqueDomNonVu =  0;
-  int marqueDomVide  = -1; // normallement, il n'y e a pas
+  int marqueDomVide  = -1; // normally, there are none
 
   double* PoidsSave;
 
 #ifdef ARCANE_DEBUG
   info()<<" ------------------------------------";
-  info()<<" on entre dans  MAJDeltaGlobal, tolerance = "<<tolerance;
+  info()<<" entering MAJDeltaGlobal, tolerance = "<<tolerance;
   info()<<" ------------------------------------";
-  info()<<" ......... Maillage Initial ...........";
+  info()<<" ......... Initial Mesh ...........";
   AfficheListeDomaines(ListeDomaines,NbDomaines);
 #endif
   
   if (NbDomaines==0){
-    info()<<" SplitSDMeshPartitioner::MAJDeltaGlobal : NbDomaines nul !";
+    info()<<" SplitSDMeshPartitioner::MAJDeltaGlobal: NbDomaines is null!";
     return;
   }
   if (Maillage->NbDomainesPleins<=1){
 #ifdef ARCANE_DEBUG
-    info()<<" \n = on sort de MAJDeltaGlobal sans rien faire (NbDomainesPleins = "<<Maillage->NbDomainesPleins;
+    info()<<" \n = exiting MAJDeltaGlobal without doing anything (NbDomainesPleins = "<<Maillage->NbDomainesPleins;
     info()<<" ------------------------------------";
 #endif
     return;
@@ -490,14 +488,13 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
   FiltreDomaine = (int*) malloc ((size_t) NbDomaines*sizeof(int));
   CHECK_IF_NOT_NULL(FiltreDomaine);
 
-  /* on met à zero tous les Delta  par sécurité */
+  /* setting all Deltas to zero for safety */
   for (i=0; i<NbDomaines; i++)
     for (int j=0; j<ListeDomaines[i].NbVoisins; j++)
       ListeDomaines[i].ListeVoisins[j].Delta = 0.0;
   
   /* 
-     on décale le nombre de noeuds de chacun des domaines de manière à avoir 
-     une somme totale <= 0 
+     shifting the number of nodes of each domain so that the total sum is <= 0 
   */
 
   for (i=0; i<NbDomaines; i++){
@@ -510,12 +507,12 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
   PoidsSave = (double*) malloc ((size_t) NbDomaines*sizeof(double));
   CHECK_IF_NOT_NULL(PoidsSave);
 
-  /* la valeur moyenne */
+  /* the average value */
   PoidsMoyen = Maillage->Poids/(double)Maillage->NbDomainesMax;
 
-  /* on fait le décalage */  
+  /* performing the shift */  
   for (i=0; i<NbDomaines; i++){
-    /* on met de côté le poids */
+    /* saving the weight */
     PoidsSave[i] = ListeDomaines[i].Poids;
     
     if (FiltreDomaine[i] != marqueDomVide)
@@ -523,11 +520,11 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
   } 
 
 #ifdef DEBUG
-  info()<<" Après Poids -= PoidsMoyen";
+  info()<<" After Poids -= PoidsMoyen";
   AfficheListeDomaines(ListeDomaines,NbDomaines);
 #endif
 
-  /* initialisation mémoire au plus large */
+  /* memory initialization to the largest size */
   FrontPrec = (int*) malloc ((size_t) (NbDomaines-1)*sizeof(int));
   CHECK_IF_NOT_NULL(FrontPrec);
   FrontSuiv = (int*) malloc ((size_t) (NbDomaines-1)*sizeof(int));
@@ -541,20 +538,19 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
     info()<<" ListeDomaines[iDomDep = "<<iDomDep<<"].Poids  = "<<ListeDomaines[iDomDep].Poids;
 #endif
 	  
-    /* on ne prend comme départ que les domaines étant au dessus de la moyenne en poids 
-       (donc > 0 maintenant) */
+    /* we only take domains above the average weight (so > 0 now) as starting points */
     if (ListeDomaines[iDomDep].Poids > tolerance){
-      /* DANS CE QUI SUIT, UN NOEUD EST UN DOMAINE, IL S'AGIT D'UN NOEUD DU GRAPHE */
+      /* BELOW, A NODE IS A DOMAIN; IT IS A NODE OF THE GRAPH */
       
-      /* on initialise les domaines qui ont été vu précédemment à non vu */
+      /* initializing previously seen domains to non-seen */
       for (i=0; i<NbDomaines; i++)
 	if (FiltreDomaine[i] == marqueDomVu)
 	  FiltreDomaine[i] = marqueDomNonVu;
       
-      /* on marque le noeud actuel comme étant vu */
+      /* marking the current node as seen */
       FiltreDomaine[iDomDep] = marqueDomVu;
       
-      /* initialisation du front de départ */
+      /* initialization of the starting front */
       tailleFS = 1;
       FrontSuiv[tailleFS-1] = iDomDep;
       
@@ -562,41 +558,40 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
       info()<<" FrontSuiv[0] = "<<iDomDep;
 #endif
       
-      /* initialisation du noeud de départ (pas de noeud précédent) */
+      /* initialization of the starting node (no previous node) */
       ListeNoeudsPrec[FrontSuiv[tailleFS-1]] = -1;
       
-      /* boucle tant que le noeud de départ est trop gros (poids>0) */
+      /* loop while the starting node is too large (weight>0) */
       while (ListeDomaines[iDomDep].Poids > tolerance){
 #ifdef DEBUG    
 	info()<<" while (ListeDomaines["<<iDomDep<<"].Poids  = "<<ListeDomaines[iDomDep].Poids<<" > "<<tolerance;
 #endif
 
-	/* on permute les fronts suivant et précédents */
+	/* swapping the following and preceding fronts */
 	FrontTMP = FrontPrec;
 	FrontPrec = FrontSuiv;
 	FrontSuiv = FrontTMP;
 	tailleFP = tailleFS;
-	tailleFS = 0; /* le front suivant est désormais vide */
+	tailleFS = 0; /* the following front is now empty */
 	
-	/* cas où le domaine de départ n'a pas réussi à dispercer son surplus sur
-	   les autre domaines, et que l'on a vu tout ce que l'on pouvait */
+	/* case where the starting domain failed to disperse its surplus onto other domains, and we have seen everything we could */
 	if (tailleFP == 0){
-	  fatal()<<" partitionner/MAJDeltaGlobal: on ne trouve plus de domaine alors que l'on n'a pas terminé !!!";
+	  fatal()<<" partitionner/MAJDeltaGlobal: no more domains found while not finished!!!";
 	}
 	
 	/* 
-	   on progresse d'un front 
+	   progressing one front 
 	*/
 	
-	/* boucle sur les noeuds du front précédent */
+	/* loop over the nodes of the preceding front */
 	for (int iFP=0; iFP<tailleFP; iFP++){
 	  int iDom = FrontPrec[iFP];
 	  
-	  /* boucle sur les voisins du noeud */
+	  /* loop over the neighbors of the node */
 	  for (int iVois=0; iVois<ListeDomaines[iDom].NbVoisins; iVois++){
 	    int iDomVois = ListeDomaines[iDom].ListeVoisins[iVois].NoDomVois;
 	    if (FiltreDomaine[iDomVois] == marqueDomNonVu){
-	      /* on marque ce noeud */
+	      /* marking this node */
 	      FiltreDomaine[iDomVois] = marqueDomVu;
 	      ListeNoeudsPrec[iDomVois] = iDom;
 #ifdef DEBUG    
@@ -605,14 +600,14 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
 	      FrontSuiv[tailleFS++] = iDomVois;
 	    }
 	  }
-	} /* end for iFD<tailleFP */
+	} /* end for iFP<tailleFP */
 	
 	
 	/* 
-	   on décharge le noeud de base sur les noeuds du front suivant
+	   discharging the base node onto the nodes of the following front
 	*/
 	
-	/* boucle sur les noeuds du front suivant */
+	/* loop over the nodes of the following front */
 	for (int iFS=0; iFS<tailleFS; iFS++){
 	  int iDom = FrontSuiv[iFS];
 	  
@@ -620,12 +615,12 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
 	  info()<<" ListeDomaines["<<iDom<<"].Poids = "<<ListeDomaines[iDom].Poids;
 #endif
 	  
-	  /* on ne donne qu'aux noeuds déficitaires */
+	  /* only giving to deficit nodes */
 	  if (ListeDomaines[iDom].Poids < 0.0){
-	    /* on ne donne pas plus que ce que l'on a */
+	    /* not giving more than we have */
 	    double don = MIN(-ListeDomaines[iDom].Poids, ListeDomaines[iDomDep].Poids);
 	    
-	    /* cas où il y a un don */
+	    /* case where there is a donation */
 	    if (don > 0.0){
 	      int iDomTmp;
 	      int iDomTmpPrec;
@@ -633,27 +628,27 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
 	      ListeDomaines[iDom].Poids += don;
 	      ListeDomaines[iDomDep].Poids -= don;
 	      
-	      //fprintf(stdout," don = %f\n",don);
+	      //fprintf(stdout," donation = %f\n",don);
 	      
-	      /* on remonte tout le chemin pour mettre à jour le Delta
-		 entre les noeuds iDomTmp et iDomTmpPrec */
+	      /* tracing back the entire path to update the Delta
+		 between nodes iDomTmp and iDomTmpPrec */
 	      iDomTmp = iDom;
 	      iDomTmpPrec = ListeNoeudsPrec[iDomTmp];
 	      while (iDomTmpPrec != -1){
-		/* on incrémente le Delta de don entre iDomTmpPrec et iDomTmp */
+		/* incrementing the Delta by donation between iDomTmpPrec and iDomTmp */
 		MAJDelta(don,iDomTmpPrec,iDomTmp,ListeDomaines);
-		/* de même (au signe pret) pour l'interface réciproque */
+		/* similarly (with the opposite sign) for the reciprocal interface */
 		MAJDelta(-don,iDomTmp,iDomTmpPrec,ListeDomaines);
 		
-		/* on remonte d'un cran en arrière sur le chemin */
+		/* moving one step back along the path */
 		iDomTmp = iDomTmpPrec;
 		iDomTmpPrec = ListeNoeudsPrec[iDomTmp];
 		
 	      } /* end while iDomTmpPrec != -1 */
 	      
 	    }/* end if don != 0 */
-	  } /* end if NbNoeuds < 0, pour le domaine du front */
-	} /* end for iFD<tailleFP */
+	  } /* end if NbNoeuds < 0, for the front domain */
+	} /* end for iFS<tailleFS */
 	//	AfficheListeDomaines(ListeDomaines,NbDomaines);
 	
       } /* end while Poids > tolerance */
@@ -661,7 +656,7 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
   } /* end for iDomDep<NbDomaines */
   
  
-  /* on remet les valeurs en place */  
+  /* restoring the values */  
   for (i=0; i<NbDomaines; i++)
     ListeDomaines[i].Poids = PoidsSave[i];
  
@@ -672,9 +667,9 @@ MAJDeltaGlobal(StrucInfoProc* InfoProc, StrucMaillage* Maillage, double toleranc
   free((void*) PoidsSave);       PoidsSave       = NULL;
 
 #ifdef ARCANE_DEBUG
-  info()<<" ......... Maillage Final ...........";
+  info()<<" ......... Final Mesh ...........";
   AfficheListeDomaines(ListeDomaines,NbDomaines);
-  info()<<" = on sort de   MAJDeltaGlobal     =";
+  info()<<" = exiting MAJDeltaGlobal =";
   info()<<" ------------------------------------";
 #endif
 }
@@ -693,12 +688,12 @@ MAJDelta(double ajout, int iDom, int iVois, StrucListeDomMail* ListeDomaines)
   
   if (j == ListeDomaines[iDom].NbVoisins) 
     {
-      info()<<"on ne trouve pas le numéro de voisin";
-      info()<<"pour info: ajout = "<<ajout<<", iDom = "<<iDom<<", iVois = "<<iVois;
-      pfatal()<<"Erreur dans Partitionner/MAJDelta, pas de voisin !";
+      info()<<"could not find the neighbor number";
+      info()<<"for info: addition = "<<ajout<<", iDom = "<<iDom<<", iVois = "<<iVois;
+      pfatal()<<"Error in Partitionner/MAJDelta, no neighbor found!";
     }
 
-  /* on fait le décalage */
+  /* performing the shift */
   ListeDomaines[iDom].ListeVoisins[j].Delta += ajout;
 }
 
@@ -707,12 +702,10 @@ MAJDelta(double ajout, int iDom, int iVois, StrucListeDomMail* ListeDomaines)
 double SplitSDMeshPartitioner::
 CalculDeltaMin(StrucMaillage* Maillage, double deltaMin, int iterEquilibrage, int NbMaxIterEquil)
 {
-  // le but : limiter le deltaMin pour qu'il ne soit pas trop petit les premières fois
-  // dans le cas où les transferts sont importants.
-  // En effet, cela a tendance à morceler les domaines ce qui se répercute par de moins bonnes perf
-  // (plus d'attentes lors des communications)
+  // the goal: limit deltaMin so that it is not too small the first time transfers are important.
+  // Indeed, this tends to fragment the domains, which results in poorer performance (more waiting during communications)
 
-  debug()<<"  on entre dans SplitSDMeshPartitioner::CalculDeltaMin,  deltaMin = "<<deltaMin
+  debug()<<"  entering SplitSDMeshPartitioner::CalculDeltaMin,  deltaMin = "<<deltaMin
          << ", iterEquilibrage = " <<iterEquilibrage
          << ", NbMaxIterEquil = " <<NbMaxIterEquil;
   if (arcaneIsDebug())
@@ -720,9 +713,9 @@ CalculDeltaMin(StrucMaillage* Maillage, double deltaMin, int iterEquilibrage, in
 
   double deltaAjuste = deltaMin;
 
-  // recherche du plus grand Delta sur les interfaces
+  // searching for the largest Delta on the interfaces
   double deltaMaxItf = 0.0;
-  // idem pour la somme des deltas par domaine, ramené au poid du domaine (donc un ratio)
+  // same for the sum of deltas per domain, normalized by the domain weight (so a ratio)
   double ratioDeltaMax = 0.0;
 
   StrucListeDomMail* ListeDomaines = Maillage->ListeDomaines;
@@ -743,17 +736,17 @@ CalculDeltaMin(StrucMaillage* Maillage, double deltaMin, int iterEquilibrage, in
 
   double poidsMoy =  Maillage->Poids/(double)Maillage->NbDomainesMax;
 
-  // heuristique pour limiter deltaAjuste
+  // heuristic to limit deltaAjuste
   if (ratioDeltaMax>0.9)
     deltaAjuste = poidsMoy/3.0;
   else if (ratioDeltaMax>0.5)
     deltaAjuste = deltaMaxItf/10.0;
 
-  // pour ne pas avoir plus petit que le min qui semble raisonnable et qui est paramétré par le cas .plt
+  // to avoid being smaller than the minimum which seems reasonable and is parameterized by the .plt file
   deltaAjuste = MAX(deltaMin,deltaAjuste);
 
 #if defined(ARCANE_DEBUG) || defined(DEBUG_PARTITIONER)
-  // que représente ce delta / poids moy ? tout ou une faible proportion ?
+  // what does this delta / average weight represent? all or a small proportion?
   double proportion = deltaMaxItf/poidsMoy;
 
   info()<<" deltaMaxItf = "<<deltaMaxItf;
@@ -770,36 +763,36 @@ CalculDeltaMin(StrucMaillage* Maillage, double deltaMin, int iterEquilibrage, in
 void SplitSDMeshPartitioner::
 Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage)
 {
-  int   iDom;             // indice pour les boucles
-  int indDomCharge = -1;  // le domaine dont on va extraire des éléments
-  int indDomVois = -1;    // le domaine qui va recevoir depuis indDomCharge
+  int   iDom;             // index for loops
+  int indDomCharge = -1;  // the domain from which elements will be extracted
+  int indDomVois = -1;    // the domain that will receive from indDomCharge
   
-  double deltaMin;        // on ne fera le transfert que pour un poids minimum.
-  // desequilibre-maximal (0.01) dans fichier .plt => maxImbalance()
-  deltaMin = Maillage->Poids/(double)Maillage->NbDomainesMax*maxImbalance()/6.0; // on prend comme valeur maxImbalance/6 de la moyenne (donc 0.1 par défaut)
+  double deltaMin;        // we will only perform the transfer for a minimum weight.
+  // maximum imbalance (0.01) in .plt file => maxImbalance()
+  deltaMin = Maillage->Poids/(double)Maillage->NbDomainesMax*maxImbalance()/6.0; // we take maxImbalance/6 of the average as the value (so 0.1 by default)
 
-  double poidsMax = 0;    // pour la recherche du domaine le plus chargé
+  double poidsMax = 0;    // for searching the most loaded domain
 
-  void* TabTMP; /* pour transférer les infos sur les procs choisis et le Delta du maître vers les autres procs */
+  void* TabTMP; /* to transfer info about the chosen procs and the master's Delta to the other procs */
 
   int NbAppelsAEquil2Dom = -1;
 
   int iterEquilibrage = 0;
-  int NbMaxIterEquil = 5; // phase d'équilibrage global. TODO voir s'il faut faire évoluer cette valeur (la paramétrer)
+  int NbMaxIterEquil = 5; // global balancing phase. TODO see if this value needs to be changed (parameterize it)
 
-  double tolConnexite = 0.1; // un sous-domaine non connexe plus petit de tolConnexite*taille_moyenne, sera transféré
+  double tolConnexite = 0.1; // a non-connected subdomain smaller than tolConnexite*average_size will be transferred
 
 
 #ifdef ARCANE_DEBUG
   info()<<" -------------------------------------";
-  info()<<"  on entre dans SplitSDMeshPartitioner::Equilibrage,  deltaMin = "<<deltaMin;
+  info()<<" entering SplitSDMeshPartitioner::Equilibrage,  deltaMin = "<<deltaMin;
 #endif
 
   int TailleTMP = TailleEquil();
   TabTMP = malloc((size_t)TailleTMP);
   CHECK_IF_NOT_NULL(TabTMP);
 
-  /* on se limite à NbMaxIter itérations */		
+  /* limiting to NbMaxIter iterations */		
   while (iterEquilibrage<NbMaxIterEquil && NbAppelsAEquil2Dom!=0){
     int* FiltreDomaine;
     int marqueDomVu    =  1;
@@ -818,29 +811,29 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
 
     IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
     
-    /* sur le maître */
+    /* on the master */
     if (InfoProc->me == 0){
-      info()<<" SplitSDMeshPartitioner::Equilibrage de la charge (iteration No "<<iterEquilibrage<<")";
+      info()<<" SplitSDMeshPartitioner::Equilibrage of the load (iteration No "<<iterEquilibrage<<")";
       
-      /* MAJ des Delta sur les interfaces de la description des domaines sur le maître */
-      MAJDeltaGlobal(InfoProc, Maillage, deltaMin); // ex GetDeltaNoeuds
+      /* updating Deltas on the domain description interfaces on the master */
+      MAJDeltaGlobal(InfoProc, Maillage, deltaMin); // e.g. GetDeltaNoeuds
 
-      // calcul un deltaMin en fonction des transferts locaux
+      // calculating a deltaMin based on local transfers
       double deltaAjuste = CalculDeltaMin(Maillage, deltaMin, iterEquilibrage, NbMaxIterEquil);
       
-      /* on va marquer les domaines vu (ou vide) */
+      /* marking the seen (or empty) domains */
       FiltreDomaine = (int*) calloc ((size_t) Maillage->NbDomainesMax, sizeof(int));
       CHECK_IF_NOT_NULL(FiltreDomaine);
       
-      // pour les domaines vides
+      // for empty domains
       for (iDom=0; iDom<Maillage->NbDomainesMax; iDom++)
 	if (Maillage->ListeDomaines[iDom].NbElements == 0)
 	  FiltreDomaine[iDom] = marqueDomVu;
       
-      // boucle tant que l'on trouve un domaine sur lequel faire un transfert
+      // loop while we find a domain to transfer from
       do {
 
-	/* on recherche le plus chargé des domaines restant */
+	/* searching for the most loaded of the remaining domains */
 	indDomCharge = -1;
 	poidsMax = 0;
 	
@@ -855,34 +848,33 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
 #endif
 	
 	if (indDomCharge != -1) {
-	  /* on ne veut plus le retrouver */
+	  /* we no longer want to find it */
 	  FiltreDomaine[indDomCharge] = marqueDomVu;
 	  
-	  /* on choisi 2 domaines pour effectuer le déplacement de l'interface entre les 2 */
+	  /* choosing 2 domains to perform the interface movement between the 2 */
 	  
-	  /* pour ce domaine chargé, on regarde vers quel autre domaine il pourrait 
-	     y avoir transfert de noeuds */
+	  /* for this loaded domain, we look at which other domain there might be a node transfer */
 	  for (int i=0; i<Maillage->ListeDomaines[indDomCharge].NbVoisins; i++){
 	    indDomVois = Maillage->ListeDomaines[indDomCharge].ListeVoisins[i].NoDomVois;
 	    
 	    
-	    /* on se limite aux transferts dont le DeltaNoeuds>deltaNoeudsMin */
+	    /* we limit ourselves to transfers where DeltaNoeuds > deltaNoeudsMin */
 	    if (Maillage->ListeDomaines[indDomCharge].ListeVoisins[i].Delta > deltaAjuste){
 #if defined(ARCANE_DEBUG) || defined(DEBUG_PARTITIONER)
-	      info()<<" Equilibrage ("<<iterEquilibrage<<") pour le couple indDomCharge = "<<indDomCharge<<"; indDomVois = "<<indDomVois
+	      info()<<" Balancing ("<<iterEquilibrage<<") for the pair indDomCharge = "<<indDomCharge<<"; indDomVois = "<<indDomVois
 		    <<"; Delta = "<<Maillage->ListeDomaines[indDomCharge].ListeVoisins[i].Delta;
 #endif
 	      
-	      /* on diffuse l'information à tous les processeurs */
+	      /* We diffuse the information to all processors */
 	      PackEquil(InfoProc, indDomCharge, indDomVois, Maillage->ListeDomaines[indDomCharge].ListeVoisins[i].Delta,
 			TabTMP, TailleTMP, InfoProc->Split_Comm);
 	      
 	      TabTMP = DiffuseMessage(InfoProc, 0, TabTMP, TailleTMP);
 	      
-	      // change la marque pour chaque appel (ce qui permet de libérer les noeuds)
+	      // Change the mark for each call (which allows the nodes to be released)
 	      marqueVu+=1;
 
-	      // équilibrage entre 2 domaines
+	      // Balancing between 2 domains
 	      Equil2Dom(MasqueDesNoeuds, MasqueDesElements, marqueVu, marqueNonVu,
 			InfoProc, Domaine, Maillage, indDomCharge, indDomVois, 
 			Maillage->ListeDomaines[indDomCharge].ListeVoisins[i].Delta);
@@ -894,7 +886,7 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
 	}// end if indDomCharge != -1
       } while (indDomCharge != -1);
 
-      indDomVois = -1; /* pour informer que l'on arete, indDomCharge == -1 et indDomVois == -1 */
+      indDomVois = -1; /* to inform that we are stopping, indDomCharge == -1 and indDomVois == -1 */
       double DeltaNul = 0.0;
       PackEquil(InfoProc, indDomCharge, indDomVois, DeltaNul, TabTMP, TailleTMP, InfoProc->Split_Comm);
       
@@ -917,10 +909,10 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
 	UnpackEquil(TabTMP, TailleTMP, InfoProc->Split_Comm, &indDomCharge, &indDomVois, &Delta);
 
 	if (indDomCharge != -1){
-	  // change la marque pour chaque appel
+	  // Change the mark for each call
 	  marqueVu+=1;
 
-	  // équilibrage entre 2 domaines
+	  // Balancing between 2 domains
 	  Equil2Dom(MasqueDesNoeuds, MasqueDesElements, marqueVu, marqueNonVu,
 		    InfoProc, Domaine, Maillage, indDomCharge, indDomVois, Delta);
 	  NbAppelsAEquil2Dom += 1;
@@ -930,28 +922,28 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
 
     } /* end else if me == 0 */
     
-    // synchro dans le cas où il y a eu des modifs
+    // Synchronization in the case where there have been modifications
     if (NbAppelsAEquil2Dom){
-      // libération des noeuds dans les interfaces
+      // Release of nodes in the interfaces
       LibereDomaine(Domaine);
       
 #ifdef ARCANE_DEBUG
       info() << "cells_new_owner.synchronize() et changeOwnersFromCells()";
 #endif
-      // on ne fait la synchro que pour une unique série d'appels à Equil2Dom
+      // We only perform synchronization for a single series of calls to Equil2Dom
       VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
       cells_new_owner.synchronize();
       changeOwnersFromCells();
-      // effectue le transfert effectif des données d'un proc à l'autre, sans compactage des données
+      // Performs the effective transfer of data from one proc to another, without data compaction
       bool compact = mesh->properties()->getBool("compact");
       mesh->properties()->setBool("compact", false);
       mesh->exchangeItems();
       mesh->properties()->setBool("compact", compact);
       
-      // MAJ du Domaine
+      // Domain Update
       MAJDomaine(Domaine);
       
-      /* on remet à jour la structure Maillage->ListeDomaines */
+      /* We update the Maillage->ListeDomaines structure */
       MAJMaillageMaitre(InfoProc,Domaine,Maillage);
     } // end if NbAppelsAEquil2Dom
 
@@ -962,8 +954,8 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
 
     AfficheEquilMaillage(Maillage);
 
-    // Rend les domaines connexes autant que possible suivant une tolérance 
-    // (on accepte des partie non connexes à condition que leur taille soit > tol*taille_moyenne)
+    // Makes the domains connected as much as possible according to a tolerance 
+    // (we accept non-connected parts provided their size is > tol*average_size)
     marqueVu+=1;
     ConnexifieDomaine(InfoProc, Domaine, Maillage, tolConnexite);
 
@@ -974,8 +966,8 @@ Equilibrage(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage
   free(TabTMP); 
   TabTMP = nullptr;
   
-  debug()<<" nombre d'iterations pour equilibrage  = "<<iterEquilibrage<<" / "<<NbMaxIterEquil<<" max ";
-  debug()<<" = on sort de SplitSDMeshPartitioner::Equilibrage";
+  debug()<<" number of iterations for balancing = "<<iterEquilibrage<<" / "<<NbMaxIterEquil<<" max ";
+  debug()<<" = we are exiting SplitSDMeshPartitioner::Equilibrage";
   debug()<<" -------------------------------------";
 }
 
@@ -989,14 +981,14 @@ Equil2Dom(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int marque
 {
   ARCANE_UNUSED(Maillage);
 
-  debug()<<"    on entre dans Equil2Dom (indDomCharge:"<<indDomCharge<<", indDomVois:"<<indDomVois<<", Delta:"<<Delta;
+  debug()<<"    we are entering Equil2Dom (indDomCharge:"<<indDomCharge<<", indDomVois:"<<indDomVois<<", Delta:"<<Delta;
 
-  // tableau des éléments sélectionnés pour être déplacé
+  // array of elements selected to be moved
   Arcane::UniqueArray<Arcane::Cell> ListeElements;
 
   if (InfoProc->me == indDomCharge){
     int iIntf = 0;
-    /* l'interface entre les deux domaines existe-t-elle  encore ? */
+    /* Does the interface between the two domains still exist? */
     for (iIntf=0; 
 	 iIntf<Domaine->NbIntf
 	   && Domaine->Intf[iIntf].NoDomVois != indDomVois; 
@@ -1005,18 +997,18 @@ Equil2Dom(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int marque
   
     if (iIntf==Domaine->NbIntf){
 #if defined(ARCANE_DEBUG) || defined(DEBUG_PARTITIONER)
-      pinfo()<<"### l'interface a disparu ### entre "<<indDomCharge<< " et " <<indDomVois;
+      pinfo()<<"### the interface has disappeared ### between "<<indDomCharge<< " and " <<indDomVois;
 #endif	        
     }
     else {
-      // sélection des éléments par un parcour frontal depuis l'interface entre les 2 sous-domaines.
+      // selection of elements by a frontal traversal from the interface between the 2 sub-domains.
       SelectElements(MasqueDesNoeuds, MasqueDesElements, 
 		     marqueVu, marqueNonVu,
 		     InfoProc, Domaine, Delta, indDomVois, ListeElements);
 
     }
 
-    // marquage pour déplacement des données arcane
+    // marking for arcane data transfer
     IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
     VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
     
@@ -1028,10 +1020,10 @@ Equil2Dom(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int marque
   } // end if me == indDomCharge
 #ifdef ARCANE_DEBUG
   else {
-    info() << "SelectElements et autres operations sur les processeurs "<<indDomCharge<<" et " <<indDomVois;
+    info() << "SelectElements and other operations on processors "<<indDomCharge<<" and " <<indDomVois;
   }
 
-  info()<<"     on sort de    Equil2Dom";
+  info()<<"     we are exiting    Equil2Dom";
 #endif
 }
 /*---------------------------------------------------------------------------*/
@@ -1055,12 +1047,12 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
 
   if (Delta>=Domaine->PoidsDom){
 #ifdef ARCANE_DEBUG
-    pinfo()<<" Tout le domaine est sélectionné sur le domaine "<<subDomain()->subDomainId()
-	   <<", avec SelectElements, PoidsDom = " << Domaine->PoidsDom
+    pinfo()<<" All the domain is selected on domain "<<subDomain()->subDomainId()
+	   <<", with SelectElements, PoidsDom = " << Domaine->PoidsDom
 	   <<", Delta = "<<Delta;
 #endif
-    // cas où tout le domaine est demandé
-    // ce proceseur va se retrouver vide ! à moins qu'il n'y ait un transfert depuis un autre proc qui compense la perte
+    // case where the entire domain is requested
+    // this processor will end up empty! unless there is a transfer from another proc that compensates for the loss
     CellGroup own_cells = mesh->ownCells();
      ENUMERATE_CELL(i_item,own_cells){
       const Cell item = *i_item;
@@ -1068,9 +1060,9 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
       ListeElements.add(item);
      }
   } else {
-    // cas où il faut sélectionner un sous-ensemble
+    // case where a subset must be selected
     
-    int iIntf;      /* indice de l'interface pour le voisin indDomVois */
+    int iIntf;      /* interface index for neighbor indDomVois */
     int NbFrontsMax;
     int NbFronts;
     int* IndFrontsNoeuds;
@@ -1080,15 +1072,15 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
       { }
 	  
     if (iIntf==Domaine->NbIntf) {
-      pfatal()<<" SelectElements ne trouve pas l'interface parmis les voisins !!!";
+      pfatal()<<" SelectElements cannot find the interface among the neighbors !!!";
     }
 
     NbFrontsMax = Domaine->NbElements / 2;
     
-    /* les noeuds pris dans les fronts */
+    /* nodes taken in the fronts */
     Arcane::UniqueArray<Arcane::Node> FrontsNoeuds;
 
-    /* les éléments pris dans les fronts */
+    /* elements taken in the fronts */
     Arcane::Array<Arcane::Cell>& FrontsElements(ListeElements);
 
     IndFrontsNoeuds = (int*) malloc ((size_t) (NbFrontsMax+1)*sizeof(int));
@@ -1097,10 +1089,10 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
     IndFrontsElements = (int*) malloc ((size_t) (NbFrontsMax+1)*sizeof(int));
     CHECK_IF_NOT_NULL(IndFrontsElements);
 
-    /* front de départ pour le parcours */
+    /* starting front for the traversal */
     NbFronts = 1;
 
-    /* on met comme front de départ la liste des noeuds dans l'interface */
+    /* we use the list of nodes in the interface as the starting front */
     for (int i=0; i<Domaine->Intf[iIntf].ListeNoeuds.size(); i++)
       FrontsNoeuds.add(Domaine->Intf[iIntf].ListeNoeuds[i]);
     
@@ -1109,16 +1101,16 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
     IndFrontsElements[0] = 0;
     IndFrontsElements[1] = 0;
 
-    // on marque les mailles fantomes comme étant déjà vues
+    // we mark the phantom cells as already seen
     int me = subDomain()->subDomainId();
-    CellGroup all_cells = mesh->allCells(); // éléments sur ce processeur (mailles fantomes comprises)
+    CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom cells)
     ENUMERATE_CELL(i_item,all_cells){
       const Cell cell = *i_item;
       if (cell.owner() != me)
 	MasqueDesElements[cell.localId()] = marqueVu;
     }
 
-    // on marque les éléments déjà sélectionné
+    // we mark the already selected elements
     for (int i=0; i<ListeElements.size(); i++){
       const Cell cell = ListeElements[i];
       MasqueDesElements[cell.localId()] = marqueVu;
@@ -1126,7 +1118,7 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
 
     
     int retPF; 
-    // Parcour Frontal pour un poids Delta demandé
+    // Frontal Traversal for a requested Delta weight
     retPF = ParcoursFrontalDelta (MasqueDesNoeuds, MasqueDesElements, 
 				  marqueVu, marqueNonVu,
 				  Delta,
@@ -1134,15 +1126,15 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
 				  FrontsNoeuds,  IndFrontsNoeuds,
 				  FrontsElements,IndFrontsElements);
 
-    /* le dernier front est un front incomplet, on le concatène à l'avant dernier pour le lissage */
+    /* the last front is an incomplete front, we concatenate it to the second to last for smoothing */
     if (NbFronts>1){
       IndFrontsNoeuds[NbFronts-1] = IndFrontsNoeuds[NbFronts];
       IndFrontsElements[NbFronts-1] = IndFrontsElements[NbFronts];
       NbFronts-=1;
     }
     
-    /* on fait le lissage du front dans le cas où l'on n'a pas sélectionné tout le domaine 
-       et que le ParcoursFrontal s'est bien déroulé (n'est pas bloqué) */
+    /* we perform front smoothing in the case where we haven't selected the entire domain 
+       and the Frontal Traversal proceeded correctly (is not blocked) */
     if (FrontsNoeuds.size() < Domaine->NbElements && retPF == 0)
       LissageDuFront(MasqueDesNoeuds, MasqueDesElements, 
 		     marqueVu, marqueNonVu,
@@ -1155,7 +1147,7 @@ SelectElements(int* MasqueDesNoeuds, int* MasqueDesElements, int marqueVu, int m
     free((void*)IndFrontsElements); IndFrontsElements = NULL;
   }
 
-  info()<<" en sortie: ListeElements.size() = "<<ListeElements.size();
+  info()<<" exiting: ListeElements.size() = "<<ListeElements.size();
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1168,17 +1160,17 @@ ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements,
 		      Arcane::Array<Arcane::Cell>& FrontsElements,int* IndFrontsElements)
 {
 #ifdef ARCANE_DEBUG
-  info()<<"       = on entre dans ParcoursFront  :   (NbFronts = "<<*pNbFronts<<", NbFrontsMax = "<<NbFrontsMax<<")";
+  info()<<"       = we are entering FrontalTraversal :   (NbFronts = "<<*pNbFronts<<", NbFrontsMax = "<<NbFrontsMax<<")";
   info()<<"  FrontsNoeuds.size() = "<<FrontsNoeuds.size();
   info()<<"  FrontsElements.size() = "<<FrontsElements.size();
 #endif
 
-  int IndFn = 0; /* indices sur les tableaux [Ind]FrontsNoeuds */
-  int IndFe = 0; /* indices sur les tableaux [Ind]FrontsElements */
+  int IndFn = 0; /* indices on the [Ind]FrontsNoeuds arrays */
+  int IndFe = 0; /* indices on the [Ind]FrontsElements arrays */
   double PoidsActuel = 0.0;
   bool  bloque = false;
 
-  /* on marque les noeuds et les éléments déjà dans les fronts (pour ne pas les avoir deux fois) */
+  /* we mark the nodes and elements already in the fronts (to avoid duplicates) */
   for (IndFn=0; IndFn<IndFrontsNoeuds[*pNbFronts]; IndFn++){
     MasqueDesNoeuds[FrontsNoeuds[IndFn].localId()] = marqueVu;
   }
@@ -1187,18 +1179,18 @@ ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements,
     MasqueDesElements[FrontsElements[IndFe].localId()] = marqueVu;
   }
 
-  /* on met dans le front initial les noeuds liés aux éléments de ce même front 
-     si cela n'a pas été fait */
+  /* we put the nodes linked to the elements of this same front into the initial front 
+     if it hasn't been done */
   if (IndFrontsElements[*pNbFronts] > 0 && IndFrontsNoeuds[*pNbFronts] == 0){
-    //info()<<" Initialisation à partir de "<<IndFrontsElements[*pNbFronts]<<" éléments";
+    //info()<<" Initialization from "<<IndFrontsElements[*pNbFronts]<<" elements";
     for (int ielm=0; ielm<IndFrontsElements[*pNbFronts]; ielm++){
       const Cell cell = FrontsElements[ielm];
       PoidsActuel += m_poids_aux_mailles[cell];
 
       for (int iepn = 0; iepn < cell.nbNode(); iepn++){
-	const Node nodeVois = cell.node(iepn); // noeud voisin  // int NoeudVoisin
+	const Node nodeVois = cell.node(iepn); // neighbor node  // int NeighborNode
 	
-	/* pour chaques nouveau noeud, on l'insère dans le nouveau front*/
+	/* for each new node, we insert it into the new front*/
 	if (MasqueDesNoeuds[nodeVois.localId()] == marqueNonVu){
 	  FrontsNoeuds.add(nodeVois);
 	  IndFn+=1;
@@ -1206,27 +1198,27 @@ ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements,
 	}
       } /* end for iepn */
     }
-    /* on met les noeuds dans le dernier front existant */
+    /* we set the nodes in the last existing front */
     IndFrontsNoeuds[*pNbFronts] = IndFn;
   }
 
   /*----------------------------------------------------------------*/
-  /* boucle jusqu'à ce que l'on ait vu assez de noeuds ou de fronts */ 
+  /* loop until we have seen enough nodes or fronts */ 
   /*----------------------------------------------------------------*/
   do {
-    /* pour chaques noeuds du front précédent, on regarde les éléments qu'il possède */
+    /* for each node in the previous front, we look at the elements it possesses */
     for (int in = IndFrontsNoeuds[*pNbFronts-1];
 	 in < IndFrontsNoeuds[*pNbFronts] && PoidsActuel<Delta;
 	 in++) {
-      const Node node = FrontsNoeuds[in]; // noeud du front précédent  // int Noeud
+      const Node node = FrontsNoeuds[in]; // node of the previous front  // int Node
       
-      /* on évite de s'arrêter sans avoir tous les éléments liés, 
-	 on risquerait d'avoir un élément relié par un seul noeud ! */
+      /* we avoid stopping without having all linked elements, 
+	 we risk having an element connected by only one node! */
       for (int inpe = 0; inpe < node.nbCell(); inpe++){
-	const Cell cell = node.cell(inpe); //élément lié à ce noeud  //int Element
+	const Cell cell = node.cell(inpe); // element linked to this node  //int Element
 	
-	/* pour ce nouvel élément, on l'insère dans le nouveau front 
-	   et on regarde les noeuds qu'il possède */
+	/* for this new element, we insert it into the new front 
+	   and look at the nodes it possesses */
 	if (MasqueDesElements[cell.localId()] == marqueNonVu) {
 	  FrontsElements.add(cell); 
 	  IndFe+=1;
@@ -1235,9 +1227,9 @@ ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements,
 	  PoidsActuel += m_poids_aux_mailles[cell];
 	  
 	  for (int iepn = 0; iepn < cell.nbNode(); iepn++){
-	    const Node nodeVois = cell.node(iepn); // noeud voisin  // int NoeudVoisin
+	    const Node nodeVois = cell.node(iepn); // neighbor node  // int NeighborNode
 		    
-	    /* pour chaques nouveau noeud, on l'insère dans le nouveau front*/
+	    /* for each new node, we insert it into the new front*/
 	    if (MasqueDesNoeuds[nodeVois.localId()] == marqueNonVu){
 	      FrontsNoeuds.add(nodeVois);
 	      IndFn+=1;
@@ -1248,7 +1240,7 @@ ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements,
       } /* end for inpe */
     } /* end for in */
     
-    /* test du cas où cela se bloquerait */
+    /* test the case where it would get blocked */
     if (IndFrontsNoeuds[*pNbFronts-1] == IndFrontsNoeuds[*pNbFronts]){
       bloque = true;
     }
@@ -1267,21 +1259,21 @@ ParcoursFrontalDelta (int* MasqueDesNoeuds, int* MasqueDesElements,
   info()<<" PoidsActuel = "<<PoidsActuel;
   info()<<" NbNoeuds   = "<<IndFrontsNoeuds[*pNbFronts];
   info()<<" NbElements = "<<IndFrontsElements[*pNbFronts];
-  info()<<" bloque = "<<(bloque?"VRAI":"FAUX");
+  info()<<" blocked = "<<(bloque?"TRUE":"FALSE");
 
   if (!(*pNbFronts<NbFrontsMax)){
-    info()<<"       =  on arete apres avoir obtenu le nombre maximum de fronts "<<NbFrontsMax;
+    info()<<"       =  we stop after obtaining the maximum number of fronts "<<NbFrontsMax;
   }
   else if (!(PoidsActuel<Delta)){
-    info()<<"       =  on arete apres avoir obtenu le poids desire "<<PoidsActuel;
+    info()<<"       =  we stop after obtaining the desired weight "<<PoidsActuel;
   }
   else if (bloque){
-    info()<<"       =  on est bloque (non connexe ?) =";
+    info()<<"       =  we are blocked (not connected ?) =";
   }
   else{
-    info()<<"       =  on arete parce que l'on a tout vu =";
+    info()<<"       =  we stop because we have seen everything =";
   }
-  info()<<"       = on sort de    ParcoursFront  .   =";
+  info()<<"       = we are exiting    FrontalTraversal  .   =";
 #endif
 
   return ((bloque)?1:0);
@@ -1298,49 +1290,49 @@ LissageDuFront (int* MasqueDesNoeuds, int* MasqueDesElements,
 {
   ARCANE_UNUSED(IndFrontsElements);
 
-  debug()<<"       on entre dans LissageDuFront  :    NbFronts = "<<NbFronts;
+  debug()<<"       we are entering LissageDuFront :    NbFronts = "<<NbFronts;
 
   int NbElementsAjoutes = 0;
   
   Arcane::UniqueArray<Arcane::Cell> ElementsALiberer;
 
-  /* Récupération des éléments pris dans le dernier front de noeuds */
+  /* Retrieval of elements taken in the last node front */
   for (int IndFn=IndFrontsNoeuds[NbFronts-1]; IndFn<IndFrontsNoeuds[NbFronts]; IndFn++){
-    const Node node = FrontsNoeuds[IndFn]; // noeud du front précédent  // int Noeud
+    const Node node = FrontsNoeuds[IndFn]; // node of the previous front  // int Node
     
     for (int inpe = 0; inpe < node.nbCell(); inpe++){
-      const Cell cell = node.cell(inpe); //élément lié à ce noeud  //int Element
+      const Cell cell = node.cell(inpe); //element linked to this node  //int Element
 	    
-      /* si cet élément est non-vu */
+      /* if this element is unseen */
       if (MasqueDesElements[cell.localId()] == marqueNonVu){
-	/* on cherche si tous les noeuds de cet élément sont marqués vu */
+	/* we check if all nodes of this element are marked as seen */
 	int iepn;
 	for (iepn = 0; iepn < cell.nbNode() && MasqueDesNoeuds[cell.node(iepn).localId()] == marqueVu; iepn++)
 	  { }
-	  /* cas où tous les noeuds sont marqués */
+	  /* case where all nodes are marked */
 	  if (iepn == cell.nbNode()){
-	    /* on ajoute l'élément au dernier front */
+	    /* we add the element to the last front */
 
 	    FrontsElements.add(cell); 
 	    NbElementsAjoutes+=1;
 	    MasqueDesElements[cell.localId()] = marqueVu;
 	  }
 	  else {
-	    /* on marque l'élement */
-	    MasqueDesElements[cell.localId()] = marqueVu; // pour ne pas le reprendre tout de suite
+	    /* we mark the element */
+	    MasqueDesElements[cell.localId()] = marqueVu; // so as not to pick it up immediately
 	    ElementsALiberer.add(cell);
 	  }
 	      
-	} /* end if Element non vu */
+	} /* end if Element unseen */
       } /* end for inpe ... */
     } /* end for IndFn ... */
   
-  // on remet à marqueNonVu ceux que l'on a marqué juste pour ne les voir qu'une fois
+  // we reset those we marked back to unseen just so we only see them once
   for (int i=0; i<ElementsALiberer.size(); i++)
     MasqueDesElements[ElementsALiberer[i].localId()] = marqueNonVu;
 
 #ifdef ARCANE_DEBUG
-  info()<<"       on sort de  LissageDuFront ("<<NbElementsAjoutes<<" elements ajoutes)";
+  info()<<"       we exit LissageDuFront ("<<NbElementsAjoutes<<" elements added)";
 #endif
 }
 /*---------------------------------------------------------------------------*/
@@ -1350,7 +1342,7 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
 		  double tolConnexite)
 {
 #ifdef ARCANE_DEBUG
-  info()<<"    on entre dans ConnexifieDomaine, tolConnexite = "<<tolConnexite;
+  info()<<"    entering ConnexifieDomaine, tolConnexite = "<<tolConnexite;
 #endif
   
   int* MasqueDesNoeuds = GetMasqueDesNoeuds(InfoProc);
@@ -1358,14 +1350,14 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
   int marqueVu = 1;
   int marqueNonVu = 0;
 
-  // Maillage->NbElements n'est connu que sur le maitre !
+  // Maillage->NbElements is only known on the master!
 //   double tailleMoy = (double)Maillage->NbElements / (double)Maillage->NbDomainesMax;
   double tailleMoy = (double)Domaine->NbElements;
 
-  // on marque les mailles fantomes comme étant déjà vues
+  // we mark the phantom meshes as already seen
   int me = InfoProc->me;
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
-  CellGroup all_cells = mesh->allCells(); // éléments sur ce processeur (mailles fantomes comprises)
+  CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom meshes)
 
   ENUMERATE_CELL(i_item,all_cells){
     Cell cell = *i_item;
@@ -1386,10 +1378,10 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
   
   NbFrontsMax = Domaine->NbElements / 2;
   
-  /* les noeuds pris dans les fronts */
+  /* nodes taken into the fronts */
   Arcane::UniqueArray<Arcane::Node> FrontsNoeuds;
   
-  /* les éléments pris dans les fronts */
+  /* elements taken into the fronts */
   Arcane::SharedArray<Arcane::SharedArray<Arcane::Cell> > ListeFrontsElements;
   
   IndFrontsNoeuds = (int*) malloc ((size_t) (NbFrontsMax+1)*sizeof(int));
@@ -1399,14 +1391,14 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
   CHECK_IF_NOT_NULL(IndFrontsElements);
 
 
-  /* on boucle de manière à voir tous les éléments du domaine */
+  /* we loop to see all elements of the domain */
   while (NbElementsVus < NbElementsAVoir){
 
     FrontsNoeuds.clear(); 
     Arcane::SharedArray<Arcane::Cell> FrontsElements;
 
-    /* recherche d'un éléments non vu (il est mis dans le premier front) */
-    //TODO à optimiser ?
+    /* search for an unseen element (it is put in the first front) */
+    //TODO to optimize?
     bool trouve = false;
     ENUMERATE_CELL(i_item,all_cells){
       const Cell cell = *i_item;
@@ -1416,7 +1408,7 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
       }
     }
     if (!trouve){
-      pfatal()<<"ConnexifieDomaine est bloqué lors de la recherche d'un élément de départ";
+      pfatal()<<"ConnexifieDomaine is blocked while searching for a starting element";
     }
 
     NbFronts = 1;
@@ -1425,7 +1417,7 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
     IndFrontsElements[0] = 0;
     IndFrontsElements[1] = 1;
 
-    /* recherche de l'ensemble connexe d'éléments non vus associé */
+    /* search for the associated connected set of unseen elements */
     ParcoursFrontalDelta (MasqueDesNoeuds, MasqueDesElements, 
 			  marqueVu, marqueNonVu,
 			  Domaine->PoidsDom,
@@ -1433,7 +1425,7 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
 			  FrontsNoeuds,  IndFrontsNoeuds,
 			  FrontsElements,IndFrontsElements);
 
-    /* on met de côté cet ensemble d'éléments */
+    /* we set aside this set of elements */
     ListeFrontsElements.add(FrontsElements);
 
     NbElementsVus+=FrontsElements.size();
@@ -1443,23 +1435,23 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
 
   } /* end while (NbElementsVus < NbElementsAVoir) */
 
-  // nombre de composantes transférées
+  // number of transferred components
   int nbCCTransf = 0;
 
-  /* s'il y a plus d'une composante connexe */
+  /* if there is more than one connected component */
   if (ListeFrontsElements.size() > 1){
  
 #ifdef ARCANE_DEBUG
     info()<<"    NbComposantesConnexes = "<<ListeFrontsElements.size();
 #endif
 
-    // analyse du nombre de domaines en dessous du seuil
+    // analysis of the number of domains below the threshold
     int nbDomEnDessous = 0;
-    int plusGrosseCC = 0; // plus grosse composante connexe
+    int plusGrosseCC = 0; // largest connected component
 
     int seuil = (int)(tailleMoy*tolConnexite);
 #ifdef ARCANE_DEBUG
-    info()<< "  seuil = "<<seuil;
+    info()<< "  threshold = "<<seuil;
 #endif
 
     for (int i=0; i<ListeFrontsElements.size(); i++){
@@ -1473,25 +1465,25 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
     info()<< "  nbDomEnDessous = "<<nbDomEnDessous;
 #endif
 
-    // pour éviter de prendre toutes les composantes
+    // to avoid taking all components
     if (nbDomEnDessous == ListeFrontsElements.size()){
 #ifdef ARCANE_DEBUG
-      info() <<" seuil abaissé à "<< plusGrosseCC;
+      info() <<" threshold lowered to "<< plusGrosseCC;
 #endif
       seuil = plusGrosseCC;
     }
     
-    // pour chacune des composante de taille < seuil, on fait le transfert vers un voisin
+    // for each component smaller than the threshold, we transfer it to a neighbor
     VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
     for (int i=0; i<ListeFrontsElements.size(); i++){
       Arcane::Array<Arcane::Cell> &FrontsElements = ListeFrontsElements[i];
       if (FrontsElements.size()<seuil){
 	nbCCTransf += 1;
 	
-	// recherche du sous-domaine voisin ayant un max de face en commun
+	// search for the neighboring subdomain having the maximum shared face
 	int indDomVois = getDomVoisMaxFace(FrontsElements, me);
 	
-	// on affecte les cellules à ce voisin
+	// we assign the cells to this neighbor
 	for (int j=0; j<FrontsElements.size(); j++){
 	  const Cell item = FrontsElements[j];
 	  cells_new_owner[item] = indDomVois;
@@ -1500,12 +1492,12 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
       } // if FrontsElements.size()<seuil
     } // end for i<ListeFrontsElements.size()
 #ifdef ARCANE_DEBUG
-    info() << " Nombre de composantes transférées : "<<nbCCTransf;
+    info() << " Number of transferred components: "<<nbCCTransf;
 #endif
 
   } // end if ListeFrontsElements.size() > 1
 
-  /* libérations mémoire */
+  /* memory deallocations */
   free((void*) IndFrontsNoeuds);
   IndFrontsNoeuds = NULL;
   free((void*) IndFrontsElements);
@@ -1517,8 +1509,8 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
   MasqueDesElements = NULL;	
 
 
-  // on ne fait la synchro que si l'un des sous-domaines à fait une modif
-  // faire la somme sur tous les proc de nbCCTransf
+  // we only synchronize if one of the subdomains made a modification
+  // sum up nbCCTransf across all procs
 
   int nbCCTransfMin = 0;
   int nbCCTransfMax = 0;
@@ -1538,26 +1530,26 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
 
   if (synchroNecessaire){
 #ifdef ARCANE_DEBUG
-    info()<<"    on fait la synchronisation";
+    info()<<"    we perform the synchronization";
 #endif
-    // on ne fait la synchro que pour une unique série d'appels à Equil2Dom
+    // we only synchronize for a single series of calls to Equil2Dom
     VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
     cells_new_owner.synchronize();
     changeOwnersFromCells();
-    // effectue le transfert effectif des données d'un proc à l'autre, sans compactage des données
+    // performs the effective transfer of data from one proc to another, without data compaction
     bool compact = mesh->properties()->getBool("compact");
     mesh->properties()->setBool("compact", false);
     mesh->exchangeItems();
     mesh->properties()->setBool("compact", compact);
     
-    // MAJ du Domaine
+    // Update Domain
     MAJDomaine(Domaine);
     
-    /* on remet à jour la structure Maillage->ListeDomaines */
+    /* we update the Maillage->ListeDomaines structure */
     MAJMaillageMaitre(InfoProc,Domaine,Maillage);
   }
 #ifdef ARCANE_DEBUG
-  info()<<"    on sort de ConnexifieDomaine";
+  info()<<"    we exit ConnexifieDomaine";
 #endif
 }
 /*---------------------------------------------------------------------------*/
@@ -1567,7 +1559,7 @@ getDomVoisMaxFace(Arcane::Array<Arcane::Cell>& ListeElements, int me)
 {
   int indDomVois = -1;
 
-  // nombre de face par sous-domaine voisin
+  // number of faces per neighboring subdomain
   std::map<int,int> indVois_nbFace;
 
   for (int i=0; i<ListeElements.size(); i++){
@@ -1588,7 +1580,7 @@ getDomVoisMaxFace(Arcane::Array<Arcane::Cell>& ListeElements, int me)
     }
   }
 
-  // recherche du plus grand nombre de faces
+  // search for the largest number of faces
   int maxNbFaces = 0;
   std::map<int,int>::iterator iter;
   for (iter = indVois_nbFace.begin();
@@ -1602,7 +1594,7 @@ getDomVoisMaxFace(Arcane::Array<Arcane::Cell>& ListeElements, int me)
   }
   
   if (indDomVois == -1)
-    pfatal()<<"indDomVois toujours à -1 !!!";
+    pfatal()<<"indDomVois always at -1 !!!";
 
 #ifdef ARCANE_DEBUG
   pinfo()<<" getDomVoisMaxFace, me = "<<me<<", ListeElements.size() = "<<ListeElements.size()
@@ -1618,7 +1610,7 @@ GetMasqueDesNoeuds(StrucInfoProc* InfoProc)
   int* MasqueDesNoeuds = NULL;
 
   IMesh* mesh = this->mesh();
-  // recherche des plus grand id
+  // search for the largest id
   int maxNodeLocalId = 0;
 
   NodeGroup all_nodes = mesh->allNodes();
@@ -1630,7 +1622,7 @@ GetMasqueDesNoeuds(StrucInfoProc* InfoProc)
   info() << "SplitSDMeshPartitioner::GetMasqueDesNoeuds(), maxNodeLocalId = "<<maxNodeLocalId;
 #endif
 
-  /* allocation et initialisation à 0 du masque */
+  /* allocation and initialization to 0 of the mask */
   MasqueDesNoeuds = (int*) calloc ((size_t)(maxNodeLocalId+1), sizeof(int));
   CHECK_IF_NOT_NULL(MasqueDesNoeuds);
 
@@ -1644,10 +1636,10 @@ GetMasqueDesElements(StrucInfoProc* InfoProc)
   int* MasqueDesElements = NULL;
 
   IMesh* mesh = this->mesh();
-  // recherche des plus grand id
+  // search for the largest id
   int maxCellLocalId = 0;
   
-  CellGroup all_cells = mesh->allCells(); // éléments sur ce processeur (mailles fantomes comprises)
+  CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom meshes)
   ENUMERATE_CELL(i_item,all_cells){
     const Cell cell = *i_item;
     maxCellLocalId = MAX(maxCellLocalId,cell.localId());
@@ -1657,7 +1649,7 @@ GetMasqueDesElements(StrucInfoProc* InfoProc)
   info() << "SplitSDMeshPartitioner::GetMasqueDesElements(), maxCellLocalId = "<<maxCellLocalId;
 #endif
   
-  /* allocation et initialisation à 0 du masque */
+  /* allocation and initialization to 0 of the mask */
   MasqueDesElements = (int*) calloc ((size_t)(maxCellLocalId+1), sizeof(int));
   CHECK_IF_NOT_NULL(MasqueDesElements);
 
@@ -1746,10 +1738,10 @@ AfficheDomaine (int NbDom, StructureBlocEtendu* Domaine)
       info()<<" Interfaces (NbIntf = "<<Domaine[idom].NbIntf<<") :";
       for (i=0; i<Domaine[idom].NbIntf; i++) {
 	info()<<" ("<<i<<") NoDomVois = "<<Domaine[idom].Intf[i].NoDomVois
-		 <<", nb de noeuds "<<Domaine[idom].Intf[i].ListeNoeuds.size();
+		 <<", number of nodes "<<Domaine[idom].Intf[i].ListeNoeuds.size();
       } 
 	  
-    } /* end else if 'domaine vide' */
+    } /* end else if 'empty domain' */
   } /* end for idom */
 }
 /*---------------------------------------------------------------------------*/
@@ -1758,10 +1750,10 @@ void SplitSDMeshPartitioner::
 AfficheMaillage (StrucMaillage* Maillage)
 {
   info()<<" ----------------";
-  info()<<" --- Maillage ---";
+  info()<<" ----- Mesh -----";
   info()<<" ----------------";
   if (Maillage==NULL){
-    info()<<" structure Maillage vide !";
+    info()<<" Mesh structure is empty!";
   }
   else {
     info()<<" NbElements (total)   = "<<Maillage->NbElements;
@@ -1786,7 +1778,7 @@ AfficheListeDomaines(StrucListeDomMail* ListeDomaines, int NbDomaines)
 {
   info()<<"  ListeDomaines :";
   for (int i=0; i<NbDomaines; i++) {
-    info()<<" ("<<i<<") NbElements  = "<<ListeDomaines[i].NbElements<<"; Poids    = "<<ListeDomaines[i].Poids;
+    info()<<" ("<<i<<") NbElements  = "<<ListeDomaines[i].NbElements<<"; Weight    = "<<ListeDomaines[i].Poids;
     info()<<" ("<<i<<") NbVoisins = "<<ListeDomaines[i].NbVoisins<<"; ListeVoisins :";
       for (int j=0; j<ListeDomaines[i].NbVoisins; j++) {
 	info()<<" ("<<i<<")   NoDomVois  = "<<ListeDomaines[i].ListeVoisins[j].NoDomVois
@@ -1818,8 +1810,8 @@ AfficheEquilMaillage(StrucMaillage* Maillage)
 	poidsMin = poidsDom;
     }
 
-    info()<<"   INFO equilibrage / noeuds : max : "<<poidsMax<<", min : "<<poidsMin
-	     <<", max/moy = "<<poidsMax/(Maillage->Poids/(double)Maillage->NbDomainesMax);
+    info()<<"   INFO balancing / nodes : max : "<<poidsMax<<", min : "<<poidsMin
+	     <<", max/avg = "<<poidsMax/(Maillage->Poids/(double)Maillage->NbDomainesMax);
   }
   else{
     info()<<"AfficheEquilMaillage : Maillage->ListeDomaines == NULL";
@@ -1829,36 +1821,36 @@ AfficheEquilMaillage(StrucMaillage* Maillage)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Reçoit un tableau de taille (in)connue via MPI.
-  Alloue ce tableau et le retourne (en sortie).
+  Receives an array of unknown size via MPI.
+  Allocates this array and returns it (as output).
 
-  {\em Remarque:} la taille du tableau est positive lorsqu'elle est connue sinon il est fait appel 
-  aux fonctions MPI\_Probe et MPI\_Get\_count pour connaître la taille.
+  {\em Note:} the array size is positive when known; otherwise, MPI\_Probe
+  and MPI\_Get\_count functions are called to determine the size.
 
-  @memo    Réception d'un tableau à l'aide de la libriarie de communication MPI.
-  @param   InfoProc (I) structure décrivant le processeur sur lequel tourne l'application.
-  @param   FromProc (I) numéro du processeur qui envoit.
-  @param   Tag      (I) marque pour distinguer les messages.
-  @param   pTailleTMP (I/O) pointeur sur taille en octets du tableau TabTMP:\\
-               <=0 si la taille du tableau est inconnue\\
-	       > 0 si la taille du tableau est connue.
+  @memo    Receiving an array using the MPI communication library.
+  @param   InfoProc (I) structure describing the processor on which the application runs.
+  @param   FromProc (I) number of the sending processor.
+  @param   Tag      (I) tag to distinguish messages.
+  @param   pTailleTMP (I/O) pointer to the size in bytes of the TabTMP array:
+					  <=0 if the array size is unknown
+					  > 0 if the array size is known.
 
-  @return  (void*) TabTMP : tableau qui est envoyé.
+  @return  (void*) TabTMP: the array that is sent.
   @see     MAJMaillageMaitre
   @author  Eric Brière de l'Isle, ONERA, DRIS/SRL
-  @version Création Septembre 1996 - 26/08/98
+  @version Created September 1996 - 26/08/98
 */
 void* SplitSDMeshPartitioner::RecoitMessage (StrucInfoProc* InfoProc, int FromProc, int Tag, int *pTailleTMP)
 {
   void *TabTMP;
-  int ierror;        /* retour d'erreur sur lib MPI */
-  MPI_Status status; /* pour les communication MPI  */
+  int ierror;        /* error return on MPI lib */
+  MPI_Status status; /* for MPI communication  */
 
 
   if (*pTailleTMP <= 0)
     {
-      /* pour récupérer l'info sur la taille des tableaux qui vont suivre,
-	 on attend qu'un message soit arrivé */
+      /* to retrieve information about the size of the arrays that will follow,
+	 wait for a message to arrive */
       ierror = MPI_Probe (FromProc,
 			  Tag,
 			  InfoProc->Split_Comm,
@@ -1866,22 +1858,22 @@ void* SplitSDMeshPartitioner::RecoitMessage (StrucInfoProc* InfoProc, int FromPr
       
       if (ierror != MPI_SUCCESS) 
 	{
-	  InfoProc->m_service->pfatal()<<"Problème sur "<<InfoProc->me<<" de communication en provenance de "
-				       <<FromProc<<", lors de MPI_Probe";
+	  InfoProc->m_service->pfatal()<<"Problem on "<<InfoProc->me<<" communication from "
+				       <<FromProc<<", during MPI_Probe";
 	}
       
-      /* récupération de la taille du message | tableau */
+      /* retrieving the size of the message | array */
       ierror = MPI_Get_count (&status,
 			      MPI_PACKED,
 			      pTailleTMP);
       
       if (ierror != MPI_SUCCESS) {
-	InfoProc->m_service->pfatal()<<"Problème sur "<<InfoProc->me<<" de communication en provenance de "
-				     <<FromProc<<", lors de MPI_Get_count";
+	InfoProc->m_service->pfatal()<<"Problem on "<<InfoProc->me<<" communication from "
+				     <<FromProc<<", during MPI_Get_count";
       }
     } /* end if *pTailleTMP <= 0 */
 
-  /* allocation pour le tableau tampon */
+  /* allocation for the buffer array */
   if (*pTailleTMP > 0)
     {
       TabTMP = malloc ((size_t) *pTailleTMP);
@@ -1890,7 +1882,7 @@ void* SplitSDMeshPartitioner::RecoitMessage (StrucInfoProc* InfoProc, int FromPr
   else
     TabTMP = NULL;
 
-  /* réception du message */
+  /* receiving the message */
   ierror = MPI_Recv (TabTMP,
 		     *pTailleTMP,
 		     MPI_PACKED,
@@ -1900,8 +1892,8 @@ void* SplitSDMeshPartitioner::RecoitMessage (StrucInfoProc* InfoProc, int FromPr
 		     &status);
   
   if (ierror != MPI_SUCCESS) {
-      InfoProc->m_service->pfatal()<<"Problème sur "<<InfoProc->me<<" de communication en provenance de "
-				   <<FromProc<<", lors de MPI_Recv";
+      InfoProc->m_service->pfatal()<<"Problem on "<<InfoProc->me<<" communication from "
+				   <<FromProc<<", during MPI_Recv";
     }
 
   return (TabTMP);
@@ -1910,24 +1902,24 @@ void* SplitSDMeshPartitioner::RecoitMessage (StrucInfoProc* InfoProc, int FromPr
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Fonction qui se charge d'envoyer un tableau.
+  Function responsible for sending an array.
 
-  {\em Remarque:} La taille du tableau est en octets.
+  {\em Note:} The array size is in bytes.
 
-  @memo    Envoi d'un message.
-  @param   InfoProc  (I) structure décrivant le processeur sur lequel tourne l'application.
-  @param   ToProc    (I) noeud de calcul de destination.
-  @param   Tag       (I) marque pour différencier les messages.
-  @param   TabTMP    (I) tableau qui est envoyé.
-  @param   TailleTMP (I) taille de TabTMP (en octets).
+  @memo    Sending a message.
+  @param   InfoProc  (I) structure describing the processor on which the application runs.
+  @param   ToProc    (I) destination computing node.
+  @param   Tag       (I) tag to differentiate messages.
+  @param   TabTMP    (I) array that is sent.
+  @param   TailleTMP (I) size of TabTMP (in bytes).
   @return  void
   @see     Equilibrage,MAJMaillageMaitre
   @author  Eric Brière de l'Isle, ONERA, DRIS/SRL
-  @version Création Janvier 1997 - 26/08/98
+  @version Created January 1997 - 26/08/98
 */
 void SplitSDMeshPartitioner::EnvoieMessage(StrucInfoProc* InfoProc, int ToProc, int Tag, void* TabTMP, int TailleTMP)
 {
-  int ierror; /* retour d'erreur sur les fonctions MPI */
+  int ierror; /* error return on MPI functions */
   
   ierror = MPI_Send ((void *) TabTMP,
 		     TailleTMP,
@@ -1937,8 +1929,8 @@ void SplitSDMeshPartitioner::EnvoieMessage(StrucInfoProc* InfoProc, int ToProc, 
 		     InfoProc->Split_Comm);
   
   if (ierror != MPI_SUCCESS) {
-    InfoProc->m_service->pfatal()<<"Problème sur "<<InfoProc->me<<" de communication vers "
-				 <<ToProc<<", lors de MPI_Send";
+    InfoProc->m_service->pfatal()<<"Problem on "<<InfoProc->me<<" communication to "
+				 <<ToProc<<", during MPI_Send";
   }
   
 
@@ -1947,20 +1939,20 @@ void SplitSDMeshPartitioner::EnvoieMessage(StrucInfoProc* InfoProc, int ToProc, 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // /** 
-//   Fonction qui se charge d'envoyer un tableau avec une communication non bloquante.
+//   Function responsible for sending an array with non-blocking communication.
 
-//   {\em Remarque:} La taille du tableau est en octets.
+//   {\em Note:} The array size is in bytes.
 
-//   @memo    Envoi d'un message non-bloquants.
-//   @param   InfoProc  (I) structure décrivant le processeur sur lequel tourne l'application.
-//   @param   ToProc    (I) noeud de calcul de destination.
-//   @param   Tag       (I) marque pour différencier les messages.
-//   @param   TabTMP    (I) tableau qui est envoyé.
-//   @param   TailleTMP (I) taille de TabTMP (en octets).
-//   @return  (MPI\_Request*) prequest : pointeur sur une structure propre à MPI pour la gestion du message.
+//   @memo    Sending a non-blocking message.
+//   @param   InfoProc  (I) structure describing the processor on which the application runs.
+//   @param   ToProc    (I) destination computing node.
+//   @param   Tag       (I) tag to differentiate messages.
+//   @param   TabTMP    (I) array that is sent.
+//   @param   TailleTMP (I) size of TabTMP (in bytes).
+//   @return  (MPI_Request*) prequest: pointer to an MPI-specific structure for message management.
 //   @see     
 //   @author  Eric Brière de l'Isle, ONERA, DRIS/SRL
-//   @version Création Décembre 1998
+//   @version Created December 1998
 // */
 // MPI_Request* EnvoieIMessage(StrucInfoProc* InfoProc, int ToProc, int Tag, void* TabTMP, int TailleTMP)
 // {
@@ -1979,8 +1971,8 @@ void SplitSDMeshPartitioner::EnvoieMessage(StrucInfoProc* InfoProc, int ToProc, 
 // 		      prequest);
   
 //   if (ierror != MPI_SUCCESS) {
-//     InfoProc->m_service->pfatal()<<"Problème sur "<<InfoProc->me<<" de communication vers "
-// 				 <<ToProc<<", lors de MPI_Isend";
+//     InfoProc->m_service->pfatal()<<"Problem on "<<InfoProc->me<<" communication to "
+// 				 <<ToProc<<", during MPI_Isend";
 //   }
   
 //   return prequest;
@@ -1990,27 +1982,27 @@ void SplitSDMeshPartitioner::EnvoieMessage(StrucInfoProc* InfoProc, int ToProc, 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Fonction qui se charge de diffuser un tableau (envois et réception).
-  Il est fait un MPI\_Bcast mais il faut que la taille du tableau soit connue sur tous les processeurs.
+  Function responsible for broadcasting an array (sending and receiving).
+  An MPI\_Bcast is used, but the array size must be known on all processors.
 
-  {\em Remarque:} La taille du tableau est en octets.
+  {\em Note:} The array size is in bytes.
 
-  @memo    Diffusion d'un message.
-  @param   InfoProc  (I) structure décrivant le processeur sur lequel tourne l'application.
-  @param   FromProc  (I) noeud de calcul depuis lequel on diffuse le tableau.
-  @param   TabTMP    (I) tableau qui est envoyé.
-  @param   TailleTMP (I) taille de TabTMP (en octets).
-  @return  (void *) TabTMP : tableau qui est reçu.
+  @memo    Broadcasting a message.
+  @param   InfoProc  (I) structure describing the processor on which the application runs.
+  @param   FromProc  (I) computing node from which the array is broadcast.
+  @param   TabTMP    (I) array that is sent.
+  @param   TailleTMP (I) size of TabTMP (in bytes).
+  @return  (void *) TabTMP: the array that is received.
   @see     Equilibrage
   @author  Eric Brière de l'Isle, ONERA, DRIS/SRL
-  @version Création Octobre 1998
+  @version Created October 1998
 */
 void* SplitSDMeshPartitioner::DiffuseMessage(StrucInfoProc* InfoProc, int FromProc, void* TabTMP, int TailleTMP)
 {
-  int ierror; /* retour d'erreur sur les fonctions MPI */
+  int ierror; /* error return on MPI functions */
 
   if (TailleTMP<=0) {
-    InfoProc->m_service->pfatal()<<"DiffuseMessage depuis "<<InfoProc->me<<", il est nécessaire que la taille du tableau soit connue !!!\n";
+    InfoProc->m_service->pfatal()<<"DiffuseMessage from "<<InfoProc->me<<", it is necessary that the array size is known !!!\n";
   }
 
 
@@ -2024,7 +2016,7 @@ void* SplitSDMeshPartitioner::DiffuseMessage(StrucInfoProc* InfoProc, int FromPr
     } /* end if me != FromProc */
   
 
-  /* diffusion du tableau TabTMP */
+  /* broadcasting the TabTMP array */
   ierror = MPI_Bcast (TabTMP,
 		      TailleTMP,
 		      MPI_PACKED,
@@ -2032,8 +2024,8 @@ void* SplitSDMeshPartitioner::DiffuseMessage(StrucInfoProc* InfoProc, int FromPr
 		      InfoProc->Split_Comm);
   
   if (ierror != MPI_SUCCESS) {
-    InfoProc->m_service->pfatal()<<"Problème sur "<<InfoProc->me<<" depuis "
-				 <<FromProc<<", lors de MPI_Bcast";
+    InfoProc->m_service->pfatal()<<"Problem on "<<InfoProc->me<<" from "
+				 <<FromProc<<", during MPI_Bcast";
   }
 
   return (TabTMP);
@@ -2042,14 +2034,14 @@ void* SplitSDMeshPartitioner::DiffuseMessage(StrucInfoProc* InfoProc, int FromPr
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Donne la taille en octets nécessaire pour le stockage mémoire d'un domaine
-  (sans la liste des noeuds sur l'interface) en vue d'une communication.
+  \brief Gives the size in bytes required for the memory storage of a domain
+  (without the list of interface nodes) for communication purposes.
 
-  @memo    Donne la taille en octets d'une StructureBlocEtendu
+  @memo    Gives the size in bytes of a StructureBlocEtendu
   @param   Domaine (I) StructureBlocEtendu
-  @return  (int) : la taille en octets
+  @return  (int) : the size in bytes
   @see     PackDom, UnpackDom
-  @author  Eric Brière de l'Isle, Novembre 2007
+  @author  Eric Brière de l'Isle, November 2007
 */
 Integer SplitSDMeshPartitioner::
 TailleDom(StructureBlocEtendu* Domaine)
@@ -2061,22 +2053,22 @@ TailleDom(StructureBlocEtendu* Domaine)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Stocke le contenu d'un Domaine dans un tableau en vue d'une communication (sans la liste des noeuds sur l'interface)
+  Stores the content of a Domain in an array for communication (without the list of interface nodes).
 
-  @memo    Stockage d'une StructureBlocEtendu dans un tableau.
+  @memo    Storing a StructureBlocEtendu in an array.
   @param   Domaine (I) StructureBlocEtendu
-  @param   TabTMP (I/O) tableau que l'on remplit
-  @param   TailleTMP (I) taille totale du tableau TabTMP
-  @param   comm (I) environnement de communication
+  @param   TabTMP (I/O) array that is filled
+  @param   TailleTMP (I) total size of the TabTMP array
+  @param   comm (I) communication environment
   @return  void
   @see     TailleDom, UnpackDom
-  @author  Eric Brière de l'Isle, Novembre 2007
+  @author  Eric Brière de l'Isle, November 2007
 */
 void SplitSDMeshPartitioner::
 PackDom(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, void* TabTMP,
         int TailleTMP, MPI_Comm comm)
 {
-  int position = 0; // initialisation pour mettre dans le tableau au début
+  int position = 0; // initialization to put into the array at the beginning
   int ier;
 
   ier = MPI_Pack(&Domaine->NbElements, 1, MPI_INT, TabTMP, TailleTMP, &position, comm);
@@ -2100,20 +2092,20 @@ PackDom(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, void* TabTMP,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Extrait un Domaine d'un tableau en provenance d'une communication.
+  Extracts a Domain from an array received via communication.
 
-  @memo    Extraction des données pour renseigner une StrucListeDomMail
-  @param   TabTMP (I) tableau d'où sont extraites les informations
-  @param   TailleTMP (I) taille totale du tableau TabTMP
-  @param   comm (I) environnement de communication pour la librairie
+  @memo    Extracting data to populate a StrucListeDomMail
+  @param   TabTMP (I) array from which the information is extracted
+  @param   TailleTMP (I) total size of the TabTMP array
+  @param   comm (I) communication environment for the library
   @param   DomMail (I/O) StrucListeDomMail
   @return  void
   @see     TailleDom, PackDom
-  @author  Eric Brière de l'Isle, Novembre 2007
+  @author  Eric Brière de l'Isle, November 2007
 */
 void SplitSDMeshPartitioner::UnpackDom(void* TabTMP, int TailleTMP, MPI_Comm comm, StrucListeDomMail* DomMail)
 {
-  int position = 0; // initialisation pour prendre au début du tableau
+  int position = 0; // initialization to take from the beginning of the array
 
   MPI_Unpack(TabTMP, TailleTMP, &position, &DomMail->NbElements, 1, MPI_INT, comm);
   MPI_Unpack(TabTMP, TailleTMP, &position, &DomMail->Poids,      1, MPI_DOUBLE, comm);
@@ -2131,7 +2123,7 @@ void SplitSDMeshPartitioner::UnpackDom(void* TabTMP, int TailleTMP, MPI_Comm com
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Donne la taille en octets nécessaire pour le stockage mémoire d'un entier pour le domaine chargé, un autre entier pour le domaine voisin, et un double pour le Delta (transfert en poids)
+  Gives the size in bytes required for the memory storage of an integer for the loaded domain, another integer for the neighbor domain, and a double for Delta (weight transfer).
 */
 
 int SplitSDMeshPartitioner::TailleEquil()
@@ -2141,11 +2133,11 @@ int SplitSDMeshPartitioner::TailleEquil()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Stocke les 2 entiers et le double 
+  Stores the 2 integers and the double 
 */
 void SplitSDMeshPartitioner::PackEquil(StrucInfoProc* InfoProc, int indDomCharge, int indDomVois, double Delta, void* TabTMP, int TailleTMP, MPI_Comm comm)
 {
-  int position = 0; // initialisation pour mettre dans le tableau au début
+  int position = 0; // initialization to put into the array at the beginning
   int ier;
   ier = MPI_Pack(&indDomCharge, 1, MPI_INT, TabTMP, TailleTMP, &position, comm);
   CHECK_MPI_PACK_ERR(ier);
@@ -2159,11 +2151,11 @@ void SplitSDMeshPartitioner::PackEquil(StrucInfoProc* InfoProc, int indDomCharge
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /** 
-  Extrait les 2 entiers et le double  d'un tableau en provenance d'une communication.
+  Extracts the 2 integers and the double from an array received via communication.
 */
 void SplitSDMeshPartitioner::UnpackEquil(void* TabTMP, int TailleTMP, MPI_Comm comm, int* indDomCharge, int* indDomVois, double* Delta)
 {
-  int position = 0; // initialisation pour prendre au début du tableau
+  int position = 0; // initialization to take from the beginning of the array
   MPI_Unpack(TabTMP, TailleTMP, &position, indDomCharge, 1, MPI_INT, comm);
   MPI_Unpack(TabTMP, TailleTMP, &position, indDomVois, 1, MPI_INT, comm);
   MPI_Unpack(TabTMP, TailleTMP, &position, Delta, 1, MPI_DOUBLE, comm);
