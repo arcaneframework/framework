@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataCompressor.h                                           (C) 2000-2021 */
 /*                                                                           */
-/* Interface permettant de compresser/décompresser des données.              */
+/* Interface allowing data compression/decompression.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IDATACOMPRESSOR_H
 #define ARCANE_UTILS_IDATACOMPRESSOR_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service permettant de compresser/décompresser des données.
+ * \brief Interface of a service for compressing/decompressing data.
  */
 class ARCANE_UTILS_EXPORT IDataCompressor
 {
@@ -39,36 +40,35 @@ class ARCANE_UTILS_EXPORT IDataCompressor
 
  public:
 
-  //! Nom de l'algorithme
+  //! Algorithm name
   virtual String name() const =0;
 
  /*!
-  * \brief Taille minimale du tableau en dessous de laquelle il n'est pas utile
-  * de compresser.
+  * \brief Minimum array size below which compression is not useful.
   *
-  * Cela peut être utilisé par l'appelant pour ne pas pas compresser/décompresser
-  * certains tableaux. Cette valeur n'est pas utilisée en interne par cette instance.
+  * This can be used by the caller to avoid compressing/decompressing
+  * certain arrays. This value is not used internally by this instance.
   *
-  * Si l'appelant utilise cette valeur, il faut garantir la cohérence à la fois
-  * en compression et décompression (i.e: ne pas appeler la décompression pour les
-  * tableaux dont la taille décompressée est inférieure à minCompressSize() si
-  * la méthode compress() n'a pas été appelée pour ce tableau.
+  * If the caller uses this value, consistency must be guaranteed both during
+  * compression and decompression (i.e.: do not call decompression for arrays
+  * whose decompressed size is less than minCompressSize() if the compress()
+  * method was not called for that array).
   */
   virtual Int64 minCompressSize() const =0;
 
   /*!
-   * \brief Compresse les données \a values et les stocke dans \a compressed_values.
+   * \brief Compresses the data \a values and stores it in \a compressed_values.
    *
-   * Cette opération peut lever une exception de type IOException en cas d'erreur.
+   * This operation may throw an IOException exception in case of an error.
    */
   virtual void compress(Span<const std::byte> values,Array<std::byte>& compressed_values) =0;
 
   /*!
-   * \brief Décompresse les données \a compressed_values et les stocke dans \a values.
+   * \brief Decompresses the data \a compressed_values and stores it in \a values.
    *
-   * \a values doit déjà avoir été allouée à la taille nécessaire pour contenir
-   * les données décompressées.
-   * Cette opération peut lever une exception de type IOException en cas d'erreur.
+   * \a values must already have been allocated to the necessary size to contain
+   * the decompressed data.
+   * This operation may throw an IOException exception in case of an error.
    */
   virtual void decompress(Span<const std::byte> compressed_values,Span<std::byte> values) =0;
 };
@@ -81,4 +81,4 @@ class ARCANE_UTILS_EXPORT IDataCompressor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AutoDestroyUserData.h                                       (C) 2000-2012 */
 /*                                                                           */
-/* UserData s'auto-détruisant une fois détaché.                              */
+/* UserData that self-destructs once detached.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_AUTODESTROYUSERDATA_H
 #define ARCANE_UTILS_AUTODESTROYUSERDATA_H
@@ -33,17 +33,18 @@ class DeleteOnDestroyBehaviour
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief UserData s'auto-détruisant une fois détaché.
+ * \brief UserData that self-destructs once detached.
  * \ingroup Core
  *
- * Une instance de cette classe doit être allouée via new()
- * et est détruite automatiquement ainsi que sa donnée associée lorsqu'elle
- * est détachée d'un IUserDataList via IUserDataList::removeData().
+ * An instance of this class must be allocated via new()
+ * and is automatically destroyed along with its associated data when it
+ * is detached from an IUserDataList via IUserDataList::removeData().
  *
- * Par défaut, elle appelle l'opérateur delete pour sa donnée
- * mais il est possible de changer son comportement via le
- * paramètre template DestroyBehaviour.
+ * By default, it calls the delete operator for its data
+ * but it is possible to change its behavior via the
+ * DestroyBehaviour template parameter.
  */
 template<typename T,typename DestroyBehaviour = DeleteOnDestroyBehaviour<T> >
 class AutoDestroyUserData
@@ -82,5 +83,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

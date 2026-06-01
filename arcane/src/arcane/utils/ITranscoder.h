@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITranscoder.h                                               (C) 2000-2005 */
 /*                                                                           */
-/* Interface d'un convertisseur de/vers le format UTF-16.                    */
+/* Interface of a converter to/from the UTF-16 format.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ITRANSCODER_H
 #define ARCANE_UTILS_ITRANSCODER_H
@@ -28,13 +28,13 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface d'un convertisseur de/vers le format UTF-16.
+ * \brief Interface of a converter to/from the UTF-16 format.
  */
 class ITranscoder
 {
  public:
 
-  virtual ~ITranscoder() {} //<! Libère les ressources
+  virtual ~ITranscoder() {} //<! Releases resources
 
  public:
 
@@ -42,17 +42,17 @@ class ITranscoder
 
  public:
 
-  /*! \brief Traduit la source \a src de longueur \a src_len au format UTF-16
+  /*! \brief Translates the source \a src of length \a src_len to the UTF-16 format
    *
-   * Stocke la conversion dans \a out qui doit être préallablement alloué
-   * et de longueur suffisante.
+   * Stores the conversion in \a out, which must be pre-allocated
+   * and of sufficient length.
    */
   virtual void transcodeToUtf16(const Byte* src,Integer src_len,UChar* out) =0;
 
-  /*! \brief Traduit la source \a src de longueur \a src_len depuis le format UTF-16
+  /*! \brief Translates the source \a src of length \a src_len from the UTF-16 format
    *
-   * Stocke la conversion dans \a out qui doit être préallablement alloué
-   * et de longueur suffisante.
+   * Stores the conversion in \a out, which must be pre-allocated
+   * and of sufficient length.
    */
   virtual void transcodeFromUtf16(const UChar* src,Integer src_len,Byte* out) =0;
 };
@@ -65,5 +65,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

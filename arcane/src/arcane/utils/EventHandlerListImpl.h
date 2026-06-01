@@ -1,1 +1,1 @@
-#error "Do not include EventHandlerListImpl.h"
+﻿#error "Do not include EventHandlerListImpl.h"

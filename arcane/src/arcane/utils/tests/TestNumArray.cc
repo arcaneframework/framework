@@ -198,7 +198,7 @@ TEST(NumArray3,Misc)
 
   NumArray<Int64,MDDim3> v(nb_x,nb_y,nb_z);
   v.fill(0);
-  // Attention, v.extents() change si 'v' est redimensionné
+  // Note, v.extents() changes if 'v' is resized
   auto v_extents = v.extentsWithOffset();
   {
     for( Int32 x=0, xn=v.dim1Size(); x<xn; ++x ){
@@ -221,12 +221,11 @@ TEST(NumArray3,Misc)
   v.resize(3,2,6);
   std::cout << "CAPACITY V4=" << v.capacity() << "\n";
 
-  // NOTE: désactive temporairement le test tant que la méthode
-  // resize() de 'NumArray' ne conserve pas les valeurs
+  // NOTE: temporarily disables the test until the method
+  // resize() of 'NumArray' preserves values
 #if NUMARRAY_HAS_VALID_RESIZE
-  // Les valeurs ci-dessous dépendent de l'implémentation actuelle
-  // de NumArray::resize(). Je ne suis pas sur qu'il soit valide de les
-  // tester
+  // The values below depend on the current implementation
+  // of NumArray::resize(). I am not sure it is valid to test them
   std::vector<Int64> valid_values =
   {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -413,7 +412,7 @@ TEST(NumArray2,Layout)
 template<typename NumArray3>
 void _checkRightLayoutDim3(NumArray3& a)
 {
-  // Le tableau doit avoir les dimensions (2,3,5);
+  // The array must have dimensions (2,3,5);
   ASSERT_EQ(a.totalNbElement(),(2*3*5));
   ASSERT_EQ(a.extent0(),2);
   ASSERT_EQ(a.extent1(),3);
@@ -432,7 +431,7 @@ void _checkRightLayoutDim3(NumArray3& a)
 template<typename NumArray3>
 void _checkLeftLayoutDim3(NumArray3& a)
 {
-  // Le tableau doit avoir les dimensions (2,3,5);
+  // The array must have dimensions (2,3,5);
   //NumArray<Real,MDDim3,LeftLayout3> a(2,3,5);
   ASSERT_EQ(a.totalNbElement(),(2*3*5));
   _setNumArray3Values(a);

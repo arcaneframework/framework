@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CriticalSection.h                                           (C) 2000-2008 */
 /*                                                                           */
-/* Section critique en multi-thread.                                         */
+/* Critical section in multi-thread.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_CRITICALSECTION_H
 #define ARCANE_UTILS_CRITICALSECTION_H
@@ -23,8 +23,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Section critique en multi-thread.
+ * \brief Critical section in multi-thread.
  */
 class ARCANE_UTILS_EXPORT CriticalSection
 {

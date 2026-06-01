@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Real3x3.cc                                                  (C) 2000-2023 */
 /*                                                                           */
-/* Matrice 3x3 de 'Real'.                                                    */
+/* 3x3 matrix of 'Real'.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ printXyz(std::ostream& o) const
 std::istream& Real3x3Proxy::
 assign(std::istream& i)
 {
-  // TODO marquer acces
+  // TODO mark access
   return m_value.assign(i);
 }
 

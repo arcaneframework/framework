@@ -1,1 +1,1 @@
-#include "arcane/utils/IFunctor.h"
+﻿#include "arcane/utils/IFunctor.h"

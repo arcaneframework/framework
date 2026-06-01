@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IFunctorWithAddress.h                                       (C) 2000-2012 */
 /*                                                                           */
-/* Interface d'un fonctor.                                                   */
+/* Interface of a functor.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IFUNCTOR_WITH_ADDRESS_H
 #define ARCANE_UTILS_IFUNCTOR_WITH_ADDRESS_H
@@ -24,8 +24,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor.
+ * \brief Interface of a functor.
  * \ingroup Core
  */
 class ARCANE_UTILS_EXPORT IFunctorWithAddress
@@ -33,16 +34,16 @@ class ARCANE_UTILS_EXPORT IFunctorWithAddress
 {
  public:
 	
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IFunctorWithAddress(){}
 
  public:
 
   /*!
    * \internal
-   * \brief Retourne l'adresse de la méthode associé.
-   * \warning Cette méthode ne doit être appelée que par HYODA
-   * et n'est pas valide sur toutes les plate-formes.
+   * \brief Returns the address of the associated method.
+   * \warning This method must only be called by HYODA
+   * and is not valid on all platforms.
    */
   virtual void* functorAddress() =0;  
 };
@@ -55,5 +56,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

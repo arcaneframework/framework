@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TestLogger.h                                                (C) 2000-2022 */
 /*                                                                           */
-/* Classe utilitaire pour enregistrer les informations de tests.             */
+/* Utility class for logging test information.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_TESTLOGGER_H
 #define ARCANE_UTILS_TESTLOGGER_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe utilitaire pour enregistrer les informations de tests.
+ * \brief Utility class for logging test information.
  */
 class ARCANE_UTILS_EXPORT TestLogger
 {

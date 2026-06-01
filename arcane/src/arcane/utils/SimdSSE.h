@@ -7,16 +7,18 @@
 /*---------------------------------------------------------------------------*/
 /* SimdSSE.h                                                   (C) 2000-2016 */
 /*                                                                           */
-/* Vectorisation pour le SSE.                                                */
+/* Vectorization for SSE.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMDSSE_H
 #define ARCANE_UTILS_SIMDSSE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Ce fichier ne doit pas être inclus directement.
- * Utiliser 'Simd.h' à la place.
+ * This file should not be included directly.
+ * Use 'Simd.h' instead.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,12 +26,13 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des entiers en utilisant SSE.
- * \todo Normalement il faudrait mettre l'alignement sur 32 octets mais
- * cela rend sur CentOS 6 les compilations entre gcc 4.4 (le défaut sur
- * CentOS 6) et gcc 4.6+ incompatibles.
+ * \brief Vectorization of integers using SSE.
+ * \todo Normally, the alignment should be set to 32 bytes, but
+ * this makes compilations on CentOS 6 between gcc 4.4 (the default on
+ * CentOS 6) and gcc 4.6+ incompatible.
  */
 class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Int32
 {
@@ -51,7 +54,7 @@ class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Int32
  public:
   SSESimdX4Int32(const Int32* base,const Int32* idx)
   : v0(_mm_set_epi32(base[idx[3]],base[idx[2]],base[idx[1]],base[idx[0]])) {}
-  // TODO: faire la version non alignée
+  // TODO: implement the unaligned version
   explicit SSESimdX4Int32(const Int32* base)
   : v0(_mm_load_si128((const __m128i*)base)){}
 
@@ -69,7 +72,7 @@ class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Int32
 
   void set(ARCANE_RESTRICT Int32* base) const
   {
-    // TODO: faire la version non alignée
+    // TODO: implement the unaligned version
     _mm_store_si128((__m128i*)base,v0);
   }
 
@@ -84,12 +87,13 @@ class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Int32
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des réels en utilisant SSE.
- * \todo Normalement il faudrait mettre l'alignement sur 32 octets mais
- * cela rend sur CentOS 6 les compilations entre gcc 4.4 (le défaut sur
- * CentOS 6) et gcc 4.6+ incompatibles.
+ * \brief Vectorization of reals using SSE.
+ * \todo Normally, the alignment should be set to 32 bytes, but
+ * this makes compilations on CentOS 6 between gcc 4.4 (the default on
+ * CentOS 6) and gcc 4.6+ incompatible.
  */
 class ARCANE_ALIGNAS_PACKED(16) SSESimdX2Real
 {
@@ -173,12 +177,13 @@ class ARCANE_ALIGNAS_PACKED(16) SSESimdX2Real
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des réels en utilisant SSE.
- * \todo Normalement il faudrait mettre l'alignement sur 32 octets mais
- * cela rend sur CentOS 6 les compilations entre gcc 4.4 (le défaut sur
- * CentOS 6) et gcc 4.6+ incompatibles.
+ * \brief Vectorization of reals using SSE.
+ * \todo Normally, the alignment should be set to 32 bytes, but
+ * this makes compilations on CentOS 6 between gcc 4.4 (the default on
+ * CentOS 6) and gcc 4.6+ incompatible.
  */
 class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Real
 {
@@ -188,9 +193,9 @@ class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Real
   {
     Length = 4
   };
-  // NOTE: utiliser EMULSimd au lieu de SSE est beaucoup plus performant
-  // avec gcc 4.9 et gcc 6.1. Avec Intel 16, c'est le contraire mais la
-  // différence n'est pas énorme.
+  // NOTE: using EMULSimd instead of SSE is much more performant
+  // with gcc 4.9 and gcc 6.1. With Intel 16, it is the opposite but the
+  // difference is not huge.
   // typedef SSESimdX4Int32 Int32IndexType;
   typedef EMULSimdX4Int32 Int32IndexType;
  public:
@@ -263,9 +268,10 @@ class ARCANE_ALIGNAS_PACKED(16) SSESimdX4Real
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vecteur de 8 doubles avec implémentation SSE.
+ * \brief Vector of 8 doubles with SSE implementation.
  */
 class ARCANE_ALIGNAS_PACKED(64) SSESimdX8Real
 {
@@ -335,13 +341,13 @@ class ARCANE_ALIGNAS_PACKED(64) SSESimdX8Real
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Vecteur de 'double' en implémentation par SSE.
+ * \brief Vector of 'double' in SSE implementation.
  *
- * Utilise le vecteur de 4 éléments comme vecteur par défaut en SSE.
- * Les différents tests montrent que c'est la meilleur taille. Avec une
- * taille de deux les boucles sont trop petites et avec une taille de 8
- * le compilateur a souvent trop de temporaires à gérer ce qui limite
- * l'optimisation.
+ * Uses the 4-element vector as the default vector in SSE.
+ * Different tests show that this is the best size. With a
+ * size of two, the loops are too small and with a size of 8
+ * the compiler often has too many temporaries to manage, which limits
+ * optimization.
  */
 typedef SSESimdX4Real SSESimdReal;
 

@@ -213,8 +213,8 @@ TEST(TestRealN,Copyable)
 
 TEST(TestRealN,ContiguousAddress)
 {
-  // Vérifie que les adresses des champs des classes 'RealN' sont
-  // contigues et qu'on peut utiliser operator[] pour accéder à la i-ème composante.
+  // Checks that the field addresses of the 'RealN' classes are
+  // contiguous and that operator[] can be used to access the i-th component.
   Real2 r2;
   ASSERT_TRUE(sizeof(r2)==2*sizeof(Real));
   ASSERT_TRUE(&r2.y==(&r2.x+1));

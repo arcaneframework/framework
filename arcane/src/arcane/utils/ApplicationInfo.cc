@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ApplicationInfo.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur une application.                                         */
+/* Information about an application.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,15 +38,15 @@ class ApplicationInfoPrivate
   }
  public:
   CommandLineArguments m_command_line_args;
-  VersionInfo m_version; //!< Numéro de version
-  bool m_is_debug; //!< \a true s'il s'agit d'une version debug.
-  String m_version_date; //!< Date de la version.
-  String m_application_name; //!< Nom de l'application
-  String m_code_name; //!< Nom du code
-  String m_target_full_name; //!< Nom complet de la cible
-  String m_osname; //!< Nom de l'OS
-  String m_data_os_dir; //!< Répertoire des fichiers config dépendant OS
-  String m_data_dir; //!< Répertoire des fichiers de config communs
+  VersionInfo m_version; //!< Version number
+  bool m_is_debug; //!< \a true if it is a debug version.
+  String m_version_date; //!< Version date.
+  String m_application_name; //!< Application name
+  String m_code_name; //!< Code name
+  String m_target_full_name; //!< Full target name
+  String m_osname; //!< OS name
+  String m_data_os_dir; //!< Directory of OS-dependent config files
+  String m_data_dir; //!< Directory of common config files
   StringList m_args;
   StringList m_dynamic_libraries_name;
   UniqueArray<std::byte> m_runtime_config_file_content;
@@ -190,8 +190,8 @@ _init(const String& name)
   }
 
   if (dataDir().null() || dataOsDir().null()){
-    // Considère que les infos partagées et les libs sont
-    // au même endroit qui est celui de l'exécutable.
+    // Assumes that shared info and libs are
+    // in the same place as the executable.
     String exe_full_path = platform::getExeFullPath();
     String exe_path = platform::getFileDirName(exe_full_path);
     if (dataDir().null())
@@ -499,4 +499,3 @@ ARCANE_REGISTER_PROPERTY_CLASS(ApplicationInfoProperties,());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

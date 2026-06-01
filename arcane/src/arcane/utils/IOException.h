@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IOException.h                                               (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une erreur d'entrée/sortie est détectée.                 */
+/* Exception when an input/output error is detected.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IOEXCEPTION_H
 #define ARCANE_UTILS_IOEXCEPTION_H
@@ -23,9 +23,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Exception lorsqu'une erreur d'entrée/sortie est détectée.
+ * \brief Exception when an input/output error is detected.
  */
 class ARCANE_UTILS_EXPORT IOException
 : public Exception
@@ -59,5 +60,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

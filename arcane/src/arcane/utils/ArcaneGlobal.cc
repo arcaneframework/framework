@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneGlobal.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales de Arcane.                                         */
+/* General declarations for Arcane.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,9 +23,9 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IMemoryInfo.h"
 
-// Ces includes ne sont pas utilisés par ce fichier
-// mais il faut au moins les lire une fois sous Windows
-// pour que les symboles externes soient créés
+// These includes are not used by this file
+// but they must at least be read once under Windows
+// for external symbols to be created
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/IFunctorWithAddress.h"
 #include "arcane/utils/IRangeFunctor.h"
@@ -44,14 +44,14 @@
 /*!
  * \file utils/ArcaneGlobal.h
  *
- * \brief Fichier de configuration d'Arcane.
+ * \brief Arcane configuration file.
  */
 /*!
  * \namespace Arcane
  *
- * \brief Espace de nom d'Arcane.
+ * \brief Arcane namespace.
  *
- * Toutes les classes et types utilisés dans \b Arcane sont dans ce
+ * All classes and types used in \b Arcane are in this
  * namespace.
  */
 /*---------------------------------------------------------------------------*/
@@ -221,71 +221,71 @@ arcaneSizeWithPadding(Integer size)
 /*!
  * \defgroup Collection Collection
  *
- * \brief Classes collections.
+ * \brief Collection classes.
  *
- * Les collections sont les classes %Arcane qui gèrent un ensemble d'objet.
- * En général, la collection la plus utilisée est le tableau. Pour
- * plus de renseignements, se reporter à la page \ref arcanedoc_core_types_array_usage.
+ * Collections are %Arcane classes that manage a set of objects.
+ * Generally, the most used collection is the array. For
+ * more information, refer to the page \ref arcanedoc_core_types_array_usage.
  */
 
 /*!
  * \defgroup Module Module
  *
- * \brief Classes des modules
+ * \brief Module classes
  */
 
 /*!
  * \defgroup Core Core
  *
- * \brief Classes du noyau
+ * \brief Core classes
  */
 
 /*!
  * \defgroup CaseOption CaseOption
  *
- * \brief Classes du jeu de données
+ * \brief Data set classes
  */
 
 /*!
  * \defgroup Mesh Mesh
  *
- * \brief Classes du maillage
+ * \brief Mesh classes
  */
 
 /*!
  * \defgroup Variable Variable
  *
- * \brief Classes liées aux variables
+ * \brief Variable-related classes
  */
 
 /*!
  * \defgroup Parallel Parallel
  *
- * \brief Classes liées aux parallélisme
+ * \brief Parallelism-related classes
  */
 
 /*!
  * \defgroup Xml Xml
  *
- * \brief Classes liées à XML.
+ * \brief XML-related classes.
  */
 
 /*!
  * \defgroup StandardService StandardService
  *
- * \brief Services standards
+ * \brief Standard services
  */
 
 /*!
  * \defgroup IO IO
  *
- * \brief Gestion des entrées/sorties
+ * \brief Input/output management
  */
 
 /*!
  * \defgroup Math Math
  *
- * \brief Fonctions mathématiques
+ * \brief Mathematical functions
  */
 
 /*---------------------------------------------------------------------------*/

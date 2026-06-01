@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Real3x3Proxy.h                                              (C) 2000-2008 */
 /*                                                                           */
-/* Proxy d'un 'Real3x3'.                                                     */
+/* Proxy for a 'Real3x3'.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_REAL3X3PROXY_H
 #define ARCANE_UTILS_REAL3X3PROXY_H
@@ -24,24 +24,27 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /**
- * \brief Proxy d'un 'Real3x3'.
+ * \brief Proxy for a 'Real3x3'.
 */
 class ARCANE_UTILS_EXPORT Real3x3Proxy
 {
  public:
  
-  //! Construit le triplet (ax,ay,az)
+  //! Constructs the triplet (ax,ay,az)
   Real3x3Proxy(Real3x3& value,const MemoryAccessInfo& info)
   : x(value.x,info), y(value.y,info), z(value.z,info), m_value(value), m_info(info) {}
-  //! Construit un triplet identique à \a f
+
+  //! Constructs a triplet identical to \a f
   Real3x3Proxy(const Real3x3Proxy& f)
   : x(f.x), y(f.y), z(f.z), m_value(f.m_value), m_info(f.m_info) {}
   const Real3x3& operator=(const Real3x3Proxy f)
     { x=f.x; y=f.y; z=f.z; return m_value; }
   const Real3x3& operator=(Real3x3 f)
     { x=f.x; y=f.y; z=f.z; return m_value; }
-  //! Affecte à l'instance le triplet (v,v,v).
+
+  //! Assigns the triplet (v,v,v) to the instance.
   const Real3x3& operator= (Real v)
     { x = y = z = v; return m_value; }
   operator const Real3x3&() const
@@ -55,9 +58,9 @@ class ARCANE_UTILS_EXPORT Real3x3Proxy
 
  public:
 
-  Real3Proxy x; //!< premier élément du triplet
-  Real3Proxy y; //!< premier élément du triplet
-  Real3Proxy z; //!< premier élément du triplet
+  Real3Proxy x; //!< first element of the triplet
+  Real3Proxy y; //!< first element of the triplet
+  Real3Proxy z; //!< first element of the triplet
 
  private:
 
@@ -66,64 +69,83 @@ class ARCANE_UTILS_EXPORT Real3x3Proxy
 
  public:
 
-  //! Retourne une copie du triplet.
+  //! Returns a copy of the triplet.
   Real3x3 copy() const  { return m_value; }
-  //! Réinitialise le triplet avec les constructeurs par défaut.
+
+  //! Resets the triplet using default constructors.
   Real3x3Proxy& reset() { x.reset(); y.reset(); z.reset(); return (*this); }
-  //! Affecte à l'instance le triplet (ax,ay,az)
+
+  //! Assigns the triplet (ax,ay,az) to the instance
   Real3x3Proxy& assign(Real3 ax,Real3 ay,Real3 az)
     { x = ax; y = ay; z = az; return (*this); }
-  //! Copie le triplet \a f
+
+  //! Copies the triplet \a f
   Real3x3Proxy& assign(Real3x3 f)
     { x = f.x; y = f.y; z = f.z; return (*this); }
+
   /*!
-   * \brief Compare la matrice avec la matrice nulle.
+   * \brief Compares the matrix with the zero matrix.
    *
-   * La matrice est nulle si et seulement si chacune de ses composant
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * The matrix is zero if and only if each of its components
+   * is less than a given epsilon. The epsilon value used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
    *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
+   * \retval true if the matrix is equal to the zero matrix,
+   * \retval false otherwise.
    */
   bool isNearlyZero() const
     { return x.isNearlyZero() && y.isNearlyZero() && z.isNearlyZero(); }
+
   /*!
-   * \brief Lit la matrice sur le flot \a i
-   * La matrice est lue sous la forme de trois Real3.
+   * \brief Reads the matrix from the stream \a i
+   * The matrix is read in the form of three Real3s.
    */
   std::istream& assign(std::istream& i);
-  //! Ecrit le triplet sur le flot \a o lisible par un assign()
+
+  //! Writes the triplet to the stream \a o readable by an assign()
   std::ostream& print(std::ostream& o) const;
-  //! Ecrit le triplet sur le flot \a o sous la forme (x,y,z)
+
+  //! Writes the triplet to the stream \a o in the form (x,y,z)
   std::ostream& printXyz(std::ostream& o) const;
 
-  //! Ajoute \a b au triplet
+  //! Adds \a b to the triplet
   Real3x3Proxy& add(Real3x3 b) { x += b.x; y += b.y; z += b.z; return (*this); }
-  //! Soustrait \a b au triplet
+
+  //! Subtracts \a b from the triplet
   Real3x3Proxy& sub(Real3x3 b) { x -= b.x; y -= b.y; z -= b.z; return (*this); }
-  //! Ajoute \a b à chaque composante du triplet
+
+  //! Adds \a b to each component of the triplet
   Real3x3Proxy& addSame(Real3 b) { x += b; y += b; z += b; return (*this); }
-  //! Soustrait \a b à chaque composante du triplet
+
+  //! Subtracts \a b from each component of the triplet
   Real3x3Proxy& subSame(Real3 b) { x -= b; y -= b; z -= b; return (*this); }
-  //! Multiplie chaque composante du triplet par \a b
+
+  //! Multiplies each component of the triplet by \a b
   Real3x3Proxy& mulSame(Real3 b) { x *= b; y *= b; z *= b; return (*this); }
-  //! Divise chaque composante du triplet par \a b
+
+  //! Divides each component of the triplet by \a b
   Real3x3Proxy& divSame(Real3 b) { x /= b; y /= b; z /= b; return (*this); }
-  //! Ajoute \a b au triplet.
+
+  //! Adds \a b to the triplet.
   Real3x3Proxy& operator+= (Real3x3 b) { return add(b); }
-  //! Soustrait \a b au triplet
+
+  //! Subtracts \a b from the triplet
   Real3x3Proxy& operator-= (Real3x3 b) { return sub(b); }
-  //! Multiple chaque composante de la matrice par le réel \a b
+
+  //! Multiplies each component of the matrix by the real \a b
   void operator*= (Real b)  { x *= b; y *= b; z *= b; }
-  //! Divise chaque composante de la matrice par le réel \a b
+
+  //! Divides each component of the matrix by the real \a b
   void operator/= (Real  b) { x /= b; y /= b; z /= b; }
-  //! Créé un triplet qui vaut ce triplet ajouté à \a b
+
+  //! Creates a triplet that equals this triplet added to \a b
   Real3x3 operator+(Real3x3 b)  const { return Real3x3(x+b.x,y+b.y,z+b.z); }
-  //! Créé un triplet qui vaut \a b soustrait de ce triplet
+
+  //! Creates a triplet that equals \a b subtracted from this triplet
   Real3x3 operator-(Real3x3 b)  const { return Real3x3(x-b.x,y-b.y,z-b.z); }
-  //! Créé un tenseur opposé au tenseur actuel
+
+  //! Creates a tensor opposite to the current tensor
   Real3x3 operator-() const { return Real3x3(-x,-y,-z); }
 
  public:
@@ -140,9 +162,9 @@ class ARCANE_UTILS_EXPORT Real3x3Proxy
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of \a a and \a b with the TypeEqualT comparator
+   * \retval true if \a a and \a b are equal,
+   * \retval false otherwise.
    */
   static bool _eq(Real a,Real b)
     { return TypeEqualT<Real>::isEqual(a,b); }
@@ -150,8 +172,9 @@ class ARCANE_UTILS_EXPORT Real3x3Proxy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecrit le triplet \a t sur le flot \a o
+ * \brief Writes the triplet \a t to the stream \a o
  * \relates Real3
  */
 inline std::ostream&
@@ -159,8 +182,9 @@ operator<< (std::ostream& o,Real3x3Proxy t)
 {
   return t.printXyz(o);
 }
+
 /*!
- * \brief Lit le triplet \a t à partir du flot \a o.
+ * \brief Reads the triplet \a t from the stream \a o.
  * \relates Real3
  */
 inline std::istream&
@@ -209,7 +233,8 @@ operator!=(const Real3x3Proxy& a,const Real3x3Proxy& b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! \brief Multiplication par un scalaire. */
+
+/*! \brief Multiplication by a scalar. */
 inline Real3x3
 operator*(Real sca,Real3x3Proxy vec)
 {
@@ -218,7 +243,8 @@ operator*(Real sca,Real3x3Proxy vec)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! \brief Multiplication par un scalaire. */
+
+/*! \brief Multiplication by a scalar. */
 inline Real3x3
 operator*(const Real3x3Proxy& vec,Real sca)
 {
@@ -227,7 +253,8 @@ operator*(const Real3x3Proxy& vec,Real sca)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! \brief Division par un scalaire. */
+
+/*! \brief Division by a scalar. */
 inline Real3x3
 operator/(const Real3x3Proxy& vec,Real sca)
 {
@@ -236,11 +263,12 @@ operator/(const Real3x3Proxy& vec,Real sca)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérateur de comparaison.
+ * \brief Comparison operator.
  *
- * Cet opérateur permet de trier les Real3 pour les utiliser par exemple
- * dans les std::set
+ * This operator allows sorting Real3s for example
+ * when using std::set
  */
 inline bool
 operator<(Real3x3Proxy v1,Real3x3Proxy v2)

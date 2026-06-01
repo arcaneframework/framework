@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MathApfloat.h                                               (C) 2000-2020 */
 /*                                                                           */
-/* Fonctions mathématiques diverses pour le type apfloat.                    */
+/* Various mathematical functions for the apfloat type.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MATHAPFLOAT_H
 #define ARCANE_UTILS_MATHAPFLOAT_H
@@ -21,10 +21,12 @@
 
 namespace Arcane::math
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Logarithme népérien de \a v.
+ * \brief Natural logarithm of \a v.
  */
 inline apfloat
 log(apfloat v)
@@ -37,7 +39,7 @@ log(apfloat v)
 }
 
 /*!
- * \brief Arondir \a v à l'entier immédiatement inférieur.
+ * \brief Round \a v down to the immediately lower integer.
  */
 inline apfloat
 floor(apfloat v)
@@ -47,8 +49,9 @@ floor(apfloat v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exponentielle de \a v.
+ * \brief Exponential of \a v.
  */
 inline apfloat
 exp(apfloat v)
@@ -58,8 +61,9 @@ exp(apfloat v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Racine carrée de \a v.
+ * \brief Square root of \a v.
  */
 inline apfloat
 sqrt(apfloat v)
@@ -73,12 +77,13 @@ sqrt(apfloat v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction puissance.
+ * \brief Power function.
  *
- * Calcul \a x à la puissance \a y.
+ * Calculates \a x raised to the power of \a y.
  *
- * \pre x>=0 ou y entier
+ * \pre x>=0 or y is an integer
  */
 inline apfloat
 pow(apfloat x,apfloat y)
@@ -93,8 +98,9 @@ pow(apfloat x,apfloat y)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Returns the minimum of two real numbers.
  * \ingroup GroupMathUtils
  */
 inline apfloat
@@ -105,8 +111,9 @@ min(apfloat a,apfloat b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Returns the maximum of two real numbers.
  * \ingroup GroupMathUtils
  */
 inline apfloat
@@ -117,8 +124,9 @@ max(apfloat a,apfloat b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Returns the absolute value of a real number.
  * \ingroup GroupMathUtils
  */
 inline apfloat
@@ -135,4 +143,4 @@ abs(apfloat a)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

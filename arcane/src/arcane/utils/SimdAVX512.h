@@ -7,22 +7,23 @@
 /*---------------------------------------------------------------------------*/
 /* SimdAVX512.h                                                (C) 2000-2016 */
 /*                                                                           */
-/* Vectorisation pour l'AVX512.                                              */
+/* Vectorization for AVX512.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMDAVX512_H
 #define ARCANE_UTILS_SIMDAVX512_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Ce fichier ne doit pas être inclus directement.
- * Utiliser 'Simd.h' à la place.
+ * This file should not be included directly.
+ * Use 'Simd.h' instead.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// A définir si on souhaite utiliser directement les instructions
-// de scatter/gather de l'AVX512.
-// Il n'y a priori aucune raison de ne pas le faire.
+// Define if you wish to directly use the AVX512 scatter/gather instructions.
+// There is no obvious reason not to do so.
 #define ARCANE_USE_AVX512_SCATTERGATHER
 
 /*---------------------------------------------------------------------------*/
@@ -32,9 +33,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des réels en utilisant la vectorisation du AVX512.
+ * \brief Vectorization of reals using AVX512 vectorization.
  */
 class ARCANE_ALIGNAS_PACKED(64) AVX512SimdReal
 {
@@ -77,14 +79,14 @@ class ARCANE_ALIGNAS_PACKED(64) AVX512SimdReal
   {
   }
 
-  //! Charge les valeurs continues situées à l'adresse \a base qui doit être alignée.
+  //! Loads continuous values located at the address \a base which must be aligned.
   explicit AVX512SimdReal(const Real* base)
   : v0(_mm512_load_pd(base)) { }
 
   Real operator[](Integer i) const { return ((const Real*)&v0)[i]; }
   Real& operator[](Integer i) { return ((Real*)&v0)[i]; }
 
-  // TODO: faire une surcharge qui prend directement un vecteur de Int32 avec alignement.
+  // TODO: create an overload that takes a vector of Int32 with alignment directly.
   void set(ARCANE_RESTRICT Real* base,const ARCANE_RESTRICT Int32* idx) const
   {
 #ifdef ARCANE_USE_AVX512_SCATTERGATHER
@@ -117,7 +119,7 @@ class ARCANE_ALIGNAS_PACKED(64) AVX512SimdReal
 #endif
   }
   
-  //! Stocke les valeurs de l'instance à l'adresse \a base qui doit être alignée.
+  //! Stores the instance values at the address \a base which must be aligned.
   void set(ARCANE_RESTRICT Real* base) const
   {
     _mm512_store_pd(base,v0);

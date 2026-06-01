@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArithmeticException.h                                       (C) 2000-2014 */
 /*                                                                           */
-/* Exception lorsqu'une erreur arithmétique survient.                        */
+/* Exception when an arithmetic error occurs.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARITHMETICEXCEPTION_H
 #define ARCANE_UTILS_ARITHMETICEXCEPTION_H
@@ -25,9 +25,9 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une erreur arithmétique survient.
+ * \brief Exception when an arithmetic error occurs.
  *
- * Cette exception survient notamment lorsqu'un signal SIGFPE survient
+ * This exception occurs notably when a SIGFPE signal occurs
  */
 class ARCANE_UTILS_EXPORT ArithmeticException
 : public Exception
@@ -58,5 +58,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MD5HashAlgorithm.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Calcule la fonction de hashage MD5.                                       */
+/* Calculates the MD5 hashing function.                                      */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/StdHeader.h"

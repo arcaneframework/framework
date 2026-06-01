@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MultiBuffer.h                                               (C) 2000-2011 */
 /*                                                                           */
-/* Classe template d'un tableau avec tampon.                                 */
+/* Template class of an array with a buffer.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MULTIBUFFER_H
 #define ARCANE_UTILS_MULTIBUFFER_H
@@ -25,19 +25,19 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Tampon pour allocation multiple
+ * \brief Buffer for multiple allocation
 
- Cette classe gère une liste pré-alloué d'élément afin de limiter
- les appels multiples à des allocations (new() ou malloc()).
+ This class manages a pre-allocated list of elements in order to limit
+ multiple calls to allocations (new() or malloc()).
 
- Les pré-allocation se font par bloc de \a m_buffer_size éléments
+ Pre-allocations are done in blocks of \a m_buffer_size elements
 
- Pour être utilisé par cette classe, un type doit posséder un constructeur
- par défaut et un opérateur de recopie. Cette classe garantit que les
- pointeurs retournés restent valides tant que cette instance existe.
+ To be used by this class, a type must possess a default constructor
+ and a copy operator. This class guarantees that the
+ returned pointers remain valid as long as this instance exists.
 
- Les constructeurs et opérateurs de recopie ne dupliquent pas la mémoire
- mais se contentent juste de conserver la taille du tampon.
+ The constructors and copy operators do not duplicate memory
+ but simply retain the buffer size.
 */
 template<class T>
 class MultiBufferT
@@ -56,7 +56,8 @@ class MultiBufferT
   : m_buffer_size(buf_size), m_current_buffer_size(0), m_nb_in_buffer(0),m_current_buffer(0)
     {
     }
-  //! Constructeur de recopie
+
+  //! Copy constructor
   MultiBufferT(const MultiBufferT<T>& ref)
   : m_buffer_size(ref.m_buffer_size), m_current_buffer_size(0), m_nb_in_buffer(0), m_current_buffer(0)
     {
@@ -66,7 +67,8 @@ class MultiBufferT
       _freeAllocatedBuffers();
     }
  public:
-  //! Opérateur de recopie (interdit)
+
+  //! Copy assignment operator (forbidden)
   void operator=(const MultiBufferT<T>& ref)
     {
       if (&ref==this)
@@ -75,7 +77,8 @@ class MultiBufferT
       m_buffer_size = ref.m_buffer_size;
     }
  public:
-  //! Alloue un nouvel élément
+
+  //! Allocates a new element
   T* allocOne()
     {
       if (!m_current_buffer)
@@ -83,14 +86,15 @@ class MultiBufferT
       T* v = &(*m_current_buffer)[m_nb_in_buffer];
       ++m_nb_in_buffer;
       if (m_nb_in_buffer==m_current_buffer_size)
-        m_current_buffer = 0; // Indique que le tampon actuel est plein
+        m_current_buffer = 0; // Indicates that the current buffer is full
       return v;
     }
-  //! Alloue \a n éléments
+
+  //! Allocates \a n elements
   ArrayView<T> allocMany(Integer n)
     {
-      // Si le nombre d'éléments souhaités est supérieure à la taille
-      // du tampon, alloue spécifiquement un tampon de la bonne taille
+      // If the desired number of elements is greater than the size
+      // of the buffer, specifically allocate a buffer of the correct size
       if (n>m_current_buffer_size){
         BufferType* bt = new BufferType(n);
         m_allocated_buffers.add(bt);
@@ -98,14 +102,14 @@ class MultiBufferT
       }
       if (!m_current_buffer)
         _allocateCurrentBuffer();
-      // Si le tampon actuel n'est pas assez grand pour contenir les
-      // \a n éléments souhaités, en alloue un autre
+      // If the current buffer is not large enough to contain the
+      // \a n desired elements, allocate another one
       if ((m_nb_in_buffer+n)>=m_current_buffer_size)
         _allocateCurrentBuffer();
       T* v = &(*m_current_buffer)[m_nb_in_buffer];
       m_nb_in_buffer += n;
       if (m_nb_in_buffer==m_current_buffer_size)
-        m_current_buffer = 0; // Indique que le tampon actuel est plein
+        m_current_buffer = 0; // Indicates that the current buffer is full
       return ArrayView<T>(n,v);
     }
   void clear()
@@ -127,11 +131,11 @@ class MultiBufferT
       m_allocated_buffers.clear();
     }
  private:
-  Integer m_buffer_size; //!< Nombre d'élément d'un tampon
-  Integer m_current_buffer_size; //!< Nombre d'éléments max du tampon courant
-  Integer m_nb_in_buffer; //!< Nombre d'éléments dans le tampon actuel.
-  BufferType* m_current_buffer; //!< Tampon actuel
-  UniqueArray< BufferType* > m_allocated_buffers; //!< Liste de tous les tampons
+  Integer m_buffer_size; //!< Number of elements in a buffer
+  Integer m_current_buffer_size; //!< Maximum number of elements in the current buffer
+  Integer m_nb_in_buffer; //!< Number of elements in the current buffer.
+  BufferType* m_current_buffer; //!< Current buffer
+  UniqueArray< BufferType* > m_allocated_buffers; //!< List of all buffers
  private:
   void _allocateCurrentBuffer()
     {
@@ -150,5 +154,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

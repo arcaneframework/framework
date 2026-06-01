@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumArrayUtils.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Fonctions utilitaires pour NumArray.                                      */
+/* Utility functions for NumArray.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,10 +19,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \namespace Arcane::NumArrayUtils
  *
- * \brief Fonctions utilitaires pour NumArray.
+ * \brief Utility functions for NumArray.
  */
 namespace Arcane::NumArrayUtils
 {
@@ -45,21 +46,21 @@ _readFromText(NumArray<DataType, MDDim1>& num_array, std::istream& input)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Remplit \a v avec les valeurs de input.
+//! Fills \a v with the values from input.
 extern "C++" ARCANE_UTILS_EXPORT void
 readFromText(NumArray<double, MDDim1>& v, std::istream& input)
 {
   _readFromText(v,input);
 }
 
-//! Remplit \a v avec les valeurs de input.
+//! Fills \a v with the values from input.
 extern "C++" ARCANE_UTILS_EXPORT void
 readFromText(NumArray<Int32, MDDim1>& v, std::istream& input)
 {
   _readFromText(v,input);
 }
 
-//! Remplit \a v avec les valeurs de input.
+//! Fills \a v with the values from input.
 extern "C++" ARCANE_UTILS_EXPORT void
 readFromText(NumArray<Int64, MDDim1>& v, std::istream& input)
 {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PlatformUtils.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires dépendant de la plateforme.                         */
+/* Utility functions dependent on the platform.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -78,11 +78,11 @@
 #include <unistd.h>
 #endif
 
-// Support pour gérer les exceptions flottantes:
-// - sous Linux avec la GlibC, cela se fait via les méthodes
-// feenableexcept(), fedisableexcept() et fegetexcept()
-// - sous Win32, cela se fait via la méthode _controlfp() mais pour
-// l'instant ce n'est pas utilisé dans Arcane.
+// Support for handling floating-point exceptions:
+// - under Linux with GlibC, this is done via the methods
+// feenableexcept(), fedisableexcept() and fegetexcept()
+// - under Win32, this is done via the _controlfp() method but for
+// the moment it is not used in Arcane.
 #if defined(ARCANE_OS_LINUX) && defined(__USE_GNU)
 #  include <fenv.h>
 #  define ARCANE_GLIBC_FENV
@@ -262,9 +262,9 @@ resetAlarmTimer(Integer nb_second)
   time_val.it_value.tv_usec    = 0;
   time_val.it_interval.tv_sec  = 0;
   time_val.it_interval.tv_usec = 0;
-  // Utilise le temps virtuel et pas le temps réel.
-  // Cela permet de suspendre temporairement un job (par exemple
-  // pour régler des problèmes systèmes) sans déclencher l'alarme.
+  // Use virtual time and not real time.
+  // This allows temporarily suspending a job (for example
+  // to fix system issues) without triggering the alarm.
   int r = setitimer(ITIMER_VIRTUAL,&time_val,&otime_val);
   if (r!=0)
     cout << "** ERROR in setitimer r=" << r << '\n';
@@ -318,10 +318,10 @@ _readAllFile(StringView filename, bool is_binary, Array<ByteType>& out_bytes)
     // cerr << "** BAD READ\n";
     return true;
   }
-  // Il est possible que le nombre d'octets lus soit inférieur
-  // à la longueur du fichier, notamment sous Windows avec les fichiers
-  // texte et la conversion des retour-chariots. Il faut donc redimensionner
-  // \a bytes à la bonne longueur.
+  // It is possible that the number of bytes read is less
+  // than the file length, especially on Windows with text files
+  // and carriage return conversion. Therefore, it is necessary to resize
+  // the bytes to the correct length.
   size_t nb_read = ifile.gcount();
   out_bytes.resize(nb_read);
   //cerr << "** READ " << file_length << " bytes " << (const char*)(bytes.begin()) << "\n";
@@ -416,7 +416,7 @@ fillCommandLineArguments(StringList& arg_list)
     if (fd<0)
       return;
     ssize_t nb_read = 0;
-    // TODO: traiter les interruptions
+    // TODO: handle interruptions
     while ((nb_read = read(fd, buffer, BUFSIZE)) > 0) {
       buffer[BUFSIZE] = '\0';
       bytes.addRange(Span<const char>(buffer, nb_read));
@@ -505,8 +505,8 @@ getLLDBStack()
   const size_t cmd_size = 4096;
   char cmd[cmd_size + 1];
   long pid = (long)getpid();
-  // Les commandes 'clrthreads', 'clrstack' et 'dumpstack' nécessitent
-  // d'avoir installé 'dotnet-sos'.
+  // The commands 'clrthreads', 'clrstack', and 'dumpstack' require
+  // having installed 'dotnet-sos'.
   snprintf(cmd, cmd_size, "lldb -p %ld -o 'bt' -o 'bt all' -o 'clrthreads' -o 'clrstack' -o 'dumpstack' --batch", pid);
   result = _getDebuggerStack(cmd);
 #endif

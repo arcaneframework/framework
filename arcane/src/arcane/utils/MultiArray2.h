@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MultiArray2.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Tableau 2D à taille multiple.                                             */
+/* Multi-sized 2D Array.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MULTIARRAY2_H
 #define ARCANE_UTILS_MULTIARRAY2_H
@@ -27,34 +27,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Collection
- * \brief Classe de base des tableau 2D à taille multiple.
+ * \brief Base class for multi-sized 2D arrays.
  *
- * Cette classe gère les tableaux 2D dont le nombre d'éléments de la
- * deuxième dimension est variable.
- * Par exemple:
+ * This class manages 2D arrays where the number of elements in the
+ * second dimension is variable.
+ * For example:
  * \code
- *  UniqueArray<Int32> sizes(3); // Tableau avec 3 éléments
+ *  UniqueArray<Int32> sizes(3); // Array with 3 elements
  *  sizes[0] = 1; sizes[1] = 2; sizes[2] = 4;
- *  // Construit le tableau avec sizes comme tailles
+ *  // Constructs the array with sizes as dimensions
  *  MultiArray2<Int32> v(sizes);
- *  info() << " size=" << v.dim1Size(); // affiche 3
- *  info() << " size[0]=" << v[0].size(); // affiche 1
- *  info() << " size[1]=" << v[1].size(); // affiche 2
- *  info() << " size[2]=" << v[2].size(); // affiche 4
+ *  info() << " size=" << v.dim1Size(); // displays 3
+ *  info() << " size[0]=" << v[0].size(); // displays 1
+ *  info() << " size[1]=" << v[1].size(); // displays 2
+ *  info() << " size[2]=" << v[2].size(); // displays 4
  * \endcode
  *
- * \note Les indices sont conservés via le type Int32.
- * Le nombre total d'éléments du tableau est donc limité à 2^31
+ * \note Indices are stored using the Int32 type.
+ * The total number of elements in the array is therefore limited to 2^31
  *
- * Il est possible de redimensionner (via la méthode resize()) le
- * tableau tout en conservant ses valeurs mais pour des raisons de performance, ces
- * redimensionnements se font sur tout le tableau (il n'est pas possible
- * de redimensionner uniquement pour un seul élément, par exemple v[5].resize(3)).
+ * It is possible to resize (via the resize() method) the
+ * array while keeping its values, but for performance reasons, these
+ * resizes apply to the entire array (it is not possible
+ * to resize only a single element, for example v[5].resize(3)).
  * 
- * Comme pour Array et Array2, les instances de cette classe ne sont
- * pas copiables ni assignables. Pour obtenir cette fonctionnalité, il faut
- * utiliser la classe SharedMultiArray2 pour une sémantique par référence
- * ou UniqueMultiArray2 pour une sémantique par valeur.
+ * Like Array and Array2, instances of this class are not copyable or assignable. To get this functionality, you must
+ * use the SharedMultiArray2 class for reference semantics
+ * or UniqueMultiArray2 for value semantics.
  */
 template <typename DataType>
 class MultiArray2
@@ -67,7 +66,7 @@ class MultiArray2
  public:
 
   MultiArray2() = default;
-  // TODO: Rendre accessible uniquement à UniqueMultiArray2 ou SharedMultiArray2
+  // TODO: Make accessible only to UniqueMultiArray2 or SharedMultiArray2
   explicit MultiArray2(ConstArrayView<Int32> sizes)
   {
     _resize(sizes);
@@ -81,9 +80,9 @@ class MultiArray2
  protected:
 
   /*!
-   * \brief Constructeur de recopie.
-   * Méthode temporaire à supprimer une fois le constructeur et opérateur de recopie
-   * supprimé.
+   * \brief Copy constructor.
+   * Temporary method to be removed once the copy constructor and copy operator
+   * are deleted.
    */
   MultiArray2(const MultiArray2<DataType>& rhs, bool do_clone)
   : m_buffer(do_clone ? rhs.m_buffer.clone() : rhs.m_buffer)
@@ -102,7 +101,7 @@ class MultiArray2
   , m_indexes(allocation_options)
   , m_sizes(allocation_options)
   {}
-  // TODO: Rendre accessible uniquement à UniqueMultiArray2 ou SharedMultiArray2
+  // TODO: Make accessible only to UniqueMultiArray2 or SharedMultiArray2
   MultiArray2(const MemoryAllocationOptions& allocation_options, ConstArrayView<Int32> sizes)
   : MultiArray2(allocation_options)
   {
@@ -122,17 +121,17 @@ class MultiArray2
 
  public:
 
-  //! Nombre total d'éléments
+  //! Total number of elements
   Int32 totalNbElement() const { return m_buffer.size(); }
 
-  //! Supprime les éléments du tableau.
+  //! Clears the array elements.
   void clear()
   {
     m_buffer.clear();
     m_indexes.clear();
     m_sizes.clear();
   }
-  //! Remplit les éléments du tableau avec la valeur \a v
+  //! Fills the array elements with the value \a v
   void fill(const DataType& v)
   {
     m_buffer.fill(v);
@@ -152,67 +151,67 @@ class MultiArray2
 
  public:
 
-  //! Nombre d'éléments suivant la première dimension
+  //! Number of elements following the first dimension
   Int32 dim1Size() const { return m_indexes.size(); }
 
-  //! Tableau du nombre d'éléments suivant la deuxième dimension
+  //! Array of the number of elements following the second dimension
   ConstArrayView<Int32> dim2Sizes() const { return m_sizes; }
 
-  //! Opérateur de conversion vers une vue modifiable
+  //! Conversion operator to a mutable view
   operator MultiArray2View<DataType>()
   {
     return view();
   }
 
-  //! Opérateur de conversion vers une vue constante.
+  //! Conversion operator to a constant view.
   operator ConstMultiArray2View<DataType>() const
   {
     return constView();
   }
 
-  //! Vue modifiable du tableau
+  //! Mutable view of the array
   MultiArray2View<DataType> view()
   {
     return MultiArray2View<DataType>(m_buffer, m_indexes, m_sizes);
   }
 
-  //! Vue constante du tableau
+  //! Constant view of the array
   ConstMultiArray2View<DataType> constView() const
   {
     return ConstMultiArray2View<DataType>(m_buffer, m_indexes, m_sizes);
   }
 
-  //! Vue modifiable du tableau
+  //! Mutable view of the array
   JaggedSmallSpan<DataType> span()
   {
     return { m_buffer.smallSpan(), m_indexes, m_sizes };
   }
 
-  //! Vue constante du tableau
+  //! Constant view of the array
   JaggedSmallSpan<const DataType> span() const
   {
     return { m_buffer, m_indexes, m_sizes };
   }
 
-  //! Vue constante du tableau
+  //! Constant view of the array
   JaggedSmallSpan<const DataType> constSpan() const
   {
     return { m_buffer.constSmallSpan(), m_indexes, m_sizes };
   }
 
-  //! Vue du tableau sous forme de tableau 1D
+  //! View of the array as a 1D array
   ArrayView<DataType> viewAsArray()
   {
     return m_buffer.view();
   }
 
-  //! Vue du tableau sous forme de tableau 1D
+  //! View of the array as a 1D array
   ConstArrayView<DataType> viewAsArray() const
   {
     return m_buffer.constView();
   }
 
-  //! Retaille le tableau avec comme nouvelles tailles \a new_sizes
+  //! Resizes the array with new sizes \a new_sizes
   void resize(ConstArrayView<Int32> new_sizes)
   {
     if (new_sizes.empty()) {
@@ -234,14 +233,14 @@ class MultiArray2
   void _resize(ConstArrayView<Int32> ar)
   {
     Integer size1 = ar.size();
-    // Calcule le nombre d'éléments total
-    // TODO: Vérifier qu'on ne dépasse pas la valeur max d'un Int32
+    // Calculates the total number of elements
+    // TODO: Check that we do not exceed the max value of an Int32
     Integer total_size = 0;
     for (Integer i = 0; i < size1; ++i)
       total_size += ar[i];
 
-    // Si on ne change pas le nombre total d'éléments, vérifie
-    // si le resize est nécessaire
+    // If the total number of elements does not change, check
+    // if the resize is necessary
     if (total_size == totalNbElement() && size1 == m_indexes.size()) {
       bool is_same = true;
       for (Integer i = 0; i < size1; ++i)
@@ -257,7 +256,7 @@ class MultiArray2
 
     SharedArray<DataType> new_buffer(m_buffer.allocationOptions(), total_size);
 
-    // Recopie dans le nouveau tableau les valeurs de l'ancien.
+    // Copies the values from the old array to the new one.
     if (old_size1 > size1)
       old_size1 = size1;
     Integer index = 0;
@@ -300,19 +299,20 @@ class MultiArray2
 
  private:
 
-  //! Tableau des Valeurs
+  //! Array of Values
   SharedArray<DataType> m_buffer;
-  //! Tableau des indices dans \a m_buffer du premièr élément de la deuxième dimension
+  //! Array of indices in \a m_buffer of the first element of the second dimension
   SharedArray<Int32> m_indexes;
-  //! Tableau des tailles de la deuxième dimension
+  //! Array of sizes of the second dimension
   SharedArray<Int32> m_sizes;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Tableau 2D à taille multiple avec sémantique par référence.
+ * \brief Multi-sized 2D array with reference semantics.
  */
 template <typename DataType>
 class SharedMultiArray2
@@ -353,7 +353,7 @@ class SharedMultiArray2
 
  public:
 
-  //! Clone le tableau
+  //! Clones the array
   SharedMultiArray2<DataType> clone() const
   {
     return SharedMultiArray2<DataType>(this->constView());
@@ -365,9 +365,10 @@ class SharedMultiArray2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Tableau 2D à taille multiple avec sémantique par valeur.
+ * \brief Multi-sized 2D array with value semantics.
  */
 template <typename DataType>
 class UniqueMultiArray2
@@ -412,7 +413,7 @@ class UniqueMultiArray2
   }
   ThatClass& operator=(ConstMultiArray2View<DataType> view)
   {
-    // TODO: Vérifier que \a view n'est pas dans ce tableau
+    // TODO: Check that \a view is not in this array
     this->_copy(view);
     return (*this);
   }
@@ -426,7 +427,7 @@ class UniqueMultiArray2
 
  public:
 
-  //! Clone le tableau
+  //! Clones the array
   UniqueMultiArray2<DataType> clone() const
   {
     return UniqueMultiArray2<DataType>(this->constView());

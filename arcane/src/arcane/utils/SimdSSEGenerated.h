@@ -1,4 +1,4 @@
-// WARNING: This file is generated. Do not edit.
+﻿// WARNING: This file is generated. Do not edit.
 
 
 /*---------------------------------------------------------------------------*/
@@ -184,4 +184,3 @@ inline SSESimdReal log10 (SSESimdReal a)
   return SSESimdReal::fromScalar(math::log10(za[0]),math::log10(za[1]),math::log10(za[2]),math::log10(za[3]));
 }
 }
-

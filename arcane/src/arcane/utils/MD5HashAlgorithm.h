@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MD5HashAlgorithm.h                                          (C) 2000-2023 */
 /*                                                                           */
-/* Calcule la fonction de hashage MD5.                                       */
+/* Calculates the MD5 hashing function.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MD5HASHALGORITHM_H
 #define ARCANE_UTILS_MD5HASHALGORITHM_H
@@ -25,10 +25,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule la fonction de hashage MD5 d'un tableau.
+ * \brief Calculates the MD5 hashing function of an array.
  *
- * Pour cet algorithme, la taille de la clé est de 16 octets.
+ * For this algorithm, the key size is 16 bytes.
  */
 class ARCANE_UTILS_EXPORT MD5HashAlgorithm
 : public IHashAlgorithm

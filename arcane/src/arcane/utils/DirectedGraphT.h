@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DirectedGraphT.h                                             (C) 2000-2017 */
+/* DirectedGraphT.h                                            (C) 2000-2017 */
 /*                                                                           */
 /* Comment on file content.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -36,11 +36,11 @@ class DirectedGraphT
 {
 public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   DirectedGraphT(ITraceMng* trace_mng)
   : GraphBaseT<VertexType,EdgeType>(trace_mng) {}
 
-  /** Destructeur de la classe */
+  /** Destructor of the class */
   virtual ~DirectedGraphT() {}
 };
 

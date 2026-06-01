@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneGlobal.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales de Arcane.                                         */
+/* General declarations for Arcane.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARCANEGLOBAL_H
 #define ARCANE_UTILS_ARCANEGLOBAL_H
@@ -16,8 +16,8 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 
-// Infos globales sur les options de compilation comme
-// les threads, le mode debug, ...
+// Global information about compilation options such as
+// threads, debug mode, etc.
 #include "arcane_core_config.h"
 
 #ifdef ARCCORE_OS_LINUX
@@ -46,8 +46,9 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: supprimer l'inclusion de <iosfwd> et les using.
-// Pour l'instant (2022), on supprime ces inclusions uniquement pour Arcane.
+
+// TODO: remove the inclusion of <iosfwd> and the using statements.
+// For now (2022), these inclusions are removed only for Arcane.
 
 #ifndef ARCANE_NO_USING_FOR_STREAM
 #include <iosfwd>
@@ -199,52 +200,52 @@ const double cgrPI = 3.14159265358979323846;
 #endif
 
 /*!
- * \brief Type des entiers utilisés pour stocker les identifiants locaux
- * des entités.
+ * \brief Type of integers used to store local identifiers
+ * of entities.
  *
- * Les valeurs que peut prendre ce type indique combien d'entités
- * pourront être présentes sur un sous-domaine.
+ * The values this type can take indicate how many entities
+ * can be present on a subdomain.
  */
 using LocalIdType = Int32;
 
 /*!
- * \brief Type des entiers utilisés pour stocker les identifiants uniques
- * (globaux) des entités.
+ * \brief Type of integers used to store unique
+ * (global) identifiers of entities.
  *
- * Les valeurs que peut prendre ce type indique combien d'entités
- * pourront être présentes sur le domaine initial.
+ * The values this type can take indicate how many entities
+ * can be present on the initial domain.
  */
 using UniqueIdType = Int64;
 
 /*!
  * \def ARCANE_INTEGER_MAX
- * \brief Macro indiquant la valeur maximal que peut prendre le type #Integer
+ * \brief Macro indicating the maximum value that the #Integer type can take
  */
 
 /*!
  * \typedef Int64
- * \brief Type entier signé sur 64 bits.
+ * \brief 64-bit signed integer type.
  */
 /*!
  * \typedef Int32
- * \brief Type entier signé sur 32 bits.
+ * \brief 32-bit signed integer type.
  */
 /*!
  * \typedef Int16
- * \brief Type entier signé sur 16 bits.
+ * \brief 16-bit signed integer type.
  */
 /*!
  * \typedef Integer
- * \brief Type représentant un entier
+ * \brief Type representing an integer
  *
- * Si la macro ARCANE_64BIT est définie, le type Integer correspond à un
- * entier Int64, sinon à un entier Int32.
+ * If the ARCANE_64BIT macro is defined, the Integer type corresponds to an
+ * Int64 integer, otherwise to an Int32 integer.
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Encapsulation de la fonction C printf
+//! Encapsulation of the C printf function
 extern "C++" ARCANE_UTILS_EXPORT void
 arcanePrintf(const char*,...);
 
@@ -252,14 +253,14 @@ arcanePrintf(const char*,...);
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Passe en mode pause ou lance une erreur fatale.
+ * \brief Enters pause mode or throws a fatal error.
  *
- * Si le code est compilé en mode \a debug (ARCANE_DEBUG est définie) ou
- * en mode \a check (ARCANE_CHECK est définie), met le programme en pause
- * pour éventuellement connecter un débugger dessus.
+ * If the code is compiled in \a debug mode (ARCANE_DEBUG is defined) or
+ * in \a check mode (ARCANE_CHECK is defined), it pauses the program
+ * potentially allowing a debugger to connect to it.
  *
- * En mode normal, lance une exception FatalErrorException avec le message
- * \a msg comme argument.
+ * In normal mode, it throws a FatalErrorException with the message
+ * \a msg as an argument.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneDebugPause(const char* msg);
@@ -276,12 +277,12 @@ _internalArcaneMathError(long double arg_value1,long double arg_value2,const cha
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Signale un argument invalide d'une fonction mathématique.
+ * \brief Signals an invalid argument in a mathematical function.
  *
- * Une fois le message affiché, appelle arcaneDebugPause()
+ * After displaying the message, it calls arcaneDebugPause()
  *
- * \param arg_value valeur de l'argument invalide.
- * \param func_name nom de la fonction mathématique.
+ * \param arg_value value of the invalid argument.
+ * \param func_name name of the mathematical function.
  */
 ARCCORE_HOST_DEVICE inline void
 arcaneMathError(long double arg_value,const char* func_name)
@@ -295,13 +296,13 @@ arcaneMathError(long double arg_value,const char* func_name)
 }
 
 /*!
- * \brief Signale un argument invalide d'une fonction mathématique.
+ * \brief Signals an invalid argument in a mathematical function.
  *
- * Une fois le message affiché, appelle arcaneDebugPause()
+ * After displaying the message, it calls arcaneDebugPause()
  *
- * \param arg_value1 valeur du premier argument invalide.
- * \param arg_value2 valeur du second argument invalide.
- * \param func_name nom de la fonction mathématique.
+ * \param arg_value1 value of the first invalid argument.
+ * \param arg_value2 value of the second invalid argument.
+ * \param func_name name of the mathematical function.
  */
 ARCCORE_HOST_DEVICE inline void
 arcaneMathError(long double arg_value1,long double arg_value2,const char* func_name)
@@ -317,15 +318,16 @@ arcaneMathError(long double arg_value1,long double arg_value2,const char* func_n
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Signale une fonction non implémentée.
+ * \brief Signals an unimplemented function.
  *
- * Une fois le message affiché, appelle arcaneDebugPause()
+ * After displaying the message, it calls arcaneDebugPause()
  *
- * \param file nom du fichier contenant la fonction
- * \param func nom de la fonction
- * \param numéro de ligne
- * \param msg message éventuel à afficher (0 si aucun)
+ * \param file name of the file containing the function
+ * \param func name of the function
+ * \param line number
+ * \param msg optional message to display (0 if none)
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneNotYetImplemented(const char* file,const char* func,unsigned long line,const char* msg);
@@ -333,7 +335,7 @@ arcaneNotYetImplemented(const char* file,const char* func,unsigned long line,con
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Signale l'utilisation d'une fonction obsolète
+//! Signals the use of a deprecated function
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneDeprecated(const char* file,const char* func,unsigned long line,const char* text);
 
@@ -341,137 +343,130 @@ arcaneDeprecated(const char* file,const char* func,unsigned long line,const char
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Utilisation d'un objet non référencé.
+ * \brief Use of an unreferenced object.
  *
- * Signale une tentative d'utilisation d'un objet qui ne devrait plus être
- * référencé. Affiche un message et appelle arcaneDebugPause() si demandé et
- * ensuite lance une exception FatalErrorException.
+ * Signals an attempt to use an object that should no longer be
+ * referenced. Displays a message and calls arcaneDebugPause() if requested,
+ * and then throws a FatalErrorException.
  *
- * \param ptr adresse de l'objet
+ * \param ptr address of the object
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneNoReferenceError(const void* ptr);
 
 /*!
- * \brief Utilisation d'un objet non référencé.
+ * \brief Use of an unreferenced object.
  *
- * Signale une tentative d'utilisation d'un objet qui ne devrait plus être
- * référencé. Affiche un message et appelle arcaneDebugPause() si demandé et
- * ensuite appelle std::terminate().
+ * Signals an attempt to use an object that should no longer be
+ * referenced. Displays a message and calls arcaneDebugPause() if requested,
+ * and then calls std::terminate().
  *
- * \param ptr adresse de l'objet
+ * \param ptr address of the object
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneNoReferenceErrorCallTerminate(const void* ptr);
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that \a size can be converted into an 'Integer' to serve
+ * as the size of an array. If possible, returns \a size converted to an 'Integer'.
+ * Otherwise, throws an ArgumentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long long size);
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that \a size can be converted into an 'Integer' to serve
+ * as the size of an array. If possible, returns \a size converted to an 'Integer'.
+ * Otherwise, throws an ArgumentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long long size);
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that \a size can be converted into an 'Integer' to serve
+ * as the size of an array. If possible, returns \a size converted to an 'Integer'.
+ * Otherwise, throws an ArgumentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long size);
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that \a size can be converted into an 'Integer' to serve
+ * as the size of an array. If possible, returns \a size converted to an 'Integer'.
+ * Otherwise, throws an ArgumentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long size);
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that \a size can be converted into an 'Integer' to serve
+ * as the size of an array. If possible, returns \a size converted to an 'Integer'.
+ * Otherwise, throws an ArgumentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned int size);
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that \a size can be converted into an 'Integer' to serve
+ * as the size of an array. If possible, returns \a size converted to an 'Integer'.
+ * Otherwise, throws an ArgumentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(int size);
 
 /*!
- * \brief Vérifie que \a ptr est aligné sur \a alignment octets.
- * Si ce n'est pas le cas, Sinon, lance une exception de type BadAlignmentException.
+ * \brief Checks that \a ptr is aligned on \a alignment bytes.
+ * If not, throws a BadAlignmentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneCheckAlignment(const void* ptr,Integer alignment);
 
 /*!
- * \brief Vrai si on est en mode vérification.
+ * \brief True if running in check mode.
  *
- * Ce mode est actif si la macro ARCANE_CHECK est définie
- * ou si la méthode arcaneSetCheck() a été positionnée a vrai.
+ * This mode is active if the ARCANE_CHECK macro is defined
+ * or if the arcaneSetCheck() method has been set to true.
  */
 extern "C++" ARCANE_UTILS_EXPORT 
 bool arcaneIsCheck();
 
 /*!
- * \brief Active ou désactive le mode vérification.
+ * \brief Activates or deactivates verification mode.
  *
- * Le mode vérification est toujours actif si la macro ARCANE_CHECK est définie.
- * Sinon, il est possible de l'activer avec cette méthode. Cela permet
- * d'activer certains tests même en mode optimisé.
+ * Verification mode is always active if the ARCANE_CHECK macro is defined.
+ * Otherwise, it is possible to activate it using this method. This allows
+ * certain tests to be activated even in optimized mode.
  */
 extern "C++" ARCANE_UTILS_EXPORT 
 void arcaneSetCheck(bool v);
 
 /*!
- * \brief Vrai si la macro ARCANE_DEBUG est définie
+ * \brief True if the ARCANE_DEBUG macro is defined
  */
 extern "C++" ARCANE_UTILS_EXPORT
 bool arcaneIsDebug();
 
 /*!
- * \brief Vrai si arcane est compilé avec le support des threads ET qu'ils sont actifs
+ * \brief True if arcane is compiled with thread support AND they are active
  */
 extern "C++" ARCANE_UTILS_EXPORT 
 bool arcaneHasThread();
 
 /*!
- * \brief Active ou désactive le support des threads.
+ * \brief Activates or deactivates thread support.
  *
- * Cette fonction ne doit être appelée que lors de l'initialisation
- * de l'application (ou avant) et ne pas être modifiée par la suite.
- * L'activation des threads n'est possible que si une implémentation
- * des threads existe sur la plate-forme et que Arcane a été compilé
- * avec ce support.
+ * This function should only be called during application initialization
+ * (or before) and must not be modified afterward.
+ * Thread activation is only possible if a thread implementation
+ * exists on the platform and Arcane was compiled with this support.
  */
 extern "C++" ARCANE_UTILS_EXPORT 
 void arcaneSetHasThread(bool v);
 
 /*!
- * \brief Retourne l'identifiant du thread courant.
+ * \brief Returns the ID of the current thread.
  *
- * Retourne toujours 0 si arcaneHasThread() est faux.
+ * Always returns 0 if arcaneHasThread() is false.
  */
 extern "C++" ARCANE_UTILS_EXPORT
 Int64 arcaneCurrentThread();
@@ -523,21 +518,20 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #define ARCANE_DEPRECATED_LONG_TERM(reason)
 #else
 /*!
- * \brief Macro pour l'attribut 'deprecated' à long terme.
+ * \brief Macro for long-term 'deprecated' attribute.
  *
- * Cette macro est pour indiquer les types ou fonctions
- * obsolète et donc qu'il est préférable de ne pas utiliser mais qui
- * ne seront pas supprimés avant plusieurs versions.
+ * This macro is used to indicate types or functions
+ * that are obsolete and therefore preferably should not be used, but
+ * will not be removed for several versions.
  */
 #define ARCANE_DEPRECATED_LONG_TERM(reason) [[deprecated(reason)]]
 #endif
 
-// Définir cette macro si on souhaite supprimer de la compilation les
-// méthodes et types obsolètes.
+// Define this macro if you wish to remove obsolete methods and types from compilation.
 #define ARCANE_NO_DEPRECATED
 
-// Si la macro est définie, ne notifie pas des méthodes obsolètes des anciennes
-// classes tableaux.
+// If the macro is defined, do not notify about deprecated methods of old
+// array classes.
 #ifdef ARCANE_NO_NOTIFY_DEPRECATED_ARRAY
 #define ARCANE_DEPRECATED_ARRAY
 #else
@@ -547,52 +541,48 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Les macros suivantes permettent de de créer un identifiant en suffixant
-// le numéro de ligne du fichier. Cela permet d'avoir un identifiant unique
-// pour un fichier et est utilisé par exemple pour générer des noms
-// de variable globale pour l'enregistrement des services.
-// La macro a utiliser est ARCANE_JOIN_WITH_LINE(name).
+// The following macros allow creating an identifier by suffixing the file line number.
+// This allows having a unique identifier for a file and is used, for example,
+// to generate global variable names for service registration.
+// The macro to use is ARCANE_JOIN_WITH_LINE(name).
 #define ARCANE_JOIN_HELPER2(a,b) a ## b
 #define ARCANE_JOIN_HELPER(a,b) ARCANE_JOIN_HELPER2(a,b)
 #define ARCANE_JOIN_WITH_LINE(a) ARCANE_JOIN_HELPER(a,__LINE__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// La macro ARCANE_NORETURN utilise l'attribut [[noreturn]] du C++11 pour
-// indiquer qu'une fonction ne retourne pas.
+// The ARCANE_NORETURN macro uses the C++11 [[noreturn]] attribute to indicate that a function does not return.
 #define ARCANE_NORETURN ARCCORE_NORETURN
 
-//! Macro permettant de spécifier le mot-clé 'constexpr' du C++11
+//! Macro allowing specification of the C++11 'constexpr' keyword
 #define ARCANE_CONSTEXPR ARCCORE_CONSTEXPR
 
-// Le C++11 définit un mot clé 'noexcept' pour indiquer qu'une méthode ne
-// renvoie pas d'exceptions. Malheureusement, comme le support du C++11
-// est fait de manière partielle par les compilateurs, cela ne marche pas
-// pour tous. En particulier, icc 13, 14 et 15 ne supportent pas cela, ni
-// Visual Studio 2013 et antérieurs.
+// C++11 defines a 'noexcept' keyword to indicate that a method does not throw exceptions.
+// Unfortunately, since C++11 support is partial across compilers, this does not work
+// for everyone. In particular, icc 13, 14, and 15 do not support this, nor do
+// Visual Studio 2013 and earlier.
 #define ARCANE_NOEXCEPT ARCCORE_NOEXCEPT
 #define ARCANE_NOEXCEPT_FALSE ARCCORE_NOEXCEPT_FALSE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Support pour l'alignement.
-// le C++11 utilise le mot clé alignas pour spécifier l'alignement.
-// Cela fonctionne avec GCC 4.9+ et Visual Studio 2015. Cela ne fonctionne
-// pas avec Visual Studio 2013. Donc pour Visual Studio on utilise dans tous
-// les cas __declspec qui fonctionne toujours. Sous Linux, __attribute__ fonctionne
-// aussi toujours donc on utilise cela. A noter que les structures Simd ont besoin
-// de l'attribut 'packed' qui n'existe que avec GCC et Intel. Il ne semble pas y avoir
-// d'équivalent avec MSVC.
+// Support for alignment.
+// C++11 uses the alignas keyword to specify alignment.
+// This works with GCC 4.9+ and Visual Studio 2015. It does not work with Visual Studio 2013.
+// Therefore, for Visual Studio, we always use __declspec, which always works.
+// Under Linux, __attribute__ also always works, so we use that. Note that SIMD structures
+// require the 'packed' attribute, which only exists with GCC and Intel. There seems
+// to be no equivalent with MSVC.
 #ifdef _MSC_VER
-//! Macro pour garantir le compactage et l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the packing and alignment of a class to \a value bytes
 #  define ARCANE_ALIGNAS(value) __declspec(align(value))
-//! Macro pour garantir l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the alignment of a class to \a value bytes
 #  define ARCANE_ALIGNAS_PACKED(value) __declspec(align(value))
 #else
-//! Macro pour garantir le compactage et l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the packing and alignment of a class to \a value bytes
 #  define ARCANE_ALIGNAS_PACKED(value) __attribute__ ((aligned (value),packed))
-//! Macro pour garantir l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the alignment of a class to \a value bytes
 #  define ARCANE_ALIGNAS(value) __attribute__ ((aligned (value)))
 #endif
 
@@ -617,11 +607,10 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Signalue l'utilisation d'un pointeur nul.
+ * \brief Signals the use of a null pointer.
  *
- * Signale une tentative d'utilisation d'un pointeur nul.
- * Affiche un message, appelle arcaneDebugPause() et lance une exception
- * de type FatalErrorException.
+ * Signals an attempt to use a null pointer.
+ * Displays a message, calls arcaneDebugPause(), and throws a FatalErrorException.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneNullPointerError [[noreturn]] ();
@@ -629,15 +618,14 @@ arcaneNullPointerError [[noreturn]] ();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Signalee l'utilisation d'un pointeur nul en envoyant une exception
+ * \brief Signals the use of a null pointer by throwing an exception
  *
- * Signale une tentative d'utilisation d'un pointeur nul.
- * Lance une exception de type FatalErrorException.
+ * Signals an attempt to use a null pointer.
+ * Throws a FatalErrorException.
  *
- * Dans l'exception, affiche \a text si non nul, sinon affiche \a ptr_name.
+ * In the exception, displays \a text if not null, otherwise displays \a ptr_name.
  *
- * Normalement cette méthode ne doit pas être appelée directement mais
- * via la macro ARCANE_CHECK_POINTER.
+ * Normally, this method should not be called directly but via the ARCANE_CHECK_POINTER macro.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
@@ -645,7 +633,7 @@ arcaneThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie qu'un pointeur n'est pas nul.
+ * \brief Checks that a pointer is not null.
  */
 static inline void
 arcaneCheckNull(const void* ptr)
@@ -657,12 +645,12 @@ arcaneCheckNull(const void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Retourne la taille avec padding pour une taille \a size.
+ * \brief Returns the size with padding for a size \a size.
  *
- * La valeurs retournée est un multiple de SIMD_PADDING_SIZE et vaut:
- * - 0 si \a size est inférieur ou égal à 0.
- * - \a size si \a size est un multiple de SIMD_PADDING_SIZE.
- * - le multiple de SIMD_PADDING_SIZE immédiatement supérieur à \a size sinon.
+ * The returned value is a multiple of SIMD_PADDING_SIZE and is:
+ * - 0 if \a size is less than or equal to 0.
+ * - \a size if \a size is a multiple of SIMD_PADDING_SIZE.
+ * - the multiple of SIMD_PADDING_SIZE immediately greater than \a size otherwise.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneSizeWithPadding(Integer size);
@@ -671,7 +659,7 @@ arcaneSizeWithPadding(Integer size);
 /*---------------------------------------------------------------------------*/
 
 /*
- * Macros utilisées pour le débug.
+ * Macros used for debugging.
  */
 #ifdef ARCANE_DEBUG_ASSERT
 extern "C++" ARCANE_UTILS_EXPORT void _doAssert(const char*,const char*,const char*,size_t);
@@ -708,21 +696,21 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Macro pour envoyer une exception avec formattage.
+ * \brief Macro for throwing an exception with formatting.
  *
- * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés pour formatter un message d'erreur via la
- * méthode String::format().
+ * \a exception_class is the exception type. The following arguments of
+ * the macro are used to format an error message via the
+ * String::format() method.
  */
 #define ARCANE_THROW(exception_class,...) \
   ARCCORE_THROW(exception_class,__VA_ARGS__)
 
 /*!
- * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
+ * \brief Macro for throwing an exception with formatting if \a cond is true.
  *
- * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés pour formatter un message d'erreur via la
- * méthode String::format().
+ * \a exception_class is the exception type. The following arguments of
+ * the macro are used to format an error message via the
+ * String::format() method.
  *
  * \sa ARCANE_THROW
  */
@@ -732,19 +720,19 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Macro envoyant une exception FatalErrorException.
+ * \brief Macro throwing a FatalErrorException.
  *
- * Les arguments de la macro sont utilisés pour formatter un message
- * d'erreur via la méthode String::format().
+ * The macro arguments are used to format an error message
+ * via the String::format() method.
  */
 #define ARCANE_FATAL(...) \
   ARCCORE_FATAL(__VA_ARGS__)
 
 /*!
- * \brief Macro envoyant une exception FatalErrorException si \a cond est vrai
+ * \brief Macro throwing a FatalErrorException if \a cond is true
  *
- * Les arguments de la macro sont utilisés pour formatter un message
- * d'erreur via la méthode String::format().
+ * The macro arguments are used to format an error message
+ * via the String::format() method.
  *
  * \sa ARCANE_FATAL
  */
@@ -754,10 +742,10 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie qu'un pointeur n'est pas nul.
+ * \brief Checks that a pointer is not null.
  *
- * Si le pointeur est nul, appelle arcaneThrowNullPointerError().
- * Sinon, retourne le pointeur.
+ * If the pointer is null, it calls arcaneThrowNullPointerError().
+ * Otherwise, it returns the pointer.
  */
 static inline void*
 arcaneThrowIfNull(void* ptr,const char* ptr_name,const char* text)
@@ -770,10 +758,10 @@ arcaneThrowIfNull(void* ptr,const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie qu'un pointeur n'est pas nul.
+ * \brief Checks that a pointer is not null.
  *
- * Si le pointeur est nul, appelle à arcaneThrowNullPointerError().
- * Sinon, retourne le pointeur.
+ * If the pointer is null, it calls arcaneThrowNullPointerError().
+ * Otherwise, it returns the pointer.
  */
 static inline const void*
 arcaneThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
@@ -786,10 +774,10 @@ arcaneThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vérifie qu'un pointeur n'est pas nul.
+ * \brief Checks that a pointer is not null.
  *
- * Si le pointeur est nul, appelle à arcaneThrowNullPointerError().
- * Sinon, retourne le pointeur.
+ * If the pointer is null, it calls arcaneThrowNullPointerError().
+ * Otherwise, it returns the pointer.
  */
 template<typename T> inline T*
 arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
@@ -802,8 +790,8 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Macro retournant le pointeur \a ptr s'il est non nul
- * ou lancant une exception s'il est nul.
+ * \brief Macro returning the pointer \a ptr if it is not null
+ * or throwing an exception if it is null.
  *
  * \sa arcaneThrowIfNull().
  */
@@ -811,8 +799,8 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
   arcaneThrowIfNull(ptr,#ptr,nullptr)
 
 /*!
- * \brief Macro retournant le pointeur \a ptr s'il est non nul
- * ou lancant une exception s'il est nul.
+ * \brief Macro returning the pointer \a ptr if it is not null
+ * or throwing an exception if it is null.
  *
  * \sa arcaneThrowIfNull().
  */
@@ -822,19 +810,18 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Signale une erreur de débordement.
+ * \brief Signals an overflow error.
  *
- * Signale un débordement de tableau. Affiche un message et appelle
- * arcaneDebugPause().
+ * Signals an array overflow. Displays a message and calls arcaneDebugPause().
  *
- * \param i indice invalide
- * \param max_size nombre d'éléments du tableau
+ * \param i invalid index
+ * \param max_size number of elements in the array
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneRangeError [[noreturn]] (Int64 i,Int64 max_size);
 
 /*!
- * \brief Vérifie un éventuel débordement de tableau.
+ * \brief Checks for a possible array overflow.
  */
 static inline constexpr ARCCORE_HOST_DEVICE void
 arcaneCheckAt(Int64 i,Int64 max_size)
@@ -862,4 +849,4 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

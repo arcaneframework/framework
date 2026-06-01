@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyUtils.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
+/* Classes managing concurrency (tasks, parallel loops, ...)                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_CONCURRENCYUTILS_H
 #define ARCANE_UTILS_CONCURRENCYUTILS_H
@@ -30,9 +30,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range given by \a loop_ranges.
  */
 template<int RankValue,typename LambdaType,typename... ReducerArgs> inline void
 arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -45,9 +46,10 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range given by \a loop_ranges.
  */
 template<int RankValue,typename LambdaType,typename... ReducerArgs> inline void
 arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -60,9 +62,10 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
@@ -75,9 +78,10 @@ arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
@@ -90,9 +94,10 @@ arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range given by \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
 arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -103,9 +108,10 @@ arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range given by \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
 arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
@@ -122,4 +128,4 @@ arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

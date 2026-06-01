@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayView.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Types définissant les vues de tableaux C.                                 */
+/* Types defining C array views.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARRAYVIEW_H
 #define ARCANE_UTILS_ARRAYVIEW_H
@@ -27,22 +27,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique à \a ids un remplissage en fin de tableau.
+ * \brief Applies padding at the end of the array \a ids.
  *
- * Cette méthode remplit les éléments de \a ids après la dernière valeur
- * pour que \a ids ait un nombre d'éléments valide multiple de la taille
- * d'un vecteur Simd.
+ * This method fills the elements of \a ids after the last value
+ * so that \a ids has a valid number of elements that is a multiple of the size
+ * of a Simd vector.
  *
- * Le tableau associé à la vue doit avoir sufisamment de mémoire allouée
- * pour remplir les éléments de padding sinon cela conduit à un
- * débordement de tableau.
+ * The array associated with the view must have enough allocated memory
+ * to fill the padding elements, otherwise it leads to an
+ * array overflow.
  *
- * Le remplissage se fait avec comme valeur celle du dernier élément
- * valide de \a ids.
+ * The padding is done using the value of the last element
+ * of \a ids.
  *
- * Par exemple, si ids.size()==5 et que la taille de vecteur Simd est de 8,
- * alors ids[5], ids[6] et ids[7] sont remplis avec la valeur de ids[4].
+ * For example, if ids.size()==5 and the Simd vector size is 8,
+ * then ids[5], ids[6], and ids[7] are filled with the value of ids[4].
  */
 //@{
 extern ARCANE_UTILS_EXPORT void

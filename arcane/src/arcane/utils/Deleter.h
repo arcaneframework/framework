@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Deleter.h                                                   (C) 2000-2006 */
 /*                                                                           */
-/* Classe utilitaire pour la destruction des objets alloués par new.         */
+/* Utility class for destroying objects allocated by new.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_DELETER_H
 #define ARCANE_UTILS_DELETER_H
@@ -23,9 +23,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe utilitaire pour la destruction des objets alloués par new.
+ * \brief Utility class for destroying objects allocated by new.
  */
 class Deleter
 {
@@ -45,4 +46,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

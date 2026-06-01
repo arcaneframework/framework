@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IThreadMng.h                                                (C) 2000-2008 */
 /*                                                                           */
-/* Interface d'un gestionnaire de thread.                                    */
+/* Interface of a thread manager.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ITHREADMNG_H
 #define ARCANE_UTILS_ITHREADMNG_H
@@ -23,8 +23,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un gestionnaire de thread.
+ * \brief Interface of a thread manager.
  */
 class ARCANE_UTILS_EXPORT IThreadMng
 {

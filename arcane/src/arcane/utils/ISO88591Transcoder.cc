@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISO88591Transcoder.cc                                       (C) 2000-2007 */
 /*                                                                           */
-/* Convertisseur ISO-8859-1 depuis/vers UTF-16.                              */
+/* ISO-8859-1 Transcoder from/to UTF-16.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,7 +66,7 @@ transcodeFromUtf16(const UChar* src,Integer src_len,Byte* out)
       *out++ = Byte(*src_current);
     }
     else{
-      // Conversion impossible. Remplace par un caractère blanc
+      // Conversion impossible. Replace with a whitespace character
       has_error = true;
       *out++ = 0x1A;
     }
@@ -84,4 +84,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

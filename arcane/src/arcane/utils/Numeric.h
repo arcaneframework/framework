@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Numeric.h                                                   (C) 2000-2020 */
 /*                                                                           */
-/* Définitions des constantes numériques.                                    */
+/* Numeric constant definitions.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DATATYPE_NUMERIC_H
 #define ARCANE_DATATYPE_NUMERIC_H
@@ -25,29 +25,31 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Opérations de comparaisons pour un type numérique T
+ * \brief Comparison operations for a numeric type T
  *
- * Cette classe définit juste un opérateur de comparaison pour le
- * type 'T' paramètre template. Il existe deux types de comparaisons:
- * - les comparaisons exactes (isEqual());
- * - les comparaisons approximatives (isNearlyEqual()).
+ * This class defines a comparison operator for the
+ * template parameter type 'T'. There are two types of comparisons:
+ * - exact comparisons (isEqual());
+ * - approximate comparisons (isNearlyEqual()).
  *
- * Les deux types de comparaisons sont identiques, sauf pour les
- * types flottants ou équivalents. Dans ce cas, la comparaison exacte
- * compare bit à bit les deux valeurs et la comparaison approximative
- * considère que deux nombres sont égaux si leur différence relative est
- * inférieure à un epsilon près.
+ * Both types of comparisons are identical, except for
+ * floating-point types or equivalents. In this case, the exact comparison
+ * compares the two values bit by bit, and the approximate comparison
+ * considers two numbers equal if their relative difference is
+ * less than an epsilon.
  */
 template<class T>
 class TypeEqualT
 {
  public:
+
   /*!
-   * \brief Compare \a a à zéro.
-   * \retval true si \a a vaut zéro à un epsilon près,
-   * \retval false sinon.
+   * \brief Compares \a a to zero.
+   * \retval true if \a a is zero within an epsilon,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool isNearlyZero (const T& a)
   {
@@ -55,9 +57,9 @@ class TypeEqualT
   }
 
   /*!
-   * \brief Compare \a a à zéro.
-   * \retval true si \a a vaut exactement zéro,
-   * \retval false sinon.
+   * \brief Compares \a a to zero.
+   * \retval true if \a a is exactly zero,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool isZero (const T& a)
   {
@@ -65,9 +67,9 @@ class TypeEqualT
   }
 
   /*!
-   * \brief Compare \a a à \a b.
-   * \retval true si \a a et \b sont égaux à un epsilon près,
-   * \retval false sinon.
+   * \brief Compares \a a to \a b.
+   * \retval true if \a a and \b are equal within an epsilon,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqual(const T& a,const T& b)
   {
@@ -75,9 +77,9 @@ class TypeEqualT
   }
 
   /*!
-   * \brief Compare \a a à \a b.
-   * \retval true si \a a et \b sont égaux à un epsilon près,
-   * \retval false sinon.
+   * \brief Compares \a a to \a b.
+   * \retval true if \a a and \b are equal within an epsilon,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqualWithEpsilon(const T& a,const T& b,const T&)
   {
@@ -85,9 +87,9 @@ class TypeEqualT
   }
 
   /*!
-   * \brief Compare \a a à \a b.
-   * \retval true si \a a et \b sont exactements égaux,
-   * \retval false sinon.
+   * \brief Compares \a a to \a b.
+   * \retval true if \a a and \b are exactly equal,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool isEqual(const T& a,const T& b)
   {
@@ -97,12 +99,13 @@ class TypeEqualT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Définit l'opérateur == pour les flottants.
+ * \brief Defines the == operator for floats.
  *
- * \note A terme, devrait utiliser pour l'epsilon la classe 'numeric_limits'
- * de la STL quand cela sera implémenté.
+ * \note Eventually, it should use the 'numeric_limits' class
+ * from the STL when it is implemented.
  */
 template<class T>
 class FloatEqualT
@@ -116,20 +119,20 @@ class FloatEqualT
   }
   
   /*!
-   * \brief Compare \a a à zéro à \a epsilon près.
+   * \brief Compares \a a to zero within \a epsilon.
    * 
-   * \a epsilon doit être positif.
+   * \a epsilon must be positive.
    *
-   * \retval true si abs(a)<epilon
-   * \retval false sinon
+   * \retval true if abs(a)<epilon
+   * \retval false otherwise
    */
   constexpr ARCCORE_HOST_DEVICE static bool isNearlyZeroWithEpsilon(T a,T epsilon)
   {
     return ( (a<0.) ? a>-epsilon : a<epsilon );
   }
   
-  /*! \brief Compare \a avec \a b*epsilon.
-   * \warning b doit être positif. */
+  /*! \brief Compares \a with \a b*epsilon.
+   * \warning b must be positive. */
   ARCCORE_HOST_DEVICE static bool isNearlyZero(T a,T b)
   {
     return ( (a<0.) ? a>-(b*nepsilon()) : a<(b*nepsilon()) );
@@ -154,9 +157,10 @@ class FloatEqualT
     return a==b;
   }
 };
+
 /*!
  * \internal
- * \brief spécialisation de TypeEqualT pour le type <tt>float</tt>.
+ * \brief Specialization of TypeEqualT for the <tt>float</tt> type.
  */
 template<>
 class TypeEqualT<float>
@@ -165,7 +169,7 @@ class TypeEqualT<float>
 
 /*!
  * \internal
- * \brief spécialisation de TypeEqualT pour le type <tt>double</tt>.
+ * \brief Specialization of TypeEqualT for the <tt>double</tt> type.
  */
 template<>
 class TypeEqualT<double>
@@ -174,7 +178,7 @@ class TypeEqualT<double>
 
 /*!
  * \internal
- * \brief spécialisation de TypeEqualT pour le type <tt>long double</tt>.
+ * \brief Specialization of TypeEqualT for the <tt>long double</tt> type.
  */
 template<>
 class TypeEqualT<long double>
@@ -184,7 +188,7 @@ class TypeEqualT<long double>
 #ifdef ARCANE_REAL_NOT_BUILTIN
 /*!
  * \internal
- * \brief spécialisation de TypeEqualT pour le type <tt>Real</tt>.
+ * \brief Specialization of TypeEqualT for the <tt>Real</tt> type.
  */
 template<>
 class TypeEqualT<Real>
@@ -199,14 +203,14 @@ namespace math
 {
 
 /*!
- * \brief Teste si deux valeurs sont à un peu près égales.
- * Pour les types entiers, cette fonction est équivalente à IsEqual().
- * Dans le cas de types réels, les deux nombres sont considérés comme égaux
- * si et seulement si la valeur absolue de leur différence relative est
- * inférieure à un epsilon donné. Cet
- * epsilon est égal à float_info<_Type>::nearlyEpsilon().
- * \retval true si les deux valeurs sont égales,
- * \retval false sinon.
+ * \brief Tests if two values are approximately equal.
+ * For integer types, this function is equivalent to IsEqual().
+ * In the case of real types, the two numbers are considered equal
+ * if and only if the absolute value of their relative difference is
+ * less than a given epsilon. This
+ * epsilon is equal to float_info<_Type>::nearlyEpsilon().
+ * \retval true if the two values are equal,
+ * \retval false otherwise.
  */
 template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
 isNearlyEqual(const _Type& a,const _Type& b)
@@ -214,7 +218,7 @@ isNearlyEqual(const _Type& a,const _Type& b)
   return TypeEqualT<_Type>::isNearlyEqual(a,b);
 }
 
-//! Surcharge pour les reels
+//! Overload for reals
 constexpr ARCCORE_HOST_DEVICE inline bool
 isNearlyEqual(Real a,Real b)
 {
@@ -222,14 +226,14 @@ isNearlyEqual(Real a,Real b)
 }
 
 /*!
- * \brief Teste si deux valeurs sont à un peu près égales.
- * Pour les types entiers, cette fonction est équivalente à IsEqual().
- * Dans le cas de types réels, les deux nombres sont considérés comme égaux
- * si et seulement si la valeur absolue de leur différence relative est
- * inférieure à \a epsilon.
+ * \brief Tests if two values are approximately equal.
+ * For integer types, this function is equivalent to IsEqual().
+ * In the case of real types, the two numbers are considered equal
+ * if and only if the absolute value of their relative difference is
+ * less than \a epsilon.
  *
- * \retval true si les deux valeurs sont égales,
- * \retval false sinon.
+ * \retval true if the two values are equal,
+ * \retval false otherwise.
  */
 template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
 isNearlyEqualWithEpsilon(const _Type& a,const _Type& b,const _Type& epsilon)
@@ -237,7 +241,7 @@ isNearlyEqualWithEpsilon(const _Type& a,const _Type& b,const _Type& epsilon)
   return TypeEqualT<_Type>::isNearlyEqualWithEpsilon(a,b,epsilon);
 }
 
-//! Surcharge pour les reels
+//! Overload for reals
 ARCCORE_HOST_DEVICE constexpr inline bool
 isNearlyEqualWithEpsilon(Real a,Real b,Real epsilon)
 {
@@ -245,9 +249,9 @@ isNearlyEqualWithEpsilon(Real a,Real b,Real epsilon)
 }
 
 /*!
- * \brief Teste l'égalité bit à bit entre deux valeurs.
- * \retval true si les deux valeurs sont égales,
- * \retval false sinon.
+ * \brief Tests the bit-by-bit equality between two values.
+ * \retval true if the two values are equal,
+ * \retval false otherwise.
  */
 template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
 isEqual(const _Type& a,const _Type& b)
@@ -255,7 +259,7 @@ isEqual(const _Type& a,const _Type& b)
   return TypeEqualT<_Type>::isEqual(a,b);
 }
 
-//! Surcharge pour les reels
+//! Overload for reals
 ARCCORE_HOST_DEVICE constexpr inline bool
 isEqual(Real a,Real b)
 {
@@ -263,14 +267,14 @@ isEqual(Real a,Real b)
 }
 
 /*!
- * \brief Teste si une valeur est à peu près égale à zéro à un epsilon près.
+ * \brief Tests if a value is approximately equal to zero within an epsilon.
  *
- * Pour les types entiers, cette fonction est équivalente à IsZero().
- * Dans le cas de types réels, la valeur est considérée comme égale à
- * zéro si et seulement si sa valeur absolue est inférieure à un epsilon
- * donné par la fonction float_info<_Type>::nearlyEpsilon().
- * \retval true si les deux valeurs sont égales,
- * \retval false sinon.
+ * For integer types, this function is equivalent to IsZero().
+ * In the case of real types, the value is considered equal to
+ * zero if and only if its absolute value is less than an epsilon
+ * given by the function float_info<_Type>::nearlyEpsilon().
+ * \retval true if the two values are equal,
+ * \retval false otherwise.
  */
 template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
 isNearlyZeroWithEpsilon(const _Type& a,const _Type& epsilon)
@@ -279,9 +283,9 @@ isNearlyZeroWithEpsilon(const _Type& a,const _Type& epsilon)
 }
 
 /*!
- * \brief Teste si une valeur est à peu près égale à zéro à l'epsilon standard près.
+ * \brief Tests if a value is approximately equal to zero using the standard epsilon.
  *
- * L'epsilon standard est celui retourné par FloatInfo<_Type>::nearlyEpsilon().
+ * The standard epsilon is the one returned by FloatInfo<_Type>::nearlyEpsilon().
  *
  * \sa isNearlyZero(const _Type& a,const _Type& epsilon).
  */
@@ -292,9 +296,9 @@ isNearlyZero(const _Type& a)
 }
 
 /*!
- * \brief Teste si une valeur est exactement égale à zéro.
- * \retval true si \a vaut zéro,
- * \retval false sinon.
+ * \brief Tests if a value is exactly equal to zero.
+ * \retval true if \a is zero,
+ * \retval false otherwise.
  */
 template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
 isZero(const _Type& a)

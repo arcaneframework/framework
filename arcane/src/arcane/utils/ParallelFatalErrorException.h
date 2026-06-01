@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelFatalErrorException.h                               (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une erreur fatale 'parallèle' est survenue.              */
+/* Exception when a 'parallel' fatal error occurred.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_PARALLELFATALERROREXCEPTION_H
 #define ARCANE_UTILS_PARALLELFATALERROREXCEPTION_H
@@ -23,12 +23,13 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Parallel
- * \brief Exception lorsqu'une erreur fatale 'parallèle' est générée.
+ * \brief Exception when a 'parallel' fatal error is generated.
  *
- * Une erreur fatale 'parallèle' est une erreur fatale commune à tout les
- * sous-domaines. Dans ce cas, il est possible d'arrêter proprement le code
+ * A 'parallel' fatal error is a fatal error common to all
+ * subdomains. In this case, it is possible to cleanly stop the code
  */
 class ARCANE_UTILS_EXPORT ParallelFatalErrorException
 : public Exception
@@ -61,5 +62,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

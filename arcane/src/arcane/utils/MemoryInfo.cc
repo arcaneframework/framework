@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryInfo.cc                                               (C) 2000-2022 */
 /*                                                                           */
-/* Collecteur d'informations sur l'usage mémoire.                            */
+/* Memory usage information collector.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,14 +29,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: les hooks sont obsolètes car non thread-safe.
-// Il faudrait utiliser LD_PRELOAD
-// d'une bibliothèque qui surcharge malloc(), realloc(), ...,
-// puis faire un dlopen sur la libc et appeler dans notre
-// bibliothèque les routinies d'allocation de la libc.
+// TODO: the hooks are obsolete because they are not thread-safe.
+// We should use LD_PRELOAD
+// from a library that overrides malloc(), realloc(), ...,
+// then perform a dlopen on libc and call in our
+// library the libc allocation routines.
 
-// Cette macro ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK est maintenant définie
-// lors de la configuration
+// This macro ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK is now defined
+// during configuration
 // #if defined(ARCANE_OS_LINUX)
 //   #define ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
 // #endif
@@ -228,8 +228,8 @@ setOwner(const void* owner,const TraceInfo& ti)
 void MemoryInfo::
 addInfo(const void* owner,const void* ptr,Int64 size)
 {
-  //NOTE: Cette méthode doit être réentrente.
-  //TODO: verifier owner present.
+  //NOTE: This method must be reentrant.
+  //TODO: verify owner present.
   MemoryInfoMap::const_iterator i = m_infos.find(ptr);
   String stack_value;
   //cout << "** ADD: " << ptr << '\n';
@@ -410,9 +410,9 @@ void MemoryInfo::
 printInfos(std::ostream& ostr)
 {
   bool is_collecting = global_check_memory;
-  // Comme _printInfos() utilise m_infos et peut allouer de la mémoire ce
-  // qui va provoquer une modification de m_infos is on est en cours
-  // de collection, on désactive les hooks le temps de l'appel.
+  // Since _printInfos() uses m_infos and may allocate memory, which
+  // would cause a modification of m_infos while we are in
+  // collection, we disable the hooks for the duration of the call.
   if (is_collecting)
     _pushHook();
   try{

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Limits.h                                                    (C) 2000-2024 */
 /*                                                                           */
-/* Fichiers encapsulant <limits> et associés.                                */
+/* Files encapsulating <limits> and associated types.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_LIMITS_H
 #define ARCANE_UTILS_LIMITS_H
@@ -16,8 +16,8 @@
 
 #include "arcane/utils/StdHeader.h"
 
-// Comme <limits> definit min, max, abs, ... et que certains logiciels
-// en font des macros, on les supprime
+// Since <limits> defines min, max, abs, ... and some software
+// makes them macros, we remove them
 #ifdef min
 #undef min
 #endif
@@ -39,28 +39,30 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur le type flottant.
- * \note Spécialisation obligatoire pour les flottants.
+ * \brief Information about the floating-point type.
+ * \note Mandatory specialization for floating-point types.
  */
 template<typename T>
 class FloatInfo
 {
  public:
-  //! Indique si l'instantiation est pour un type flottant.
+  //! Indicates if the instantiation is for a floating-point type.
   typedef FalseType  _IsFloatType;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de la classe FloatInfo pour le type \c float.
+ * \brief Specialization of the FloatInfo class for the \c float type.
  */
 template<>
 class FloatInfo<float>
 {
  public:
-  //! Indique que l'instantiation est pour un type flottant.
+  //! Indicates that the instantiation is for a floating-point type.
   typedef TrueType  _IsFloatType;
  public:
   ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 1; }
@@ -73,14 +75,15 @@ class FloatInfo<float>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de la classe FloatInfo pour le type <tt>double</tt>.
+ * \brief Specialization of the FloatInfo class for the <tt>double</tt> type.
  */
 template<>
 class FloatInfo<double>
 {
  public:
-  //! Indique que l'instantiation est pour un type flottant.
+  //! Indicates that the instantiation is for a floating-point type.
   typedef TrueType  _IsFloatType;
  public:
   ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 2; }
@@ -93,17 +96,18 @@ class FloatInfo<double>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de la classe FloatInfo pour le type
+ * \brief Specialization of the FloatInfo class for the type
  * <tt>long double</tt>.
  *
- * \todo Vérifier que cette classe est valide pour toutes les architectures.
+ * \todo Verify that this class is valid for all architectures.
  */
 template<>
 class FloatInfo<long double>
 {
  public:
-  //! Indique que l'instantiation est pour un type flottant.
+  //! Indicates that the instantiation is for a floating-point type.
   typedef TrueType  _IsFloatType;
  public:
   ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 3; }
@@ -117,17 +121,18 @@ class FloatInfo<long double>
 #ifdef ARCANE_REAL_USE_APFLOAT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de la classe FloatInfo pour le type
+ * \brief Specialization of the FloatInfo class for the type
  * <tt>long double</tt>.
  *
- * \todo Vérifier que cette classe est valide pour toutes les architectures.
+ * \todo Verify that this class is valid for all architectures.
  */
 template<>
 class FloatInfo<apfloat>
 {
  public:
-  //! Indique que l'instantiation est pour un type flottant.
+  //! Indicates that the instantiation is for a floating-point type.
   typedef TrueType  _IsFloatType;
  public:
   ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 3; }

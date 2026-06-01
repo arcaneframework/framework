@@ -13,14 +13,13 @@ target_compile_definitions(arcane_utils PRIVATE ARCANE_COMPONENT_arcane_utils)
 target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${ARCANE_SRC_PATH}> $<INSTALL_INTERFACE:include>)
 
-# 'arcane_build_compile_flags' n'est utilisé que lors de la compilation
-# de la bibliothèque mais ne doit pas être exportée.
+# 'arcane_build_compile_flags' is only used during the library compilation but should not be exported.
 target_link_libraries(arcane_utils PUBLIC $<BUILD_INTERFACE:arcane_build_compile_flags> arcane_export_compile_flags)
 
-# TODO A supprimer car cette cible ne doit pas utiliser des '.h' de 'arcane_core'
+# TODO To be removed because this target should not use '.h' files from 'arcane_core'
 target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${ARCANE_COMPATIBILITY_DIRECTORY}>)
 
-# Ajoute dépendances provenant de 'Arccore'
+# Adds dependencies from 'Arccore'
 target_link_libraries(arcane_utils PUBLIC
   Arccore::arccore_trace
   Arccore::arccore_concurrency
@@ -31,7 +30,7 @@ target_link_libraries(arcane_utils PUBLIC
 arcane_add_arccon_packages(arcane_utils PUBLIC Glib)
 
 # ----------------------------------------------------------------------------
-# Indique qu'il faut le C++17 par défaut ou sinon celui spécifié par
+# Specifies that C++17 should be used by default or the one specified by
 # Arccore
 if (DEFINED ARCCORE_CXX_STANDARD)
   target_compile_features(arcane_utils PUBLIC cxx_std_${ARCCORE_CXX_STANDARD})
@@ -40,8 +39,7 @@ else()
 endif()
 
 # ----------------------------------------------------------------------------
-# Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
-# sont disponibles
+# Checks if the memory 'hooks' of glibc's 'malloc.h' under linux are available
 if (${ARCANE_HAS_MALLOC_HOOKS})
   target_compile_definitions(arcane_utils PRIVATE ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK)
 endif()

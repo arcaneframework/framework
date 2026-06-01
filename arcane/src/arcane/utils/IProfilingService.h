@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IProfilingService.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un service de profiling.                                      */
+/* Interface of a profiling service.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IPROFILINGSERVICE_H
 #define ARCANE_UTILS_IPROFILINGSERVICE_H
@@ -29,17 +29,18 @@ class ITimerMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un service de profiling.
+ * \brief Interface of a profiling service.
  *
- * Il faut appeler initialize() avant d'utiliser l'instance. On peut
- * ensuite appeler startProfiling()/stopProfiling() pour démarrer et
- * arrêter le profiling.
+ * initialize() must be called before using the instance. You can
+ * then call startProfiling()/stopProfiling() to start and
+ * stop profiling.
  *
- * Lorsque le profiling est arrêté, on peut appeler printInfos() pour
- * afficher les informations de profiling. La méthode reset() permet de
- * remettre à zéro les informations de profiling.
+ * When profiling is stopped, you can call printInfos() to
+ * display the profiling information. The reset() method allows you to
+ * reset the profiling information.
  */
 class ARCANE_UTILS_EXPORT IProfilingService
 {
@@ -50,52 +51,53 @@ class ARCANE_UTILS_EXPORT IProfilingService
  public:
 
   /*!
-   * \brief Initialise le service de profiling.
+   * \brief Initializes the profiling service.
    *
-   * Cette méthode ne peut être appelée qu'une seule fois.
+   * This method can only be called once.
    */
   virtual void initialize() = 0;
 
-  //! Indique si initialize() a déjà été appelé
+  //! Indicates if initialize() has already been called
   virtual bool isInitialized() const { return false; }
 
-  //! Démarre un profiling
+  //! Starts profiling
   virtual void startProfiling() = 0;
 
   virtual void switchEvent() = 0;
 
-  //! Stoppe le profiling
+  //! Stops profiling
   virtual void stopProfiling() = 0;
 
   /*!
-   * \brief Affiche les infos de profiling.
+   * \brief Displays profiling information.
    *
-   * Le profiling doit être arrêté.
-   * Si \a dump_file est vrai, des sorties fichiers contenant les infos
-   * sont générées ce qui peut prendre du temps.
+   * Profiling must be stopped.
+   * If \a dump_file is true, file outputs containing the information
+   * are generated, which may take time.
    */
   virtual void printInfos(bool dump_file = false) = 0;
 
   virtual void getInfos(Int64Array&) = 0;
 
-  //! Ecrit les infos de profiling dans l'écrivain \a writer.
+  //! Writes the profiling information to the writer \a writer.
   virtual void dumpJSON(JSONWriter& writer) = 0;
 
   /*!
-   * \brief Remet à zéro les compteurs.
+   * \brief Resets the counters.
    *
-   * Le profiling doit être arrêté pour cela.
+   * Profiling must be stopped for this.
    */
   virtual void reset() = 0;
 
-  //! Timer utilisant les fonctionnalités de ce service si elles existent. Peut être nul.
+  //! Timer using the features of this service if they exist. Can be null.
   virtual ITimerMng* timerMng() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe permettant de démarrer et arrêter automatiquement un service.
+ * \brief Class allowing automatic start and stop of a service.
  */
 class ARCANE_UTILS_EXPORT ProfilingSentry
 {
@@ -124,19 +126,20 @@ class ARCANE_UTILS_EXPORT ProfilingSentry
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe permettant de démarrer et arrêter automatiquement un service.
+ * \brief Class allowing automatic start and stop of a service.
  *
- * Le service est initialisé si nécessaire.
+ * The service is initialized if necessary.
  */
 class ARCANE_UTILS_EXPORT ProfilingSentryWithInitialize
 {
  public:
 
   /*!
-   * \brief Construit une instance associée au service \a s.
+   * \brief Constructs an instance associated with the service \a s.
    *
-   * Si \a s est \a null, alors l'instance ne fait rien.
+   * If \a s is \a null, the instance does nothing.
    */
   explicit ProfilingSentryWithInitialize(IProfilingService* s)
   : m_service(s)
@@ -160,7 +163,7 @@ class ARCANE_UTILS_EXPORT ProfilingSentryWithInitialize
  public:
 
   IProfilingService* service() { return m_service; }
-  //! Indique si on imprime les résultats à la fin du profiling
+  //! Indicates if results are printed at the end of profiling
   void setPrintAtEnd(bool v) { m_print_at_end = v; }
 
  private:

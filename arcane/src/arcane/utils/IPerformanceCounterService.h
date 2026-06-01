@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IPerformanceCounterService.h                                (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'un service d'accès aux compteurs de performance.              */
+/* Interface of a service for accessing performance counters.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IPERFORMANCECOUNTERSERVICE_H
 #define ARCANE_UTILS_IPERFORMANCECOUNTERSERVICE_H
@@ -24,14 +24,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service d'accès aux compteurs de performance.
+ * \brief Interface of a service for accessing performance counters.
  */
 class ARCANE_UTILS_EXPORT IPerformanceCounterService
 {
  public:
 
-  //! Taille minimale de la vue pour getCounters()
+  //! Minimum size of the view for getCounters()
   static const int MIN_COUNTER_SIZE = 8;
 
  public:
@@ -40,35 +41,35 @@ class ARCANE_UTILS_EXPORT IPerformanceCounterService
 
  public:
 
-  //! Initialise le service.
+  //! Initializes the service.
   virtual void initialize() = 0;
 
   /*!
-   * \brief Débute le suivi des compteurs de performance.
+   * \brief Starts tracking performance counters.
    * \pre isStarted()==false.
    * \post isStarted()==true.
    */
   virtual void start() = 0;
 
   /*!
-   * \brief Arrête le suivi des compteurs de performance.
+   * \brief Stops tracking performance counters.
    * \pre isStarted()==true.
    * \post isStarted()==false.
    */
   virtual void stop() = 0;
 
-  //! Indique si le service a démarré (start() a été appelé)
+  //! Indicates if the service has started (start() has been called)
   virtual bool isStarted() const = 0;
 
   /*!
-   * \brief Récupère les valeurs actuelles des compteurs.
+   * \brief Retrieves the current values of the counters.
    *
-   * Cette méthode ne doit être appelée que si isStarted() est vrai.
+   * This method must only be called if isStarted() is true.
    *
-   * Si \a do_substract vaut \a false, remplit \a counters avec les
-   * valeurs actuelles des compteurs. Si \a do_substract vaut \a true,
-   * remplit counters avec la différence entre les valeurs actuelles et celles
-   * de \a counters lors de l'appel.
+   * If \a do_substract is \a false, fills \a counters with the
+   * current values of the counters. If \a do_substract is \a true,
+   * fills counters with the difference between the current values and those
+   * in \a counters during the call.
    *
    \code
    * Int64ArrayView counters = ...;
@@ -79,16 +80,16 @@ class ARCANE_UTILS_EXPORT IPerformanceCounterService
    * info() << "Nb cycle=" << counters[0].
    \endcode
    *
-   * Le compteur d'indice 0 est toujours le nombre de cycle. \a counters
-   * doit valoir assez d'éléments pour renseigner au moins MIN_COUNTER_SIZE compteurs.
+   * The counter at index 0 is always the number of cycles. \a counters
+   * must have enough elements to provide at least MIN_COUNTER_SIZE counters.
    *
-   * \retval le nombre de compteurs renseignés.
+   * \retval the number of counters provided.
    * \pre isStarted()==true
    */
   virtual Int32 getCounters(Int64ArrayView counters, bool do_substract) = 0;
 
   /*!
-   * \brief Valeur du compteur pour le nombre de cycles du CPU.
+   * \brief Value of the counter for the number of CPU cycles.
    *
    * \pre isStarted()==true   
    */
@@ -103,4 +104,4 @@ class ARCANE_UTILS_EXPORT IPerformanceCounterService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

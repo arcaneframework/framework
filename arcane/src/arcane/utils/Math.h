@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Math.h                                                      (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions mathématiques diverses.                                         */
+/* Diverse mathematical functions.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MATH_H
 #define ARCANE_UTILS_MATH_H
@@ -22,19 +22,21 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
-  \brief Espace de nom pour les fonctions mathématiques.
+  \brief Namespace for mathematical functions.
  
-  Cet espace de nom contient toutes les fonctions mathématiques utilisées
-  par le code.
+  This namespace contains all mathematical functions used
+  by the code.
 */
 namespace Arcane::math
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Logarithme népérien de \a v.
+ * \brief Natural logarithm of \a v.
  */
 ARCCORE_HOST_DEVICE inline double
 log(double v)
@@ -47,7 +49,7 @@ log(double v)
 }
 
 /*!
- * \brief Logarithme népérien de \a v.
+ * \brief Natural logarithm of \a v.
  */
 ARCCORE_HOST_DEVICE inline long double
 log(long double v)
@@ -61,8 +63,9 @@ log(long double v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Logarithme décimal de \a v.
+ * \brief Decimal logarithm of \a v.
  */
 ARCCORE_HOST_DEVICE inline double
 log10(double v)
@@ -75,7 +78,7 @@ log10(double v)
 }
 
 /*!
- * \brief Logarithme décimal de \a v.
+ * \brief Decimal logarithm of \a v.
  */
 ARCCORE_HOST_DEVICE inline long double
 log10(long double v)
@@ -89,8 +92,9 @@ log10(long double v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arondir \a v à l'entier immédiatement inférieur.
+ * \brief Round \a v down to the immediately lower integer.
  */
 ARCCORE_HOST_DEVICE inline double
 floor(double v)
@@ -99,7 +103,7 @@ floor(double v)
 }
 
 /*!
- * \brief Arondir \a v à l'entier immédiatement inférieur.
+ * \brief Round \a v down to the immediately lower integer.
  */
 ARCCORE_HOST_DEVICE inline long double
 floor(long double v)
@@ -109,8 +113,9 @@ floor(long double v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exponentielle de \a v.
+ * \brief Exponential of \a v.
  */
 ARCCORE_HOST_DEVICE inline double
 exp(double v)
@@ -118,7 +123,7 @@ exp(double v)
   return std::exp(v);
 }
 /*!
- * \brief Exponentielle de \a v.
+ * \brief Exponential of \a v.
  */
 ARCCORE_HOST_DEVICE inline long double
 exp(long double v)
@@ -128,8 +133,9 @@ exp(long double v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Racine carrée de \a v.
+ * \brief Square root of \a v.
  */
 ARCCORE_HOST_DEVICE inline double
 sqrt(double v)
@@ -141,7 +147,7 @@ sqrt(double v)
   return std::sqrt(v);
 }
 /*!
- * \brief Racine carrée de \a v.
+ * \brief Square root of \a v.
  */
 ARCCORE_HOST_DEVICE inline long double
 sqrt(long double v)
@@ -155,18 +161,19 @@ sqrt(long double v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction puissance.
+ * \brief Power function.
  *
- * Calcul \a x à la puissance \a y.
+ * Calculates \a x to the power of \a y.
  *
- * \pre x>=0 ou y entier
+ * \pre x>=0 or y is an integer
  */
 ARCCORE_HOST_DEVICE inline double
 pow(double x,double y)
 {
 #ifdef ARCANE_CHECK_MATH
-  // Arguments invalides si x est négatif et y non entier
+  // Invalid arguments if x is negative and y is not an integer
   if (x<0.0 && ::floor(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
@@ -174,52 +181,55 @@ pow(double x,double y)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction puissance.
+ * \brief Power function.
  *
- * Calcul \a x à la puissance \a y.
+ * Calculates \a x to the power of \a y.
  *
- * \pre x>=0 ou y entier
+ * \pre x>=0 or y is an integer
  */
 ARCCORE_HOST_DEVICE inline long double
 pow(long double x,long double y)
 {
 #ifdef ARCANE_CHECK_MATH
-  // Arguments invalides si x est négatif et y non entier
+  // Invalid arguments if x is negative and y is not an integer
   if (x<0.0 && ::floorl(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
   return std::pow(x,y);
 }
+
 /*!
- * \brief Fonction puissance.
+ * \brief Power function.
  *
- * Calcul \a x à la puissance \a y.
+ * Calculates \a x to the power of \a y.
  *
- * \pre x>=0 ou y entier
+ * \pre x>=0 or y is an integer
  */
 ARCCORE_HOST_DEVICE inline long double
 pow(double x,long double y)
 {
 #ifdef ARCANE_CHECK_MATH
-  // Arguments invalides si x est négatif et y non entier
+  // Invalid arguments if x is negative and y is not an integer
   if (x<0.0 && ::floorl(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
   return std::pow(x,y);
 }
+
 /*!
- * \brief Fonction puissance.
+ * \brief Power function.
  *
- * Calcul \a x à la puissance \a y.
+ * Calculates \a x to the power of \a y.
  *
- * \pre x>=0 ou y entier
+ * \pre x>=0 or y is an integer
  */
 ARCCORE_HOST_DEVICE inline long double
 pow(long double x,double y)
 {
 #ifdef ARCANE_CHECK_MATH
-  // Arguments invalides si x est négatif et y non entier
+  // Invalid arguments if x is negative and y is not an integer
   if (x<0.0 && ::floor(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
@@ -228,20 +238,22 @@ pow(long double x,double y)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le minimum de deux éléments.
+ * \brief Returns the minimum of two elements.
  *
  * \ingroup GroupMathUtils
  *
- * Utilise l'opérateur < pour déterminer le minimum.
+ * Uses the < operator to determine the minimum.
  */
 template<class T> ARCCORE_HOST_DEVICE inline T
 min(const T& a,const T& b)
 {
   return ( (a<b) ? a : b );
 }
+
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Returns the minimum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -249,8 +261,9 @@ min(long double a,long double b)
 {
   return ( (a<b) ? a : b );
 }
+
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Returns the minimum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -258,8 +271,9 @@ min(double a,long double b)
 {
   return ( (a<b) ? a : b );
 }
+
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Returns the minimum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -267,8 +281,9 @@ min(long double a,double b)
 {
   return ( (a<b) ? a : b );
 }
+
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Returns the minimum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline double
@@ -276,8 +291,9 @@ min(double a,double b)
 {
   return ( (a<b) ? a : b );
 }
+
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Returns the minimum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline float
@@ -285,8 +301,9 @@ min(float a,float b)
 {
   return ( (a<b) ? a : b );
 }
+
 /*!
- * \brief Retourne le minimum de deux entiers.
+ * \brief Returns the minimum of two integers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline int
@@ -297,20 +314,22 @@ min(int a,int b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le maximum de deux éléments.
+ * \brief Returns the maximum of two elements.
  *
  * \ingroup GroupMathUtils
  *
- * Utilise l'opérateur < pour déterminer le maximum.
+ * Uses the < operator to determine the maximum.
  */
 template<class T> ARCCORE_HOST_DEVICE inline T
 max(const T& a,const T& b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Returns the maximum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -318,8 +337,9 @@ max(long double a,long double b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Returns the maximum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -327,8 +347,9 @@ max(double a,long double b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Returns the maximum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -336,8 +357,9 @@ max(long double a,double b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux entiers.
+ * \brief Returns the maximum of two integers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline unsigned long
@@ -345,8 +367,9 @@ max(unsigned long a,unsigned long b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Returns the maximum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline double
@@ -354,8 +377,9 @@ max(double a,double b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Returns the maximum of two real numbers.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline float
@@ -363,8 +387,9 @@ max(float a,float b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux Int16
+ * \brief Returns the maximum of two Int16
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Int16
@@ -372,8 +397,9 @@ max(Int16 a,Int16 b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux Int32
+ * \brief Returns the maximum of two Int32
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Int32
@@ -381,8 +407,9 @@ max(Int32 a,Int32 b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux Int32
+ * \brief Returns the maximum of two Int32
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Int64
@@ -390,8 +417,9 @@ max(Int32 a,Int64 b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux Int64
+ * \brief Returns the maximum of two Int64
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Int64
@@ -399,8 +427,9 @@ max(Int64 a,Int32 b)
 {
   return ( (a<b) ? b : a );
 }
+
 /*!
- * \brief Retourne le maximum de deux Int64
+ * \brief Returns the maximum of two Int64
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Int64
@@ -411,8 +440,9 @@ max(Int64 a,Int64 b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Returns the absolute value of a real number.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long double
@@ -420,8 +450,9 @@ abs(long double a)
 {
   return std::abs(a);
 }
+
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Returns the absolute value of a real number.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline double
@@ -429,8 +460,9 @@ abs(double a)
 {
   return std::abs(a);
 }
+
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Returns the absolute value of a real number.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline float
@@ -440,7 +472,7 @@ abs(float a)
 }
 
 /*!
- * \brief Retourne la valeur absolue d'un 'int'.
+ * \brief Returns the absolute value of an 'int'.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline short
@@ -450,7 +482,7 @@ abs(short a)
 }
 
 /*!
- * \brief Retourne la valeur absolue d'un 'int'.
+ * \brief Returns the absolute value of an 'int'.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline int
@@ -460,7 +492,7 @@ abs(int a)
 }
 
 /*!
- * \brief Retourne la valeur absolue d'un 'long'.
+ * \brief Returns the absolute value of a 'long'.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long
@@ -470,7 +502,7 @@ abs(long a)
 }
 
 /*!
- * \brief Retourne la valeur absolue d'un 'long'.
+ * \brief Returns the absolute value of a 'long'.
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline long long
@@ -481,30 +513,30 @@ abs(long long a)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Tronque la précision du réel \a v à \a nb_digit chiffres significatifs.
+ * \brief Truncates the precision of the real number v to nb_digit significant figures.
  *
- * Pour un réel double précision en IEEE 754, le nombre de bits significatif
- * est de 15 ou 16 suivant la valeur. Il est à noter qu'il n'est possible
- * de manière simple et rapide de tronquer la précision à une valeur donnée.
- * C'est pourquoi \a nb_digit représente un nombre de chiffre approximatif.
- * Notamment, il n'est pas possible de descendre en dessous de 8 chiffres
- * significatifs.
+ * For a double-precision real number in IEEE 754, the number of significant bits
+ * is 15 or 16 depending on the value. It should be noted that it is not possible
+ * to simply and quickly truncate the precision to a given value.
+ * This is why nb_digit represents an approximate number of digits.
+ * Notably, it is not possible to go below 8 significant figures.
  *
- * Si \a nb_digit est inférieur ou égal à zéro ou supérieur à 15, c'est
- * la valeur \a v qui est retourné.
+ * If nb_digit is less than or equal to zero or greater than 15, the value v is returned.
  */
 extern ARCANE_UTILS_EXPORT double
 truncateDouble(double v,Integer nb_digit);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Tronque la précision du tableau de réels \a values à
- * \a nb_digit chiffres significatifs.
+ * \brief Truncates the precision of the array of real numbers values to
+ * \a nb_digit significant figures.
  *
- * En sortie, chaque élément de \a values est modifié comme après appel
- * à truncateDouble(double v,Integer nb_digit).
+ * On exit, each element of values is modified as if after calling
+ * truncateDouble(double v,Integer nb_digit).
  */
 extern ARCANE_UTILS_EXPORT void
 truncateDouble(ArrayView<double> values,Integer nb_digit);
@@ -524,4 +556,4 @@ truncateDouble(ArrayView<double> values,Integer nb_digit);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

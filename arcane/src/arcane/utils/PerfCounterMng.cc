@@ -25,10 +25,10 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne la fréquence du CPU en Mhz.
+ * \brief Returns the CPU frequency in MHz.
  *
- * Ne marche que sous Linux et ne tient pas compte des variations
- * possibles de fréquence telles que le turbo-boost.
+ * Only works under Linux and does not account for
+ * possible frequency variations such as turbo-boost.
  */
 extern "C++" int
 arcaneGetCpuBaseFrequency()
@@ -66,4 +66,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdHeader.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Fichiers d'entêtes standards.                                             */
+/* Standard header files.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_STDHEADER_H
 #define ARCANE_UTILS_STDHEADER_H
@@ -23,8 +23,8 @@
 #include <cmath>
 #include <locale>
 
-// Temporaire (avril 2024) pour compatibilité avec l'existant.
-// Par la suite il faudra supprimer ces using
+// Temporary (April 2024) for compatibility with existing code.
+// Later, these using statements must be removed
 #if !defined(ARCANE_NO_USE_STD_MATH_FUNCTIONS)
 using std::abs;
 using std::cos;
@@ -36,23 +36,3 @@ using std::isinf;
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

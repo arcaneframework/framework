@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedPtr.h                                                 (C) 2000-2022 */
 /*                                                                           */
-/* Encapsulation d'un pointeur avec compteur de référence.                   */
+/* Encapsulation of a pointer with a reference counter.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SHAREDPTR_H
 #define ARCANE_UTILS_SHAREDPTR_H
@@ -21,9 +21,9 @@
 #include <atomic>
 
 /*
- * Différent de AutoRef où le pointeur doit référencer un objet satisfaisant
- * un contrat d'utilisation similaire à l'interface ISharedReference
- * (autre implémentation : std::(tr1::)|boost::shared_ptr
+ * Different from AutoRef where the pointer must reference an object satisfying
+ * a usage contract similar to the ISharedReference interface
+ * (other implementation: std::(tr1::)|boost::shared_ptr
  */
 
 /*---------------------------------------------------------------------------*/
@@ -68,14 +68,14 @@ class SharedPtrT : public PtrT<T>
   , m_free(true)
   {}
 
-  //Constructeur de copie
+  // Copy constructor
   SharedPtrT(const SharedPtrT<T>& ptr)
   : PtrT<T>(0)
   {
     _copy(ptr.get(), ptr.refCountPtr(), ptr.explicitDelete());
   }
 
-  // N'est pas utilise quand T2 = T
+  // Not used when T2 = T
   template <typename T2>
   SharedPtrT(const SharedPtrT<T2>& ptr)
   : PtrT<T>(0)
@@ -83,7 +83,7 @@ class SharedPtrT : public PtrT<T>
     _copy(ptr.get(), ptr.refCountPtr(), ptr.explicitDelete());
   }
 
-  // Constructeurs explicites
+  // Explicit constructors
   template <typename T2>
   explicit SharedPtrT(T2* t, bool tofree = true)
   : BaseClass(t)
@@ -91,7 +91,7 @@ class SharedPtrT : public PtrT<T>
   , m_free(tofree)
   {}
 
-  // Constructeurs pour faire un "dynamic_cast"
+  // Constructors for performing a "dynamic_cast"
   template <typename T2>
   explicit SharedPtrT(const SharedPtrT<T2>& ptr, bool)
   {
@@ -105,7 +105,7 @@ class SharedPtrT : public PtrT<T>
     return (*this);
   }
 
-  // N'est pas utilise quand T2 = T
+  // Not used when T2 = T
   template <typename T2>
   SharedPtrT<T>& operator=(const SharedPtrT<T2>& ptr)
   {

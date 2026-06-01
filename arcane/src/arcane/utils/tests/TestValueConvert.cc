@@ -54,13 +54,13 @@ void _checkNaN(const String& s)
 }
 
 /*!
- * \brief Vérifie que \a value et \a expected_value sont strictements identiques.
+ * \brief Checks that \a value and \a expected_value are strictly identical.
  *
- * \return true si la valeur attendu n'est pas NaN.
+ * \return true if the expected value is not NaN.
  */
 void _checkValidDouble(double value, double expected_value)
 {
-  // Pour NaN, on ne peut pas faire la comparaison.
+  // For NaN, comparison cannot be performed.
   if (std::isnan(expected_value)) {
     ASSERT_TRUE(std::isnan(value)) << "value " << value << " is not 'nan'";
     return;
@@ -102,15 +102,15 @@ void _testDoubleConvert(bool use_from_chars)
 {
 
   {
-    // TODO: tester les autres conversions
+    // TODO: test other conversions
     String s = "25e3";
     Int32 x = 0;
     bool is_bad = builtInGetValue(x, s);
     std::cout << "S=" << s << " X=" << x << " is_bad?=" << is_bad << "\n";
     ASSERT_TRUE(is_bad);
   }
-  // Avec la version 'from_chars', convertir une chaîne vide est une erreur
-  // mais pas avec la version historique.
+  // With the 'from_chars' version, converting an empty string is an error
+  // but not with the historical version.
   if (use_from_chars)
     _checkBad<double>("");
   _checkDouble("-0x1.81e03f705857bp-16", -2.3e-05);

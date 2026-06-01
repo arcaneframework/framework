@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ForLoopRanges.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Intervalles d'itérations pour les boucles.                                */
+/* Iteration ranges for loops.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_FORLOOPRANGES_H
 #define ARCANE_UTILS_FORLOOPRANGES_H
@@ -25,7 +25,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Applique le fonctor \a func sur une boucle 1D.
+
+//! Applies the functor \a func on a 1D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
 void arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, RemainingArgs... remaining_args)
@@ -36,21 +37,21 @@ void arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func,
   Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
-//! Applique le fonctor \a func sur une boucle 2D.
+//! Applies the functor \a func on a 2D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 {
   arccoreSequentialFor(bounds,func);
 }
 
-//! Applique le fonctor \a func sur une boucle 3D.
+//! Applies the functor \a func on a 3D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
 {
   arccoreSequentialFor(bounds,func);
 }
 
-//! Applique le fonctor \a func sur une boucle 4D.
+//! Applies the functor \a func on a 4D loop.
 template <typename IndexType, template <int, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
 {

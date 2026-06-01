@@ -13,7 +13,7 @@
 #include "arccore/common/AllocatedMemoryInfo.h"
 #include "arccore/common/IMemoryAllocator.h"
 
-// Version initiale issue du commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (27 aout 2024)
+// Initial version released from commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (August 27, 2024)
 // emhash8::HashMap for C++14/17
 // version 1.6.5
 // https://github.com/ktprime/emhash/blob/master/hash_table8.hpp

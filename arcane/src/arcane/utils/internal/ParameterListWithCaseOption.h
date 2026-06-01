@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterListWithCaseOption.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Liste de paramètres avec support pour les options du jeu de données.      */
+/* Parameter list with support for dataset options.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_PARAMETERLISTWITHCASEOPTION_H
 #define ARCANE_UTILS_INTERNAL_PARAMETERLISTWITHCASEOPTION_H
@@ -26,9 +26,9 @@ class ParameterList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste de paramètres avec informations pour surcharger les options
- * du jeu de données.
+ * \brief Parameter list with information to override dataset options.
  */
 class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
 {
@@ -36,62 +36,61 @@ class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
 
  public:
 
-  //! Construit un dictionnaire
+  //! Constructs a dictionary
   ParameterListWithCaseOption();
-  //! Construit un dictionnaire
+  //! Constructs a dictionary
   ParameterListWithCaseOption(const ParameterListWithCaseOption& rhs);
-  ~ParameterListWithCaseOption(); //!< Libère les ressources
+  ~ParameterListWithCaseOption(); //!< Releases resources
 
  public:
 
   /*!
-   * \brief Récupère le paramètre de nom \a param_name.
+   * \brief Retrieves the parameter with name \a param_name.
    *
-   * Retourne une chaîne nulle s'il n'y aucun paramètre avec ce nom.
+   * Returns a null string if no parameter with this name exists.
    *
-   * Si le paramètre est présent plusieurs fois, seule la dernière
-   * valeur est retournée.
+   * If the parameter is present multiple times, only the last
+   * value is returned.
    */
   String getParameterOrNull(const String& param_name) const;
 
   /*!
-   * \brief Analyse la ligne \a line.
+   * \brief Parses the line \a line.
    *
-   * La ligne doit avoir une des formes suivantes, avec \a A le
-   * paramètre et \a B la valeur:
+   * The line must have one of the following forms, with \a A the
+   * parameter and \a B the value:
    *
    * 1. A=B,
    * 2. A:=B
    * 3. A+=B,
    * 4. A-=B
    *
-   * Dans le cas (1) ou (3), la valeur de l'argument est ajoutée aux
-   * occurences déjà présentes. Dans le cas (2), la valeur de
-   * l'argument remplace toutes les occurences déjà présentes. Dans
-   * le cas (4), l'occurence ayant la valeur \a B est supprimée si elle
-   * était présente et rien ne se produit si elle était absente.
+   * In case (1) or (3), the argument value is added to the
+   * already present occurrences. In case (2), the argument value
+   * replaces all already present occurrences. In case (4), the occurrence
+   * having the value \a B is deleted if it was present and nothing happens if it was absent.
    *
-   * \retval false si un paramètre a pu être analysé
-   * \retval true sinon.
+   * \retval false if a parameter could be parsed
+   * \retval true otherwise.
    */
   bool addParameterLine(const String& line);
 
   /*!
-   * \brief Méthode permettant de récupérer un objet de type ParameterCaseOption.
+   * \brief Method to retrieve an object of type ParameterCaseOption.
    *
-   * Cet objet peut être détruit après utilisation.
+   * This object can be destroyed after use.
    *
-   * \param language Le langage dans lequel est écrit le jeu de données.
-   * \return Un objet de type ParameterCaseOption.
+   * \param language The language in which the dataset is written.
+   * \return An object of type ParameterCaseOption.
    */
   ParameterCaseOption getParameterCaseOption(const String& language) const;
 
-  //! Ajoute les paramètres de \a parameters aux paramètres de l'instance
+  //! Adds the parameters from \a parameters to the instance's parameters
   void addParameters(const ParameterList& parameters);
 
  private:
 
-  Impl* m_p = nullptr; //!< Implémentation
+  Impl* m_p = nullptr; //!< Implementation
 };
 
 /*---------------------------------------------------------------------------*/
@@ -102,4 +101,4 @@ class ARCANE_UTILS_EXPORT ParameterListWithCaseOption
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

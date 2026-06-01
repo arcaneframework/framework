@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryUtils.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires de gestion mémoire.                                 */
+/* Memory management utility functions.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,14 +21,16 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MemoryUtils.h
- * \brief Fonctions de gestion mémoire et des allocateurs.
+ * \brief Memory and allocator management functions.
  */
 /*!
  * \namespace Arcane::MemoryUtils
- * \brief Espace de noms pour les fonctions de gestion mémoire et des allocateurs.
+ * \brief Namespace for memory and allocator management functions.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IUserDataList.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Interface d'une liste qui gère des données utilisateurs.                  */
+/* Interface of a list that manages user data.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IUSERDATALIST_H
 #define ARCANE_UTILS_IUSERDATALIST_H
@@ -28,46 +28,49 @@ class IUserData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une liste qui gère des données utilisateurs.
+ * \brief Interface of a list that manages user data.
  * \ingroup Core
  */
 class ARCANE_UTILS_EXPORT IUserDataList
 {
  public:
 	
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IUserDataList(){}
 
  public:
 
   /*!
-   * \brief Positionne le user-data associé au nom \a name.
+   * \brief Sets the user data associated with the name \a name.
    *
-   * Aucune donnée ne doit déjà être associée à \a name, sinon une
-   * exception est levée.
+   * No data should already be associated with \a name, otherwise an
+   * exception is thrown.
    */  
   virtual void setData(const String& name,IUserData* ud) =0;
+
   /*!
-   * \brief Donnée associée à \a name.
+   * \brief Data associated with \a name.
    *
-   * Une exception est levée si \a allow_null vaut \a false et qu'aucune
-   * donnée n'est associée à \a name. Si \a allow_null est \a vrai et
-   * qu'aucune donnée n'est associée, retourne un pointeur nul.
+   * An exception is thrown if \a allow_null is \a false and no
+   * data is associated with \a name. If \a allow_null is \a true and
+   * no data is associated, a null pointer is returned.
    */
   virtual IUserData* data(const String& name,bool allow_null=false) const =0;
+
   /*!
-   * \brief Supprime la donnée associèe au nom \a name.
+   * \brief Removes the data associated with the name \a name.
    *
-   * Une exception est levée si \a allow_null vaut \a false et qu'aucune
-   * donnée n'est associée à \a name.
+   * An exception is thrown if \a allow_null is \a false and no
+   * data is associated with \a name.
    */
   virtual void removeData(const String& name,bool allow_null=false) =0;
 
   /*!
-   * \brief Supprime toutes les données utilisateurs.
+   * \brief Removes all user data.
    *
-   * Cela revient à appeler removeData() pour toutes les données utilisateurs.
+   * This is equivalent to calling removeData() for all user data.
    */  
   virtual void clear() =0;
 };
@@ -80,5 +83,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

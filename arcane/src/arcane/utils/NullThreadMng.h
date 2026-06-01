@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------------*/
 /* NullThreadMng.h                                             (C) 2000-2010 */
 /*                                                                           */
-/* Gestionnaire de thread en mode mono-thread.                               */
+/* Single-threaded mode thread manager.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_NULLTHREADMNG_H
 #define ARCANE_UTILS_NULLTHREADMNG_H
@@ -25,8 +25,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de thread en mode mono-thread.
+ * \brief Thread manager in single-threaded mode.
  */
 class ARCANE_UTILS_EXPORT NullThreadMng
 : public IThreadMng

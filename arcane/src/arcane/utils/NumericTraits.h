@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumericTraits.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
+/* View of a multi-dimensional array for numeric types.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_NUMERICTRAITS_H
 #define ARCANE_UTILS_NUMERICTRAITS_H
@@ -80,7 +80,8 @@ template<>
 class NumericTraitsT<Real3x3>
 {
  public:
-  //! Type de retour de operator[] pour ce type
+
+  //! Return type of operator[] for this type
   using SubscriptType = const Real3;
   using Subscript2Type = Real&;
   using Subscript2ConstType = const Real;
@@ -90,7 +91,8 @@ template<>
 class NumericTraitsT<const Real3x3>
 {
  public:
-  //! Type de retour de operator[] pour ce type
+
+  //! Return type of operator[] for this type
   using SubscriptType = const Real3;
   using Subscript2Type = const Real;
   using Subscript2ConstType = const Real;

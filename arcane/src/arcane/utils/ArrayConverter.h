@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayConverter.h                                            (C) 2000-2023 */
 /*                                                                           */
-/* Conversion d'un tableau d'un type vers un autre type.                     */
+/* Conversion of an array from one type to another type.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARRAYCONVERTER_H
 #define ARCANE_UTILS_ARRAYCONVERTER_H
@@ -43,8 +43,9 @@ class DefaultConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conversion d'un tableau d'un type vers un autre type.
+ * \brief Conversion of an array from one type to another type.
  */
 template<typename InputType,typename OutputType,
   typename Converter = DefaultConverter<InputType,OutputType> >
@@ -101,11 +102,11 @@ class ArrayConverter
  public:
 
   /*!
-   * \deprecated Utiliser data() à la place.
+   * \deprecated Use data() instead.
    */
   ARCANE_DEPRECATED_280 iterator begin() { return m_output_array.begin(); }
   /*!
-   * \deprecated Utiliser data() à la place.
+   * \deprecated Use data() instead.
    */
   ARCANE_DEPRECATED_280 const_iterator begin() const { return m_output_array.begin(); }
   OutputArrayType& array() { return m_output_array; }
@@ -128,11 +129,11 @@ class ArrayConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conversion d'un tableau d'un type vers un autre type.
+ * \brief Conversion of an array from one type to another type.
  *
- * Spécialisation pour le cas ou le type d'entré et de sortie est
- * le même.
+ * Specialization for the case where the input and output types are the same.
  */
 template<typename InputType>
 class ArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
@@ -165,11 +166,11 @@ class ArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
  public:
 
   /*!
-   * \deprecated Utiliser data() à la place.
+   * \deprecated Use data() instead.
    */
   ARCANE_DEPRECATED_280 iterator begin() { return m_input_array.begin(); }
   /*!
-   * \deprecated Utiliser data() à la place.
+   * \deprecated Use data() instead.
    */
   ARCANE_DEPRECATED_280 const_iterator begin() const { return m_input_array.begin(); }
   OutputArrayType& array() { return m_input_array; }
@@ -186,8 +187,9 @@ class ArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conversion d'un tableau d'un type vers un autre type.
+ * \brief Conversion of an array from one type to another type.
  */
 template<typename InputType,typename OutputType,
   typename Converter = DefaultConverter<InputType,OutputType> >
@@ -230,7 +232,7 @@ class ConstArrayConverter
  public:
 
   /*!
-   * \deprecated Utiliser data() à la place.
+   * \deprecated Use data() instead.
    */
   ARCANE_DEPRECATED_280 const_iterator begin() const { return m_output_array.begin(); }
   OutputArrayType& array() const { return m_output_array; }
@@ -251,11 +253,11 @@ class ConstArrayConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conversion d'un tableau d'un type vers un autre type.
+ * \brief Conversion of an array from one type to another type.
  *
- * Spécialisation pour le cas ou le type d'entrée et de sortie est
- * le même.
+ * Specialization for the case where the input and output types are the same.
  */
 template<typename InputType>
 class ConstArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
@@ -285,7 +287,7 @@ class ConstArrayConverter<InputType,InputType,DefaultConverter<InputType,InputTy
  public:
 
   /*!
-   * \deprecated Utiliser data() à la place.
+   * \deprecated Use data() instead.
    */
   ARCANE_DEPRECATED_280 const_iterator begin() const { return m_input_array.begin(); }
   OutputArrayType& array() const { return m_input_array; }
@@ -304,5 +306,4 @@ class ConstArrayConverter<InputType,InputType,DefaultConverter<InputType,InputTy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

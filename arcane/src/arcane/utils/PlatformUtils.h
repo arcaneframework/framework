@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PlatformUtils.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires dépendant de la plateforme.                         */
+/* Platform-dependent utility functions.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_PLATFORMUTILS_H
 #define ARCANE_UTILS_PLATFORMUTILS_H
@@ -36,27 +36,27 @@ class ISymbolizerService;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
-  \brief Espace de nom pour les fonctions dépendant de la plateforme.
- 
-  Cet espace de nom contient toutes les fonctions dépendant de la plateforme.
-*/
+ * \brief Namespace for platform-dependent functions.
+ *
+ *  This namespace contains all platform-dependent functions.
+ */
 namespace platform
 {
 
 /*!
- * \brief Initialisations spécifiques à une platforme.
+ * \brief Platform-specific initialization.
  *
- Cette routine est appelé lors de l'initialisation de l'architecture.
- Elle permet d'effectuer certains traitements qui dépendent de la
- plateforme
+ This routine is called when the architecture is initialized.
+ It allows certain platform-dependent processes to be performed.
  */
 extern "C++" ARCANE_UTILS_EXPORT void platformInitialize();
 
 /*!
- * \brief Routines de fin de programme spécifiques à une platforme.
+ * \brief Platform-specific program termination routines.
  *
- Cette routine est appelé juste avant de quitter le programme.
+ This routine is called just before exiting the program.
  */
 extern "C++" ARCANE_UTILS_EXPORT void platformTerminate();
 
@@ -64,111 +64,112 @@ extern "C++" ARCANE_UTILS_EXPORT void platformTerminate();
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Service utilisé pour la gestion de l'affinité des processeurs.
+ * \brief Service used for managing processor affinity.
  *
- * Peut retourner nul si aucun service n'est disponible.
+ * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IProcessorAffinityService*
 getProcessorAffinityService();
 
 /*!
- * \brief Positionne le service utilisé pour la gestion de l'affinité des processeurs.
+ * \brief Sets the service used for managing processor affinity.
  *
- * Retourne l'ancien service utilisé.
+ * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IProcessorAffinityService*
 setProcessorAffinityService(IProcessorAffinityService* service);
 
 /*!
- * \brief Service utilisé pour obtenir pour obtenir des informations de profiling.
+ * \brief Service used to obtain profiling information.
  * 
- * Peut retourner nul si aucun service n'est disponible.
+ * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IProfilingService*
 getProfilingService();
 
 /*!
- * \brief Positionne le service utilisé pour obtenir des informations de profiling.
+ * \brief Sets the service used to obtain profiling information.
  * 
- * Retourne l'ancien service utilisé.
+ * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IProfilingService*
 setProfilingService(IProfilingService* service);
 
 /*!
- * \brief Service utilisé pour obtenir la mise en place d'une architecture en ligne de debug.
+ * \brief Service used to set up an online debug architecture.
  * 
- * Peut retourner nul si aucun service n'est disponible.
+ * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IOnlineDebuggerService*
 getOnlineDebuggerService();
 
 /*!
- * \brief Positionne le service a utiliser pour l'architecture en ligne de debug.
+ * \brief Sets the service to be used for the online debug architecture.
  * 
- * Retourne l'ancien service utilisé.
+ * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IOnlineDebuggerService*
 setOnlineDebuggerService(IOnlineDebuggerService* service);
 
 /*!
- * \brief Service utilisé pour gérer les threads.
+ * \brief Service used to manage threads.
  * 
- * Peut retourner nul si aucun service n'est disponible.
+ * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IThreadImplementation*
 getThreadImplementationService();
 
 /*!
- * \brief Positionne le service utilisé pour gérer les threads.
+ * \brief Sets the service used to manage threads.
  * 
- * Retourne l'ancien service utilisé.
+ * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IThreadImplementation*
 setThreadImplementationService(IThreadImplementation* service);
 
 /*!
- * \brief Positionne le service utilisé pour gérer les compteurs interne du processeur.
+ * \brief Sets the service used to manage internal processor counters.
  *
- * Retourne l'ancien service utilisé.
+ * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IPerformanceCounterService*
 setPerformanceCounterService(IPerformanceCounterService* service);
 
 /*!
- * \brief Service utilisé pour obtenir pour obtenir les compteurs interne du processeur.
+ * \brief Service used to obtain internal processor counters.
  *
- * Peut retourner nul si aucun service n'est disponible.
+ * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService*
 getPerformanceCounterService();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remet à timer d'alarme à \a nb_second.
+ * \brief Resets the alarm timer to \a nb_second.
  *
- * Le timer déclenchera un signal (SIGALRM) au bout de \a nb_second.
+ * The timer will trigger a signal (SIGALRM) after \a nb_second.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 resetAlarmTimer(Integer nb_second);
 
 /*!
- * \brief Vrai si le code s'exécute avec le runtime .NET.
+ * \brief True if the code is running with the .NET runtime.
  */
 extern "C++" ARCANE_UTILS_EXPORT bool
 hasDotNETRuntime();
 
 /*!
- * \brief Positionne si le code s'exécute avec le runtime .NET.
+ * \brief Sets whether the code is running with the .NET runtime.
  *
- * Cette fonction ne peut être positionnée qu'au démarrage
- * du calcul avant arcaneInitialize().
+ * This function can only be set at the start of the calculation before
+ * arcaneInitialize().
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 setHasDotNETRuntime(bool v);
@@ -176,14 +177,15 @@ setHasDotNETRuntime(bool v);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Appelle le Garbage Collector de '.Net' s'il est disponible
+//! Calls the .Net Garbage Collector if available
 extern "C++" ARCANE_UTILS_EXPORT void
 callDotNETGarbageCollector();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur spécifique pour les accélérateurs.
+ * \brief Allocator specific to accelerators.
  *
  * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
  */
@@ -193,13 +195,14 @@ getAcceleratorHostMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne l'allocateur spécifique pour les accélérateurs.
+ * \brief Sets the allocator specific to accelerators.
  *
- * Retourne l'ancien allocateur utilisé. L'allocateur spécifié doit rester
- * valide durant toute la durée de vie de l'application.
+ * Returns the previously used allocator. The specified allocator must remain
+ * valid throughout the application's lifetime.
  *
- * \deprecated Cette méthode est interne à Arcane.
+ * \deprecated This method is internal to Arcane.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IMemoryAllocator*
@@ -207,16 +210,17 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur par défaut pour les données.
+ * \brief Default allocator for data.
  *
- * Cette allocateur utilise celui getAcceleratorHostMemoryAllocator()
- * s'il est disponible, sinon il utilise un allocateur aligné.
+ * This allocator uses the one returned by getAcceleratorHostMemoryAllocator()
+ * if available; otherwise, it uses an aligned allocator.
  *
- * Il est garanti que l'allocateur retourné permettra d'utiliser la donnée
- * sur accélerateur si cela est disponible.
+ * It is guaranteed that the returned allocator will allow the data
+ * to be used on the accelerator if available.
  *
- * Il est garanti que l'alignement est au moins celui retourné par
+ * It is guaranteed that the alignment is at least that returned by
  * AlignedMemoryAllocator::Simd().
  */
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
@@ -224,14 +228,15 @@ getDefaultDataAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne le gestionnaire de ressource mémoire pour les données.
+ * \brief Sets the memory resource manager for data.
  *
- * Le gestionnaire doit rester valide durant toute l'exécution du programme.
+ * The manager must remain valid throughout the program's execution.
  *
- * Retourne l'ancien gestionnaire.
+ * Returns the previously used manager.
  *
- * * \deprecated Cette méthode est interne à Arcane.
+ * \deprecated This method is internal to Arcane.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
 ARCANE_UTILS_EXPORT IMemoryRessourceMng*
@@ -239,13 +244,15 @@ setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de ressource mémoire pour les données.
+ * \brief Memory resource manager for data.
  *
- * Il est garanti que l'alignement est au moins celui retourné par
+ * It is guaranteed that the alignment is at least that returned by
  * AlignedMemoryAllocator::Simd().
  *
- * \deprecated Cette méthode est interne à Arcane.
+ * \deprecated This method is internal to Arcane. Use methods from MemoryUtils
+ * instead.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use methods from MemoryUtils instead.")
 ARCANE_UTILS_EXPORT IMemoryRessourceMng*
@@ -253,79 +260,85 @@ getDataMemoryRessourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lit le contenu d'un fichier et le conserve dans \a out_bytes.
+ * \brief Reads the content of a file and stores it in \a out_bytes.
  *
- * Lit le fichier de nom \a filename et remplit \a out_bytes avec le contenu
- * de ce fichier. Si \a is_binary est vrai, le fichier est ouvert en mode
- * binaire. Sinon il est ouvert en mode texte.
+ * Reads the file named \a filename and fills \a out_bytes with the content
+ * of this file. If \a is_binary is true, the file is opened in binary mode.
+ * Otherwise, it is opened in text mode.
  *
- * \retval true en cas d'erreur
- * \retval false sinon.
+ * \retval true in case of error
+ * \retval false otherwise.
  */
 extern "C++" ARCANE_UTILS_EXPORT bool
 readAllFile(StringView filename, bool is_binary, ByteArray& out_bytes);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lit le contenu d'un fichier et le conserve dans \a out_bytes.
+ * \brief Reads the content of a file and stores it in \a out_bytes.
  *
- * Lit le fichier de nom \a filename et remplit \a out_bytes avec le contenu
- * de ce fichier. Si \a is_binary est vrai, le fichier est ouvert en mode
- * binaire. Sinon il est ouvert en mode texte.
+ * Reads the file named \a filename and fills \a out_bytes with the content
+ * of this file. If \a is_binary is true, the file is opened in binary mode.
+ * Otherwise, it is opened in text mode.
  *
- * \retval true en cas d'erreur
- * \retval false sinon.
+ * \retval true in case of error
+ * \retval false otherwise.
  */
 extern "C++" ARCANE_UTILS_EXPORT bool
 readAllFile(StringView filename, bool is_binary, Array<std::byte>& out_bytes);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le nom complet avec le chemin de l'exécutable.
+ * \brief Returns the full name with the executable path.
  */
 extern "C++" ARCANE_UTILS_EXPORT String
 getExeFullPath();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit \a arg_list avec les arguments de la ligne de commande.
+ * \brief Fills \a arg_list with command line arguments.
  *
- * Cette fonction remplit \a arg_list avec les arguments utilisés dans
- * l'appel à main().
+ * This function fills \a arg_list with the arguments used in the call to
+ * main().
  *
- * Actuellement cette méthode ne fonctionne que sous Linux. Pour les autres
- * plateforme elle retourne une liste vide.
+ * Currently, this method only works on Linux. For other platforms, it
+ * returns an empty list.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 fillCommandLineArguments(StringList& arg_list);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Récupère la pile d'appel via gdb.
+ * \brief Retrieves the call stack via gdb.
  *
- * Cette méthode ne fonctionne que sous Linux et si GDB est installé. Dans
- * les autres cas c'est la chaîne nulle qui est retournée.
+ * This method only works on Linux and if GDB is installed. In other cases,
+ * the null string is returned.
  *
- * Cette méthode appelle la commande std::system() pour lancer gbd qui doit
- * se trouver dans le PATH. Comme gdb charge ensuite les symboles de debug
- * la commande peut être assez longue à s'exécuter.
+ * This method calls the std::system() command to launch gdb, which must be
+ * in the PATH. Since gdb then loads the debug symbols, the command can take
+ * a long time to execute.
  */
 extern "C++" ARCANE_UTILS_EXPORT String
 getGDBStack();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Récupère la pile d'appel via lldb.
+ * \brief Retrieves the call stack via lldb.
  *
- * Cette méthode est similaire à getGDBStack() mais utilise 'lldb' pour
- * récupérer la pile d'appel. Si `dotnet-sos` est installé, cela permet
- * aussi de récupérer les informations sur les méthodes du runtime 'dotnet'.
+ * This method is similar to getGDBStack() but uses 'lldb' to retrieve the
+ * call stack. If `dotnet-sos` is installed, it also allows retrieving
+ * information about 'dotnet' runtime methods.
  */
 extern "C++" ARCANE_UTILS_EXPORT String
 getLLDBStack();
@@ -333,25 +346,25 @@ getLLDBStack();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Définition du pragma pour indiquer l'indépendance des itérations
+// Definition of the pragma to indicate iteration independence
 
 /*!
  * \def ARCANE_PRAGMA_IVDEP
- * Pragma pour indiquer au compilateur que les itérations d'une boucle sont
- * indépendanntes. Ce pragma se positionne avant une boucle 'for'.
+ * Pragma to indicate to the compiler that loop iterations are
+ * independent. This pragma is placed before a 'for' loop.
  */
 
 /*!
  * \def ARCANE_PRAGMA_IVDEP_VALUE
- * Valeur du pragma ARCANE_PRAGMA_IVDEP
+ * Value of the ARCANE_PRAGMA_IVDEP pragma
  */
 
-// Pour les définitions, il faut finir par GCC car Clang et ICC définissent
-// la macro __GNU__
-// Pour CLANG, il n'y a pas encore d'équivalent au pragma ivdep de ICC.
-// Celui qui s'en approche le plus est:
+// For definitions, GCC must be last because Clang and ICC define
+// the macro __GNU__
+// For CLANG, there is no equivalent to the ICC pragma ivdep yet.
+// The closest one is:
 //   #pragma clang loop vectorize(enable)
-// mais il ne force pas la vectorisation.
+// but it does not force vectorization.
 #ifdef __clang__
 #  define ARCANE_PRAGMA_IVDEP_VALUE "clang loop vectorize(enable)"
 #else
@@ -386,4 +399,4 @@ getLLDBStack();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

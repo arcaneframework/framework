@@ -48,12 +48,12 @@ class GraphBaseT
 {
 protected:
 
-  /** Constructeur de la classe */
+  /** Class constructor */
   GraphBaseT(ITraceMng* trace_mng)
   : m_trace_mng(trace_mng)
   {}
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~GraphBaseT() {}
 
 public:
@@ -117,9 +117,9 @@ public:
   typedef VertexType VertexRef;
   typedef EdgeType EdgeRef;
 
-  // TODO Array de reference_wrapper ne fonctionne pas ...car il fait des T()...voir avec std::vector...
+  // TODO Array of reference_wrapper does not work ... because it does T()... see std::vector...
 
-  //! Les arêtes multiples (constituées des mêmes noeuds source et target) ne sont pas autorisées (throw FatalErrorException)
+  //! Multiple edges (consisting of the same source and target nodes) are not allowed (throws FatalErrorException)
   void addEdge(const VertexType& source_vertex, const VertexType& target_vertex, const EdgeType& source_to_target_edge)
   {
     _addEdge(source_vertex,target_vertex,source_to_target_edge);
@@ -150,17 +150,17 @@ public:
     transposed_adjacency_entry.second.push_back(inserted_edge);
     // Fill edge map [edge] = pair <Vertex,Vertex>
     m_edge_to_vertex_map.insert(std::make_pair(std::ref(inserted_edge),std::make_pair(std::ref(inserted_source_vertex),std::ref(inserted_target_vertex))));
-    // c'est moche mais on ne peut pas utiliser [] de la map avec reference_wrapper (not default constructible) ni utiliser emplace (pas supporté dans gcc 4.7.2
+    // It's ugly but we cannot use [] on the map with reference_wrapper (not default constructible) nor use emplace (not supported in gcc 4.7.2
 //    m_edge_to_vertex_map.emplace(std::cref(inserted_edge),std::make_pair(inserted_source_vertex,inserted_target_vertex)); // No Gcc 4,7,2
   }
 
-  //! Renvoie un pointeur vers l'instance d'EdgeType stockée dans le graphe ou nullptr si non trouvé.
+  //! Returns a pointer to the EdgeType instance stored in the graph or nullptr if not found.
   EdgeType* getEdge(const VertexType& source_vertex, const VertexType& target_vertex)
   {
     return _getEdge(source_vertex,target_vertex);
   }
 
-  //! Renvoie un pointeur vers l'instance d'EdgeType stockée dans le graphe ou nullptr si non trouvé.
+  //! Returns a pointer to the EdgeType instance stored in the graph or nullptr if not found.
   const EdgeType* getEdge(const VertexType& source_vertex, const VertexType& target_vertex) const
   {
     return _getEdge(source_vertex,target_vertex);
@@ -175,7 +175,7 @@ public:
     else return &edge_array[edge_index].get();
   }
 
-  // Implémenter in_edges(vertex) et out_edges(vertex) avec un itérateur...puis edges() et vertices()
+  // Implement in_edges(vertex) and out_edges(vertex) with an iterator... then edges() and vertices()
 
   VertexType* getSourceVertex(const EdgeType& edge)
   {
@@ -239,7 +239,7 @@ protected:
 private:
 
   template <class Vertex>
-  VertexType& _addVertex(Vertex vertex) // to handle _add(VertexType&) et _add(VertexType&&)
+  VertexType& _addVertex(Vertex vertex) // to handle _add(VertexType&) and _add(VertexType&&)
   {
     // Look up if vertex does exist
     auto found_vertex = std::find_if(m_vertices.begin(), m_vertices.end(), [&vertex](const VertexType& u){return (!(u < vertex) && !(vertex < u));}); // Unary predicate used to avoid contraining VertexObject to be Equality Comparable objects
@@ -251,7 +251,7 @@ private:
     else return *found_vertex;
   }
 
-  template <class Vertex> // to handle Vertex&& et Vertex& = another way to do so ?
+  template <class Vertex> // to handle Vertex&& and Vertex& = another way to do so ?
   std::pair<Integer,EdgeTypeRefArray> _getEdgeIndex(Vertex source_vertex, Vertex target_vertex)
   {
     typename AdjacencyListType::iterator found_source_vertex = m_adjacency_list.find(source_vertex);
@@ -260,14 +260,14 @@ private:
     return std::make_pair(target_vertex_index,found_source_vertex->second.second); // pair < u, pair <[u], [u_v] > >...Use get<T> with pair when available to improve readability
   }
 
-  template <class Vertex> // c'est contagieux...
+  template <class Vertex> // it's contagious...
   Integer _getTargetVertexIndex(typename AdjacencyListType::iterator source_vertex_map_entry, Vertex target_vertex)
   {
     if (source_vertex_map_entry == m_adjacency_list.end()) return -1;
     return _getConnectedVertexIndex(source_vertex_map_entry,target_vertex);
   }
 
-  template <class Vertex> // c'est contagieux...
+  template <class Vertex> // it's contagious...
   Integer _getConnectedVertexIndex(typename AdjacencyListType::iterator vertex_map_entry, Vertex connected_vertex)
   {
     VertexTypeRefArray& vertex_array = vertex_map_entry->second.first;

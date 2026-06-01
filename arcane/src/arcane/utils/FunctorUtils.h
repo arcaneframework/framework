@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FunctorUtils.h                                              (C) 2000-2018 */
 /*                                                                           */
-/* Fonctions utilitaires pour les fonctors.                                  */
+/* Utility functions for functors.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_FUNCTORUTILS_H
 #define ARCANE_UTILS_FUNCTORUTILS_H
@@ -27,7 +27,7 @@ ARCANE_BEGIN_NAMESPACE
 
 namespace functor
 {
-//! Spécialisation pour une fonction lamba avec un argument
+//! Specialization for a lambda function with one argument
 template<typename LambdaType,typename A1> StdFunctorWithArgumentT<A1>
 make(const LambdaType& f,void (LambdaType::*)(A1 r) const)
 {
@@ -35,12 +35,12 @@ make(const LambdaType& f,void (LambdaType::*)(A1 r) const)
 }
 
 /*!
- * \brief Créé et retourne un fonctor pour la fonction lambda \a f.
+ * \brief Creates and returns a functor for the lambda function \a f.
  *
- * La lambda \a f doit correspondre à une fonction avec le
+ * The lambda \a f must correspond to a function with the
  * prototype void(ArgType).
- * L'objet retourné est de type IFunctorWithArgumentT<ArgType> avec
- * \a ArgType le seul paramètre de \a f.
+ * The returned object is of type IFunctorWithArgumentT<ArgType> with
+ * \a ArgType being the only parameter of \a f.
  */
 template<typename LambdaType> auto
 make(const LambdaType& f) -> decltype(make(f,&LambdaType::operator()))
@@ -48,7 +48,7 @@ make(const LambdaType& f) -> decltype(make(f,&LambdaType::operator()))
   return make(f,&LambdaType::operator());
 }
 
-//! Spécialisation pour une fonction lamba avec un argument
+//! Specialization for a lambda function with one argument
 template<typename LambdaType,typename A1>  StdFunctorWithArgumentT<A1>*
 makePointer(const LambdaType& f,void (LambdaType::*)(A1 r) const)
 {
@@ -56,13 +56,13 @@ makePointer(const LambdaType& f,void (LambdaType::*)(A1 r) const)
 }
 
 /*!
- * \brief Créé et retourne un pointeur pour un fonctor pour la fonction lambda \a f.
+ * \brief Creates and returns a pointer to a functor for the lambda function \a f.
  *
- * La lambda \a f doit correspondre à une fonction avec le
+ * The lambda \a f must correspond to a function with the
  * prototype void(ArgType).
- * Le pointeur retourné est de type IFunctorWithArgumentT<ArgType> avec
- * \a ArgType le seul paramètre de \a f.
- * Le pointeur retourné doit être détruit par l'opérateur delete.
+ * The returned pointer is of type IFunctorWithArgumentT<ArgType> with
+ * \a ArgType being the only parameter of \a f.
+ * The returned pointer must be destroyed by the delete operator.
  */
 template<typename LambdaType> auto
 makePointer(const LambdaType& f) -> decltype(makePointer(f,&LambdaType::operator()))
@@ -72,20 +72,21 @@ makePointer(const LambdaType& f) -> decltype(makePointer(f,&LambdaType::operator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique un functor issu d'une lambda fonction sur une méthode donnée.
+ * \brief Applies a functor derived from a lambda function to a given method.
  *
- * Cette fonction permet d'appliquer directement une lambda fonction
- * sur une méthode qui prend en paramètre une instance de
+ * This function allows a lambda function to be applied directly
+ * to a method that takes an instance of
  * IFunctorWithArgumentT.
  *
- * Par exemple, si on a la classe suivante:
+ * For example, if we have the following class:
  *
  * \code
  * class A { void visit(IFunctorWithArgumentT<int>*); };
  * \encode
  *
- * On peut l'utiliser comme suit:
+ * It can be used as follows:
  *
  * \code
  * void f()
@@ -113,5 +114,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

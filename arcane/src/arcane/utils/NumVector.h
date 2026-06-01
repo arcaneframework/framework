@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumVector.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Vecteur de taille fixe de types numériques.                               */
+/* Fixed-size vector of numerical types.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_NUMVECTOR_H
 #define ARCANE_UTILS_NUMVECTOR_H
@@ -27,16 +27,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Petit vecteur de taille fixe de N données numériques.
+ * \brief Small fixed-size vector of N numerical data points.
  *
- * \note Actuellement uniquement implémenté pour le type Real.
+ * \note Currently only implemented for the Real type.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  *
- * Il est possible d'accéder à chaque composante du vecteur par 'operator[]'
- * ou 'operator()' ou par les méthodes vx(), vy(), vz() si la dimension est
- * suffisante (par exemple vz() est uniquement accessible si la Size>=3.
+ * It is possible to access each component of the vector using 'operator[]'
+ * or 'operator()' or via the methods vx(), vy(), vz() if the dimension is
+ * sufficient (for example, vz() is only accessible if Size>=3.
  */
 template <typename T, int Size>
 class NumVector
@@ -51,10 +52,10 @@ class NumVector
 
  public:
 
-  //! Construit le vecteur nul.
+  //! Constructs the zero vector.
   NumVector() = default;
 
-  //! Construit avec le couple (ax,ay)
+  //! Constructs with the pair (ax,ay)
   constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay) requires(Size == 2)
 
   {
@@ -62,7 +63,7 @@ class NumVector
     m_values[1] = ay;
   }
 
-  //! Construit avec le triplet (ax,ay,az)
+  //! Constructs with the triplet (ax,ay,az)
   constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay, T az) requires(Size == 3)
 
   {
@@ -71,7 +72,7 @@ class NumVector
     m_values[2] = az;
   }
 
-  //! Construit avec le quadruplet (a1,a2,a3,a4)
+  //! Constructs with the quadruplet (a1,a2,a3,a4)
   constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4) requires(Size == 4)
 
   {
@@ -81,7 +82,7 @@ class NumVector
     m_values[3] = a4;
   }
 
-  //! Construit avec le quintuplet (a1,a2,a3,a4,a5)
+  //! Constructs with the quintuplet (a1,a2,a3,a4,a5)
   constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4, T a5) requires(Size == 5)
   {
     m_values[0] = a1;
@@ -91,7 +92,7 @@ class NumVector
     m_values[4] = a5;
   }
 
-  //! Construit l'instance avec pour chaque composante la valeur \a v
+  //! Constructs the instance with the value \a v for each component
   template <bool = true>
   explicit constexpr ARCCORE_HOST_DEVICE NumVector(const T (&v)[Size])
   {
@@ -99,14 +100,14 @@ class NumVector
       m_values[i] = v[i];
   }
 
-  //! Construit l'instance avec pour chaque composante la valeur \a v
+  //! Constructs the instance with the value \a v for each component
   explicit constexpr ARCCORE_HOST_DEVICE NumVector(std::array<T, Size> v)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] = v[i];
   }
 
-  //! Construit l'instance avec pour chaque composante la valeur \a v
+  //! Constructs the instance with the value \a v for each component
   explicit constexpr ARCCORE_HOST_DEVICE NumVector(T v)
   {
     for (int i = 0; i < Size; ++i)
@@ -121,7 +122,7 @@ class NumVector
   : NumVector(v.x, v.y, v.z)
   {}
 
-  //! Affecte à l'instance le triplet (v,v,v).
+  //! Assigns the triplet (v,v,v) to the instance.
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(Real v)
   {
     for (int i = 0; i < Size; ++i)
@@ -159,7 +160,7 @@ class NumVector
     return is_nearly_zero;
   }
 
-  //! Retourne la norme L2 au carré du triplet \f$x^2+y^2+z^2\f$
+  //! Returns the square of the L2 norm of the triplet \f$x^2+y^2+z^2\f$
   constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const
   {
     T v = T();
@@ -167,10 +168,11 @@ class NumVector
       v += m_values[i] * m_values[i];
     return v;
   }
-  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+
+  //! Returns the L2 norm of the triplet \f$\sqrt{x^2+y^2+z^2}\f$
   ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
 
-  //! Valeur absolue composante par composante.
+  //! Absolute value component by component.
   ARCCORE_HOST_DEVICE ThatClass absolute() const
   {
     ThatClass v;
@@ -179,7 +181,7 @@ class NumVector
     return v;
   }
 
-  //! Ajoute \a b à chaque composante de l'instance
+  //! Adds \a b to each component of the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(T b)
   {
     for (int i = 0; i < Size; ++i)
@@ -187,42 +189,47 @@ class NumVector
     return (*this);
   }
 
-  //! Ajoute \a b à l'instance
+  //! Adds \a b to the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] += b.m_values[i];
     return (*this);
   }
-  //! Soustrait \a b à chaque composante de l'instance
+
+  //! Subtracts \a b from each component of the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(T b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] -= b;
     return (*this);
   }
-  //! Soustrait \a b à l'instance
+
+  //! Subtracts \a b from the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] -= b.m_values[i];
     return (*this);
   }
-  //! Multiple chaque composante par \a b
+
+  //! Multiplies each component by \a b
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator*=(T b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] *= b;
     return (*this);
   }
-  //! Divise chaque composante par \a b
+
+  //! Divides each component by \a b
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator/=(T b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] /= b;
     return (*this);
   }
-  //! Créé un triplet qui vaut ce triplet ajouté à \a b
+
+  //! Creates a triplet that equals this triplet added to \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const ThatClass& b)
   {
     ThatClass v;
@@ -230,7 +237,8 @@ class NumVector
       v.m_values[i] = a.m_values[i] + b.m_values[i];
     return v;
   }
-  //! Créé un triplet qui vaut \a b soustrait de ce triplet
+
+  //! Creates a triplet that equals \a b subtracted from this triplet
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const ThatClass& b)
   {
     ThatClass v;
@@ -238,7 +246,8 @@ class NumVector
       v.m_values[i] = a.m_values[i] - b.m_values[i];
     return v;
   }
-  //! Créé un triplet opposé au triplet actuel
+
+  //! Creates a triplet opposite to the current triplet
   constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const
   {
     ThatClass v;
@@ -246,7 +255,8 @@ class NumVector
       v.m_values[i] = -m_values[i];
     return v;
   }
-  //! Multiplication par un scalaire.
+
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(T a, const ThatClass& vec)
   {
     ThatClass v;
@@ -254,7 +264,8 @@ class NumVector
       v.m_values[i] = a * vec.m_values[i];
     return v;
   }
-  //! Multiplication par un scalaire.
+
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& vec, T b)
   {
     ThatClass v;
@@ -262,7 +273,8 @@ class NumVector
       v.m_values[i] = vec.m_values[i] * b;
     return v;
   }
-  //! Division par un scalaire.
+
+  //! Division by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& vec, T b)
   {
     ThatClass v;
@@ -272,10 +284,10 @@ class NumVector
   }
 
   /*!
-   * \brief Compare composant pas composante l'instance courante à \a b.
+   * \brief Compares the current instance component by component to \a b.
    *
-   * \retval true si this.x==b.x et this.y==b.y et this.z==b.z.
-   * \retval false sinon.
+   * \retval true if this.x==b.x and this.y==b.y and this.z==b.z.
+   * \retval false otherwise.
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator==(const ThatClass& a, const ThatClass& b)
   {
@@ -286,8 +298,8 @@ class NumVector
   }
 
   /*!
-   * \brief Compare deux vecteurs
-   * Pour la notion d'égalité, voir operator==()
+   * \brief Compares two vectors
+   * For the notion of equality, see operator==()
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator!=(const ThatClass& a, const ThatClass& b)
   {
@@ -315,34 +327,34 @@ class NumVector
     return m_values[i];
   }
 
-  //! Valeur de la première composante
+  //! Value of the first component
   T& vx() requires(Size >= 1)
   {
     return m_values[0];
   }
-  //! Valeur de la première composante
+  //! Value of the first component
   T vx() const requires(Size >= 1)
   {
     return m_values[0];
   }
 
-  //! Valeur de la deuxième composante
+  //! Value of the second component
   T& vy() requires(Size >= 2)
   {
     return m_values[1];
   }
-  //! Valeur de la deuxième composante
+  //! Value of the second component
   T vy() const requires(Size >= 2)
   {
     return m_values[1];
   }
 
-  //! Valeur de la troisième composante
+  //! Value of the third component
   T& vz() requires(Size >= 3)
   {
     return m_values[2];
   }
-  //! Valeur de la troisième composante
+  //! Value of the third component
   T vz() const requires(Size >= 3)
   {
     return m_values[2];
@@ -350,22 +362,23 @@ class NumVector
 
  private:
 
-  //! Valeurs du vecteur
+  //! Vector values
   T m_values[Size] = {};
 
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of \a a and \a b using the TypeEqualT comparator
+   * \retval true if \a a and \a b are equal,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool
   _eq(T a, T b)
   {
     return math::isEqual(a, b);
   }
-  //! Retourne la racine carrée de \a a
+
+  //! Returns the square root of \a a
   ARCCORE_HOST_DEVICE static T _sqrt(T a)
   {
     return math::sqrt(a);

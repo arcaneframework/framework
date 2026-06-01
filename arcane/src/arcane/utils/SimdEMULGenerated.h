@@ -1,4 +1,4 @@
-// WARNING: This file is generated. Do not edit.
+﻿// WARNING: This file is generated. Do not edit.
 
 
 /*---------------------------------------------------------------------------*/
@@ -129,4 +129,3 @@ inline EMULSimdReal log10 (EMULSimdReal a)
   return EMULSimdReal::fromScalar(math::log10(za[0]),math::log10(za[1]));
 }
 }
-

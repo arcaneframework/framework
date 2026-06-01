@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ValueConvert.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions pour convertir une chaîne de caractère en un type donné.        */
+/* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,7 +21,7 @@
 
 #include <charconv>
 
-// TODO: Pour builtInGetValue(), retourner `true` si la chaîne en entrée est vide.
+// TODO: For builtInGetValue(), return `true` if the input string is empty.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,10 +31,10 @@ namespace Arcane
 namespace
 {
   /*!
-   * \brief Retourne \a s converti en \a 'const char*'.
+   * \brief Returns \a s converted to \a 'const char*'.
    *
-   * \warning Si la valeur retournée est utilisée pour une fonction C,
-   * il faut être sur que \a s a un '\0' terminal.
+   * \warning If the returned value is used for a C function,
+   * you must ensure that \a s has a terminal '\0'.
    */
   const char* _stringViewData(StringView s)
   {
@@ -92,9 +92,9 @@ builtInGetValue(Float16& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Float128& v, StringView s)
 {
-  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Float128.
-  // On utilise donc un 'long double'.
-  // TODO: à implémenter correctement
+  // For now (12/2024), there are no native functions to read a Float128.
+  // We therefore use a 'long double'.
+  // TODO: to be implemented correctly
   long double z = 0.0;
   bool r = builtInGetValue(z, s);
   v = z;
@@ -227,9 +227,9 @@ builtInGetValue(Real3x3& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Int128& v, StringView s)
 {
-  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Int128.
-  // On utilise donc un 'Int64' en attendant.
-  // TODO: il existe des exemples sur internet. A implémenter correctement
+  // For now (12/2024), there are no native functions to read an Int128.
+  // We are therefore using an 'Int64' for now.
+  // TODO: there are examples on the internet. To be implemented correctly
   long long v2 = 0;
   const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
@@ -288,9 +288,9 @@ namespace
 {
   bool _builtInGetBoolArrayValue(BoolArray& v, StringView s)
   {
-    // Le type 'bool' est un peu spécial car il doit pouvoir lire les
-    // valeurs comme 'true' ou 'false'.
-    // On le lit donc comme un 'StringUniqueArray', puis on converti en bool
+    // The 'bool' type is a bit special because it must be able to read
+    // values like 'true' or 'false'.
+    // We therefore read it as a 'StringUniqueArray', then convert it to bool
     //cout << "** GET BOOL ARRAY V=" << s << '\n';
     //return builtInGetArrayValue(v,s);
 

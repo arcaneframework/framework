@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterCaseOption.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant d'interroger les paramètres pour savoir si des options  */
-/* du jeu de données doivent être modifiées par ceux-ci.                     */
+/* Class allowing querying parameters to determine if dataset options        */
+/* should be modified by them.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_PARAMETERCASEOPTION_H
 #define ARCANE_UTILS_INTERNAL_PARAMETERCASEOPTION_H
@@ -30,9 +30,10 @@ class ParameterOptionElementsCollection;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe représentant l'ensemble des paramètres pouvant modifier
- * les options du jeu de données.
+ * \brief Class representing the set of parameters that can modify
+ * the dataset options.
  */
 class ARCANE_UTILS_EXPORT ParameterCaseOption
 {
@@ -44,244 +45,238 @@ class ARCANE_UTILS_EXPORT ParameterCaseOption
  public:
 
   /*!
-   * \brief Méthode permettant de récupérer la valeur d'une option.
+   * \brief Method allowing retrieval of an option's value.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[index]/xpath_after_index
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par celui passé en paramètre).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by the one passed as a parameter).
    *
-   * xpath_after_index doit être de la forme suivante :
+   * xpath_after_index must be in the following format:
    * ddd/eee
-   * - pas de "/" au début ni à la fin.
+   * - no "/" at the beginning or the end.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
+   * The indices are XML indices and these indices start at 1.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \param xpath_after_index L'adresse après indice.
-   * \param index L'indice à mettre entre les deux parties de l'adresse.
-   * \return La valeur si trouvée, sinon chaîne null.
+   * \param xpath_before_index The address before the index.
+   * \param xpath_after_index The address after the index.
+   * \param index The index to place between the two parts of the address.
+   * \return The value if found, otherwise null string.
    */
   String getParameterOrNull(const String& xpath_before_index, const String& xpath_after_index, Integer index) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la valeur d'une option.
+   * \brief Method allowing retrieval of an option's value.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[index]
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par celui passé en paramètre).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by the one passed as a parameter).
    *
-   * Si le paramètre allow_elems_after_index est activé, les adresses de la forme :
+   * If the parameter allow_elems_after_index is enabled, addresses of the form:
    * xpath_before_index[index]/aaa/bbb
-   * seront aussi recherchées.
+   * will also be searched.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
+   * The indices are XML indices and these indices start at 1.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \param index L'indice à mettre après l'adresse.
-   * \param allow_elems_after_index Doit-on vérifier la présence d'éléments après l'indice ?
-   * \return La valeur si trouvée, sinon chaîne null.
+   * \param xpath_before_index The address before the index.
+   * \param index The index to place after the address.
+   * \param allow_elems_after_index Should elements after the index be checked?
+   * \return The value if found, otherwise null string.
    */
   String getParameterOrNull(const String& xpath_before_index, Integer index, bool allow_elems_after_index) const;
 
   /*!
-   * \brief Méthode permettant de récupérer la valeur d'une option.
+   * \brief Method allowing retrieval of an option's value.
    *
-   * L'adresse doit être de la forme suivante :
+   * The address must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin.
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
+   * The indices are XML indices and these indices start at 1.
    *
-   * \param full_xpath L'adresse à rechercher.
-   * \return La valeur si trouvée, sinon chaîne null.
+   * \param full_xpath The address to search for.
+   * \return The value if found, otherwise null string.
    */
   String getParameterOrNull(const String& full_xpath) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une option est présente.
+   * \brief Method allowing checking if an option is present.
    *
-   * L'adresse doit être de la forme suivante :
+   * The address must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin.
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
+   * The indices are XML indices and these indices start at 1.
    *
-   * \param full_xpath L'adresse à rechercher.
-   * \return true si l'adresse est trouvée dans la liste.
+   * \param full_xpath The address to search for.
+   * \return true if the address is found in the list.
    */
   bool exist(const String& full_xpath) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une option est présente.
+   * \brief Method allowing checking if an option is present.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[ANY_INDEX]/xpath_after_index
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par ANY_INDEX).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by ANY_INDEX).
    *
-   * xpath_after_index doit être de la forme suivante :
+   * xpath_after_index must be in the following format:
    * ddd/eee
-   * - pas de "/" au début ni à la fin.
+   * - no "/" at the beginning or the end.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
-   * L'indice ANY_INDEX est un indice spécial désignant tous les indices.
+   * The indices are XML indices and these indices start at 1. The ANY_INDEX index is a special index designating all indices.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \param xpath_after_index L'adresse après indice.
-   * \return true si l'adresse est trouvée dans la liste.
+   * \param xpath_before_index The address before the index.
+   * \param xpath_after_index The address after the index.
+   * \return true if the address is found in the list.
    */
   bool existAnyIndex(const String& xpath_before_index, const String& xpath_after_index) const;
 
   /*!
-   * \brief Méthode permettant de savoir si une option est présente.
+   * \brief Method allowing checking if an option is present.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * full_xpath[ANY_INDEX]
    *
-   * L'adresse doit être de la forme suivante :
+   * The address must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par ANY_INDEX).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by ANY_INDEX).
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
-   * L'indice ANY_INDEX est un indice spécial désignant tous les indices.
+   * The indices are XML indices and these indices start at 1. The ANY_INDEX index is a special index designating all indices.
    *
-   * \param full_xpath L'adresse à rechercher.
-   * \return true si l'adresse est trouvée dans la liste.
+   * \param full_xpath The address to search for.
+   * \return true if the address is found in the list.
    */
   bool existAnyIndex(const String& full_xpath) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le ou les indices de l'option.
+   * \brief Method allowing retrieval of the index or indices of the option.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[GET_INDEX]/xpath_after_index
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par GET_INDEX).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by GET_INDEX).
    *
-   * xpath_after_index doit être de la forme suivante :
+   * xpath_after_index must be in the following format:
    * ddd/eee
-   * - pas de "/" au début ni à la fin.
+   * - no "/" at the beginning or the end.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
-   * L'indice GET_INDEX est un indice spécial désignant les indices que l'on souhaite récupérer.
+   * The indices are XML indices and these indices start at 1. The GET_INDEX index is a special index designating the indices to be retrieved.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \param xpath_after_index L'adresse après indice.
-   * \param indexes Le tableau qui contiendra l'ensemble des indices trouvés
-   * (ce tableau n'est pas effacé avant utilisation).
+   * \param xpath_before_index The address before the index.
+   * \param xpath_after_index The address after the index.
+   * \param indexes The array that will contain the set of found indices
+   * (this array is not cleared before use).
    */
   void indexesInParam(const String& xpath_before_index, const String& xpath_after_index, UniqueArray<Integer>& indexes) const;
 
   /*!
-   * \brief Méthode permettant de récupérer le ou les indices de l'option.
+   * \brief Method allowing retrieval of the index or indices of the option.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[GET_INDEX]
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par GET_INDEX).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by GET_INDEX).
    *
-   * Si le paramètre allow_elems_after_index est activé, les adresses de la forme :
+   * If the parameter allow_elems_after_index is enabled, addresses of the form:
    * xpath_before_index[GET_INDEX]/aaa/bbb
-   * seront aussi recherchées.
+   * will also be searched.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
-   * L'indice GET_INDEX est un indice spécial désignant les indices que l'on souhaite récupérer.
+   * The indices are XML indices and these indices start at 1. The GET_INDEX index is a special index designating the indices to be retrieved.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \param indexes Le tableau qui contiendra l'ensemble des indices trouvés
-   * \param allow_elems_after_index Doit-on vérifier la présence d'éléments après l'indice ?
-   * (ce tableau n'est pas effacé avant utilisation).
+   * \param xpath_before_index The address before the index.
+   * \param indexes The array that will contain the set of found indices
+   * \param allow_elems_after_index Should elements after the index be checked?
+   * (this array is not cleared before use).
    */
   void indexesInParam(const String& xpath_before_index, UniqueArray<Integer>& indexes, bool allow_elems_after_index) const;
 
   /*!
-   * \brief Méthode permettant de connaitre le nombre d'indices de l'option.
+   * \brief Method allowing knowing the number of indices of the option.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[GET_INDEX]/xpath_after_index
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par GET_INDEX).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by GET_INDEX).
    *
-   * xpath_after_index doit être de la forme suivante :
+   * xpath_after_index must be in the following format:
    * ddd/eee
-   * - pas de "/" au début ni à la fin.
+   * - no "/" at the beginning or the end.
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
-   * L'indice GET_INDEX est un indice spécial désignant les indices que l'on souhaite récupérer.
+   * The indices are XML indices and these indices start at 1. The GET_INDEX index is a special index designating the indices to be retrieved.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \param xpath_after_index L'adresse après indice.
-   * \return Le nombre d'indices de l'option.
+   * \param xpath_before_index The address before the index.
+   * \param xpath_after_index The address after the index.
+   * \return The number of indices of the option.
    */
   Integer count(const String& xpath_before_index, const String& xpath_after_index) const;
 
   /*!
-   * \brief Méthode permettant de connaitre le nombre d'indices de l'option.
+   * \brief Method allowing knowing the number of indices of the option.
    *
-   * L'adresse de l'option est reformée comme ceci :
+   * The option address is formatted as follows:
    * xpath_before_index[GET_INDEX]
    *
-   * xpath_before_index doit être de la forme suivante :
+   * xpath_before_index must be in the following format:
    * //case/aaa/bbb[2]/ccc
-   * - le "//case/" au début (ou "//cas/" en français"),
-   * - une succession de tags avec possiblement leurs indices,
-   * - pas de "/" à la fin,
-   * - un indice peut être mise à la fin (mais il sera remplacé
-   *   par GET_INDEX).
+   * - the "//case/" at the beginning (or "//cas/" in French),
+   * - a succession of tags possibly with their indices,
+   * - no "/" at the end,
+   * - an index may be placed at the end (but it will be replaced
+   *   by GET_INDEX).
    *
-   * Les indices sont des indices XML et ces indices commencent par 1.
-   * L'indice GET_INDEX est un indice spécial désignant les indices que l'on souhaite récupérer.
+   * The indices are XML indices and these indices start at 1. The GET_INDEX index is a special index designating the indices to be retrieved.
    *
-   * \param xpath_before_index L'adresse avant indice.
-   * \return Le nombre d'indices de l'option.
+   * \param xpath_before_index The address before the index.
+   * \return The number of indices of the option.
    */
   Integer count(const String& xpath_before_index) const;
 
@@ -303,4 +298,4 @@ class ARCANE_UTILS_EXPORT ParameterCaseOption
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

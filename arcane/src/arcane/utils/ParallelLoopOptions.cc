@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelLoopOptions.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Options de configuration pour les boucles parallèles en multi-thread.     */
+/* Configuration options for multi-threaded parallel loops.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

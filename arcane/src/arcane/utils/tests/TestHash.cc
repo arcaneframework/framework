@@ -54,7 +54,7 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
     has_context = true;
   }
 
-  // TODO: ajouter test ou ne fait clear() entre les appels
+  // TODO: add test or clear() between calls
   for (const TestInfo& ti : values_to_test) {
     Span<const Byte> str_bytes(ti.data_value.bytes());
     {
@@ -64,7 +64,7 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
       if (has_context){
         output1_incremental.clear();
         context->reset();
-        // Fais l'appel en deux fois.
+        // Make the call in two parts.
         auto span1 = input1.subspan(0,input1.size()/2);
         auto span2 = input1.subspan(input1.size()/2,input1.size());
         context->updateHash(span1);
@@ -111,14 +111,14 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
   }
 
   {
-    // Teste un gros tableau
+    // Test a large array
     const Int32 nb_byte = 100000;
     UniqueArray<std::byte> bytes(nb_byte);
     for (Int32 i = 0; i < nb_byte; ++i) {
       bytes[i] = std::byte(i % 127);
     }
-    // Boucle si on veut tester les performances
-    //(dans ce cas augmenter le nombre d'itérations)
+    // Loop if we want to test performance
+    //(in this case increase the number of iterations)
     for (int j = 0; j < 2; ++j) {
       output1.clear();
       algo.computeHash64(bytes, output1);

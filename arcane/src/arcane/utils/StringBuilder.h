@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringBuilder.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Constructeur de chaîne de caractère unicode.                              */
+/* Unicode character string constructor.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_STRINGBUILDER_H
 #define ARCANE_UTILS_STRINGBUILDER_H

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CStringUtils.cc                                             (C) 2000-2015 */
 /*                                                                           */
-/* Fonctions utilitaires sur les chaînes de caractères.                      */
+/* Utility functions for character strings.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,7 +58,7 @@ toInt(const char* str,bool* is_ok)
   return v;
 }
 
-//! Retourne \e true si \a s1 et \a s2 sont identiques, \e false sinon
+//! Returns true if s1 and s2 are identical, false otherwise
 bool CStringUtils::
 isEqual(const char* s1,const char* s2)
 {
@@ -74,7 +74,7 @@ isEqual(const char* s1,const char* s2)
   return false;
 }
 
-//! Retourne \e true si \a s1 est inférieur (ordre alphabétique) à \a s2 , \e false sinon
+//! Returns true if s1 is lexicographically less than s2, false otherwise
 bool CStringUtils::
 isLess(const char* s1,const char* s2)
 {
@@ -85,7 +85,7 @@ isLess(const char* s1,const char* s2)
   return (::strcmp(s1,s2) < 0);
 }
 
-//! Retourne la longueur de la chaîne \a s
+//! Returns the length of the string s
 Integer CStringUtils::
 len(const char* s)
 {

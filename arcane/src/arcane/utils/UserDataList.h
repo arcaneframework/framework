@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UserDataList.h                                              (C) 2000-2018 */
 /*                                                                           */
-/* Gère une liste de données utilisateurs.                                   */
+/* Manages a list of user data.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_USERDATALIST_H
 #define ARCANE_UTILS_USERDATALIST_H
@@ -28,8 +28,9 @@ class IUserData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère une liste de données utilisateurs.
+ * \brief Manages a list of user data.
  * \ingroup Core
  */
 class ARCANE_UTILS_EXPORT UserDataList
@@ -42,7 +43,7 @@ class ARCANE_UTILS_EXPORT UserDataList
  public:
 	
   UserDataList();
-  //! Libère les ressources
+  //! Frees resources
   ~UserDataList();
 
  public:
@@ -65,5 +66,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

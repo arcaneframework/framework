@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadAlignmentException.h                                     (C) 2000-2017 */
 /*                                                                           */
-/* Exception lorsqu'une adresse n'est pas correctement alignée.              */
+/* Exception when an address is not correctly aligned.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_BADCASTEXCEPTION_H
 #define ARCANE_UTILS_BADCASTEXCEPTION_H
@@ -23,9 +23,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une adresse n'est pas correctement alignée.
+ * \brief Exception when an address is not correctly aligned.
  */
 class ARCANE_UTILS_EXPORT BadAlignmentException
 : public Exception
@@ -54,5 +55,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

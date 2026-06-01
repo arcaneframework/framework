@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryAccessInfo.h                                          (C) 2000-2006 */
 /*                                                                           */
-/* Informations sur un accès mémoire.                                        */
+/* Information about a memory access.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MEMORYACCESSINFO_H
 #define ARCANE_UTILS_MEMORYACCESSINFO_H

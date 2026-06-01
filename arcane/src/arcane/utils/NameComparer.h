@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NameComparer.h                                              (C) 2000-2006 */
 /*                                                                           */
-/* Classe utilitaire pour la destruction des objets alloués par new.         */
+/* Utility class for destroying objects allocated by new.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_NAMECOMPARER_H
 #define ARCANE_UTILS_NAMECOMPARER_H
@@ -25,16 +25,17 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- \brief Classe utilitaire pour comparer le nom d'une instance.
+ \brief Utility class for comparing an instance's name.
   
-  Compare l'attribut name() d'un objet avec la valeur donnée dans
-  le constructeur.
+  Compares the object's name() attribute with the value provided in
+  the constructor.
 
-  \warning L'instance de cette classe ne fait pas de recopie de
-  la chaîne donnée dans le constructeur. Elle doit donc rester
-  valide tant que cette instance l'est.
+  \warning The instance of this class does not make a copy of
+  the string given in the constructor. It must therefore remain
+  valid as long as this instance is valid.
 */
 class NameComparer
 {
@@ -59,4 +60,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

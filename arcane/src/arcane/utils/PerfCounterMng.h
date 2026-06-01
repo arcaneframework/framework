@@ -8,8 +8,8 @@
 #ifndef ARCANE_PERFCOUNTERMNG_H_
 #define ARCANE_PERFCOUNTERMNG_H_
 
-//GG: Toute cette partie est tres linux/x64 spécifique et n'a rien à faire ici:
-// mettre tous ce qui est spécifique dans PlatformUtils
+//GG: This whole part is very Linux/x64 specific and shouldn't be here:
+// put everything that is specific into PlatformUtils
 #ifdef ARCANE_OS_LINUX
 
 #include <string>
@@ -59,7 +59,7 @@ static inline void rdtsc(volatile unsigned long long int *counter){
 
 #else // defined(__x86_64__)
 
-// IMPLEMENTATION NE FAISANT RIEN: A supprimer avec ce fichier.
+// NO-OP IMPLEMENTATION: To be deleted with this file.
 static inline void rdtsc(volatile unsigned long long int *counter)
 {
   *counter = 1;
@@ -67,7 +67,7 @@ static inline void rdtsc(volatile unsigned long long int *counter)
 
 #endif // defined(__x86_64__)
 
-//! Retourne la fréquence du CPU en Mhz
+//! Returns the CPU frequency in MHz
 extern "C++" int arcaneGetCpuBaseFrequency();
 
 template<typename PerfCounterT>
@@ -167,4 +167,3 @@ ARCANE_END_NAMESPACE
 #endif // ARCANE_OS_LINUX
 
 #endif /* PERFCOUNTERMNG_H_ */
-

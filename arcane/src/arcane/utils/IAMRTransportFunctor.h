@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IFunctorWithArgument.h                                      (C) 2000-2005 */
 /*                                                                           */
-/* Interface d'un fonctor avec argument.                                     */
+/* Interface of a functor with argument.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IAMRTRANSPORTFUNCTOR_H
 #define ARCANE_UTILS_IAMRTRANSPORTFUNCTOR_H
@@ -32,21 +32,22 @@ enum AMROperationType {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor avec argument.
+ * \brief Interface of a functor with argument.
  */
 class IAMRTransportFunctor
 {
  public:
 	
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IAMRTransportFunctor(){}
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual void executeFunctor(Array<ItemInternal*>& old_items,AMROperationType op) =0;
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual void executeFunctor(Array<Cell>& old_items,AMROperationType op) =0;
 
 };
@@ -59,5 +60,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

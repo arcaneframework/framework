@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GoBackwardException.h                                       (C) 2000-2015 */
 /*                                                                           */
-/* Exception pour demander un retour-arrière de la boucle en temps           */
+/* Exception to request a backward step in the time loop                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_GOBACKWARDEXCEPTION_H
 #define ARCANE_UTILS_GOBACKWARDEXCEPTION_H
@@ -23,9 +23,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception pour demander un retour-arrière de la boucle en temps
+ * \brief Exception to request a backward step in the time loop
  */
 class ARCANE_UTILS_EXPORT GoBackwardException
 : public Exception
@@ -58,5 +59,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

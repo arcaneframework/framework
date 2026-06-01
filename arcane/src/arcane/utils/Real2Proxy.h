@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Real2Proxy.h                                                (C) 2000-2008 */
 /*                                                                           */
-/* Proxy d'un 'Real2'.                                                       */
+/* Proxy of a 'Real2'.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_REAL2PROXY_H
 #define ARCANE_UTILS_REAL2PROXY_H
@@ -24,33 +24,35 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe gérant un vecteur de réel de dimension 2.
 
- Le vecteur comprend deuxs composantes \a x et \a y qui sont du
- type \b Real.
+/*!
+ * \brief Class managing a 2-dimensional real vector.
+ 
+ The vector comprises two components \a x and \a y which are of type \b Real.
 
  \code
- Real2Proxy value (1.0,2.3); // Créé un couple (x=1.0, y=2.3)
- cout << value.x;   // Imprime la composante x 
- value.y += 3.2; // Ajoute 3.2 à la composante \b y
+ Real2Proxy value (1.0,2.3); // Created a pair (x=1.0, y=2.3)
+ cout << value.x;   // Prints the x component 
+ value.y += 3.2; // Adds 3.2 to the \b y component
  \endcode
  */
 class ARCANE_UTILS_EXPORT Real2Proxy
 {
  public:
  
-  //! Construit le couplet (ax,ay)
+  //! Constructs the pair (ax,ay)
   Real2Proxy(Real2& value,const MemoryAccessInfo& info)
   : x(value.x,info), y(value.y,info), m_value(value), m_info(info) {}
-  //! Construit un couple identique à \a f
+
+  //! Constructs a pair identical to \a f
   Real2Proxy(const Real2Proxy& f)
   : x(f.x), y(f.y), m_value(f.m_value), m_info(f.m_info) {}
   const Real2& operator=(Real2Proxy f)
     { x=f.x; y=f.y; return m_value; }
   const Real2& operator=(Real2 f)
     { x=f.x; y=f.y; return m_value; }
-  //! Affecte à l'instance le couple (v,v).
+
+  //! Assigns the pair (v,v) to the instance.
   const Real2& operator=(Real v)
     { x = y = v; return m_value; }
   operator Real2() const
@@ -63,8 +65,8 @@ class ARCANE_UTILS_EXPORT Real2Proxy
   //}
  public:
 
-  RealProxy x; //!< première composante du couple
-  RealProxy y; //!< deuxième composante du couple
+  RealProxy x; //!< first component of the pair
+  RealProxy y; //!< second component of the pair
 
  private:
 
@@ -73,103 +75,129 @@ class ARCANE_UTILS_EXPORT Real2Proxy
 
  public:
 
-  //! Retourne une copie du couple.
+  //! Returns a copy of the pair.
   Real2 copy() const { return m_value; }
-  //! Réinitialise le couple avec les constructeurs par défaut.
+
+  //! Resets the pair with default constructors.
   Real2Proxy& reset() { x = y = 0.; return (*this); }
-  //! Affecte à l'instance le couple (ax,ay,az)
+
+  //! Assigns the pair (ax,ay,az) to the instance
   Real2Proxy& assign(Real ax,Real ay)
     { x = ax; y = ay; return (*this); }
-  //! Copie le couple \a f
+
+  //! Copies the pair \a f
   Real2Proxy& assign(Real2 f)
     { x = f.x; y = f.y; return (*this); }
+
   /*!
-   * \brief Compare le couple avec le couple nul.
+   * \brief Compares the pair with the zero pair.
    *
-   * Dans le cas d'un type #value_type de type intégral, le couple est
-   * nul si et seulement si chacune de ses composantes est égal à 0.
+   * In the case of an integral #value_type, the pair is
+   * zero if and only if each of its components is equal to 0.
    *
-   * Pour #value_type du type flottant (float, double ou #Real), le couple
-   * est nul si et seulement si chacune de ses composant est inférieure
-   * à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * For #value_type of the floating point type (float, double or #Real), the pair
+   * is zero if and only if each of its components is less
+   * than a given epsilon. The value of the epsilon used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon \f]
    *
-   * \retval true si le couple est égal au couple nul,
-   * \retval false sinon.
+   * \retval true if the pair is equal to the zero pair,
+   * \retval false otherwise.
    */
   bool isNearlyZero() const
     {
       return math::isNearlyZero(x.getValue()) && math::isNearlyZero(y.getValue());
     }
-  //! Retourne la norme au carré du couple \f$x^2+y^2+z^2\f$
+
+  //! Returns the squared norm of the pair \f$x^2+y^2+z^2\f$
   Real abs2() const
     { return x*x + y*y; }
-  //! Retourne la norme du couple \f$\sqrt{x^2+y^2+z^2}\f$
+
+  //! Returns the norm of the pair \f$\sqrt{x^2+y^2+z^2}\f$
   Real abs() const
     { return _sqrt(abs2()); }
 
   /*!
-   * \brief Lit un couple sur le flot \a i
-   * Le couple est lu sous la forme de trois valeur de type #value_type.
+   * \brief Reads a pair from the stream \a i
+   * The pair is read in the form of three #value_type values.
    */
   istream& assign(istream& i);
-  //! Ecrit le couple sur le flot \a o lisible par un assign()
+
+  //! Writes the pair to the stream \a o readable by an assign()
   ostream& print(ostream& o) const;
-  //! Ecrit le couple sur le flot \a o sous la forme (x,y)
+
+  //! Writes the pair to the stream \a o in the form (x,y)
   ostream& printXy(ostream& o) const;
 
-  //! Ajoute \a b au couple
+  //! Adds \a b to the pair
   Real2Proxy& add(Real2 b) { x+=b.x; y+=b.y; return (*this); }
-  //! Soustrait \a b au couple
+
+  //! Subtracts \a b from the pair
   Real2Proxy& sub(Real2 b) { x-=b.x; y-=b.y; return (*this); }
-  //! Multiple chaque composante du couple par la composant correspondant de \a b
+
+  //! Multiplies each component of the pair by the corresponding component of \a b
   Real2Proxy& mul(Real2 b) { x*=b.x; y*=b.y; return (*this); }
-  //! Divise chaque composante du couple par la composant correspondant de \a b
+
+  //! Divides each component of the pair by the corresponding component of \a b
   Real2Proxy& div(Real2 b) { x/=b.x; y/=b.y; return (*this); }
-  //! Ajoute \a b à chaque composante du couple
+
+  //! Adds \a b to each component of the pair
   Real2Proxy& addSame(Real b) { x+=b; y+=b; return (*this); }
-  //! Soustrait \a b à chaque composante du couple
+
+  //! Subtracts \a b from each component of the pair
   Real2Proxy& subSame(Real b) { x-=b; y-=b; return (*this); }
-  //! Multiplie chaque composante du couple par \a b
+
+  //! Multiplies each component of the pair by \a b
   Real2Proxy& mulSame(Real b) { x*=b; y*=b; return (*this); }
-  //! Divise chaque composante du couple par \a b
+
+  //! Divides each component of the pair by \a b
   Real2Proxy& divSame(Real b) { x/=b; y/=b; return (*this); }
-  //! Ajoute \a b au couple.
+
+  //! Adds \a b to the pair.
   Real2Proxy& operator+=(Real2 b) { return add(b); }
-  //! Soustrait \a b au couple
+
+  //! Subtracts \a b from the pair
   Real2Proxy& operator-=(Real2 b) { return sub(b); }
-  //! Multiplie chaque composante du couple par la composant correspondant de \a b
+
+  //! Multiplies each component of the pair by the corresponding component of \a b
   Real2Proxy& operator*=(Real2 b) { return mul(b); }
-  //! Multiplie chaque composante du couple par le réel \a b
+
+  //! Multiplies each component of the pair by the real \a b
   void  operator*=(Real b) { x*=b; y*=b; }
-  //! Divise chaque composante du couple par la composant correspondant de \a b
+
+  //! Divides each component of the pair by the corresponding component of \a b
   Real2Proxy& operator/=(Real2 b) { return div(b); }
-  //! Divise chaque composante du couple par le réel \a b
+
+  //! Divides each component of the pair by the real \a b
   void  operator/=(Real  b) { x/=b; y/=b; }
-  //! Créé un couple qui vaut ce couple ajouté à \a b
+
+  //! Creates a pair that equals this pair added to \a b
   Real2 operator+(Real2 b)  const { return Real2(x+b.x,y+b.y); }
-  //! Créé un couple qui vaut \a b soustrait de ce couple
+
+  //! Creates a pair that equals \a b subtracted from this pair
   Real2 operator-(Real2 b)  const { return Real2(x-b.x,y-b.y); }
-  //! Créé un couple opposé au couple actuel
+
+  //! Creates a pair opposite to the current pair
   Real2 operator-() const { return Real2(-x,-y); }
+
   /*!
-   * \brief Créé un couple qui vaut ce couple dont chaque composant a été
-   * multipliée par la composante correspondante de \a b.
+   * \brief Creates a pair that equals this pair where each component has been
+   * multiplied by the corresponding component of \a b.
    */
   Real2 operator*(Real2 b) const { return Real2(x*b.x,y*b.y); }
+
   /*!
-   * \brief Créé un couple qui vaut ce couple dont chaque composant a été divisée
-   * par la composante correspondante de \a b.
+   * \brief Creates a pair that equals this pair where each component has been divided
+   * by the corresponding component of \a b.
    */
   Real2 operator/(Real2 b) const { return Real2(x/b.x,y/b.y); }
 										
   /*!
-   * \brief Normalise le couple.
+   * \brief Normalizes the pair.
    * 
-   * Si le couple est non nul, divise chaque composante par la norme du couple
-   * (abs()), de telle sorte qu'après l'appel à cette méthode, abs() valent \a 1.
-   * Si le couple est nul, ne fait rien.
+   * If the pair is non-zero, divides each component by the norm of the pair
+   * (abs()), such that after calling this method, abs() equals \a 1.
+   * If the pair is zero, does nothing.
    */
   Real2Proxy& normalize()
     {
@@ -180,28 +208,29 @@ class ARCANE_UTILS_EXPORT Real2Proxy
     }
 	
   /*!
-   * \brief Compare le couple à \a b.
+   * \brief Compares the pair to \a b.
    *
-   * Dans le cas d'un type #value_type de type intégral, deux couples
-   * sont égaux si et seulement si chacune de leur composant sont strictement
-   * égales.
+   * In the case of an integral #value_type, two pairs
+   * are equal if and only if each of their components are strictly
+   * equal.
    *
-   * Pour #value_type du type flottant (float, double ou #Real), deux couples
-   * sont identiques si et seulement si la valeur absolue de la différence
-   * entre chacune de leur composant correspondante est inférieure
-   * à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * For #value_type of the floating point type (float, double or #Real), two pairs
+   * are identical if and only if the absolute value of the difference
+   * between each of their corresponding components is less
+   * than a given epsilon. The value of the epsilon used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=B \Leftrightarrow |A.x-B.x|<\epsilon,|A.y-B.y|<\epsilon,|A.z-B.z|<\epsilon \f]
-   * \retval true si les deux couples sont égaux,
-   * \retval false sinon.
+   * \retval true if the two pairs are equal,
+   * \retval false otherwise.
    */
   bool operator==(Real2 b) const
     { return _eq(x,b.x) && _eq(y,b.y); }
+
   /*!
-   * \brief Compare deux couples.
-   * Pour la notion d'égalité, voir operator==()
-   * \retval true si les deux couples sont différents,
-   * \retval false sinon.
+   * \brief Compares two pairs.
+   * For the notion of equality, see operator==()
+   * \retval true if the two pairs are different,
+   * \retval false otherwise.
    */
   bool operator!=(Real2 b) const
     { return !operator==(b); }
@@ -222,21 +251,23 @@ class ARCANE_UTILS_EXPORT Real2Proxy
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of \a a and \a b with the TypeEqualT comparator
+   * \retval true if \a a and \a b are equal,
+   * \retval false otherwise.
    */
   static bool _eq(Real a,Real b)
     { return math::isEqual(a,b); }
-  //! Retourne la racine carrée de \a a
+
+  //! Returns the square root of \a a
   static Real _sqrt(Real a)
     { return math::sqrt(a); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Multiplication par un scalaire.
+ * \brief Multiplication by a scalar.
  */
 inline Real2 operator*(Real sca,const Real2Proxy& vec)
 {
@@ -245,8 +276,9 @@ inline Real2 operator*(Real sca,const Real2Proxy& vec)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Multiplication par un scalaire.
+ * \brief Multiplication by a scalar.
  */
 inline Real2
 operator*(const Real2Proxy& vec,Real sca)
@@ -256,8 +288,9 @@ operator*(const Real2Proxy& vec,Real sca)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Division par un scalaire.
+ * \brief Division by a scalar.
  */
 inline Real2
 operator/(const Real2Proxy& vec,Real sca)
@@ -267,11 +300,12 @@ operator/(const Real2Proxy& vec,Real sca)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérateur de comparaison.
+ * \brief Comparison operator.
  *
- * Cet opérateur permet de trier les Real2Proxy pour les utiliser par exemple
- * dans les std::set
+ * This operator allows sorting Real2Proxy for example
+ * in std::set
  */
 inline bool
 operator<(const Real2Proxy& v1,const Real2Proxy& v2)
@@ -281,8 +315,9 @@ operator<(const Real2Proxy& v1,const Real2Proxy& v2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecrit le couple \a t sur le flot \a o
+ * \brief Writes the pair \a t to the stream \a o
  * \relates Real2Proxy
  */
 inline ostream&
@@ -290,8 +325,9 @@ operator<< (ostream& o,Real2Proxy t)
 {
   return t.printXy(o);
 }
+
 /*!
- * \brief Lit le couple \a t à partir du flot \a o.
+ * \brief Reads the pair \a t from the stream \a o.
  * \relates Real2Proxy
  */
 inline istream&
@@ -309,4 +345,3 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 #endif
-

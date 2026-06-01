@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumMatrix.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Matrice carrée de taille fixe de types numériques.                        */
+/* Fixed-size square matrix of numeric types.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_NUMMATRIX_H
 #define ARCANE_UTILS_NUMMATRIX_H
@@ -26,16 +26,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Petite matrice de taille fixe contenant RowSize lignes et ColumnSize colonnes.
+ * \brief Small fixed-size matrix containing RowSize rows and ColumnSize columns.
  *
- * \note Actuellement uniquement implémenté pour le type Real.
+ * \note Currently only implemented for the Real type.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane
+ * \warning API is under definition. Do not use outside of Arcane
  *
- * Il est possible d'accéder à chaque composante du vecteur par 'operator[]'
- * ou 'operator()' ou par les méthodes vx(), vy(), vz() si la dimension est
- * suffisante (par exemple vz() est uniquement accessible si la Size>=3.
+ * It is possible to access each vector component using 'operator[]'
+ * or 'operator()' or via the methods vx(), vy(), vz() if the dimension is
+ * sufficient (for example, vz() is only accessible if Size>=3.
  */
 template <typename T, int RowSize, int ColumnSize>
 class NumMatrix
@@ -57,10 +58,10 @@ class NumMatrix
 
  public:
 
-  //! Construit la matrice avec tous les coefficiants nuls.
+  //! Constructs the matrix with all coefficients zero.
   NumMatrix() = default;
 
-  //! Construit la matrice avec les lignes (ax,ay)
+  //! Constructs the matrix with rows (ax, ay)
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay)
   requires(RowSize == 2)
   {
@@ -68,7 +69,7 @@ class NumMatrix
     m_values[1] = ay;
   }
 
-  //! Construit la matrice avec les lignes (ax,ay,az)
+  //! Constructs the matrix with rows (ax, ay, az)
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay, const VectorType& az)
   requires(RowSize == 3)
   {
@@ -77,7 +78,7 @@ class NumMatrix
     m_values[2] = az;
   }
 
-  //! Construit la matrice avec les lignes (a1,a2,a3,a4)
+  //! Constructs the matrix with rows (a1, a2, a3, a4)
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& a1, const VectorType& a2,
                                           const VectorType& a3, const VectorType& a4)
   requires(RowSize == 4)
@@ -88,7 +89,7 @@ class NumMatrix
     m_values[3] = a4;
   }
 
-  //! Construit la matrice avec les lignes (a1,a2,a3,a4,a5)
+  //! Constructs the matrix with rows (a1, a2, a3, a4, a5)
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& a1, const VectorType& a2,
                                           const VectorType& a3, const VectorType& a4,
                                           const VectorType& a5)
@@ -101,7 +102,7 @@ class NumMatrix
     m_values[4] = a5;
   }
 
-  //! Construit l'instance avec le triplet (v,v,v).
+  //! Constructs the instance with the triplet (v, v, v).
   constexpr ARCCORE_HOST_DEVICE explicit NumMatrix(T v)
   {
     for (int i = 0; i < Size; ++i)
@@ -116,7 +117,7 @@ class NumMatrix
   : NumMatrix(VectorType(v.x), VectorType(v.y), VectorType(v.z))
   {}
 
-  //! Affecte à l'instance le triplet (v,v,v).
+  //! Assigns the triplet (v, v, v) to the instance.
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(T v)
   {
     for (int i = 0; i < Size; ++i)
@@ -148,20 +149,20 @@ class NumMatrix
 
  public:
 
-  //! Construit la matrice nulle
+  //! Constructs the zero matrix
   constexpr ARCCORE_HOST_DEVICE static ThatClass zero()
   {
     return ThatClass();
   }
 
-  //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+  //! Constructs the matrix ((ax,bx,cx), (ay,by,cy), (az,bz,cz)).
   constexpr ARCCORE_HOST_DEVICE static ThatClass fromColumns(T ax, T ay, T az, T bx, T by, T bz, T cx, T cy, T cz)
   requires(isSquare3())
   {
     return ThatClass(VectorType(ax, bx, cx), VectorType(ay, by, cy), VectorType(az, bz, cz));
   }
 
-  //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+  //! Constructs the matrix ((ax,bx,cx), (ay,by,cy), (az,bz,cz)).
   constexpr ARCCORE_HOST_DEVICE static ThatClass fromLines(T ax, T bx, T cx, T ay, T by, T cy, T az, T bz, T cz)
   requires(isSquare3())
   {
@@ -171,15 +172,15 @@ class NumMatrix
  public:
 
   /*!
-   * \brief Compare la matrice avec la matrice nulle.
+   * \brief Compares the matrix with the zero matrix.
    *
-   * La matrice est nulle si et seulement si chacune de ses composantes
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * The matrix is zero if and only if each of its components
+   * is less than a given epsilon. The epsilon value used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
    *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
+   * \retval true if the matrix is equal to the zero matrix,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
   {
@@ -189,35 +190,35 @@ class NumMatrix
     return is_nearly_zero;
   }
 
-  //! Ajoute \a b au triplet.
+  //! Adds b to the triplet.
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] += b.m_values[i];
     return (*this);
   }
-  //! Soustrait \a b au triplet
+  //! Subtracts b from the triplet
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] -= b.m_values[i];
     return (*this);
   }
-  //! Multiple chaque composante de la matrice par le réel \a b
+  //! Multiplies each component of the matrix by the real number b
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator*=(T b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] *= b;
     return (*this);
   }
-  //! Divise chaque composante de la matrice par le réel \a b
+  //! Divides each component of the matrix by the real number b
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator/=(T b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] *= b;
     return (*this);
   }
-  //! Créé un triplet qui vaut ce triplet ajouté à \a b
+  //! Creates a triplet that equals this triplet added to b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const ThatClass& b)
   {
     ThatClass v;
@@ -225,7 +226,7 @@ class NumMatrix
       v.m_values[i] = a.m_values[i] + b.m_values[i];
     return v;
   }
-  //! Créé un triplet qui vaut \a b soustrait de ce triplet
+  //! Creates a triplet that equals a subtracted from this triplet
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const ThatClass& b)
   {
     ThatClass v;
@@ -233,7 +234,7 @@ class NumMatrix
       v.m_values[i] = a.m_values[i] - b.m_values[i];
     return v;
   }
-  //! Créé un tenseur opposé au tenseur actuel
+  //! Creates a tensor opposite to the current tensor
   constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const
   {
     ThatClass v;
@@ -242,7 +243,7 @@ class NumMatrix
     return v;
   }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(DataType a, const ThatClass& mat)
   {
     ThatClass v;
@@ -250,7 +251,7 @@ class NumMatrix
       v.m_values[i] = a * mat.m_values[i];
     return v;
   }
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& mat, DataType b)
   {
     ThatClass v;
@@ -258,7 +259,7 @@ class NumMatrix
       v.m_values[i] = mat.m_values[i] * b;
     return v;
   }
-  //! Division par un scalaire.
+  //! Division by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& mat, DataType b)
   {
     ThatClass v;
@@ -268,10 +269,10 @@ class NumMatrix
   }
 
   /*!
-   * \brief Compare composant pas composante l'instance courante à \a b.
+   * \brief Compares the current instance component by component to b.
    *
-   * \retval true si this.x==b.x et this.y==b.y et this.z==b.z.
-   * \retval false sinon.
+   * \retval true if this.x==b.x and this.y==b.y and this.z==b.z.
+   * \retval false otherwise.
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator==(const ThatClass& a, const ThatClass& b)
   {
@@ -282,10 +283,10 @@ class NumMatrix
   }
 
   /*!
-   * \brief Compare deux triplets.
-   * Pour la notion d'égalité, voir operator==()
-   * \retval true si les deux triplets sont différents,
-   * \retval false sinon.
+   * \brief Compares two triplets.
+   * For the notion of equality, see operator==()
+   * \retval true if the two triplets are different,
+   * \retval false otherwise.
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator!=(const ThatClass& a, const ThatClass& b)
   {
@@ -294,26 +295,29 @@ class NumMatrix
 
  public:
 
-  // Récupère la \a i-ème ligne
+  // Retrieves the i-th row
   constexpr ARCCORE_HOST_DEVICE VectorType operator()(Int32 i) const
   {
     ARCCORE_CHECK_AT(i, RowSize);
     return m_values[i];
   }
-  // Récupère la \a i-ème ligne
+
+  // Retrieves the i-th row
   constexpr ARCCORE_HOST_DEVICE VectorType operator[](Int32 i) const
   {
     ARCCORE_CHECK_AT(i, RowSize);
     return m_values[i];
   }
-  // Récupère une référence sur la valeur de \a i-ème ligne et \a j-ème colonne
+
+  // Retrieves a reference to the value of the i-th row and j-th column
   constexpr ARCCORE_HOST_DEVICE T& operator()(Int32 i, Int32 j)
   {
     ARCCORE_CHECK_AT(i, RowSize);
     ARCCORE_CHECK_AT(j, ColumnSize);
     return m_values[i](j);
   }
-  // Récupère la valeur de \a i-ème ligne et \a j-ème colonne
+
+  // Retrieves the value of the i-th row and j-th column
   constexpr ARCCORE_HOST_DEVICE T operator()(Int32 i, Int32 j) const
   {
     ARCCORE_CHECK_AT(i, RowSize);
@@ -321,7 +325,7 @@ class NumMatrix
     return m_values[i](j);
   }
 
-  //! Positionne à \a v la valeur de la \a i-ème ligne
+  //! Sets the value of the i-th row to v
   constexpr ARCCORE_HOST_DEVICE void setLine(Int32 i, const VectorType& v)
   {
     ARCCORE_CHECK_AT(i, RowSize);
@@ -367,9 +371,9 @@ class NumMatrix
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of a and b using the TypeEqualT comparator
+   * \retval true if a and b are equal,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool _eq(T a, T b)
   {

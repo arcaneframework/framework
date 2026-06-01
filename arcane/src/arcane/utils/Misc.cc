@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Misc.cc                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Diverses fonctions                                                        */
+/* Various functions                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,7 +23,7 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/IThreadImplementation.h"
-// Pas utilise ici mais necessaire pour charger les symbols dans la DLL
+// Not used here but necessary to load symbols in the DLL
 #include "arcane/utils/NullThreadMng.h"
 #include "arcane/utils/CriticalSection.h"
 
@@ -181,7 +181,7 @@ arcaneNoReferenceErrorCallTerminate(const void* ptr)
 extern "C++" ARCANE_UTILS_EXPORT void
 arcanePrintf(const char* format,...)
 {
-  // \n écrit en meme temps pour éviter des écritures intermédiares parasites
+  // \n is written at the same time to avoid parasitic intermediate writes
   char buffer[256];
   va_list ap;
   va_start(ap,format);
@@ -208,9 +208,9 @@ arcaneObsolete(const char* file,const char* func,unsigned long line,const char* 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Fonction appelée lorsqu'une assertion échoue.
+/// Function called when an assertion fails.
 typedef void (*fDoAssert)(const char*,const char*,const char*,size_t);
-/// Fonction appelée pour indiquer s'il faut afficher l'information de débug
+/// Function called to indicate whether debug information should be displayed
 typedef bool (*fCheckDebug)(unsigned int);
 
 static fDoAssert g_do_assert_func = 0;
@@ -218,8 +218,9 @@ static fCheckDebug  g_check_debug_func = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Affichage d'une assertion ayant échouée.
+ * Displaying a failed assertion.
  */
 ARCANE_UTILS_EXPORT void
 _doAssert(const char* text,const char* file,const char* func,size_t line)
@@ -235,8 +236,9 @@ _doAssert(const char* text,const char* file,const char* func,size_t line)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /**
- * Vérifie si un message de débug doit être affiché.
+ * Checks if a debug message should be displayed.
  */
 extern "C++" ARCANE_UTILS_EXPORT bool
 _checkDebug(unsigned int val)
@@ -362,17 +364,17 @@ arcaneCallDefaultSignal(int val)
   // cerr << "** SIGVAL " << val << ' ' << SIG_DFL
   // << ' ' << SIG_IGN << " is_in_signal?=" << global_already_in_signal << '\n';
 
-  // En cas de nouveau signal alors qu'on est déja dans un handler, ou
-  // s'il s'agit d'un signal d'erreur memoire (SIGBUS ou SIGSEGV), on fait un abort.
+  // If a new signal occurs while already in a handler, or
+  // if it is a memory error signal (SIGBUS or SIGSEGV), we abort.
   if (global_already_in_signal)
     ::abort();
   global_already_in_signal = true;
     
   arcaneDebugPause("arcaneCallDefaultSignal");
 
-  // Pour éviter certains problèmes lors de la récupération de la pile
-  // qui peuvent provoquer une exception, on récupère d'abord la pile
-  // d'appel et on la passe au constructeur de l'exception.
+  // To avoid certain problems when recovering the stack
+  // which might cause an exception, we first retrieve the call
+  // stack and pass it to the exception constructor.
   StackTrace stack_trace;
   IStackTraceService* stack_service = platform::getStackTraceService();
   if (stack_service){
@@ -382,8 +384,8 @@ arcaneCallDefaultSignal(int val)
   else
     cerr << " No stack trace service\n";
 
-  // Si demandé, affiche la pile d'appel via le debugger. Cela permet d'avoir
-  // plus d'informations (mais c'est plus long à exécuter)
+  // If requested, display the call stack via the debugger. This allows for
+  // more information (but it takes longer to execute)
   bool do_debug_stack = false;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DUMP_DEBUGGER_STACK_IN_SIGNAL", true))
     do_debug_stack = (v.value()!=0);
@@ -401,7 +403,7 @@ arcaneCallDefaultSignal(int val)
   else if (signal_type==SignalException::ST_FloatingException){
     global_already_in_signal = false;
     cerr << "** THROW ARITHMETIC EXCEPTION\n";
-    // Réactive les exceptions flottantes pour le prochain coup
+    // Re-enable floating exceptions for the next time
     platform::enableFloatingException(true);
     throw ArithmeticException(A_FUNCINFO,stack_trace);
   }

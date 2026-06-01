@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BuiltInProxy.h                                              (C) 2000-2006 */
 /*                                                                           */
-/* Proxy d'un type du langage.                                               */
+/* Proxy of a language type.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_BUILTINPROXY_H
 #define ARCANE_UTILS_BUILTINPROXY_H
@@ -24,8 +24,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Proxy d'un type du langage.
+ * \brief Proxy of a language type.
  */
 template<typename Type>
 class BuiltInProxy
@@ -133,7 +134,7 @@ bool operator==(const Type& a,const BuiltInProxy<Type>& b)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Lit le triplet \a t à partir du flot \a o.
+ * \brief Reads the triplet \a t from the stream \a o.
  * \relates Real3
  */
 template<typename Type> inline std::istream&
@@ -156,9 +157,9 @@ isNearlyZero(const BuiltInProxy<_Type>& a)
   return TypeEqualT<_Type>::isNearlyZero(a);
 }
 /*!
- * \brief Teste si une valeur est exactement égale à zéro.
- * \retval true si \a vaut zéro,
- * \retval false sinon.
+ * \brief Tests if a value is exactly equal to zero.
+ * \retval true if \a is zero,
+ * \retval false otherwise.
  */
 template<class _Type> inline bool
 isZero(const BuiltInProxy<_Type>& a)

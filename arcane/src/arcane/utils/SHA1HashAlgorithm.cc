@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SHA1HashAlgorithm.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Calcule de fonction de hashage SHA-1.                                     */
+/* Calculates SHA-1 hashing function.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,10 +20,10 @@
 #include <cstring>
 #include <array>
 
-// L'algorithme est decrit ici;
+// The algorithm is described here;
 // https://en.wikipedia.org/wiki/SHA-3
 
-// L'implémentation est issue du dépot suivant:
+// The implementation is based on the following repository:
 // https://github.com/rhash/RHash
 
 /* sha1.c - an implementation of Secure Hash Algorithm 1 (SHA1)
@@ -152,7 +152,7 @@ class SHA1
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Valide pour little-endian
+// Valid for little-endian
 //@{
 #define be2me_32(x) bswap_32(x)
 #define be32_copy(to, index, from, length) _swap_copy_str_to_u32((to), (index), (from), (length))
@@ -570,6 +570,3 @@ createContext()
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

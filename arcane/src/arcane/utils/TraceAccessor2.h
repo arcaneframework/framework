@@ -25,8 +25,9 @@ namespace Arcane::internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API EN COURS DE CONCEPTION. NE PAS UTILISER.
+ * \brief API UNDER DEVELOPMENT. DO NOT USE.
  */
 class ARCANE_UTILS_EXPORT TraceAccessor2
 : public TraceAccessor

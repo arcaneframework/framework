@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayUtils.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires sur les tableaux et les vues.                       */
+/* Utility functions for arrays and views.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARRAYUTILS_H
 #define ARCANE_UTILS_ARRAYUTILS_H
@@ -25,8 +25,9 @@ namespace Arcane::ArrayUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie le padding pour la vectorisation.
+ * \brief Checks the padding for vectorization.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 checkSimdPadding(ConstArrayView<Int32> ids);

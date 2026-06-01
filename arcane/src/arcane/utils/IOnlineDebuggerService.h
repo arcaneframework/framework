@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* IHyodaService.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service de debugger hybrid.                                */
+/* Interface of a hybrid debugger service.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IHYODA_SERVICE_H
 #define ARCANE_IHYODA_SERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Mettre ce fichier dans 'arcane/core' car il utilise des types
-// de 'arcane/core'
+// TODO: Move this file to 'arcane/core' because it uses types
+// from 'arcane/core'
 
 #include "arcane/utils/ArcaneGlobal.h"
 
@@ -28,11 +28,12 @@ class ISubDomain;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un service de debugger hybrid
+ * \brief Interface of a hybrid debugger service
  *
- * \note En cours de développement
+ * \note In development
  */
 class IOnlineDebuggerService{
  public:
@@ -52,4 +53,4 @@ class IOnlineDebuggerService{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

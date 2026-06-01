@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Simd.cc                                                     (C) 2000-2018 */
 /*                                                                           */
-/* Types pour la vectorisation.                                              */
+/* Types for vectorization.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,12 +24,14 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \defgroup ArcaneSimd Vectorisation
+ * \defgroup ArcaneSimd Vectorization
  *
- * Ensemble des classes gérant la vectorisation.
- * Pour plus d'informations, se reporter à la page \ref arcanedoc_parallel_simd.
+ * Set of classes managing vectorization.
+ * For more information, refer to the page \ref arcanedoc_parallel_simd.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -99,7 +101,7 @@ _checkValidHelper()
   if (padding_size==size)
     return;
 
-  // Vérifie que le padding est fait avec la dernière valeur valide.
+  // Checks that the padding is done with the last valid value.
   Int32 last_local_id = m_local_ids[size-1];
   for( Integer k=size; k<padding_size; ++k )
     if (m_local_ids[k]!=last_local_id)

@@ -7,16 +7,18 @@
 /*---------------------------------------------------------------------------*/
 /* SimdEmulated.h                                              (C) 2000-2016 */
 /*                                                                           */
-/* Emulation de la vectorisation lorsque aucune mécanisme n'est disponible.  */
+/* Emulation of vectorization when no mechanism is available.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMDEMULATED_H
 #define ARCANE_UTILS_SIMDEMULATED_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Ce fichier ne doit pas être inclus directement.
- * Utiliser 'Simd.h' à la place.
+ * This file should not be included directly.
+ * Use 'Simd.h' instead.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,9 +29,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des entiers en utilisant une émulation.
+ * \brief Integer vectorization using emulation.
  */
 class EMULSimdX2Int32
 {
@@ -80,9 +83,10 @@ class EMULSimdX2Int32
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des entiers en utilisant une émulation.
+ * \brief Integer vectorization using emulation.
  */
 class EMULSimdX4Int32
 {
@@ -142,14 +146,14 @@ class EMULSimdX4Int32
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vectorisation des réels par émulation.
+ * \brief Real vectorization using emulation.
  *
- * Cette classe est utilisée lorsqu'aucun mécanisme de vectorisation
- * n'est disponible. Il s'agit juste d'une encapsulation de 2 réels. On
- * aurait pu prendre d'autres tailles de vecteurs (par exemple 4 ou 8) mais
- * les tests effectués (en 2013) montrent que les performances se dégradent
- * au dela de 2.
+ * This class is used when no vectorization mechanism is available. It is
+ * just an encapsulation of 2 reals. Other vector sizes could have been
+ * chosen (for example 4 or 8), but tests performed (in 2013) show that
+ * performance degrades beyond 2.
  */
 class EMULSimdReal
 {
@@ -162,7 +166,7 @@ class EMULSimdReal
   typedef EMULSimdX2Int32 Int32IndexType;
   Real v0;
   Real v1;
-  //NOTE: il est normal que ce constructeur ne fasse pas d'initialisation.
+  //NOTE: it is normal that this constructor does not perform initialization.
   EMULSimdReal(){}
   explicit EMULSimdReal(Real a)
   : v0(a), v1(a){}

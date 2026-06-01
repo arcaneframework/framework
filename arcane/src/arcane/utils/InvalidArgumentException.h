@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* InvalidArgumentException.h                                  (C) 2000-2016 */
 /*                                                                           */
-/* Exception lorsqu'un argument est invalide.                                */
+/* Exception when an argument is invalid.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INVALIDARGUMENTEXCEPTION_H
 #define ARCANE_UTILS_INVALIDARGUMENTEXCEPTION_H
@@ -23,8 +23,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception lorsqu'une erreur fatale est survenue.
+ * \brief Exception when a fatal error has occurred.
  */
 class ARCANE_UTILS_EXPORT InvalidArgumentException
 : public Exception
@@ -70,4 +71,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

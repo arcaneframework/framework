@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelLoopOptionsProperties.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Options de configuration pour les boucles parallèles en multi-thread.     */
+/* Configuration options for parallel loops in multi-threading.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_PARALLELLOOPOPTIONSPROPERTIES_H
 #define ARCANE_UTILS_INTERNAL_PARALLELLOOPOPTIONSPROPERTIES_H
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe pour fixer les valeurs de ParallelLoopOptions via des propriétés.
+ * \brief Class to set the values of ParallelLoopOptions via properties.
  */
 class ARCANE_UTILS_EXPORT ParallelLoopOptionsProperties
 : public ParallelLoopOptions
@@ -42,4 +42,4 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptionsProperties
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

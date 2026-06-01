@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* String.h                                                    (C) 2000-2015 */
 /*                                                                           */
-/* Chaîne de caractère unicode.                                              */
+/* Unicode character string.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_STRING_H
 #define ARCANE_UTILS_STRING_H

@@ -7,24 +7,25 @@
 /*---------------------------------------------------------------------------*/
 /* SimdAVX.h                                                   (C) 2000-2016 */
 /*                                                                           */
-/* Vectorisation pour AVX et AVX2.                                           */
+/* Vectorization for AVX and AVX2.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMDAVX_H
 #define ARCANE_UTILS_SIMDAVX_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Ce fichier ne doit pas être inclus directement.
- * Utiliser 'Simd.h' à la place.
+ * This file should not be included directly.
+ * Use 'Simd.h' instead.
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! A définir si on souhaite utiliser le gather de l'AVX2.
+//! Define if you wish to use AVX2 gather.
 // #define ARCANE_USE_AVX2_GATHER
 
-// Le gather n'est disponible que avec l'AVX2
+// Gather is only available with AVX2
 #ifndef __AVX2__
 #undef ARCANE_USE_AVX2_GATHER
 #endif
@@ -36,9 +37,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des entiers Int32 en utilisant AVX.
+ * \brief Vectorization of Int32 integers using AVX.
  */
 class ARCANE_ALIGNAS_PACKED(32) AVXSimdX8Int32
 {
@@ -102,10 +104,11 @@ class ARCANE_ALIGNAS_PACKED(32) AVXSimdX8Int32
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des réels en utilisant AVX.
- * \note Cette classe doit être alignée sur 32 octets.
+ * \brief Vectorization of real numbers using AVX.
+ * \note This class must be aligned to 32 bytes.
  */
 class ARCANE_ALIGNAS_PACKED(32) AVXSimdX4Real
 {
@@ -144,7 +147,7 @@ class ARCANE_ALIGNAS_PACKED(32) AVXSimdX4Real
   : AVXSimdX4Real(base,(const Int32*)simd_idx){}
 #endif
 
-  //! Charge les valeurs continues situées à l'adresse \a base qui doit être alignée.
+  //! Loads contiguous values located at address \a base, which must be aligned.
   explicit AVXSimdX4Real(const Real* base)
   : v0(_mm256_load_pd(base)) { }
 
@@ -160,8 +163,8 @@ class ARCANE_ALIGNAS_PACKED(32) AVXSimdX4Real
     base[idx[2]] = x[2];
     base[idx[3]] = x[3];
 #else
-    // Ces méthodes de scatter ne sont disponibles que
-    // pour l'AVX512VL
+    // These scatter methods are only available
+    // for AVX512VL
     __m128i idx0 = _mm_load_si128((__m128i*)idx);
     _mm256_i32scatter_pd(base,idx0,v0, 8);
 #endif
@@ -176,7 +179,8 @@ class ARCANE_ALIGNAS_PACKED(32) AVXSimdX4Real
   {
     this->set(base,(const Int32*)simd_idx);
   }
-  //! Stocke les valeurs de l'instance à l'adresse \a base qui doit être alignée.
+
+  //! Stores the instance values at address \a base, which must be aligned.
   void set(ARCANE_RESTRICT Real* base) const
   {
     _mm256_store_pd(base,v0);
@@ -199,10 +203,11 @@ class ARCANE_ALIGNAS_PACKED(32) AVXSimdX4Real
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Vectorisation des réels en utilisant AVX avec des blocs de 8 reels.
- * \note Cette classe doit être alignée sur 32 octets.
+ * \brief Vectorization of real numbers using AVX with blocks of 8 reals.
+ * \note This class must be aligned to 32 bytes.
  */
 class ARCANE_ALIGNAS_PACKED(64) AVXSimdX8Real
 {
@@ -232,9 +237,9 @@ class ARCANE_ALIGNAS_PACKED(64) AVXSimdX8Real
  public:
   AVXSimdX8Real(const Real* base,const Int32* idx)
   {
-    //TODO Avec AVX2, utiliser vgather mais pour l'instant on ne le détecte pas
-    // et les tests montrent que ce n'est pas toujours le plus
-    // performant (peut-être avec des indices alignés).
+    //TODO With AVX2, use vgather but for now we don't detect it
+    // and tests show that it is not always the most
+    // performant (maybe with aligned indices).
 #if 1
     v0 = _mm256_set_pd(base[idx[3]],base[idx[2]],base[idx[1]],base[idx[0]]);
     v1 = _mm256_set_pd(base[idx[7]],base[idx[6]],base[idx[5]],base[idx[4]]);
@@ -246,7 +251,7 @@ class ARCANE_ALIGNAS_PACKED(64) AVXSimdX8Real
 #endif
   }
 
-  //! Charge les valeurs continues situées à l'adresse \a base qui doit être alignée.
+  //! Loads contiguous values located at address \a base, which must be aligned.
   explicit AVXSimdX8Real(const Real* base)
   {
     v0 = _mm256_load_pd(base);
@@ -269,8 +274,8 @@ class ARCANE_ALIGNAS_PACKED(64) AVXSimdX8Real
     base[idx[6]] = x[6];
     base[idx[7]] = x[7];
 #else
-    // Ces méthodes de scatter ne sont disponibles que
-    // pour l'AVX512VL
+    // These scatter methods are only available
+    // for AVX512VL
     __m128i idx0 = _mm_loadu_si128((__m128i*)idx);
     __m128i idx1 = _mm_loadu_si128((__m128i*)(idx+4));
     _mm256_i32scatter_pd(base,idx0,v0, 8);
@@ -278,7 +283,7 @@ class ARCANE_ALIGNAS_PACKED(64) AVXSimdX8Real
 #endif
   }
 
-  //! Stocke les valeurs de l'instance à l'adresse \a base qui doit être alignée.
+  //! Stores the instance values at address \a base, which must be aligned.
   void set(ARCANE_RESTRICT Real* base) const
   {
     _mm256_store_pd(base,v0);
@@ -304,14 +309,15 @@ class ARCANE_ALIGNAS_PACKED(64) AVXSimdX8Real
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vecteur de 'double' en implémentation par SSE.
+ * \brief Vector of 'double' in SSE implementation.
  *
- * Utilise le vecteur de 4 éléments comme vecteur par défaut en SSE.
- * Les différents tests montrent que c'est la meilleur taille. Avec une
- * taille de deux les boucles sont trop petites et avec une taille de 8
- * le compilateur a souvent trop de temporaires à gérer ce qui limite
- * l'optimisation.
+ * Uses the 4-element vector as the default vector in SSE.
+ * Different tests show that this is the best size. With a
+ * size of two, the loops are too small, and with a size of 8,
+ * the compiler often has too many temporaries to manage, which limits
+ * optimization.
  */
 typedef AVXSimdX4Real AVXSimdReal;
 

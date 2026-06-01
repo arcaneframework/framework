@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ValueConvertInternal.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions pour convertir une chaîne de caractère en un type donné.        */
+/* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_VALUECONVERTINTERNAL_H
 #define ARCANE_UTILS_INTERNAL_VALUECONVERTINTERNAL_H
@@ -64,5 +64,4 @@ builtInGetArrayValue(Array<T>& v, StringView s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

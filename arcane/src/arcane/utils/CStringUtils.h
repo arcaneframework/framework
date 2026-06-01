@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CStringUtils.h                                              (C) 2000-2015 */
 /*                                                                           */
-/* Fonctions utilitaires sur les chaînes de caractères.                      */
+/* Utility functions for character strings.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_CSTRINGUTILS_H
@@ -24,48 +24,49 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions utilitaires sur les chaînes de caractères.
+ * \brief Utility functions for character strings.
  */
 namespace CStringUtils
 {
   /*!
-   * \brief Converti la chaîne \a str en un réel.
-   * Si \a is_ok n'est pas nul, il vaut \a true en retour si la conversion
-   * est correcte, false sinon.
-   * \return la valeur de str convertie en réel ou 0. en cas d'erreur.
+   * \brief Converts the string \a str to a real number.
+   * If \a is_ok is not null, it is set to \a true if the conversion
+   * is correct, false otherwise.
+   * \return the value of str converted to a real number or 0 in case of error.
    */
   ARCANE_UTILS_EXPORT Real toReal(const char* str,bool* is_ok=0);
   /*!
-   * \brief Converti la chaîne \a str en un entier non signé.
-   * Si \a is_ok n'est pas nul, il vaut \a true en retour si la conversion
-   * est correcte, false sinon.
-   * \return la valeur de str convertie en entier non signé ou 0 en cas d'erreur.
+   * \brief Converts the string \a str to an unsigned integer.
+   * If \a is_ok is not null, it is set to \a true if the conversion
+   * is correct, false otherwise.
+   * \return the value of str converted to an unsigned integer or 0 in case of error.
    */
   ARCANE_UTILS_EXPORT Integer toInteger(const char* str,bool* is_ok=0);
 
   /*!
-   * \brief Converti la chaîne \a str en un entier
-   * Si \a is_ok n'est pas nul, il vaut \a true en retour si la conversion
-   * est correcte, false sinon.
-   * \return la valeur de str convertie en entier ou 0 en cas d'erreur.
+   * \brief Converts the string \a str to an integer
+   * If \a is_ok is not null, it is set to \a true if the conversion
+   * is correct, false otherwise.
+   * \return the value of str converted to an integer or 0 in case of error.
    */
   ARCANE_UTILS_EXPORT int toInt(const char* str,bool* is_ok=0);
  
-  //! Retourne \e true si \a s1 et \a s2 sont identiques, \e false sinon
+  //! Returns \e true if \a s1 and \a s2 are identical, \e false otherwise
   ARCANE_UTILS_EXPORT bool isEqual(const char* s1,const char* s2);
 
-  //! Retourne \e true si \a s1 est inférieur (ordre alphabétique) à \a s2 , \e false sinon
+  //! Returns \e true if \a s1 is less than (alphabetical order) \a s2 , \e false otherwise
   ARCANE_UTILS_EXPORT bool isLess(const char* s1,const char* s2);
 
-  //! Retourne la longueur de la chaîne \a s
+  //! Returns the length of the string \a s
   ARCANE_UTILS_EXPORT Integer len(const char* s);
 
-  /*! \brief Copie les \a n premiers caractères de \a from dans \a to.
+  /*! \brief Copies the first \a n characters of \a from into \a to.
    * \retval to */
   ARCANE_UTILS_EXPORT char* copyn(char* to,const char* from,Integer n);
 
-  //! Copie \a from dans \a to
+  //! Copies \a from into \a to
   ARCANE_UTILS_EXPORT char* copy(char* to,const char* from);
 }
 
@@ -78,4 +79,3 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 #endif
-

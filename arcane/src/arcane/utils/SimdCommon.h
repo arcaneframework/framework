@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimdCommnon.h                                               (C) 2000-2014 */
 /*                                                                           */
-/* Types communs à tous les mécanismes de vectorisation.                     */
+/* Common types for all vectorization mechanisms.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMDCOMMON_H
 #define ARCANE_UTILS_SIMDCOMMON_H

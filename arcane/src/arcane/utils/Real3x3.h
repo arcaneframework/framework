@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Real3x3.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Matrice 3x3 de 'Real'.                                                    */
+/* 3x3 Matrix of 'Real'.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_REAL3X3_H
 #define ARCANE_UTILS_REAL3X3_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Structure POD pour un Real3x3.
+ * \brief POD structure for a Real3x3.
  */
 struct Real3x3POD
 {
@@ -38,22 +39,22 @@ struct Real3x3POD
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant une matrice de réel de dimension 3x3.
+ * \brief Class managing a 3x3 real matrix.
 
- La matrice comprend trois composantes \a x, \a y et \a z qui sont du
- type \b Real3. Chaque composante représente une ligne de la matrice.
- Par conséquent, Pour une matrice \a m, m.y.z représente la 2ème ligne
- et la 3ème colonne de la matrice.
+ The matrix comprises three components \a x, \a y and \a z of type \b Real3.
+ Each component represents a row of the matrix.
+ Consequently, for a matrix \a m, m.y.z represents the 2nd row
+ and the 3rd column of the matrix.
 
- Il est aussi possible d'accéder aux éléments de la matrice à la
- manière d'un tableau. Par exemple m[1][2] représente la 2ème ligne et la 3ème
- colonne de la matrice.
+ It is also possible to access the matrix elements like an array. For example
+ m[1][2] represents the 2nd row and the 3rd column of the matrix.
 
- Les matrices peuvent se construire par ligne en spécifiant les valeurs
- par ligne (fromLines()) ou en spécifiant par colonne (fromColumns()).
+ Matrices can be constructed by row by specifying the values
+ by row (fromLines()) or by specifying by column (fromColumns()).
 
- Par exemple:
+ For example:
 
  * \code
  * Real3x3 matrix;
@@ -66,14 +67,14 @@ class ARCANE_UTILS_EXPORT Real3x3
 {
  public:
 
-  //! Construit la matrice avec tous les coefficiants nuls.
+  //! Constructs the matrix with all coefficients zero.
   constexpr ARCCORE_HOST_DEVICE Real3x3()
   : x(Real3::zero())
   , y(Real3::zero())
   , z(Real3::zero())
   {}
 
-  //! Construit la matrice avec les lignes (ax,ay,az)
+  //! Constructs the matrix with rows (ax,ay,az)
   constexpr ARCCORE_HOST_DEVICE Real3x3(Real3 ax, Real3 ay, Real3 az)
   : x(ax)
   , y(ay)
@@ -81,8 +82,8 @@ class ARCANE_UTILS_EXPORT Real3x3
   {}
 
   /*!
-   * \brief Construit le tenseur ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
-   * \deprecated Utiliser Real3x3(Real3 x,Real3 y,Real3 z) à la place.
+   * \brief Constructs the tensor ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+   * \deprecated Use Real3x3(Real3 x,Real3 y,Real3 z) instead.
    */
   ARCANE_DEPRECATED_116 Real3x3(Real ax, Real ay, Real az, Real bx, Real by, Real bz, Real cx, Real cy, Real cz)
   : x(ax, bx, cx)
@@ -90,32 +91,33 @@ class ARCANE_UTILS_EXPORT Real3x3
   , z(az, bz, cz)
   {}
 
-  //! Construit un triplet identique à \a f
+  //! Constructs a triplet identical to \a f
   Real3x3(const Real3x3& f) = default;
-  //! Construit un triplet identique à \a f
+
+  //! Constructs a triplet identical to \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real3x3(const Real3x3POD& f)
   : x(f.x)
   , y(f.y)
   , z(f.z)
   {}
 
-  //! Construit l'instance avec le triplet (v,v,v).
+  //! Constructs the instance with the triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real3x3(Real v)
   {
     x = y = z = v;
   }
 
-  //! Construit le triplet ((av[0], av[1], av[2]), (av[3], av[4], av[5]), (av[6], av[7], av[8]))
+  //! Constructs the triplet ((av[0], av[1], av[2]), (av[3], av[4], av[5]), (av[6], av[7], av[8]))
   constexpr ARCCORE_HOST_DEVICE explicit Real3x3(ConstArrayView<Real> av)
   : x(av[0], av[1], av[2])
   , y(av[3], av[4], av[5])
   , z(av[6], av[7], av[8])
   {}
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   Real3x3& operator=(const Real3x3& f) = default;
 
-  //! Affecte à l'instance le triplet (v,v,v).
+  //! Assigns the triplet (v,v,v) to the instance.
   constexpr ARCCORE_HOST_DEVICE Real3x3& operator=(Real v)
   {
     x = y = z = v;
@@ -124,28 +126,28 @@ class ARCANE_UTILS_EXPORT Real3x3
 
  public:
 
-  Real3 x; //!< premier élément du triplet
-  Real3 y; //!< premier élément du triplet
-  Real3 z; //!< premier élément du triplet
+  Real3 x; //!< first element of the triplet
+  Real3 y; //!< first element of the triplet
+  Real3 z; //!< first element of the triplet
 
  public:
 
-  //! Construit le tenseur nul.
+  //! Constructs the null tensor.
   constexpr ARCCORE_HOST_DEVICE static Real3x3 null() { return Real3x3(); }
 
-  //! Construit la matrice nulle
+  //! Constructs the zero matrix
   constexpr ARCCORE_HOST_DEVICE static Real3x3 zero() { return Real3x3(); }
 
-  //! Construit la matrice identité
+  //! Constructs the identity matrix
   constexpr ARCCORE_HOST_DEVICE static Real3x3 identity() { return Real3x3(Real3(1.0, 0.0, 0.0), Real3(0.0, 1.0, 0.0), Real3(0.0, 0.0, 1.0)); }
 
-  //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+  //! Constructs the matrix ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
   constexpr ARCCORE_HOST_DEVICE static Real3x3 fromColumns(Real ax, Real ay, Real az, Real bx, Real by, Real bz, Real cx, Real cy, Real cz)
   {
     return Real3x3(Real3(ax, bx, cx), Real3(ay, by, cy), Real3(az, bz, cz));
   }
 
-  //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+  //! Constructs the matrix ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
   constexpr ARCCORE_HOST_DEVICE static Real3x3 fromLines(Real ax, Real bx, Real cx, Real ay, Real by, Real cy, Real az, Real bz, Real cz)
   {
     return Real3x3(Real3(ax, bx, cx), Real3(ay, by, cy), Real3(az, bz, cz));
@@ -153,17 +155,17 @@ class ARCANE_UTILS_EXPORT Real3x3
 
  public:
 
-  //! Retourne une copie de la matrice
+  //! Returns a copy of the matrix
   constexpr ARCCORE_HOST_DEVICE Real3x3 copy() const { return (*this); }
 
-  //! Remet à zéro les coefficients de la matrice.
+  //! Resets the coefficients of the matrix to zero.
   constexpr ARCCORE_HOST_DEVICE Real3x3& reset()
   {
     *this = zero();
     return (*this);
   }
 
-  //! Affecte à l'instance les lignes (ax,ay,az)
+  //! Assigns the rows (ax,ay,az) to the instance
   constexpr ARCCORE_HOST_DEVICE Real3x3& assign(Real3 ax, Real3 ay, Real3 az)
   {
     x = ax;
@@ -172,7 +174,7 @@ class ARCANE_UTILS_EXPORT Real3x3
     return (*this);
   }
 
-  //! Copie la matrice \a f
+  //! Copies matrix \a f
   constexpr ARCCORE_HOST_DEVICE Real3x3& assign(Real3x3 f)
   {
     x = f.x;
@@ -181,14 +183,14 @@ class ARCANE_UTILS_EXPORT Real3x3
     return (*this);
   }
 
-  //! Retourne une vue sur les neuf élements de la matrice.
+  //! Returns a view over the nine elements of the matrix.
   //! [x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z]
   constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
   {
     return { 9, &x.x };
   }
 
-  //! Retourne une vue constante sur les neuf élements de la matrice.
+  //! Returns a constant view over the nine elements of the matrix.
   //! [x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z]
   constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
   {
@@ -196,16 +198,18 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Lit la matrice sur le flot \a i
-   * La matrice est lue sous la forme de trois Real3.
+   * \brief Reads the matrix from the stream \a i
+   * The matrix is read in the form of three Real3s.
    */
   std::istream& assign(std::istream& i);
-  //! Ecrit le triplet sur le flot \a o lisible par un assign()
+
+  //! Writes the triplet to the stream \a o readable by an assign()
   std::ostream& print(std::ostream& o) const;
-  //! Ecrit le triplet sur le flot \a o sous la forme (x,y,z)
+
+  //! Writes the triplet to the stream \a o in the form (x,y,z)
   std::ostream& printXyz(std::ostream& o) const;
 
-  //! Ajoute \a b au triplet
+  //! Adds \a b to the triplet
   constexpr ARCCORE_HOST_DEVICE Real3x3& add(Real3x3 b)
   {
     x += b.x;
@@ -213,7 +217,8 @@ class ARCANE_UTILS_EXPORT Real3x3
     z += b.z;
     return (*this);
   }
-  //! Soustrait \a b au triplet
+
+  //! Subtracts \a b from the triplet
   constexpr ARCCORE_HOST_DEVICE Real3x3& sub(Real3x3 b)
   {
     x -= b.x;
@@ -221,7 +226,8 @@ class ARCANE_UTILS_EXPORT Real3x3
     z -= b.z;
     return (*this);
   }
-  //! Ajoute \a b à chaque composante du triplet
+
+  //! Adds \a b to each component of the triplet
   constexpr ARCCORE_HOST_DEVICE Real3x3& addSame(Real3 b)
   {
     x += b;
@@ -229,7 +235,8 @@ class ARCANE_UTILS_EXPORT Real3x3
     z += b;
     return (*this);
   }
-  //! Soustrait \a b à chaque composante du triplet
+
+  //! Subtracts \a b from each component of the triplet
   constexpr ARCCORE_HOST_DEVICE Real3x3& subSame(Real3 b)
   {
     x -= b;
@@ -237,36 +244,43 @@ class ARCANE_UTILS_EXPORT Real3x3
     z -= b;
     return (*this);
   }
-  //! Ajoute \a b au triplet.
+
+  //! Adds \a b to the triplet.
   constexpr ARCCORE_HOST_DEVICE Real3x3& operator+=(Real3x3 b) { return add(b); }
-  //! Soustrait \a b au triplet
+
+  //! Subtracts \a b from the triplet
   constexpr ARCCORE_HOST_DEVICE Real3x3& operator-=(Real3x3 b) { return sub(b); }
-  //! Multiple chaque composante de la matrice par le réel \a b
+
+  //! Multiplies each component of the matrix by the real \a b
   constexpr ARCCORE_HOST_DEVICE void operator*=(Real b)
   {
     x *= b;
     y *= b;
     z *= b;
   }
-  //! Divise chaque composante de la matrice par le réel \a b
+
+  //! Divides each component of the matrix by the real \a b
   constexpr ARCCORE_HOST_DEVICE void operator/=(Real b)
   {
     x /= b;
     y /= b;
     z /= b;
   }
-  //! Créé un triplet qui vaut ce triplet ajouté à \a b
+
+  //! Creates a triplet that equals this triplet added to \a b
   constexpr ARCCORE_HOST_DEVICE Real3x3 operator+(Real3x3 b) const { return Real3x3(x + b.x, y + b.y, z + b.z); }
-  //! Créé un triplet qui vaut \a b soustrait de ce triplet
+
+  //! Creates a triplet that equals \a b subtracted from this triplet
   constexpr ARCCORE_HOST_DEVICE Real3x3 operator-(Real3x3 b) const { return Real3x3(x - b.x, y - b.y, z - b.z); }
-  //! Créé un tenseur opposé au tenseur actuel
+
+  //! Creates a tensor opposite to the current tensor
   constexpr ARCCORE_HOST_DEVICE Real3x3 operator-() const { return Real3x3(-x, -y, -z); }
 
   /*!
-   * \brief Compare composant pas composante l'instance courante à \a b.
+   * \brief Compares the current instance component by component to \a b.
    *
-   * \retval true si this.x==b.x et this.y==b.y et this.z==b.z.
-   * \retval false sinon.
+   * \retval true if this.x==b.x and this.y==b.y and this.z==b.z.
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool operator==(Real3x3 b) const
   {
@@ -274,10 +288,10 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Compare deux triplets.
-   * Pour la notion d'égalité, voir operator==()
-   * \retval true si les deux triplets sont différents,
-   * \retval false sinon.
+   * \brief Compares two triplets.
+   * For the notion of equality, see operator==()
+   * \retval true if the two triplets are different,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool operator!=(Real3x3 b) const
   {
@@ -285,8 +299,8 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Accès en lecture seule à la \a i-ème (entre 0 et 2 inclus) ligne de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Read-only access to the \a i-th (between 0 and 2 inclusive) row of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real3 operator[](Integer i) const
   {
@@ -295,8 +309,8 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Accès en lecture seule à la \a i-ème (entre 0 et 2 inclus) ligne de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Read-only access to the \a i-th (between 0 and 2 inclusive) row of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real3 operator()(Integer i) const
   {
@@ -305,9 +319,9 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Accès en lecture seule à la \a i-ème ligne et \a j-ème colonne.
-   * \param i numéro de la ligne à retourner
-   * \param j numéro de la colonne à retourner
+   * \brief Read-only access to the \a i-th row and \a j-th column.
+   * \param i row number to return
+   * \param j column number to return
    */
   ARCCORE_HOST_DEVICE Real operator()(Integer i, Integer j) const
   {
@@ -317,8 +331,8 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Accès à la \a i-ème ligne (entre 0 et 2 inclus) de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Access to the \a i-th row (between 0 and 2 inclusive) of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real3& operator[](Integer i)
   {
@@ -327,8 +341,8 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Accès à la \a i-ème ligne (entre 0 et 2 inclus) de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Access to the \a i-th row (between 0 and 2 inclusive) of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real3& operator()(Integer i)
   {
@@ -337,9 +351,9 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
-   * \brief Accès à la \a i-ème ligne et \a j-ème colonne.
-   * \param i numéro de la ligne à retourner
-   * \param j numéro de la colonne à retourner
+   * \brief Access to the \a i-th row and \a j-th column.
+   * \param i row number to return
+   * \param j column number to return
    */
   ARCCORE_HOST_DEVICE Real& operator()(Integer i, Integer j)
   {
@@ -348,47 +362,47 @@ class ARCANE_UTILS_EXPORT Real3x3
     return (&x)[i][j];
   }
 
-  //! Déterminant de la matrice
+  //! Determinant of the matrix
   constexpr ARCCORE_HOST_DEVICE Real determinant() const
   {
     return (x.x * (y.y * z.z - y.z * z.y) + x.y * (y.z * z.x - y.x * z.z) + x.z * (y.x * z.y - y.y * z.x));
   }
 
-  //! Ecrit le triplet \a t sur le flot \a o.
+  //! Writes the triplet \a t to the stream \a o.
   friend std::ostream& operator<<(std::ostream& o, Real3x3 t)
   {
     return t.printXyz(o);
   }
 
-  //! Lit le triplet \a t à partir du flot \a o.
+  //! Reads the triplet \a t from the stream \a o.
   friend std::istream& operator>>(std::istream& i, Real3x3& t)
   {
     return t.assign(i);
   }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real3x3 operator*(Real sca, Real3x3 vec)
   {
     return Real3x3(vec.x * sca, vec.y * sca, vec.z * sca);
   }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real3x3 operator*(Real3x3 vec, Real sca)
   {
     return Real3x3(vec.x * sca, vec.y * sca, vec.z * sca);
   }
 
-  //! Division par un scalaire.
+  //! Division by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real3x3 operator/(Real3x3 vec, Real sca)
   {
     return Real3x3(vec.x / sca, vec.y / sca, vec.z / sca);
   }
 
   /*!
-  * \brief Opérateur de comparaison.
+  * \brief Comparison operator.
   *
-  * Cet opérateur permet de trier les Real3 pour les utiliser par exemple
-  * dans les std::set
+  * This operator allows sorting Real3s for example
+  * in std::set
   */
   friend constexpr ARCCORE_HOST_DEVICE bool operator<(Real3x3 v1, Real3x3 v2)
   {
@@ -403,15 +417,15 @@ class ARCANE_UTILS_EXPORT Real3x3
 
  public:
 
-  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real3x3&) instead")
+  // TODO: deprecate mid-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real3x3&) instead")
   inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
 
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of \a a and \a b with the TypeEqualT comparator
+   * \retval true if \a a and \a b are equal,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b)
   {
@@ -425,15 +439,15 @@ class ARCANE_UTILS_EXPORT Real3x3
 namespace math
 {
   /*!
-   * \brief Compare la matrice avec la matrice nulle.
+   * \brief Compares the matrix with the zero matrix.
    *
-   * La matrice est nulle si et seulement si chacune de ses composantes
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * The matrix is zero if and only if each of its components
+   * is less than a given epsilon. The epsilon value used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
    *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
+   * \retval true if the matrix is equal to the zero matrix,
+   * \retval false otherwise.
    */
   inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real3x3& v)
   {

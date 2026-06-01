@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimdOperation.h                                             (C) 2000-2022 */
 /*                                                                           */
-/* Operations sur les types Simd.                                            */
+/* Operations on Simd types.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMDOPERATION_H
 #define ARCANE_UTILS_SIMDOPERATION_H

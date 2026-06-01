@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SignalException.h                                           (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'un signal survient.                                      */
+/* Exception when a signal occurs.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIGNALEXCEPTION_H
 #define ARCANE_UTILS_SIGNALEXCEPTION_H
@@ -23,9 +23,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'un signal survient.
+ * \brief Exception when a signal occurs.
  */
 class ARCANE_UTILS_EXPORT SignalException
 : public Exception
@@ -71,5 +72,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

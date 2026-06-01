@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Vector2.h                                                   (C) 2000-2023 */
 /*                                                                           */
-/* Vecteur à 2 dimensions.                                                   */
+/* 2-dimensional vector.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_VECTOR2_H
 #define ARCANE_UTILS_VECTOR2_H
@@ -26,10 +26,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant un vecteur de dimension 2 de type \a T
+ * \brief Class managing a 2-dimensional vector of type \a T
  *
- * Les 2 éléments du vecteur peuvent être accédés par \a x ou \a y.
+ * The 2 elements of the vector can be accessed by \a x or \a y.
  */
 template <typename T>
 class Vector2
@@ -46,38 +47,38 @@ class Vector2
 
  public:
 
-  //! Construit le vecteur nul.
+  //! Constructs the zero vector.
   constexpr ARCCORE_HOST_DEVICE
   Vector2() = default;
 
-  //! Construit le triplet (ax,ay,az)
+  //! Constructs the triplet (ax,ay,az)
   constexpr ARCCORE_HOST_DEVICE Vector2(const T& ax, const T& ay)
   : x(ax)
   , y(ay)
   {
   }
 
-  //! Construit l'instance avec le triplet (v,v,v).
+  //! Constructs the instance with the triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Vector2(const T& v)
   : x(v)
   , y(v)
   {
   }
 
-  //! Construit l'instance avec le tableau \a v
+  //! Constructs the instance with the array \a v
   constexpr Vector2(const std::array<T, 2>& v)
   : x(v[0])
   , y(v[1])
   {
   }
 
-  //! Construit l'instance avec la liste \a v
+  //! Constructs the instance with the list \a v
   constexpr Vector2(std::initializer_list<T> v)
   {
     _setFromList(v);
   }
 
-  //! Positionne l'instance avec la liste \a v
+  //! Positions the instance with the list \a v
   constexpr Vector2& operator=(std::initializer_list<T> v)
   {
     _setFromList(v);
@@ -95,7 +96,7 @@ class Vector2
     return (v1.x < v2.x);
   }
 
-  //! Ecrit \a t sur le flot \a o
+  //! Writes \a t to the stream \a o
   friend std::ostream& operator<<(std::ostream& o, const Vector2<T>& t)
   {
     t._print(o);
@@ -116,81 +117,95 @@ class Vector2
 
  public:
 
-   //! Ajoute \a b à l'instance
+   //! Adds \a b to the instance
   constexpr ARCCORE_HOST_DEVICE void operator+=(const T& b)
   {
     x += b;
     y += b;
   }
-  //! Ajoute \a b à l'instance
+
+  //! Adds \a b to the instance
   constexpr ARCCORE_HOST_DEVICE void operator+=(const ThatClass& b)
   {
     x += b.x;
     y += b.y;
   }
-  //! Soustrait \a b à l'instance
+
+  //! Subtracts \a b from the instance
   constexpr ARCCORE_HOST_DEVICE void operator-=(const T& b)
   {
     x -= b;
     y -= b;
   }
-  //! Soustrait \a b à l'instance
+
+  //! Subtracts \a b from the instance
   constexpr ARCCORE_HOST_DEVICE void operator-=(const ThatClass& b)
   {
     x -= b.x;
     y -= b.y;
   }
-  //! Multiple chaque composante de l'instance par \a b
+
+  //! Multiplies each component of the instance by \a b
   constexpr ARCCORE_HOST_DEVICE void operator*=(const T& b)
   {
     x *= b;
     y *= b;
   }
-  //! Divise chaque composante de l'instance par \a b
+
+  //! Divides each component of the instance by \a b
   constexpr ARCCORE_HOST_DEVICE void operator/=(const T& b)
   {
     x /= b;
     y /= b;
   }
-  //! Somme composante par composante de \a a et \a b
+
+  //! Sums component by component of \a a and \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const ThatClass& b)
   {
     return ThatClass(a.x + b.x, a.y + b.y);
   }
-  //! Retourne \a a en ajoutant \a b à chaque composante
+
+  //! Returns \a a by adding \a b to each component
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x + b, a.y + b);
   }
-  //! Retourne \a b en ajoutant \a a à chaque composante
+
+  //! Returns \a b by adding \a a to each component
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const T& a, const ThatClass& b)
   {
     return ThatClass(a + b.x, a + b.y);
   }
-  //! Soustrait chaque composante de \a a par chaque composante de \a b
+
+  //! Subtracts each component of \a a by each component of \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const ThatClass& b)
   {
     return ThatClass(a.x - b.x, a.y - b.y);
   }
-  //! Soustrait chaque composante de \a a par \a b
+
+  //! Subtracts each component of \a a by \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x - b, a.y - b);
   }
-  //! Retourne l'opposé de l'instance
+
+  //! Returns the opposite of the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const { return ThatClass(-x, -y); }
 
-  //! Multiplie chaque composante de \a b par \a a
+
+  //! Multiplies each component of \a b by \a a
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const T& a, const ThatClass& b)
   {
     return ThatClass(b.x * a, b.y * a);
   }
-  //! Multiplie chaque composante de \a a par \a b
+
+  //! Multiplies each component of \a a by \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x * b, a.y * b);
   }
-  //! Divise chaque composante de \a a par \a b
+
+  //! Divides each component of \a a by \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x / b, a.y / b);

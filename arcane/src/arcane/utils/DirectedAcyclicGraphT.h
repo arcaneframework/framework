@@ -42,12 +42,12 @@ class DirectedAcyclicGraphT
   typedef EdgeType& EdgeRef;
 public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   DirectedAcyclicGraphT(ITraceMng* trace_mng)
   : GraphBaseT<VertexType,EdgeType>(trace_mng)
   , m_compute_vertex_levels(true){}
 
-  /** Destructeur de la classe */
+  /** Destructor of the class */
   virtual ~DirectedAcyclicGraphT() {}
 
 public:
@@ -164,8 +164,8 @@ public:
       this->m_trace_mng->info() << "-- Graph has vertex " << vertex_level_set_entry.first << " with level " << vertex_level_set_entry.second;
   }
 
-  /*! La detection de cycle se fait avec un pattern lazy qui n'est lancé que lors de l'appel à topologicalSort() et print().
-   *  Cette méthode permet de savoir si le graphe contient un cycle (ce qui produirait l'échec de topologicalSort())
+  /*! Cycle detection is done using a lazy pattern which is only triggered when calling topologicalSort() and print().
+   *  This method allows knowing if the graph contains a cycle (which would cause topologicalSort() to fail).
    */
     bool hasCycle()
     {

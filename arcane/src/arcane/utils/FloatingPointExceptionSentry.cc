@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FloatingPointExceptionSentry.cc                             (C) 2000-2023 */
 /*                                                                           */
-/* Activation/désactivation temporaire des exceptions flottantes             */
+/* Temporary activation/deactivation of floating point exceptions            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

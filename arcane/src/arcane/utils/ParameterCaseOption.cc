@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterCaseOption.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant d'interroger les paramètres pour savoir si des options  */
-/* du jeu de données doivent être modifiées par ceux-ci.                     */
+/* Class allowing querying parameters to determine if data set options       */
+/* should be modified by them.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ namespace Arcane
 ParameterCaseOption::
 ParameterCaseOption(ParameterOptionElementsCollection* parameter_options, const String& lang)
 : m_is_fr(lang == "fr")
-, m_lines(parameter_options) // On ne récupère pas la propriété.
+, m_lines(parameter_options) // We do not retrieve the property.
 {}
 
 /*---------------------------------------------------------------------------*/

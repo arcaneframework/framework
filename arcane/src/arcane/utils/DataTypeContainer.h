@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataTypeContainer.h                                         (C) 2000-2022 */
 /*                                                                           */
-/* Conteneur contenant une instance d'une classe par type de donnée.         */
+/* Container containing an instance of a class per data type.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_DATATYPECONTAINER_H
 #define ARCANE_UTILS_DATATYPECONTAINER_H
@@ -25,11 +25,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Conteneur contenant une instance d'une classe par type de donnée.
+ * \brief Container containing an instance of a class per data type.
  *
- * La classe template \a Traits doit contenir un type \a InstanceType qui
- * indique pour chaque type du language le type de l'instance du conteneur.
- * Par exemple
+ * The template class \a Traits must contain a type \a InstanceType which
+ * indicates the type of the container instance for each language type.
+ * For example
  *
  * \code
  * template<typename DataType>
@@ -40,8 +40,8 @@ namespace Arcane
  * };
  * \endcode
  *
- * La méthode instance() permet de récupérer une référence sur l'instance
- * à partir de son type.
+ * The instance() method allows retrieving a reference to the instance
+ * based on its type.
  */
 template <template <typename DataType> class Traits>
 class BuiltInDataTypeContainer
@@ -83,8 +83,9 @@ class BuiltInDataTypeContainer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur contenant une instance d'une classe par type de donnée %Arcane.
+ * \brief Container containing an instance of a class per data type %Arcane.
  */
 template <template <typename DataType> class Traits>
 class ArcaneDataTypeContainer

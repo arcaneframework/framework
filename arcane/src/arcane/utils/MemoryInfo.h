@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryInfo.h                                                (C) 2000-2015 */
 /*                                                                           */
-/* Collecteur d'informations sur l'usage mémoire.                            */
+/* Memory usage information collector.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MEMORYINFO_H
 #define ARCANE_UTILS_MEMORYINFO_H
@@ -26,9 +26,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Collecteur d'informations sur l'usage mémoire.
+ * \brief Memory usage information collector.
  */
 class ARCANE_UTILS_EXPORT MemoryInfo
 : public IMemoryInfo
@@ -137,5 +138,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

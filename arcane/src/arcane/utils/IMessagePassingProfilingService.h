@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMessagePassingProfilingService.h                           (C) 2000-2016 */
 /*                                                                           */
-/* Interface d'un service de profiling dédié au "message passing"            */
+/* Interface of a profiling service dedicated to "message passing"           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMESSAGEPASSINGPROFILINGSERVICE_H
 #define ARCANE_IMESSAGEPASSINGPROFILINGSERVICE_H
@@ -23,11 +23,12 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un service de profiling dedie au "message passing"
+ * \brief Interface of a profiling service dedicated to "message passing"
  *
- * \note En cours de developpement
+ * \note In development
  */
 class ARCANE_UTILS_EXPORT IMessagePassingProfilingService
 {
@@ -37,16 +38,16 @@ class ARCANE_UTILS_EXPORT IMessagePassingProfilingService
 
  public:
 
-  //! Démarre un profiling
+  //! Starts profiling
   virtual void startProfiling() =0;
 
-  //! Stoppe le profiling
+  //! Stops profiling
   virtual void stopProfiling() =0;
 
-  //! Affiche les informations issues du profiling
+  //! Displays information from the profiling
   virtual void printInfos(std::ostream& output) =0;
 
-  //! Donne le nom du service qui implemente l'interface
+  //! Gives the name of the service that implements the interface
   virtual String implName() =0;
 };
 

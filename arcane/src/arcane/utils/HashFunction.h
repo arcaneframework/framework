@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HashFunction.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Fonction de hachage.                                                      */
+/* Hash function.                                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_HASHFUNCTION_H
 #define ARCANE_UTILS_HASHFUNCTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonctor pour une fonction de hachage.
+ * \brief Functor for a hash function.
  */
 template <class Type>
 class IntegerHashFunctionT
@@ -35,9 +36,10 @@ class IntegerHashFunctionT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonction de hashage pour un entier 32 bits.
+ * \brief Hashing function for a 32-bit integer.
  
  Thomas Wang (http://www.cris.com/~Ttwang/tech/inthash.htm)
 */
@@ -60,9 +62,10 @@ class IntegerHashFunctionT<Int32>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonction de hashage pour un entier 64 bits.
+ * \brief Hashing function for a 64-bit integer.
  
  Thomas Wang (http://www.cris.com/~Ttwang/tech/inthash.htm)
 */
@@ -87,9 +90,10 @@ class IntegerHashFunctionT<Int64>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonction de hashage une chaîne de caractères.
+ * \brief Hashing function for a string.
  */
 template <>
 class IntegerHashFunctionT<StringView>
@@ -125,7 +129,7 @@ class HashTraitsT
 
 /*!
  * \internal
- * \brief Spécialisation pour les Int32
+ * \brief Specialization for Int32
  */
 template <>
 class HashTraitsT<Int32>
@@ -151,7 +155,7 @@ class HashTraitsT<Int32>
 
 /*!
  * \internal
- * \brief Spécialisation pour les Int64
+ * \brief Specialization for Int64
  */
 template <>
 class HashTraitsT<Int64>

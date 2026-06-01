@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMemoryInfo.h                                               (C) 2000-2018 */
 /*                                                                           */
-/* Interface d'un collecteur d'informations sur l'usage mémoire.             */
+/* Interface for a memory usage information collector.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IMEMORYINFO_H
 #define ARCANE_UTILS_IMEMORYINFO_H
@@ -24,8 +24,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur un bloc alloué.
+ * \brief Information about an allocated chunk.
  */
 class MemoryInfoChunk
 {
@@ -52,9 +53,10 @@ class MemoryInfoChunk
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un collecteur d'informations sur l'usage mémoire.
+ * \brief Interface for a memory usage information collector.
  */
 class IMemoryInfo
 {
@@ -64,18 +66,18 @@ class IMemoryInfo
 
  public:
 	
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IMemoryInfo(){}
 
  public:
 
-  //! Crée une référence sur \a owner avec les infos de trace \a trace_info
+  //! Creates a reference on \a owner with the trace info \a trace_info
   virtual void createOwner(const void* owner,const TraceInfo& trace_info) =0;
 
-  //! Modifie les infos de la référence \a owner
+  //! Modifies the info of the reference \a owner
   virtual void setOwner(const void* owner,const TraceInfo& new_info) =0;
 
-  //! Supprime la référence sur \a owner
+  //! Removes the reference on \a owner
   virtual void removeOwner(const void* owner) =0;
 
  public:
@@ -98,42 +100,39 @@ class IMemoryInfo
 
  public:
 
-  //! Positionne le numéro de l'itération courante.
+  //! Sets the current iteration number.
   virtual void setIteration(Integer iteration) =0;
 
   virtual void printAllocatedMemory(std::ostream& ostr,Integer iteration) =0;
 
-  //! Positionne le ITraceMng pour les messages.
+  //! Sets the ITraceMng for messages.
   virtual void setTraceMng(ITraceMng* msg) =0;
 
   /*!
-   * \brief Indique si on active la sauvegarde de la pile d'appel.
+   * \brief Indicates whether call stack saving is active.
    *
-   * Si \a is_active est vrai, active la trace la pile d'appel des allocations.
-   * Le tracage est conditionné à la valeur de stackTraceMinAllocSize().
+   * If \a is_active is true, it activates tracing the call stack of allocations.
+   * Tracing is conditional on the value of stackTraceMinAllocSize().
    */
   virtual void setKeepStackTrace(bool is_active) =0;
 
-  //! Indique si la sauvegarde de la pile d'appel est activée.
+  //! Indicates if call stack saving is enabled.
   virtual bool keepStackTrace() const =0;
 
   /*!
-   * \brief Positionne la taille minimale des allocations dont on trace la pile d'appel.
+   * \brief Sets the minimum size of allocations whose call stack is traced.
    *
-   * Pour toutes les allocations au dessus de \a alloc_size,
-   * la pile d'appel est conservée afin de pouvoir identifier les
-   * fuites mémoires. Le cout mémoire et CPU de la conservation
-   * d'une pile d'appel est important et il est donc déconseillé
-   * de mettre une valeur trop faible (en dessous de 1000) à \a alloc_size.
-   * La conservation de la pile d'appel est désactivée si \a keepStackTrace()
-   * vaut \a false.
+   * For all allocations above \a alloc_size,
+   * the call stack is preserved in order to identify memory leaks. The memory and CPU cost of preserving
+   * a call stack is significant, and it is therefore not recommended to set a value too low (below 1000) for \a alloc_size.
+   * Call stack preservation is disabled if \a keepStackTrace() equals \a false.
    */
   virtual void setStackTraceMinAllocSize(Int64 alloc_size) =0;
 
-  //! Taille minimale des allocations dont on trace la pile d'appel.
+  //! Minimum size of allocations whose call stack is traced.
   virtual Int64 stackTraceMinAllocSize() const =0;
 
-  //! Visiteur sur l'ensemble des blocs alloués
+  //! Visitor over all allocated blocks
   virtual void visitAllocatedBlocks(IFunctorWithArgumentT<const MemoryInfoChunk&>* functor) const =0;
 
   virtual Int64 nbAllocation() const =0;
@@ -153,5 +152,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

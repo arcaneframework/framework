@@ -53,7 +53,7 @@ TEST(TestEvent, Misc)
     EventObserverPool pool;
     {
       EventObserver<int, int> xobserver;
-      // NOTE: le test suivnant ne marche pas avec MSVS2013
+      // NOTE: the following test does not work with MSVS2013
       std::function<void(TestMemberCall*, int, int)> kk1(&TestMemberCall::my_func);
       std::function<void(int, int)> kk(std::bind(&TestMemberCall::my_func, tmc, _1, _2));
       //std::function<void(int,int)> kk2( std::bind( &TestMemberCall::my_func, tmc ) );

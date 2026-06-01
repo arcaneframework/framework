@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISO88591Transcoder.h                                        (C) 2000-2005 */
 /*                                                                           */
-/* Convertisseur ISO-8859-1 depuis/vers UTF-16.                              */
+/* ISO-8859-1 Transcoder from/to UTF-16.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ISO88591TRANSCODER_H
 #define ARCANE_UTILS_ISO88591TRANSCODER_H
@@ -26,9 +26,10 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Convertisseur ISO-8859-1 depuis/vers UTF-16.
+ * \brief ISO-8859-1 Transcoder from/to UTF-16.
  */
 class ISO88591Transcoder
 : public ITranscoder
@@ -55,5 +56,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ScopedPtr.h                                                 (C) 2000-2006 */
 /*                                                                           */
-/* Encapsulation d'un pointeur qui se détruit automatiquement.               */
+/* Encapsulation of a pointer that is automatically destroyed.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SCOPEDPTR_H
 #define ARCANE_UTILS_SCOPEDPTR_H
@@ -23,16 +23,15 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Encapsulation d'un pointeur qui se détruit automatiquement.
+ * \brief Encapsulation of an automatically destructing pointer.
  *
- Cette classe encapsule un pointeur sur un objet qui sera détruit (par
- l'intermédiaire de l'opérateur delete) lorsque l'instance de cette classe
- devient hors de portée.
+ This class encapsulates a pointer to an object that will be destroyed (via
+ the delete operator) when the instance of this class goes out of scope.
 
- Cette classe est utile pour être sur qu'un objet sera désalloué même dans
- le cas où une exception survient.
+ This class is useful to ensure that an object is deallocated even if an exception occurs.
 
  \since 0.4.40
  \author Gilles Grospellier
@@ -44,23 +43,23 @@ class ScopedPtrT
 {
  public:
 
-  //! Type de la classe de base
+  //! Base class type
   typedef PtrT<T> BaseClass;
 
  public:
 
-  //! Construit une instance sans référence
+  //! Constructs an instance without a reference
   ScopedPtrT() : BaseClass(0) {}
 
-  //! Construit une instance référant \a t
+  //! Constructs an instance referencing t
   explicit ScopedPtrT(T* t) : BaseClass(t) {}
 
-  //! Détruit l'objet référencé.
+  //! Destroys the referenced object.
   ~ScopedPtrT() { delete this->m_value; }
 
  public:
   
-  //! Opérateur de copie
+  //! Copy operator
   const ScopedPtrT<T>& operator=(const ScopedPtrT<T>& from)
     {
       if (this!=&from){
@@ -70,7 +69,7 @@ class ScopedPtrT
       return (*this);
     }
 
-  //! Affecte à l'instance la value \a new_value
+  //! Assigns the value new_value to the instance
   const ScopedPtrT<T>& operator=(T* new_value)
     {
       if (this->m_value!=new_value){
@@ -89,5 +88,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

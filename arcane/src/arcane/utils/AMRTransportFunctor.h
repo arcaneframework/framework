@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FunctorAMRTansport.h                                        (C) 2000-2022 */
 /*                                                                           */
-/* Fonctor avec deux arguments.                                              */
+/* Functor with two arguments.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_FUNCTORAMRTRANSPORT_H
 #define ARCANE_UTILS_FUNCTORAMRTRANSPORT_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Functor associé à une méthode d'une classe \a T.
+ * \brief Functor associated with a method of a class \a T.
  */
 template<typename ClassType>
 class AMRTransportFunctorT
@@ -34,11 +35,11 @@ class AMRTransportFunctorT
 {
  public:
 	
-  typedef void (ClassType::*FuncPtr)(Array<ItemInternal*>& , AMROperationType); //!< Type du pointeur sur la méthode
-  typedef void (ClassType::*FuncPtr2)(Array<Cell>& , AMROperationType); //!< Type du pointeur sur la méthode
+  typedef void (ClassType::*FuncPtr)(Array<ItemInternal*>& , AMROperationType); //!< Type of the method pointer
+  typedef void (ClassType::*FuncPtr2)(Array<Cell>& , AMROperationType); //!< Type of the method pointer
  public:
 	
-  //! Constructeur
+  //! Constructor
   AMRTransportFunctorT(ClassType* object,FuncPtr funcptr)
   : m_object(object), m_function(funcptr) {}
 
@@ -47,12 +48,12 @@ class AMRTransportFunctorT
 
  protected:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   void executeFunctor(Array<ItemInternal*>& old_cells,AMROperationType op)
   {
     (m_object->*m_function)(old_cells,op);
   }
-  //! Exécute la méthode associé
+  //! Executes the associated method
   void executeFunctor(Array<Cell>& old_cells,AMROperationType op)
   {
     (m_object->*m_function2)(old_cells,op);
@@ -60,9 +61,9 @@ class AMRTransportFunctorT
   
  private:
 
-  ClassType* m_object = nullptr; //!< Objet associé.
-  FuncPtr m_function = nullptr; //!< Pointeur vers la méthode associée.
-  FuncPtr2 m_function2 = nullptr; //!< Pointeur vers la méthode associée.
+  ClassType* m_object = nullptr; //!< Associated object.
+  FuncPtr m_function = nullptr; //!< Pointer to the associated method.
+  FuncPtr2 m_function2 = nullptr; //!< Pointer to the associated method.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,4 +74,4 @@ class AMRTransportFunctorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

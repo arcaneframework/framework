@@ -300,11 +300,11 @@ void _TestBindValue()
     String wanted_string{ "Tata" };
     Int32 wanted_int{ 25 };
 
-    //! Injecte les valeurs souhaitées
+    //! Inject the desired values
     injector.bind(wanted_string, "Name");
     injector.bind(wanted_int, "Value");
 
-    //! Injecte des valeurs non utilisées pour tester.
+    //! Inject unused values for testing.
     //injector.bind("FalseString","AnyName");
     //injector.bind(38,"SomeName");
     //injector.bind(3.2,"DoubleName");
@@ -360,7 +360,7 @@ TEST(DependencyInjection,Impl2)
 
   try{
     {
-      // Test avec le constructeur CDImpl(int)
+      // Test with the CDImpl(int) constructor
       Injector injector;
       injector.fillWithGlobalFactories();
 
@@ -370,9 +370,9 @@ TEST(DependencyInjection,Impl2)
       ASSERT_EQ(ic->value(),25);
     }
     {
-      // Test avec le constructeur sans arguments (CDImpl())
-      // Dans ce cas la valeur IC::value() doit valoir 2
-      // (voir constructeur de CDImpl)
+      // Test with the no-argument constructor (CDImpl())
+      // In this case, the IC::value() must be 2
+      // (see CDImpl constructor)
       Injector injector;
       injector.fillWithGlobalFactories();
       Ref<IC> ic = injector.createInstance<IC>("CDImplProvider3");
@@ -380,9 +380,9 @@ TEST(DependencyInjection,Impl2)
       ASSERT_EQ(ic->value(),2);
     }
     {
-      // Test avec le constructeur avec 2 arguments (CDImpl(int,double))
-      // Dans ce cas la valeur IC::value() doit valoir 25+12
-      // (voir constructeur de CDImpl)
+      // Test with the constructor having 2 arguments (CDImpl(int,double))
+      // In this case, the IC::value() must be 25+12
+      // (see CDImpl constructor)
       Injector injector;
       injector.fillWithGlobalFactories();
       injector.bind<int>(25);

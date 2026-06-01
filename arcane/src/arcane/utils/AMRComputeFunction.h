@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRComputeFunction.h                                        (C) 2000-2017 */
 /*                                                                           */
-/* Classe fonctor de transport de variables .                                */
+/* Variable transport functor class.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_AMRCOMPUTEFUNCTION_H
 #define ARCANE_AMRCOMPUTEFUNCTION_H
@@ -31,8 +31,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- \brief Interface de la classe fonctor de transport d'une CellVariable.
+ \brief Interface for the CellVariable transport functor class.
  */
 
 class AMRComputeFunction
@@ -50,16 +51,16 @@ class AMRComputeFunction
   : m_functor(new AMRTransportFunctorT<ClassType>(instance,func))
   {
   }
-  virtual ~AMRComputeFunction(){ delete m_functor; } //!< Libère les ressources
+  virtual ~AMRComputeFunction(){ delete m_functor; } //!< Releases resources
 
  public:
 
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   virtual void executeFunctor(Array<ItemInternal*>& cells, AMROperationType op)
   {
     m_functor->executeFunctor(cells,op);
   }
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   virtual void executeFunctor(Array<Cell>& cells, AMROperationType op)
   {
     m_functor->executeFunctor(cells,op);
@@ -78,5 +79,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

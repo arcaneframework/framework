@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceMessage.h                                              (C) 2008      */
+/* TraceMessage.h                                              (C) 2000-2008 */
 /*                                                                           */
-/* Timer pour message de trace.                                              */
+/* Timer for trace message.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_TRACETIMER_H
 #define ARCANE_UTILS_TRACETIMER_H
@@ -30,17 +30,17 @@ ARCANE_BEGIN_NAMESPACE
 #elif defined(SCPU_TRACE_TIMER)
 #else
 #error "TraceTimer type not defined"
-/* MPI_TRACE_TIMER  : utilise la fonction MPI_Wtime de MPI 
- * DAY_TRACE_TIMER  : mesure le temps qui passe (** SVr4, BSD 4.3 **)
- * CPU_TRACE_TIMER  : mesure le nombre de 'ticks' CPU (** SVR4, SVID, POSIX, X/OPEN, BSD 4.3 **)
- *                  : (on peut distinguer le processus même de ses enfants et appels système)
- *                  : pour plus d'infos voir 'man times'
- * SCPU_TRACE_TIMER : comme CPU_TRACE_TIMER mais inclus les temps système et des enfants
+/* MPI_TRACE_TIMER  : uses the MPI_Wtime function from MPI 
+ * DAY_TRACE_TIMER  : measures the elapsed time (** SVr4, BSD 4.3 **)
+ * CPU_TRACE_TIMER  : measures the number of CPU 'ticks' (** SVR4, SVID, POSIX, X/OPEN, BSD 4.3 **)
+ *                  : (it can distinguish the process itself from its children and system calls)
+ *                  : for more info see 'man times'
+ * SCPU_TRACE_TIMER : like CPU_TRACE_TIMER but includes system and child times
  *
- * On peut aussi utiliser 
+ * We can also use 
  * return ((double) clock())/CLOCKS_PER_SEC;
- * qui compte les cycles consommés et limite à 72min (arch 32bits) [need <time.h>]
- * ou getrusage qui ressemble à times() mais fourni plus de paramètres
+ * which counts consumed cycles and is limited to 72min (32bit arch) [need <time.h>]
+ * or getrusage which resembles times() but provides more parameters
  */
 #endif
 

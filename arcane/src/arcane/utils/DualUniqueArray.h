@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DualUniqueArray.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Tableau 1D alloué à la fois sur CPU et accélérateur.                      */
+/* 1D array allocated both on CPU and accelerator.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_DUALUNIQUEARRAY_H
 #define ARCANE_UTILS_DUALUNIQUEARRAY_H
@@ -25,10 +25,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des DualUniqueArray
+ * \brief Base class for DualUniqueArray
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 class ARCANE_UTILS_EXPORT DualUniqueArrayBase
 {
@@ -39,10 +40,11 @@ class ARCANE_UTILS_EXPORT DualUniqueArrayBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Représente un tableau ayant une vue à la fois sur CPU et accélérateur.
+ * \brief Represents an array having a view on both CPU and accelerator.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 template <typename DataType>
 class DualUniqueArray

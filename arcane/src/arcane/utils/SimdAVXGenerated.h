@@ -1,4 +1,4 @@
-// WARNING: This file is generated. Do not edit.
+﻿// WARNING: This file is generated. Do not edit.
 
 
 /*---------------------------------------------------------------------------*/
@@ -165,4 +165,3 @@ inline AVXSimdReal log10 (AVXSimdReal a)
   return AVXSimdReal::fromScalar(math::log10(za[0]),math::log10(za[1]),math::log10(za[2]),math::log10(za[3]));
 }
 }
-

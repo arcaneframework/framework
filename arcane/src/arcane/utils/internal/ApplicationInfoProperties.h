@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ApplicationInfoProperties.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur une application.                                         */
+/* Information about an application.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_APPLICATIONINFOPROPERTIES_H
 #define ARCANE_UTILS_INTERNAL_APPLICATIONINFOPROPERTIES_H
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Informations sur une application.
+ * \brief Information about an application.
  */
 class ARCANE_UTILS_EXPORT ApplicationInfoProperties
 : public ApplicationInfo

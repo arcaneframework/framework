@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMathFunctor.h                                              (C) 2000-2011 */
 /*                                                                           */
-/* Interface d'un fonctor pour une fonction mathématiques.                   */
+/* Interface of a functor for a mathematical function.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IMATHFUNCTOR_H
 #define ARCANE_UTILS_IMATHFUNCTOR_H
@@ -23,23 +23,24 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une fonction mathématique binaire.
+ * \brief Interface of a binary mathematical function.
  */
 template<typename Arg1,typename Arg2,typename ReturnType>
 class IBinaryMathFunctor
 {
  public:
 	
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IBinaryMathFunctor(){}
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual ReturnType apply(Arg1 a1,Arg2 a2) =0;
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual void apply(ConstArrayView<Arg1> a1,ConstArrayView<Arg2> a2,ArrayView<ReturnType> result)
   {
     for( Integer i=0,n=result.size(); i<n; ++i )
@@ -55,5 +56,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

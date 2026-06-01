@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OStringStream.h                                             (C) 2000-2018 */
 /*                                                                           */
-/* Flux de sortie dans une chaîne de caractères.                             */
+/* Output stream into a character string.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_OSTRINGSTREAM_H
 #define ARCANE_UTILS_OSTRINGSTREAM_H
@@ -30,7 +30,7 @@ ARCANE_BEGIN_NAMESPACE
 class OStringStreamPrivate;
 
 /*!
- * \brief Flot de sortie lié à une String.
+ * \brief Output stream linked to a String.
  */
 class ARCANE_UTILS_EXPORT OStringStream
 {
@@ -52,7 +52,7 @@ class ARCANE_UTILS_EXPORT OStringStream
 
  private:
 
-  OStringStreamPrivate* m_p; //!< Implémentation
+  OStringStreamPrivate* m_p; //!< Implementation
 };
 
 /*---------------------------------------------------------------------------*/
