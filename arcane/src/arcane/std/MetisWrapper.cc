@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
   Int32 my_rank = m_parallel_mng->commRank();
 
   UniqueArray<idx_t> half_vtxdist(vtxdist.size());
-  
+
   int comm_0_size = nb_rank / 2 + nb_rank % 2;
   int comm_1_size = nb_rank / 2;
   int comm_0_io_rank = 0;
@@ -68,17 +68,17 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
   for (int i = 0; i < nb_rank + 1; ++i) {
     half_vtxdist[i] = vtxdist[i];
   }
-  
+
   int color = 1;
   int key = my_rank;
-  
+
   if (my_rank >= comm_0_size) {
     color = 2;
     for (int i = 0; i < comm_1_size + 1; ++i) {
       half_vtxdist[i] = vtxdist[i + comm_0_size] - vtxdist[comm_0_size];
     }
   }
-  
+
   MetisGraph metis_graph;
   Ref<IParallelMng> half_pm = ParallelMngUtils::createSubParallelMngRef(m_parallel_mng, color, key);
   MetisGraphGather metis_gather(half_pm.get());
@@ -96,7 +96,7 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
   metis_vtxdist[0] = 0;
   metis_vtxdist[1] = vtxdist[comm_0_size];
   metis_vtxdist[2] = vtxdist[vtxdist.size() - 1];
-  
+
   int ierr = 0;
 
   if (metis_pm.get()) {
@@ -117,17 +117,16 @@ _callMetisWith2Processors(const Int32 ncon, const bool need_part,
 
 int MetisWrapper::
 callPartKway(const bool print_digest, const bool gather,
-             idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
-             idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, idx_t *nparts, 
-             real_t *tpwgts, real_t *ubvec, idx_t *options, idx_t *edgecut, idx_t *part)
+             idx_t* vtxdist, idx_t* xadj, idx_t* adjncy, idx_t* vwgt,
+             idx_t* adjwgt, idx_t* wgtflag, idx_t* numflag, idx_t* ncon, idx_t* nparts,
+             real_t* tpwgts, real_t* ubvec, idx_t* options, idx_t* edgecut, idx_t* part)
 {
   int ierr = 0;
   Int32 nb_rank = m_parallel_mng->commSize();
   Int32 my_rank = m_parallel_mng->commRank();
 
   MetisCall partkway = [&](IParallelMng* pm, MetisGraphView graph,
-                           ArrayView<idx_t> graph_vtxdist)
-  {
+                           ArrayView<idx_t> graph_vtxdist) {
     MPI_Comm graph_comm = static_cast<MPI_Comm>(pm->communicator());
     // NOTE GG: it may happen that these two pointers are null if there are no
     // neighbors. If everything else is consistent, this is not a problem, but ParMetis
@@ -151,8 +150,7 @@ callPartKway(const bool print_digest, const bool gather,
   // NOTE: This piece of code is the same as in callAdaptiveRepart.
   // We should centralize/abstract the two.
   MetisCall partkway_seq = [&](IParallelMng*, MetisGraphView graph,
-                               ArrayView<idx_t> graph_vtxdist)
-  {
+                               ArrayView<idx_t> graph_vtxdist) {
     idx_t options2[METIS_NOPTIONS];
     METIS_SetDefaultOptions(options2);
     options2[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
@@ -172,7 +170,7 @@ callPartKway(const bool print_digest, const bool gather,
   };
 
   MetisGraphView my_graph;
-  
+
   ArrayView<idx_t> offset(nb_rank + 1, vtxdist);
   my_graph.nb_vertices = CheckedConvert::toInt32(offset[my_rank + 1] - offset[my_rank]);
   my_graph.xadj = ArrayView<idx_t>(my_graph.nb_vertices + 1, xadj);
@@ -184,8 +182,8 @@ callPartKway(const bool print_digest, const bool gather,
   my_graph.part = ArrayView<idx_t>(my_graph.nb_vertices, part);
   my_graph.have_vsize = false;
   my_graph.have_adjwgt = true;
-  
-  if (print_digest){
+
+  if (print_digest) {
     MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeInputDigest(false, 3, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
@@ -193,7 +191,7 @@ callPartKway(const bool print_digest, const bool gather,
       info() << "Metis input signature = " << digest;
     }
   }
-  
+
   if (gather && nb_rank > 2) {
     // Normally this is faster ...
     info() << "Partitioning metis: re-grouping " << nb_rank << " -> 2 ranks";
@@ -206,14 +204,14 @@ callPartKway(const bool print_digest, const bool gather,
   }
 
   info() << "End Partitioning metis";
-  if (print_digest){
+  if (print_digest) {
     MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeOutputDigest(my_graph, edgecut);
     if (my_rank == 0) {
       info() << "hash for Metis output = " << digest;
     }
   }
-  
+
   return ierr;
 }
 
@@ -222,21 +220,20 @@ callPartKway(const bool print_digest, const bool gather,
 
 int MetisWrapper::
 callAdaptiveRepart(const bool print_digest, const bool gather,
-                   idx_t *vtxdist, idx_t *xadj, idx_t *adjncy, idx_t *vwgt, 
-                   idx_t *vsize, idx_t *adjwgt, idx_t *wgtflag, idx_t *numflag, idx_t *ncon, 
-                   idx_t *nparts, real_t *tpwgts, real_t *ubvec, real_t *ipc2redist, 
-                   idx_t *options, idx_t *edgecut, idx_t *part)
+                   idx_t* vtxdist, idx_t* xadj, idx_t* adjncy, idx_t* vwgt,
+                   idx_t* vsize, idx_t* adjwgt, idx_t* wgtflag, idx_t* numflag, idx_t* ncon,
+                   idx_t* nparts, real_t* tpwgts, real_t* ubvec, real_t* ipc2redist,
+                   idx_t* options, idx_t* edgecut, idx_t* part)
 {
   int ierr = 0;
   Int32 nb_rank = m_parallel_mng->commSize();
   Int32 my_rank = m_parallel_mng->commRank();
 
   MetisCall repart_func = [&](IParallelMng* pm, MetisGraphView graph,
-                              ArrayView<idx_t> graph_vtxdist)
-  {
+                              ArrayView<idx_t> graph_vtxdist) {
     MPI_Comm graph_comm = static_cast<MPI_Comm>(pm->communicator());
     return ParMETIS_V3_AdaptiveRepart(graph_vtxdist.data(), graph.xadj.data(),
-                                      graph.adjncy.data(), graph.vwgt.data(), 
+                                      graph.adjncy.data(), graph.vwgt.data(),
                                       graph.vsize.data(), graph.adjwgt.data(),
                                       wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
                                       ipc2redist, options, edgecut,
@@ -247,8 +244,7 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
   // NOTE: This piece of code is the same as in callPartKWay
   // We should centralize/abstract the two.
   MetisCall repart_seq_func = [&](IParallelMng*, MetisGraphView graph,
-                                  ArrayView<idx_t> graph_vtxdist)
-  {
+                                  ArrayView<idx_t> graph_vtxdist) {
     idx_t options2[METIS_NOPTIONS];
     METIS_SetDefaultOptions(options2);
     options2[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
@@ -267,7 +263,6 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
   };
 
   MetisGraphView my_graph;
-  
 
   ArrayView<idx_t> offset(nb_rank + 1, vtxdist);
   my_graph.nb_vertices = CheckedConvert::toInt32(offset[my_rank + 1] - offset[my_rank]);
@@ -282,8 +277,7 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
   my_graph.have_vsize = true;
   my_graph.have_adjwgt = true;
 
-  
-  if (print_digest){
+  if (print_digest) {
     MetisGraphDigest d(m_parallel_mng);
     String digest = d.computeInputDigest(true, 4, my_graph, vtxdist, wgtflag, numflag,
                                          ncon, nparts, tpwgts, ubvec, nullptr, options);
@@ -309,7 +303,7 @@ callAdaptiveRepart(const bool print_digest, const bool gather,
       info() << "Metis output signature = " << digest;
     }
   }
-  
+
   return ierr;
 }
 

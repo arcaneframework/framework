@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class ParallelDataWriter::Impl
 
  public:
 
-  void sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid);
+  void sort(Int32ConstArrayView local_ids, Int64ConstArrayView items_uid);
 
   Ref<IData> getSortedValues(IData* data);
 };
@@ -102,9 +102,9 @@ setGatherAll(bool v)
 }
 
 void ParallelDataWriter::
-sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
+sort(Int32ConstArrayView local_ids, Int64ConstArrayView items_uid)
 {
-  m_p->sort(local_ids,items_uid);
+  m_p->sort(local_ids, items_uid);
 }
 
 Ref<IData> ParallelDataWriter::
@@ -145,7 +145,7 @@ setGatherAll(bool v)
 /*---------------------------------------------------------------------------*/
 
 void ParallelDataWriter::Impl::
-sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
+sort(Int32ConstArrayView local_ids, Int64ConstArrayView items_uid)
 {
   IParallelMng* pm = m_parallel_mng;
 
@@ -172,20 +172,20 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
     }
   }
 
-  if (m_gather_all){
+  if (m_gather_all) {
     // Process 0 gathers everything
-    pm->allGatherVariable(keys,global_all_keys);
-    pm->allGatherVariable(key_indexes,global_all_key_indexes);
-    pm->allGatherVariable(key_ranks,global_all_key_ranks);
+    pm->allGatherVariable(keys, global_all_keys);
+    pm->allGatherVariable(key_indexes, global_all_key_indexes);
+    pm->allGatherVariable(key_ranks, global_all_key_ranks);
     Int32 gather_rank = 0;
 
-    if (pm->commRank()!=gather_rank){
+    if (pm->commRank() != gather_rank) {
       global_all_key_ranks.clear();
       global_all_key_indexes.clear();
       global_all_keys.clear();
     }
     nb_item = global_all_keys.size();
-      
+
     key_ranks = global_all_key_ranks.view();
     key_indexes = global_all_key_indexes.view();
     keys = global_all_keys.view();
@@ -207,9 +207,9 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
   {
     UniqueArray<UniqueArray<Int32>> indexes_list(pm->commSize());
     UniqueArray<UniqueArray<Int32>> own_indexes_list(pm->commSize());
-    auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
+    auto sd_exchange{ ParallelMngUtils::createExchangerRef(pm) };
 
-    for( Integer i=0; i<nb_item; ++i ){
+    for (Integer i = 0; i < nb_item; ++i) {
       Int32 index = key_indexes[i];
       Int32 rank = key_ranks[i];
       if (rank != my_rank && indexes_list[rank].empty())
@@ -227,7 +227,7 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
     Integer nb_send = send_sd.size();
     m_indexes_to_recv.resize(nb_send);
     m_ranks_to_recv.resize(nb_send);
-    for( Integer i=0; i<nb_send; ++i ){
+    for (Integer i = 0; i < nb_send; ++i) {
       //info() << " SEND TO A: rank=" << send_sd[i];
       ISerializeMessage* send_msg = sd_exchange->messageToSend(i);
       Int32 dest_rank = send_sd[i];
@@ -256,7 +256,7 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
     const Int32 nb_recv = recv_sd.size();
     m_indexes_to_send.resize(nb_recv);
     m_ranks_to_send.resize(nb_recv);
-    for( Integer i=0; i<nb_recv; ++i ){
+    for (Integer i = 0; i < nb_recv; ++i) {
       //info() << " RECEIVE FROM A: rank=" << recv_sd[i];
       ISerializeMessage* recv_msg = sd_exchange->messageToReceive(i);
       Int32 orig_rank = recv_sd[i];
@@ -267,7 +267,7 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
       serializer->getArray(recv_indexes);
       const Int32 nb_to_recv = recv_indexes.size();
       //info() << " RECEIVE FROM A: NB_TO_RECEIVE " << nb_to_recv << " S2=" << own_group_local_ids.size();
-      for( Integer z=0; z<nb_to_recv; ++z ){
+      for (Integer z = 0; z < nb_to_recv; ++z) {
         Int32 index = recv_indexes[z];
         //info() << " RECV Z=" << z << " RANK=" << orig_rank << " index=" << index
         //     << " index2=" << own_group_local_ids[index];
@@ -286,7 +286,6 @@ sort(Int32ConstArrayView local_ids,Int64ConstArrayView items_uid)
         m_local_indexes_to_send[z] = local_ids[index];
       }
     }
-
   }
 }
 
@@ -299,7 +298,7 @@ getSortedValues(IData* data)
   IParallelMng* pm = m_parallel_mng;
   Ref<IData> sorted_data = data->cloneEmptyRef();
 
-  auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
+  auto sd_exchange{ ParallelMngUtils::createExchangerRef(pm) };
   for (Int32 rank_to_send : m_ranks_to_send)
     sd_exchange->addSender(rank_to_send);
 
@@ -310,16 +309,16 @@ getSortedValues(IData* data)
   sd_exchange->initializeCommunicationsMessages(ranks_to_recv2);
   Int32ConstArrayView send_sd = sd_exchange->senderRanks();
   const Int32 nb_send = send_sd.size();
-  for( Integer i=0; i<nb_send; ++i ){
+  for (Integer i = 0; i < nb_send; ++i) {
     //info() << " SEND TO B: rank=" << send_sd[i];
     ISerializeMessage* send_msg = sd_exchange->messageToSend(i);
     //Int32 dest_rank = send_sd[i];
     ISerializer* serializer = send_msg->serializer();
     serializer->setMode(ISerializer::ModeReserve);
-    data->serialize(serializer,m_indexes_to_send[i],0);
+    data->serialize(serializer, m_indexes_to_send[i], 0);
     serializer->allocateBuffer();
     serializer->setMode(ISerializer::ModePut);
-    data->serialize(serializer,m_indexes_to_send[i],0);
+    data->serialize(serializer, m_indexes_to_send[i], 0);
   }
 
   sd_exchange->processExchange();
@@ -327,20 +326,20 @@ getSortedValues(IData* data)
   Int32ConstArrayView recv_sd = sd_exchange->receiverRanks();
   const Int32 nb_recv = recv_sd.size();
   sorted_data->resize(m_nb_item);
-  for( Integer i=0; i<nb_recv; ++i ){
+  for (Integer i = 0; i < nb_recv; ++i) {
     //info() << " RECEIVE FROM B: rank=" << recv_sd[i];
     ISerializeMessage* recv_msg = sd_exchange->messageToReceive(i);
     //Int32 orig_rank = recv_sd[i];
     ISerializer* serializer = recv_msg->serializer();
     serializer->setMode(ISerializer::ModeGet);
-    sorted_data->serialize(serializer,m_indexes_to_recv[i],0);
+    sorted_data->serialize(serializer, m_indexes_to_recv[i], 0);
   }
 
   // Processes data that is already present on this processor.
   {
     ConstArrayView<Int32> local_recv_indexes = m_local_indexes_to_recv;
     const Int32 nb_local_index = local_recv_indexes.size();
-    if (nb_local_index>0){
+    if (nb_local_index > 0) {
       SerializeBuffer sbuf;
       sbuf.setMode(ISerializer::ModeReserve);
       data->serialize(&sbuf, m_local_indexes_to_send, nullptr);

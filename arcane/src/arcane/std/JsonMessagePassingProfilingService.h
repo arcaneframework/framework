@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,11 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/AbstractService.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ObserverPool.h"
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/String.h"
+
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ObserverPool.h"
+
 #include "arccore/message_passing/Stat.h"
 
 #include <map>
@@ -26,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,7 +67,7 @@ class JsonMessagePassingProfilingService
   StatDataMap m_ep_mpstat_col;
   String m_impl_name;
 
-private:
+ private:
 
   void _dumpCurrentIterationInJSON();
 
@@ -77,7 +80,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

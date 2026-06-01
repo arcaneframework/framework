@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="Cartesian2DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
@@ -10,15 +10,15 @@
     If only the division in X or Y is specified, this specified
     value must be a divisor of the number of subdomains.
   </description>
-    
-  <interface name="Arcane::IMeshBuilder" />
+
+  <interface name="Arcane::IMeshBuilder"/>
 
   <options>
-    <simple name="origin" type="real2" >
+    <simple name="origin" type="real2">
       <description>Mesh origin</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-x" type="integer" default="0" >
+    <simple name="nb-part-x" type="integer" default="0">
       <description>
         Number of subdomains in X. If absent or if the value '0' is specified,
         the X division is calculated dynamically
@@ -46,13 +46,13 @@
       <userclass>User</userclass>
     </simple>
 
-    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
+      <simple name="n" type="integer">
         <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
+      <simple name="length" type="real">
         <description>Length</description>
         <userclass>User</userclass>
       </simple>
@@ -62,13 +62,13 @@
       </simple>
     </complex>
 
-    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
+      <simple name="n" type="integer">
         <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
+      <simple name="length" type="real">
         <description>Length</description>
         <userclass>User</userclass>
       </simple>

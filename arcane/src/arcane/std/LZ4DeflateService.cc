@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,9 +16,9 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/IDataCompressor.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/IDeflateService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IDeflateService.h"
 
 #include <lz4.h>
 
@@ -49,7 +49,7 @@ class LZ4DeflateService
 
   void build() override {}
 
-  void compress(ByteConstArrayView values,ByteArray& compressed_values) override
+  void compress(ByteConstArrayView values, ByteArray& compressed_values) override
   {
     Integer input_size = values.size();
     int dest_capacity = LZ4_compressBound(input_size);
@@ -63,26 +63,26 @@ class LZ4DeflateService
 
     const char* source = reinterpret_cast<const char*>(values.data());
     unsigned int source_len = (unsigned int)input_size;
-    
+
 #if 0
     info() << "CHECK COMPRESS dest=" << (void*)dest
            << " dest_len=" << dest_len
            << " source=" << (void*)source
            << " source_len=" << source_len;
 #endif
-    
-    int r = LZ4_compress_default(source,dest,source_len,dest_capacity);
 
-    if (r==0)
-      throw IOException(A_FUNCINFO,String::format("io error during compression r={0}",r));
+    int r = LZ4_compress_default(source, dest, source_len, dest_capacity);
+
+    if (r == 0)
+      throw IOException(A_FUNCINFO, String::format("io error during compression r={0}", r));
     int dest_len = r;
-    Real ratio = (dest_len * 100.0 ) / source_len;
+    Real ratio = (dest_len * 100.0) / source_len;
     info() << "LZ4 compress r=" << r << " source_len=" << source_len
            << " dest_len=" << dest_len << " ratio=" << ratio;
     compressed_values.resize(dest_len);
   }
 
-  void decompress(ByteConstArrayView compressed_values,ByteArrayView values) override
+  void decompress(ByteConstArrayView compressed_values, ByteArrayView values) override
   {
     char* dest = reinterpret_cast<char*>(values.data());
     int dest_len = values.size();
@@ -90,10 +90,10 @@ class LZ4DeflateService
     const char* source = reinterpret_cast<const char*>(compressed_values.data());
     int source_len = compressed_values.size();
 
-    int r = LZ4_decompress_safe(source,dest,source_len,dest_len);
+    int r = LZ4_decompress_safe(source, dest, source_len, dest_len);
     info() << "LZ4 decompress r=" << r << " source_len=" << source_len << " dest_len=" << dest_len;
-    if (r<0)
-      throw IOException(A_FUNCINFO,String::format("io error during decompression r={0}",r));
+    if (r < 0)
+      throw IOException(A_FUNCINFO, String::format("io error during decompression r={0}", r));
   }
 };
 
@@ -110,7 +110,8 @@ class LZ4DataCompressor
  public:
 
   explicit LZ4DataCompressor(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_name(sbi.serviceInfo()->localName())
+  : AbstractService(sbi)
+  , m_name(sbi.serviceInfo()->localName())
   {
   }
 
@@ -119,15 +120,15 @@ class LZ4DataCompressor
   void build() override {}
   String name() const override { return m_name; }
   Int64 minCompressSize() const override { return 512; }
-  void compress(Span<const std::byte> values,Array<std::byte>& compressed_values) override
+  void compress(Span<const std::byte> values, Array<std::byte>& compressed_values) override
   {
     // Although theoretically supporting an array size of 64 bits,
     // the 'LZ4' algorithm uses 'int' for sizes and does not
     // support values greater than LZ4_MAX_INPUT_SIZE.
     int input_size = _toInt(values.size());
     // Checks if we do not exceed LZ4_MAX_INPUT_SIZE
-    if (input_size>LZ4_MAX_INPUT_SIZE)
-      ARCANE_THROW(IOException,"Array is too large for LZ4: size={0} max={1}",input_size,LZ4_MAX_INPUT_SIZE);
+    if (input_size > LZ4_MAX_INPUT_SIZE)
+      ARCANE_THROW(IOException, "Array is too large for LZ4: size={0} max={1}", input_size, LZ4_MAX_INPUT_SIZE);
 
     int dest_capacity = LZ4_compressBound(input_size);
     compressed_values.resize(dest_capacity);
@@ -135,19 +136,19 @@ class LZ4DataCompressor
     char* dest = reinterpret_cast<char*>(compressed_values.data());
     const char* source = reinterpret_cast<const char*>(values.data());
 
-    int r = LZ4_compress_default(source,dest,input_size,dest_capacity);
-    if (r==0)
-      ARCANE_THROW(IOException,"IO error during compression r={0}",r);
+    int r = LZ4_compress_default(source, dest, input_size, dest_capacity);
+    if (r == 0)
+      ARCANE_THROW(IOException, "IO error during compression r={0}", r);
     int dest_len = r;
-    if (input_size>0){
-      Real ratio = (dest_len * 100.0 ) / input_size;
+    if (input_size > 0) {
+      Real ratio = (dest_len * 100.0) / input_size;
       info(5) << "LZ4 compress r=" << r << " source_len=" << input_size
               << " dest_len=" << dest_len << " ratio=" << ratio;
     }
     compressed_values.resize(dest_len);
   }
 
-  void decompress(Span<const std::byte> compressed_values,Span<std::byte> values) override
+  void decompress(Span<const std::byte> compressed_values, Span<std::byte> values) override
   {
     char* dest = reinterpret_cast<char*>(values.data());
     int dest_len = _toInt(values.size());
@@ -155,20 +156,24 @@ class LZ4DataCompressor
     const char* source = reinterpret_cast<const char*>(compressed_values.data());
     int source_len = _toInt(compressed_values.size());
 
-    int r = LZ4_decompress_safe(source,dest,source_len,dest_len);
+    int r = LZ4_decompress_safe(source, dest, source_len, dest_len);
     info(5) << "LZ4 decompress r=" << r << " source_len=" << source_len << " dest_len=" << dest_len;
-    if (r<0)
-      ARCANE_THROW(IOException,"IO error during decompression r={0}",r);
+    if (r < 0)
+      ARCANE_THROW(IOException, "IO error during decompression r={0}", r);
   }
+
  private:
+
   String m_name;
+
  private:
+
   int _toInt(Int64 vsize)
   {
     // Checks if it fits in an 'int'.
     Int64 max_int_size = std::numeric_limits<int>::max();
-    if (vsize>max_int_size)
-      ARCANE_THROW(IOException,"Array is too large to fit in 'int' type: size={0} max={1}",vsize,max_int_size);
+    if (vsize > max_int_size)
+      ARCANE_THROW(IOException, "Array is too large to fit in 'int' type: size={0} max={1}", vsize, max_int_size);
     return static_cast<int>(vsize);
   }
 };
@@ -177,11 +182,11 @@ class LZ4DataCompressor
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(LZ4DeflateService,
-                        ServiceProperty("LZ4",ST_Application),
+                        ServiceProperty("LZ4", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IDeflateService));
 
 ARCANE_REGISTER_SERVICE(LZ4DataCompressor,
-                        ServiceProperty("LZ4DataCompressor",ST_Application|ST_CaseOption),
+                        ServiceProperty("LZ4DataCompressor", ST_Application | ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IDataCompressor));
 
 /*---------------------------------------------------------------------------*/

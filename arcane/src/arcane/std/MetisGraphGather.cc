@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -77,18 +77,19 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
   const Int32 nb_rank = m_nb_rank;
   const bool is_master_io = m_parallel_mng->isMasterIO();
   // buffers
-  
+
   UniqueArray<int> my_buffer; // for the inputs of the MPI routines
   UniqueArray<int> buffer; // for the outputs of the MPI routines
   UniqueArray<int> offset; // for the gather
-  
+
   // number of vertices in the complete graph
 
   if (m_my_rank == io_rank) {
     graph.nb_vertices = CheckedConvert::toInt32(vtxdist[m_nb_rank]);
     graph.have_vsize = my_graph.have_vsize; // it is assumed that all processors have the same value
     graph.have_adjwgt = my_graph.have_adjwgt; // it is assumed that all processors have the same value
-  } else {
+  }
+  else {
     graph.nb_vertices = 0;
     graph.have_vsize = false;
     graph.have_adjwgt = false;
@@ -121,7 +122,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
   }
 
   // resize the buffers now that the dimensions are known (the largest array is adjcny)
-  
+
   int max_buffer_size = my_graph.nb_vertices * ncon;
   max_buffer_size = std::max(my_graph.adjncy.size(), max_buffer_size);
   my_buffer.resize(max_buffer_size);
@@ -150,7 +151,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
   _convertVector(adjcny_size, buffer.constView(), graph.adjncy.view());
 
   // Retrieves the list of edge weights.
-  
+
   if (my_graph.have_adjwgt) {
     if (is_master_io) {
       graph.adjwgt.resize(adjcny_size);
@@ -192,12 +193,12 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
   if (is_master_io) {
     int start_adjncy_index = 0;
     for (int rank = 1; rank < nb_rank; ++rank) {
-      start_adjncy_index += adjncy_size_per_rank[rank-1];
+      start_adjncy_index += adjncy_size_per_rank[rank - 1];
       //std::cerr << "rank " << rank << " offset " << start_adjncy_index << "  vtxdist[rank] " <<  vtxdist[rank] << " vtxdist[rank+1] " << vtxdist[rank+1] << std::endl;
       Int32 vtxdist_rank = CheckedConvert::toInt32(vtxdist[rank]);
       Int32 vtxdist_rank_plus_one = CheckedConvert::toInt32(vtxdist[rank + 1]);
       for (Int32 ixadj = vtxdist_rank; ixadj < vtxdist_rank_plus_one; ++ixadj) {
-        graph.xadj[ixadj] +=  start_adjncy_index;
+        graph.xadj[ixadj] += start_adjncy_index;
       }
     }
   }
@@ -223,7 +224,7 @@ gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon,
   if (is_master_io) {
     graph.part.resize(graph.nb_vertices);
   }
-  
+
   if (need_part) {
 
     _convertVector(my_graph.nb_vertices, my_graph.part.constView(), my_buffer.view());
@@ -264,7 +265,7 @@ scatterPart(ConstArrayView<idx_t> vtxdist, ConstArrayView<idx_t> part, ArrayView
   const Int32 nb_rank = m_nb_rank;
   const bool is_master_io = m_parallel_mng->isMasterIO();
   int io_rank = 0;
-  
+
   UniqueArray<Int32> nb_vertices(nb_rank);
   UniqueArray<Int32> displ(nb_rank);
 
@@ -272,7 +273,7 @@ scatterPart(ConstArrayView<idx_t> vtxdist, ConstArrayView<idx_t> part, ArrayView
     displ[rank] = CheckedConvert::toInt32(vtxdist[rank]);
     nb_vertices[rank] = CheckedConvert::toInt32(vtxdist[rank + 1] - vtxdist[rank]);
   }
-  
+
   UniqueArray<int> send_buffer;
   UniqueArray<int> recv_buffer(my_part.size());
 

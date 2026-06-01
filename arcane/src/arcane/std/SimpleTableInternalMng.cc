@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,7 +36,8 @@ clearInternal()
 Integer SimpleTableInternalMng::
 addRow(const String& row_name)
 {
-  if(row_name.empty()) return -1;
+  if (row_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim1Size();
   m_simple_table_internal->m_values.resize(position + 1);
@@ -52,7 +53,8 @@ addRow(const String& row_name)
 Integer SimpleTableInternalMng::
 addRow(const String& row_name, ConstArrayView<Real> elements)
 {
-  if(row_name.empty()) return -1;
+  if (row_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim1Size();
   m_simple_table_internal->m_values.resize(position + 1);
@@ -68,7 +70,8 @@ addRow(const String& row_name, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addRows(StringConstArrayView rows_names)
 {
-  if(rows_names.contains("")) return false;
+  if (rows_names.contains(""))
+    return false;
 
   Integer size = rows_names.size();
   if (size == 0)
@@ -91,7 +94,8 @@ addRows(StringConstArrayView rows_names)
 Integer SimpleTableInternalMng::
 addColumn(const String& column_name)
 {
-  if(column_name.empty()) return -1;
+  if (column_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim2Size();
   m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
@@ -107,7 +111,8 @@ addColumn(const String& column_name)
 Integer SimpleTableInternalMng::
 addColumn(const String& column_name, ConstArrayView<Real> elements)
 {
-  if(column_name.empty()) return -1;
+  if (column_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim2Size();
   m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
@@ -123,7 +128,8 @@ addColumn(const String& column_name, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addColumns(StringConstArrayView columns_names)
 {
-  if(columns_names.contains("")) return false;
+  if (columns_names.contains(""))
+    return false;
 
   Integer size = columns_names.size();
   if (size == 0)
@@ -754,8 +760,9 @@ editColumnName(const String& column_name, const String& new_name)
 Integer SimpleTableInternalMng::
 addAverageColumn(const String& column_name)
 {
-  if(column_name.empty()) return -1;
-  
+  if (column_name.empty())
+    return -1;
+
   Integer position = addColumn(column_name);
   for (Integer i = 0; i < m_simple_table_internal->m_values.dim1Size(); i++) {
     Real avg = 0.0;

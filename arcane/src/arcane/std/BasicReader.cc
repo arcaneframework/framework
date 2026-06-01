@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -137,7 +137,7 @@ void BasicReader::
 _directReadVal(VariableMetaData* varmd, IData* data)
 {
   info(4) << "DIRECT READ VAL v=" << varmd->fullName();
-    
+
   bool is_item_variable = !varmd->itemFamilyName().null();
   Int32 nb_rank_to_read = m_nb_rank_to_read;
   // If it is a variable that is not on the mesh,
@@ -160,7 +160,7 @@ _directReadVal(VariableMetaData* varmd, IData* data)
     String vname = varmd->fullName();
     info(4) << " TRY TO READ var_full_name=" << vname;
     m_global_readers[i]->readData(vname, written_data[i]);
-    if (i==0 && m_comparison_hash_algorithm.get() )
+    if (i == 0 && m_comparison_hash_algorithm.get())
       info(5) << "COMPARISON_HASH =" << m_global_readers[i]->comparisonHashValue(vname);
   }
 
@@ -267,14 +267,14 @@ void BasicReader::
 fillComparisonHash(std::map<String, String>& comparison_hash_map)
 {
   comparison_hash_map.clear();
-  if (m_nb_rank_to_read==0)
+  if (m_nb_rank_to_read == 0)
     return;
-  if (m_parallel_mng->commRank()!=m_parallel_mng->masterIORank())
+  if (m_parallel_mng->commRank() != m_parallel_mng->masterIORank())
     return;
   const VariableDataInfoMap& var_map = m_global_readers[0]->variablesDataInfoMap();
-  for( auto v : var_map){
+  for (auto v : var_map) {
     VariableDataInfo* vd = v.second.get();
-    comparison_hash_map.try_emplace(vd->fullName(),vd->comparisonHashValue());
+    comparison_hash_map.try_emplace(vd->fullName(), vd->comparisonHashValue());
   }
 }
 

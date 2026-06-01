@@ -1,20 +1,20 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="HoneyComb3DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
     3D hexagonal mesh generator.
   </description>
 
-  <interface name="Arcane::IMeshBuilder" />
+  <interface name="Arcane::IMeshBuilder"/>
 
   <options>
-    <simple name="origin" type="real2" >
+    <simple name="origin" type="real2">
       <description>
         2D origin of the mesh. Height values are provided by the 'heights' option
       </description>
       <userclass>User</userclass>
     </simple>
-    <simple name="pitch-size" type="real" >
+    <simple name="pitch-size" type="real">
       <description>
         Pitch value, which is the distance between two opposite sides of a hexagon.
         Must be strictly positive.

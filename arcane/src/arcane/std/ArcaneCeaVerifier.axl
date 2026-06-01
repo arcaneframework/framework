@@ -1,8 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
+﻿<?xml version="1.0" ?>
 <!-- Dataset options concerning the non-regression verification module -->
 
 <module name="ArcaneCeaVerifier" autoload="true">
@@ -18,7 +14,7 @@
   </entry-points>
 
   <options>
-      
+
     <simple name="verify" type="bool" default="false">
       <name lang='fr'>verification-active</name>
       <userclass>User</userclass>
@@ -39,22 +35,24 @@
       <name lang='fr'>fichier-reference</name>
       <userclass>User</userclass>
       <description>
-        Name of the file containing the reference values. In case of generation and in parallel mode, there are as many files as there are subdomains, and each file is suffixed with the subdomain number.
+        Name of the file containing the reference values. In case of generation and in parallel mode, there are as many
+        files as there are subdomains, and each file is suffixed with the subdomain number.
       </description>
     </simple>
 
-    <simple name="compare-parallel-sequential" type="bool" default="false" >
+    <simple name="compare-parallel-sequential" type="bool" default="false">
       <name lang='fr'>comparaison-parallele-sequentiel</name>
       <description>
         If true, indicates that the comparison must be made between a parallel case and a sequential reference.
       </description>
     </simple>
 
-    <simple name="result-file" type="ustring" default="compare.xml" >
+    <simple name="result-file" type="ustring" default="compare.xml">
       <name lang='fr'>fichier-resultat</name>
       <userclass>User</userclass>
       <description>
-        Name of the file containing the results. It is an XML format file, and it is preferable to include the 'xml' extension in the file name.
+        Name of the file containing the results. It is an XML format file, and it is preferable to include the 'xml'
+        extension in the file name.
       </description>
     </simple>
 
@@ -69,11 +67,14 @@
       <name lang='fr'>fichiers-dans-dossier-output</name>
       <userclass>User</userclass>
       <description>
-        If true, allows reference files to be saved and results to be read in the 'output' directory, which contains, among other things, the listing and the curves. Useful in the case where the same dataset is launched from the same directory multiple times in parallel (provided that the 'output' directories defined at runtime are different).
+        If true, allows reference files to be saved and results to be read in the 'output' directory, which contains,
+        among other things, the listing and the curves. Useful in the case where the same dataset is launched from the
+        same directory multiple times in parallel (provided that the 'output' directories defined at runtime are
+        different).
       </description>
     </simple>
 
-    <complex name="trace" type="Trace" minOccurs="0" maxOccurs="unbounded" >
+    <complex name="trace" type="Trace" minOccurs="0" maxOccurs="unbounded">
       <name lang='fr'>trace</name>
       <userclass>User</userclass>
       <description>
@@ -88,7 +89,7 @@
         </description>
       </simple>
 
-      <simple name="unique-id" type="integer" minOccurs="0" maxOccurs="unbounded" >
+      <simple name="unique-id" type="integer" minOccurs="0" maxOccurs="unbounded">
         <name lang='fr'>unique-id</name>
         <userclass>User</userclass>
         <description>
@@ -98,8 +99,5 @@
     </complex>
 
   </options>
-  
-  <!-- ###################################################################### -->
-  <!-- ###################################################################### -->
 
 </module>

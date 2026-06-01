@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -66,12 +66,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 enum ZoltanModel
 {
-  ZOLTAN_HG = (1<<0),
-  ZOLTAN_GRAPH = (1<<1),
-  ZOLTAN_GEOM = (1<<2)
+  ZOLTAN_HG = (1 << 0),
+  ZOLTAN_GRAPH = (1 << 1),
+  ZOLTAN_GEOM = (1 << 2)
 };
 
 /*---------------------------------------------------------------------------*/
@@ -82,24 +81,27 @@ enum ZoltanModel
  * \brief Information for partitioning with Zoltan.
  */
 class ZoltanInfo
-  : public TraceAccessor
+: public TraceAccessor
 {
-public:
-  ZoltanInfo(MeshPartitionerBase* basePartitionner,ostream* ofile, int model=1, const Real edgeWeightMultiplier = 1.)
-    : TraceAccessor(basePartitionner->mesh()->traceMng())
-    , m_mesh_partitionner_base(basePartitionner)
-    , m_nbEdges(0)
-    , m_nbPins(0)
-    , m_ofile(ofile)
-    , m_model(model)
-    , m_edgeGIDStart(0)
-    , m_edge_weight_multiplier(edgeWeightMultiplier)
+ public:
+
+  ZoltanInfo(MeshPartitionerBase* basePartitionner, ostream* ofile, int model = 1, const Real edgeWeightMultiplier = 1.)
+  : TraceAccessor(basePartitionner->mesh()->traceMng())
+  , m_mesh_partitionner_base(basePartitionner)
+  , m_nbEdges(0)
+  , m_nbPins(0)
+  , m_ofile(ofile)
+  , m_model(model)
+  , m_edgeGIDStart(0)
+  , m_edge_weight_multiplier(edgeWeightMultiplier)
   {
     m_own_cells = m_mesh_partitionner_base->mesh()->ownCells();
     build();
   }
   MeshPartitionerBase* m_mesh_partitionner_base;
-private:
+
+ private:
+
   CellGroup m_own_cells;
   int m_nbEdges;
   int m_nbPins;
@@ -107,8 +109,10 @@ private:
   int m_model;
   int m_edgeGIDStart;
   Real m_edge_weight_multiplier;
-  std::set<std::pair<Int64, Int64> > m_weight_set;
-public:
+  std::set<std::pair<Int64, Int64>> m_weight_set;
+
+ public:
+
   void build()
   {
     info() << "ZoltanInfo::build()";
@@ -131,54 +135,50 @@ public:
     Int32UniqueArray scanouille(pm->commSize());
     scanouille.fill(0);
     scanouille[pm->commRank()] = nbOwnEdges;
-    pm->scan(Parallel::ReduceSum,scanouille);
+    pm->scan(Parallel::ReduceSum, scanouille);
     m_edgeGIDStart = 0;
-    for (int i = 0 ; i < pm->commRank() ; ++i) {
+    for (int i = 0; i < pm->commRank(); ++i) {
       m_edgeGIDStart += scanouille[i];
     }
 
     m_nbEdges = 0;
     m_nbPins = 0;
-    ENUMERATE_CELL(iCell,m_own_cells)
-    {
+    ENUMERATE_CELL (iCell, m_own_cells) {
       if (!m_mesh_partitionner_base->cellUsedWithConstraints(*iCell))
         continue;
 
       int nbNgb = m_mesh_partitionner_base->nbNeighbourCellsWithConstraints(*iCell);
       if (m_model & ZOLTAN_HG) {
-	m_nbEdges ++;
-	m_nbPins += nbNgb + 1;
+        m_nbEdges++;
+        m_nbPins += nbNgb + 1;
       }
       if (m_model & ZOLTAN_GRAPH) {
         m_nbEdges += nbNgb;
-        m_nbPins += (nbNgb*2);
+        m_nbPins += (nbNgb * 2);
       }
     }
 
     info() << "nbEdges=" << m_nbEdges << " ; nbPins=" << m_nbPins;
 
-    if(m_mesh_partitionner_base->haveWeakConstraints())
-    {
+    if (m_mesh_partitionner_base->haveWeakConstraints()) {
       MeshVariableScalarRefT<Face, Integer> weak_constraint(VariableBuildInfo(m_mesh_partitionner_base->mesh(), "EdgeWeight"));
-      ENUMERATE_FACE(iface,m_mesh_partitionner_base->mesh()->ownFaces())
-      {
-	const Face& face = *iface;
-	const Cell& bCell = iface->backCell();
-	const Cell& fCell = iface->frontCell();
-	if(bCell.null() || fCell.null())
-	  continue;
-	if(weak_constraint[face]==2)
-	{
-	  m_weight_set.insert(std::pair<Int64,Int64>(face.backCell().uniqueId(), face.frontCell().uniqueId()));
-	  m_weight_set.insert(std::pair<Int64,Int64>(face.frontCell().uniqueId(), face.backCell().uniqueId()));
-	}
+      ENUMERATE_FACE (iface, m_mesh_partitionner_base->mesh()->ownFaces()) {
+        const Face& face = *iface;
+        const Cell& bCell = iface->backCell();
+        const Cell& fCell = iface->frontCell();
+        if (bCell.null() || fCell.null())
+          continue;
+        if (weak_constraint[face] == 2) {
+          m_weight_set.insert(std::pair<Int64, Int64>(face.backCell().uniqueId(), face.frontCell().uniqueId()));
+          m_weight_set.insert(std::pair<Int64, Int64>(face.frontCell().uniqueId(), face.backCell().uniqueId()));
+        }
       }
     }
   } // end build()
 
+ public:
 
-public:
-  static int getHgNumVertices(void *data, int *ierr)
+  static int getHgNumVertices(void* data, int* ierr)
   {
     ARCANE_UNUSED(ierr);
 
@@ -196,9 +196,9 @@ public:
     return zi->m_mesh_partitionner_base->nbOwnCellsWithConstraints();
   }
 
-  static void getHgVerticesAndWeights(void *data, int num_gid_entries,
+  static void getHgVerticesAndWeights(void* data, int num_gid_entries,
                                       int num_lid_entries, ZOLTAN_ID_PTR gids, ZOLTAN_ID_PTR lids,
-                                      int wgt_dim, float *obj_weights, int *ierr)
+                                      int wgt_dim, float* obj_weights, int* ierr)
   {
     ARCANE_UNUSED(num_gid_entries);
     ARCANE_UNUSED(num_lid_entries);
@@ -217,19 +217,18 @@ public:
     SharedArray<float> cells_weights;
     if (wgt_dim != 0) { // No weight, does not mean no limitation like for Arcane
       if (zi->m_mesh_partitionner_base->nbCellWeight() <= wgt_dim) { // We can use all criteria, so we do
-	cells_weights = zi->m_mesh_partitionner_base->cellsWeightsWithConstraints(wgt_dim);
+        cells_weights = zi->m_mesh_partitionner_base->cellsWeightsWithConstraints(wgt_dim);
       }
-      else  { // We need more criteria than available
-	// So we try to balance memory !
-	cells_weights = zi->m_mesh_partitionner_base->cellsSizeWithConstraints();
+      else { // We need more criteria than available
+        // So we try to balance memory !
+        cells_weights = zi->m_mesh_partitionner_base->cellsSizeWithConstraints();
       }
       ArrayView<float> view_weights(cells_weights.size(), obj_weights);
       view_weights.copy(cells_weights);
     }
 
     int index = 0;
-    ENUMERATE_CELL(icell,zi->m_own_cells)
-    {
+    ENUMERATE_CELL (icell, zi->m_own_cells) {
       if (!zi->m_mesh_partitionner_base->cellUsedWithConstraints(*icell))
         continue;
 
@@ -237,19 +236,19 @@ public:
       lids[index] = zi->m_mesh_partitionner_base->localIdWithConstraints(*icell);
 
       if (zi->m_ofile) {
-        for( int j=0; j< wgt_dim; ++j ){
-          float weight = cells_weights[lids[index]*wgt_dim+j];
+        for (int j = 0; j < wgt_dim; ++j) {
+          float weight = cells_weights[lids[index] * wgt_dim + j];
           *obj_weights++ = weight;
           // zi->info() << " Weight uid=" << gids[index] << " w=" << weight;
           (*zi->m_ofile) << " Weight uid=" << gids[index] << " w=" << weight << '\n';
         }
       }
-      index ++;
+      index++;
     }
     *ierr = ZOLTAN_OK;
   }
 
-  static void getHgSizeAndFormat(void *data, int *num_lists, int *num_pins, int *format, int *ierr)
+  static void getHgSizeAndFormat(void* data, int* num_lists, int* num_pins, int* format, int* ierr)
   {
     ZoltanInfo* zi = (ZoltanInfo*)data;
 
@@ -270,12 +269,12 @@ public:
     //   *format = ZOLTAN_COMPRESSED_VERTEX;
     // }
     zi->info() << " ZoltanInfo::getHgSizeAndFormat() " << " num_list= " << *num_lists << " num_pins= " << *num_pins;
-    *ierr =ZOLTAN_OK;
+    *ierr = ZOLTAN_OK;
   }
 
-  static void getHg(void *data,  int num_gid_entries,
+  static void getHg(void* data, int num_gid_entries,
                     int nrowcol, int npins, int format,
-                    ZOLTAN_ID_PTR z_vtxedge_GID, int *z_vtxedge_ptr, ZOLTAN_ID_PTR z_pin_GID, int *ierr)
+                    ZOLTAN_ID_PTR z_vtxedge_GID, int* z_vtxedge_ptr, ZOLTAN_ID_PTR z_pin_GID, int* ierr)
   {
     ZoltanInfo* zi = (ZoltanInfo*)data;
 
@@ -292,7 +291,7 @@ public:
     int indexEdge = 0;
     int gid = zi->m_edgeGIDStart;
     z_vtxedge_ptr[0] = 0;
-    ENUMERATE_CELL(i_item, zi->m_own_cells) {
+    ENUMERATE_CELL (i_item, zi->m_own_cells) {
       const Cell& item = *i_item;
 
       if (!zi->m_mesh_partitionner_base->cellUsedWithConstraints(item))
@@ -300,37 +299,35 @@ public:
 
       neighbour_cells.resize(0);
       zi->m_mesh_partitionner_base->getNeighbourCellsUidWithConstraints(item,
-									neighbour_cells);
+                                                                        neighbour_cells);
 
-      if (zi->m_model & ZOLTAN_HG)
-      {
-        for( Integer z=0; z<neighbour_cells.size(); ++z )
+      if (zi->m_model & ZOLTAN_HG) {
+        for (Integer z = 0; z < neighbour_cells.size(); ++z)
           z_pin_GID[indexPin++] = CheckedConvert::toInteger(neighbour_cells[z]);
         z_pin_GID[indexPin++] = item.uniqueId().asInt32(); // Don't forget current cell
         z_vtxedge_GID[indexEdge] = gid++;
         // +1 because current cell is it's own neighbor !
-        z_vtxedge_ptr[indexEdge+1] = z_vtxedge_ptr[indexEdge] + neighbour_cells.size() + 1;
-        indexEdge ++;
+        z_vtxedge_ptr[indexEdge + 1] = z_vtxedge_ptr[indexEdge] + neighbour_cells.size() + 1;
+        indexEdge++;
       }
 
-      if (zi->m_model & ZOLTAN_GRAPH)
-      {
+      if (zi->m_model & ZOLTAN_GRAPH) {
         // size 2 edges are face communications
         // other are neighborhood description
-        for( Integer z=0; z<neighbour_cells.size(); ++z ) {
+        for (Integer z = 0; z < neighbour_cells.size(); ++z) {
           z_pin_GID[indexPin++] = CheckedConvert::toInteger(neighbour_cells[z]);
           z_pin_GID[indexPin++] = (item.uniqueId().asInt32());
           z_vtxedge_GID[indexEdge] = gid++;
-          z_vtxedge_ptr[indexEdge+1] = z_vtxedge_ptr[indexEdge] + 2;
+          z_vtxedge_ptr[indexEdge + 1] = z_vtxedge_ptr[indexEdge] + 2;
           indexEdge++;
         }
       }
     }
     if (zi->m_ofile) {
-      for (int i = 0 ; i < nrowcol ; ++i) {
+      for (int i = 0; i < nrowcol; ++i) {
         (*zi->m_ofile) << "*topo GID " << z_vtxedge_GID[i]
-                       << " : "	<< z_vtxedge_ptr[i+1] - z_vtxedge_ptr[i];
-        for (int j = z_vtxedge_ptr[i] ; j < z_vtxedge_ptr[i+1] ; ++j) {
+                       << " : " << z_vtxedge_ptr[i + 1] - z_vtxedge_ptr[i];
+        for (int j = z_vtxedge_ptr[i]; j < z_vtxedge_ptr[i + 1]; ++j) {
           (*zi->m_ofile) << '\t' << z_pin_GID[j];
         }
         (*zi->m_ofile) << '\n';
@@ -339,16 +336,15 @@ public:
     *ierr = ZOLTAN_OK;
   }
 
-
   /*
     For a list of objects, it returns the per-objects sizes (in bytes)
     of the data buffers needed to pack object data.
     void (*)(void*, int, int, int, ZOLTAN_ID_TYPE*, ZOLTAN_ID_TYPE*, int*, int*)
   */
 
-  static void getHgVertexSizes (void *data, int num_gid_entries, int num_lid_entries,
-                         int num_ids, ZOLTAN_ID_PTR global_ids, ZOLTAN_ID_PTR local_ids,
-                         int *sizes, int *ierr)
+  static void getHgVertexSizes(void* data, int num_gid_entries, int num_lid_entries,
+                               int num_ids, ZOLTAN_ID_PTR global_ids, ZOLTAN_ID_PTR local_ids,
+                               int* sizes, int* ierr)
   {
     ARCANE_UNUSED(num_gid_entries);
     ARCANE_UNUSED(num_lid_entries);
@@ -358,15 +354,14 @@ public:
 
     SharedArray<float> cellSizes = zi->m_mesh_partitionner_base->cellsSizeWithConstraints();
 
-    for (int i = 0 ; i < num_ids ; ++i)
-    {
+    for (int i = 0; i < num_ids; ++i) {
       sizes[i] = Convert::toInteger(cellSizes[local_ids[i]]);
     }
 
     *ierr = ZOLTAN_OK;
   }
 
-  static void getHgEdgeWeightSize(void *data, int *num_edges, int *ierr)
+  static void getHgEdgeWeightSize(void* data, int* num_edges, int* ierr)
   {
     ZoltanInfo* zi = (ZoltanInfo*)data;
 
@@ -383,9 +378,9 @@ public:
     *ierr = ZOLTAN_OK;
   }
 
-  static void getHgEdgeWeights(void *data,  int num_gid_entries,
+  static void getHgEdgeWeights(void* data, int num_gid_entries,
                                int num_lid_entries, int nedges, int edge_weight_dim,
-                               ZOLTAN_ID_PTR edge_GID, ZOLTAN_ID_PTR edge_LID, float *edge_weight, int *ierr)
+                               ZOLTAN_ID_PTR edge_GID, ZOLTAN_ID_PTR edge_LID, float* edge_weight, int* ierr)
   {
     ARCANE_UNUSED(num_lid_entries);
 
@@ -406,7 +401,7 @@ public:
     connectivityWeights.reserve(6);
     int indexEdge = 0;
 
-    ENUMERATE_CELL(i_item, zi->m_own_cells) {
+    ENUMERATE_CELL (i_item, zi->m_own_cells) {
       Cell item = *i_item;
 
       if (!zi->m_mesh_partitionner_base->cellUsedWithConstraints(item))
@@ -414,16 +409,16 @@ public:
 
       connectivityWeights.resize(0);
       neighbour_cells.resize(0);
-      bool hg_model=(zi->m_model & ZOLTAN_HG);
-      Real he_weight= 0;
+      bool hg_model = (zi->m_model & ZOLTAN_HG);
+      Real he_weight = 0;
       he_weight =
-        zi->m_mesh_partitionner_base->getNeighbourCellsUidWithConstraints(item,
-          neighbour_cells, &connectivityWeights, hg_model);
+      zi->m_mesh_partitionner_base->getNeighbourCellsUidWithConstraints(item,
+                                                                        neighbour_cells, &connectivityWeights, hg_model);
 
       if (zi->m_model & ZOLTAN_HG) {
         if (!(zi->m_model & ZOLTAN_GRAPH)) {
           // We have to sum-up de Weight of pins to define HyperEdge's one.
-          for( Integer z=0; z<neighbour_cells.size(); ++z ) {
+          for (Integer z = 0; z < neighbour_cells.size(); ++z) {
             he_weight += connectivityWeights[z];
           }
         }
@@ -435,14 +430,14 @@ public:
       if (zi->m_model & ZOLTAN_GRAPH) {
         // size 2 edges are face communications
         // other are neighborhood description
-        for( Integer z=0; z<neighbour_cells.size(); ++z ){
+        for (Integer z = 0; z < neighbour_cells.size(); ++z) {
           edge_GID[indexEdge] = indexEdge + zi->m_edgeGIDStart;
           edge_LID[indexEdge] = indexEdge;
           Real w = connectivityWeights[z];
           edge_weight[indexEdge] = (float)w;
-          if (zi->m_mesh_partitionner_base->haveWeakConstraints()){
-            std::pair<Int64,Int64> items(item.uniqueId(), neighbour_cells[z]);
-            if(zi->m_mesh_partitionner_base->cellUsedWithWeakConstraints(items)){
+          if (zi->m_mesh_partitionner_base->haveWeakConstraints()) {
+            std::pair<Int64, Int64> items(item.uniqueId(), neighbour_cells[z]);
+            if (zi->m_mesh_partitionner_base->cellUsedWithWeakConstraints(items)) {
               edge_weight[indexEdge] *= (float)zi->m_edge_weight_multiplier;
             }
           }
@@ -454,7 +449,7 @@ public:
   }
 
   // Return the dimension of a vertex, for geometric methods
-  static int get_num_geometry(void *data, int *ierr)
+  static int get_num_geometry(void* data, int* ierr)
   {
     ARCANE_UNUSED(data);
     *ierr = ZOLTAN_OK;
@@ -462,26 +457,25 @@ public:
   }
 
   // Return the coordinates of my objects (vertices), for geometric methods.
-  static void get_geometry_list(void *data, int sizeGID, int sizeLID,
+  static void get_geometry_list(void* data, int sizeGID, int sizeLID,
                                 int num_obj,
                                 ZOLTAN_ID_PTR global_ids, ZOLTAN_ID_PTR local_ids,
-                                int num_dim, double *geom_vec, int *ierr)
+                                int num_dim, double* geom_vec, int* ierr)
   {
     ARCANE_UNUSED(global_ids);
     ARCANE_UNUSED(local_ids);
 
     ZoltanInfo* zi = (ZoltanInfo*)data;
 
-    if ( (sizeGID != 1) || (sizeLID != 1) || (num_dim > 3)){
+    if ((sizeGID != 1) || (sizeLID != 1) || (num_dim > 3)) {
       *ierr = ZOLTAN_FATAL;
       return;
     }
 
     VariableNodeReal3& coords(zi->m_mesh_partitionner_base->mesh()->nodesCoordinates());
 
-
-    int i=0;
-    ENUMERATE_CELL(icell,zi->m_own_cells){
+    int i = 0;
+    ENUMERATE_CELL (icell, zi->m_own_cells) {
       if (!zi->m_mesh_partitionner_base->cellUsedWithConstraints(*icell))
         continue;
 
@@ -489,22 +483,22 @@ public:
 
       Real3 bar;
 
-      for( Integer z=0, zs = (*icell).nbNode(); z<zs; ++z ){
+      for (Integer z = 0, zs = (*icell).nbNode(); z < zs; ++z) {
         const Node& node = (*icell).node(z);
         bar += coords[node];
       }
       bar /= Convert::toDouble((*icell).nbNode());
 
-      geom_vec[num_dim*i  ] = bar.x;
-      geom_vec[num_dim*i+1] = bar.y;
-      geom_vec[num_dim*i+2] = bar.z;
+      geom_vec[num_dim * i] = bar.x;
+      geom_vec[num_dim * i + 1] = bar.y;
+      geom_vec[num_dim * i + 2] = bar.z;
       i += 1;
     }
 
     String s = platform::getEnvironmentVariable("ZOLTAN_MODEL");
     if (!s.null() && (s == "MYGEOM")) {
-      for (int i = 0 ; i < num_obj ; ++i) {
-        geom_vec[num_dim*i+num_dim-1] = 0.0;
+      for (int i = 0; i < num_obj; ++i) {
+        geom_vec[num_dim * i + num_dim - 1] = 0.0;
       }
     }
 
@@ -533,7 +527,7 @@ class ZoltanMeshPartitioner
  public:
 
   virtual void partitionMesh(bool initial_partition);
-  virtual void partitionMesh(bool initial_partition,Int32 nb_part);
+  virtual void partitionMesh(bool initial_partition, Int32 nb_part);
 
   virtual void notifyEndPartition();
 
@@ -545,7 +539,7 @@ class ZoltanMeshPartitioner
 
 ZoltanMeshPartitioner::
 ZoltanMeshPartitioner(const ServiceBuildInfo& sbi)
-  : ArcaneZoltanMeshPartitionerObject(sbi)
+: ArcaneZoltanMeshPartitionerObject(sbi)
 {
 }
 
@@ -556,20 +550,20 @@ void ZoltanMeshPartitioner::
 partitionMesh(bool initial_partition)
 {
   Int32 nb_part = mesh()->parallelMng()->commSize();
-  partitionMesh(initial_partition,nb_part);
+  partitionMesh(initial_partition, nb_part);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ZoltanMeshPartitioner::
-partitionMesh(bool initial_partition,Int32 nb_part)
+partitionMesh(bool initial_partition, Int32 nb_part)
 {
   info() << "Load balancing with Zoltan\n";
 
   float ver;
 
-  int rc = ::Zoltan_Initialize(0,0,&ver);
+  int rc = ::Zoltan_Initialize(0, 0, &ver);
   Zoltan_Memory_Debug(2);
   if (rc != ZOLTAN_OK)
     fatal() << "Can not initialize zoltan (r=" << rc << ")";
@@ -577,28 +571,28 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   IParallelMng* pm = mesh->parallelMng();
   Integer nb_rank = pm->commSize();
 
-  if (nb_part<nb_rank)
-    throw ArgumentException(A_FUNCINFO,"partition with nb_part<nb_rank");
+  if (nb_part < nb_rank)
+    throw ArgumentException(A_FUNCINFO, "partition with nb_part<nb_rank");
 
-  if (nb_rank==1){
+  if (nb_rank == 1) {
     warning() << "Unable to test load balancing on a single sub-domain";
     return;
   }
 
   Integer nb_weight = nbCellWeight();
 
-  struct Zoltan_Struct *zz;
+  struct Zoltan_Struct* zz;
   int changes;
   int numGidEntries;
   int numLidEntries;
   int numImport;
   ZOLTAN_ID_PTR importGlobalIds;
   ZOLTAN_ID_PTR importLocalIds;
-  int *importProcs;
-  int *importToPart;
+  int* importProcs;
+  int* importToPart;
   int numExport;
   ZOLTAN_ID_PTR exportGlobalIds;
-  int *exportProcs;
+  int* exportProcs;
 
   /******************************************************************
    ** Prepare to partition the example hypergraph using the Zoltan
@@ -626,7 +620,8 @@ partitionMesh(bool initial_partition,Int32 nb_part)
       s = "RCB";
     else if (s.null())
       s = options()->model();
-  } else if (s.null()) {
+  }
+  else if (s.null()) {
     s = "OLDHG";
   }
   // => s != null
@@ -642,13 +637,16 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   if (s == "MYHG" || s == "OLDHG" /* nuance with OLD_HG? */ || s == "DUALHG" || s == "GRAPH") {
     algo = "HYPERGRAPH";
     usePHG = true;
-  } else if (s == "RIB" || s== "HSFC") {
+  }
+  else if (s == "RIB" || s == "HSFC") {
     algo = s;
     usePHG = false;
-  } else if (s == "RCB" || s == "MYGEOM") {
+  }
+  else if (s == "RCB" || s == "MYGEOM") {
     algo = "RCB";
     usePHG = false;
-  } else {
+  }
+  else {
     fatal() << "Undefined zoltan model '" << s << "'";
   }
 
@@ -659,7 +657,8 @@ partitionMesh(bool initial_partition,Int32 nb_part)
 
   if (s == "DUALHG") {
     model |= ZOLTAN_GRAPH;
-  } else if (s == "GRAPH") {
+  }
+  else if (s == "GRAPH") {
     model = ZOLTAN_GRAPH;
   }
 
@@ -674,8 +673,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   Integer phgOutputLevel = 0;
   Integer debugLevel = 0;
 
-  if(options())
-  {
+  if (options()) {
     edgeWeightMultiplier = options()->edgeWeightMultiplier();
     repartitionFrequency = options()->repartFrequency();
     imbalanceTol = options()->imbalanceTol();
@@ -685,22 +683,19 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   }
 
   /* General parameters */
-  info() << "Zoltan: utilise un repartitionnement " << algo <<" (" << s << ").";
-  Zoltan_Set_Param(zz, "LB_METHOD", algo.localstr());   /* partitioning method */
+  info() << "Zoltan: utilise un repartitionnement " << algo << " (" << s << ").";
+  Zoltan_Set_Param(zz, "LB_METHOD", algo.localstr()); /* partitioning method */
   Zoltan_Set_Param(zz, "HYPERGRAPH_PACKAGE", "PHG"); /* version of method */
   //if(!initial_partition)
-  if(mesh->subDomain()->commonVariables().globalIteration()==1)
-  {
+  if (mesh->subDomain()->commonVariables().globalIteration() == 1) {
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION"); /* version of method */
     info() << "Zoltan: Partition";
   }
-  else if(mesh->subDomain()->commonVariables().globalIteration()%repartitionFrequency==0 && repartitionFrequency!=-1)
-  {
+  else if (mesh->subDomain()->commonVariables().globalIteration() % repartitionFrequency == 0 && repartitionFrequency != -1) {
     Zoltan_Set_Param(zz, "LB_APPROACH", "REPARTITION"); /* version of method */
     info() << "Zoltan: Repartition";
   }
-  else
-  {
+  else {
     Zoltan_Set_Param(zz, "LB_APPROACH", "REFINE"); /* version of method */
     info() << "Zoltan: Refine";
   }
@@ -711,8 +706,8 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   String s_nb_part(String::fromNumber(nb_part));
   Zoltan_Set_Param(zz, "NUM_GLOBAL_PARTS", s_nb_part.localstr());
 
-  Zoltan_Set_Param(zz, "NUM_GID_ENTRIES", "1");/* global IDs are integers */
-  Zoltan_Set_Param(zz, "NUM_LID_ENTRIES", "1");/* local IDs are integers */
+  Zoltan_Set_Param(zz, "NUM_GID_ENTRIES", "1"); /* global IDs are integers */
+  Zoltan_Set_Param(zz, "NUM_LID_ENTRIES", "1"); /* local IDs are integers */
   Zoltan_Set_Param(zz, "RETURN_LISTS", "EXPORT"); /* only export lists */
   String s_nb_weight(String::fromNumber(nb_weight));
 
@@ -730,7 +725,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
     Zoltan_Set_Param(zz, "PHG_OUTPUT_LEVEL", s_phgOutputLevel.localstr());
 
     // Usage in debug
-    Zoltan_Set_Param(zz, "CHECK_HYPERGRAPH", "0");  /* see User's Guide */
+    Zoltan_Set_Param(zz, "CHECK_HYPERGRAPH", "0"); /* see User's Guide */
     String s_debugLevel(String::fromNumber(debugLevel));
     Zoltan_Set_Param(zz, "DEBUG_LEVEL", s_debugLevel.localstr());
 
@@ -744,14 +739,12 @@ partitionMesh(bool initial_partition,Int32 nb_part)
     Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "1");
     Zoltan_Set_Param(zz, "PHG_EDGE_WEIGHT_OPERATION", "add");
 
-    if(!initial_partition)
-    {
+    if (!initial_partition) {
       // Number of iterations between 2 load balances. Used to scale the cost
       // of data migration.
       String s_phgRepartMultiplier(String::fromNumber(phgRepartMultiplier));
       Zoltan_Set_Param(zz, "PHG_REPART_MULTIPLIER", s_phgRepartMultiplier.localstr());
     }
-
   }
   else {
     Zoltan_Set_Param(zz, "KEEP_CUTS", "0");
@@ -768,10 +761,10 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   }
 
   bool dump_infos = false;
-  if (platform::getEnvironmentVariable("ARCANE_DEBUG_PARTITION")=="TRUE")
+  if (platform::getEnvironmentVariable("ARCANE_DEBUG_PARTITION") == "TRUE")
     dump_infos = true;
   ofstream ofile;
-  if (dump_infos){
+  if (dump_infos) {
     StringBuilder fname;
     Integer iteration = mesh->subDomain()->commonVariables().globalIteration();
     fname = "weigth-";
@@ -791,23 +784,22 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   if (dump_infos)
     zofile = &ofile;
 
-  ScopedPtrT<ZoltanInfo> zoltan_info(new ZoltanInfo(this,zofile, model, edgeWeightMultiplier));
-  Zoltan_Set_Num_Obj_Fn(zz,&ZoltanInfo::getHgNumVertices, zoltan_info.get());
+  ScopedPtrT<ZoltanInfo> zoltan_info(new ZoltanInfo(this, zofile, model, edgeWeightMultiplier));
+  Zoltan_Set_Num_Obj_Fn(zz, &ZoltanInfo::getHgNumVertices, zoltan_info.get());
   Zoltan_Set_Obj_List_Fn(zz, &ZoltanInfo::getHgVerticesAndWeights, zoltan_info.get());
   if (!initial_partition) {
     Zoltan_Set_Obj_Size_Multi_Fn(zz, &ZoltanInfo::getHgVertexSizes,
                                  zoltan_info.get());
   }
-  if (usePHG){
-    info() <<"Setting up HG Callbacks";
+  if (usePHG) {
+    info() << "Setting up HG Callbacks";
     Zoltan_Set_HG_Size_CS_Fn(zz, &ZoltanInfo::getHgSizeAndFormat, zoltan_info.get());
     Zoltan_Set_HG_CS_Fn(zz, &ZoltanInfo::getHg, zoltan_info.get());
     Zoltan_Set_HG_Size_Edge_Weights_Fn(zz, &ZoltanInfo::getHgEdgeWeightSize, zoltan_info.get());
     Zoltan_Set_HG_Edge_Weights_Fn(zz, &ZoltanInfo::getHgEdgeWeights, zoltan_info.get());
   }
-  else
-  {
-    info() <<"Setting up Geom Callbacks";
+  else {
+    info() << "Setting up Geom Callbacks";
     Zoltan_Set_Num_Geom_Fn(zz, ZoltanInfo::get_num_geometry, zoltan_info.get());
     Zoltan_Set_Geom_Multi_Fn(zz, ZoltanInfo::get_geometry_list, zoltan_info.get());
   }
@@ -818,15 +810,15 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   ZOLTAN_ID_PTR export_local_ids = 0;
 
   info() << "Doing partition";
- rc = Zoltan_LB_Partition(zz, &changes, &numGidEntries, &numLidEntries,
-                          &numImport, &importGlobalIds, &importLocalIds,
-                          &importProcs, &importToPart,
-                          &numExport, &exportGlobalIds, &export_local_ids,
-                          &exportProcs, &export_partitions);
+  rc = Zoltan_LB_Partition(zz, &changes, &numGidEntries, &numLidEntries,
+                           &numImport, &importGlobalIds, &importLocalIds,
+                           &importProcs, &importToPart,
+                           &numExport, &exportGlobalIds, &export_local_ids,
+                           &exportProcs, &export_partitions);
   pm->barrier();
 
   VariableItemInt32& cells_new_owner = mesh->toPrimaryMesh()->itemsNewOwner(IK_Cell);
-  ENUMERATE_ITEM(icell,mesh->ownCells()){
+  ENUMERATE_ITEM (icell, mesh->ownCells()) {
     cells_new_owner[icell] = (*icell).owner();
   }
 
@@ -835,9 +827,9 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   {
     CellInfoListView items_internal(m_cell_family);
     Integer nb_export = numExport;
-    info() <<"numExport = "<<numExport;
-    for( Integer i=0; i<nb_export; ++i ){
-      Item item = items_internal[ localIdWithConstraints(export_local_ids[i]) ];
+    info() << "numExport = " << numExport;
+    for (Integer i = 0; i < nb_export; ++i) {
+      Item item = items_internal[localIdWithConstraints(export_local_ids[i])];
       // change for the mesh or the whole group if necessary
       changeCellOwner(item, cells_new_owner, export_partitions[i]);
       if (dump_infos) // these infos do not take groups/constraints into account
@@ -883,17 +875,17 @@ notifyEndPartition()
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(ZoltanMeshPartitioner,
-                        ServiceProperty("Zoltan",ST_SubDomain),
+                        ServiceProperty("Zoltan", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
-ARCANE_REGISTER_SERVICE_ZOLTANMESHPARTITIONER(Zoltan,ZoltanMeshPartitioner);
+ARCANE_REGISTER_SERVICE_ZOLTANMESHPARTITIONER(Zoltan, ZoltanMeshPartitioner);
 
 #if ARCANE_DEFAULT_PARTITIONER == ZOLTAN_DEFAULT_PARTITIONER
 ARCANE_REGISTER_SERVICE(ZoltanMeshPartitioner,
-                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ServiceProperty("DefaultPartitioner", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
-ARCANE_REGISTER_SERVICE_ZOLTANMESHPARTITIONER(DefaultPartitioner,ZoltanMeshPartitioner);
+ARCANE_REGISTER_SERVICE_ZOLTANMESHPARTITIONER(DefaultPartitioner, ZoltanMeshPartitioner);
 #endif
 
 /*---------------------------------------------------------------------------*/

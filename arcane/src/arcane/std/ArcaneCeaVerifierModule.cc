@@ -52,7 +52,7 @@ class ArcaneVerifierModule
 
  public:
 
-  VersionInfo versionInfo() const override { return VersionInfo(0,0,1); }
+  VersionInfo versionInfo() const override { return VersionInfo(0, 0, 1); }
 
  public:
 
@@ -83,10 +83,10 @@ ArcaneVerifierModule(const ModuleBuildInfo& mb)
 void ArcaneVerifierModule::
 onInit()
 {
-  if (options()->trace.size()!=0)
+  if (options()->trace.size() != 0)
     this->pwarning() << "The option 'trace' is no longer used and should be removed";
 
-  if (!platform::getEnvironmentVariable("ARCANE_VERIFY_SORTEDGROUP").null()){
+  if (!platform::getEnvironmentVariable("ARCANE_VERIFY_SORTEDGROUP").null()) {
     info() << "Add observer to check sorted groups before checkpoint";
     // Adds an observer signaling unsorted groups.
     m_observers.addObserver(this,
@@ -104,16 +104,15 @@ _checkSortedGroups()
   // Displays the list of unsorted groups.
   Integer nb_sorted_group = 0;
   Integer nb_group = 0;
-  auto check_sorted_func = [&](ItemGroup& g)
-  {
+  auto check_sorted_func = [&](ItemGroup& g) {
     ++nb_group;
     if (g.checkIsSorted())
       ++nb_sorted_group;
     else
       info() << "VerifierModule: group not sorted name=" << g.name();
   };
-  meshvisitor::visitGroups(this->mesh(),check_sorted_func);
-  info() << "VerifierModule: nb_unsorted_group=" << (nb_group-nb_sorted_group)
+  meshvisitor::visitGroups(this->mesh(), check_sorted_func);
+  info() << "VerifierModule: nb_unsorted_group=" << (nb_group - nb_sorted_group)
          << "/" << nb_group;
 }
 
@@ -182,13 +181,13 @@ onExit()
   info() << "Verification check is_parallel?=" << is_parallel << " compare_from_sequential?=" << compare_from_sequential;
   verifier_service->setFileName(reference_file_name);
 
-  if (options()->generate()){
+  if (options()->generate()) {
     info() << "Writing check file '" << reference_file_name << "'";
     verifier_service->writeReferenceFile();
   }
-  else{
+  else {
     info() << "Comparing reference file '" << reference_file_name << "'";
-    verifier_service->doVerifFromReferenceFile(compare_from_sequential,false);
+    verifier_service->doVerifFromReferenceFile(compare_from_sequential, false);
   }
 }
 

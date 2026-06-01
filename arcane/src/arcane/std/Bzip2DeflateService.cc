@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,9 +16,9 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/IDataCompressor.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/IDeflateService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IDeflateService.h"
 
 #include <bzlib.h>
 
@@ -39,6 +39,7 @@ class Bzip2DeflateService
 , public IDeflateService
 {
  public:
+
   Bzip2DeflateService(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {
@@ -48,7 +49,7 @@ class Bzip2DeflateService
 
   void build() override {}
 
-  void compress(ByteConstArrayView values,ByteArray& compressed_values) override
+  void compress(ByteConstArrayView values, ByteArray& compressed_values) override
   {
     Integer input_size = values.size();
     // According to the documentation, we must allocate at least 1% more than the input size
@@ -66,33 +67,33 @@ class Bzip2DeflateService
     int blockSize100k = 9;
     int verbosity = 1;
     int workFactor = 30;
-    
+
 #if 0
     info() << "CHECK COMPRESS dest=" << (void*)dest
            << " dest_len=" << dest_len
            << " source=" << (void*)source
            << " source_len=" << source_len;
 #endif
-    
-    int r = BZ2_bzBuffToBuffCompress(dest, 
+
+    int r = BZ2_bzBuffToBuffCompress(dest,
                                      &dest_len,
-                                     source, 
+                                     source,
                                      source_len,
-                                     blockSize100k, 
-                                     verbosity, 
+                                     blockSize100k,
+                                     verbosity,
                                      workFactor);
-    if (r!=BZ_OK)
-      throw IOException(A_FUNCINFO,String::format("io error during compression r={0}",r));
+    if (r != BZ_OK)
+      throw IOException(A_FUNCINFO, String::format("io error during compression r={0}", r));
     // Warning: Int32 overflow.
     Real ratio = 0.0;
-    if (source_len>0)
-      ratio = ((double)dest_len * 100.0 ) / (double)source_len;
+    if (source_len > 0)
+      ratio = ((double)dest_len * 100.0) / (double)source_len;
     info() << "Bzip2 compress r=" << r << " source_len=" << source_len
            << " dest_len=" << dest_len << " ratio=" << ratio;
     compressed_values.resize(dest_len);
   }
 
-  void decompress(ByteConstArrayView compressed_values,ByteArrayView values) override
+  void decompress(ByteConstArrayView compressed_values, ByteArrayView values) override
   {
     char* dest = (char*)values.data();
     unsigned int dest_len = (unsigned int)values.size();
@@ -104,13 +105,13 @@ class Bzip2DeflateService
     // and 0 otherwise.
     int small = 0;
     int verbosity = 1;
-    int r = BZ2_bzBuffToBuffDecompress(dest,&dest_len,
-                                       source,source_len,
-                                       small,verbosity);
+    int r = BZ2_bzBuffToBuffDecompress(dest, &dest_len,
+                                       source, source_len,
+                                       small, verbosity);
     info() << "Bzip2 decompress r=" << r << " source_len=" << source_len
            << " dest_len=" << dest_len;
-    if (r!=BZ_OK)
-      ARCANE_THROW(IOException,"IO error during decompression r={0}",r);
+    if (r != BZ_OK)
+      ARCANE_THROW(IOException, "IO error during decompression r={0}", r);
   }
 };
 
@@ -125,8 +126,10 @@ class Bzip2DataCompressor
 , public IDataCompressor
 {
  public:
+
   explicit Bzip2DataCompressor(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_name(sbi.serviceInfo()->localName())
+  : AbstractService(sbi)
+  , m_name(sbi.serviceInfo()->localName())
   {
   }
 
@@ -135,7 +138,7 @@ class Bzip2DataCompressor
   void build() override {}
   String name() const override { return m_name; }
   Int64 minCompressSize() const override { return 512; }
-  void compress(Span<const std::byte> values,Array<std::byte>& compressed_values) override
+  void compress(Span<const std::byte> values, Array<std::byte>& compressed_values) override
   {
     Int64 input_size = values.size();
     // According to the documentation, we must allocate at least 1% more than the input size
@@ -160,19 +163,19 @@ class Bzip2DataCompressor
                                      blockSize100k,
                                      verbosity,
                                      workFactor);
-    if (r!=BZ_OK)
-      ARCANE_THROW(IOException,"IO error during compression r={0}",r);
+    if (r != BZ_OK)
+      ARCANE_THROW(IOException, "IO error during compression r={0}", r);
 
     // Warning: Int32 overflow.
     Real ratio = 0.0;
-    if (source_len>0)
-      ratio = ((double)dest_len * 100.0 ) / (double)source_len;
+    if (source_len > 0)
+      ratio = ((double)dest_len * 100.0) / (double)source_len;
     info() << "Bzip2 compress r=" << r << " source_len=" << source_len
            << " dest_len=" << dest_len << " ratio=" << ratio;
     compressed_values.resize(dest_len);
   }
 
-  void decompress(Span<const std::byte> compressed_values,Span<std::byte> values) override
+  void decompress(Span<const std::byte> compressed_values, Span<std::byte> values) override
   {
     char* dest = reinterpret_cast<char*>(values.data());
     unsigned int dest_len = _toUInt(values.size());
@@ -184,24 +187,28 @@ class Bzip2DataCompressor
     // and 0 otherwise.
     int small = 0;
     int verbosity = 1;
-    int r = BZ2_bzBuffToBuffDecompress(dest,&dest_len,
-                                       source,source_len,
-                                       small,verbosity);
+    int r = BZ2_bzBuffToBuffDecompress(dest, &dest_len,
+                                       source, source_len,
+                                       small, verbosity);
     info(5) << "Bzip2 decompress r=" << r << " source_len=" << source_len
-           << " dest_len=" << dest_len;
-    if (r!=BZ_OK)
-      ARCANE_THROW(IOException,"IO error during decompression r={0}",r);
+            << " dest_len=" << dest_len;
+    if (r != BZ_OK)
+      ARCANE_THROW(IOException, "IO error during decompression r={0}", r);
   }
+
  private:
+
   String m_name;
+
  private:
+
   unsigned int _toUInt(Int64 vsize)
   {
     // Checks if it fits in an 'int'.
     Int64 max_uint_size = std::numeric_limits<unsigned int>::max();
-    if (vsize>max_uint_size)
-      ARCANE_THROW(IOException,"Array is too large to fit in 'unsigned int' type: size={0} max={1}",
-                   vsize,max_uint_size);
+    if (vsize > max_uint_size)
+      ARCANE_THROW(IOException, "Array is too large to fit in 'unsigned int' type: size={0} max={1}",
+                   vsize, max_uint_size);
     return static_cast<unsigned int>(vsize);
   }
 };
@@ -210,11 +217,11 @@ class Bzip2DataCompressor
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(Bzip2DeflateService,
-                        ServiceProperty("Bzip2",ST_Application),
+                        ServiceProperty("Bzip2", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IDeflateService));
 
 ARCANE_REGISTER_SERVICE(Bzip2DataCompressor,
-                        ServiceProperty("Bzip2DataCompressor",ST_Application|ST_CaseOption),
+                        ServiceProperty("Bzip2DataCompressor", ST_Application | ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IDataCompressor));
 
 /*---------------------------------------------------------------------------*/

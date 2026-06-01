@@ -1,26 +1,26 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="Cartesian3DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
     3D Cartesian Mesh Generator
   </description>
-    
-  <interface name="Arcane::IMeshBuilder" />
+
+  <interface name="Arcane::IMeshBuilder"/>
 
   <options>
-    <simple name="origin" type="real3" >
+    <simple name="origin" type="real3">
       <description>Mesh origin</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-x" type="integer" >
+    <simple name="nb-part-x" type="integer">
       <description>Number of sub-domains in X</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-y" type="integer" >
+    <simple name="nb-part-y" type="integer">
       <description>Number of sub-domains in Y</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-z" type="integer" >
+    <simple name="nb-part-z" type="integer">
       <description>Number of sub-domains in Z</description>
       <userclass>User</userclass>
     </simple>
@@ -46,13 +46,13 @@
       <userclass>User</userclass>
     </simple>
 
-    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
+      <simple name="n" type="integer">
         <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
+      <simple name="length" type="real">
         <description>Length</description>
         <userclass>User</userclass>
       </simple>
@@ -62,13 +62,13 @@
       </simple>
     </complex>
 
-    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
+      <simple name="n" type="integer">
         <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
+      <simple name="length" type="real">
         <description>Length</description>
         <userclass>User</userclass>
       </simple>
@@ -78,13 +78,13 @@
       </simple>
     </complex>
 
-    <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
+      <simple name="n" type="integer">
         <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
+      <simple name="length" type="real">
         <description>Length</description>
         <userclass>User</userclass>
       </simple>

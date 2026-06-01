@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,19 +11,16 @@
 /* Simplifies the use of the writer by managing multiprocessing and the      */
 /* names of files/directories.                                               */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_SIMPLETABLEWRITERHELPER_H
 #define ARCANE_STD_SIMPLETABLEWRITERHELPER_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableReaderWriter.h"
-#include "arcane/ISimpleTableWriterHelper.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableReaderWriter.h"
+#include "arcane/core/ISimpleTableWriterHelper.h"
 
-#include "arcane/Directory.h"
+#include "arcane/core/Directory.h"
 #include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/

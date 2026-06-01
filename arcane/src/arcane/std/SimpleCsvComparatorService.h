@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -15,15 +15,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableComparator.h"
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableOutput.h"
+#include "arcane/core/ISimpleTableComparator.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableOutput.h"
 
 #include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/std/SimpleTableInternalComparator.h"
 
-#include "arcane/Directory.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/std/SimpleCsvComparator_axl.h"
 
@@ -124,6 +124,3 @@ class SimpleCsvComparatorService
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

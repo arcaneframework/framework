@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -235,18 +235,18 @@ readItemGroup(const String& group_full_name, Int64Array& written_unique_ids,
 
   {
     Integer nb_unique_id = 0;
-    binaryRead(reader,asWritableBytes(SmallSpan<Integer>(&nb_unique_id, 1)));
+    binaryRead(reader, asWritableBytes(SmallSpan<Integer>(&nb_unique_id, 1)));
     info(5) << "NB_WRITTEN_UNIQUE_ID = " << nb_unique_id;
     written_unique_ids.resize(nb_unique_id);
-    binaryRead(reader,asWritableBytes(written_unique_ids.span()));
+    binaryRead(reader, asWritableBytes(written_unique_ids.span()));
   }
 
   {
     Integer nb_unique_id = 0;
-    binaryRead(reader,asWritableBytes(SmallSpan<Integer>(&nb_unique_id, 1)));
+    binaryRead(reader, asWritableBytes(SmallSpan<Integer>(&nb_unique_id, 1)));
     info(5) << "NB_WANTED_UNIQUE_ID = " << nb_unique_id;
     wanted_unique_ids.resize(nb_unique_id);
-    binaryRead(reader,asWritableBytes(wanted_unique_ids.span()));
+    binaryRead(reader, asWritableBytes(wanted_unique_ids.span()));
   }
 }
 

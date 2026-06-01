@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -93,11 +93,11 @@ goToEndOfLine()
   while (m_stream->good()) {
     int c = m_stream->peek();
 #ifdef _MSC_VER
-  #if _MSC_VER < 1930
-    if (std::isspace(c,std::locale::classic()))
-  #else
+#if _MSC_VER < 1930
+    if (std::isspace(c, std::locale::classic()))
+#else
     if (std::isspace(c))
-  #endif
+#endif
 #else
     if (std::isspace(c))
 #endif
@@ -209,10 +209,10 @@ isEqualString(const String& current_value, const String& expected_value)
 void IosFile::
 readBytes(SmallSpan<std::byte> bytes)
 {
-  m_stream->read(reinterpret_cast<char*>(bytes.data()),bytes.size());
+  m_stream->read(reinterpret_cast<char*>(bytes.data()), bytes.size());
   if (!m_stream->good())
     throw IOException("IosFile::readBytes()",
-                      String::format("Can not read '{0}' bytes",bytes.size()));
+                      String::format("Can not read '{0}' bytes", bytes.size()));
 }
 
 /*---------------------------------------------------------------------------*/

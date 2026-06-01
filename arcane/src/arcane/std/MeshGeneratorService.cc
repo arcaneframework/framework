@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,16 +14,16 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/IMeshReader.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/XmlNode.h"
-#include "arcane/Service.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/MeshVariable.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
+#include "arcane/core/IMeshReader.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
 
 #include "arcane/std/SodMeshGenerator.h"
 #include "arcane/std/SimpleMeshGenerator.h"
@@ -32,7 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,10 +46,15 @@ class MeshGeneratorService
 , public IMeshReader
 {
  public:
+
   MeshGeneratorService(const ServiceBuildInfo& sbi);
+
  public:
+
   virtual void build() {}
+
  public:
+
   virtual bool allowExtension(const String& str)
   {
     return str.null();
@@ -68,7 +74,6 @@ MeshGeneratorService(const ServiceBuildInfo& sbi)
 : AbstractService(sbi)
 {
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -90,33 +95,35 @@ readMeshFromFile(IPrimaryMesh* mesh,
   ScopedPtrT<IMeshGenerator> generator;
 
   //msg->warning() << "USING MESHGENERATOR !!\n";
-  if (!meshclass.null()){
-    gen_node = mesh_node.childWithNameAttr(meshgen_ustr,meshclass);
+  if (!meshclass.null()) {
+    gen_node = mesh_node.childWithNameAttr(meshgen_ustr, meshclass);
     info() << "Using ARCANE_MESHGENERATOR";
-  }else{
+  }
+  else {
     gen_node = mesh_node.child(meshgen_ustr);
   }
-  if (gen_node.null()) return RTIrrelevant;
+  if (gen_node.null())
+    return RTIrrelevant;
   XmlNode node;
   // Searching for the 'cartesian' mesh generator
-  if (node.null()){
+  if (node.null()) {
     node = gen_node.child("cartesian");
     if (!node.null())
       generator = new CartesianMeshGenerator(mesh);
   }
   // Searching for the 'sod' mesh generator
-  if (node.null()){
+  if (node.null()) {
     node = gen_node.child("sod");
     if (!node.null())
       generator = new SodMeshGenerator(mesh, node.attr("zyx").valueAsBoolean());
   }
   // Searching for the 'simple' mesh generator
-  if (node.null()){
+  if (node.null()) {
     node = gen_node.child("simple");
     if (!node.null())
       generator = new SimpleMeshGenerator(mesh);
   }
-  if (!generator.get()){
+  if (!generator.get()) {
     warning() << "Unknown mesh generator type.";
     return RTIrrelevant;
   }
@@ -130,12 +137,12 @@ readMeshFromFile(IPrimaryMesh* mesh,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MeshGeneratorService,IMeshReader,MeshGenerator);
+ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MeshGeneratorService, IMeshReader, MeshGenerator);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,8 +45,10 @@
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Output module for post-processing.
  *
@@ -87,7 +89,7 @@ class ArcanePostProcessingModule
   bool m_is_output_at_current_iteration = false;
   Directory m_output_directory; //!< Output directory
   bool m_output_dir_created = false; //!< \a true if directory created.
-  VariableList m_variables;    //!< List of variables to export
+  VariableList m_variables; //!< List of variables to export
   ItemGroupList m_groups; //!< List of groups to export
   Timer* m_post_processor_timer = nullptr; //!< Timer for time spent writing
   bool m_is_plugin_initialized = false;
@@ -114,15 +116,15 @@ ARCANE_REGISTER_MODULE_ARCANEPOSTPROCESSING(ArcanePostProcessingModule);
 ArcanePostProcessingModule::
 ArcanePostProcessingModule(const ModuleBuildInfo& mbi)
 : ArcaneArcanePostProcessingObject(mbi)
-, m_output_checker(mbi.subDomain(),"PostProcessing")
-, m_history_output_checker(mbi.subDomain(),"PostProcessingHistory")
-, m_times(VariableBuilder(this,"ExportTimes"))
+, m_output_checker(mbi.subDomain(), "PostProcessing")
+, m_history_output_checker(mbi.subDomain(), "PostProcessingHistory")
+, m_times(VariableBuilder(this, "ExportTimes"))
 {
-  m_output_checker.assignIteration(&m_next_iteration,&options()->outputPeriod);
-  m_output_checker.assignGlobalTime(&m_next_global_time,&options()->outputFrequency);
+  m_output_checker.assignIteration(&m_next_iteration, &options()->outputPeriod);
+  m_output_checker.assignGlobalTime(&m_next_global_time, &options()->outputFrequency);
 
-  m_history_output_checker.assignIteration(&m_history_next_iteration,&options()->outputHistoryPeriod);
-  m_post_processor_timer = new Timer(mbi.subDomain(),"PostProcessorTimer",Timer::TimerReal);
+  m_history_output_checker.assignIteration(&m_history_next_iteration, &options()->outputHistoryPeriod);
+  m_post_processor_timer = new Timer(mbi.subDomain(), "PostProcessorTimer", Timer::TimerReal);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -140,34 +142,35 @@ ArcanePostProcessingModule::
 void ArcanePostProcessingModule::
 _readConfig()
 {
-  Integer nb_var   = options()->output().variable.size();
+  Integer nb_var = options()->output().variable.size();
   Integer nb_group = options()->output().group.size();
 
   IVariableMng* var_mng = subDomain()->variableMng();
   IMesh* mesh = subDomain()->defaultMesh();
 
-  if (nb_var!=0){
+  if (nb_var != 0) {
     std::set<String> used_variables; // List of variables already specified
     m_variables.clear();
     info() << " ";
     info() << "-- List of output variables (" << nb_var << " variables):";
-    for( Integer i=0; i<nb_var; ++i ){
+    for (Integer i = 0; i < nb_var; ++i) {
       String varname(options()->output().variable[i]);
-      IVariable* var = var_mng->findMeshVariable(defaultMesh(),varname);
+      IVariable* var = var_mng->findMeshVariable(defaultMesh(), varname);
       if (!var)
-        ARCANE_FATAL("PostTreatment: no variable with name '{0}' exists",varname);
+        ARCANE_FATAL("PostTreatment: no variable with name '{0}' exists", varname);
       eItemKind ik = var->itemKind();
-      if (ik!=IK_Node && ik!=IK_Edge && ik!=IK_Face && ik!=IK_Cell)
+      if (ik != IK_Node && ik != IK_Edge && ik != IK_Face && ik != IK_Cell)
         ARCANE_FATAL("PostTreatment: variable ({0}) must"
-                     " be a mesh variable (node, edge, face or cell)",varname);
+                     " be a mesh variable (node, edge, face or cell)",
+                     varname);
 
-      if (used_variables.find(varname)==used_variables.end()){
+      if (used_variables.find(varname) == used_variables.end()) {
         info() << "Variable <" << varname << ">";
         m_variables.add(var);
         used_variables.insert(varname);
-        var->addTag(IVariable::TAG_POST_PROCESSING,"1");
+        var->addTag(IVariable::TAG_POST_PROCESSING, "1");
       }
-      else{
+      else {
         warning() << "Variable <" << varname << "> required twice during post-processing analysis";
       }
     }
@@ -175,17 +178,17 @@ _readConfig()
   else
     m_is_output_active = false;
 
-  if (nb_group!=0){
+  if (nb_group != 0) {
     std::set<String> used_groups; // List of groups already specified
     //m_group_list.resize(nb_group);
     info() << " ";
     info() << "-- List of output groups (" << nb_group << " groups):";
-    for( Integer i=0; i<nb_group; ++i ){
+    for (Integer i = 0; i < nb_group; ++i) {
       ItemGroup group = options()->output().group[i];
       if (group.null())
         continue;
       String groupname = group.name();
-      if (used_groups.find(groupname)==used_groups.end()){
+      if (used_groups.find(groupname) == used_groups.end()) {
         info() << "Group <" << groupname << ">";
         used_groups.insert(groupname);
         m_groups.add(group);
@@ -195,7 +198,7 @@ _readConfig()
     }
     //m_group_list.resize(index);
   }
-  else{
+  else {
     // If no group is specified, only save the entire mesh.
     //m_groups.resize(1);
 
@@ -215,7 +218,7 @@ _checkCreateOutputDir()
 {
   if (m_output_dir_created)
     return;
-  m_output_directory = Directory(subDomain()->exportDirectory(),"depouillement");
+  m_output_directory = Directory(subDomain()->exportDirectory(), "depouillement");
   m_output_directory.createDirectory();
   m_output_dir_created = true;
 }
@@ -289,7 +292,7 @@ postProcessingExit()
     save_at_exit = options()->saveFinalTime();
   if (!save_at_exit)
     save_at_exit = options()->endExecutionOutput();
-  if (save_at_exit){
+  if (save_at_exit) {
     _saveAtTime(current_time);
   }
 
@@ -297,7 +300,7 @@ postProcessingExit()
   Real total_time = m_post_processor_timer->totalTime();
   info() << "Total time for post-processing analysis output (second): " << total_time;
   Integer nb_time = m_post_processor_timer->nbActivated();
-  if (nb_time!=0)
+  if (nb_time != 0)
     info() << "Average time per output (second): " << total_time / nb_time
            << " (for " << nb_time << " outputs";
   IPostProcessorWriter* post_processor = options()->format();
@@ -367,10 +370,10 @@ _saveAtTime(Real saved_time)
 
   // Does not save if the current time is the same as the previous one
   // (Otherwise, Ensight crashes...)
-  if (size!=0 && math::isEqual(m_times[size-1],saved_time))
+  if (size != 0 && math::isEqual(m_times[size - 1], saved_time))
     return;
 
-  m_times.resize(size+1);
+  m_times.resize(size + 1);
   m_times[size] = saved_time;
 
   _checkCreateOutputDir();
@@ -382,8 +385,8 @@ _saveAtTime(Real saved_time)
     post_processor->setVariables(m_variables);
     post_processor->setGroups(m_groups);
     info() << " ";
-    info() << "****  Output in progress at time " << saved_time <<"  ******";
-  
+    info() << "****  Output in progress at time " << saved_time << "  ******";
+
     {
       Timer::Sentry ts(m_post_processor_timer);
       _checkExternalPlugin();
@@ -438,7 +441,7 @@ _checkExternalPlugin()
   IExternalPlugin* p = plugin_option.externalPlugin();
   String function = plugin_option.functionName();
   info() << "Executing Python function '" << function << "'";
-  if (!m_is_plugin_initialized){
+  if (!m_is_plugin_initialized) {
     info() << "Initializing Python environment";
     p->loadFile(String{});
     m_is_plugin_initialized = true;

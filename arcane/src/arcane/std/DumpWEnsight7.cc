@@ -63,6 +63,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  \brief Writes in Ensight7 format.
  
@@ -192,7 +193,8 @@ class DumpWEnsight7
       ARCANE_ASSERT(m_general_item_types, ("Cannot question an empty GroupPartInfo"));
       return (*(m_general_item_types))[item];
     }
-    EnsightPart* getTypeInfo(int type) {
+    EnsightPart* getTypeInfo(int type)
+    {
       auto ensight_part_element = m_parts_map.find(type);
       if (ensight_part_element != m_parts_map.end())
         return ensight_part_element->second;
@@ -210,9 +212,10 @@ class DumpWEnsight7
     //! Variable to store the types of general items (untyped)
     std::unique_ptr<VariableItemInt32> m_general_item_types = nullptr;
     using TypeId = int;
-    std::unordered_map<TypeId, EnsightPart*> m_parts_map;// used to handle large number of extra types
+    std::unordered_map<TypeId, EnsightPart*> m_parts_map; // used to handle large number of extra types
 
    private:
+
     void _initPartMap()
     {
       for (auto& ensight_part : m_parts) {
@@ -710,7 +713,7 @@ class DumpWEnsight7
 
   void beginWrite() override;
   void endWrite() override;
-  void setMetaData(const String&) override{};
+  void setMetaData(const String&) override {};
 
   bool isParallelOutput() const { return m_is_parallel_output; }
   bool isMasterProcessor() const { return m_is_master; }
@@ -867,24 +870,25 @@ DumpWEnsight7::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Retrieves a group of a given type and its information.
  *
  * \relates DumpWEnsight7
-
- The template parameter is either a DumpWEnsight7::CellGroup,
- or a DumpWEnsight7::FaceGroup.
-
- First, iterate through the list of groups (\a list_group) and retrieve
- those of type T::GroupType. Add these groups to the list \a grp_list and
- assign them a number \a partid. Note that \a partid is passed by
- reference and is incremented in this function. This identifier corresponds
- to the part number (part) in ensight.
-
- Next, determine for each of its groups the number of elements of
- each Ensight subtype. For example, for a mesh group, determine
- the number of \e hexa8, the number of \e pyramid5, ...
-*/
+ *
+ * The template parameter is either a DumpWEnsight7::CellGroup,
+ * or a DumpWEnsight7::FaceGroup.
+ *
+ * First, iterate through the list of groups (\a list_group) and retrieve
+ * those of type T::GroupType. Add these groups to the list \a grp_list and
+ * assign them a number \a partid. Note that \a partid is passed by
+ * reference and is incremented in this function. This identifier corresponds
+ * to the part number (part) in ensight.
+ *
+ * Next, determine for each of its groups the number of elements of
+ * each Ensight subtype. For example, for a mesh group, determine
+ * the number of \e hexa8, the number of \e pyramid5, ...
+ */
 void DumpWEnsight7::
 _computeGroupParts(ItemGroupList list_group, Integer& partid)
 {
@@ -910,7 +914,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
     if (ItemTypeMng::nbBuiltInItemType() == ItemTypeMng::nbBasicItemType()) // no extra type
     {
       debug(Trace::High) << "Using standard group part building algo";
-      if (!grp.mesh()->itemTypeMng()->hasGeneralCells(grp.mesh())) {// classical types
+      if (!grp.mesh()->itemTypeMng()->hasGeneralCells(grp.mesh())) { // classical types
         for (Integer z = 0; z < current_grp.nbType(); ++z) {
           EnsightPart& type_info = current_grp.typeInfo(z);
           Array<Item>& items = type_info.items();
@@ -925,8 +929,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
           debug(Trace::High) << "Group " << grp.name() << " has "
                              << nb_of_type << " items of type " << type_info.name();
           Integer index = 0;
-          ENUMERATE_ITEM (iz, grp)
-          {
+          ENUMERATE_ITEM (iz, grp) {
             Item mi = *iz;
             if (mi.type() == type_to_seek) {
               ItemWithNodes e = mi.toItemWithNodes();
@@ -936,13 +939,13 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
           }
         }
       }
-      else {// polyhedral mesh items
+      else { // polyhedral mesh items
         ENUMERATE_ITEM (i2, grp) {
           const Item& item = *i2;
           auto item_type = current_grp.generalItemTypeId(item);
           EnsightPart* ensight_part = current_grp.getTypeInfo(item_type);
           if (!ensight_part)
-            continue ;
+            continue;
           ItemWithNodes item_wn = item.toItemWithNodes();
           ensight_part->items().add(item_wn);
         }
@@ -959,7 +962,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
           auto item_type = item->type();
           EnsightPart* ensight_part = current_grp.getTypeInfo(item_type);
           if (!ensight_part)
-            continue ;
+            continue;
           ItemWithNodes item_wn = item->toItemWithNodes();
           ensight_part->items().add(item_wn); // few elements are added
         }
@@ -1168,27 +1171,27 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Applies a functor to the elements of a group.
- 
- \relates DumpWEnsight7
-
- Applies the functor \a from_func to the group \a ensight_grp.
-
- The functor must derive from WriteBase and is used to save a variable of a
- given type. In Ensight, variables are saved for each part and each element
- type (hexa8, ...). The operation is similar to saving the geometry (see the
- function _ensightSaveGroup()). Therefore, the same procedure must be followed:
- iterate over the group as many times as there are element types, and in one
- iteration, only save the variables for a given element type.
-
- \warning This function will not support the processing of variables defined
- on a group other than the set of elements.
-
- \sa WriteFunctor
-
- \param ofile output stream
- \param ensight_grp group
- \param from_func functor
-*/
+ *
+ * \relates DumpWEnsight7
+ *
+ * Applies the functor \a from_func to the group \a ensight_grp.
+ *
+ * The functor must derive from WriteBase and is used to save a variable of a
+ * given type. In Ensight, variables are saved for each part and each element
+ * type (hexa8, ...). The operation is similar to saving the geometry (see the
+ * function _ensightSaveGroup()). Therefore, the same procedure must be followed:
+ * iterate over the group as many times as there are element types, and in one
+ * iteration, only save the variables for a given element type.
+ *
+ * \warning This function will not support the processing of variables defined
+ * on a group other than the set of elements.
+ *
+ * \sa WriteFunctor
+ *
+ * \param ofile output stream
+ * \param ensight_grp group
+ * \param from_func functor
+ */
 void DumpWEnsight7::
 _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
                      WriteBase& from_func)

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -15,11 +15,11 @@
 
 #include "arcane/utils/Real2.h"
 
-#include "arcane/IMeshBuilder.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/MeshBuildInfo.h"
+#include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/MeshBuildInfo.h"
 
 #include "arcane/std/HoneyComb2DMeshGenerator_axl.h"
 #include "arcane/std/HoneyComb3DMeshGenerator_axl.h"
@@ -162,7 +162,7 @@ class HoneyComb2DMeshGenerator::CellLineInfo
 
   CellLineInfo(Real2 first_center, Int32 nb_cell)
   : m_first_center(first_center)
-    , m_nb_cell(nb_cell)
+  , m_nb_cell(nb_cell)
   {}
 
  public:

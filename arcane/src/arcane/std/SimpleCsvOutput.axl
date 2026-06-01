@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0"?>
 <service name="SimpleCsvOutput" version="1.0" singleton="true">
 
   <userclass>User</userclass>
@@ -6,12 +6,12 @@
     CSV format table output service.
   </description>
 
-  <interface name="Arcane::ISimpleTableOutput" />
+  <interface name="Arcane::ISimpleTableOutput"/>
 
-	<variables>
+  <variables>
   </variables>
 
-	<options>
+  <options>
     <simple name="tableName" type="string" default="">
       <userclass>User</userclass>
       <description>
@@ -22,8 +22,8 @@
         Example: "MonTableau"
 
         Name 'symbols' are also supported:
-          - @proc_id@: the process rank.
-          - @num_procs@: the total number of processes.
+        - @proc_id@: the process rank.
+        - @num_procs@: the total number of processes.
 
         During writing, these symbols will be replaced by
         what they represent at runtime.
@@ -50,5 +50,5 @@
         ./output/csv/
       </description>
     </simple>
-	</options>
+  </options>
 </service>

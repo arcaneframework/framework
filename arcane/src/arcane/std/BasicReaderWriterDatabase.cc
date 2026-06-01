@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ArcaneException.h"
+#include "arcane/core/ArcaneException.h"
 
 #include "arcane/std/internal/TextReader2.h"
 #include "arcane/std/internal/TextWriter2.h"
@@ -264,7 +264,7 @@ class BasicReaderWriterDatabaseCommon
       }
       else {
         String redis_machine = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_REDIS");
-        if (!redis_machine.null()){
+        if (!redis_machine.null()) {
           info() << "Using Redis database at location '" << redis_machine << "'";
           m_hash_database = createRedisHashDatabase(tm, redis_machine, 6379);
         }
@@ -851,8 +851,8 @@ _read2(const String& key, Span<std::byte> values)
       SmallArray<Byte, 1024> hash_result;
       hasher.computeHash(values, hash_result);
       String check_hash_value = Convert::toHexaString(hash_result);
-      if (check_hash_value!=hash_value)
-        ARCANE_FATAL("Invalid hash expected={0} read={1} key={2}",hash_value,check_hash_value,key);
+      if (check_hash_value != hash_value)
+        ARCANE_FATAL("Invalid hash expected={0} read={1} key={2}", hash_value, check_hash_value, key);
     }
   }
   else

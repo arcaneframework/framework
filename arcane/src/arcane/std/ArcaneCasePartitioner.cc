@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ class ArcaneInitialPartitioner
 
  public:
 
-  ArcaneInitialPartitioner(ArcaneCasePartitioner* mt,ISubDomain* sd)
+  ArcaneInitialPartitioner(ArcaneCasePartitioner* mt, ISubDomain* sd)
   : m_sub_domain(sd)
   , m_main(mt)
   {
@@ -84,11 +84,12 @@ class ArcaneInitialPartitioner
   void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes) override;
 
  private:
+
   //! Groups meshes associated with constraints on the same process
   void _mergeConstraints(ConstArrayView<IMesh*> meshes);
 
   //! Prints statistics on the partitioning
-  void _printStats(Integer nb_part,IMesh* mesh,VariableCellInt32& new_owners);
+  void _printStats(Integer nb_part, IMesh* mesh, VariableCellInt32& new_owners);
 
  public:
 
@@ -107,7 +108,6 @@ class ArcaneCasePartitioner
 : public ArcaneArcaneCasePartitionerObject
 {
  public:
-
  public:
 
   explicit ArcaneCasePartitioner(const ServiceBuildInfo& sbi);
@@ -121,6 +121,7 @@ class ArcaneCasePartitioner
   bool isActive() const override { return true; }
 
  private:
+
   //! Opens the Correspondence file (only on proc 0)
   void _initCorrespondance(Int32 my_rank);
 
@@ -130,7 +131,6 @@ class ArcaneCasePartitioner
   //! Closes the Correspondence file (only on proc 0)
   void _finalizeCorrespondance(Int32 my_rank);
 
-
  private:
 
   std::ofstream m_sortiesCorrespondance;
@@ -138,9 +138,9 @@ class ArcaneCasePartitioner
   ArcaneInitialPartitioner* m_init_part = nullptr;
 
   void _partitionMesh(Int32 nb_part);
-  void _computeGroups(IItemFamily* current_family,IItemFamily* new_family);
+  void _computeGroups(IItemFamily* current_family, IItemFamily* new_family);
   void _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new_mesh,
-                       Integer nb_layer,Integer maxLocalIdCell, Integer maxLocalIdNode);
+                       Integer nb_layer, Integer maxLocalIdCell, Integer maxLocalIdNode);
   void _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh,
                        VariableCellInt32& true_cells_owner, VariableNodeInt32& true_nodes_owner,
                        Int32Array& new_cells_local_id, Integer id_loc);
@@ -153,23 +153,23 @@ void ArcaneInitialPartitioner::
 _mergeConstraints(ConstArrayView<IMesh*> meshes)
 {
   Integer nb_mesh = meshes.size();
-  if (nb_mesh!=1)
+  if (nb_mesh != 1)
     ARCANE_FATAL("Can not partition multiple meshes");
 
   IMesh* mesh = meshes[0];
   ISubDomain* sd = m_sub_domain;
   ITraceMng* tm = sd->traceMng();
 
-  tm->info()<<" _regroupeContraintes: nbMailles = "<<meshes[0]->nbCell() <<", nbMaillesLocales = "<< meshes[0]->ownCells().size();
+  tm->info() << " _regroupeContraintes: nbMailles = " << meshes[0]->nbCell() << ", nbMaillesLocales = " << meshes[0]->ownCells().size();
 
   Integer nb_contraintes = m_main->options()->constraints.size();
   tm->info() << "Number of constraints = " << nb_contraintes;
-  if (nb_contraintes==0)
+  if (nb_contraintes == 0)
     return;
 
   IItemFamily* current_cell_family = mesh->cellFamily();
   VariableItemInt32& cells_new_owner(current_cell_family->itemsNewOwner());
-  ENUMERATE_CELL(icell,current_cell_family->allItems()){
+  ENUMERATE_CELL (icell, current_cell_family->allItems()) {
     cells_new_owner[icell] = (*icell).owner();
   }
 
@@ -213,7 +213,7 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
   Int32 nb_rank = pm->commSize();
   //Int32 my_rank = pm->commRank();
   ServiceBuilder<IMeshPartitioner> service_builder(sd);
-  auto mesh_partitioner(service_builder.createReference(lib_name,SB_AllowNull));
+  auto mesh_partitioner(service_builder.createReference(lib_name, SB_AllowNull));
   ITraceMng* tm = sd->traceMng();
   tm->info() << "DoInitialPartition. Service=" << lib_name;
 
@@ -223,20 +223,20 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
   _mergeConstraints(meshes);
 
   Integer nb_mesh = meshes.size();
-  if (nb_mesh!=1)
+  if (nb_mesh != 1)
     ARCANE_FATAL("Can not partition multiple meshes");
 
   m_part_indexes.resize(nb_mesh);
   Int32 nb_part = m_main->options()->nbCutPart();
-  if (nb_part==0)
+  if (nb_part == 0)
     nb_part = nb_rank;
   tm->info() << "NbPart = " << nb_part << " nb_mesh=" << nb_mesh;
 
-  for( Integer i=0; i<nb_mesh; ++i ){
+  for (Integer i = 0; i < nb_mesh; ++i) {
     IMesh* mesh = meshes[i];
     ARCANE_CHECK_POINTER(mesh);
-    VariableCellInt32* p_true_cells_owner = new VariableCellInt32(VariableBuildInfo(mesh,"TrueCellsOwner"));
-    VariableNodeInt32* p_true_nodes_owner = new VariableNodeInt32(VariableBuildInfo(mesh,"TrueNodesOwner"));
+    VariableCellInt32* p_true_cells_owner = new VariableCellInt32(VariableBuildInfo(mesh, "TrueCellsOwner"));
+    VariableNodeInt32* p_true_nodes_owner = new VariableNodeInt32(VariableBuildInfo(mesh, "TrueNodesOwner"));
     m_part_indexes[i].m_true_cells_owner = p_true_cells_owner;
     m_part_indexes[i].m_true_nodes_owner = p_true_nodes_owner;
     VariableCellInt32& true_cells_owner = *p_true_cells_owner;
@@ -254,23 +254,23 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
     // Final partitioning
     {
       sd->timeStats()->dumpTimeAndMemoryUsage(pm);
-      Timer t(sd,"InitPartTimer",Timer::TimerReal);
+      Timer t(sd, "InitPartTimer", Timer::TimerReal);
       {
         Timer::Sentry ts(&t);
-        mesh_partitioner->partitionMesh(mesh,nb_part);
+        mesh_partitioner->partitionMesh(mesh, nb_part);
       }
       tm->info() << "Partitioning time t=" << t.lastActivationTime();
       sd->timeStats()->dumpTimeAndMemoryUsage(pm);
     }
-    ENUMERATE_CELL(icell,current_cell_family->allItems()){
+    ENUMERATE_CELL (icell, current_cell_family->allItems()) {
       Int32 new_owner = cells_new_owner[icell];
       true_cells_owner[icell] = new_owner;
       cells_new_owner[icell] = new_owner % nb_rank;
     }
-    ENUMERATE_NODE(inode,current_node_family->allItems()){
+    ENUMERATE_NODE (inode, current_node_family->allItems()) {
       true_nodes_owner[inode] = nodes_new_owner[inode];
     }
-    _printStats(nb_part,mesh,true_cells_owner);
+    _printStats(nb_part, mesh, true_cells_owner);
     mesh->utilities()->changeOwnersFromCells();
     //mesh->modifier()->setDynamic(true);
     //PRIMARYMESH_CAST(mesh)->exchangeItems();
@@ -284,7 +284,7 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
   // Adding a second layer of meshes
   // We should no longer call exchangeItems with the two mesh layers
   IMesh* mesh = meshes[0];
-  if (m_main->options()->nbGhostLayer()==2)
+  if (m_main->options()->nbGhostLayer() == 2)
     mesh->updateGhostLayers(false);
 }
 
@@ -292,19 +292,19 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
 /*---------------------------------------------------------------------------*/
 
 void ArcaneInitialPartitioner::
-_printStats(Integer nb_part,IMesh* mesh,VariableCellInt32& new_owners)
+_printStats(Integer nb_part, IMesh* mesh, VariableCellInt32& new_owners)
 {
-  Int64UniqueArray nb_cells(nb_part,0);
-  ENUMERATE_CELL(icell,mesh->ownCells()){
+  Int64UniqueArray nb_cells(nb_part, 0);
+  ENUMERATE_CELL (icell, mesh->ownCells()) {
     Int32 new_owner = new_owners[icell];
     ++nb_cells[new_owner];
   }
   IParallelMng* pm = mesh->parallelMng();
-  pm->reduce(Parallel::ReduceSum,nb_cells);
+  pm->reduce(Parallel::ReduceSum, nb_cells);
   ITraceMng* tm = m_sub_domain->traceMng();
   tm->info() << " -- Partitioning statistics --";
   tm->info() << "   Part              NbCell";
-  for( Integer i=0; i<nb_part; ++i ){
+  for (Integer i = 0; i < nb_part; ++i) {
     tm->info() << Trace::Width(6) << i << Trace::Width(18) << nb_cells[i];
   }
 }
@@ -316,7 +316,7 @@ ArcaneCasePartitioner::
 ArcaneCasePartitioner(const ServiceBuildInfo& sb)
 : ArcaneArcaneCasePartitionerObject(sb)
 {
-  m_init_part = new ArcaneInitialPartitioner(this,sb.subDomain());
+  m_init_part = new ArcaneInitialPartitioner(this, sb.subDomain());
   info() << "** ** SET INITIAL PARTITIONER 2";
   sb.subDomain()->setInitialPartitioner(m_init_part);
 }
@@ -337,7 +337,7 @@ execute()
 {
   Int32 nb_part = options()->nbCutPart();
   info() << "ArcaneCasePartitioner::execute() nb_part=" << nb_part;
-  if (nb_part!=0){
+  if (nb_part != 0) {
     subDomain()->timeStats()->dumpTimeAndMemoryUsage(subDomain()->parallelMng());
     _partitionMesh(nb_part);
   }
@@ -364,7 +364,7 @@ _partitionMesh(Int32 nb_part)
   if (mesh_writer_name.empty())
     pfatal() << "No service selected to write the mesh";
   ServiceBuilder<IMeshWriter> sb(sd);
-  auto mesh_writer = sb.createReference(mesh_writer_name,SB_Collective);
+  auto mesh_writer = sb.createReference(mesh_writer_name, SB_Collective);
 
   String pattern = options()->meshFileNamePattern();
   info() << "Mesh file pattern=" << pattern;
@@ -380,7 +380,7 @@ _partitionMesh(Int32 nb_part)
   IItemFamily* current_cell_family = mesh()->cellFamily();
   //VariableItemInt32& cells_new_owner(current_cell_family->itemsNewOwner());
   CellGroup current_all_cells = current_cell_family->allItems();
-  Integer total_current_nb_cell = pm->reduce(Parallel::ReduceSum,current_all_cells.own().size());
+  Integer total_current_nb_cell = pm->reduce(Parallel::ReduceSum, current_all_cells.own().size());
   info() << "TOTAL_NB_CELL=" << total_current_nb_cell;
 
   IPrimaryMesh* new_mesh = nullptr;
@@ -394,10 +394,10 @@ _partitionMesh(Int32 nb_part)
 
   new_mesh->setDimension(mesh()->dimension());
   // To optimize, there is no need to sort or compact the entities.
-  new_mesh->properties()->setBool("compact",false);
-  new_mesh->properties()->setBool("sort",false);
+  new_mesh->properties()->setBool("compact", false);
+  new_mesh->properties()->setBool("sort", false);
   new_mesh->modifier()->setDynamic(true);
-  new_mesh->allocateCells(0,Int64ConstArrayView(),true);
+  new_mesh->allocateCells(0, Int64ConstArrayView(), true);
 
   // If the original mesh has MSH generation information,
   // we copy it to the new mesh.
@@ -405,7 +405,7 @@ _partitionMesh(Int32 nb_part)
   // a method to clone the mesh.
   impl::MshMeshGenerationInfo* new_msh_mesh_info = nullptr;
   auto* msh_mesh_info = impl::MshMeshGenerationInfo::getReference(mesh(), false);
-  if (msh_mesh_info){
+  if (msh_mesh_info) {
     new_msh_mesh_info = impl::MshMeshGenerationInfo::getReference(new_mesh, true);
     *new_msh_mesh_info = *msh_mesh_info;
   }
@@ -423,21 +423,21 @@ _partitionMesh(Int32 nb_part)
 
   // Forces the owner of the entities to subdomain 0 because
   // new_mesh uses a sequential parallelMng().
-  for (IItemFamily* family : mesh()->itemFamilies() ){
-    ENUMERATE_ITEM(iitem,family->allItems()){
-      iitem->mutableItemBase().setOwner(0,0);
+  for (IItemFamily* family : mesh()->itemFamilies()) {
+    ENUMERATE_ITEM (iitem, family->allItems()) {
+      iitem->mutableItemBase().setOwner(0, 0);
     }
   }
   // For each part to process, create a mesh
   // containing the entities of that part
   // and save it
   info() << "NbPart=" << nb_part << " my_rank=" << my_rank;
-  for( Integer i=0; i<nb_part; ++i ){
-    if ((i % nb_rank)!=my_rank){
-      if (my_rank==0 && options()->createCorrespondances()){
+  for (Integer i = 0; i < nb_part; ++i) {
+    if ((i % nb_rank) != my_rank) {
+      if (my_rank == 0 && options()->createCorrespondances()) {
 
-        info()<<"Receive on master to build correspondence file on sub-domain "<<i
-              <<" sent from processor "<<i % nb_rank;
+        info() << "Receive on master to build correspondence file on sub-domain " << i
+               << " sent from processor " << i % nb_rank;
         Int32UniqueArray taillesTab(2);
         Int64UniqueArray nodesUniqueId;
         Int64UniqueArray cellsUniqueId;
@@ -456,8 +456,8 @@ _partitionMesh(Int32 nb_part)
     new_mesh->modifier()->clearItems();
     new_mesh->modifier()->endUpdate();
     UniqueArray<Cell> cells_selected_for_new_mesh;
-    ENUMERATE_CELL(icell,current_all_cells.own()){
-      if (true_cells_owner[icell]==i){
+    ENUMERATE_CELL (icell, current_all_cells.own()) {
+      if (true_cells_owner[icell] == i) {
         Cell cell = *icell;
         cells_selected_for_new_mesh.add(cell);
         //info() << "ADD CELL " << ItemPrinter(cell);
@@ -465,11 +465,11 @@ _partitionMesh(Int32 nb_part)
     }
 
     // select ghost layers additionally if necessary
-    _addGhostLayers(current_all_cells,  cells_selected_for_new_mesh, options()->nbGhostLayer(), maxLocalIdCell, maxLocalIdNode);
+    _addGhostLayers(current_all_cells, cells_selected_for_new_mesh, options()->nbGhostLayer(), maxLocalIdCell, maxLocalIdNode);
 
     Int32UniqueArray cells_local_id;
     Int64UniqueArray cells_unique_id;
-    for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+    for (Integer j = 0, js = cells_selected_for_new_mesh.size(); j < js; ++j) {
       Cell cell = cells_selected_for_new_mesh[j];
       cells_local_id.add(cell.localId());
       cells_unique_id.add(static_cast<Int64>(cell.uniqueId()));
@@ -477,7 +477,7 @@ _partitionMesh(Int32 nb_part)
 
     Integer nb_cell_to_copy = cells_local_id.size();
     SerializeBuffer buffer;
-    current_mesh->serializeCells(&buffer,cells_local_id);
+    current_mesh->serializeCells(&buffer, cells_local_id);
     info() << "NB_CELL_TO_SERIALIZE=" << nb_cell_to_copy;
     new_mesh->modifier()->addCells(&buffer);
     new_mesh->modifier()->endUpdate();
@@ -488,55 +488,55 @@ _partitionMesh(Int32 nb_part)
     VariableNodeReal3& new_coordinates(new_mesh->nodesCoordinates());
     VariableNodeReal3& current_coordinates(current_mesh->toPrimaryMesh()->nodesCoordinates());
     Int32UniqueArray new_cells_local_id(nb_cell_to_copy);
-    new_mesh->cellFamily()->itemsUniqueIdToLocalId(new_cells_local_id,cells_unique_id);
-    for( Integer zid=0; zid<nb_cell_to_copy; ++zid ){
+    new_mesh->cellFamily()->itemsUniqueIdToLocalId(new_cells_local_id, cells_unique_id);
+    for (Integer zid = 0; zid < nb_cell_to_copy; ++zid) {
       Cell current_cell = current_cells[cells_local_id[zid]];
       Cell new_cell = new_cells[new_cells_local_id[zid]];
-      if (current_cell.uniqueId()!=new_cell.uniqueId())
+      if (current_cell.uniqueId() != new_cell.uniqueId())
         fatal() << "Inconsistent unique ids";
       Integer nb_node = current_cell.nbNode();
       //info() << "Current=" << ItemPrinter(current_cell)
       //       << " new=" << ItemPrinter(new_cell)
       //       << " nb_node=" << nb_node;
-      for( Integer z2=0; z2<nb_node; ++z2 ){
+      for (Integer z2 = 0; z2 < nb_node; ++z2) {
         Real3 coord = current_coordinates[current_cell.node(z2)];
-	//         info() << "Node=" << ItemPrinter(new_cell.node(z2)) << " coord=" << coord
-	//                << " orig_node=" << ItemPrinter(current_cell.node(z2));
+        //         info() << "Node=" << ItemPrinter(new_cell.node(z2)) << " coord=" << coord
+        //                << " orig_node=" << ItemPrinter(current_cell.node(z2));
         new_coordinates[new_cell.node(z2)] = coord;
         // Position the final owner of the node
-        new_cell.node(z2).mutableItemBase().setOwner(true_nodes_owner[current_cell.node(z2)],0);
+        new_cell.node(z2).mutableItemBase().setOwner(true_nodes_owner[current_cell.node(z2)], 0);
       }
     }
     // Now, we must copy the groups
     {
-      _computeGroups(current_mesh->nodeFamily(),new_mesh->nodeFamily());
-      _computeGroups(current_mesh->edgeFamily(),new_mesh->edgeFamily());
-      _computeGroups(current_mesh->faceFamily(),new_mesh->faceFamily());
-      _computeGroups(current_mesh->cellFamily(),new_mesh->cellFamily());
+      _computeGroups(current_mesh->nodeFamily(), new_mesh->nodeFamily());
+      _computeGroups(current_mesh->edgeFamily(), new_mesh->edgeFamily());
+      _computeGroups(current_mesh->faceFamily(), new_mesh->faceFamily());
+      _computeGroups(current_mesh->cellFamily(), new_mesh->cellFamily());
 
-      if (options()->nbGhostLayer()>0)
+      if (options()->nbGhostLayer() > 0)
         _addGhostGroups(new_mesh, cells_selected_for_new_mesh, true_cells_owner, true_nodes_owner, new_cells_local_id, i);
     }
     Integer new_nb_cell = new_mesh->nbCell();
     info() << "NB_NEW_CELL=" << new_nb_cell;
-    min_nb_cell = math::min(min_nb_cell,new_nb_cell);
-    max_nb_cell = math::max(max_nb_cell,new_nb_cell);
+    min_nb_cell = math::min(min_nb_cell, new_nb_cell);
+    max_nb_cell = math::max(max_nb_cell, new_nb_cell);
     saved_nb_cell += new_nb_cell;
     String filename;
-    if (pattern.empty()){
+    if (pattern.empty()) {
       StringBuilder sfilename = "cut_mesh_";
       sfilename += i;
       sfilename += ".mli2";
       filename = sfilename;
     }
-    else{
+    else {
       // ATTENTION potential overflow if pattern is too long.
       // Also check if there is a %d. Eventually, use String::format()
       char buf[4096];
-      if (pattern.length()>128){
+      if (pattern.length() > 128) {
         pfatal() << "Pattern too long (max=128)";
       }
-      sprintf(buf,pattern.localstr(),i);
+      sprintf(buf, pattern.localstr(), i);
       filename = String(StringView(buf));
     }
     {
@@ -547,8 +547,8 @@ _partitionMesh(Int32 nb_part)
     }
 
     // Correspondence File
-    if (options()->createCorrespondances()){
-      info()<<"Participation to build correspondence file on sub-domain "<<i;
+    if (options()->createCorrespondances()) {
+      info() << "Participation to build correspondence file on sub-domain " << i;
 
       Int32UniqueArray taillesTab;
       taillesTab.add(new_mesh->nodeFamily()->nbItem());
@@ -557,18 +557,18 @@ _partitionMesh(Int32 nb_part)
       Int64UniqueArray cellsUniqueId(taillesTab[1]);
 
       NodeInfoListView nodes(new_mesh->nodeFamily());
-      for( int j=0; j<taillesTab[0]; ++j ){
+      for (int j = 0; j < taillesTab[0]; ++j) {
         Node node = nodes[j];
         nodesUniqueId[j] = node.uniqueId();
       }
 
       CellInfoListView cells(new_mesh->cellFamily());
-      for( int j=0; j<taillesTab[1]; ++j ){
+      for (int j = 0; j < taillesTab[1]; ++j) {
         Cell cell = cells[j];
         cellsUniqueId[j] = cell.uniqueId();
       }
 
-      if (my_rank!=0){
+      if (my_rank != 0) {
         pm->send(taillesTab, 0);
         pm->send(nodesUniqueId, 0);
         pm->send(cellsUniqueId, 0);
@@ -579,25 +579,25 @@ _partitionMesh(Int32 nb_part)
     }
   } // end i<nb_part
 
-  Integer total_new_nb_cell = pm->reduce(Parallel::ReduceSum,saved_nb_cell);
-  Integer total_min_nb_cell = pm->reduce(Parallel::ReduceMin,min_nb_cell);
-  Integer total_max_nb_cell = pm->reduce(Parallel::ReduceMax,max_nb_cell);
+  Integer total_new_nb_cell = pm->reduce(Parallel::ReduceSum, saved_nb_cell);
+  Integer total_min_nb_cell = pm->reduce(Parallel::ReduceMin, min_nb_cell);
+  Integer total_max_nb_cell = pm->reduce(Parallel::ReduceMax, max_nb_cell);
   info() << "TOTAL_NEW_NB_CELL=" << total_new_nb_cell
          << " min=" << total_min_nb_cell
          << " max=" << total_max_nb_cell
-         << " computed_average=" << (total_current_nb_cell/nb_part);
+         << " computed_average=" << (total_current_nb_cell / nb_part);
 
   subDomain()->timeStats()->dumpTimeAndMemoryUsage(pm);
 
   if (options()->createCorrespondances())
     _finalizeCorrespondance(my_rank);
 
-  if (options()->nbGhostLayer()==0)
-    if (total_new_nb_cell!=total_current_nb_cell)
+  if (options()->nbGhostLayer() == 0)
+    if (total_new_nb_cell != total_current_nb_cell)
       pfatal() << "Bad number of saved cells current=" << total_current_nb_cell
                << " saved=" << total_new_nb_cell;
 
-  pinfo()<<"Total Memory Used : "<<platform::getMemoryUsed();
+  pinfo() << "Total Memory Used : " << platform::getMemoryUsed();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -606,14 +606,14 @@ _partitionMesh(Int32 nb_part)
 void ArcaneCasePartitioner::
 _initCorrespondance(Int32 my_rank)
 {
-  info()<<" _initCorrespondance("<<my_rank<<")";
+  info() << " _initCorrespondance(" << my_rank << ")";
 
   if (my_rank)
     return;
 
   m_sortiesCorrespondance.open("Correspondances");
 
-  if (m_sortiesCorrespondance.fail ()){
+  if (m_sortiesCorrespondance.fail()) {
     pfatal() << "Unable to write to file 'Correspondances' ";
   }
 
@@ -628,22 +628,25 @@ _initCorrespondance(Int32 my_rank)
 void ArcaneCasePartitioner::
 _writeCorrespondance(Int32 rank, Int64Array& nodesUniqueId, Int64Array& cellsUniqueId)
 {
-  info()<<" _writeCorrespondance("<<rank<<", nodesUniqueId.size() = "
-	<<nodesUniqueId.size()<<", cellsUniqueId.size() = "<<cellsUniqueId.size()<<")";
+  info() << " _writeCorrespondance(" << rank << ", nodesUniqueId.size() = "
+         << nodesUniqueId.size() << ", cellsUniqueId.size() = " << cellsUniqueId.size() << ")";
 
   m_sortiesCorrespondance << "  <cpu id=\"" << rank << "\">" << "\n"
-			  << "    <noeuds>" << "\n" << "    ";
-  for( Integer i=0; i<nodesUniqueId.size(); ++i )
-    m_sortiesCorrespondance <<nodesUniqueId[i]<< " ";
+                          << "    <noeuds>" << "\n"
+                          << "    ";
+  for (Integer i = 0; i < nodesUniqueId.size(); ++i)
+    m_sortiesCorrespondance << nodesUniqueId[i] << " ";
 
-  m_sortiesCorrespondance << "\n" << "    </noeuds>"
-			  << "\n"
-			  << "    <mailles>" << "\n"
-			  << "      ";
-  for( Integer i=0; i<cellsUniqueId.size(); ++i )
-    m_sortiesCorrespondance <<cellsUniqueId[i]<< " ";
-  m_sortiesCorrespondance << "\n" << "    </mailles>" << "\n"
-			  << "  </cpu>" << "\n";
+  m_sortiesCorrespondance << "\n"
+                          << "    </noeuds>"
+                          << "\n"
+                          << "    <mailles>" << "\n"
+                          << "      ";
+  for (Integer i = 0; i < cellsUniqueId.size(); ++i)
+    m_sortiesCorrespondance << cellsUniqueId[i] << " ";
+  m_sortiesCorrespondance << "\n"
+                          << "    </mailles>" << "\n"
+                          << "  </cpu>" << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -656,7 +659,7 @@ _finalizeCorrespondance(Int32 my_rank)
     return;
 
   m_sortiesCorrespondance << "</cpus>\n";
-  m_sortiesCorrespondance.close ();
+  m_sortiesCorrespondance.close();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -674,7 +677,7 @@ _finalizeCorrespondance(Int32 my_rank)
  * for each the list of entities to add to the new mesh.
  */
 void ArcaneCasePartitioner::
-_computeGroups(IItemFamily* current_family,IItemFamily* new_family)
+_computeGroups(IItemFamily* current_family, IItemFamily* new_family)
 {
   info() << "Compute groups family=" << current_family->name();
 
@@ -685,7 +688,7 @@ _computeGroups(IItemFamily* current_family,IItemFamily* new_family)
   Int32UniqueArray new_items_lid(nb_new_item);
   {
     Integer index = 0;
-    ENUMERATE_ITEM(iitem,new_all_items){
+    ENUMERATE_ITEM (iitem, new_all_items) {
       new_items_uid[index] = (*iitem).uniqueId();
       new_items_lid[index] = iitem.itemLocalId();
       ++index;
@@ -693,28 +696,28 @@ _computeGroups(IItemFamily* current_family,IItemFamily* new_family)
   }
   Int32UniqueArray items_lid(nb_new_item);
   // Determine the localId() in the original mesh of the entities
-  current_family->itemsUniqueIdToLocalId(items_lid,new_items_uid);
+  current_family->itemsUniqueIdToLocalId(items_lid, new_items_uid);
 
   Int32UniqueArray items_current_to_new_local_id(current_family->maxLocalId());
   items_current_to_new_local_id.fill(NULL_ITEM_LOCAL_ID);
-  for( Integer i=0; i<nb_new_item; ++i )
+  for (Integer i = 0; i < nb_new_item; ++i)
     items_current_to_new_local_id[items_lid[i]] = new_items_lid[i];
 
   Int32UniqueArray create_local_ids;
-  for( ItemGroupCollection::Enumerator igroup(current_family->groups()); ++igroup; ){
+  for (ItemGroupCollection::Enumerator igroup(current_family->groups()); ++igroup;) {
     ItemGroup group = *igroup;
     if (group.isOwn())
       continue;
     if (group.isAllItems())
       continue;
     create_local_ids.clear();
-    ENUMERATE_ITEM(iitem,group){
+    ENUMERATE_ITEM (iitem, group) {
       Int32 current_uid = iitem.itemLocalId();
       Int32 new_lid = items_current_to_new_local_id[current_uid];
-      if (new_lid!=NULL_ITEM_LOCAL_ID)
+      if (new_lid != NULL_ITEM_LOCAL_ID)
         create_local_ids.add(new_lid);
     }
-    new_family->createGroup(group.name(),create_local_ids,true);
+    new_family->createGroup(group.name(), create_local_ids, true);
   }
 }
 
@@ -726,9 +729,9 @@ _computeGroups(IItemFamily* current_family,IItemFamily* new_family)
  */
 void ArcaneCasePartitioner::
 _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new_mesh,
-                Integer nbCouches,Integer maxLocalIdCell, Integer maxLocalIdNode)
+                Integer nbCouches, Integer maxLocalIdCell, Integer maxLocalIdNode)
 {
-  if (nbCouches==0)
+  if (nbCouches == 0)
     return;
 
   Int32UniqueArray filtre_lid_cell(maxLocalIdCell);
@@ -737,26 +740,26 @@ _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new
   filtre_lid_node.fill(0);
 
   // mark the already selected cells
-  for (Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+  for (Integer j = 0, js = cells_selected_for_new_mesh.size(); j < js; ++j) {
     Cell cell = cells_selected_for_new_mesh[j];
     filtre_lid_cell[cell.localId()] = 1;
   }
 
   // search for all nodes associated with selected cells a connected cell
   // to this same node that is not selected
-  for (Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+  for (Integer j = 0, js = cells_selected_for_new_mesh.size(); j < js; ++j) {
     Cell cell = cells_selected_for_new_mesh[j];
 
     NodeVectorView nodes = cell.nodes();
-    for( Integer k=0, ks=nodes.size(); k<ks; ++k){
+    for (Integer k = 0, ks = nodes.size(); k < ks; ++k) {
       Node node = nodes[k];
-      if (filtre_lid_node[node.localId()]==0){
+      if (filtre_lid_node[node.localId()] == 0) {
         // cells connected by a node
         CellVectorView cells_vois = node.cells();
 
-        for( Integer i=0, is=cells_vois.size(); i<is; ++i ){
+        for (Integer i = 0, is = cells_vois.size(); i < is; ++i) {
           Cell cell_vois = cells_vois[i];
-          if (filtre_lid_cell[cell_vois.localId()]==0){
+          if (filtre_lid_cell[cell_vois.localId()] == 0) {
             // add the cell that has not yet been seen
             cells_selected_for_new_mesh.add(cell_vois);
 
@@ -769,8 +772,7 @@ _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new
   }
 
   // for the second layer (if needed) it is simpler to do it recursively
-  _addGhostLayers(current_all_cells, cells_selected_for_new_mesh,  nbCouches-1, maxLocalIdCell,  maxLocalIdNode);
-
+  _addGhostLayers(current_all_cells, cells_selected_for_new_mesh, nbCouches - 1, maxLocalIdCell, maxLocalIdNode);
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -784,18 +786,18 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
                 VariableNodeInt32& true_nodes_owner,
                 Int32Array& new_cells_local_id, Integer id_loc)
 {
-  info()<<"ArcaneCasePartitioner::_addGhostGroups (id_loc = "<<id_loc<<")";
+  info() << "ArcaneCasePartitioner::_addGhostGroups (id_loc = " << id_loc << ")";
   // we must determine the existing neighbor groups
   // we use a "map" to store the different sub-domains that appear and the number of cells in them
   std::map<Integer, Integer> dom_vois;
-  for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+  for (Integer j = 0, js = cells_selected_for_new_mesh.size(); j < js; ++j) {
     Cell cell = cells_selected_for_new_mesh[j];
     dom_vois[true_cells_owner[cell]] += 1;
   }
 
   // we use a second map to list the cells according to the destination domain
-  std::map<Integer,SharedArray<Int32> > map_groupes;
-  for (std::map<Integer, Integer>::const_iterator iter=dom_vois.begin(); iter!=dom_vois.end(); ++iter){
+  std::map<Integer, SharedArray<Int32>> map_groupes;
+  for (std::map<Integer, Integer>::const_iterator iter = dom_vois.begin(); iter != dom_vois.end(); ++iter) {
     Integer no_sous_dom = iter->first;
     Integer nb_mailles_sous_dom = iter->second;
 
@@ -804,26 +806,26 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
     tab.reserve(nb_mailles_sous_dom);
   }
 
-  for( Integer j=0, js=cells_selected_for_new_mesh.size(); j<js; ++j ){
+  for (Integer j = 0, js = cells_selected_for_new_mesh.size(); j < js; ++j) {
     Cell cell = cells_selected_for_new_mesh[j];
     Integer no_sous_dom = true_cells_owner[cell];
 
     // filling the lists by sub-domain
-    Int32Array & liste_lid = map_groupes[no_sous_dom];
+    Int32Array& liste_lid = map_groupes[no_sous_dom];
     liste_lid.add(new_cells_local_id[j]);
   }
 
   // creation (if necessary) of the different groups and adding the cells to them
-  for (std::map<Integer,SharedArray<Int32> >::iterator iter=map_groupes.begin(); iter!=map_groupes.end(); ++iter){
+  for (std::map<Integer, SharedArray<Int32>>::iterator iter = map_groupes.begin(); iter != map_groupes.end(); ++iter) {
     Integer no_sous_dom = iter->first;
-    Int32Array & liste_lid = iter->second;
+    Int32Array& liste_lid = iter->second;
 
     ItemGroup groupe_loc;
-    if (no_sous_dom==id_loc)
+    if (no_sous_dom == id_loc)
       groupe_loc = new_mesh->cellFamily()->findGroup("LOCAL", true);
     else {
       String nom_mf("MF_");
-      nom_mf = nom_mf+no_sous_dom;
+      nom_mf = nom_mf + no_sous_dom;
       groupe_loc = new_mesh->cellFamily()->findGroup(nom_mf, true);
     }
 
@@ -837,8 +839,8 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
     Integer nbnodes = new_mesh->nodeFamily()->nbItem();
     liste_lid.reserve(nbnodes);
     NodeInfoListView nodes(new_mesh->nodeFamily());
-    for (int j= 0 ; j < nbnodes ; ++j) {
-      Node node= nodes[j];
+    for (int j = 0; j < nbnodes; ++j) {
+      Node node = nodes[j];
       if (true_nodes_owner[node] == id_loc)
         liste_lid.add(node.localId());
     }
@@ -846,7 +848,6 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
     ItemGroup groupe_loc = new_mesh->nodeFamily()->findGroup("LOCALN", true);
     groupe_loc.addItems(liste_lid, false);
   }
-
 
   // the group with all cells
   ItemGroup groupe_glob = new_mesh->cellFamily()->findGroup("TOUT", true);
@@ -856,12 +857,12 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_ARCANECASEPARTITIONER(ArcaneCasePartitioner,ArcaneCasePartitioner);
+ARCANE_REGISTER_SERVICE_ARCANECASEPARTITIONER(ArcaneCasePartitioner, ArcaneCasePartitioner);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

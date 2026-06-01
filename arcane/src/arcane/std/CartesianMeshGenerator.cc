@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -150,17 +150,17 @@ readOptionsFromXml(XmlNode cartesian_node)
 
   {
     XmlNode version_node = cartesian_node.child("face-numbering-version");
-    if (!version_node.null()){
+    if (!version_node.null()) {
       Int32 v = version_node.valueAsInteger(true);
-      if (v>=0)
+      if (v >= 0)
         m_face_numbering_version = v;
     }
   }
   {
     XmlNode version_node = cartesian_node.child("edge-numbering-version");
-    if (!version_node.null()){
+    if (!version_node.null()) {
       Int32 v = version_node.valueAsInteger(true);
-      if (v>=0)
+      if (v >= 0)
         m_edge_numbering_version = v;
     }
   }
@@ -209,7 +209,7 @@ setBuildInfo(const CartesianMeshGeneratorBuildInfo& build_info)
 bool CartesianMeshGenerator::
 _readOptions()
 {
-  Trace::Setter mci(traceMng(),"CartesianMeshGenerator");
+  Trace::Setter mci(traceMng(), "CartesianMeshGenerator");
 
   m_mesh_dimension = m_build_info.m_mesh_dimension;
   Int32 nb_sub_domain = m_mesh->parallelMng()->commSize();
@@ -264,7 +264,7 @@ _readOptions()
   info() << " dimension=" << m_mesh_dimension;
   info() << " origin:" << m_build_info.m_origine;
   info() << " length x =" << m_l.x << "," << m_build_info.m_bloc_lx;
-  info() << " length y="  << m_l.y << "," << m_build_info.m_bloc_ly;
+  info() << " length y=" << m_l.y << "," << m_build_info.m_bloc_ly;
   if (m_build_info.m_mesh_dimension == 3)
     info() << " length z=" << m_l.z << "," << m_build_info.m_bloc_lz;
   info() << "cells number:" << m_nx << "x" << m_ny << "x" << m_nz;
@@ -279,7 +279,7 @@ _readOptions()
   // Check the number of subdomains vs what was specified
   if (m_build_info.m_nsdx * m_build_info.m_nsdy * m_build_info.m_nsdz != nb_sub_domain)
     ARCANE_FATAL("Specified partition {0}x{1}x{2} has to be equal to number of parts ({3})",
-                 m_build_info.m_nsdx,m_build_info.m_nsdy,m_build_info.m_nsdz,nb_sub_domain);
+                 m_build_info.m_nsdx, m_build_info.m_nsdy, m_build_info.m_nsdz, nb_sub_domain);
 
   return false; // false == ok
 }
@@ -602,10 +602,10 @@ zScan(const Int64 all_nb_cell_z,
 bool CartesianMeshGenerator::
 generateMesh()
 {
-  Trace::Setter mci(traceMng(),"CartesianMeshGenerator");
+  Trace::Setter mci(traceMng(), "CartesianMeshGenerator");
   IPrimaryMesh* mesh = m_mesh;
 
-  m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
+  m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh, true);
 
   CartesianMeshAllocateBuildInfo cartesian_mesh_build_info(mesh);
 
@@ -620,9 +620,9 @@ generateMesh()
   // le nombre de mailles dans chaque direction ainsi que l'offset du sous-domaine.
   // Cela est utilisé notammement par CartesianMesh.
   //Properties* mesh_properties = mesh->properties();
-  m_generation_info->setGlobalNbCells(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
-  m_generation_info->setSubDomainOffsets(sdXOffset(),sdYOffset(),sdZOffset());
-  m_generation_info->setNbSubDomains(m_build_info.m_nsdx,m_build_info.m_nsdy,m_build_info.m_nsdz);
+  m_generation_info->setGlobalNbCells(all_nb_cell_x, all_nb_cell_y, all_nb_cell_z);
+  m_generation_info->setSubDomainOffsets(sdXOffset(), sdYOffset(), sdZOffset());
+  m_generation_info->setNbSubDomains(m_build_info.m_nsdx, m_build_info.m_nsdy, m_build_info.m_nsdz);
 
   m_generation_info->setGlobalOrigin(m_build_info.m_origine);
   m_generation_info->setGlobalLength(m_l);
@@ -636,7 +636,7 @@ generateMesh()
   Int32 own_nb_cell_x = ownXNbCell();
   Int32 own_nb_cell_y = ownYNbCell();
   Int32 own_nb_cell_z = ownZNbCell();
-  m_generation_info->setOwnNbCells(own_nb_cell_x,own_nb_cell_y,own_nb_cell_z);
+  m_generation_info->setOwnNbCells(own_nb_cell_x, own_nb_cell_y, own_nb_cell_z);
   Integer own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
   Integer own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
   info() << " own cells: " << own_nb_cell_x << "x" << own_nb_cell_y << "y"
@@ -703,9 +703,9 @@ generateMesh()
     if (m_mesh_dimension == 3) {
       cell_offset_z = sd_z_cell_offset[sdZOffset()] / all_nb_cell_xy;
     }
-    first_own_cell_offset = Int64x3(cell_offset_x,cell_offset_y,cell_offset_z);
+    first_own_cell_offset = Int64x3(cell_offset_x, cell_offset_y, cell_offset_z);
     info() << "OwnCellOffset info X=" << cell_offset_x << " Y=" << cell_offset_y << " Z=" << cell_offset_z;
-    m_generation_info->setOwnCellOffsets(cell_offset_x,cell_offset_y,cell_offset_z);
+    m_generation_info->setOwnCellOffsets(cell_offset_x, cell_offset_y, cell_offset_z);
   }
   // IBL, NBL
   info() << " sd_x_ibl=" << sd_x_ibl;
@@ -854,23 +854,23 @@ generateMesh()
 
   {
     info() << "Set Specific info for cartesian mesh";
-    if (m_mesh_dimension==3)
-      cartesian_mesh_build_info.setInfos3D({all_nb_cell_x,all_nb_cell_y,all_nb_cell_z},
-                                           {own_nb_cell_x,own_nb_cell_y,own_nb_cell_z},
-                                           {first_own_cell_offset.x,first_own_cell_offset.y,first_own_cell_offset.z},
-                                           0 );
-    else if (m_mesh_dimension==2){
-      cartesian_mesh_build_info.setInfos2D({all_nb_cell_x,all_nb_cell_y},
-                                           {own_nb_cell_x,own_nb_cell_y},
-                                           {first_own_cell_offset.x,first_own_cell_offset.y},
-                                           0 );
+    if (m_mesh_dimension == 3)
+      cartesian_mesh_build_info.setInfos3D({ all_nb_cell_x, all_nb_cell_y, all_nb_cell_z },
+                                           { own_nb_cell_x, own_nb_cell_y, own_nb_cell_z },
+                                           { first_own_cell_offset.x, first_own_cell_offset.y, first_own_cell_offset.z },
+                                           0);
+    else if (m_mesh_dimension == 2) {
+      cartesian_mesh_build_info.setInfos2D({ all_nb_cell_x, all_nb_cell_y },
+                                           { own_nb_cell_x, own_nb_cell_y },
+                                           { first_own_cell_offset.x, first_own_cell_offset.y },
+                                           0);
     }
     else
-      ARCANE_FATAL("Invalid dimensionn '{0}' (valid values are 2 or 3)",m_mesh_dimension);
+      ARCANE_FATAL("Invalid dimensionn '{0}' (valid values are 2 or 3)", m_mesh_dimension);
 
-    if (face_numbering_version>=0)
+    if (face_numbering_version >= 0)
       cartesian_mesh_build_info._internal()->setFaceBuilderVersion(face_numbering_version);
-    if (edge_numbering_version>=0)
+    if (edge_numbering_version >= 0)
       cartesian_mesh_build_info._internal()->setEdgeBuilderVersion(edge_numbering_version);
   }
 
@@ -898,7 +898,7 @@ generateMesh()
   {
     SodStandardGroupsBuilder groups_builder(traceMng());
     Real3 origin = m_build_info.m_origine;
-    Real3 length(m_l.x,m_l.y,m_l.z);
+    Real3 length(m_l.x, m_l.y, m_l.z);
     Real3 max_pos = origin + length;
     // TODO: Since there can be geometric progressions, we must define
     // the middle based on the position of the offset mesh the middle
@@ -928,7 +928,8 @@ class Cartesian2DMeshGenerator
  public:
 
   explicit Cartesian2DMeshGenerator(const ServiceBuildInfo& sbi)
-  : ArcaneCartesian2DMeshGeneratorObject(sbi){}
+  : ArcaneCartesian2DMeshGeneratorObject(sbi)
+  {}
 
  public:
 
@@ -946,13 +947,13 @@ class Cartesian2DMeshGenerator
     m_build_info.m_is_generate_sod_groups = options()->generateSodGroups();
     m_build_info.m_face_numbering_version = options()->faceNumberingVersion();
 
-    for( auto& o : options()->x() ){
+    for (auto& o : options()->x()) {
       m_build_info.m_bloc_lx.add(o->length);
       m_build_info.m_bloc_nx.add(o->n);
       m_build_info.m_bloc_px.add(o->progression);
     }
 
-    for( auto& o : options()->y() ){
+    for (auto& o : options()->y()) {
       m_build_info.m_bloc_ly.add(o->length);
       m_build_info.m_bloc_ny.add(o->n);
       m_build_info.m_bloc_py.add(o->progression);
@@ -964,7 +965,7 @@ class Cartesian2DMeshGenerator
     info() << "Cartesian2DMeshGenerator: allocateMeshItems()";
     CartesianMeshGenerator g(pm);
     // Check if the partitioning needs to be calculated dynamically
-    auto [ x, y ] = _computePartition(pm,m_build_info.m_nsdx,m_build_info.m_nsdy);
+    auto [x, y] = _computePartition(pm, m_build_info.m_nsdx, m_build_info.m_nsdy);
     m_build_info.m_nsdx = x;
     m_build_info.m_nsdy = y;
     g.setBuildInfo(m_build_info);
@@ -975,44 +976,44 @@ class Cartesian2DMeshGenerator
 
   CartesianMeshGeneratorBuildInfo m_build_info;
 
-  static std::tuple<Integer,Integer>
-  _computePartition(IPrimaryMesh* pm,Integer nb_x,Integer nb_y)
+  static std::tuple<Integer, Integer>
+  _computePartition(IPrimaryMesh* pm, Integer nb_x, Integer nb_y)
   {
     Int32 nb_part = pm->meshPartInfo().nbPart();
     // In sequential mode, it does not take into account the dataset values.
-    if (nb_part==1)
-      return {1,1};
+    if (nb_part == 1)
+      return { 1, 1 };
     // If the partitioning in X and Y is specified, use it directly.
-    if (nb_x!=0 && nb_y!=0)
-      return {nb_x, nb_y};
+    if (nb_x != 0 && nb_y != 0)
+      return { nb_x, nb_y };
     // No partitioning specified. math::sqrt(nb_part)
     // must be an integer
-    if (nb_x==0 && nb_y==0){
+    if (nb_x == 0 && nb_y == 0) {
       double s = math::sqrt((double)(nb_part));
       Integer s_int = (Integer)(::floor(s));
-      if ((s_int*s_int) != nb_part)
+      if ((s_int * s_int) != nb_part)
         ARCANE_FATAL("Invalid number of part '{0}' for automatic partitioning: sqrt({1}) is not an integer",
-                     nb_part,nb_part);
-      return {s_int,s_int};
+                     nb_part, nb_part);
+      return { s_int, s_int };
     }
     // Here, one of the two partitions is not specified.
-    if (nb_x==0){
-      if ( (nb_part % nb_y) != 0 )
+    if (nb_x == 0) {
+      if ((nb_part % nb_y) != 0)
         ARCANE_FATAL("Invalid number of Y part '{0}' for automatic partitioning: can not divide '{1}' by '{2}'",
-                     nb_y,nb_part,nb_y);
+                     nb_y, nb_part, nb_y);
       nb_x = nb_part / nb_y;
     }
-    else{
-      if ( (nb_part % nb_x) != 0 )
+    else {
+      if ((nb_part % nb_x) != 0)
         ARCANE_FATAL("Invalid number of X part '{0}' for automatic partitioning: can not divide '{1}' by '{2}'",
-                     nb_x,nb_part,nb_x);
+                     nb_x, nb_part, nb_x);
       nb_y = nb_part / nb_x;
     }
-    return {nb_x,nb_y};
+    return { nb_x, nb_y };
   }
 };
 
-ARCANE_REGISTER_SERVICE_CARTESIAN2DMESHGENERATOR(Cartesian2D,Cartesian2DMeshGenerator);
+ARCANE_REGISTER_SERVICE_CARTESIAN2DMESHGENERATOR(Cartesian2D, Cartesian2DMeshGenerator);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1024,9 +1025,13 @@ class Cartesian3DMeshGenerator
 : public ArcaneCartesian3DMeshGeneratorObject
 {
  public:
+
   Cartesian3DMeshGenerator(const ServiceBuildInfo& sbi)
-  : ArcaneCartesian3DMeshGeneratorObject(sbi){}
+  : ArcaneCartesian3DMeshGeneratorObject(sbi)
+  {}
+
  public:
+
   void fillMeshBuildInfo(MeshBuildInfo& build_info) override
   {
     ARCANE_UNUSED(build_info);
@@ -1044,19 +1049,19 @@ class Cartesian3DMeshGenerator
     m_build_info.m_face_numbering_version = options()->faceNumberingVersion();
     m_build_info.m_edge_numbering_version = options()->edgeNumberingVersion();
 
-    for( auto& o : options()->x() ){
+    for (auto& o : options()->x()) {
       m_build_info.m_bloc_lx.add(o->length);
       m_build_info.m_bloc_nx.add(o->n);
       m_build_info.m_bloc_px.add(o->progression);
     }
 
-    for( auto& o : options()->y() ){
+    for (auto& o : options()->y()) {
       m_build_info.m_bloc_ly.add(o->length);
       m_build_info.m_bloc_ny.add(o->n);
       m_build_info.m_bloc_py.add(o->progression);
     }
 
-    for( auto& o : options()->z() ){
+    for (auto& o : options()->z()) {
       m_build_info.m_bloc_lz.add(o->length);
       m_build_info.m_bloc_nz.add(o->n);
       m_build_info.m_bloc_pz.add(o->progression);
@@ -1074,7 +1079,10 @@ class Cartesian3DMeshGenerator
   CartesianMeshGeneratorBuildInfo m_build_info;
 };
 
-ARCANE_REGISTER_SERVICE_CARTESIAN3DMESHGENERATOR(Cartesian3D,Cartesian3DMeshGenerator);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE_CARTESIAN3DMESHGENERATOR(Cartesian3D, Cartesian3DMeshGenerator);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,7 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+﻿<?xml version="1.0" ?>
 
 <!-- Data set options concerning the post-processing module -->
 
@@ -18,7 +15,7 @@
     <periode-sortie>5</periode-sortie>
     ~~~~~~
   </description>
-    
+
   <variables>
     <variable field-name="next_iteration"
               name="PostProcessingNextIteration"
@@ -58,164 +55,171 @@
   </variables>
 
   <entry-points>
-    <entry-point method-name="exportData" 
-                 name="PostProcessingExportData" 
-                 where="compute-loop" 
+    <entry-point method-name="exportData"
+                 name="PostProcessingExportData"
+                 where="compute-loop"
                  property="auto-load-end"/>
-    <entry-point method-name="exportDataStart" 
-                 name="PostProcessingExportDataStart" 
-                 where="compute-loop" 
+    <entry-point method-name="exportDataStart"
+                 name="PostProcessingExportDataStart"
+                 where="compute-loop"
                  property="auto-load-begin"/>
-    <entry-point method-name="postProcessingStartInit" 
-                 name="PostProcessingStartInit" 
-                 where="start-init" 
+    <entry-point method-name="postProcessingStartInit"
+                 name="PostProcessingStartInit"
+                 where="start-init"
                  property="auto-load-begin"/>
-    <entry-point method-name="postProcessingInit" 
-                 name="PostProcessingInit" 
-                 where="init" 
+    <entry-point method-name="postProcessingInit"
+                 name="PostProcessingInit"
+                 where="init"
                  property="auto-load-end"/>
-    <entry-point method-name="postProcessingExit" 
-                 name="PostProcessingExit" 
-                 where="exit" 
+    <entry-point method-name="postProcessingExit"
+                 name="PostProcessingExit"
+                 where="exit"
                  property="auto-load-end"/>
   </entry-points>
 
   <options>
-    
+
     <!-- - - - - - format-service - - - - -->
-    <service-instance name    = "format"
-	              type    = "Arcane::IPostProcessorWriter"
-	              default = "Ensight7PostProcessor"
-		      >
+    <service-instance name="format"
+                      type="Arcane::IPostProcessorWriter"
+                      default="Ensight7PostProcessor"
+    >
       <name lang='fr'>format-service</name>
       <userclass>User</userclass>
       <description>
-	Specifies the type of library to use for data extraction outputs.
+        Specifies the type of library to use for data extraction outputs.
       </description>
     </service-instance>
 
 
     <!-- - - - - - output-frequency - - - - -->
-    <simple name    = "output-frequency"
-	    type    = "real"
-	    default = "0.0"
-	    >
+    <simple name="output-frequency"
+            type="real"
+            default="0.0"
+    >
       <name lang='fr'>frequence-sortie</name>
       <userclass>User</userclass>
       <description>
-	Physical time between two outputs. If this value is zero, no output is performed. If this option is present with the *output-period* option, the latter is not taken into account.
+        Physical time between two outputs. If this value is zero, no output is performed. If this option is present with
+        the *output-period* option, the latter is not taken into account.
       </description>
     </simple>
 
     <!-- - - - - - output-period - - - - -->
-    <simple name    = "output-period"
-	    type    = "integer"
-	    default = "0"
-	    >
+    <simple name="output-period"
+            type="integer"
+            default="0"
+    >
       <name lang='fr'>periode-sortie</name>
       <userclass>User</userclass>
       <description>
-	Number of iterations between two outputs. If this value is zero, no output is performed during the iterations.
+        Number of iterations between two outputs. If this value is zero, no output is performed during the iterations.
       </description>
     </simple>
 
     <!-- - - - - - history-period - - - - -->
-    <simple name    = "output-history-period"
-	    type    = "integer"
-	    default = "1"
-	    >
+    <simple name="output-history-period"
+            type="integer"
+            default="1"
+    >
       <name lang='fr'>periode-sortie-historique</name>
       <userclass>User</userclass>
       <description>
-	Number of iterations between two outputs for histories. If this value is zero, outputs for histories are disabled.
+        Number of iterations between two outputs for histories. If this value is zero, outputs for histories are
+        disabled.
       </description>
     </simple>
 
     <!-- - - - - - history-shrink - - - - -->
-    <simple name    = "output-history-shrink"
-	    type    = "bool"
-	    default = "false" 
-	    >
+    <simple name="output-history-shrink"
+            type="bool"
+            default="false"
+    >
       <name lang='fr'>compression-sortie-historique</name>
       <userclass>User</userclass>
       <description>
-	Prevents saving all abscissa points between the periods of the *output-history-period* option.
+        Prevents saving all abscissa points between the periods of the *output-history-period* option.
         This helps reduce memory consumption, especially when the code performs a large number of iterations.
       </description>
     </simple>
 
     <!-- - - - - - save-init - - - - -->
-    <simple name    = "save-init"
-	    type    = "bool"
-	    default = "false"
-	    >
+    <simple name="save-init"
+            type="bool"
+            default="false"
+    >
       <name lang='fr'>sauvegarde-initiale</name>
       <userclass>User</userclass>
       <description>
-	If true, performs an output at the end of initialization.
+        If true, performs an output at the end of initialization.
       </description>
     </simple>
 
     <!-- - - - - - save-init - - - - -->
-    <simple name    = "save-final-time"
-	    type    = "bool"
-	    default = "true"
-	    >
+    <simple name="save-final-time"
+            type="bool"
+            default="true"
+    >
       <name lang='fr'>sauvegarde-temps-final</name>
       <userclass>User</userclass>
       <description>
-	If true, performs an output at the end of execution when the final time is reached.
+        If true, performs an output at the end of execution when the final time is reached.
       </description>
     </simple>
 
     <!-- - - - - - end-execution-output - - - - -->
-    <simple name    = "end-execution-output"
-	    type    = "bool"
-	    default = "false"
-	    >
+    <simple name="end-execution-output"
+            type="bool"
+            default="false"
+    >
       <name lang='fr'>sortie-fin-execution</name>
       <userclass>User</userclass>
       <description>
-	If true, performs a data extraction output at the end of execution. The end of execution is not necessarily identical to the final time if protections/resumptions are used or if a maximum number of iterations is specified during execution.
+        If true, performs a data extraction output at the end of execution. The end of execution is not necessarily
+        identical to the final time if protections/resumptions are used or if a maximum number of iterations is
+        specified during execution.
       </description>
     </simple>
 
     <!-- - - - - - output - - - - - -->
-    <complex type = "Output" name="output">
+    <complex type="Output" name="output">
       <name lang='fr'>depouillement</name>
       <userclass>User</userclass>
       <description>
-	List of variables and groups to extract.
+        List of variables and groups to extract.
       </description>
-	
+
       <!-- - - - - - variable - - - - - -->
-      <simple name = "variable"
-	      type = "ustring"
-	      minOccurs = "0"
-	      maxOccurs = "unbounded"
-	      >
-	<name lang='fr'>variable</name>
-	<userclass>User</userclass>
-	<description>
-	  Name of a variable to export. It is possible to include multiple options of this type to export several variables. If no variable is specified, no output is performed.
-	</description>
+      <simple name="variable"
+              type="ustring"
+              minOccurs="0"
+              maxOccurs="unbounded"
+      >
+        <name lang='fr'>variable</name>
+        <userclass>User</userclass>
+        <description>
+          Name of a variable to export. It is possible to include multiple options of this type to export several
+          variables. If no variable is specified, no output is performed.
+        </description>
       </simple>
 
-      <extended name = "group"
-		type = "Arcane::ItemGroup"
-		minOccurs = "0"
-		maxOccurs = "unbounded"
-		>
-	<name lang='fr'>groupe</name>
-	<userclass>User</userclass>
-	<description>
-	  Group of mesh entities on which you wish to export variables. It is possible to include multiple options of this type to export variables on several groups. If this option is not specified, the variables are output for the entire mesh.
-	</description>
+      <extended name="group"
+                type="Arcane::ItemGroup"
+                minOccurs="0"
+                maxOccurs="unbounded"
+      >
+        <name lang='fr'>groupe</name>
+        <userclass>User</userclass>
+        <description>
+          Group of mesh entities on which you wish to export variables. It is possible to include multiple options of
+          this type to export variables on several groups. If this option is not specified, the variables are output for
+          the entire mesh.
+        </description>
       </extended>
     </complex>
-    <complex type = "ExperimentalPythonPlugin" name="experimental-python-plugin" optional="true">
+    <complex type="ExperimentalPythonPlugin" name="experimental-python-plugin" optional="true">
       <description>
-	Python plugin for testing.
+        Python plugin for testing.
         WARNING: This option is experimental
       </description>
       <service-instance name="external-plugin"
@@ -224,5 +228,5 @@
                         allow-null="true"/>
       <simple name="function-name" type="string"/>
     </complex>
-  </options>  
+  </options>
 </module>

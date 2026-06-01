@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -97,21 +97,21 @@ class CartesianMeshGenerator
 
  private:
 
-  Real nxDelta(Real,int);
-  Real nyDelta(Real,int);
-  Real nzDelta(Real,int);
+  Real nxDelta(Real, int);
+  Real nyDelta(Real, int);
+  Real nzDelta(Real, int);
   Real xDelta(int);
   Real yDelta(int);
   Real zDelta(int);
 
  private:
 
-  void xScan(const Int64,Int32Array&,Int32Array&,Int64Array&,
-             Int64Array&,Int64Array&);
-  void yScan(const Integer, Int32Array&,Int32Array&,Int64Array&,
-             Int64Array&,Int64Array&,Int64,Int64);
-  void zScan(const Int64, Int32Array&,Int32Array&,Int64Array&,
-             Int64Array&,Int64Array&,Int64,Int64);
+  void xScan(const Int64, Int32Array&, Int32Array&, Int64Array&,
+             Int64Array&, Int64Array&);
+  void yScan(const Integer, Int32Array&, Int32Array&, Int64Array&,
+             Int64Array&, Int64Array&, Int64, Int64);
+  void zScan(const Int64, Int32Array&, Int32Array&, Int64Array&,
+             Int64Array&, Int64Array&, Int64, Int64);
 
  private:
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,32 +13,34 @@
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/EntryPoint.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/ITimeStats.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeHistoryMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/ITimeStats.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/std/ArcaneLoadBalance_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 #define OLD_LOADBALANCE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Load balancing module
  */
@@ -52,7 +54,7 @@ class ArcaneLoadBalanceModule
 
  public:
 
-  virtual VersionInfo versionInfo() const { return VersionInfo(1,0,0); }
+  virtual VersionInfo versionInfo() const { return VersionInfo(1, 0, 0); }
 
  public:
 
@@ -67,7 +69,7 @@ class ArcaneLoadBalanceModule
    */
   Real m_computation_time;
 #ifdef OLD_LOADBALANCE
-   Integer m_nb_weight;
+  Integer m_nb_weight;
   UniqueArray<float> m_cells_weight;
 #endif // OLD_LOADBALANCE
 
@@ -76,7 +78,7 @@ class ArcaneLoadBalanceModule
   void _checkInit();
   Real _computeImbalance();
 #ifdef OLD_LOADBALANCE
-   void _computeWeights(RealConstArrayView compute_times,Real max_compute_time);
+  void _computeWeights(RealConstArrayView compute_times, Real max_compute_time);
 #endif // OLD_LOADBALANCE
 };
 
@@ -91,11 +93,11 @@ ARCANE_REGISTER_MODULE_ARCANELOADBALANCE(ArcaneLoadBalanceModule);
 ArcaneLoadBalanceModule::
 ArcaneLoadBalanceModule(const ModuleBuildInfo& mb)
 : ArcaneArcaneLoadBalanceObject(mb)
-, m_elapsed_computation_time(VariableBuildInfo(this,"ArcaneLoadBalanceElapsedComputationTime",
-                                               IVariable::PNoDump|IVariable::PNoRestore))
+, m_elapsed_computation_time(VariableBuildInfo(this, "ArcaneLoadBalanceElapsedComputationTime",
+                                               IVariable::PNoDump | IVariable::PNoRestore))
 , m_computation_time(0.0)
 #ifdef OLD_LOADBALANCE
- , m_nb_weight(2)
+, m_nb_weight(2)
 #endif // OLD_LOADBALANCE
 {
 }
@@ -124,12 +126,12 @@ loadBalanceInit()
 void ArcaneLoadBalanceModule::
 _checkInit()
 {
-  if (options()->period()==0 || !options()->active()){
+  if (options()->period() == 0 || !options()->active()) {
     info() << "Load balance deactivated.";
     return;
   }
 
-  if (!subDomain()->parallelMng()->isParallel()){
+  if (!subDomain()->parallelMng()->isParallel()) {
     info() << "Load balance required but inactive during serial execution";
     return;
   }
@@ -149,41 +151,42 @@ checkLoadBalance()
   ISubDomain* sd = subDomain();
   Integer global_iteration = sd->commonVariables().globalIteration();
   int period = options()->period();
-  if (period==0)
+  if (period == 0)
     return;
-  if (global_iteration==0)
+  if (global_iteration == 0)
     return;
   if ((global_iteration % period) != 0)
     return;
-  
+
   Real imbalance = _computeImbalance();
 
   if (!options()->active())
     return;
-  if (imbalance<options()->maxImbalance())
+  if (imbalance < options()->maxImbalance())
     return;
   Real min_cpu_time = options()->minCpuTime();
-  if (min_cpu_time!=0 || m_computation_time<min_cpu_time)
+  if (min_cpu_time != 0 || m_computation_time < min_cpu_time)
     return;
 
   m_computation_time = 0;
   info() << "Program a mesh repartitioning";
 #ifdef OLD_LOADBALANCE
   IMeshPartitioner* p = options()->partitioner();
-  _computeWeights(p->computationTimes(),p->maximumComputationTime());
-  p->setCellsWeight(m_cells_weight,m_nb_weight);
+  _computeWeights(p->computationTimes(), p->maximumComputationTime());
+  p->setCellsWeight(m_cells_weight, m_nb_weight);
 #endif // OLD_LOADBALANCE
   subDomain()->timeLoopMng()->registerActionMeshPartition(options()->partitioner());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #ifdef OLD_LOADBALANCE
 /*!
  * \brief Calculates the weight of each mesh cell and stores it in m_cells_weight
  */
 void ArcaneLoadBalanceModule::
-_computeWeights(RealConstArrayView compute_times,Real max_compute_time)
+_computeWeights(RealConstArrayView compute_times, Real max_compute_time)
 {
   ISubDomain* sd = subDomain();
   IMesh* mesh = this->mesh();
@@ -194,20 +197,20 @@ _computeWeights(RealConstArrayView compute_times,Real max_compute_time)
   Integer nb_own_cell = own_cells.size();
   Integer nb_weight = m_nb_weight;
 
-  pm->allGather(IntegerConstArrayView(1,&nb_own_cell),global_nb_own_cell);
+  pm->allGather(IntegerConstArrayView(1, &nb_own_cell), global_nb_own_cell);
   //Integer total_nb_cell = 0;
 
   // compute_times[0] contains the global time (without tracking)
   // compute_times[1] contains the tracking time
   //Real max_compute_time = maximumComputationTime();
   //RealConstArrayView compute_times = computationTimes();
-  bool has_compute_time = compute_times.size()!=0;
-  bool has_cell_time = compute_times.size()==2;
+  bool has_compute_time = compute_times.size() != 0;
+  bool has_cell_time = compute_times.size() == 2;
   if (math::isZero(max_compute_time))
     max_compute_time = 1.0;
   Real compute_times0 = 1.0;
   Real compute_times1 = 0.0;
-  if (has_compute_time){
+  if (has_compute_time) {
     compute_times0 = compute_times[0];
     if (has_cell_time)
       compute_times1 = compute_times[1];
@@ -218,50 +221,50 @@ _computeWeights(RealConstArrayView compute_times,Real max_compute_time)
   Real time_ratio = compute_times0 / max_compute_time;
   Real time_ratio2 = compute_times1 / max_compute_time;
 
-  if (dump_info){
+  if (dump_info) {
     info() << " MAX_COMPUTE=" << max_compute_time;
     info() << " COMPUTE 0=" << compute_times0;
     info() << " COMPUTE 1=" << compute_times1;
     info() << " TIME RATIO 0=" << time_ratio;
     info() << " TIME RATIO 2=" << time_ratio2;
   }
-  Real proportional_time = compute_times0 / (nb_own_cell+1);
+  Real proportional_time = compute_times0 / (nb_own_cell + 1);
 
-  if (dump_info){
+  if (dump_info) {
     info() << " PROPORTIONAL TIME=" << proportional_time;
   }
 
   Real max_weight = 0.0;
   IItemFamily* cell_family = mesh->cellFamily();
-  m_cells_weight.resize(cell_family->maxLocalId()*nb_weight);
-  ENUMERATE_CELL(iitem,own_cells){
+  m_cells_weight.resize(cell_family->maxLocalId() * nb_weight);
+  ENUMERATE_CELL (iitem, own_cells) {
     const Cell& cell = *iitem;
     Real v0 = proportional_time;
     Real w = (v0);
-    if (dump_info && iitem.index()<10){
+    if (dump_info && iitem.index() < 10) {
       info() << "Weight " << ItemPrinter(cell)
              << " v0=" << v0
              << " w=" << w;
     }
     // For testing if we have a second weight, multiply it by i+1;
-    for( Integer i=0; i<nb_weight; ++i ){
-      m_cells_weight[(nb_weight*iitem->localId())+i] = (float)(w*((Real)(i+1)));
+    for (Integer i = 0; i < nb_weight; ++i) {
+      m_cells_weight[(nb_weight * iitem->localId()) + i] = (float)(w * ((Real)(i + 1)));
     }
-    if (w>max_weight)
+    if (w > max_weight)
       max_weight = w;
   }
 
-  Real total_max_weight = pm->reduce(Parallel::ReduceMax,max_weight);
+  Real total_max_weight = pm->reduce(Parallel::ReduceMax, max_weight);
   if (math::isZero(total_max_weight))
     total_max_weight = 1.0;
 
-  if (dump_info){
+  if (dump_info) {
     info() << " TOTAL MAX WEIGHT=" << total_max_weight;
   }
 
-  ENUMERATE_CELL(iitem,own_cells){
-    for( Integer i=0; i<nb_weight; ++i ){
-      Integer idx = (nb_weight*iitem->localId())+i;
+  ENUMERATE_CELL (iitem, own_cells) {
+    for (Integer i = 0; i < nb_weight; ++i) {
+      Integer idx = (nb_weight * iitem->localId()) + i;
       m_cells_weight[idx] = (float)(m_cells_weight[idx] / total_max_weight);
     }
   }
@@ -284,17 +287,17 @@ _computeImbalance()
 
   m_elapsed_computation_time = elapsed_computation_time;
 
-  if (options()->statistics()){
+  if (options()->statistics()) {
     // Optional:
     // Retrieves the computation time of each subdomain to output the history.
     // TODO: in this case, the standard reduce for min and max is unused -> delete it
     Integer nb_sub_domain = pm->commSize();
     RealUniqueArray compute_times(nb_sub_domain);
     Real my_time = computation_time;
-    RealConstArrayView my_time_a(1,&my_time);
-    pm->allGather(my_time_a,compute_times);
+    RealConstArrayView my_time_a(1, &my_time);
+    pm->allGather(my_time_a, compute_times);
     ITimeHistoryMng* thm = subDomain()->timeHistoryMng();
-    thm->addValue("SubDomainComputeTime",compute_times);
+    thm->addValue("SubDomainComputeTime", compute_times);
   }
 
   Real reduce_times[2];
@@ -303,7 +306,7 @@ _computeImbalance()
   // All replicas must have the same time information to start the partitioning
   // (even if only one replica performs the partitioning in the end, the request
   // operation must be collective)
-  subDomain()->allReplicaParallelMng()->reduce(Parallel::ReduceMin,RealArrayView(2,reduce_times));
+  subDomain()->allReplicaParallelMng()->reduce(Parallel::ReduceMin, RealArrayView(2, reduce_times));
   Real min_computation_time = reduce_times[0];
   Real max_computation_time = -reduce_times[1];
   if (math::isZero(max_computation_time))
@@ -314,7 +317,7 @@ _computeImbalance()
   computation_times[0] = computation_time;
 
   m_computation_time += max_computation_time;
-  
+
   Real ratio = computation_time / max_computation_time;
   Real imbalance = (max_computation_time - min_computation_time) / min_computation_time;
   info() << "Computing time used (" << pm->commRank() << ") :"
@@ -337,7 +340,7 @@ _computeImbalance()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

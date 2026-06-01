@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/FactoryService.h"
+#include "arcane/core/FactoryService.h"
 
 #include <linux/perf_event.h>
 #include <linux/hw_breakpoint.h>
@@ -76,7 +76,7 @@ class LinuxPerfPerformanceCounterService
     unsigned long flags = 0;
     long long_fd = syscall(__NR_perf_event_open, &attr, m_process_id, cpu, group_fd, flags);
     info(4) << "AddEvent type=" << attr.type << " id=" << attr.config << " fd=" << long_fd;
-    if (long_fd == (-1)){
+    if (long_fd == (-1)) {
       if (is_optional)
         return true;
       ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, strerror(errno));

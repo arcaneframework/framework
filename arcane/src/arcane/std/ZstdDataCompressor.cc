@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,9 +16,9 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/IDataCompressor.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/IDeflateService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IDeflateService.h"
 
 #include <zstd.h>
 // Necessary for zstd versions prior to 1.5.6.

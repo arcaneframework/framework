@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0"?>
 <service name="VtkPolyhedralMeshIO" type="caseoption">
   <description>Polyhedral Vtk mesh file reader</description>
   <interface name="ICaseMeshReader"/>

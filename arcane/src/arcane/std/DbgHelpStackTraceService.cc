@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,7 +43,8 @@ namespace Arcane
 
 class ARCANE_STD_EXPORT DbgHelpSymContainer
 {
-public:
+ public:
+
   void init()
   {
     _init();
@@ -55,7 +56,7 @@ public:
     _init();
     if (!m_is_good)
       return frames;
-    _getStack(first_function,frames);
+    _getStack(first_function, frames);
     return frames;
   }
   String getStackSymbols(ConstArrayView<StackFrame> frames)
@@ -64,6 +65,7 @@ public:
   }
 
  private:
+
   void _init()
   {
     if (m_is_init)
@@ -78,7 +80,9 @@ public:
   }
   void _getStack(int first_function, FixedStackFrameArray& frames);
   String _getStackSymbols(ConstArrayView<StackFrame> frames);
-private:
+
+ private:
+
   bool m_is_init = false;
   bool m_is_good = false;
 };
@@ -117,7 +121,7 @@ _getStackSymbols(ConstArrayView<StackFrame> frames)
     SYMBOL_INFO* info = (SYMBOL_INFO*)buffer;
     info->SizeOfStruct = sizeof(SYMBOL_INFO);
     info->MaxNameLen = 1024;
- 
+
     // Attempt to get information about the symbol and add it to our output parameter.
     DWORD64 displacement = 0;
     if (::SymFromAddr(::GetCurrentProcess(), addr, &displacement, info)) {
@@ -153,7 +157,7 @@ namespace
       m_sym_container = std::make_shared<DbgHelpSymContainer>();
     return m_sym_container;
   }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -181,21 +185,22 @@ class DbgHelpStackTraceService
 
  public:
 
-   void build() {}
+  void build() {}
 
  public:
 
-   StackTrace stackTrace(int first_function) override;
-   StackTrace stackTraceFunction(int function_index) override;
+  StackTrace stackTrace(int first_function) override;
+  StackTrace stackTraceFunction(int function_index) override;
 
  private:
-   std::shared_ptr<DbgHelpSymContainer> m_sym_container;
-   DbgHelpSymContainer* _getContainer()
-   {
-     if (!m_sym_container.get())
-       m_sym_container = _getStaticContainer();
-     return m_sym_container.get();
-   }
+
+  std::shared_ptr<DbgHelpSymContainer> m_sym_container;
+  DbgHelpSymContainer* _getContainer()
+  {
+    if (!m_sym_container.get())
+      m_sym_container = _getStaticContainer();
+    return m_sym_container.get();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -207,7 +212,7 @@ stackTrace(int first_function)
   DbgHelpSymContainer* c = _getContainer();
   FixedStackFrameArray frames = c->getStackFrames(first_function);
   String text = c->getStackSymbols(frames.view());
-  return StackTrace(frames,text);
+  return StackTrace(frames, text);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -254,6 +259,7 @@ class DbgHelpSymbolizerService
   }
 
  private:
+
   std::shared_ptr<DbgHelpSymContainer> m_sym_container;
   DbgHelpSymContainer* _getContainer()
   {
@@ -267,11 +273,11 @@ class DbgHelpSymbolizerService
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(DbgHelpStackTraceService,
-                        ServiceProperty("DbgHelpStackTraceService",ST_Application),
+                        ServiceProperty("DbgHelpStackTraceService", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IStackTraceService));
 
 ARCANE_REGISTER_SERVICE(DbgHelpSymbolizerService,
-                        ServiceProperty("DbgHelpSymbolizerService",ST_Application),
+                        ServiceProperty("DbgHelpSymbolizerService", ST_Application),
                         ARCANE_SERVICE_INTERFACE(ISymbolizerService));
 
 ARCANE_DI_REGISTER_PROVIDER(DbgHelpStackTraceService,

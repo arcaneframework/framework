@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,8 +45,9 @@ struct MetisGraph
 class MetisGraphView
 {
  public:
-  MetisGraphView()  = default;
-  
+
+  MetisGraphView() = default;
+
   MetisGraphView(MetisGraph& graph)
   : nb_vertices(graph.nb_vertices)
   , have_vsize(graph.have_vsize)
@@ -58,7 +59,9 @@ class MetisGraphView
   , adjwgt(graph.adjwgt)
   , part(graph.part)
   {}
+
  public:
+
   int nb_vertices = 0;
   bool have_vsize = false;
   bool have_adjwgt = false;

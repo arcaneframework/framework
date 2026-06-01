@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -555,7 +555,7 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
 
-    if (entity_type==MSH_PNT){
+    if (entity_type == MSH_PNT) {
       // If the type is a point, the processing seems
       // a bit particular. In this case, there are
       // two integers in the next line:
@@ -566,7 +566,7 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
       info(4) << "Adding unique node uid=" << item_unique_id;
       block.uids.add(item_unique_id);
     }
-    else{
+    else {
       for (Integer i = 0; i < nb_entity_in_block; ++i) {
         Int64 item_unique_id = ios_file.getInt64();
         block.uids.add(item_unique_id);
@@ -719,7 +719,7 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
       Int32 entity_physical_tag = entity->physical_tag;
       physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
-    else{
+    else {
       MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim, block_entity_tag);
       if (!entity) {
         info(5) << "[Groups] Skipping block index=" << block_index
@@ -867,15 +867,15 @@ _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
   info(4) << "Adding " << nodes_id.size() << " nodes from block index=" << block.index
           << " to group '" << node_group.name() << "'";
 
-  if (nb_entity<10){
+  if (nb_entity < 10) {
     info(4) << "Nodes UIDS=" << block.uids;
     info(4) << "Nodes LIDS=" << nodes_id;
   }
   node_group.addItems(nodes_id);
 
-  if (nb_entity<10){
+  if (nb_entity < 10) {
     VariableNodeReal3& coords(mesh->nodesCoordinates());
-    ENUMERATE_(Node,inode,node_group){
+    ENUMERATE_ (Node, inode, node_group) {
       info(4) << "Node id=" << ItemPrinter(*inode) << " coord=" << coords[inode];
     }
   }
@@ -1183,21 +1183,21 @@ createMshParallelMeshReader(ITraceMng* tm);
 namespace
 {
 
-Ref<IMshMeshReader>
-_internalCreateReader(ITraceMng* tm)
-{
-  bool use_new_reader = true;
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
-    use_new_reader = (v.value()!=0);
-  Ref<IMshMeshReader> reader;
-  if (use_new_reader)
-    reader = createMshParallelMeshReader(tm);
-  else
-    reader = createMshMeshReader(tm);
-  return reader;
-}
+  Ref<IMshMeshReader>
+  _internalCreateReader(ITraceMng* tm)
+  {
+    bool use_new_reader = true;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
+      use_new_reader = (v.value() != 0);
+    Ref<IMshMeshReader> reader;
+    if (use_new_reader)
+      reader = createMshParallelMeshReader(tm);
+    else
+      reader = createMshMeshReader(tm);
+    return reader;
+  }
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

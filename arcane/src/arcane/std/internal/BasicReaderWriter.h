@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -8,7 +8,6 @@
 /* BasicReaderWriter.h                                         (C) 2000-2024 */
 /*                                                                           */
 /* Simple Reading/Writing.                                                   */
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_BASICREADERWRITER_H
 #define ARCANE_STD_INTERNAL_BASICREADERWRITER_H
@@ -43,7 +42,7 @@ class ISerializedData;
 class IParallelMng;
 class ParallelDataWriter;
 class ParallelDataReader;
-}
+} // namespace Arcane
 
 namespace Arcane::impl
 {
@@ -98,7 +97,7 @@ class IGenericReader
   virtual void readItemGroup(const String& group_name, Int64Array& written_unique_ids,
                              Int64Array& wanted_unique_ids) = 0;
   virtual String comparisonHashValue(const String& var_full_name) const = 0;
-  virtual const VariableDataInfoMap& variablesDataInfoMap() const =0;
+  virtual const VariableDataInfoMap& variablesDataInfoMap() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

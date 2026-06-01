@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -30,10 +30,9 @@ namespace Arcane
 
 namespace
 {
-MD5HashAlgorithm hash_algo;
-const Integer idx_t_size = sizeof(idx_t);
-const Integer real_t_size = sizeof(real_t);
-
+  MD5HashAlgorithm hash_algo;
+  const Integer idx_t_size = sizeof(idx_t);
+  const Integer real_t_size = sizeof(real_t);
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -103,6 +102,7 @@ _computeHash(Span<const real_t> data, ByteArray& output, const char* name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #define COMPUTE_HASH1(array, output) _computeHash(array, output, #array)
 #define COMPUTE_HASH(array, n, output) _computeHash({ array, n }, output, #array)
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,19 +20,23 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
-#include "arcane/IPhysicalUnitSystemService.h"
-#include "arcane/IPhysicalUnitSystem.h"
-#include "arcane/IPhysicalUnitConverter.h"
-#include "arcane/IPhysicalUnit.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IPhysicalUnitSystemService.h"
+#include "arcane/core/IPhysicalUnitSystem.h"
+#include "arcane/core/IPhysicalUnitConverter.h"
+#include "arcane/core/IPhysicalUnit.h"
 
 #include <udunits2.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class UdunitsPhysicalUnitConverter;
 class UdunitsPhysicalUnit;
@@ -50,7 +54,7 @@ class UdunitsPhysicalUnit
 
  public:
 
-  UdunitsPhysicalUnit(UdunitsPhysicalUnitSystem*,::ut_unit* unit,
+  UdunitsPhysicalUnit(UdunitsPhysicalUnitSystem*, ::ut_unit* unit,
                       const String& name)
   : m_unit(unit)
   {
@@ -92,8 +96,11 @@ class UdunitsPhysicalUnitConverter
                                UdunitsPhysicalUnit* from_unit,
                                UdunitsPhysicalUnit* to_unit,
                                ::cv_converter* converter)
-  : m_from_unit(from_unit), m_to_unit(to_unit), m_is_from_owned(true),
-    m_is_to_owned(true), m_converter(converter)
+  : m_from_unit(from_unit)
+  , m_to_unit(to_unit)
+  , m_is_from_owned(true)
+  , m_is_to_owned(true)
+  , m_converter(converter)
   {
   }
 
@@ -109,7 +116,7 @@ class UdunitsPhysicalUnitConverter
 
   virtual Real convert(Real value)
   {
-    double new_value = cv_convert_double(m_converter,value);
+    double new_value = cv_convert_double(m_converter, value);
     return new_value;
   }
 
@@ -118,9 +125,9 @@ class UdunitsPhysicalUnitConverter
   {
     Integer nb = input_values.size();
     Integer nb_out = output_values.size();
-    if (nb!=nb_out)
-      throw ArgumentException(A_FUNCINFO,"input and ouput arrays do not have the same number of elements");
-    cv_convert_doubles(m_converter,input_values.data(),nb,output_values.data());
+    if (nb != nb_out)
+      throw ArgumentException(A_FUNCINFO, "input and ouput arrays do not have the same number of elements");
+    cv_convert_doubles(m_converter, input_values.data(), nb, output_values.data());
   }
 
   virtual IPhysicalUnit* fromUnit()
@@ -133,9 +140,8 @@ class UdunitsPhysicalUnitConverter
     return m_to_unit;
   }
 
- public:
-
  private:
+
   UdunitsPhysicalUnit* m_from_unit;
   UdunitsPhysicalUnit* m_to_unit;
   bool m_is_from_owned;
@@ -153,7 +159,8 @@ class UdunitsPhysicalUnitSystem
  public:
 
   UdunitsPhysicalUnitSystem(ITraceMng* tm)
-  : TraceAccessor(tm), m_unit_system(0)
+  : TraceAccessor(tm)
+  , m_unit_system(0)
   {
   }
 
@@ -163,37 +170,37 @@ class UdunitsPhysicalUnitSystem
       ut_free_system(m_unit_system);
   }
 
-  virtual IPhysicalUnitConverter* createConverter(IPhysicalUnit* from,IPhysicalUnit* to)
+  virtual IPhysicalUnitConverter* createConverter(IPhysicalUnit* from, IPhysicalUnit* to)
   {
     // Normally already created.
     _checkCreateUnitSystem();
     UdunitsPhysicalUnit* from_unit = dynamic_cast<UdunitsPhysicalUnit*>(from);
     UdunitsPhysicalUnit* to_unit = dynamic_cast<UdunitsPhysicalUnit*>(to);
     if (!from_unit || !to_unit)
-      throw ArgumentException(A_FUNCINFO,"can not convert units to this system unit");
-    return _createConverter(from_unit,to_unit);
+      throw ArgumentException(A_FUNCINFO, "can not convert units to this system unit");
+    return _createConverter(from_unit, to_unit);
   }
 
-  virtual IPhysicalUnitConverter* createConverter(const String& from,const String& to)
+  virtual IPhysicalUnitConverter* createConverter(const String& from, const String& to)
   {
     info() << "Create unit converter from='" << from << "' to='" << to << "'";
     _checkCreateUnitSystem();
     UdunitsPhysicalUnit* from_unit = _createUnit(from);
     UdunitsPhysicalUnit* to_unit = _createUnit(to);
     //TODO: destroy units in case of error.
-    return _createConverter(from_unit,to_unit);
+    return _createConverter(from_unit, to_unit);
   }
 
  private:
-  
-  UdunitsPhysicalUnitConverter* _createConverter(UdunitsPhysicalUnit* from_unit,UdunitsPhysicalUnit* to_unit)
+
+  UdunitsPhysicalUnitConverter* _createConverter(UdunitsPhysicalUnit* from_unit, UdunitsPhysicalUnit* to_unit)
   {
-    ::cv_converter* cv_cvt = ::ut_get_converter(from_unit->m_unit,to_unit->m_unit);
+    ::cv_converter* cv_cvt = ::ut_get_converter(from_unit->m_unit, to_unit->m_unit);
     if (!cv_cvt)
       throw FatalErrorException(A_FUNCINFO,
                                 String::format("Can not convert from '{0}' to '{1}' because units are not convertible",
-                                               from_unit->name(),to_unit->name()));
-    UdunitsPhysicalUnitConverter* cvt = new UdunitsPhysicalUnitConverter(this,from_unit,to_unit,cv_cvt);
+                                               from_unit->name(), to_unit->name()));
+    UdunitsPhysicalUnitConverter* cvt = new UdunitsPhysicalUnitConverter(this, from_unit, to_unit, cv_cvt);
     return cvt;
   }
 
@@ -203,19 +210,16 @@ class UdunitsPhysicalUnitSystem
     if (!m_unit_system)
       m_unit_system = ut_read_xml(0);
     if (!m_unit_system)
-      throw FatalErrorException(A_FUNCINFO,"Can not load unit system");
+      throw FatalErrorException(A_FUNCINFO, "Can not load unit system");
   }
 
   UdunitsPhysicalUnit* _createUnit(const String& name)
   {
-    ::ut_unit* unit = ut_parse(m_unit_system,(const char*)name.utf8().data(),UT_UTF8);
+    ::ut_unit* unit = ut_parse(m_unit_system, (const char*)name.utf8().data(), UT_UTF8);
     if (!unit)
-      throw FatalErrorException(A_FUNCINFO,String::format("Can not create unit from string '{0}'",name));
-    return new UdunitsPhysicalUnit(this,unit,name);
+      throw FatalErrorException(A_FUNCINFO, String::format("Can not create unit from string '{0}'", name));
+    return new UdunitsPhysicalUnit(this, unit, name);
   }
-
- public:
-  
 
  private:
 
@@ -248,9 +252,6 @@ class UdunitsUnitSystemService
     UdunitsPhysicalUnitSystem* s = new UdunitsPhysicalUnitSystem(traceMng());
     return s;
   }
-
- private:
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -286,7 +287,7 @@ ARCANE_REGISTER_APPLICATION_FACTORY(UdunitsUnitSystemService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

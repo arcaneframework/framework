@@ -1,114 +1,115 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
-<service name="ArcaneCasePartitioner" type="caseoption" version="1.0" namespace-macro-name="ARCANE" >
- <name lang='fr'>partitionneur-cas</name>
+﻿<?xml version="1.0" ?>
+<service name="ArcaneCasePartitioner" type="caseoption" version="1.0" namespace-macro-name="ARCANE">
+  <name lang='fr'>partitionneur-cas</name>
   <userclass>User</userclass>
- <description>
- </description>
+  <description>
+  </description>
 
- <interface name="Arcane::IDirectExecution" />
-    
- <variables>
- </variables>
+  <interface name="Arcane::IDirectExecution"/>
 
- <options>
-      
-  <simple
-   name = "nb-cut-part"
-   type = "int32"
-   default = "0"
-  >
-   <name lang='fr'>nb-partie-decoupees</name>
-  <userclass>User</userclass>
-   <description>
-Cuts the mesh into this number of parts.
-   </description>
-  </simple>
+  <variables>
+  </variables>
 
-  <simple
-   name = "library"
-   type = "string"
-   default = "DefaultPartitioner"
-  >
-   <name lang='fr'>bibliotheque</name>
-  <userclass>User</userclass>
-   <description>
-Name of the library to use for partitioning (Metis, Zoltan or PTScotch)
-   </description>
-  </simple>
+  <options>
+
+    <simple
+      name="nb-cut-part"
+      type="int32"
+      default="0"
+    >
+      <name lang='fr'>nb-partie-decoupees</name>
+      <userclass>User</userclass>
+      <description>
+        Cuts the mesh into this number of parts.
+      </description>
+    </simple>
+
+    <simple
+      name="library"
+      type="string"
+      default="DefaultPartitioner"
+    >
+      <name lang='fr'>bibliotheque</name>
+      <userclass>User</userclass>
+      <description>
+        Name of the library to use for partitioning (Metis, Zoltan or PTScotch)
+      </description>
+    </simple>
 
 
-  <extended 
-   name = "constraints"
-   type = "ItemGroup"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>indivisible</name>
-  <userclass>User</userclass>
-   <description>
-Groups of entities not to be cut
-   </description>
-  </extended>
+    <extended
+      name="constraints"
+      type="ItemGroup"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <name lang='fr'>indivisible</name>
+      <userclass>User</userclass>
+      <description>
+        Groups of entities not to be cut
+      </description>
+    </extended>
 
-  <!-- Allows the creation of the Correspondence file (global IDs for nds and cells, per domain) -->
-  <simple
-   name = "create-correspondances"
-   type     = "bool"
-   default  = "false"
-  >
-   <name lang='fr'>correspondance</name>
-  <userclass>User</userclass>
-   <description>Creation of the Correspondence file</description>
-  </simple>
+    <!-- Allows the creation of the Correspondence file (global IDs for nds and cells, per domain) -->
+    <simple
+      name="create-correspondances"
+      type="bool"
+      default="false"
+    >
+      <name lang='fr'>correspondance</name>
+      <userclass>User</userclass>
+      <description>Creation of the Correspondence file</description>
+    </simple>
 
-  <!-- Number of ghost mesh layers -->
-  <simple
-   name = "nb-ghost-layer"
-   type = "int32"
-   default = "0"
-  >
-   <name lang='fr'>nb-couches-fantomes</name>
-  <userclass>User</userclass>
-   <description>
-Number of ghost mesh layers.
-   </description>
-  </simple>
+    <!-- Number of ghost mesh layers -->
+    <simple
+      name="nb-ghost-layer"
+      type="int32"
+      default="0"
+    >
+      <name lang='fr'>nb-couches-fantomes</name>
+      <userclass>User</userclass>
+      <description>
+        Number of ghost mesh layers.
+      </description>
+    </simple>
 
-  <!-- Name of the service for writing the final mesh -->
-  <simple
-   name = "writer-service-name"
-   type = "string"
-  >
-   <name lang='fr'>nom-service-ecriture</name>
-  <userclass>User</userclass>
-   <description>
-Name of the service used to write the output meshes.
-   </description>
-  </simple>
+    <!-- Name of the service for writing the final mesh -->
+    <simple
+      name="writer-service-name"
+      type="string"
+    >
+      <name lang='fr'>nom-service-ecriture</name>
+      <userclass>User</userclass>
+      <description>
+        Name of the service used to write the output meshes.
+      </description>
+    </simple>
 
-  <!-- Name of the service for writing the final mesh -->
-  <simple
-   name = "mesh-file-name-pattern"
-   type = "string"
-   default= "CPU%05d"
-  >
-   <name lang='fr'>patron-nom-fichier-maillage</name>
-  <userclass>User</userclass>
-   <description>
-Pattern used to generate the mesh file name. The syntax is that of the C printf function and %d is replaced by the part number.
-   </description>
-  </simple>
+    <!-- Name of the service for writing the final mesh -->
+    <simple
+      name="mesh-file-name-pattern"
+      type="string"
+      default="CPU%05d"
+    >
+      <name lang='fr'>patron-nom-fichier-maillage</name>
+      <userclass>User</userclass>
+      <description>
+        Pattern used to generate the mesh file name. The syntax is that of the C printf function and %d is replaced by
+        the part number.
+      </description>
+    </simple>
 
-  <!-- Output file for non-regression -->
-  <!-- <service-instance
-   name = "tool"
-   type = "Arcane::IDirectExecution"
-  >
-   <name lang='fr'>tool</name>
-   <description>
-Tool to execute
-   </description>
-  </service-instance>  -->
- </options>
+    <!-- Output file for non-regression -->
+    <!-- <service-instance
+      name="tool"
+      type="Arcane::IDirectExecution"
+    >
+      <name lang='fr'>tool</name>
+      <description>
+        Tool to execute
+      </description>
+    </service-instance> -->
+  </options>
 
 </service>

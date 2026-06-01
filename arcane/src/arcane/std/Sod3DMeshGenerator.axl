@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="Sod3DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>

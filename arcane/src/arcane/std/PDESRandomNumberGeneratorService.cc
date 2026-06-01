@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ generateRandomSeed(Integer leap)
 ByteUniqueArray PDESRandomNumberGeneratorService::
 generateRandomSeed(ByteArrayView parent_seed, Integer leap)
 {
-  if(parent_seed.size() != m_size_of_seed) {
+  if (parent_seed.size() != m_size_of_seed) {
     ARCANE_FATAL("Erreur de taille de graine.");
   }
   Int64* i_seed = (Int64*)parent_seed.data();
@@ -112,7 +112,7 @@ generateRandomNumber(Integer leap)
 Real PDESRandomNumberGeneratorService::
 generateRandomNumber(ByteArrayView seed, Integer leap)
 {
-  if(seed.size() != m_size_of_seed) {
+  if (seed.size() != m_size_of_seed) {
     ARCANE_FATAL("Erreur de taille de graine.");
   }
   Int64* i_seed = (Int64*)seed.data();
