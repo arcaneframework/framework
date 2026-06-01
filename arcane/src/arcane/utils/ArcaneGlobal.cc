@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArcaneGlobal.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales de Arcane.                                         */
+/* General declarations for Arcane.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,9 +23,9 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/IMemoryInfo.h"
 
-// Ces includes ne sont pas utilisés par ce fichier
-// mais il faut au moins les lire une fois sous Windows
-// pour que les symboles externes soient créés
+// These includes are not used by this file
+// but they must at least be read once under Windows
+// for external symbols to be created
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/IFunctorWithAddress.h"
 #include "arcane/utils/IRangeFunctor.h"
@@ -41,19 +41,21 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file utils/ArcaneGlobal.h
  *
- * \brief Fichier de configuration d'Arcane.
+ * \brief Arcane configuration file.
  */
 /*!
  * \namespace Arcane
  *
- * \brief Espace de nom d'Arcane.
+ * \brief Arcane namespace.
  *
- * Toutes les classes et types utilisés dans \b Arcane sont dans ce
+ * All classes and types used in \b Arcane are in this
  * namespace.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,27 +66,27 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError(Int32 i,Int32 max_size)
+arcaneRangeError(Int32 i, Int32 max_size)
 {
   arcaneDebugPause("arcaneRangeError");
-  throw IndexOutOfRangeException(A_FUNCINFO,String(),i,0,max_size);
+  throw IndexOutOfRangeException(A_FUNCINFO, String(), i, 0, max_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError(Int64 i,Int64 max_size)
+arcaneRangeError(Int64 i, Int64 max_size)
 {
   arcaneDebugPause("arcaneRangeError");
-  throw IndexOutOfRangeException(A_FUNCINFO,String(),i,0,max_size);
+  throw IndexOutOfRangeException(A_FUNCINFO, String(), i, 0, max_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-_internalArcaneMathError(long double value,const char* funcname)
+_internalArcaneMathError(long double value, const char* funcname)
 {
   cerr << "** FATAL: Argument error for a mathematical operation:\n";
   cerr << "** FATAL: Argument: " << value << '\n';
@@ -98,7 +100,7 @@ _internalArcaneMathError(long double value,const char* funcname)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-_internalArcaneMathError(long double value1,long double value2,const char* funcname)
+_internalArcaneMathError(long double value1, long double value2, const char* funcname)
 {
   cerr << "** FATAL: Argument error for a mathematical operation:\n";
   cerr << "** FATAL: Argument1: " << value1 << '\n';
@@ -113,8 +115,8 @@ _internalArcaneMathError(long double value1,long double value2,const char* funcn
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneNotYetImplemented(const char* file,const char* func,
-                        unsigned long line,const char* text)
+arcaneNotYetImplemented(const char* file, const char* func,
+                        unsigned long line, const char* text)
 {
   cerr << file << ':' << func << ':' << line << '\n';
   cerr << "sorry, functionality not yet implemented";
@@ -132,16 +134,16 @@ arcaneNullPointerError()
   cerr << "** FATAL: null pointer.\n";
   cerr << "** FATAL: Trying to dereference a null pointer.\n";
   arcaneDebugPause("arcaneNullPointerPtr");
-  throw FatalErrorException(A_FUNCINFO,"null pointer");
+  throw FatalErrorException(A_FUNCINFO, "null pointer");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneThrowNullPointerError(const char* ptr_name,const char* text)
+arcaneThrowNullPointerError(const char* ptr_name, const char* text)
 {
-  throw FatalErrorException(A_FUNCINFO,text ? text : ptr_name);
+  throw FatalErrorException(A_FUNCINFO, text ? text : ptr_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -150,45 +152,45 @@ arcaneThrowNullPointerError(const char* ptr_name,const char* text)
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long long size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long long size)
 {
-  ARCANE_THROW_IF( (size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
-  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
+  ARCANE_THROW_IF((size < 0), ArgumentException, "invalid negative value '{0}' for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
-  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
+  ARCANE_THROW_IF((size < 0), ArgumentException, "invalid negative value '{0}' for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned int size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(int size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
-  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
+  ARCANE_THROW_IF((size < 0), ArgumentException, "invalid negative value '{0}' for Array size", size);
   return static_cast<Integer>(size);
 }
 
@@ -196,14 +198,14 @@ arcaneCheckArraySize(int size)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneCheckAlignment(const void* ptr,Integer alignment)
+arcaneCheckAlignment(const void* ptr, Integer alignment)
 {
-  if (alignment<=0)
+  if (alignment <= 0)
     return;
   Int64 iptr = (intptr_t)ptr;
   Int64 modulo = iptr % alignment;
-  if (modulo!=0)
-    throw BadAlignmentException(A_FUNCINFO,ptr,alignment);
+  if (modulo != 0)
+    throw BadAlignmentException(A_FUNCINFO, ptr, alignment);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,77 +223,77 @@ arcaneSizeWithPadding(Integer size)
 /*!
  * \defgroup Collection Collection
  *
- * \brief Classes collections.
+ * \brief Collection classes.
  *
- * Les collections sont les classes %Arcane qui gèrent un ensemble d'objet.
- * En général, la collection la plus utilisée est le tableau. Pour
- * plus de renseignements, se reporter à la page \ref arcanedoc_core_types_array_usage.
+ * Collections are %Arcane classes that manage a set of objects.
+ * Generally, the most used collection is the array. For
+ * more information, refer to the page \ref arcanedoc_core_types_array_usage.
  */
 
 /*!
  * \defgroup Module Module
  *
- * \brief Classes des modules
+ * \brief Module classes
  */
 
 /*!
  * \defgroup Core Core
  *
- * \brief Classes du noyau
+ * \brief Core classes
  */
 
 /*!
  * \defgroup CaseOption CaseOption
  *
- * \brief Classes du jeu de données
+ * \brief Data set classes
  */
 
 /*!
  * \defgroup Mesh Mesh
  *
- * \brief Classes du maillage
+ * \brief Mesh classes
  */
 
 /*!
  * \defgroup Variable Variable
  *
- * \brief Classes liées aux variables
+ * \brief Variable-related classes
  */
 
 /*!
  * \defgroup Parallel Parallel
  *
- * \brief Classes liées aux parallélisme
+ * \brief Parallelism-related classes
  */
 
 /*!
  * \defgroup Xml Xml
  *
- * \brief Classes liées à XML.
+ * \brief XML-related classes.
  */
 
 /*!
  * \defgroup StandardService StandardService
  *
- * \brief Services standards
+ * \brief Standard services
  */
 
 /*!
  * \defgroup IO IO
  *
- * \brief Gestion des entrées/sorties
+ * \brief Input/output management
  */
 
 /*!
  * \defgroup Math Math
  *
- * \brief Fonctions mathématiques
+ * \brief Mathematical functions
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

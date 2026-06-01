@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Exception.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations et définitions liées aux exceptions.                         */
+/* Declarations and definitions related to exceptions.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_EXCEPTION_H
 #define ARCANE_UTILS_EXCEPTION_H
@@ -21,8 +21,8 @@
 
 #include <functional>
 
-// TODO: Rendre ces méthode obsolète fin 2026 et indiquer qu'il faut
-// utiliser ExceptionUtils à la place.
+// TODO: Make these methods obsolete by the end of 2026 and indicate that
+// ExceptionUtils should be used instead.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,24 +34,25 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
-arcanePrintAnyException(ITraceMng* msg,bool is_no_continue = true);
+arcanePrintAnyException(ITraceMng* msg, bool is_no_continue = true);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
-arcanePrintStdException(const std::exception& ex,ITraceMng* msg,bool is_no_continue = true);
+arcanePrintStdException(const std::exception& ex, ITraceMng* msg, bool is_no_continue = true);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
-arcanePrintArcaneException(const Exception& ex,ITraceMng* msg,bool is_no_continue = true);
+arcanePrintArcaneException(const Exception& ex, ITraceMng* msg, bool is_no_continue = true);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \ brief Appelle la fonction \a function en récupérant les éventuelles exceptions.
+ * \brief Calls the function \a function while catching potential exceptions.
  *
  * Usage:
  *
@@ -59,16 +60,16 @@ arcanePrintArcaneException(const Exception& ex,ITraceMng* msg,bool is_no_continu
  * arcaneCallAndCatchException([&]() { std::cout << "Hello\n"});
  * \endcode
  *
- * \return 0 si aucune exception n'est récupérée et une valeur positive dans
- * le cas contraire.
+ * \return 0 if no exception is caught and a positive value otherwise.
  */
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCallFunctionAndCatchException(std::function<void()> function);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \ brief Appelle la fonction \a function et en cas d'exception appelle std::terminate().
+ * \brief Calls the function \a function and calls std::terminate() if an exception occurs.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneCallFunctionAndTerminateIfThrow(std::function<void()> function);

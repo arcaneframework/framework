@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -127,29 +127,29 @@ TEST(NumArray, Basic)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(NumArray,Basic2)
+TEST(NumArray, Basic2)
 {
   std::cout << "TEST_NUMARRAY Basic2\n";
 
-  NumArray<Real,MDDim1> array1;
+  NumArray<Real, MDDim1> array1;
   array1.resize(2);
   array1(1) = 5.0;
   std::cout << " V=" << array1(1) << "\n";
 
-  NumArray<Real,MDDim2> array2;
-  array2.resize(2,3);
-  array2(1,2) = 5.0;
-  std::cout << " V=" << array2(1,2) << "\n";
+  NumArray<Real, MDDim2> array2;
+  array2.resize(2, 3);
+  array2(1, 2) = 5.0;
+  std::cout << " V=" << array2(1, 2) << "\n";
 
-  NumArray<Real,MDDim3> array3(2,3,4);
-  array3.resize(2,3,4);
-  array3(1,2,3) = 5.0;
-  std::cout << " V=" << array3(1,2,3) << "\n";
+  NumArray<Real, MDDim3> array3(2, 3, 4);
+  array3.resize(2, 3, 4);
+  array3(1, 2, 3) = 5.0;
+  std::cout << " V=" << array3(1, 2, 3) << "\n";
 
-  NumArray<Real,MDDim4> array4(2,3,4,5);
-  array4.resize(2,3,4,5);
-  array4(1,2,3,4) = 5.0;
-  std::cout << " V=" << array4(1,2,3,4) << "\n";
+  NumArray<Real, MDDim4> array4(2, 3, 4, 5);
+  array4.resize(2, 3, 4, 5);
+  array4(1, 2, 3, 4) = 5.0;
+  std::cout << " V=" << array4(1, 2, 3, 4) << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -190,65 +190,63 @@ TEST(NumArray, Extents)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(NumArray3,Misc)
+TEST(NumArray3, Misc)
 {
   constexpr int nb_x = 3;
   constexpr int nb_y = 4;
   constexpr int nb_z = 5;
 
-  NumArray<Int64,MDDim3> v(nb_x,nb_y,nb_z);
+  NumArray<Int64, MDDim3> v(nb_x, nb_y, nb_z);
   v.fill(0);
-  // Attention, v.extents() change si 'v' est redimensionné
+  // Note, v.extents() changes if 'v' is resized
   auto v_extents = v.extentsWithOffset();
   {
-    for( Int32 x=0, xn=v.dim1Size(); x<xn; ++x ){
-      for( Int32 y=0, yn=v.dim2Size(); y<yn; ++y ){
-        for( Int32 z=0, zn=v.dim3Size(); z<zn; ++z ){
-          ArrayIndex<3> idx{x,y,z};
+    for (Int32 x = 0, xn = v.dim1Size(); x < xn; ++x) {
+      for (Int32 y = 0, yn = v.dim2Size(); y < yn; ++y) {
+        for (Int32 z = 0, zn = v.dim3Size(); z < zn; ++z) {
+          ArrayIndex<3> idx{ x, y, z };
           Int64 offset = v_extents.offset(idx);
-          v(x,y,z) = offset;
-          v({x,y,z}) = offset;
+          v(x, y, z) = offset;
+          v({ x, y, z }) = offset;
           v(idx) = offset;
         }
       }
     }
   }
   std::cout << "CAPACITY V1=" << v.capacity() << "\n";
-  v.resize(4,5,6);
+  v.resize(4, 5, 6);
   std::cout << "CAPACITY V2=" << v.capacity() << "\n";
-  v.resize(2,7,9);
+  v.resize(2, 7, 9);
   std::cout << "CAPACITY V3=" << v.capacity() << "\n";
-  v.resize(3,2,6);
+  v.resize(3, 2, 6);
   std::cout << "CAPACITY V4=" << v.capacity() << "\n";
 
-  // NOTE: désactive temporairement le test tant que la méthode
-  // resize() de 'NumArray' ne conserve pas les valeurs
+  // NOTE: temporarily disables the test until the method
+  // resize() of 'NumArray' preserves values
 #if NUMARRAY_HAS_VALID_RESIZE
-  // Les valeurs ci-dessous dépendent de l'implémentation actuelle
-  // de NumArray::resize(). Je ne suis pas sur qu'il soit valide de les
-  // tester
-  std::vector<Int64> valid_values =
-  {
+  // The values below depend on the current implementation
+  // of NumArray::resize(). I am not sure it is valid to test them
+  std::vector<Int64> valid_values = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
     20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    24 , 25, 26, 27, 28, 29, 20 , 21, 22, 23, 24, 25
+    24, 25, 26, 27, 28, 29, 20, 21, 22, 23, 24, 25
   };
-  ASSERT_EQ(valid_values.size(),(size_t)36);
+  ASSERT_EQ(valid_values.size(), (size_t)36);
 
   v_extents = v.extentsWithOffset();
   Int64 index = 0;
-  for( Int64 x=0, xn=v.dim1Size(); x<xn; ++x ){
-    for( Int64 y=0, yn=v.dim2Size(); y<yn; ++y ){
-      for( Int64 z=0, zn=v.dim3Size(); z<zn; ++z ){
-        ArrayBoundsIndex<3> idx{x,y,z};
+  for (Int64 x = 0, xn = v.dim1Size(); x < xn; ++x) {
+    for (Int64 y = 0, yn = v.dim2Size(); y < yn; ++y) {
+      for (Int64 z = 0, zn = v.dim3Size(); z < zn; ++z) {
+        ArrayBoundsIndex<3> idx{ x, y, z };
         Int64 offset = v_extents.offset(idx);
-        Int64 val1 = v(x,y,z);
-        Int64 val2 = v({x,y,z});
+        Int64 val1 = v(x, y, z);
+        Int64 val2 = v({ x, y, z });
         std::cout << "XYZ=" << x << " " << y << " " << z
                   << " V=" << val1 << " offset=" << offset << "\n";
-        ASSERT_EQ(index,offset);
-        ASSERT_EQ(val1,val2);
-        ASSERT_EQ(valid_values.at(offset),val1);
+        ASSERT_EQ(index, offset);
+        ASSERT_EQ(val1, val2);
+        ASSERT_EQ(valid_values.at(offset), val1);
         ++index;
       }
     }
@@ -261,16 +259,16 @@ TEST(NumArray3,Misc)
 
 namespace
 {
-NumArray<int,MDDim1> _createNumArray(Int32 size)
+NumArray<int, MDDim1> _createNumArray(Int32 size)
 {
   std::cout << "IN_CREATE_1\n";
-  NumArray<int,MDDim1> a(size);
+  NumArray<int, MDDim1> a(size);
   std::cout << "IN_CREATE_2\n";
-  for(Int32 i=0; i<size; ++i )
-    a(i) = size+i+2;
+  for (Int32 i = 0; i < size; ++i)
+    a(i) = size + i + 2;
   return a;
 }
-}
+} // namespace
 TEST(NumArray3, Copy)
 {
   int nb_x = 3;
@@ -313,137 +311,135 @@ TEST(NumArray3, Copy)
   }
 }
 
-TEST(NumArray3,Move)
+TEST(NumArray3, Move)
 {
   // Test NumArray::NumArray(NumArray&&)
   {
     std::cout << "PART_1\n";
-    NumArray<Int32,MDDim1> test_move(5);
+    NumArray<Int32, MDDim1> test_move(5);
     test_move.fill(3);
     Int32 wanted_size1 = 23;
     test_move = _createNumArray(wanted_size1);
     std::cout << "PART_2\n";
-    ASSERT_EQ(test_move.totalNbElement(),wanted_size1) << "Bad size (test move 1)";
-    ASSERT_EQ(test_move[6],wanted_size1+8) << "Bad size (test move 2)";
+    ASSERT_EQ(test_move.totalNbElement(), wanted_size1) << "Bad size (test move 1)";
+    ASSERT_EQ(test_move[6], wanted_size1 + 8) << "Bad size (test move 2)";
     Int32 wanted_size2 = 17;
     test_move = _createNumArray(wanted_size2);
     std::cout << "PART_3\n";
-    ASSERT_EQ(test_move.totalNbElement(),wanted_size2) << "Bad size (test move 3)";
-    ASSERT_EQ(test_move[3],wanted_size2+5) << "Bad size (test move 4)";
+    ASSERT_EQ(test_move.totalNbElement(), wanted_size2) << "Bad size (test move 3)";
+    ASSERT_EQ(test_move[3], wanted_size2 + 5) << "Bad size (test move 4)";
   }
   // Test NumArray::operator=(NumArray&&)
   {
     Int32 wanted_size1 = 31;
     std::cout << "PART_4\n";
-    NumArray<Int32,MDDim1> test_move(_createNumArray(wanted_size1));
+    NumArray<Int32, MDDim1> test_move(_createNumArray(wanted_size1));
     std::cout << "PART_5\n";
-    ASSERT_EQ(test_move.totalNbElement(),wanted_size1) << "Bad size (test move 1)";
-    ASSERT_EQ(test_move[7],wanted_size1+9) << "Bad size (test move 2)";
+    ASSERT_EQ(test_move.totalNbElement(), wanted_size1) << "Bad size (test move 1)";
+    ASSERT_EQ(test_move[7], wanted_size1 + 9) << "Bad size (test move 2)";
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(NumArray3,Index)
+TEST(NumArray3, Index)
 {
-  ArrayIndex<3> index(1,4,2);
+  ArrayIndex<3> index(1, 4, 2);
   auto [i, j, k] = index();
 
-  ASSERT_TRUE(i==1);
-  ASSERT_TRUE(j==4);
-  ASSERT_TRUE(k==2);
+  ASSERT_TRUE(i == 1);
+  ASSERT_TRUE(j == 4);
+  ASSERT_TRUE(k == 2);
 }
 
 namespace
 {
-template<typename T>
+template <typename T>
 void _setNumArray2Values(T& a)
 {
-  for( Int32 i=0; i<a.dim1Size(); ++i ){
-    for( Int32 j=0; j<a.dim2Size(); ++j ){
-      a(i,j) = (i*253) + j;
+  for (Int32 i = 0; i < a.dim1Size(); ++i) {
+    for (Int32 j = 0; j < a.dim2Size(); ++j) {
+      a(i, j) = (i * 253) + j;
     }
   }
 }
-template<typename T>
+template <typename T>
 void _setNumArray3Values(T& a)
 {
-  for( Int32 i=0; i<a.dim1Size(); ++i ){
-    for( Int32 j=0; j<a.dim2Size(); ++j ){
-      for( Int32 k=0; k<a.dim3Size(); ++k ){
-        a(i,j,k) = (i*253) + (j*27) + k;
+  for (Int32 i = 0; i < a.dim1Size(); ++i) {
+    for (Int32 j = 0; j < a.dim2Size(); ++j) {
+      for (Int32 k = 0; k < a.dim3Size(); ++k) {
+        a(i, j, k) = (i * 253) + (j * 27) + k;
       }
     }
   }
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(NumArray2,Layout)
+TEST(NumArray2, Layout)
 {
   std::cout << "TEST_NUMARRAY2 Layout\n";
 
   {
-    NumArray<Real,MDDim2,RightLayout> a(3,5);
-    ASSERT_EQ(a.totalNbElement(),(3*5));
+    NumArray<Real, MDDim2, RightLayout> a(3, 5);
+    ASSERT_EQ(a.totalNbElement(), (3 * 5));
     _setNumArray2Values(a);
     auto values = a.to1DSpan();
     std::cout << "V=" << values << "\n";
     UniqueArray<Real> ref_value = { 0, 1, 2, 3, 4, 253, 254, 255, 256, 257, 506, 507, 508, 509, 510 };
-    ASSERT_EQ(values.smallView(),ref_value.view());
+    ASSERT_EQ(values.smallView(), ref_value.view());
   }
 
   {
-    NumArray<Real,MDDim2,LeftLayout2> a(3,5);
-    ASSERT_EQ(a.totalNbElement(),(3*5));
+    NumArray<Real, MDDim2, LeftLayout2> a(3, 5);
+    ASSERT_EQ(a.totalNbElement(), (3 * 5));
     _setNumArray2Values(a);
     auto values = a.to1DSpan();
     std::cout << "V=" << values << "\n";
     UniqueArray<Real> ref_value = { 0, 253, 506, 1, 254, 507, 2, 255, 508, 3, 256, 509, 4, 257, 510 };
-    ASSERT_EQ(values.smallView(),ref_value.view());
+    ASSERT_EQ(values.smallView(), ref_value.view());
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArray3>
+template <typename NumArray3>
 void _checkRightLayoutDim3(NumArray3& a)
 {
-  // Le tableau doit avoir les dimensions (2,3,5);
-  ASSERT_EQ(a.totalNbElement(),(2*3*5));
-  ASSERT_EQ(a.extent0(),2);
-  ASSERT_EQ(a.extent1(),3);
-  ASSERT_EQ(a.extent2(),5);
+  // The array must have dimensions (2,3,5);
+  ASSERT_EQ(a.totalNbElement(), (2 * 3 * 5));
+  ASSERT_EQ(a.extent0(), 2);
+  ASSERT_EQ(a.extent1(), 3);
+  ASSERT_EQ(a.extent2(), 5);
   _setNumArray3Values(a);
   auto values = a.to1DSpan();
   std::cout << "V=" << values << "\n";
-  UniqueArray<Real> ref_value =
-  {
+  UniqueArray<Real> ref_value = {
     0, 1, 2, 3, 4, 27, 28, 29, 30, 31, 54, 55, 56, 57, 58,
     253, 254, 255, 256, 257, 280, 281, 282, 283, 284, 307, 308, 309, 310, 311
   };
-  ASSERT_EQ(values.smallView(),ref_value.view());
+  ASSERT_EQ(values.smallView(), ref_value.view());
 }
 
-template<typename NumArray3>
+template <typename NumArray3>
 void _checkLeftLayoutDim3(NumArray3& a)
 {
-  // Le tableau doit avoir les dimensions (2,3,5);
+  // The array must have dimensions (2,3,5);
   //NumArray<Real,MDDim3,LeftLayout3> a(2,3,5);
-  ASSERT_EQ(a.totalNbElement(),(2*3*5));
+  ASSERT_EQ(a.totalNbElement(), (2 * 3 * 5));
   _setNumArray3Values(a);
   auto values = a.to1DSpan();
   std::cout << "V=" << values << "\n";
-  UniqueArray<Real> ref_value =
-  {
+  UniqueArray<Real> ref_value = {
     0, 253, 27, 280, 54, 307, 1, 254, 28, 281, 55, 308, 2, 255, 29,
     282, 56, 309, 3, 256, 30, 283, 57, 310, 4, 257, 31, 284, 58, 311
   };
-  ASSERT_EQ(values.smallView(),ref_value.view());
+  ASSERT_EQ(values.smallView(), ref_value.view());
 }
 
 TEST(NumArray3, Layout)
@@ -506,49 +502,49 @@ TEST(NumArray3, Layout)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(NumArray,RealN)
+TEST(NumArray, RealN)
 {
   {
-    NumArray<Real2,MDDim1> a(5);
-    a(2) = Real2(0.0,3.2);
+    NumArray<Real2, MDDim1> a(5);
+    a(2) = Real2(0.0, 3.2);
     a(3)(1) = 2.0;
-    ASSERT_EQ(a(3).y,2.0);
+    ASSERT_EQ(a(3).y, 2.0);
   }
 
   {
-    NumArray<Real3,MDDim1> a(5);
-    const Real3 v(0.0,3.2,5.6);
+    NumArray<Real3, MDDim1> a(5);
+    const Real3 v(0.0, 3.2, 5.6);
     a(0) = v;
     a(4)(1) = 4.0;
-    ASSERT_EQ(a(4).y,4.0);
-    ASSERT_EQ(a(0),v);
+    ASSERT_EQ(a(4).y, 4.0);
+    ASSERT_EQ(a(0), v);
   }
 
   {
-    NumArray<Real2x2,MDDim1> a(5);
-    const Real2 v0(1.2,1.7);
-    const Real2x2 v(Real2(3.2,5.6), Real2(3.4,1.7));
+    NumArray<Real2x2, MDDim1> a(5);
+    const Real2 v0(1.2, 1.7);
+    const Real2x2 v(Real2(3.2, 5.6), Real2(3.4, 1.7));
     a(0) = v;
-    a(3)(1,0) = v0.x;
-    a(3)(1,1) = v0.y;
-    a(4)(1,0) = 4.0;
-    ASSERT_EQ(a(4).y.x,4.0);
-    ASSERT_EQ(a(0),v);
-    ASSERT_EQ(a(3)(1),v0);
+    a(3)(1, 0) = v0.x;
+    a(3)(1, 1) = v0.y;
+    a(4)(1, 0) = 4.0;
+    ASSERT_EQ(a(4).y.x, 4.0);
+    ASSERT_EQ(a(0), v);
+    ASSERT_EQ(a(3)(1), v0);
   }
 
   {
-    NumArray<Real3x3,MDDim1> a(5);
-    const Real3 v0(1.2,3.4,1.7);
-    const Real3x3 v(Real3(0.0,3.2,5.6), Real3(1.2,3.4,1.7), Real3(9.2,1.4,5.0));
+    NumArray<Real3x3, MDDim1> a(5);
+    const Real3 v0(1.2, 3.4, 1.7);
+    const Real3x3 v(Real3(0.0, 3.2, 5.6), Real3(1.2, 3.4, 1.7), Real3(9.2, 1.4, 5.0));
     a(0) = v;
     a(3)(1)(0) = v0.x;
     a(3)(1)(1) = v0.y;
     a(3)(1)(2) = v0.z;
     a(4)(1)(2) = 4.0;
-    ASSERT_EQ(a(4).y.z,4.0);
-    ASSERT_EQ(a(0),v);
-    ASSERT_EQ(a(3)(1),v0);
+    ASSERT_EQ(a(4).y.z, 4.0);
+    ASSERT_EQ(a(0), v);
+    ASSERT_EQ(a(3)(1), v0);
   }
 }
 
@@ -655,15 +651,15 @@ TEST(NumArray, SpanUsage)
 namespace Arcane
 {
 // On instantie explicitement pour tester que toutes les méthodes templates sont valides
-template class NumArray<float,MDDim4,RightLayout>;
-template class NumArray<float,MDDim3,RightLayout>;
-template class NumArray<float,MDDim2,RightLayout>;
+template class NumArray<float, MDDim4, RightLayout>;
+template class NumArray<float, MDDim3, RightLayout>;
+template class NumArray<float, MDDim2, RightLayout>;
 
-template class NumArray<float,MDDim4,LeftLayout>;
-template class NumArray<float,MDDim3,LeftLayout>;
-template class NumArray<float,MDDim2,LeftLayout>;
+template class NumArray<float, MDDim4, LeftLayout>;
+template class NumArray<float, MDDim3, LeftLayout>;
+template class NumArray<float, MDDim2, LeftLayout>;
 
-template class NumArray<float,MDDim1>;
+template class NumArray<float, MDDim1>;
 
 template class NumArray<float, ExtentsV<Int32, 7, DynExtent, 2, 3>, RightLayout>;
 template class NumArray<float, ExtentsV<Int32, DynExtent, 2, 3>, RightLayout>;
@@ -671,22 +667,22 @@ template class NumArray<float, ExtentsV<Int32, 2, 3>>;
 template class NumArray<float, ExtentsV<Int32, 2>>;
 template class NumArray<float, ExtentsV<Int32, 3, DynExtent>>;
 
-template class MDSpan<float,MDDim4,RightLayout>;
-template class MDSpan<float,MDDim3,RightLayout>;
-template class MDSpan<float,MDDim2,RightLayout>;
+template class MDSpan<float, MDDim4, RightLayout>;
+template class MDSpan<float, MDDim3, RightLayout>;
+template class MDSpan<float, MDDim2, RightLayout>;
 
-template class MDSpan<float,MDDim4,LeftLayout>;
-template class MDSpan<float,MDDim3,LeftLayout>;
-template class MDSpan<float,MDDim2,LeftLayout>;
+template class MDSpan<float, MDDim4, LeftLayout>;
+template class MDSpan<float, MDDim3, LeftLayout>;
+template class MDSpan<float, MDDim2, LeftLayout>;
 
-template class MDSpan<float,MDDim1>;
+template class MDSpan<float, MDDim1>;
 
 template class MDSpan<float, ExtentsV<Int32, 7, DynExtent, 2, 3>, RightLayout>;
 template class MDSpan<float, ExtentsV<Int32, DynExtent, 2, 3>, RightLayout>;
 template class MDSpan<float, ExtentsV<Int32, 2, 3>>;
 template class MDSpan<float, ExtentsV<Int32, 2>>;
 template class MDSpan<float, ExtentsV<Int32, 3, DynExtent>>;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

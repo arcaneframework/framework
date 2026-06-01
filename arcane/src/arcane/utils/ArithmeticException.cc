@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArithmeticException.cc                                      (C) 2000-2016 */
 /*                                                                           */
-/* Exception lorsqu'une erreur arithmétique survient.                        */
+/* Exception when an arithmetic error occurs.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,14 +19,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ArithmeticException::
 ArithmeticException(const TraceInfo& awhere)
-: Exception("ArithmeticException",awhere,"arithmetic or floating error")
+: Exception("ArithmeticException", awhere, "arithmetic or floating error")
 {
 }
 
@@ -34,8 +35,8 @@ ArithmeticException(const TraceInfo& awhere)
 /*---------------------------------------------------------------------------*/
 
 ArithmeticException::
-ArithmeticException(const TraceInfo& awhere,const StackTrace& stack_trace)
-: Exception("ArithmeticException",awhere,"arithmetic or floating error",stack_trace)
+ArithmeticException(const TraceInfo& awhere, const StackTrace& stack_trace)
+: Exception("ArithmeticException", awhere, "arithmetic or floating error", stack_trace)
 {
 }
 
@@ -43,8 +44,8 @@ ArithmeticException(const TraceInfo& awhere,const StackTrace& stack_trace)
 /*---------------------------------------------------------------------------*/
 
 ArithmeticException::
-ArithmeticException(const TraceInfo& awhere,const String& message)
-: Exception("ArithmeticException",awhere,message)
+ArithmeticException(const TraceInfo& awhere, const String& message)
+: Exception("ArithmeticException", awhere, message)
 {
 }
 
@@ -52,17 +53,16 @@ ArithmeticException(const TraceInfo& awhere,const String& message)
 /*---------------------------------------------------------------------------*/
 
 ArithmeticException::
-ArithmeticException(const TraceInfo& where,const String& message,
+ArithmeticException(const TraceInfo& where, const String& message,
                     const StackTrace& stack_trace)
-  : Exception("ArithmeticException",where,message,stack_trace)
+: Exception("ArithmeticException", where, message, stack_trace)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -1,1 +1,1 @@
-#include "arcane/utils/Functor.h"
+﻿#include "arcane/utils/Functor.h"

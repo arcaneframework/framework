@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* String.h                                                    (C) 2000-2015 */
 /*                                                                           */
-/* Chaîne de caractère unicode.                                              */
+/* Unicode character string.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_STRING_H
 #define ARCANE_UTILS_STRING_H
@@ -26,7 +26,7 @@ namespace Arcane
 typedef String String128;
 typedef String String1024;
 typedef String String4096;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

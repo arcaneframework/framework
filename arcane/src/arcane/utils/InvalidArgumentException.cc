@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* InvalidArgumentException.cc                                 (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'un argument est invalide.                                */
+/* Exception when an argument is invalid.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,15 +20,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          int arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 {
   _init(arg_value);
@@ -38,9 +39,9 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          double arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 {
   _init(arg_value);
@@ -50,9 +51,9 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          const String& arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 {
   _init(arg_value);
@@ -62,9 +63,9 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          const void* arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 {
   _init(arg_value);
@@ -74,10 +75,10 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          const String& message,
                          int arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 , m_message(message)
 {
@@ -88,10 +89,10 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          const String& message,
                          double arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 , m_message(message)
 {
@@ -102,10 +103,10 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          const String& message,
                          const String& arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 , m_message(message)
 {
@@ -116,10 +117,10 @@ InvalidArgumentException(const TraceInfo& where,const String& arg_name,
 /*---------------------------------------------------------------------------*/
 
 InvalidArgumentException::
-InvalidArgumentException(const TraceInfo& where,const String& arg_name,
+InvalidArgumentException(const TraceInfo& where, const String& arg_name,
                          const String& message,
                          const void* arg_value)
-: Exception("InvalidArgument",where)
+: Exception("InvalidArgument", where)
 , m_arg_name(arg_name)
 , m_message(message)
 {
@@ -141,14 +142,13 @@ InvalidArgumentException(const InvalidArgumentException& ex)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename U> void InvalidArgumentException::
+template <typename U> void InvalidArgumentException::
 _init(const U& arg_value)
 {
   OStringStream ostr;
   ostr() << arg_value;
   m_arg_value = ostr.str();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MemoryAccessInfo.cc                                         (C) 2000-2006 */
 /*                                                                           */
-/* Informations sur un accès mémoire.                                        */
+/* Memory access information.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,17 +42,17 @@ void MemoryAccessInfo::
 setRead() const
 {
   Byte v = *m_info;
-  if (v & MA_HasValue){
-    if ( (v & MA_NeedSync) && !(v & MA_IsSync) ){
+  if (v & MA_HasValue) {
+    if ((v & MA_NeedSync) && !(v & MA_IsSync)) {
       if (m_trace)
-        m_trace->notify(MAM_NotSyncRead,m_handle);
+        m_trace->notify(MAM_NotSyncRead, m_handle);
       else
         std::cerr << "Not Sync Read\n";
     }
     return;
   }
   if (m_trace)
-    m_trace->notify(MAM_UnitializedMemoryRead,m_handle);
+    m_trace->notify(MAM_UnitializedMemoryRead, m_handle);
   else
     std::cerr << "Unitialized Memory Read\n";
 }
@@ -97,7 +98,7 @@ setReadOrWrite() const
   if (v & MA_HasValue)
     return;
   if (m_trace)
-    m_trace->notify(MAM_MayBeUnitializedMemoryRead,m_handle);
+    m_trace->notify(MAM_MayBeUnitializedMemoryRead, m_handle);
   else
     std::cerr << "Value may be used unitialized\n";
 }
@@ -105,8 +106,7 @@ setReadOrWrite() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

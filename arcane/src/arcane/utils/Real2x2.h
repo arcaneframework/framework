@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Real2x2.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Matrice 2x2 de 'Real'.                                                    */
+/* 2x2 Matrix of 'Real'.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_REAL2X2_H
 #define ARCANE_UTILS_REAL2X2_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Structure POD pour un Real2x2.
+ * \brief POD structure for a Real2x2.
  */
 struct Real2x2POD
 {
@@ -37,11 +38,12 @@ struct Real2x2POD
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant une matrice de réel de dimension 2x2.
+ * \brief Class managing a 2x2 matrix of reals.
  *
- * La matrice comprend deux composantes \a x et \a y qui sont du
- * type \b Real2. Par exemple:
+ * The matrix comprises two components \a x and \a y which are of the
+ * type \b Real2. For example:
  *
  * \code
  * Real2x2 matrix;
@@ -53,52 +55,52 @@ class ARCANE_UTILS_EXPORT Real2x2
 {
  public:
 
-  //! Construit la matrice nulle
+  //! Constructs the zero matrix
   constexpr ARCCORE_HOST_DEVICE Real2x2()
   : x(Real2::null())
   , y(Real2::null())
   {}
 
-  //! Construit le couple (ax,ay)
+  //! Constructs the pair (ax,ay)
   constexpr ARCCORE_HOST_DEVICE Real2x2(Real2 ax, Real2 ay)
   : x(ax)
   , y(ay)
   {}
 
   /*!
-   * \brief Construit le couple ((ax,bx),(ay,by)).
-   * \deprecated Utiliser Real2x2(Real2 a,Real2 b) à la place.
+   * \brief Constructs the pair ((ax,bx),(ay,by)).
+   * \deprecated Use Real2x2(Real2 a,Real2 b) instead.
    */
   ARCANE_DEPRECATED_116 Real2x2(Real ax, Real ay, Real bx, Real by)
   : x(ax, bx)
   , y(ay, by)
   {}
 
-  //! Construit un couple identique à \a f
+  //! Constructs a copy identical to \a f
   Real2x2(const Real2x2& f) = default;
 
-  //! Construit un couple identique à \a f
+  //! Constructs a copy identical to \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real2x2(const Real2x2POD& f)
   : x(f.x)
   , y(f.y)
   {}
 
-  //! Construit l'instance avec le triplet (v,v,v).
+  //! Constructs the instance with the triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real2x2(Real v)
   {
     x = y = v;
   }
 
-  //! Construit le couple ((av[0], av[1]), (av[2], av[3]))
+  //! Constructs the pair ((av[0], av[1]), (av[2], av[3]))
   constexpr ARCCORE_HOST_DEVICE explicit Real2x2(ConstArrayView<Real> av)
   : x(av[0], av[1])
   , y(av[2], av[3])
   {}
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   Real2x2& operator=(const Real2x2& f) = default;
 
-  //! Affecte à l'instance le couple (v,v,v).
+  //! Assigns the pair (v,v,v) to the instance.
   constexpr ARCCORE_HOST_DEVICE Real2x2& operator=(Real v)
   {
     x = y = v;
@@ -107,21 +109,21 @@ class ARCANE_UTILS_EXPORT Real2x2
 
  public:
 
-  Real2 x; //!< Première composante
-  Real2 y; //!< Deuxième composante
+  Real2 x; //!< First component
+  Real2 y; //!< Second component
 
  public:
 
-  //! Construit la matrice nulle
+  //! Constructs the zero matrix
   constexpr ARCCORE_HOST_DEVICE static Real2x2 null() { return Real2x2(); }
 
-  //! Construit le couple ((ax,bx),(ay,by)).
+  //! Constructs the pair ((ax,bx),(ay,by)).
   constexpr ARCCORE_HOST_DEVICE static Real2x2 fromColumns(Real ax, Real ay, Real bx, Real by)
   {
     return Real2x2(Real2(ax, bx), Real2(ay, by));
   }
 
-  //! Construit le couple ((ax,bx),(ay,by)).
+  //! Constructs the pair ((ax,bx),(ay,by)).
   constexpr ARCCORE_HOST_DEVICE static Real2x2 fromLines(Real ax, Real bx, Real ay, Real by)
   {
     return Real2x2(Real2(ax, bx), Real2(ay, by));
@@ -129,22 +131,25 @@ class ARCANE_UTILS_EXPORT Real2x2
 
  public:
 
-  //! Retourne une copie du couple.
+  //! Returns a copy of the pair.
   constexpr ARCCORE_HOST_DEVICE Real2x2 copy() const { return (*this); }
-  //! Réinitialise le couple avec les constructeurs par défaut.
+
+  //! Resets the pair with default constructors.
   constexpr ARCCORE_HOST_DEVICE Real2x2& reset()
   {
     *this = null();
     return (*this);
   }
-  //! Affecte à l'instance le couple (ax,ay,az)
+
+  //! Assigns the pair (ax,ay) to the instance
   constexpr ARCCORE_HOST_DEVICE Real2x2& assign(Real2 ax, Real2 ay)
   {
     x = ax;
     y = ay;
     return (*this);
   }
-  //! Copie le couple \a f
+
+  //! Copies the pair \a f
   constexpr ARCCORE_HOST_DEVICE Real2x2& assign(Real2x2 f)
   {
     x = f.x;
@@ -152,14 +157,14 @@ class ARCANE_UTILS_EXPORT Real2x2
     return (*this);
   }
 
-  //! Retourne une vue sur les quatre élements de la matrice.
+  //! Returns a view of the four elements of the matrix.
   //! [x.x, x.y, y.x, y.y]
   constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
   {
     return { 4, &x.x };
   }
 
-  //! Retourne une vue constante sur les quatre élements de la matrice.
+  //! Returns a constant view of the four elements of the matrix.
   //! [x.x, x.y, y.x, y.y]
   constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
   {
@@ -167,108 +172,127 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief Lit la matrice sur le flot \a i
-   * La matrice est lue sous la forme de trois Real2.
+   * \brief Reads the matrix from the stream \a i
+   * The matrix is read in the form of three Real2.
    */
   std::istream& assign(std::istream& i);
-  //! Ecrit le couple sur le flot \a o lisible par un assign()
+
+  //! Writes the pair to the stream \a o readable by an assign()
   std::ostream& print(std::ostream& o) const;
-  //! Ecrit le couple sur le flot \a o sous la forme (x,y,z)
+
+  //! Writes the pair to the stream \a o in the form (x,y,z)
   std::ostream& printXy(std::ostream& o) const;
 
-  //! Ajoute \a b au couple
+  //! Adds \a b to the pair
   constexpr ARCCORE_HOST_DEVICE Real2x2& add(Real2x2 b)
   {
     x += b.x;
     y += b.y;
     return (*this);
   }
-  //! Soustrait \a b au couple
+
+  //! Subtracts \a b from the pair
   constexpr ARCCORE_HOST_DEVICE Real2x2& sub(Real2x2 b)
   {
     x -= b.x;
     y -= b.y;
     return (*this);
   }
-  //! Multiple chaque composante du couple par la composant correspondant de \a b
+
+  //! Multiplies each component of the pair by the corresponding component of \a b
   //Real2x2& mul(Real2x2 b) { x*=b.x; y*=b.y; return (*this); }
-  //! Divise chaque composante du couple par la composant correspondant de \a b
+
+  //! Divides each component of the pair by the corresponding component of \a b
   constexpr ARCCORE_HOST_DEVICE Real2x2& div(Real2x2 b)
   {
     x /= b.x;
     y /= b.y;
     return (*this);
   }
-  //! Ajoute \a b à chaque composante du couple
+
+  //! Adds \a b to each component of the pair
   constexpr ARCCORE_HOST_DEVICE Real2x2& addSame(Real2 b)
   {
     x += b;
     y += b;
     return (*this);
   }
-  //! Soustrait \a b à chaque composante du couple
+
+  //! Subtracts \a b from each component of the pair
   constexpr ARCCORE_HOST_DEVICE Real2x2& subSame(Real2 b)
   {
     x -= b;
     y -= b;
     return (*this);
   }
-  //! Multiplie chaque composante du couple par \a b
+
+  //! Multiplies each component of the pair by \a b
   constexpr ARCCORE_HOST_DEVICE Real2x2& mulSame(Real2 b)
   {
     x *= b;
     y *= b;
     return (*this);
   }
-  //! Divise chaque composante du couple par \a b
+
+  //! Divides each component of the pair by \a b
   constexpr ARCCORE_HOST_DEVICE Real2x2& divSame(Real2 b)
   {
     x /= b;
     y /= b;
     return (*this);
   }
-  //! Ajoute \a b au couple.
+
+  //! Adds \a b to the pair.
   constexpr ARCCORE_HOST_DEVICE Real2x2& operator+=(Real2x2 b) { return add(b); }
-  //! Soustrait \a b au couple
+
+  //! Subtracts \a b from the pair
   constexpr ARCCORE_HOST_DEVICE Real2x2& operator-=(Real2x2 b) { return sub(b); }
-  //! Multiple chaque composante du couple par la composant correspondant de \a b
+
+  //! Multiplies each component of the pair by the corresponding component of \a b
   //Real2x2& operator*=(Real2x2 b) { return mul(b); }
-  //! Multiple chaque composante de la matrice par le réel \a b
+
+  //! Multiplies each component of the matrix by the real \a b
   constexpr ARCCORE_HOST_DEVICE void operator*=(Real b)
   {
     x *= b;
     y *= b;
   }
-  //! Divise chaque composante du couple par la composant correspondant de \a b
+
+  //! Divides each component of the pair by the corresponding component of \a b
   //Real2x2& operator/= (Real2x2 b) { return div(b); }
-  //! Divise chaque composante de la matrice par le réel \a b
+
+  //! Divides each component of the matrix by the real \a b
   constexpr ARCCORE_HOST_DEVICE void operator/=(Real b)
   {
     x /= b;
     y /= b;
   }
-  //! Créé un couple qui vaut ce couple ajouté à \a b
+
+  //! Creates a pair that equals this pair added to \a b
   constexpr ARCCORE_HOST_DEVICE Real2x2 operator+(Real2x2 b) const { return Real2x2(x + b.x, y + b.y); }
-  //! Créé un couple qui vaut \a b soustrait de ce couple
+
+  //! Creates a pair that equals \a b subtracted from this pair
   constexpr ARCCORE_HOST_DEVICE Real2x2 operator-(Real2x2 b) const { return Real2x2(x - b.x, y - b.y); }
-  //! Créé un tenseur opposé au tenseur actuel
+
+  //! Creates an inverse tensor of the current tensor
   constexpr ARCCORE_HOST_DEVICE Real2x2 operator-() const { return Real2x2(-x, -y); }
 
   /*!
-   * \brief Compare composant pas composante l'instance courante à \a b.
+   * \brief Compares component by component the current instance to \a b.
    *
-   * \retval true si this.x==b.x et this.y==b.y.
-   * \retval false sinon.
+   * \retval true if this.x==b.x and this.y==b.y.
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool operator==(Real2x2 b) const
   {
     return (x == b.x) && (y == b.y);
   }
+
   /*!
-   * \brief Compare deux couples.
-   * Pour la notion d'égalité, voir operator==()
-   * \retval true si les deux couples sont différents,
-   * \retval false sinon.
+   * \brief Compares two pairs.
+   * For the notion of equality, see operator==()
+   * \retval true if the two pairs are different,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool operator!=(Real2x2 b) const
   {
@@ -276,8 +300,8 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief Accès en lecture seule à la \a i-ème (entre 0 et 1 inclus) ligne de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Read-only access to the \a i-th (between 0 and 1 inclusive) row of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real2 operator[](Integer i) const
   {
@@ -286,8 +310,8 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief Accès en lecture seule à la \a i-ème (entre 0 et 1 inclus) ligne de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Read-only access to the \a i-th (between 0 and 1 inclusive) row of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real2 operator()(Integer i) const
   {
@@ -296,9 +320,9 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief Accès en lecture seule à la \a i-ème ligne et \a j-ème colonne.
-   * \param i numéro de la ligne à retourner
-   * \param j numéro de la colonne à retourner
+   * \brief Read-only access to the \a i-th row and \a j-th column.
+   * \param i row number to return
+   * \param j column number to return
    */
   ARCCORE_HOST_DEVICE Real operator()(Integer i, Integer j) const
   {
@@ -308,8 +332,8 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief  Accès à la \a i-ème ligne (entre 0 et 1 inclus) de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Access to the \a i-th row (between 0 and 1 inclusive) of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real2& operator[](Integer i)
   {
@@ -318,8 +342,8 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief  Accès à la \a i-ème ligne (entre 0 et 1 inclus) de l'instance.
-   * \param i numéro de la ligne à retourner
+   * \brief Access to the \a i-th row (between 0 and 1 inclusive) of the instance.
+   * \param i row number to return
    */
   ARCCORE_HOST_DEVICE Real2& operator()(Integer i)
   {
@@ -328,9 +352,9 @@ class ARCANE_UTILS_EXPORT Real2x2
   }
 
   /*!
-   * \brief Accès à la \a i-ème ligne et \a j-ème colonne.
-   * \param i numéro de la ligne à retourner
-   * \param j numéro de la colonne à retourner
+   * \brief Access to the \a i-th row and \a j-th column.
+   * \param i row number to return
+   * \param j column number to return
    */
   ARCCORE_HOST_DEVICE Real& operator()(Integer i, Integer j)
   {
@@ -341,41 +365,41 @@ class ARCANE_UTILS_EXPORT Real2x2
 
  public:
 
-  //! Ecrit le couple \a t sur le flot \a o
+  //! Writes the pair \a t to the stream \a o
   friend std::ostream& operator<<(std::ostream& o, Real2x2 t)
   {
     return t.printXy(o);
   }
 
-  //! Lit le couple \a t à partir du flot \a o.
+  //! Reads the pair \a t from the stream \a o.
   friend std::istream& operator>>(std::istream& i, Real2x2& t)
   {
     return t.assign(i);
   }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real2x2 operator*(Real sca, Real2x2 vec)
   {
     return Real2x2(vec.x * sca, vec.y * sca);
   }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real2x2 operator*(Real2x2 vec, Real sca)
   {
     return Real2x2(vec.x * sca, vec.y * sca);
   }
 
-  //! Division par un scalaire.
+  //! Division by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real2x2 operator/(Real2x2 vec, Real sca)
   {
     return Real2x2(vec.x / sca, vec.y / sca);
   }
 
   /*!
-  * \brief Opérateur de comparaison.
+  * \brief Comparison operator.
   *
-  * Cet opérateur permet de trier les Real2 pour les utiliser par exemple
-  * dans les std::set
+  * This operator allows sorting Real2x2 for example
+  * in std::set
   */
   friend constexpr ARCCORE_HOST_DEVICE bool operator<(Real2x2 v1, Real2x2 v2)
   {
@@ -388,25 +412,25 @@ class ARCANE_UTILS_EXPORT Real2x2
  public:
 
   /*!
-   * \brief Compare la matrice avec la matrice nulle.
+   * \brief Compares the matrix with the zero matrix.
    *
-   * La matrice est nulle si et seulement si chacune de ses composant
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * The matrix is zero if and only if each of its components
+   * is less than a given epsilon. The epsilon value used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon\f]
    *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
+   * \retval true if the matrix is equal to the zero matrix,
+   * \retval false otherwise.
    */
-  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real2x2&) instead")
+  // TODO: make obsolete mid-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real2x2&) instead")
   inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
 
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of \a a and \a b with the TypeEqualT comparator
+   * \retval true if \a a and \a b are equal,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b)
   {
@@ -420,21 +444,21 @@ class ARCANE_UTILS_EXPORT Real2x2
 namespace math
 {
   /*!
-   * \brief Compare la matrice avec la matrice nulle.
+   * \brief Compares the matrix with the zero matrix.
    *
-   * La matrice est nulle si et seulement si chacune de ses composant
-   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
-   * de float_info<value_type>::nearlyEpsilon():
+   * The matrix is zero if and only if each of its components
+   * is less than a given epsilon. The epsilon value used is that
+   * of float_info<value_type>::nearlyEpsilon():
    * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon\f]
    *
-   * \retval true si la matrice est égale à la matrice nulle,
-   * \retval false sinon.
+   * \retval true if the matrix is equal to the zero matrix,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real2x2& v)
   {
     return math::isNearlyZero(v.x) && math::isNearlyZero(v.y);
   }
-}
+} // namespace math
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

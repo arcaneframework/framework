@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Ptr.h                                                       (C) 2000-2024 */
 /*                                                                           */
-/* Classes diverses encapsulant des pointeurs.                               */
+/* Classes encapsulating various pointers.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_PTR_H
 #define ARCANE_UTILS_PTR_H
@@ -24,28 +24,29 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Encapsulation d'un pointeur.
+ * \brief Encapsulation of a pointer.
  *
- * Cette classe ne fait rien de particulier si ce n'est encapsulé un
- * pointeur d'un type quelconque. Elle sert de classe de base à d'autres
- * classes qui fournissent des fonctionnalités plus évoluées comme AutoRefT.
+ * This class does nothing special other than encapsulating a
+ * pointer of any type. It serves as a base class for other
+ * classes that provide more advanced features like AutoRefT.
  *
- * Afin d'éviter des copies malencontreuses, le constructeur de copie et
- * les opérateurs de copie sont protégés.
+ * To avoid accidental copies, the copy constructor and
+ * copy operators are protected.
  *
- * En mode débug, vérifie qu'on accède pas à un pointeur nul.
+ * In debug mode, checks that we do not access a null pointer.
  *
- * Le paramètre template n'a pas besoin d'être défini. Cette classe peut donc
- * être instanciée pour un type opaque.
+ * The template parameter does not need to be defined. This class can therefore
+ * be instantiated for an opaque type.
  */
 template <class T>
 class PtrT
 {
  protected:
 
-  //! Opérateur de copie
+  //! Copy operator
   PtrT<T>& operator=(const PtrT<T>& from)
   {
     m_value = from.m_value;
@@ -59,19 +60,19 @@ class PtrT
     return (*this);
   }
 
-  //! Affecte à l'instance la value \a new_value
+  //! Assigns the value \a new_value to the instance
   PtrT<T>& operator=(T* new_value)
   {
     m_value = new_value;
     return (*this);
   }
 
-  //! Construit une référence référant \a from
+  //! Constructs a reference referring to \a from
   PtrT(const PtrT<T>& from)
   : m_value(from.m_value)
   {}
 
-  //! Construit une référence référant \a from
+  //! Constructs a reference referring to \a from
   template <typename T2>
   PtrT(const PtrT<T2>& from)
   : m_value(from.m_value)
@@ -79,10 +80,10 @@ class PtrT
 
  public:
 
-  //! Construit une instance sans référence
+  //! Constructs an instance without a reference
   PtrT() = default;
 
-  //! Construit une instance référant \a t
+  //! Constructs an instance referring to \a t
   explicit PtrT(T* t)
   : m_value(t)
   {}
@@ -92,7 +93,7 @@ class PtrT
  public:
  public:
 
-  //! Retourne l'objet référé par l'instance
+  //! Returns the object referenced by the instance
   inline T* operator->() const
   {
 #ifdef ARCANE_CHECK
@@ -102,7 +103,7 @@ class PtrT
     return m_value;
   }
 
-  //! Retourne l'objet référé par l'instance
+  //! Returns the object referenced by the instance
   inline T& operator*() const
   {
 #ifdef ARCANE_CHECK
@@ -113,10 +114,10 @@ class PtrT
   }
 
   /*!
-   * \brief Retourne l'objet référé par l'instance
+   * \brief Returns the object referenced by the instance
    *
-   * \warning En général, il faut être prudent lorsqu'on utilise cette
-   * fonction et ne pas conservé le pointeur retourné.
+   * \warning In general, caution must be exercised when using this
+   * function and the returned pointer should not be retained.
    */
   T* get() const { return m_value; }
 
@@ -124,17 +125,17 @@ class PtrT
 
  protected:
 
-  T* m_value = nullptr; //!< Pointeur sur l'objet référencé
+  T* m_value = nullptr; //!< Pointer to the referenced object
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compare les objets référencés par \a v1 et \a v2
+ * \brief Compares the objects referenced by \a v1 and \a v2
  *
- * La comparaison se fait pointeur par pointeur.
- * \retval true s'ils sont égaux
- * \retval false sinon
+ * The comparison is done pointer by pointer.
+ * \retval true if they are equal
+ * \retval false otherwise
  */
 template <typename T1, typename T2> inline bool
 operator==(const PtrT<T1>& v1, const PtrT<T2>& v2)
@@ -146,10 +147,10 @@ operator==(const PtrT<T1>& v1, const PtrT<T2>& v2)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Compare les objets référencés par \a v1 et \a v2
- * La comparaison se fait pointeur par pointeur.
- * \retval false s'ils sont égaux
- * \retval true sinon
+ * \brief Compares the objects referenced by \a v1 and \a v2
+ * The comparison is done pointer by pointer.
+ * \retval false if they are equal
+ * \retval true otherwise
  */
 template <typename T1, typename T2> inline bool
 operator!=(const PtrT<T1>& v1, const PtrT<T2>& v2)

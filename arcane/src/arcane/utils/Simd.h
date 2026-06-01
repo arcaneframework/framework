@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Simd.h                                                      (C) 2000-2017 */
 /*                                                                           */
-/* Types pour la vectorisation.                                              */
+/* Types for vectorization.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SIMD_H
 #define ARCANE_UTILS_SIMD_H
@@ -26,68 +26,66 @@
 /*!
  * \file Simd.h
  *
- * Ce fichier contient les déclarations des types utilisés pour gérer
- * la vectorisation. Comme il existe plusieurs mécanismes possibles, il
- * faut faire un choix en fonction de l'architecture machine et des
- * options de compilation. Chaque mécanisme utilise des vecteurs
- * de taille différente. Dans notre cas comme la vectorisation est
- * utilisée principalement pour les calculs sur des doubles, la
- * taille d'un vecteur sera égale au nombre de double qu'on peut mettre
- * dans un vecteur.
+ * This file contains the declarations of types used to manage
+ * vectorization. Since several possible mechanisms exist, a choice must be made
+ * based on the machine architecture and compilation options. Each mechanism uses
+ * vectors of different sizes. In our case, since vectorization is
+ * primarily used for calculations on doubles, the size of a vector will be
+ * equal to the number of doubles that can fit into a vector.
  *
- * Actuellement, on supporte les modes suivants par ordre de priorité. Si
- * un mode est supporté, les autres ne sont pas utilisés.
- * - AVX512 pour les architectures de type Intel Knight Landing (KNL) ou
- * Xeon Skylake. La taille des vecteurs est de 8 dans ce mode.
- * - AVX. Pour ce mode, il faut compiler Arcane avec l'option '--with-avx'. Il
- * existe deux modes, l'AVX classique et l'AVX2. Pour l'instant, seul le
- * premier est utilisé, faute de machines pour tester le second. La taille
- * des vecteurs est de 4 dans ce mode.
- * - SSE. Ce mode est disponible par défaut car il existe sur toutes les
- * plateformes x64. La aussi il existe plusieurs versions et on se limite
- * à la version 2. La taille des vecteurs est de 2 dans ce mode
- * - aucun mode. Dans ce cas il n'y a pas de vectorisation spécifique.
- * Néanmoins pour tester le code, on permet une émulation avec 
- * des vecteurs de taille de 2.
+ * Currently, we support the following modes in order of priority. If
+ * a mode is supported, the others are not used.
+ * - AVX512 for Intel Knight Landing (KNL) or Xeon Skylake type architectures.
+ *   The vector size in this mode is 8.
+ * - AVX. For this mode, Arcane must be compiled with the option '--with-avx'.
+ *   There are two modes: classic AVX and AVX2. For now, only the
+ *   former is used, due to a lack of machines to test the latter. The
+ *   vector size in this mode is 4.
+ * - SSE. This mode is available by default because it exists on all
+ *   x64 platforms. There are also several versions, and we limit ourselves
+ *   to version 2. The vector size in this mode is 2.
+ * - no mode. In this case, there is no specific vectorization.
+ *   Nevertheless, to test the code, we allow emulation with
+ *   vectors of size 2.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*
- * Les compilateurs (gcc et icc) définissent les macros suivantes
- * sur x64 suivant le support de la vectorisation
+ * The compilers (gcc and icc) define the following macros
+ * on x64 depending on vectorization support:
  * : avx: __AVX__
  * : avx2: __AVX2__
  * : avx512f: __AVX512F__
  * : sse2: __SSE2__
  *
- * A noter que pour l'avx2 avec gcc, il n'y a pas par défaut le FMA.
- * Par exemple:
- * - gcc -mavx2 : pas de fma
- * - gcc -mavx2 -mfma : fma actif
- * - gcc -march=haswell : fma actif
+ * Note that for avx2 with gcc, FMA is not enabled by default.
+ * For example:
+ * - gcc -mavx2 : no fma
+ * - gcc -mavx2 -mfma : fma active
+ * - gcc -march=haswell : fma active
  */
 
-// Simd via émulation.
+// Simd via emulation.
 #include "arcane/utils/SimdEMUL.h"
 
-// Ajoute support de SSE s'il existe
+// Add SSE support if available
 #if (defined(_M_X64) || defined(__x86_64__)) && !defined(ARCANE_NO_SSE)
-// SSE2 est disponible sur tous les CPU x64
-// La macro __x64_64__ est définie pour les machines linux
-// La macro _M_X64 est définie pour les machines Windows
+// SSE2 is available on all x64 CPUs
+// The macro __x64_64__ is defined for Linux machines
+// The macro _M_X64 is defined for Windows machines
 #define ARCANE_HAS_SSE
 #include <emmintrin.h>
 #include "arcane/utils/SimdSSE.h"
 #endif
 
-// Ajoute support de AVX si dispo
+// Add AVX support if available
 #if defined(ARCANE_HAS_AVX) || defined(ARCANE_HAS_AVX512)
 #include <immintrin.h>
 #include "arcane/utils/SimdAVX.h"
 #endif
 
-// Ajoute support de l'AVX512 si dispo
+// Add AVX512 support if available
 #if defined(ARCANE_HAS_AVX512)
 #include <immintrin.h>
 #include "arcane/utils/SimdAVX512.h"
@@ -95,24 +93,26 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Macro pour itérer sur les index d'un vecteur
- * Simd de réel ou dérivé (Real2, Real3, ...).
+ * \brief Macro to iterate over the indices of a SIMD real or derived vector (Real2, Real3, ...).
  */
 #define ENUMERATE_SIMD_REAL(_iter) \
-  for( ::Arcane::Integer _iter(0); _iter < SimdReal ::BLOCK_SIZE; ++ _iter )
+  for (::Arcane::Integer _iter(0); _iter < SimdReal ::BLOCK_SIZE; ++_iter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Définit le type SimdInfo en fonction de la vectorisation disponible.
- * On prend le type qui permet le plus de vectorisation.
+ * Defines the SimdInfo type based on available vectorization.
+ * It takes the type that allows the most vectorization.
  */
 #if defined(ARCANE_HAS_AVX512)
 typedef AVX512SimdInfo SimdInfo;
@@ -129,7 +129,7 @@ typedef EMULSimdInfo SimdInfo;
 
 /*!
  * \ingroup ArcaneSimd
- * \brief Vecteur SIMD de réel.
+ * \brief SIMD vector of real numbers.
  */
 typedef SimdInfo::SimdReal SimdReal;
 const int SimdSize = SimdReal::Length;
@@ -142,38 +142,46 @@ const int SimdSize = SimdReal::Length;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Représente un Real3 vectoriel.
+ * \brief Represents a vectorized Real3.
  */
 class ARCANE_UTILS_EXPORT SimdReal3
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal x;
   SimdReal y;
   SimdReal z;
   SimdReal3() {}
-  SimdReal3(SimdReal _x,SimdReal _y,SimdReal _z) : x(_x), y(_y), z(_z){}
-  SimdReal3(const Real3* base,const Int32IndexType& idx)
+  SimdReal3(SimdReal _x, SimdReal _y, SimdReal _z)
+  : x(_x)
+  , y(_y)
+  , z(_z)
+  {}
+  SimdReal3(const Real3* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real3 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real3 operator[](Integer i) const { return Real3(x[i],y[i],z[i]); }
+  const Real3 operator[](Integer i) const { return Real3(x[i], y[i], z[i]); }
 
-  void set(Real3* base,const Int32IndexType& idx) const
+  void set(Real3* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
-  // TODO: renommer cette méthode
-  void set(Integer i,Real3 r)
+  // TODO: rename this method
+  void set(Integer i, Real3 r)
   {
     x[i] = r.x;
     y[i] = r.y;
@@ -181,200 +189,229 @@ class ARCANE_UTILS_EXPORT SimdReal3
   }
   Real3 get(Integer i) const
   {
-    return Real3(x[i],y[i],z[i]);
+    return Real3(x[i], y[i], z[i]);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Représente un Real2 vectoriel.
+ * \brief Represents a vectorized Real2.
  */
 class ARCANE_UTILS_EXPORT SimdReal2
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal x;
   SimdReal y;
   SimdReal2() {}
-  SimdReal2(SimdReal _x,SimdReal _y) : x(_x), y(_y){}
-  SimdReal2(const Real2* base,const Int32IndexType& idx)
+  SimdReal2(SimdReal _x, SimdReal _y)
+  : x(_x)
+  , y(_y)
+  {}
+  SimdReal2(const Real2* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real2 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real2 operator[](Integer i) const { return Real2(x[i],y[i]); }
+  const Real2 operator[](Integer i) const { return Real2(x[i], y[i]); }
 
-  void set(Real2* base,const Int32IndexType& idx) const
+  void set(Real2* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
-  void set(Integer i,Real2 r)
+  void set(Integer i, Real2 r)
   {
     x[i] = r.x;
     y[i] = r.y;
   }
   Real2 get(Integer i) const
   {
-    return Real2(x[i],y[i]);
+    return Real2(x[i], y[i]);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Représente un Real3x3 vectoriel.
+ * \brief Represents a vectorized Real3x3.
  */
 class ARCANE_UTILS_EXPORT SimdReal3x3
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal3 x;
   SimdReal3 y;
   SimdReal3 z;
   SimdReal3x3() {}
-  SimdReal3x3(SimdReal3 _x,SimdReal3 _y,SimdReal3 _z) : x(_x), y(_y), z(_z){}
-  SimdReal3x3(const Real3x3* base,const Int32IndexType& idx)
+  SimdReal3x3(SimdReal3 _x, SimdReal3 _y, SimdReal3 _z)
+  : x(_x)
+  , y(_y)
+  , z(_z)
+  {}
+  SimdReal3x3(const Real3x3* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real3x3 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real3x3 operator[](Integer i) const { return Real3x3(x[i],y[i],z[i]); }
+  const Real3x3 operator[](Integer i) const { return Real3x3(x[i], y[i], z[i]); }
 
-  void set(Real3x3* base,const Int32IndexType& idx) const
+  void set(Real3x3* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
-  // TODO: renommer cette méthode
-  void set(Integer i,Real3x3 r)
+  // TODO: rename this method
+  void set(Integer i, Real3x3 r)
   {
-    x.set(i,r.x);
-    y.set(i,r.y);
-    z.set(i,r.z);
+    x.set(i, r.x);
+    y.set(i, r.y);
+    z.set(i, r.z);
   }
   Real3x3 get(Integer i) const
   {
-    return Real3x3(x[i],y[i],z[i]);
+    return Real3x3(x[i], y[i], z[i]);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Représente un Real2x2 vectoriel.
+ * \brief Represents a vectorized Real2x2.
  */
 class ARCANE_UTILS_EXPORT SimdReal2x2
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal2 x;
   SimdReal2 y;
   SimdReal2x2() {}
-  SimdReal2x2(SimdReal2 _x,SimdReal2 _y) : x(_x), y(_y){}
-  SimdReal2x2(const Real2x2* base,const Int32IndexType& idx)
+  SimdReal2x2(SimdReal2 _x, SimdReal2 _y)
+  : x(_x)
+  , y(_y)
+  {}
+  SimdReal2x2(const Real2x2* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real2x2 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real2x2 operator[](Integer i) const { return Real2x2(x[i],y[i]); }
+  const Real2x2 operator[](Integer i) const { return Real2x2(x[i], y[i]); }
 
-  void set(Real2x2* base,const Int32IndexType& idx) const
+  void set(Real2x2* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
-  // TODO: renommer cette méthode
-  void set(Integer i,Real2x2 r)
+  // TODO: rename this method
+  void set(Integer i, Real2x2 r)
   {
-    x.set(i,r.x);
-    y.set(i,r.y);
+    x.set(i, r.x);
+    y.set(i, r.y);
   }
   Real2x2 get(Integer i) const
   {
-    return Real2x2(x[i],y[i]);
+    return Real2x2(x[i], y[i]);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Charactéristiques des types vectoriels.
+ * \brief Characteristics of vector types.
  *
- * Instantiation par défaut pour les types n'ayant pas de type vectoriel
- * correspondant. Actuellement, seuls les types 'Real', 'Real2' et 'Real3'
- * en ont un.
+ * Default instantiation for types that do not have a corresponding vector type.
+ * Currently, only the types 'Real', 'Real2', and 'Real3' have one.
  */
-template<typename DataType>
+template <typename DataType>
 class SimdTypeTraits
 {
  public:
+
   typedef void SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real>
 {
  public:
+
   typedef SimdReal SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real2>
 {
  public:
+
   typedef SimdReal2 SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real2x2>
 {
  public:
+
   typedef SimdReal2x2 SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real3>
 {
  public:
+
   typedef SimdReal3 SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real3x3>
 {
  public:
+
   typedef SimdReal3x3 SimdType;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneSimd
- * \brief Classe de base des énumérateurs vectoriels avec indirection.
+ * \brief Base class for vector enumerators with indirection.
  *
- * \warning Les tableaux des indices locaux (\a local_ids) passés aux
- * constructeurs doivent être alignés.
+ * \warning The arrays of local indices (\a local_ids) passed to the
+ * constructors must be aligned.
  */
 class ARCANE_UTILS_EXPORT SimdEnumeratorBase
 {
@@ -385,31 +422,42 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
  public:
 
   SimdEnumeratorBase()
-  : m_local_ids(nullptr), m_index(0), m_count(0) { }
-  SimdEnumeratorBase(const Int32* local_ids,Integer n)
-  : m_local_ids(local_ids), m_index(0), m_count(n)
-  { _checkValid(); }
+  : m_local_ids(nullptr)
+  , m_index(0)
+  , m_count(0)
+  {}
+  SimdEnumeratorBase(const Int32* local_ids, Integer n)
+  : m_local_ids(local_ids)
+  , m_index(0)
+  , m_count(n)
+  {
+    _checkValid();
+  }
   explicit SimdEnumeratorBase(Int32ConstArrayView local_ids)
-  : m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size())
-  { _checkValid(); }
+  : m_local_ids(local_ids.data())
+  , m_index(0)
+  , m_count(local_ids.size())
+  {
+    _checkValid();
+  }
 
  public:
 
-  bool hasNext() { return m_index<m_count; }
+  bool hasNext() { return m_index < m_count; }
 
-  //! Indices locaux
+  //! Local indices
   const Int32* unguardedLocalIds() const { return m_local_ids; }
 
   void operator++() { m_index += SimdSize; }
 
   /*!
-   * \brief Nombre de valeurs valides pour l'itérateur courant.
+   * \brief Number of valid values for the current iterator.
    * \pre hasNext()==true
    */
   inline Integer nbValid() const
   {
-    Integer nb_valid = (m_count-m_index);
-    if (nb_valid>SimdSize)
+    Integer nb_valid = (m_count - m_index);
+    if (nb_valid > SimdSize)
       nb_valid = SimdSize;
     return nb_valid;
   }
@@ -425,17 +473,17 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
   const SimdIndexType* ARCANE_RESTRICT
   _currentSimdIndex() const
   {
-    return (const SimdIndexType*)(m_local_ids+m_index);
+    return (const SimdIndexType*)(m_local_ids + m_index);
   }
 
  private:
 
-  // Vérifie que m_local_ids est correctement aligné.
+  // Checks that m_local_ids is correctly aligned.
   void _checkValid()
   {
 #ifdef ARCANE_SIMD_BENCH
     Int64 modulo = (Int64)(m_local_ids) % SimdIndexType::Alignment;
-    if (modulo!=0){
+    if (modulo != 0) {
       throw BadAlignmentException();
     }
 #else
@@ -448,7 +496,7 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

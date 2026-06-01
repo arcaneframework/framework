@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ApplicationInfo.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur une application.                                         */
+/* Application information.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_APPLICATIONINFO_H
 #define ARCANE_UTILS_APPLICATIONINFO_H
@@ -32,51 +32,52 @@ class CommandLineArguments;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une application.
+ * \brief Application information.
  */
 class ARCANE_UTILS_EXPORT ApplicationInfo
 {
  public:
 
   ApplicationInfo();
-  ApplicationInfo(int* argc,char*** argv,const String& name,const VersionInfo& version);
-  ApplicationInfo(const StringList& args,const String& name,const VersionInfo& version);
-  ApplicationInfo(const CommandLineArguments& args,const String& name,const VersionInfo& version);
+  ApplicationInfo(int* argc, char*** argv, const String& name, const VersionInfo& version);
+  ApplicationInfo(const StringList& args, const String& name, const VersionInfo& version);
+  ApplicationInfo(const CommandLineArguments& args, const String& name, const VersionInfo& version);
   ApplicationInfo(const ApplicationInfo& rhs);
   ~ApplicationInfo();
   ApplicationInfo& operator=(const ApplicationInfo& rhs);
 
  public:
-	
-  //! Nom de l'application
+
+  //! Application name
   const String& applicationName() const;
-  //! Numéro de version
+  //! Version number
   ARCCORE_DEPRECATED_2020("use codeVersion() instead")
   const VersionInfo& version() const { return codeVersion(); }
-  //! Numéro de version
+  //! Version number
   const VersionInfo& codeVersion() const;
-  //! Retourne le chemin où se trouve les fichiers de données dépendant de l'OS
+  //! Returns the path where OS-dependent data files are located
   const String& dataOsDir() const;
-  //! Retourne le chemin où se trouve les fichiers de données.
+  //! Returns the path where data files are located.
   const String& dataDir() const;
 
-  //! Retourne le numéro de version majeure de l'application
+  //! Returns the major version number of the application
   ARCCORE_DEPRECATED_2020("use codeVersion().versionMajor() instead")
   int versionMajor() const;
-  //! Retourne le numéro de version mineure de l'application
+  //! Returns the minor version number of the application
   ARCCORE_DEPRECATED_2020("use codeVersion().versionMinor() instead")
   int versionMinor() const;
-  //! Retourne le numéro de version patch de l'application
+  //! Returns the patch version number of the application
   ARCCORE_DEPRECATED_2020("use codeVersion().versionPatch() instead")
   int versionPatch() const;
 
-  //! Retourne \a true si on s'exécute en mode debug.
+  //! Returns \a true if running in debug mode.
   bool isDebug() const;
 
-  //! Retourne le nom du code de calcul lié l'application
+  //! Returns the name of the calculation code linked to the application
   const String& codeName() const;
-  //! Retourne le nom complet de la cible
+  //! Returns the full target name
   const String& targetFullName() const;
 
   ARCCORE_DEPRECATED_2019("Use commandLineArguments().commandLineArgc() instead")
@@ -84,62 +85,63 @@ class ARCANE_UTILS_EXPORT ApplicationInfo
   ARCCORE_DEPRECATED_2019("Use commandLineArguments().commandLineArgv() instead")
   char*** commandLineArgv() const;
 
-  //! Remplit \a args avec les arguments de la ligne de commande.
+  //! Fills \a args with command line arguments.
   void args(StringList& args) const;
 
-  //! Arguments de la ligne de commande
+  //! Command line arguments
   const CommandLineArguments& commandLineArguments() const;
 
  public:
 
   /*!
-   * \brief Ajoute la bibliothèque \a lib_name à la liste des bibliothèques
-   * chargées dynamiquements.
+   * \brief Adds the library \a lib_name to the list of dynamically loaded libraries.
    *
-   * \a lib_name doit être un nom, sans chemin et sans extension. Par exemple,
-   * \c my_lib est valide mais pas \c libtoto.so, ni \c /tmp/toto.
+   * \a lib_name must be a name, without path and without extension. For example,
+   * \c my_lib is valid but not \c libtoto.so, nor \c /tmp/toto.
    */
   void addDynamicLibrary(const String& lib_name);
 
-  //! Liste des bibliothèques dynamiques.
+  //! List of dynamic libraries.
   StringCollection dynamicLibrariesName() const;
 
  public:
 
-  //! Positionne le chemin où se trouve les fichiers de données dépendant de l'OS
+  //! Sets the path where OS-dependent data files are located
   void setDataOsDir(const String& v);
-  //! Positionne le chemin où se trouve les fichiers de données.
+  //! Sets the path where data files are located.
   void setDataDir(const String& v);
-  //! Positionne le numéro de version du code
+  //! Sets the code version number
   ARCCORE_DEPRECATED_2020("use setCodeVersion() instead")
   void setVersionInfo(const VersionInfo& version_info)
-  { setCodeVersion(version_info); }
-  //! Positionne le nom de l'application
+  {
+    setCodeVersion(version_info);
+  }
+  //! Sets the application name
   void setApplicationName(const String& v);
-  //! Positionne le numéro de version
+  //! Sets the version number
   void setCodeVersion(const VersionInfo& version_info);
-  //! Positionne le nom du code
+  //! Sets the code name
   void setCodeName(const String& code_name);
   /*!
-   * \brief Positionne les arguments de la ligne de commande.
+   * \brief Sets the command line arguments.
    *
-   * L'appel à cette méthode modifie les valeurs de \a m_argv et \a m_argc.
+   * Calling this method modifies the values of \a m_argv and \a m_argc.
    */
   void setCommandLineArguments(const CommandLineArguments& args);
-  //! Positionne l'état de débug.
+  //! Sets the debug state.
   void setIsDebug(bool v);
 
  public:
 
-  //! Positionne le contenu du fichier de configuration de l'application
+  //! Sets the application configuration file content
   void setRuntimeConfigFileContent(ByteConstSpan content);
-  //! Contenu du fichier de configuration de l'application
+  //! Application configuration file content
   ByteConstSpan runtimeConfigFileContent() const;
 
  public:
 
   /*!
-   * \brief Ajoute un paramètre Arcane à la ligne de commande.
+   * \brief Adds an Arcane parameter to the command line.
    * \sa ParameterList::addParameterLine().
    */
   void addParameterLine(const String& line);
@@ -147,16 +149,16 @@ class ARCANE_UTILS_EXPORT ApplicationInfo
  public:
 
   ARCCORE_DEPRECATED_2019("Use commandLineArguments().commandLineArgc() instead")
-  int* m_argc; //!< Nombre d'arguments de la ligne de commande
+  int* m_argc; //!< Number of command line arguments
   ARCCORE_DEPRECATED_2019("Use commandLineArguments().commandLineArgv() instead")
-  char*** m_argv; //!< Tableau des arguments de la ligne de commande
+  char*** m_argv; //!< Array of command line arguments
 
  private:
 
   ApplicationInfoPrivate* m_p;
 
  private:
-  
+
   void _init(const String& name);
   void _setArgs();
 };
@@ -169,5 +171,4 @@ class ARCANE_UTILS_EXPORT ApplicationInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

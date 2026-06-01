@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,22 +17,22 @@
 
 using namespace Arcane;
 
-
 namespace
 {
 class TestMemberCall
 {
  public:
-  void my_func(int a,int b)
+
+  void my_func(int a, int b)
   {
     std::cout << "THIS_IS_MY FUNC XA=" << a << " B=" << b << '\n';
   }
-  void operator()(int a,int b)
+  void operator()(int a, int b)
   {
     std::cout << "THIS_IS OPERATOR() FUNC XA=" << a << " B=" << b << '\n';
   }
 };
-}
+} // namespace
 TEST(TestEvent, Misc)
 {
   using std::placeholders::_1;
@@ -53,7 +53,7 @@ TEST(TestEvent, Misc)
     EventObserverPool pool;
     {
       EventObserver<int, int> xobserver;
-      // NOTE: le test suivnant ne marche pas avec MSVS2013
+      // NOTE: the following test does not work with MSVS2013
       std::function<void(TestMemberCall*, int, int)> kk1(&TestMemberCall::my_func);
       std::function<void(int, int)> kk(std::bind(&TestMemberCall::my_func, tmc, _1, _2));
       //std::function<void(int,int)> kk2( std::bind( &TestMemberCall::my_func, tmc ) );

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ApplicationInfoProperties.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur une application.                                         */
+/* Information about an application.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_APPLICATIONINFOPROPERTIES_H
 #define ARCANE_UTILS_INTERNAL_APPLICATIONINFOPROPERTIES_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une application.
+ * \brief Information about an application.
  */
 class ARCANE_UTILS_EXPORT ApplicationInfoProperties
 : public ApplicationInfo

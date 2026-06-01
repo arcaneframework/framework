@@ -1,2 +1,2 @@
-#include "arccore/base/NotSupportedException.h"
+﻿#include "arccore/base/NotSupportedException.h"
 #include "arcane/utils/UtilsTypes.h"

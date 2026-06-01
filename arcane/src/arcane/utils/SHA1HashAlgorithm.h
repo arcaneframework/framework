@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SHA1HashAlgorithm.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Calcule la fonction de hashage SHA-1.                                     */
+/* Calculates the SHA-1 hashing function.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SHA1HASHALGORITHM_H
 #define ARCANE_UTILS_SHA1HASHALGORITHM_H
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de l'algorithme SHA-1.
+ * \brief Implementation of the SHA-1 algorithm.
  */
 class ARCANE_UTILS_EXPORT SHA1HashAlgorithm
 : public IHashAlgorithm

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Real3.h                                                     (C) 2000-2026 */
 /*                                                                           */
-/* Vecteur à 3 dimensions de 'Real'.                                         */
+/* Vector of 3 dimensions of 'Real'.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_REAL3_H
 #define ARCANE_UTILS_REAL3_H
@@ -32,16 +32,16 @@ struct Real3POD
 {
  public:
 
-  Real x; //!< première composante du triplet
-  Real y; //!< deuxième composante du triplet
-  Real z; //!< troisième composante du triplet
+  Real x; //!< first component of the triplet
+  Real y; //!< second component of the triplet
+  Real z; //!< third component of the triplet
 
   /*!
-   * Accès en lecture seule à la @a i eme composante du Real3POD
+   * Read-only access to the @a i-th component of Real3POD
    *
-   * @note ne fonctionne que pour x, y et z ordonnées dans le POD
+   * @note only works for x, y, and z ordered in the POD
    *
-   * @param i numéro de la composante à retourner
+   * @param i component number to return
    *
    * @return (&x)[i]
    */
@@ -52,11 +52,11 @@ struct Real3POD
   }
 
   /*!
-   * Accès en lecture seule à la @a i eme composante du Real3POD
+   * Read-only access to the @a i-th component of Real3POD
    *
-   * @note ne fonctionne que pour x, y et z ordonnées dans le POD
+   * @note only works for x, y, and z ordered in the POD
    *
-   * @param i numéro de la composante à retourner
+   * @param i component number to return
    *
    * @return (&x)[i]
    */
@@ -67,36 +67,36 @@ struct Real3POD
   }
 
   /*!
-   * Accès à la @a i eme composante du Real3POD
+   * Access to the @a i-th component of Real3POD
    *
-   * @note ne fonctionne que pour x, y et z ordonnées dans le POD
+   * @note only works for x, y, and z ordered in the POD
    *
-   * @param i numéro de la composante à retourner
+   * @param i component number to return
    *
    * @return (&x)[i]
    */
   ARCCORE_HOST_DEVICE Real& operator[](Integer i)
   {
-    ARCCORE_CHECK_AT(i,3);
+    ARCCORE_CHECK_AT(i, 3);
     return (&x)[i];
   }
 
   /*!
-   * Accès à la @a i eme composante du Real3POD
+   * Access to the @a i-th component of Real3POD
    *
-   * @note ne fonctionne que pour x, y et z ordonnées dans le POD
+   * @note only works for x, y, and z ordered in the POD
    *
-   * @param i numéro de la composante à retourner
+   * @param i component number to return
    *
    * @return (&x)[i]
    */
   ARCCORE_HOST_DEVICE Real& operator()(Integer i)
   {
-    ARCCORE_CHECK_AT(i,3);
+    ARCCORE_CHECK_AT(i, 3);
     return (&x)[i];
   }
 
-  //! Positionne la \a i-ème composante à \a value
+  //! Sets the \a i-th component to \a value
   ARCCORE_HOST_DEVICE void setComponent(Integer i, Real value)
   {
     ARCCORE_CHECK_AT(i, 3);
@@ -106,24 +106,24 @@ struct Real3POD
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Classe gérant un vecteur de réel de dimension 3.
 
- Le vecteur comprend trois composantes \a x, \a y et \a z qui sont du
- type \b Real.
+/*!
+ * \brief Class managing a 3-dimensional real vector.
+
+ Le vector includes three components \a x, \a y, and \a z, which are of type \b Real.
 
  \code
- Real3 value (1.0,2.3,4.5); // Créé un triplet (x=1.0, y=2.3, z=4.5)
- cout << value.x;           // Imprime le composant x 
- value.y += 3.2;            // Ajoute 3.2 à la composante \b y
+ Real3 value (1.0,2.3,4.5); // Created a triplet (x=1.0, y=2.3, z=4.5)
+ cout << value.x;           // Prints component x 
+ value.y += 3.2;            // Adds 3.2 to component \b y
  \endcode
 
- ou de maniere equivalente
+ or equivalently
 
  \code
- Real3 value (1.0,2.3,4.5); // Créé un triplet (x=1.0, y=2.3, z=4.5)
- cout << value[0];          // Imprime le composant x 
- value[1] += 3.2;           // Ajoute 3.2 à la composante \b y
+ Real3 value (1.0,2.3,4.5); // Created a triplet (x=1.0, y=2.3, z=4.5)
+ cout << value[0];          // Prints component x 
+ value[1] += 3.2;           // Adds 3.2 to component \b y
  \endcode
  */
 
@@ -132,7 +132,7 @@ class ARCANE_UTILS_EXPORT Real3
 {
  public:
 
-  //! Construit le vecteur nul.
+  //! Constructs the zero vector.
   constexpr ARCCORE_HOST_DEVICE Real3()
   : Real3POD()
   {
@@ -140,7 +140,8 @@ class ARCANE_UTILS_EXPORT Real3
     y = 0.0;
     z = 0.0;
   }
-  //! Construit le triplet (ax,ay,az)
+
+  //! Constructs the triplet (ax,ay,az)
   constexpr ARCCORE_HOST_DEVICE Real3(Real ax, Real ay, Real az)
   : Real3POD()
   {
@@ -148,9 +149,11 @@ class ARCANE_UTILS_EXPORT Real3
     y = ay;
     z = az;
   }
-  //! Construit un triplet identique à \a f
+
+  //! Constructs a triplet identical to \a f
   Real3(const Real3& f) = default;
-  //! Construit un triplet identique à \a f
+
+  //! Constructs a triplet identical to \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real3(const Real3POD& f)
   : Real3POD()
   {
@@ -159,14 +162,14 @@ class ARCANE_UTILS_EXPORT Real3
     z = f.z;
   }
 
-  //! Construit l'instance avec le triplet (v,v,v).
+  //! Constructs the instance with the triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real3(Real v)
   : Real3POD()
   {
     x = y = z = v;
   }
 
-  //! Construit un triplet identique à \a f
+  //! Constructs a triplet identical to \a f
   constexpr ARCCORE_HOST_DEVICE explicit Real3(const Real2& f)
   : Real3POD()
   {
@@ -175,19 +178,19 @@ class ARCANE_UTILS_EXPORT Real3
     z = 0.0;
   }
 
-  //! Construit le triplet (av[0], av[1], av[2])
+  //! Constructs the triplet (av[0], av[1], av[2])
   constexpr ARCCORE_HOST_DEVICE Real3(ConstArrayView<Real> av)
-    : Real3POD()
+  : Real3POD()
   {
     x = av[0];
     y = av[1];
     z = av[2];
   }
 
-  //! Opérateur de recopie.
+  //! Copy assignment operator.
   Real3& operator=(const Real3& f) = default;
 
-  //! Affecte à l'instance le triplet (v,v,v).
+  //! Assigns the triplet (v,v,v) to the instance.
   constexpr ARCCORE_HOST_DEVICE Real3& operator=(Real v)
   {
     x = y = z = v;
@@ -201,15 +204,17 @@ class ARCANE_UTILS_EXPORT Real3
 
  public:
 
-  //! Retourne une copie du triplet.
+  //! Returns a copy of the triplet.
   constexpr ARCCORE_HOST_DEVICE Real3 copy() const { return (*this); }
-  //! Réinitialise le triplet avec les constructeurs par défaut.
+
+  //! Resets the triplet using default constructors.
   constexpr ARCCORE_HOST_DEVICE Real3& reset()
   {
     x = y = z = 0.;
     return (*this);
   }
-  //! Affecte à l'instance le triplet (ax,ay,az)
+
+  //! Assigns the triplet (ax,ay,az) to the instance.
   constexpr ARCCORE_HOST_DEVICE Real3& assign(Real ax, Real ay, Real az)
   {
     x = ax;
@@ -217,7 +222,8 @@ class ARCANE_UTILS_EXPORT Real3
     z = az;
     return (*this);
   }
-  //! Copie le triplet \a f
+
+  //! Copies the triplet \a f
   constexpr ARCCORE_HOST_DEVICE Real3& assign(Real3 f)
   {
     x = f.x;
@@ -226,32 +232,34 @@ class ARCANE_UTILS_EXPORT Real3
     return (*this);
   }
 
-  //! Retourne une vue sur les trois élements du vecteur.
+  //! Returns a view of the three elements of the vector.
   constexpr ARCCORE_HOST_DEVICE ArrayView<Real> view()
   {
     return { 3, &x };
   }
 
-  //! Retourne une vue constante sur les trois élements du vecteur.
+  //! Returns a constant view of the three elements of the vector.
   constexpr ARCCORE_HOST_DEVICE ConstArrayView<Real> constView() const
   {
     return { 3, &x };
   }
 
-  //! Valeur absolue composante par composante.
+  //! Absolute value component by component.
   ARCCORE_HOST_DEVICE Real3 absolute() const { return Real3(math::abs(x), math::abs(y), math::abs(z)); }
 
   /*!
-   * \brief Lit un triplet sur le flot \a i
-   * Le triplet est lu sous la forme de trois valeur de type #value_type.
+   * \brief Reads a triplet from the stream \a i
+   * The triplet is read in the form of three values of type #value_type.
    */
   std::istream& assign(std::istream& i);
-  //! Ecrit le triplet sur le flot \a o lisible par un assign()
+
+  //! Writes the triplet to the stream \a o readable by an assign()
   std::ostream& print(std::ostream& o) const;
-  //! Ecrit le triplet sur le flot \a o sous la forme (x,y,z)
+
+  //! Writes the triplet to the stream \a o in the form (x,y,z)
   std::ostream& printXyz(std::ostream& o) const;
 
-  //! Ajoute \a b au triplet
+  //! Adds \a b to the triplet
   constexpr ARCCORE_HOST_DEVICE Real3& add(Real3 b)
   {
     x += b.x;
@@ -259,7 +267,8 @@ class ARCANE_UTILS_EXPORT Real3
     z += b.z;
     return (*this);
   }
-  //! Soustrait \a b au triplet
+
+  //! Subtracts \a b from the triplet
   constexpr ARCCORE_HOST_DEVICE Real3& sub(Real3 b)
   {
     x -= b.x;
@@ -267,7 +276,8 @@ class ARCANE_UTILS_EXPORT Real3
     z -= b.z;
     return (*this);
   }
-  //! Multiple chaque composante du triplet par la composant correspondant de \a b
+
+  //! Multiplies each component of the triplet by the corresponding component of \a b
   constexpr ARCCORE_HOST_DEVICE Real3& mul(Real3 b)
   {
     x *= b.x;
@@ -275,7 +285,8 @@ class ARCANE_UTILS_EXPORT Real3
     z *= b.z;
     return (*this);
   }
-  //! Divise chaque composante du triplet par la composant correspondant de \a b
+
+  //! Divides each component of the triplet by the corresponding component of \a b
   constexpr ARCCORE_HOST_DEVICE Real3& div(Real3 b)
   {
     x /= b.x;
@@ -283,7 +294,8 @@ class ARCANE_UTILS_EXPORT Real3
     z /= b.z;
     return (*this);
   }
-  //! Ajoute \a b à chaque composante du triplet
+
+  //! Adds \a b to each component of the triplet
   constexpr ARCCORE_HOST_DEVICE Real3& addSame(Real b)
   {
     x += b;
@@ -291,7 +303,8 @@ class ARCANE_UTILS_EXPORT Real3
     z += b;
     return (*this);
   }
-  //! Soustrait \a b à chaque composante du triplet
+
+  //! Subtracts b from each component of the triplet
   constexpr ARCCORE_HOST_DEVICE Real3& subSame(Real b)
   {
     x -= b;
@@ -299,7 +312,8 @@ class ARCANE_UTILS_EXPORT Real3
     z -= b;
     return (*this);
   }
-  //! Multiplie chaque composante du triplet par \a b
+
+  //! Multiplies each component of the triplet by b
   constexpr ARCCORE_HOST_DEVICE Real3& mulSame(Real b)
   {
     x *= b;
@@ -307,7 +321,8 @@ class ARCANE_UTILS_EXPORT Real3
     z *= b;
     return (*this);
   }
-  //! Divise chaque composante du triplet par \a b
+
+  //! Divides each component of the triplet by b
   constexpr ARCCORE_HOST_DEVICE Real3& divSame(Real b)
   {
     x /= b;
@@ -315,58 +330,69 @@ class ARCANE_UTILS_EXPORT Real3
     z /= b;
     return (*this);
   }
-  //! Ajoute \a b au triplet.
+
+  //! Adds b to the triplet.
   constexpr ARCCORE_HOST_DEVICE Real3& operator+=(Real3 b) { return add(b); }
-  //! Soustrait \a b au triplet
+
+  //! Subtracts b from the triplet
   constexpr ARCCORE_HOST_DEVICE Real3& operator-=(Real3 b) { return sub(b); }
-  //! Multiple chaque composante du triplet par la composant correspondant de \a b
+
+  //! Multiplies each component of the triplet by the corresponding component of b
   constexpr ARCCORE_HOST_DEVICE Real3& operator*=(Real3 b) { return mul(b); }
-  //! Multiple chaque composante du triplet par le réel \a b
+
+  //! Multiplies each component of the triplet by the real number b
   constexpr ARCCORE_HOST_DEVICE void operator*=(Real b)
   {
     x *= b;
     y *= b;
     z *= b;
   }
-  //! Divise chaque composante du triplet par la composant correspondant de \a b
+
+  //! Divides each component of the triplet by the corresponding component of b
   constexpr ARCCORE_HOST_DEVICE Real3& operator/=(Real3 b) { return div(b); }
-  //! Divise chaque composante du triplet par le réel \a b
+
+  //! Divides each component of the triplet by the real number b
   constexpr ARCCORE_HOST_DEVICE void operator/=(Real b)
   {
     x /= b;
     y /= b;
     z /= b;
   }
-  //! Créé un triplet qui vaut ce triplet ajouté à \a b
+
+  //! Creates a triplet that equals this triplet added to b
   constexpr ARCCORE_HOST_DEVICE Real3 operator+(Real3 b) const { return Real3(x + b.x, y + b.y, z + b.z); }
-  //! Créé un triplet qui vaut \a b soustrait de ce triplet
+
+  //! Creates a triplet that equals b subtracted from this triplet
   constexpr ARCCORE_HOST_DEVICE Real3 operator-(Real3 b) const { return Real3(x - b.x, y - b.y, z - b.z); }
-  //! Créé un triplet opposé au triplet actuel
+
+  //! Creates a triplet opposite to the current triplet
   constexpr ARCCORE_HOST_DEVICE Real3 operator-() const { return Real3(-x, -y, -z); }
+
   /*!
-   * \brief Créé un triplet qui vaut ce triplet dont chaque composant a été
-   * multipliée par la composante correspondante de \a b.
+   * \brief Creates a triplet that equals this triplet whose each component has been
+   * multiplied by the corresponding component of b.
    */
   constexpr ARCCORE_HOST_DEVICE Real3 operator*(Real3 b) const { return Real3(x * b.x, y * b.y, z * b.z); }
+
   /*!
-   * \brief Créé un triplet qui vaut ce triplet dont chaque composant a été divisée
-   * par la composante correspondante de \a b.
+   * \brief Creates a triplet that equals this triplet whose each component has been divided
+   * by the corresponding component of b.
    */
   constexpr ARCCORE_HOST_DEVICE Real3 operator/(Real3 b) const { return Real3(x / b.x, y / b.y, z / b.z); }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real3 operator*(Real sca, Real3 vec)
   {
     return Real3(vec.x * sca, vec.y * sca, vec.z * sca);
   }
 
-  //! Multiplication par un scalaire.
+  //! Multiplication by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real3 operator*(Real3 vec, Real sca)
   {
     return Real3(vec.x * sca, vec.y * sca, vec.z * sca);
   }
 
-  //! Division par un scalaire.
+  //! Division by a scalar.
   friend constexpr ARCCORE_HOST_DEVICE Real3 operator/(Real3 vec, Real sca)
   {
     return Real3(vec.x / sca, vec.y / sca, vec.z / sca);
@@ -375,10 +401,10 @@ class ARCANE_UTILS_EXPORT Real3
  public:
 
   /*!
-   * \brief Opérateur de comparaison.
+   * \brief Comparison operator.
    *
-   * Cet opérateur permet de trier les Real3 pour les utiliser par exemple
-   * dans les std::set
+   * This operator allows sorting Real3 for example
+   * in std::set
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator<(Real3 v1, Real3 v2)
   {
@@ -391,23 +417,23 @@ class ARCANE_UTILS_EXPORT Real3
     return (v1.x < v2.x);
   }
 
-  //! Ecrit le triplet \a t sur le flot \a o
+  //! Writes the triplet t to the stream o
   friend std::ostream& operator<<(std::ostream& o, Real3 t)
   {
     return t.printXyz(o);
   }
 
-  //! Lit le triplet \a t à partir du flot \a o.
+  //! Reads the triplet t from the stream o.
   friend std::istream& operator>>(std::istream& i, Real3& t)
   {
     return t.assign(i);
   }
 
   /*!
-   * \brief Compare composant pas composante l'instance courante à \a b.
+   * \brief Compares the current instance component by component to b.
    *
-   * \retval true si this.x==b.x et this.y==b.y et this.z==b.z.
-   * \retval false sinon.
+   * \retval true if this.x==b.x and this.y==b.y and this.z==b.z.
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool operator==(Real3 b) const
   {
@@ -415,46 +441,47 @@ class ARCANE_UTILS_EXPORT Real3
   }
 
   /*!
-   * \brief Compare deux triplets.
-   * Pour la notion d'égalité, voir operator==()
-   * \retval true si les deux triplets sont différents,
-   * \retval false sinon.
+   * \brief Compares two triplets.
+   * For the notion of equality, see operator==()
+   * \retval true if the two triplets are different,
+   * \retval false otherwise.
    */
   constexpr ARCCORE_HOST_DEVICE bool operator!=(Real3 b) const { return !operator==(b); }
 
  public:
 
-  //! Retourne la norme L2 au carré du triplet \f$x^2+y^2+z^2\f$
-  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::squareNormL2(const Real3&) instead")
+  //! Returns the square of the L2 norm of the triplet $\f$x^2+y^2+z^2$\f$
+  // TODO: deprecate mid-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::squareNormL2(const Real3&) instead")
   constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x * x + y * y + z * z; }
 
-  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::normL2(const Real3&) instead")
+  //! Returns the L2 norm of the triplet $\f$\sqrt{x^2+y^2+z^2}\f$
+  // TODO: deprecate mid-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::normL2(const Real3&) instead")
   inline ARCCORE_HOST_DEVICE Real normL2() const;
 
-  //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
+  //! Returns the square of the norm of the triplet $\f$x^2+y^2+z^2\f$
   ARCCORE_DEPRECATED_2021("Use math::squareNormL2(const Real3&) instead")
   constexpr ARCCORE_HOST_DEVICE Real abs2() const { return x * x + y * y + z * z; }
 
-  //! Retourne la norme du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+  //! Returns the norm of the triplet $\f$\sqrt{x^2+y^2+z^2}\f$
   ARCCORE_DEPRECATED_2021("Use math::normL2(const Real3&) instead")
   inline ARCCORE_HOST_DEVICE Real abs() const;
 
-  // TODO: rendre obsolète mi-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real3&) instead")
+  // TODO: deprecate mid-2025: ARCANE_DEPRECATED_REASON("Y2024: Use math::isNearlyZero(const Real3&) instead")
   inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const;
 
-  // TODO: rendre obsolète mi-2026: ARCANE_DEPRECATED_REASON("Y2024: Use math::mutableNormalize(Real3&) instead")
+  // TODO: deprecate mid-2026: ARCANE_DEPRECATED_REASON("Y2024: Use math::mutableNormalize(Real3&) instead")
   inline Real3& normalize();
 
  private:
 
   /*!
-   * \brief Compare les valeurs de \a a et \a b avec le comparateur TypeEqualT
-   * \retval true si \a a et \a b sont égaux,
-   * \retval false sinon.
+   * \brief Compares the values of a and b using the TypeEqualT comparator
+   * \retval true if a and b are equal,
+   * \retval false otherwise.
    */
   inline constexpr ARCCORE_HOST_DEVICE static bool _eq(Real a, Real b);
-  //! Retourne la racine carrée de \a a
+
+  //! Returns the square root of a
   inline ARCCORE_HOST_DEVICE static Real _sqrt(Real a);
 };
 
@@ -474,33 +501,35 @@ Real2(const Real3& v)
 
 namespace math
 {
-  //! Retourne la norme au carré du triplet \f$x^2+y^2+z^2\f$
+  //! Returns the square of the L2 norm of the triplet $\f$x^2+y^2+z^2\f$
   inline constexpr ARCCORE_HOST_DEVICE Real squareNormL2(const Real3& v)
   {
     return v.x * v.x + v.y * v.y + v.z * v.z;
   }
 
   /*!
-   * \brief Indique si l'instance est proche de l'instance nulle.
+   * \brief Indicates if the instance is close to the zero instance.
    *
-   * \retval true si math::isNearlyZero() est vrai pour chaque composante.
-   * \retval false sinon.
+   * \retval true if math::isNearlyZero() is true for every component.
+   * \retval false otherwise.
    */
   inline constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real3& v)
   {
     return math::isNearlyZero(v.x) && math::isNearlyZero(v.y) && math::isNearlyZero(v.z);
   }
-  //! Retourne la norme L2 du triplet \f$\sqrt{v.x^2+v.y^2+v.z^2}\f$
+
+  //! Returns the L2 norm of the triplet $\f$\sqrt{v.x^2+v.y^2+v.z^2}\f$
   inline ARCCORE_HOST_DEVICE Real normL2(const Real3& v)
   {
     return math::sqrt(math::squareNormL2(v));
   }
+
   /*!
-    * \brief Normalise le triplet \a v
+    * \brief Normalizes the triplet v
     *
-    * Si le triplet est non nul, divise chaque composante par la norme du triplet
-    * (abs()), de telle sorte qu'après l'appel à cette méthode, math::normL2() vaux \a 1.
-    * Si le triplet est nul, ne fait rien.
+    * If the triplet is non-zero, divides each component by the norm of the triplet
+    * (abs()), so that after calling this method, math::normL2() equals 1.
+    * If the triplet is zero, does nothing.
     */
   inline Real3& mutableNormalize(Real3& v)
   {
@@ -509,11 +538,12 @@ namespace math
       v.divSame(d);
     return v;
   }
+
   /*!
-    * \brief Retourne le triplet \a v normalisé avec la norme L2.
+    * \brief Returns the triplet v normalized with the L2 norm.
     *
-    * Si `math::normL2(v)` est non nul, retourne le triplet \a v divisé par \a `math::normL2(v)`.
-    * Sinon, retourne un \a v.
+    * If `math::normL2(v)` is non-zero, returns the triplet v divided by `math::normL2(v)`.
+    * Otherwise, returns v.
     */
   inline Real3 normalizeL2(const Real3& v)
   {

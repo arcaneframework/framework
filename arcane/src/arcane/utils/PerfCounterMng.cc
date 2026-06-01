@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,16 +19,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne la fréquence du CPU en Mhz.
+ * \brief Returns the CPU frequency in MHz.
  *
- * Ne marche que sous Linux et ne tient pas compte des variations
- * possibles de fréquence telles que le turbo-boost.
+ * Only works under Linux and does not account for
+ * possible frequency variations such as turbo-boost.
  */
 extern "C++" int
 arcaneGetCpuBaseFrequency()
@@ -37,17 +38,17 @@ arcaneGetCpuBaseFrequency()
   /* return cpu frequency in MHZ as read in /proc/cpuinfo */
   float ffreq = 0;
   int r = 0;
-  char *rr = NULL;
-  FILE *fdes = fopen("/proc/cpuinfo","r");
+  char* rr = NULL;
+  FILE* fdes = fopen("/proc/cpuinfo", "r");
   char buff[256];
   int bufflength = 256;
-  do{
-    rr = fgets(buff,bufflength,fdes);
-    r = sscanf(buff,"cpu MHz         : %f\n",&ffreq);
-    if(r==1){
+  do {
+    rr = fgets(buff, bufflength, fdes);
+    r = sscanf(buff, "cpu MHz         : %f\n", &ffreq);
+    if (r == 1) {
       break;
     }
-  } while(rr != NULL);
+  } while (rr != NULL);
 
   fclose(fdes);
 
@@ -62,8 +63,7 @@ arcaneGetCpuBaseFrequency()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

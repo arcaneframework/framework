@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ScopedPtr.h                                                 (C) 2000-2006 */
 /*                                                                           */
-/* Encapsulation d'un pointeur qui se détruit automatiquement.               */
+/* Encapsulation of a pointer that is automatically destroyed.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SCOPEDPTR_H
 #define ARCANE_UTILS_SCOPEDPTR_H
@@ -19,75 +19,78 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Encapsulation d'un pointeur qui se détruit automatiquement.
+ * \brief Encapsulation of an automatically destructing pointer.
  *
- Cette classe encapsule un pointeur sur un objet qui sera détruit (par
- l'intermédiaire de l'opérateur delete) lorsque l'instance de cette classe
- devient hors de portée.
+ This class encapsulates a pointer to an object that will be destroyed (via
+ the delete operator) when the instance of this class goes out of scope.
 
- Cette classe est utile pour être sur qu'un objet sera désalloué même dans
- le cas où une exception survient.
+ This class is useful to ensure that an object is deallocated even if an exception occurs.
 
  \since 0.4.40
  \author Gilles Grospellier
  \date 16/07/2001
  */
-template<class T>
+template <class T>
 class ScopedPtrT
 : public PtrT<T>
 {
  public:
 
-  //! Type de la classe de base
+  //! Base class type
   typedef PtrT<T> BaseClass;
 
  public:
 
-  //! Construit une instance sans référence
-  ScopedPtrT() : BaseClass(0) {}
+  //! Constructs an instance without a reference
+  ScopedPtrT()
+  : BaseClass(0)
+  {}
 
-  //! Construit une instance référant \a t
-  explicit ScopedPtrT(T* t) : BaseClass(t) {}
+  //! Constructs an instance referencing t
+  explicit ScopedPtrT(T* t)
+  : BaseClass(t)
+  {}
 
-  //! Détruit l'objet référencé.
+  //! Destroys the referenced object.
   ~ScopedPtrT() { delete this->m_value; }
 
  public:
-  
-  //! Opérateur de copie
-  const ScopedPtrT<T>& operator=(const ScopedPtrT<T>& from)
-    {
-      if (this!=&from){
-        delete this->m_value;
-        BaseClass::operator=(from);
-      }
-      return (*this);
-    }
 
-  //! Affecte à l'instance la value \a new_value
-  const ScopedPtrT<T>& operator=(T* new_value)
-    {
-      if (this->m_value!=new_value){
-        delete this->m_value;
-        this->m_value = new_value;
-      }
-      return (*this);
+  //! Copy operator
+  const ScopedPtrT<T>& operator=(const ScopedPtrT<T>& from)
+  {
+    if (this != &from) {
+      delete this->m_value;
+      BaseClass::operator=(from);
     }
+    return (*this);
+  }
+
+  //! Assigns the value new_value to the instance
+  const ScopedPtrT<T>& operator=(T* new_value)
+  {
+    if (this->m_value != new_value) {
+      delete this->m_value;
+      this->m_value = new_value;
+    }
+    return (*this);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IHashAlgorithm.h                                            (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un algorithme de hashage.                                     */
+/* Interface of a hashing algorithm.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IHASHALGORITHM_H
 #define ARCANE_UTILS_IHASHALGORITHM_H
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Valeur retournée par un algorithme de hashage.
+ * \brief Hash algorithm return value.
  */
 class ARCANE_UTILS_EXPORT HashAlgorithmValue
 {
@@ -60,11 +61,12 @@ class ARCANE_UTILS_EXPORT HashAlgorithmValue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte pour calculer un hash de manière incrémentale.
+ * \brief Context for calculating a hash incrementally.
  *
- * On peut utiliser un même contexte plusieurs fois en appelant reset() pour
- * réinitialiser l'instance.
+ * The same context can be used multiple times by calling reset() to
+ * reset the instance.
  *
  * \code
  * IHashAlgorithm* algo = ...;
@@ -87,20 +89,21 @@ class ARCANE_UTILS_EXPORT IHashAlgorithmContext
 
  public:
 
-  //! Réinitialise l'instance pour calculer une nouvelle valeur de hash.
+  //! Resets the instance to calculate a new hash value.
   virtual void reset() = 0;
 
-  //! Ajoute le tableau \a input au hash calculé
+  //! Adds the array \a input to the calculated hash
   virtual void updateHash(Span<const std::byte> input) = 0;
 
-  //! Calcule la valeur de hashage et la retourne dans hash_value.
+  //! Calculates the hash value and returns it in hash_value.
   virtual void computeHashValue(HashAlgorithmValue& hash_value) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un algorithme de hashage.
+ * \brief Interface of a hashing algorithm.
  */
 class ARCANE_UTILS_EXPORT IHashAlgorithm
 {
@@ -110,64 +113,64 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
 
  public:
 
-  //NOTE: pour l'instant (version 3.10) par encore virtuel pure pour rester
-  // compatible avec l'existant
-  //! Nom de l'algorithme
+  //NOTE: for now (version 3.10) still pure virtual to remain
+  // compatible with existing code
+  //! Name of the algorithm
   virtual String name() const;
 
-  //NOTE: pour l'instant (version 3.10) par encore virtuel pure pour rester
-  // compatible avec l'existant. Envoi FatalErrorException si pas surchargée
-  //! Taille (en octet) de la clé de hash.
+  //NOTE: for now (version 3.10) still pure virtual to remain
+  // compatible with existing code. Throws FatalErrorException if not overridden
+  //! Size (in bytes) of the hash key.
   virtual Int32 hashSize() const;
 
   /*!
-   * \brief Calcule la valeur du hash pour le tableau \a input.
+   * \brief Calculates the hash value for the array \a input.
    *
-   * La valeur de hashage est <strong>ajoutée</string> dans \a output.
-   * La longueur ajoutée est égale à hashSize().
+   * The hash value is <strong >added</strong > to \a output.
+   * The added length is equal to hashSize().
    */
   virtual void computeHash64(Span<const Byte> input, ByteArray& output);
 
   /*!
-   * \brief Calcule la valeur du hash pour le tableau \a input.
+   * \brief Calculates the hash value for the array \a input.
    *
-   * La valeur de hashage est <strong>ajoutée</string> dans \a output.
-   * La longueur ajoutée est égale à hashSize().
+   * The hash value is <strong >added</strong > to \a output.
+   * The added length is equal to hashSize().
    */
   virtual void computeHash64(Span<const std::byte> input, ByteArray& output);
 
-  //NOTE: pour l'instant (version 3.11) par encore virtuel pure pour rester
-  // compatible avec l'existant
+  //NOTE: for now (version 3.10) still pure virtual to remain
+  // compatible with existing code
   /*!
-   * \brief Calcule la valeur du hash pour le tableau \a input.
+   * \brief Calculates the hash value for the array \a input.
    *
-   * La valeur de hashage est positionnée dans \a value
+   * The hash value is positioned in \a value
    */
   virtual void computeHash(Span<const std::byte> input, HashAlgorithmValue& value);
 
-  //NOTE: pour l'instant (version 3.11) par encore virtuel pure pour rester
-  // compatible avec l'existant
+  //NOTE: for now (version 3.11) still pure virtual to remain
+  // compatible with existing code
   /*!
-   * \brief Créé un contexte pour calculer la valeur du hash
-   * de manière incrémentale.
+   * \brief Creates a context to calculate the hash value
+   * incrementally.
    *
-   * Si l'implémentation ne supporte pas le mode incrémental (hasCreateContext()==false),
-   * une exception est levée.
+   * If the implementation does not support incremental mode (hasCreateContext()==false),
+   * an exception is thrown.
    */
   virtual Ref<IHashAlgorithmContext> createContext();
 
-  //NOTE: pour l'instant (version 3.11) par encore virtuel pure pour rester
-  // compatible avec l'existant
-  //! Indique si l'implémentation supporte un hash incrémental
+  //NOTE: for now (version 3.11) still pure virtual to remain
+  // compatible with existing code
+  //! Indicates if the implementation supports incremental hashing
   virtual bool hasCreateContext() const { return false; }
 
  public:
 
   /*!
-   * \brief Calcule la valeur du hash pour le tableau \a input.
+   * \brief Calculates the hash value for the array \a input.
    *
-   * La valeur de hashage est <strong>ajoutée</string> dans \a output.
-   * La longueur dépend de l'algorithme utilisé.
+   * The hash value is <strong >added</strong > to \a output.
+   * The length depends on the algorithm used.
    */
   ARCANE_DEPRECATED_REASON("Y2023: Use computeHash64(Span<const std::byte> input,ByteArray& output) instead")
   virtual void computeHash(ByteConstArrayView input, ByteArray& output) = 0;
@@ -181,5 +184,4 @@ class ARCANE_UTILS_EXPORT IHashAlgorithm
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

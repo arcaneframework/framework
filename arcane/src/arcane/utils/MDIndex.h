@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MDIndex.h                                                   (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des indices des tableaux multi-dimensionnels.                     */
+/* Handling of indices for multi-dimensional arrays.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MDINDEX_H
 #define ARCANE_UTILS_MDINDEX_H
@@ -21,9 +21,10 @@
 /*
  * ATTENTION:
  *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
+ * All classes in this file are experimental and the API is not
+ * fixed. DO NOT USE OUTSIDE OF ARCANE.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,16 +33,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base de la gestion des indices d'un tableau N-dimension.
+ * \brief Base class for managing indices of an N-dimensional array.
  */
 template <int RankValue, typename IndexType_>
 class MDIndexBase
 {
  protected:
 
-  // Note: on pourrait utiliser '= default' mais cela ne passe pas
-  // avec VS2017 car pour lui le constructeur n'est pas 'constexpr'
+  // Note: we could use '= default' but this does not work
+  // with VS2017 because for it the constructor is not 'constexpr'
   constexpr MDIndexBase() {}
   constexpr MDIndexBase(std::array<Int32, RankValue> _id)
   : m_indexes(_id)
@@ -49,23 +51,23 @@ class MDIndexBase
 
  public:
 
-  //! Liste des indices
+  //! List of indices
   constexpr std::array<Int32, RankValue> operator()() const { return m_indexes; }
 
-  //! Retourne le i-ème indice
+  //! Returns the i-th index
   constexpr ARCCORE_HOST_DEVICE Int32 operator[](int i) const
   {
     ARCCORE_CHECK_AT(i, RankValue);
     return m_indexes[i];
   }
-  //! Retourne le i-ème indice sous la forme d'un Int64
+  //! Returns the i-th index in the form of an Int64
   constexpr ARCCORE_HOST_DEVICE Int64 asInt64(int i) const
   {
     ARCCORE_CHECK_AT(i, RankValue);
     return m_indexes[i];
   }
 
-  //! Ajoute \a rhs aux valeurs des indices de l'instance.
+  //! Adds \a rhs to the index values of the instance.
   constexpr ARCCORE_HOST_DEVICE void add(const MDIndexBase<RankValue>& rhs)
   {
     for (int i = 0; i < RankValue; ++i)

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ class MemoryTester
       array1[i] = x;
     }
 
-    // Teste MutableMemoryView::copyHost()
+    // Test MutableMemoryView::copyHost()
     {
       UniqueArray<DataType> array2(nb_value);
       MutableMemoryView to(array2.span());
@@ -94,8 +94,8 @@ class MemoryTester
       ASSERT_EQ(array1, array2);
     }
 
-    // Liste des indexs qu'on veut copier.
-    // Cette liste est générée aléatoirement
+    // List of indices we want to copy.
+    // This list is generated randomly
     UniqueArray<Int32> copy_indexes;
     unsigned int seed0 = 942244294;
     std::mt19937 mt1(seed0);
@@ -108,11 +108,11 @@ class MemoryTester
     Int32 nb_index = copy_indexes.size();
     std::cout << "NB_COPY=" << nb_index << "\n";
 
-    // Teste MutableMemoryView::copyFromIndexesHost()
+    // Test MutableMemoryView::copyFromIndexesHost()
     {
-      // array2 contient la référence à laquelle
-      // il faudra comparer l'opération de recopie
-      // avec index
+      // array2 contains the reference to which
+      // the copy operation must be compared
+      // with index
       UniqueArray<DataType> array2(nb_index);
       for (Int32 i = 0; i < nb_index; ++i)
         array2[i] = array1[copy_indexes[i]];
@@ -128,11 +128,11 @@ class MemoryTester
       ASSERT_EQ(view3.bytes(), asBytes(array1));
     }
 
-    // Teste MutableMemoryView::copyToIndexesHost()
+    // Test MutableMemoryView::copyToIndexesHost()
     {
-      // array2 contient la référence à laquelle
-      // il faudra comparer l'opération de recopie
-      // avec index
+      // array2 contains the reference to which
+      // the copy operation must be compared
+      // with index
       UniqueArray<DataType> array2(nb_value);
       UniqueArray<DataType> array3(nb_value);
       for (Int32 i = 0; i < nb_value; ++i) {
@@ -157,7 +157,7 @@ class MemoryTester
 
 TEST(Memory, Basic)
 {
-  // TODO: Tester NumVector et NumMatrix
+  // TODO: Test NumVector and NumMatrix
   try {
     MemoryTester<char>{}.apply();
     MemoryTester<Real>{}.apply();

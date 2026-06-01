@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IUserData.h                                                 (C) 2000-2012 */
 /*                                                                           */
-/* Interface pour une donnée utilisateur attachée à un autre objet.          */
+/* Interface for user data attached to another object.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IUSERDATA_H
 #define ARCANE_UTILS_IUSERDATA_H
@@ -19,37 +19,38 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour une donnée utilisateur attachée à un autre objet.
+ * \brief Interface for user data attached to another object.
  * \ingroup Core
  */
 class ARCANE_UTILS_EXPORT IUserData
 {
  public:
-	
-  //! Libère les ressources
-  virtual ~IUserData(){}
+
+  //! Releases resources
+  virtual ~IUserData() {}
 
  public:
 
-  //! Méthode exécutée lorsque l'instance est attachée.
-  virtual void notifyAttach() =0;
+  //! Method executed when the instance is attached.
+  virtual void notifyAttach() = 0;
 
-  //! Méthode exécutée lorsque l'instance est détachée.
-  virtual void notifyDetach() =0;
+  //! Method executed when the instance is detached.
+  virtual void notifyDetach() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

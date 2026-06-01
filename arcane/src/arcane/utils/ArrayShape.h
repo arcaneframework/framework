@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArrayShape.h                                                (C) 2000-2023 */
 /*                                                                           */
-/* Représente la forme d'un tableau.                                         */
+/* Represents the shape of an array.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARRAYSHAPE_H
 #define ARCANE_UTILS_ARRAYSHAPE_H
@@ -22,9 +22,10 @@
 /*
  * ATTENTION:
  *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
+ * All classes in this file are experimental and the API is not
+ * finalized. DO NOT USE OUTSIDE OF ARCANE.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,8 +34,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Forme d'un tableau
+ * \brief Array shape
  */
 class ARCANE_UTILS_EXPORT ArrayShape
 {
@@ -47,16 +49,16 @@ class ARCANE_UTILS_EXPORT ArrayShape
 
  public:
 
-  //! Rang de la forme
+  //! Rank of the shape
   Int32 nbDimension() const { return m_nb_dim; }
 
-  //! Valeurs de chaque dimension
+  //! Values of each dimension
   SmallSpan<const Int32> dimensions() const { return { m_dims.data(), m_nb_dim }; }
 
-  //! Nombre d'élements de la index-ème dimension
+  //! Number of elements in the index-th dimension
   Int32 dimension(Int32 index) const { return m_dims[index]; }
 
-  //! Nombre total d'élements
+  //! Total number of elements
   Int64 totalNbElement() const
   {
     Int64 v = 1;
@@ -65,13 +67,13 @@ class ARCANE_UTILS_EXPORT ArrayShape
     return v;
   }
 
-  //! Positionne le rang de la forme
+  //! Sets the rank of the shape
   void setNbDimension(Int32 nb_value);
 
-  //! Positionne la valeur de la index-ème dimension à \a value
+  //! Sets the value of the index-th dimension to \a value
   void setDimension(Int32 index, Int32 value) { m_dims[index] = value; }
 
-  //! Positionne le nombre et la valeur des dimensions
+  //! Sets the number and values of the dimensions
   void setDimensions(Span<const Int32> dims);
 
   friend std::ostream& operator<<(std::ostream& o, const ArrayShape& s)

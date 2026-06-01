@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* FileContent.h                                               (C) 2000-2019 */
 /*                                                                           */
-/* Contenu d'un fichier.                                                     */
+/* File content.                                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_FILECONTENT_H
 #define ARCANE_UTILS_FILECONTENT_H
@@ -25,27 +25,35 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Description et contenu d'un fichier.
+ * \brief Description and content of a file.
  */
 class ARCANE_UTILS_EXPORT FileContent
 {
  public:
+
   static const Int32 CURRENT_VERSION = 1;
- public:
-
-  //! Créé un contenu vide.
-  FileContent() : m_version(CURRENT_VERSION) {}
-  FileContent(Span<const Byte> abytes,Int32 version,const String& compression)
-  : m_bytes(abytes), m_version(version), m_compression(compression){}
 
  public:
 
-  //! Contenu du fichier
+  //! Creates empty content.
+  FileContent()
+  : m_version(CURRENT_VERSION)
+  {}
+  FileContent(Span<const Byte> abytes, Int32 version, const String& compression)
+  : m_bytes(abytes)
+  , m_version(version)
+  , m_compression(compression)
+  {}
+
+ public:
+
+  //! File content
   Span<const Byte> bytes() const;
-  //! Version du contenu
+  //! Content version
   Int32 version() const { return m_version; }
-  //! Algorithme de compression utilisé.
+  //! Compression algorithm used.
   const String& compression() const { return m_compression; }
 
  private:
@@ -63,5 +71,4 @@ class ARCANE_UTILS_EXPORT FileContent
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

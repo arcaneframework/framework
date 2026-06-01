@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Convert.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions pour convertir un type en un autre.                             */
+/* Functions to convert one type to another.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_CONVERT_H
 #define ARCANE_UTILS_CONVERT_H
@@ -25,45 +25,49 @@ namespace Arcane::Convert
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un tableau d'octet en sa représentation hexadécimale.
+ * \brief Converts a byte array to its hexadecimal representation.
  *
- * Chaque octet de \a input est converti en deux caractères hexadécimaux,
- * appartenant à [0-9a-f].
+ * Each byte of \a input is converted into two hexadecimal characters,
+ * belonging to [0-9a-f].
  */
 extern ARCANE_UTILS_EXPORT String
 toHexaString(ByteConstArrayView input);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un tableau d'octet en sa représentation hexadécimale.
+ * \brief Converts a byte array to its hexadecimal representation.
  *
- * Chaque octet de \a input est converti en deux caractères hexadécimaux,
- * appartenant à [0-9a-f].
+ * Each byte of \a input is converted into two hexadecimal characters,
+ * belonging to [0-9a-f].
  */
 extern ARCANE_UTILS_EXPORT String
 toHexaString(Span<const std::byte> input);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un réel en sa représentation hexadécimale.
+ * \brief Converts a real number to its hexadecimal representation.
  *
- * Chaque octet de \a input est converti en deux caractères hexadécimaux,
- * appartenant à [0-9a-f].
+ * Each byte of \a input is converted into two hexadecimal characters,
+ * belonging to [0-9a-f].
  */
 extern ARCANE_UTILS_EXPORT String
 toHexaString(Real input);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un entier 64 bits sa représentation hexadécimale.
+ * \brief Converts a 64-bit integer to its hexadecimal representation.
  *
- * Chaque octet de \a input est converti en deux caractères hexadécimaux,
- * appartenant à [0-9a-f].
- * Le tableau \a output doit avoir au moins 16 éléments.
+ * Each byte of \a input is converted into two hexadecimal characters,
+ * belonging to [0-9a-f].
+ * The \a output array must have at least 16 elements.
  */
 extern ARCANE_UTILS_EXPORT void
 toHexaString(Int64 input, Span<Byte> output);
@@ -76,5 +80,4 @@ toHexaString(Int64 input, Span<Byte> output);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

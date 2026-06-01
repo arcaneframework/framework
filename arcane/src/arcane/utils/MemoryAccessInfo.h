@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MemoryAccessInfo.h                                          (C) 2000-2006 */
 /*                                                                           */
-/* Informations sur un accès mémoire.                                        */
+/* Information about a memory access.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MEMORYACCESSINFO_H
 #define ARCANE_UTILS_MEMORYACCESSINFO_H
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,9 +39,12 @@ enum eMemoryAccessMessage
 class ARCANE_UTILS_EXPORT IMemoryAccessTrace
 {
  public:
+
   virtual ~IMemoryAccessTrace() {}
+
  public:
-  virtual void notify(eMemoryAccessMessage message,Integer handle) =0;
+
+  virtual void notify(eMemoryAccessMessage message, Integer handle) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -49,11 +53,17 @@ class ARCANE_UTILS_EXPORT IMemoryAccessTrace
 class ARCANE_UTILS_EXPORT MemoryAccessInfo
 {
  public:
- 
-  MemoryAccessInfo(Byte* info,IMemoryAccessTrace* trace,Integer handle)
-  : m_info(info), m_trace(trace), m_handle(handle) {}
+
+  MemoryAccessInfo(Byte* info, IMemoryAccessTrace* trace, Integer handle)
+  : m_info(info)
+  , m_trace(trace)
+  , m_handle(handle)
+  {}
   MemoryAccessInfo(const MemoryAccessInfo& rhs)
-  : m_info(rhs.m_info), m_trace(rhs.m_trace), m_handle(rhs.m_handle) {}
+  : m_info(rhs.m_info)
+  , m_trace(rhs.m_trace)
+  , m_handle(rhs.m_handle)
+  {}
 
  public:
 
@@ -75,7 +85,7 @@ class ARCANE_UTILS_EXPORT MemoryAccessInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

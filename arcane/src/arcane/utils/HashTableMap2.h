@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 #include "arccore/common/AllocatedMemoryInfo.h"
 #include "arccore/common/IMemoryAllocator.h"
 
-// Version initiale issue du commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (27 aout 2024)
+// Initial version released from commit bdebddbdce1b473bbc189178fd523ef4a876ea01 (August 27, 2024)
 // emhash8::HashMap for C++14/17
 // version 1.6.5
 // https://github.com/ktprime/emhash/blob/master/hash_table8.hpp
@@ -857,7 +857,6 @@ class HashTableMap2
 
     m_last = m_num_filled = 0;
     m_etail = INACTIVE;
-
   }
 
   void shrink_to_fit(const float min_factor = EMH_DEFAULT_LOAD_FACTOR / 4)
@@ -865,7 +864,6 @@ class HashTableMap2
     if (load_factor() < min_factor && bucket_count() > 10) //safe guard
       rehash(m_num_filled + 1);
   }
-
 
   /// Make room for this many elements
   bool reserve(uint64_t num_elems, bool force)

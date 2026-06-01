@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VersionInfo.h                                               (C) 2000-2018 */
 /*                                                                           */
-/* Informations sur une version d'un objet.                                  */
+/* Information about an object's version.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_VERSIONINFO_H
 #define ARCANE_UTILS_VERSIONINFO_H
@@ -21,79 +21,82 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une version.
+ * \brief Information about a version.
  *
- Cette classe contient les informations sur une version d'un objet.
- Le numéro de version comprends 3 valeurs entières:
+ This class contains information about an object's version.
+ The version number comprises 3 integer values:
 
- \arg le numéro de version majeure,
- \arg le numéro de version mineure,
- \arg le numéro de version patch,
+ \arg the major version number,
+ \arg the minor version number,
+ \arg the patch version number,
 
- Le numéro de version majeure correspondant à une évolution fondamentale
- de l'objet. Le numéro de version mineure correspondant à des évolutions
- moins importantes. Une évolution de la version majeure ou mineure
- suppose qu'on ne garde pas la compatibilité binaire.
+ The major version number corresponds to a fundamental evolution
+ of the object. The minor version number corresponds to less significant evolutions. A major or minor version evolution
+ implies that binary compatibility is not maintained.
 
- \note le numéro de sous-version n'est plus utilisé.
+ \note the sub-version number is no longer used.
  */
 class ARCANE_UTILS_EXPORT VersionInfo
 {
  public:
 
-  //! Construit une version nulle
+  //! Constructs a null version
   VersionInfo();
 
-  //! Construit une informations de version
-  VersionInfo(int vmajor,int vminor,int vpatch);
+  //! Constructs a version information
+  VersionInfo(int vmajor, int vminor, int vpatch);
 
-  /*! \brief Construit une informations de version
-   * \a version_str doit être de la forme "M.m.p.b" avec \e M version majeure,
-   * \m version mineure, \a p numéro de patch et \b numéro béta.
+  /*! \brief Constructs a version information
+   * \a version_str must be in the format "M.m.p.b" where M is the major version,
+   * \m is the minor version, p is the patch number, and b is the beta number.
    */
   VersionInfo(const Arccore::String& version_str);
 
  public:
-	
-  //! Retourne le numéro de version majeur
+
+  //! Returns the major version number
   int versionMajor() const { return m_major; }
-  //! Retourne le numéro de version mineur
+
+  //! Returns the minor version number
   int versionMinor() const { return m_minor; }
-  //! Retourne le numéro de version patch
+
+  //! Returns the patch version number
   int versionPatch() const { return m_patch; }
 
-  //! Numéro de version sous la forme d'une chaîne de caractères
+  //! Version number in string format
   String versionAsString() const;
 
  public:
 
-  // Imprime les numéros de version sur le flot \a o
+  // Prints the version numbers to the stream o
   void write(std::ostream& o) const;
 
  private:
 
-  int m_major; //!< Numéro de version majeur
-  int m_minor; //!< Numéro de version mineur
-  int m_patch; //!< Numéro de version patch
+  int m_major; //!< Major version number
+  int m_minor; //!< Minor version number
+  int m_patch; //!< Patch version number
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT std::ostream&
-operator<<(std::ostream& o,const VersionInfo& vi);
+operator<<(std::ostream& o, const VersionInfo& vi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

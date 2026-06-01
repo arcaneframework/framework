@@ -21,11 +21,11 @@ if (ARCANE_HAS_ACCELERATOR_API)
     TestCxx20.cc
     TestNumArray.cc
   )
-endif()
+endif ()
 
 arcane_add_component_test_executable(utils
   FILES ${SOURCE_FILES}
-  )
+)
 
 target_link_libraries(arcane_utils.tests PUBLIC arcane_utils GTest::GTest GTest::Main)
 

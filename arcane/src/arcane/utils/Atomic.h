@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Atomic.h                                                    (C) 2000-2024 */
 /*                                                                           */
-/* Types atomiques pour le multi-threading.                                  */
+/* Atomic types for multi-threading.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ATOMIC_H
 #define ARCANE_UTILS_ATOMIC_H
@@ -24,17 +24,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type 'Int32' atomique.
+ * \brief Atomic 'Int32' type.
  *
- * \deprecated Cette classe est obsolète. Il faut utiliser std::atomic<Int32>
- * à la place.
+ * \deprecated This class is obsolete. You must use std::atomic<Int32>
+ * instead.
  */
 class ARCANE_UTILS_EXPORT AtomicInt32
 {
  public:
 
-  //! Constructeur: attention, aucune initialisation
+  //! Constructor: warning, no initialization
   ARCANE_DEPRECATED_REASON("Y2022: Use std::atomic<Int32> instead")
   AtomicInt32() {}
   ARCANE_DEPRECATED_REASON("Y2022: Use std::atomic<Int32> instead")

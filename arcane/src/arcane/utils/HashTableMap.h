@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HashTableMap.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Tableau associatif utilisant une table de hachage.                        */
+/* Associative array using a hash table.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_HASHTABLEMAP_H
 #define ARCANE_UTILS_HASHTABLEMAP_H
@@ -32,21 +32,19 @@ class HashTableMapEnumeratorT;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Table de hachage pour tableaux associatifs.
+ * \brief Hash table for associative arrays.
  
- Cette table permet de stocker une valeur en fonction d'une clé. La
- clé est de type \a KeyType et la valeur \a ValueType.
+ This table allows storing a value based on a key. The key is of type \a KeyType and the value is \a ValueType.
 
- Cette table permet pour l'instant uniquement d'ajouter des valeurs.
- La mémoire associée à chaque entrée du tableau est gérée par
- un MultiBufferT.
+ For now, this table only allows adding values.
+ The memory associated with each entry in the array is managed by
+ a MultiBufferT.
 
- Il est possible de spécifier une fonction de hachage différente de
- la fonction par défaut en spécifiant le troisième paramètre
- template \a KeyTraitsType.
+ It is possible to specify a hash function different from
+ the default function by specifying the third template parameter \a KeyTraitsType.
 
- Pour des raisons de performance, il est préférable que la taille
- de la table (buckets) soit un nombre premier.
+ For performance reasons, it is preferable that the size
+ of the table (buckets) is a prime number.
 */
 template <typename KeyType, typename ValueType, typename KeyTraitsType = HashTraitsT<KeyType>>
 class HashTableMapT
@@ -79,12 +77,12 @@ class HashTableMapT
     KeyTypeConstRef key() { return m_key; }
     const ValueType& value() const { return m_value; }
     ValueType& value() { return m_value; }
-    //! Modifie la valeur de l'instance.
+    //! Modifies the value of the instance.
     void setValue(const ValueType& avalue) { m_value = avalue; }
     /*!
-     * \brief Change la valeur de la clé.
+     * \brief Changes the value of the key.
      *
-     * Après avoir changé la valeur d'une ou plusieurs clés, il faut faire un rehash().
+     * After changing the value of one or more keys, a rehash() must be performed.
      */
     void setKey(const KeyType& new_key)
     {
@@ -93,17 +91,17 @@ class HashTableMapT
 
    public:
 
-    KeyTypeValue m_key; //!< Clé de recherche
-    ValueType m_value; //!< Valeur de l'élément
-    Data* m_next = nullptr; //! Elément suivant dans la table de hachage
+    KeyTypeValue m_key; //!< Search key
+    ValueType m_value; //!< Element value
+    Data* m_next = nullptr; //! Next element in the hash table
   };
 
  public:
 
-  /*! \brief Crée une table de taille \a table_size
+  /*! \brief Creates a table of size \a table_size
    *
-   Si \a use_prime est vrai, utilise la fonction nearestPrimeNumber()
-   pour avoir une taille de taille qui est un nombre premier.
+   If \a use_prime is true, it uses the nearestPrimeNumber() function
+   to have a size that is a prime number.
   */
   HashTableMapT(Integer table_size, bool use_prime)
   : HashTableBase(table_size, use_prime)
@@ -118,10 +116,10 @@ class HashTableMapT
     _computeMaxCount();
   }
 
-  /*! \brief Crée une table de taille \a table_size
+  /*! \brief Creates a table of size \a table_size
    *
-   Si \a use_prime est vrai, utilise la fonction nearestPrimeNumber()
-   pour avoir une taille de taille qui est un nombre premier.
+   If \a use_prime is true, it uses the nearestPrimeNumber() function
+   to have a size that is a prime number.
   */
   HashTableMapT(Integer table_size, bool use_prime, Integer buffer_size)
   : HashTableBase(table_size, use_prime)
@@ -140,7 +138,7 @@ class HashTableMapT
     delete m_buffer;
   }
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   ThatClass& operator=(const ThatClass& from)
   {
     if (&from == this)
@@ -148,7 +146,7 @@ class HashTableMapT
     //cout << "** OPERATOR= this=" << this << '\n';
     Integer nb_bucket = from.m_nb_bucket;
     m_first_free = 0;
-    // Remet à zéro le compteur.
+    // Resets the counter.
     m_count = 0;
     m_buckets.resize(nb_bucket);
     m_buckets.fill(0);
@@ -165,7 +163,7 @@ class HashTableMapT
 
  public:
 
-  //! \a true si une valeur avec la clé \a id est présente
+  //! \a true if a value with key \a id is present
   bool hasKey(KeyTypeConstRef id)
   {
     Integer hf = _keyToBucket(id);
@@ -176,7 +174,7 @@ class HashTableMapT
     return false;
   }
 
-  //! Supprime tous les éléments de la table
+  //! Deletes all elements from the table
   void clear()
   {
     m_buckets.fill(0);
@@ -184,9 +182,9 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche la valeur correspondant à la clé \a id.
+   * \brief Searches for the value corresponding to key \a id.
    *
-   * \return la structure associé à la clé \a id (0 si aucune)
+   * \return the structure associated with key \a id (0 if none)
    */
   Data* lookup(KeyTypeConstRef id)
   {
@@ -194,9 +192,9 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche la valeur correspondant à la clé \a id.
+   * \brief Searches for the value corresponding to key \a id.
    *
-   * \return la structure associé à la clé \a id (0 si aucune)
+   * \return the structure associated with key \a id (0 if none)
    */
   const Data* lookup(KeyTypeConstRef id) const
   {
@@ -204,9 +202,9 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche la valeur correspondant à la clé \a id.
+   * \brief Searches for the value corresponding to key \a id.
    *
-   * Une exception est générée si la valeur n'est pas trouvé.
+   * An exception is generated if the value is not found.
    */
   ValueType& lookupValue(KeyTypeConstRef id)
   {
@@ -218,9 +216,9 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche la valeur correspondant à la clé \a id.
+   * \brief Searches for the value corresponding to key \a id.
    *
-   * Une exception est générée si la valeur n'est pas trouvé.
+   * An exception is generated if the value is not found.
    */
   ValueType& operator[](KeyTypeConstRef id)
   {
@@ -228,9 +226,9 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche la valeur correspondant à la clé \a id.
+   * \brief Searches for the value corresponding to key \a id.
    *
-   * Une exception est générée si la valeur n'est pas trouvé.
+   * An exception is generated if the value is not found.
    */
   const ValueType& lookupValue(KeyTypeConstRef id) const
   {
@@ -242,9 +240,9 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche la valeur correspondant à la clé \a id.
+   * \brief Searches for the value corresponding to key \a id.
    *
-   * Une exception est générée si la valeur n'est pas trouvé.
+   * An exception is generated if the value is not found.
    */
   const ValueType& operator[](KeyTypeConstRef id) const
   {
@@ -252,12 +250,12 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Ajoute la valeur \a value correspondant à la clé \a id
+   * \brief Adds the value \a value corresponding to key \a id
    *
-   * Si une valeur correspondant à \a id existe déjà, elle est remplacée.
+   * If a value corresponding to \a id already exists, it is replaced.
    *
-   * \retval true si la clé est ajoutée
-   * \retval false si la clé existe déjà et est remplacée
+   * \retval true if the key is added
+   * \retval false if the key already exists and is replaced
    */
   bool add(KeyTypeConstRef id, const ValueType& value)
   {
@@ -273,7 +271,7 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Supprime la valeur associée à la clé \a id
+   * \brief Removes the value associated with key \a id
    */
   void remove(KeyTypeConstRef id)
   {
@@ -284,14 +282,14 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Recherche ou ajoute la valeur correspondant à la clé \a id.
+   * \brief Searches for or adds the value corresponding to key \a id.
    * 
-   * Si la clé \a id est déjà dans la table, retourne une référence sur cette
-   * valeur et positionne \a is_add à \c false. Sinon, ajoute la clé \a id
-   * avec pour valeur \a value et positionne \a is_add à \c true.
+   * If key \a id is already in the table, returns a reference to this
+   * value and sets \a is_add to \c false. Otherwise, adds key \a id
+   * with value \a value and sets \a is_add to \c true.
    *
-   * La structure retournée n'est jamais nul et peut être conservée car elle
-   * ne change pas d'adresse tant que cette instance de la table de hachage existe
+   * The returned structure is never null and can be kept because it
+   * does not change address as long as this hash table instance exists
    */
   Data* lookupAdd(KeyTypeConstRef id, const ValueType& value, bool& is_add)
   {
@@ -302,42 +300,42 @@ class HashTableMapT
       return ht;
     }
     is_add = true;
-    // Toujours faire le resize avant de retourner le add
-    // car cela peut invalider le Data*
+    // Always perform the resize before returning the add
+    // because it may invalidate the Data*
     _checkResize();
     ht = _add(_hashValueToBucket(hf), id, value);
     return ht;
   }
 
   /*!
-   * \brief Recherche ou ajoute la valeur correspondant à la clé \a id.
+   * \brief Searches for or adds the value corresponding to key \a id.
    *
-   * Si la clé \a id est déjà dans la table, retourne une référence sur cette
-   * valeur et positionne \a is_add à \c false. Sinon, ajoute la clé \a id
-   * avec pour valeur \a ValueType() (qui doit exister).
+   * If key \a id is already in the table, returns a reference to this
+   * value and sets \a is_add to \c false. Otherwise, adds key \a id
+   * with value \a ValueType() (which must exist).
    * 
-   * La structure retournée n'est jamais nul et peut être conservée car elle
-   * ne change pas d'adresse tant que cette instance de la table de hachage existe
+   * The returned structure is never null and can be kept because it
+   * does not change address as long as this hash table instance exists
    */
   Data* lookupAdd(KeyTypeConstRef id)
   {
     HashValueType hf = _applyHash(id);
     Data* ht = _lookupBucket(_hashValueToBucket(hf), id);
     if (!ht) {
-      // Toujours faire le resize avant de retourner le add
-      // car cela peut invalider le Data*
+      // Always perform the resize before returning the add
+      // because it may invalidate the Data*
       _checkResize();
-      // Le resize provoque change le bucket associé à une clé
+      // The resize changes the bucket associated with a key
       ht = _add(_hashValueToBucket(hf), id, ValueType());
     }
     return ht;
   }
 
   /*!
-   * \brief Ajoute la valeur \a value correspondant à la clé \a id
+   * \brief Adds the value \a value corresponding to the key \a id
    *
-   * Si une valeur correspondant à \a id existe déjà, le résultat est
-   * indéfini.
+   * If a value corresponding to \a id already exists, the result is
+   * undefined.
    */
   void nocheckAdd(KeyTypeConstRef id, const ValueType& value)
   {
@@ -356,7 +354,7 @@ class HashTableMapT
     return m_buckets;
   }
 
-  //! Redimensionne la table de hachage
+  //! Resizes the hash table
   void resize(Integer new_size, bool use_prime = false)
   {
     if (use_prime)
@@ -371,7 +369,7 @@ class HashTableMapT
     _rehash(new_size);
   }
 
-  //! Repositionne les données après changement de valeur des clés
+  //! Rehashes the data after changing key values
   void rehash()
   {
     _rehash(m_nb_bucket);
@@ -379,7 +377,7 @@ class HashTableMapT
 
  public:
 
-  //! Applique le fonctor \a f à tous les éléments de la collection
+  //! Applies the functor \a f to all elements of the collection
   template <class Lambda> void
   each(const Lambda& lambda)
   {
@@ -392,8 +390,8 @@ class HashTableMapT
   }
 
   /*!
-   * \brief Applique le fonctor \a f à tous les éléments de la collection
-   * et utilise x->value() (de type ValueType) comme argument.
+   * \brief Applies the functor \a f to all elements of the collection
+   * and uses x->value() (of type ValueType) as an argument.
    */
   template <class Lambda> void
   eachValue(const Lambda& lambda)
@@ -408,10 +406,10 @@ class HashTableMapT
 
  private:
 
-  //! Repositionne les données après changement de valeur des clés
+  //! Rehashes the data after changing key values
   void _rehash(Integer new_size)
   {
-    //todo: supprimer l'allocation de ce tableau
+    //todo: delete the allocation of this array
     UniqueArray<Data*> old_buckets(m_buckets);
     m_count = 0;
     m_nb_bucket = new_size;
@@ -437,8 +435,8 @@ class HashTableMapT
 
  private:
 
-  MultiBufferT<Data>* m_buffer; //!< Tampon d'allocation des valeurs
-  Data* m_first_free = nullptr; //!< Pointeur vers le premier Data utilisable
+  MultiBufferT<Data>* m_buffer; //!< Value allocation buffer
+  Data* m_first_free = nullptr; //!< Pointer to the first usable Data
 
  public:
 
@@ -553,14 +551,14 @@ class HashTableMapT
 
   void _checkResize()
   {
-    // Retaille si besoin.
+    // Resize if necessary.
     if (m_count > m_max_count) {
       //cout << "** BEFORE BUCKET RESIZE this=" << this << " count=" << m_count
       //     << " bucket=" << m_nb_bucket << " m_max_count=" << m_max_count
       //     << " memory=" << (m_buckets.capacity()*sizeof(Data*)) << '\n';
       //_print(Printable());
-      // Pour les grosses tables, augmente moins vite pour limiter la
-      // consommation memoire
+      // For large tables, increase less quickly to limit
+      // memory consumption
       if (m_nb_bucket > 200000) {
         resize((Integer)(1.3 * m_nb_bucket), true);
       }
@@ -609,16 +607,17 @@ class HashTableMapT
 
  private:
 
-  //! Nombre maximal d'élément avant retaillage
+  //! Maximum number of elements before resizing
   Integer m_max_count = 0;
-  UniqueArray<Data*> m_buckets; //! Tableau des buckets
+  UniqueArray<Data*> m_buckets; //! Array of buckets
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Enumerateur sur un HashTableMap.
+ * \brief Enumerator for a HashTableMap.
  */
 template <typename KeyType, typename ValueType>
 class HashTableMapEnumeratorT

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ValueChecker.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Vérification de la validité de certaines valeurs.                         */
+/* Checking the validity of certain values.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_VALUECHECKER_H
 #define ARCANE_UTILS_VALUECHECKER_H
@@ -26,16 +26,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérification de la validité de certaines valeurs.
+ * \brief Checking the validity of certain values.
  *
- * Cette classe fournit un ensemble de méthodes permettant de vérifier
- * que des valeurs sont conformes à une référence.
+ * This class provides a set of methods to check
+ * that values conform to a reference.
  *
- * Par défaut, si une valeur est différente de sa référence, une exception
- * est lancée. Il est possible de changer ce comportement en mettant
- * setThrowIfError() à \a false. Dans ce cas, il est possible de
- * lancer manuellement l'exception en appelant throwIfError().
+ * By default, if a value is different from its reference, an exception
+ * is thrown. It is possible to change this behavior by setting
+ * setThrowIfError() to \a false. In this case, it is possible to
+ * manually throw the exception by calling throwIfError().
  */
 class ARCANE_UTILS_EXPORT ValueChecker
 {
@@ -50,7 +51,7 @@ class ARCANE_UTILS_EXPORT ValueChecker
  public:
 
   /*!
-   * Vérifie que \a value et \a expected_value ont les mêmes valeurs.
+   * Checks that \a value and \a expected_value have the same values.
    */
   template <typename T1, typename T2, typename X = std::is_convertible<T2, T1>>
   void areEqual(const T1& value, const T2& expected_value, const String& message)
@@ -61,8 +62,8 @@ class ARCANE_UTILS_EXPORT ValueChecker
   }
 
   /*!
-   * \brief Vérifie que les deux tableaux \a values et \a expected_values
-   * ont les mêmes valeurs.
+   * \brief Checks that the two arrays \a values and \a expected_values
+   * have the same values.
    */
   template <typename T1, typename T2,
             typename ValueType = typename T1::value_type,
@@ -79,8 +80,8 @@ class ARCANE_UTILS_EXPORT ValueChecker
     if (nb_value != nb_expected) {
       _addError(String::format("{0} bad array size n={1} expected={2}",
                                message, nb_value, nb_expected));
-      // Ne compare pas les éléments du tableau si les tailles
-      // sont différentes.
+      // Do not compare array elements if sizes
+      // are different.
       return;
     }
 
@@ -94,8 +95,8 @@ class ARCANE_UTILS_EXPORT ValueChecker
   }
 
   /*!
-   * \brief Vérifie que les deux tableaux 2D \a values et \a expected_values
-   * ont les mêmes valeurs.
+   * \brief Checks that the two 2D arrays \a values and \a expected_values
+   * have the same values.
    */
   template <typename T>
   void areEqualArray(Span2<const T> values, Span2<const T> expected_values,
@@ -106,8 +107,8 @@ class ARCANE_UTILS_EXPORT ValueChecker
     if (nb_value != nb_expected) {
       _addError(String::format("{0} bad array size n={1} expected={2}",
                                message, nb_value, nb_expected));
-      // Ne compare pas les éléments du tableau si les tailles
-      // sont différentes.
+      // Do not compare array elements if sizes
+      // are different.
       return;
     }
 
@@ -116,8 +117,8 @@ class ARCANE_UTILS_EXPORT ValueChecker
   }
 
   /*!
-   * \brief Vérifie que les deux tableaux \a values et \a expected_values
-   * ont les mêmes valeurs.
+   * \brief Checks that the two arrays \a values and \a expected_values
+   * have the same values.
    */
   template <typename T>
   void areEqualArray(SmallSpan2<T> values, SmallSpan2<T> expected_values,
@@ -127,20 +128,20 @@ class ARCANE_UTILS_EXPORT ValueChecker
   }
 
   /*!
-   * \brief Lève une exception si nbError()!=0.
+   * \brief Throws an exception if nbError()!=0.
    */
   void throwIfError();
 
-  //! Indique si on lève une exception en cas d'erreur
+  //! Indicates whether an exception is thrown in case of an error
   void setThrowOnError(bool v)
   {
     m_throw_on_error = v;
   }
 
-  //! Indique si on lève une exception en cas d'erreur
+  //! Indicates whether an exception is thrown in case of an error
   bool throwOnError() const { return m_throw_on_error; }
 
-  //! Nombre d'erreurs
+  //! Number of errors
   Integer nbError() const { return m_nb_error; }
 
  private:
@@ -164,5 +165,4 @@ class ARCANE_UTILS_EXPORT ValueChecker
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

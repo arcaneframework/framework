@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IOException.cc                                              (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une erreur d'entrée/sortie est détectée.                 */
+/* Exception when an input/output error is detected.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,14 +19,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IOException::
 IOException(const String& where)
-: Exception("IOException",where)
+: Exception("IOException", where)
 {
 }
 
@@ -34,8 +35,8 @@ IOException(const String& where)
 /*---------------------------------------------------------------------------*/
 
 IOException::
-IOException(const String& where,const String& message)
-: Exception("IOException",where)
+IOException(const String& where, const String& message)
+: Exception("IOException", where)
 , m_message(message)
 {
 }
@@ -45,7 +46,7 @@ IOException(const String& where,const String& message)
 
 IOException::
 IOException(const TraceInfo& where)
-: Exception("IOException",where)
+: Exception("IOException", where)
 {
 }
 
@@ -53,8 +54,8 @@ IOException(const TraceInfo& where)
 /*---------------------------------------------------------------------------*/
 
 IOException::
-IOException(const TraceInfo& where,const String& message)
-: Exception("IOException",where)
+IOException(const TraceInfo& where, const String& message)
+: Exception("IOException", where)
 , m_message(message)
 {
 }
@@ -76,14 +77,13 @@ void IOException::
 explain(std::ostream& m) const
 {
   if (!m_message.null())
-		m << "Message: " << m_message << '\n';
+    m << "Message: " << m_message << '\n';
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParameterListWithCaseOption.cc                              (C) 2000-2025 */
 /*                                                                           */
-/* Liste de paramètres avec support pour les options du jeu de données.      */
+/* Parameter list with support for dataset options.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,14 +25,15 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Cette classe gère les paramètres de la ligne de commande qui permettent
- * de surcharger les options du jeu de données.
+ * This class manages command-line parameters that allow overriding
+ * dataset options.
  *
- * Il s'agit d'une copie de la classe ParameterList.
+ * It is a copy of the ParameterList class.
  *
- * TODO: il ne faudrait conserver dans cette classe que les options
- * qui commencent par '//' et qui sont liées au jeu de données.
+ * TODO: This class should only retain options that start with '//' and are
+ * related to the dataset.
  */
 namespace Arcane
 {
@@ -101,8 +102,7 @@ class ParameterListWithCaseOption::Impl
     }
 
     m_parameters_dictionary.add(name, value);
-    // Supprime de la liste toutes les occurences ayant
-    // pour paramètre \a name
+    // Remove all occurrences from the list having \a name as the parameter
     auto comparer = [=](const NameValuePair& nv) { return nv.name == name; };
     auto new_end = std::remove_if(m_parameters_list.begin(), m_parameters_list.end(), comparer);
     m_parameters_list.resize(new_end - m_parameters_list.begin());
@@ -116,18 +116,17 @@ class ParameterListWithCaseOption::Impl
     if (name.startsWith("//")) {
       ARCANE_FATAL("Remove parameter not supported for ParameterOptions.");
     }
-    // Si le paramètre \a name avec la valeur \a value est trouvé, le supprime.
-    // Dans ce cas, il faudra regarder s'il y a toujours
-    // dans \a m_parameters_list un paramètre \a name et si c'est le
-    // cas c'est la valeur de celui-là qu'on prendra
+    // If the parameter \a name with the value \a value is found, it is removed.
+    // In this case, we must check if there is still a parameter \a name in
+    // \a m_parameters_list, and if so, we will take its value.
     String x = m_parameters_dictionary.find(name);
     bool need_fill = false;
     if (x == value) {
       m_parameters_dictionary.remove(name);
       need_fill = true;
     }
-    // Supprime de la liste toutes les occurences
-    // du paramètre avec la valeur souhaitée
+    // Remove all occurrences
+    // of the parameter with the desired value
     NameValuePair ref_value{ name, value };
     auto new_end = std::remove(m_parameters_list.begin(), m_parameters_list.end(), ref_value);
     m_parameters_list.resize(new_end - m_parameters_list.begin());
@@ -248,7 +247,7 @@ getParameterCaseOption(const String& language) const
 void ParameterListWithCaseOption::
 addParameters(const ParameterList& parameters)
 {
-  // TODO: ne prendre en compte que les options qui commencent par '//'
+  // TODO: Only consider options that start with '//'
   StringList names;
   StringList values;
   parameters.fillParameters(names, values);

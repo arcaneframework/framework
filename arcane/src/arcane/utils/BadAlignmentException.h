@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BadAlignmentException.h                                     (C) 2000-2017 */
 /*                                                                           */
-/* Exception lorsqu'une adresse n'est pas correctement alignée.              */
+/* Exception when an address is not correctly aligned.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_BADCASTEXCEPTION_H
 #define ARCANE_UTILS_BADCASTEXCEPTION_H
@@ -19,21 +19,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une adresse n'est pas correctement alignée.
+ * \brief Exception when an address is not correctly aligned.
  */
 class ARCANE_UTILS_EXPORT BadAlignmentException
 : public Exception
 {
  public:
-	
-  BadAlignmentException(const String& where,const void* ptr,Integer alignment);
-  BadAlignmentException(const TraceInfo& where,const void* ptr,Integer alignment);
+
+  BadAlignmentException(const String& where, const void* ptr, Integer alignment);
+  BadAlignmentException(const TraceInfo& where, const void* ptr, Integer alignment);
 
   virtual void explain(std::ostream& m) const;
 
@@ -46,13 +48,9 @@ class ARCANE_UTILS_EXPORT BadAlignmentException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

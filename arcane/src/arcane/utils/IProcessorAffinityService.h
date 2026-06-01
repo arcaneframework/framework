@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IProcessorAffinityService.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service de gestion de l'affinité des coeurs CPU.           */
+/* Interface of a CPU core affinity management service.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_IPROCESSORAFFINITYSERVICE_H
 #define ARCANE_UTILS_IPROCESSORAFFINITYSERVICE_H
@@ -24,15 +24,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un service de gestion de l'affinité des coeurs CPU.
+ * \brief Interface of a CPU core affinity management service.
  */
 class IProcessorAffinityService
 {
  public:
 
-  virtual ~IProcessorAffinityService() {} //<! Libère les ressources
+  virtual ~IProcessorAffinityService() {} //<! Frees resources
 
  public:
 
@@ -40,28 +41,28 @@ class IProcessorAffinityService
 
  public:
 
-  //! Affiche les informations complète de topologie via info()
+  //! Displays complete topology information via info()
   virtual void printInfos() = 0;
 
   /*!
-   * \brief Retourne le cpuset pour le thread courant.
+   * \brief Returns the cpuset for the current thread.
    *
-   * La chaîne retournée est dans un format compatible avec celui
-   * de taskset. Par exemple, on peut avoir des valeurs telles
-   * que \a 'ff', '1, ou 'ffff1234,ff'.
+   * The returned string is in a format compatible with that of
+   * taskset. For example, we can have values such as
+   * 'ff', '1, or 'ffff1234,ff'.
    */
   virtual String cpuSetString() = 0;
 
-  //! Contraint le thread courant à rester sur le coeur d'indice \a cpu
+  //! Constrains the current thread to stay on the core with index \a cpu
   virtual void bindThread(Int32 cpu) = 0;
 
-  //! Nombre de coeurs CPU (-1 si inconnu)
+  //! Number of CPU cores (-1 if unknown)
   virtual Int32 numberOfCore() = 0;
 
-  //! Nombre de sockets (-1 si inconnu)
+  //! Number of sockets (-1 if unknown)
   virtual Int32 numberOfSocket() = 0;
 
-  //! Nombre de coeurs logiques (-1 si inconnu)
+  //! Number of logical cores (-1 if unknown)
   virtual Int32 numberOfProcessingUnit() = 0;
 };
 

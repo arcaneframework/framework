@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HashTable.h                                                 (C) 2000-2023 */
 /*                                                                           */
-/* Table de hachage.                                                         */
+/* Hash Table.                                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_HASHTABLE_H
 #define ARCANE_UTILS_HASHTABLE_H
@@ -26,22 +26,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'une table de hachage simple pour les entités
+ * \brief Base class for a simple hash table for entities
 
- \todo Ajouter des itérateurs pour cette collection et les classes
- dérivées
+ \todo Add iterators for this collection and derived classes
  */
 class ARCANE_UTILS_EXPORT HashTableBase
 {
  public:
 
-  /*! \brief Crée une table de taille \a table_size
+  /*!
+   * \brief Creates a table of size \a table_size
    *
-   Si \a use_prime est vrai, utilise la fonction nearestPrimeNumber()
-   pour avoir une taille de taille qui est un nombre premier.
-  */
+   * If \a use_prime is true, uses the nearestPrimeNumber() function
+   * to have a size that is a prime number.
+   */
   HashTableBase(Integer table_size, bool use_prime)
   : m_count(0)
   , m_nb_bucket(use_prime ? nearestPrimeNumber(table_size) : table_size)
@@ -51,15 +52,16 @@ class ARCANE_UTILS_EXPORT HashTableBase
 
  public:
 
-  /*! \brief Retourne le nombre premier le plus proche de \a n par excès.
-   * Le nombre premier le plus proche et supérieur à \a n est renvoyé en utilisant une
-   * table de nombre premier déterminée à l'avance.
+  /*!
+   * \brief Returns the nearest prime number greater than \a n.
+   * The nearest prime number greater than \a n is returned using a
+   * pre-determined prime number table.
    */
   Integer nearestPrimeNumber(Integer n);
 
  public:
 
-  //! Nombre d'éléments dans la table
+  //! Number of elements in the table
   Integer count() const
   {
     return m_count;
@@ -71,27 +73,27 @@ class ARCANE_UTILS_EXPORT HashTableBase
 
  protected:
 
-  Integer m_count; //!< Nombre d'éléments
-  Integer m_nb_bucket; //!< Nombre de buckets
+  Integer m_count; //!< Number of elements
+  Integer m_nb_bucket; //!< Number of buckets
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe de base d'une table de hachage pour tableaux associatifs
+ * \brief Base class for a hash table for associative arrays
  
- Cette table permet de stocker une valeur en fonction d'une clé. Le
- type de la valeur est gérée par la classe dérivée HashTableMapT.
+ This table allows storing a value based on a key. The
+ value type is managed by the derived class HashTableMapT.
  
- La table de hachage est gérée sous forme d'un tableau dont le nombre
- d'éléments est donné par la taille de la table (m_nb_bucket).
- Les éléments sont ensuite rangés dans une liste chaînée.
+ The hash table is managed as an array whose number
+ of elements is given by the table size (m_nb_bucket).
+ The elements are then stored in a linked list.
 
- Cette table permet uniquement d'ajouter des valeurs.
+ This table only allows adding values.
 
- Pour des raisons de performance, il est préférable que le taille
- de la table (buckets) soit un nombre premier.
+ For performance reasons, it is preferable that the table size
+ (buckets) is a prime number.
  */
 template <typename KeyType, typename TraitsType>
 class HashTableBaseT
@@ -119,9 +121,10 @@ class HashTableBaseT
 
    public:
 
-    /*! \brief Change la valeur de la clé.
+    /*!
+     * \brief Changes the key value.
      *
-     * Après avoir changé la valeur d'une ou plusieurs clés, il faut faire un rehash().
+     * After changing the value of one or more keys, a rehash must be performed().
      */
     void changeKey(const KeyType& new_key)
     {
@@ -130,16 +133,17 @@ class HashTableBaseT
 
    protected:
 
-    KeyTypeValue m_key; //!< Clé de recherche
-    HashData* m_next; //! Elément suivant dans la table de hachage
+    KeyTypeValue m_key; //!< Search key
+    HashData* m_next; //! Next element in the hash table
   };
 
  public:
 
-  /*! \brief Crée une table de taille \a table_size
+  /*!
+   * \brief Creates a table of size \a table_size
    *
-   Si \a use_prime est vrai, utilise la fonction nearestPrimeNumber()
-   pour avoir une taille de taille qui est un nombre premier.
+   * If \a use_prime is true, uses the nearestPrimeNumber() function
+   * to have a size that is a prime number.
   */
   HashTableBaseT(Integer table_size, bool use_prime)
   : HashTableBase(table_size, use_prime)
@@ -150,7 +154,7 @@ class HashTableBaseT
 
  public:
 
-  //! \a true si une valeur avec la clé \a id est présente
+  //! \a true if a value with the key \a id is present
   bool hasKey(KeyTypeConstRef id) const
   {
     KeyType hf = _hash(id);
@@ -161,14 +165,14 @@ class HashTableBaseT
     return false;
   }
 
-  //! Supprime tous les éléments de la table
+  //! Clears all elements from the table
   void clear()
   {
     m_buckets.fill(0);
     m_count = 0;
   }
 
-  //! Redimensionne la table de hachage
+  //! Resizes the hash table
   void resize(Integer new_table_size, bool use_prime = false)
   {
     m_nb_bucket = new_table_size;
@@ -178,7 +182,7 @@ class HashTableBaseT
     }
     if (use_prime)
       new_table_size = nearestPrimeNumber(new_table_size);
-    //todo: supprimer l'allocation de ce tableau
+    //todo: remove the allocation of this array
     UniqueArray<HashData*> old_buckets(m_buckets.clone());
     m_buckets.resize(new_table_size);
     m_buckets.fill(0);
@@ -189,17 +193,17 @@ class HashTableBaseT
     }
   }
 
-  //! Repositionne les données après changement de valeur des clés
+  //! Repositions data after key value change
   void rehash()
   {
-    //todo: supprimer l'allocation de ce tableau
+    //todo: remove the allocation of this array
     UniqueArray<HashData*> old_buckets(m_buckets.clone());
     m_buckets.fill(0);
 
     for (Integer z = 0, zs = old_buckets.size(); z < zs; ++z) {
       for (HashData* i = old_buckets[z]; i;) {
         HashData* current = i;
-        i = i->m_next; // Il faut le faire ici, car i->m_next change avec _baseAdd
+        i = i->m_next; // Must be done here, because i->m_next changes with _baseAdd
         _baseAdd(_hash(current->m_key), current->m_key, current);
       }
     }
@@ -258,7 +262,7 @@ class HashTableBaseT
 
  protected:
 
-  UniqueArray<HashData*> m_buckets; //! Tableau des buckets
+  UniqueArray<HashData*> m_buckets; //! Array of buckets
 };
 
 /*---------------------------------------------------------------------------*/

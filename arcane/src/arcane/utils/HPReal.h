@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HPReal.h                                                    (C) 2000-2019 */
 /*                                                                           */
-/* Réel haute-précision.                                                     */
+/* High-precision real number.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_HPREAL_H
 #define ARCANE_UTILS_HPREAL_H
@@ -23,69 +23,68 @@
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe implémentant un réel Haute Précision.
+ * \brief Class implementing a High-Precision real number.
  
- Cette classe est basée sur l'article:
+ This class is based on the article:
 
  Obtaining identical results with double precision global accuracy on
  different numbers of processors in parallel particle Monte Carlo
  simulations (Mathew A. Cleveland, Thomas A. Brunner, Nicholas A. Gentile,
  jeffrey A. Keasler) in Journal Of Computational Physics 251 (2013) 223-236.
 
- Les opérations possibles sont l'accumulation (operator+=()),
- la réduction (reduce()) et la conversion vers un Real (toReal()).
- Il n'est pas possible de faire d'autres opérations telles que les divisions
- où les multiplications.
+ Possible operations are accumulation (operator+=()),
+ reduction (reduce()) and conversion to a Real (toReal()).
+ Other operations such as division or multiplication are not possible.
 
- Pour se conformer au type 'Real' classique, le constructeur par défaut
- de cette classe ne fait aucune initialisation.
+ To conform to the classic 'Real' type, the default constructor
+ of this class performs no initialization.
 
- La méthode toReal() permet de convertir le HPReal en un Réel classique.
- Le fonctionnement typique est le suivant:
+ The toReal() method allows converting the HPReal into a classic Real.
+ The typical usage is as follows:
 
  \code
  * HPReal r(0.0);
  * ArrayView<Real> x = ...;
  * for( Integer i=0, n=x.size(); i<n; ++i ){
- *   // Accumule la valeur
+ *   // Accumulates the value
  *   r += x[i];
  * }
  * Real final_r = r.toReal();
  \endcode
 
- Evolution 12/18/18 :
+ Evolution 12/18/18:
 
- Correction erreur de l'algorithme de base de  static HPReal _doTwoSum(Real a, Real b)
+ Correction of the base algorithm error for static HPReal _doTwoSum(Real a, Real b)
 
    Real sum_error = (a - (value-approx_b) + (b-approx_b));
 
- est devenu (en accord avec la Ref 1)
+ became (in accordance with Ref 1)
 
    Real sum_error = (a - (value-approx_b)) + (b-approx_b);
 
- Correction erreur de  static HPReal _doQuickTwoSum(Real a,Real b)
+ Correction of the error in static HPReal _doQuickTwoSum(Real a,Real b)
 
-   il faut tester si a>b et inverser a et b si cela n'est pas le cas (voir Ref 2,3,4)
+   it is necessary to test if a>b and invert a and b if this is not the case (see Ref 2, 3, 4)
 
- Modification de Accumulate et de Reduce,
- Accumulate et de Reduce etaient basées sur la Ref 1 qui a pour base la Ref 4
+ Modification of Accumulate and Reduce,
+ Accumulate and Reduce were based on Ref 1, which is based on Ref 4
 
- Ajout des produits comme proposés dans la ref 2 (en accord avec la Ref 5)
- de HPReal*Real ou HPreal*HPreal (on prend la meme valeur de p pour la
- fonction SPLIT() que la Ref 2,4,5)
+ Addition of products as proposed in Ref 2 (in accordance with Ref 5)
+ of HPReal*Real or HPReal*HPReal (we take the same value of p for the
+ SPLIT() function as in Ref 2, 4, 5)
 
- Attention le produit Real*Real de la Ref 4 (p.4) n'est pas ecrit de la meme facon que celui
- de la Ref 2 (p.2), 5 (p.3)
+ Note that the Real*Real product in Ref 4 (p.4) is not written in the same way as those in Ref 2 (p.2) or 5 (p.3)
 
  +++++++++++++++++
 
- Globalement les algo de reductions ou les erreurs sont cumulées uniquement
- avec une addition sont moins bons
+ Overall, reduction algorithms or errors accumulated only with addition are less good
 
- L'algo 6 de DD_TWOSUM [Ref 2]  est aussi moins bon:
+ Algorithm 6 of DD_TWOSUM [Ref 2] is also less good:
 
  \code
  static HPReal accumulate(Real a,MYHPReal b)
@@ -97,7 +96,7 @@ namespace Arcane
  }
  \endcode
 
- ou
+ or
 
  \code
  HPReal  reduce(HPReal a,HPReal b)
@@ -111,13 +110,12 @@ namespace Arcane
  }
  \endcode
 
- Des tests sur des millions de valeurs positives comme négatives ont été effectués
- pour l'additon,la multiplication et la division dans des ordres différents.
+ Tests on millions of positive as well as negative values have been performed
+ for addition, multiplication, and division in different orders.
 
- Je n'ai pas réussi à faire apparaitre dans un cas simple une différence de resultat entre l'algo
- proposée pour la somme et celui code initialement.
+ I have not managed to show a difference in results in a simple case between the proposed algorithm for the sum and the one initially coded.
 
- Références
+ References
  ----------
 
  Ref 1
@@ -136,7 +134,7 @@ namespace Arcane
    S.Gaillat, F.Jézéquel , R.Picot
    Published in Electronic Notes in Theoritical Computer Science
 
-   ou
+   or
 
    Numerical validation of compensated algorithms withs stochastic arithmetic
    S.Gaillat, F.Jézéquel , R.Picot
@@ -160,92 +158,95 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT HPReal
 {
  public:
+
   /*!
-   * \brief Constructeur par défaut sans initialisation.
+   * \brief Default constructor without initialization.
    */
   HPReal() {}
 
-  //! Créé un réel HP avec la valeur \a value et la correction \a correction
+  //! Creates an HP real with the value \a value and the correction \a correction
   explicit HPReal(double avalue)
   : m_value(avalue)
   , m_correction(0.0)
   {}
 
-  //! Créé un réel HP avec la valeur \a value et la correction \a correction
+  //! Creates an HP real with the value \a value and the correction \a correction
   HPReal(double avalue, double acorrection)
   : m_value(avalue)
   , m_correction(acorrection)
   {}
 
-  //! Valeur interne. En général, il faut utiliser toReal()
+  //! Internal value. Generally, you must use toReal()
   Real value() const { return m_value; }
 
-  //! Correction interne.
+  //! Internal correction.
   Real correction() const { return m_correction; }
 
-  //! Ajoute un Real en conservant l'erreur.
+  //! Adds a Real while preserving the error.
   void operator+=(Real v)
   {
     *this = accumulate(v, *this);
   }
 
-  //! Ajoute un HPReal \a v en conservant l'erreur (réduction)
+  //! Adds an HPReal \a v while preserving the error (reduction)
   inline void operator+=(HPReal v)
   {
     *this = reduce(*this, v);
   }
 
-  //! Converti l'instance en un Real.
+  //! Converts the instance to a Real.
   inline Real toReal() const
   {
     return value() + correction();
   }
 
-  //! Ajoute un HPReal \a v en conservant l'erreur (réduction)
+  //! Adds an HPReal \a v while preserving the error (reduction)
   HPReal reduce(HPReal b) const
   {
     return reduce(*this, b);
   }
 
-  //! multiplie un Real en conservant l'erreur.
+  //! Multiplies a Real while preserving the error.
   void operator*=(Real v)
   {
     *this = product(v, *this);
   }
 
-  //! multiplie un HPReal \a v en conservant l'erreur (réduction)
+  //! Multiplies an HPReal \a v while preserving the error (reduction)
   inline void operator*=(HPReal v)
   {
     *this = product(*this, v);
   }
 
-  //! multiplie un Real en conservant l'erreur.
+  //! Multiplies a Real while preserving the error.
   void operator/=(Real v)
   {
     *this = div2(v, *this);
   }
 
-  //! multiplie un HPReal \a v en conservant l'erreur (réduction)
+  //! Multiplies an HPReal \a v while preserving the error (reduction)
   inline void operator/=(HPReal v)
   {
     *this = div2(*this, v);
   }
 
   /*!
-   * \brief Lit un HPReal sur le flot \a i.
-   * Le couple est lu sous la forme de deux valeurs de type #Real.
+   * \brief Reads an HPReal from the stream \a i.
+   * The pair is read in the form of two #Real type values.
    */
   std::istream& assign(std::istream& i);
-  //! Ecrit l'instance sur le flot \a o lisible par un assign()
+  //! Writes the instance to the stream \a o readable by an assign()
   std::ostream& print(std::ostream& o) const;
-  //! Ecrit l'instance sur le flot \a o sous la forme (x,y)
+  //! Writes the instance to the stream \a o in the form (x,y)
   std::ostream& printPretty(std::ostream& o) const;
 
  public:
-  //! Valeur zéro.
+
+  //! Zero value.
   static HPReal zero() { return HPReal(0.0); }
 
  public:
+
   static HPReal accumulate(Real a, HPReal b)
   {
     HPReal x(_doTwoSum(a, b.value()));
@@ -253,7 +254,7 @@ class ARCANE_UTILS_EXPORT HPReal
     return _doQuickTwoSum(x.value(), c);
   }
 
-  // Mpi passe par la
+  // Mpi passes through
   static HPReal reduce(HPReal a, HPReal b)
   {
     HPReal x(_doTwoSum(a.value(), b.value()));
@@ -261,14 +262,14 @@ class ARCANE_UTILS_EXPORT HPReal
     return _doQuickTwoSum(x.value(), c);
   }
 
-  // algo 11 de AC_TWOPRODUCTS  Ref 2
+  // algo 11 of AC_TWOPRODUCTS Ref 2
   static HPReal product(HPReal a, HPReal b)
   {
     HPReal x(_doTwoProducts(a.value(), b.value()));
     Real w = x.correction() + (a.value() * b.correction() + b.value() * a.correction());
     return HPReal(x.value(), w);
   }
-  // algo 11 de AC_TWOPRODUCTS  Ref 2
+  // algo 11 of AC_TWOPRODUCTS Ref 2
   static HPReal product(Real a, HPReal b)
   {
     HPReal x(_doTwoProducts(a, b.value()));
@@ -276,10 +277,10 @@ class ARCANE_UTILS_EXPORT HPReal
     return HPReal(x.value(), w);
   }
 
-  // algo div2  Ref 6    div2 =  a/b
-  // j'ai mis des parentheses dans l'evaluation de w pour forcer un ordre quelque soir les options de compil
-  // ATTENTION les 2 dernieres lignes de l'algo div2 ne sont pas mises (on ne renormalise pas)
-  // l'algo  "mul2" les contient aussi et ne les a pas mises aussi pour "product" car l'algo 11 de la Ref 2 n'en n'a pas (a mon humble avis)
+  // algo div2 Ref 6    div2 =  a/b
+  // I put parentheses in the evaluation of w to force an order sometimes the compiler options
+  // ATTENTION the last 2 lines of the div2 algorithm are not included (we do not renormalize)
+  // The "mul2" algorithm also contains them and did not include them for "product" because algorithm 11 of Ref 2 does not have them (in my humble opinion)
   static HPReal div2(HPReal a, HPReal b)
   {
     Real c = a.value() / b.value();
@@ -287,7 +288,7 @@ class ARCANE_UTILS_EXPORT HPReal
     Real w = ((((a.value() - u.value()) + -u.correction()) + a.correction()) - c * b.correction()) / b.value();
     return HPReal(c, w);
   }
-  // algo div2  Ref 6     div2 =  a/b
+  // algo div2 Ref 6     div2 =  a/b
   static HPReal div2(Real b, HPReal a)
   {
     Real c = a.value() / b;
@@ -297,11 +298,13 @@ class ARCANE_UTILS_EXPORT HPReal
   }
 
  private:
+
   Real m_value;
   Real m_correction;
 
  private:
-  // correction des ()
+
+  // Correction of ()
   static HPReal _doTwoSum(Real a, Real b)
   {
     Real value = a + b;
@@ -309,7 +312,7 @@ class ARCANE_UTILS_EXPORT HPReal
     Real sum_error = (a - (value - approx_b)) + (b - approx_b);
     return HPReal(value, sum_error);
   }
-  //  correction tests de la valeur de a et b et on mets des valeurs absolues
+  // correction tests of the values of a and b and we put absolute values
   static HPReal _doQuickTwoSum(Real a1, Real b1)
   {
     Real a = a1;
@@ -322,7 +325,7 @@ class ARCANE_UTILS_EXPORT HPReal
     Real error_value = (b - (value - a));
     return HPReal(value, error_value);
   }
-  // algo 4 ref 2 ou algo 2.4 ref 3 ou  algo 6 p.4
+  // algorithm 4 ref 2 or algorithm 2.4 ref 3 or algorithm 6 p.4
   static HPReal _doTwoProducts(Real a, Real b)
   {
     Real x = a * b;

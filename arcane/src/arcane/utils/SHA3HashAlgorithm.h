@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SHA3HashAlgorithm.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Calcule la fonction de hashage SHA-3 (224, 256, 384 ou 512).              */
+/* Calculates the SHA-3 hashing function (224, 256, 384 or 512).             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_SHA3HASHALGORITHM_H
 #define ARCANE_UTILS_SHA3HASHALGORITHM_H
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des algorithmes SHA-3.
+ * \brief Base class for SHA-3 algorithms.
  */
 class ARCANE_UTILS_EXPORT SHA3HashAlgorithm
 : public IHashAlgorithm
@@ -53,7 +54,8 @@ class ARCANE_UTILS_EXPORT SHA3HashAlgorithm
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Hash pour l'algorithme SHA-3 256
+
+//! Hash for the SHA-3 256 algorithm
 class ARCANE_UTILS_EXPORT SHA3_256HashAlgorithm
 : public SHA3HashAlgorithm
 {
@@ -69,7 +71,8 @@ class ARCANE_UTILS_EXPORT SHA3_256HashAlgorithm
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Hash pour l'algorithme SHA-3 224
+
+//! Hash for the SHA-3 224 algorithm
 class ARCANE_UTILS_EXPORT SHA3_224HashAlgorithm
 : public SHA3HashAlgorithm
 {
@@ -85,7 +88,8 @@ class ARCANE_UTILS_EXPORT SHA3_224HashAlgorithm
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Hash pour l'algorithme SHA-3 384
+
+//! Hash for the SHA-3 384 algorithm
 class ARCANE_UTILS_EXPORT SHA3_384HashAlgorithm
 : public SHA3HashAlgorithm
 {
@@ -101,7 +105,8 @@ class ARCANE_UTILS_EXPORT SHA3_384HashAlgorithm
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Hash pour l'algorithme SHA-3 512
+
+//! Hash for the SHA-3 512 algorithm
 class ARCANE_UTILS_EXPORT SHA3_512HashAlgorithm
 : public SHA3HashAlgorithm
 {

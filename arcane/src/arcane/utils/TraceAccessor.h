@@ -1,2 +1,2 @@
-#include "arccore/trace/TraceAccessor.h"
+﻿#include "arccore/trace/TraceAccessor.h"
 #include "arcane/utils/UtilsTypes.h"

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MemoryBuffer.h                                              (C) 2000-2023 */
 /*                                                                           */
-/* Buffer mémoire.                                                           */
+/* Memory buffer.                                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_MEMORYBUFFER_H
@@ -20,13 +20,15 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'un buffer mémoire.
+ * \brief Management of a memory buffer.
  *
  */
 class ARCANE_UTILS_EXPORT MemoryBuffer
@@ -40,10 +42,10 @@ class ARCANE_UTILS_EXPORT MemoryBuffer
  public:
 
   /*!
-  * \brief Créé une instance de \a MemoryBuffer.
+  * \brief Creates an instance of \a MemoryBuffer.
   *
-  * L'allocateur \a allocator doit rester valide durant toute
-  * la durée de vie de l'instance créée.
+  * The \a allocator must remain valid throughout
+  * the lifetime of the created instance.
   */
   static Ref<MemoryBuffer> create(IMemoryAllocator* allocator)
   {
@@ -55,10 +57,10 @@ class ARCANE_UTILS_EXPORT MemoryBuffer
  public:
 
   /*!
-   * \brief Redimensionne la zone mémoire.
+   * \brief Resizes the memory area.
    *
-   * Aucune initialisation n'est effectuée. Si la taille diminue
-   * le resize() est sans effet.
+   * No initialization is performed. If the size decreases
+   * resize() has no effect.
    */
   void resize(Int64 new_size) { m_buffer.resize(new_size); }
   Span<const std::byte> bytes() const { return m_buffer; }
@@ -67,7 +69,7 @@ class ARCANE_UTILS_EXPORT MemoryBuffer
 
  private:
 
-  //! Buffer contenant les données.
+  //! Buffer containing the data.
   UniqueArray<std::byte> m_buffer;
 };
 

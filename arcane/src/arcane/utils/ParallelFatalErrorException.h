@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelFatalErrorException.h                               (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une erreur fatale 'parallèle' est survenue.              */
+/* Exception when a 'parallel' fatal error occurred.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_PARALLELFATALERROREXCEPTION_H
 #define ARCANE_UTILS_PARALLELFATALERROREXCEPTION_H
@@ -19,32 +19,35 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Parallel
- * \brief Exception lorsqu'une erreur fatale 'parallèle' est générée.
+ * \brief Exception when a 'parallel' fatal error is generated.
  *
- * Une erreur fatale 'parallèle' est une erreur fatale commune à tout les
- * sous-domaines. Dans ce cas, il est possible d'arrêter proprement le code
+ * A 'parallel' fatal error is a fatal error common to all
+ * subdomains. In this case, it is possible to cleanly stop the code
  */
 class ARCANE_UTILS_EXPORT ParallelFatalErrorException
 : public Exception
 {
  public:
-	
+
   ParallelFatalErrorException(const String& where);
   ParallelFatalErrorException(const TraceInfo& where);
-  ParallelFatalErrorException(const String& where,const String& message);
-  ParallelFatalErrorException(const TraceInfo& where,const String& message);
+  ParallelFatalErrorException(const String& where, const String& message);
+  ParallelFatalErrorException(const TraceInfo& where, const String& message);
   ParallelFatalErrorException(const ParallelFatalErrorException& rhs)
-  : Exception(rhs){}
+  : Exception(rhs)
+  {}
   ~ParallelFatalErrorException() ARCANE_NOEXCEPT {}
 
  public:
-	
+
   virtual void explain(std::ostream& m) const;
 
  private:
@@ -53,13 +56,9 @@ class ARCANE_UTILS_EXPORT ParallelFatalErrorException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

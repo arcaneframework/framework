@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ namespace Arcane
 {
 //extern "C++" ARCANE_UTILS_EXPORT void
 //_computeSHA3_256Hash(Span<const std::byte> bytes, SmallSpan<std::byte> result);
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,24 +49,24 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
 
   Ref<IHashAlgorithmContext> context;
   bool has_context = false;
-  if (algo.hasCreateContext()){
+  if (algo.hasCreateContext()) {
     context = algo.createContext();
     has_context = true;
   }
 
-  // TODO: ajouter test ou ne fait clear() entre les appels
+  // TODO: add test or clear() between calls
   for (const TestInfo& ti : values_to_test) {
     Span<const Byte> str_bytes(ti.data_value.bytes());
     {
       Span<const std::byte> input1(asBytes(str_bytes));
       output1.clear();
       algo.computeHash64(input1, output1);
-      if (has_context){
+      if (has_context) {
         output1_incremental.clear();
         context->reset();
-        // Fais l'appel en deux fois.
-        auto span1 = input1.subspan(0,input1.size()/2);
-        auto span2 = input1.subspan(input1.size()/2,input1.size());
+        // Make the call in two parts.
+        auto span1 = input1.subspan(0, input1.size() / 2);
+        auto span2 = input1.subspan(input1.size() / 2, input1.size());
         context->updateHash(span1);
         context->updateHash(span2);
         HashAlgorithmValue value;
@@ -102,7 +102,7 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
     std::cout << "HASH4=" << hash4 << "\n";
     std::cout << "HASH1_INCREMENTAL=" << hash1_incremental << "\n";
     ASSERT_EQ(hash1, expected_hash);
-    if (has_context){
+    if (has_context) {
       ASSERT_EQ(hash1_incremental, expected_hash);
     }
     ASSERT_EQ(hash2, expected_hash);
@@ -111,28 +111,28 @@ void _testHash(IHashAlgorithm& algo, SmallSpan<TestInfo> values_to_test)
   }
 
   {
-    // Teste un gros tableau
+    // Test a large array
     const Int32 nb_byte = 100000;
     UniqueArray<std::byte> bytes(nb_byte);
     for (Int32 i = 0; i < nb_byte; ++i) {
       bytes[i] = std::byte(i % 127);
     }
-    // Boucle si on veut tester les performances
-    //(dans ce cas augmenter le nombre d'itérations)
+    // Loop if we want to test performance
+    //(in this case increase the number of iterations)
     for (int j = 0; j < 2; ++j) {
       output1.clear();
       algo.computeHash64(bytes, output1);
     }
     String hash_big = Convert::toHexaString(output1);
     std::cout << "HASH_BIG=" << hash_big << "\n";
-    if (has_context){
+    if (has_context) {
       context->reset();
       Int32 to_add = 549;
       Int32 nb_iter = 0;
-      for( Int32 i=0; i<nb_byte; i+=to_add ){
+      for (Int32 i = 0; i < nb_byte; i += to_add) {
         ++nb_iter;
         to_add += 15;
-        context->updateHash(bytes.span().subspan(i,to_add));
+        context->updateHash(bytes.span().subspan(i, to_add));
       }
       HashAlgorithmValue value;
       context->computeHashValue(value);

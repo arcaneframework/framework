@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ TEST(TestHashTable, Misc)
 Int64 _getRealTimeUS()
 {
   auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en microsecondes.
+  // Convert the value to microseconds.
   auto y = std::chrono::time_point_cast<std::chrono::microseconds>(x);
   return static_cast<Int64>(y.time_since_epoch().count());
 }
@@ -163,7 +163,7 @@ _addMultiple(const char* name, HashType& map_instance, int nb_key)
   std::cout << "ADD_MULTIPLE name=" << name << "\n";
   map_instance.clear();
 
-  // Teste l'ajout
+  // Test addition
   Int64 t0 = _getRealTimeUS();
   for (Int32 i = 0; i < nb_key; i++) {
     Int32 value = (i + 1) * 5;
@@ -172,7 +172,7 @@ _addMultiple(const char* name, HashType& map_instance, int nb_key)
   Int64 t1 = _getRealTimeUS();
   std::cout << "ADD_TIME=" << (t1 - t0) << "\n";
 
-  // Teste le find
+  // Test find
   int nb_found = 0;
   auto map_end = map_instance.end();
   for (Int32 i = (2 * nb_key - 1); i >= 0; i -= 2) {
@@ -203,7 +203,7 @@ _addMultiple(const char* name, HashType& map_instance, int nb_key)
     ASSERT_EQ(total, expected_total);
   }
 
-  // Teste la suppression
+  // Test removal
   Int64 t5 = _getRealTimeUS();
   for (Int32 i = nb_key - 1; i >= 0; i -= 2) {
     auto x = map_instance.find(i);

@@ -1,14 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParameterOption.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe représentant l'ensemble des paramètres pouvant modifier les        */
-/* options du jeu de données.                                                */
+/* Class representing the set of parameters that can modify the              */
+/* data set options.                                                         */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_UTILS_INTERNAL_PARAMETEROPTION_H
@@ -31,21 +31,22 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe représentant une partie d'une adresse d'option du jeu de données.
- * À noter qu'en XML, l'index commence à 1 et non à 0.
+ * \brief Class representing a part of a data set option address.
+ * Note that in XML, the index starts at 1 and not at 0.
  *
- * Un tag spécial nommé ANY_TAG représente n'importe quel tag.
- * Deux index spéciaux sont aussi disponibles :
- * - ANY_INDEX : Représente n'importe quel index,
- * - GET_INDEX : Représente un index à récupérer (voir la classe ParameterOptionAddr).
- * Ces élements sont utiles pour l'opérateur ==.
- * À noter que ANY_TAG ne peut pas être définit sans ANY_INDEX.
- * Aussi, le tag ne peut pas être vide.
+ * A special tag named ANY_TAG represents any tag.
+ * Two special indices are also available:
+ * - ANY_INDEX: Represents any index,
+ * - GET_INDEX: Represents an index to be retrieved (see the ParameterOptionAddr class).
+ * These elements are useful for the == operator.
+ * Note that ANY_TAG cannot be defined without ANY_INDEX.
+ * Also, the tag cannot be empty.
  */
 class ARCANE_UTILS_EXPORT
 ParameterOptionAddrPart
 {
  public:
+
   static constexpr const char* ANY_TAG = "/";
   static constexpr Integer ANY_INDEX = -1;
   static constexpr Integer GET_INDEX = -2;
@@ -53,21 +54,21 @@ ParameterOptionAddrPart
  public:
 
   /*!
-   * \brief Constructeur. Définit le tag en ANY_TAG et l'index en ANY_INDEX.
+   * \brief Constructor. Sets the tag to ANY_TAG and the index to ANY_INDEX.
    */
   ParameterOptionAddrPart();
 
   /*!
-   * \brief Constructeur. Définit l'index à 1.
-   * \param tag Le tag de cette partie d'adresse. Ce tag ne peut pas être ANY_TAG.
+   * \brief Constructor. Sets the index to 1.
+   * \param tag The tag of this address part. This tag cannot be ANY_TAG.
    */
   explicit ParameterOptionAddrPart(const StringView tag);
 
   /*!
-   * \brief Constructeur.
-   * \param tag Le tag de cette partie d'adresse. Ce tag ne peut pas être ANY_TAG
-   * si l'index n'est pas ANY_INDEX.
-   * \param index L'index de cette partie d'adresse.
+   * \brief Constructor.
+   * \param tag The tag of this address part. This tag cannot be ANY_TAG
+   * if the index is not ANY_INDEX.
+   * \param index The index of this address part.
    */
   ParameterOptionAddrPart(const StringView tag, const Integer index);
 
@@ -76,22 +77,22 @@ ParameterOptionAddrPart
   StringView tag() const;
   Integer index() const;
 
-  //! Si l'index est ANY_INDEX, le tag ne peut pas être ANY_TAG.
-  //! Attention à la durée de vie de tag.
+  //! If the index is ANY_INDEX, the tag cannot be ANY_TAG.
+  //! Be careful about the lifetime of tag.
   void setTag(const StringView tag);
   void setIndex(const Integer index);
 
-  //! isAny si ANY_TAG et ANY_INDEX.
+  //! isAny if ANY_TAG and ANY_INDEX.
   bool isAny() const;
 
   /*!
-   * \brief Opérateur d'égalité.
-   * Le tag ANY_TAG est égal à tous les tags.
-   * L'index ANY_INDEX est égal à tous les index.
-   * L'index GET_INDEX est égal à tous les index.
+   * \brief Equality operator.
+   * The ANY_TAG tag is equal to all tags.
+   * The ANY_INDEX index is equal to all indices.
+   * The GET_INDEX index is equal to all indices.
    */
   bool operator==(const ParameterOptionAddrPart& other) const;
-  // TODO AH : À supprimer lors du passage en C++20.
+  // TODO AH: To be removed when migrating to C++20.
   bool operator!=(const ParameterOptionAddrPart& other) const;
 
  private:
@@ -104,25 +105,25 @@ ParameterOptionAddrPart
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe représentant une adresse d'option du jeu de données.
- * Cette adresse doit être de la forme : "tag/tag[index]/tag"
- * Les parties de l'adresse sans index auront l'index par défaut (=1).
+ * \brief Class representing a data set option address.
+ * This address must be in the form: "tag/tag[index]/tag"
+ * Address parts without an index will have the default index (=1).
  *
- * Cette adresse doit obéir à certaines règles :
- * - elle ne doit pas être vide,
- * - elle ne doit pas représenter l'ensemble des options ("/"),
- * - ses tags peuvent être vides ssi l'index est vide (voir après),
- * - l'index spécial ANY_INDEX ne peut être présent que si le tag est non vide,
- * - l'adresse peut terminer par un attribut ("\@name"),
- * - l'adresse donnée au constructeur ne peut pas terminer par un ANY_TAG (mais
- *   ANY_TAG peut être ajouté après avec la méthode addAddrPart()),
+ * This address must comply with certain rules:
+ * - it must not be empty,
+ * - it must not represent all options ("/"),
+ * - its tags can be empty if the index is empty (see below),
+ * - the special index ANY_INDEX can only be present if the tag is not empty,
+ * - the address can end with an attribute ("\@name"),
+ * - the address given to the constructor cannot end with an ANY_TAG (but
+ *   ANY_TAG can be added later with the addAddrPart() method),
  *
- * Dans une chaine de caractères :
- * - le motif ANY_TAG[ANY_INDEX] peut être défini avec "//" :
- *   -> "tag/tag//tag" sera convertie ainsi : "tag[1]/tag[1]/ANY_TAG[ANY_INDEX]/tag[1]".
- * - l'index ANY_INDEX peut être défini avec un index vide "[]" :
- *   -> "tag/tag[]/\@attr" sera convertie ainsi : "tag[1]/tag[ANY_INDEX]/\@attr[1]",
- *   -> le motif "tag/[]/tag" est interdit.
+ * In a character string:
+ * - the pattern ANY_TAG[ANY_INDEX] can be defined with "//":
+ *   -> "tag/tag//tag" will be converted as: "tag[1]/tag[1]/ANY_TAG[ANY_INDEX]/tag[1]".
+ * - the ANY_INDEX can be defined with an empty index "[]":
+ *   -> "tag/tag[]/\@attr" will be converted as: "tag[1]/tag[ANY_INDEX]/\@attr[1]",
+ *   -> the pattern "tag/[]/tag" is forbidden.
  */
 class ARCANE_UTILS_EXPORT
 ParameterOptionAddr
@@ -130,88 +131,88 @@ ParameterOptionAddr
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param addr_str_view L'adresse à convertir.
+   * \brief Constructor.
+   * \param addr_str_view The address to convert.
    */
   explicit ParameterOptionAddr(StringView addr_str_view);
 
  public:
 
-  // On ne doit pas bloquer les multiples ParameterOptionAddrPart(ANY) :
-  // Construction par iteration : aaaa/bb/ANY/ANY/cc
+  // We must not block multiple ParameterOptionAddrPart(ANY):
+  // Construction by iteration: aaaa/bb/ANY/ANY/cc
   /*!
-   * \brief Méthode permettant d'ajouter une partie à la fin de l'adresse actuelle.
-   * \param part Un pointeur vers la nouvelle partie. Attention, on récupère la
-   * propriété de l'objet (on gère le delete).
+   * \brief Method allowing a part to be added to the end of the current address.
+   * \param part A pointer to the new part. Note that we take ownership of the
+   * object (we manage the delete).
    */
   void addAddrPart(ParameterOptionAddrPart* part);
 
   /*!
-   * \brief Méthode permettant de récupérer une partie de l'adresse.
-   * Si l'adresse termine par un ANY_TAG[ANY_INDEX], tous index donnés en paramètre
-   * supérieur au nombre de partie de l'adresse retournera le dernier élément de
-   * l'adresse ("ANY_TAG[ANY_INDEX]").
+   * \brief Method allowing a part of the address to be retrieved.
+   * If the address ends with an ANY_TAG[ANY_INDEX], all indices given in the parameter
+   * greater than the number of parts of the address will return the last element of
+   * the address ("ANY_TAG[ANY_INDEX]").
    *
-   * \param index_of_part L'index de la partie à récupérer.
-   * \return La partie de l'adresse.
+   * \param index_of_part The index of the part to retrieve.
+   * \return The part of the address.
    */
   ParameterOptionAddrPart* addrPart(const Integer index_of_part) const;
 
   ParameterOptionAddrPart* lastAddrPart() const;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de partie de l'adresse.
-   * Les parties égales à "ANY_TAG[ANY_INDEX]" sont comptées.
+   * \brief Method allowing the number of parts of the address to be retrieved.
+   * Parts equal to "ANY_TAG[ANY_INDEX]" are counted.
    *
-   * \return Le nombre de partie de l'adresse.
+   * \return The number of parts of the address.
    */
   Integer nbAddrPart() const;
 
   /*!
-   * \brief Méthode permettant de récupérer un ou plusieurs indices dans l'adresse.
+   * \brief Method allowing one or more indices to be retrieved in the address.
    *
-   * Le fonctionnement de cette méthode est simple.
-   * Nous avons l'adresse suivante :          "aaa[1]/bbb[2]/ccc[4]/\@name[1]".
-   * L'adresse en paramètre est la suivante : "aaa[1]/bbb[GET_INDEX]/ccc[4]/\@name[1]".
-   * L'indice ajouté dans la vue en paramètre sera 2.
+   * The functioning of this method is simple.
+   * We have the following address: "aaa[1]/bbb[2]/ccc[4]/@name[1]".
+   * The address in the parameter is the following: "aaa[1]/bbb[GET_INDEX]/ccc[4]/@name[1]".
+   * The index added in the parameter view will be 2.
    *
-   * Si l'adresse en paramètre est :          "aaa[1]/bbb[GET_INDEX]/ccc[GET_INDEX]/\@name[1]".
-   * Les indices ajoutés dans la vue seront 2 et 4.
+   * If the address in the parameter is: "aaa[1]/bbb[GET_INDEX]/ccc[GET_INDEX]/@name[1]".
+   * The indices added in the view will be 2 and 4.
    *
-   * En revanche, un "GET_INDEX" ne peut pas être utilisé sur un "ANY_INDEX" (return false).
-   * Exemple : si l'on a :              "aaa[1]/bbb[ANY_INDEX]/ccc[4]/\@name[1]".
-   * Et si l'adresse en paramètre est : "aaa[1]/bbb[GET_INDEX]/ccc[GET_INDEX]/\@name[1]".
-   * Le booléen retourné sera false.
+   * Conversely, a "GET_INDEX" cannot be used on an "ANY_INDEX" (returns false).
+   * Example: if we have: "aaa[1]/bbb[ANY_INDEX]/ccc[4]/@name[1]".
+   * And if the address in the parameter is: "aaa[1]/bbb[GET_INDEX]/ccc[GET_INDEX]/@name[1]".
+   * The returned boolean will be false.
    *
-   * Pour avoir la bonne taille de la vue, un appel à la méthode "nbIndexToGetInAddr()"
-   * peut être effectué.
+   * To get the correct size of the view, a call to the method "nbIndexToGetInAddr()"
+   * can be made.
    *
-   * \param addr_with_get_index L'adresse contenant des indices "GET_INDEX".
-   * \param indexes [OUT] La vue dans laquelle sera ajouté le ou les indices (la taille devra être correct).
-   * \return true si la vue a pu être remplie correctement.
+   * \param addr_with_get_index The address containing "GET_INDEX" indices.
+   * \param indexes [OUT] The view where the index or indices will be added (the size must be correct).
+   * \return true if the view could be filled correctly.
    */
   bool getIndexInAddr(const ParameterOptionAddr& addr_with_get_index, ArrayView<Integer> indexes) const;
 
   /*!
-   * \brief Méthode permettant de savoir combien il y a de "GET_INDEX" dans l'adresse.
-   * \return Le nombre de "GET_INDEX".
+   * \brief Method allowing the number of "GET_INDEX" in the address to be known.
+   * \return The number of "GET_INDEX".
    */
   Integer nbIndexToGetInAddr() const;
 
  public:
 
   /*!
-   * \brief Opérateur d'égalité.
-   * Cet opérateur tient compte des ANY_TAG / ANY_INDEX.
-   * L'adresse              "aaa[1]/bbb[2]/ANY_TAG[ANY_INDEX]"
-   * sera éqale à l'adresse "aaa[1]/bbb[2]/ccc[5]/ddd[7]"
-   * ou à l'adresse         "aaa[1]/bbb[ANY_INDEX]/ccc[5]/ddd[7]"
-   * ou à l'adresse         "aaa[1]/bbb[2]"
-   * mais pas à l'adresse   "aaa[1]"
+   * \brief Equality operator.
+   * This operator takes into account ANY_TAG / ANY_INDEX.
+   * The address "aaa[1]/bbb[2]/ANY_TAG[ANY_INDEX]"
+   * will be equal to the address "aaa[1]/bbb[2]/ccc[5]/ddd[7]"
+   * or to the address "aaa[1]/bbb[ANY_INDEX]/ccc[5]/ddd[7]"
+   * or to the address "aaa[1]/bbb[2]"
+   * but not to the address "aaa[1]"
    */
   bool operator==(const ParameterOptionAddr& other) const;
 
-  // TODO AH : À supprimer lors du passage en C++20.
+  // TODO AH: To be removed when migrating to C++20.
   bool operator!=(const ParameterOptionAddr& other) const;
 
  private:
@@ -223,8 +224,8 @@ ParameterOptionAddr
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe représentant un élément XML (une option Arcane).
- * Cet élement a une adresse et une valeur.
+ * \brief Class representing an XML element (an Arcane option).
+ * This element has an address and a value.
  */
 class ARCANE_UTILS_EXPORT
 ParameterOptionElement
@@ -249,7 +250,7 @@ ParameterOptionElement
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe représentant un ensemble d'éléments XML (un ensemble d'options Arcane).
+ * \brief Class representing a collection of XML elements (a set of Arcane options).
  */
 class ARCANE_UTILS_EXPORT
 ParameterOptionElementsCollection
@@ -257,14 +258,14 @@ ParameterOptionElementsCollection
  public:
 
   /*!
-   * \brief Méthode permettant d'ajouter un paramètre d'option dans la liste
-   * des paramètres d'options.
+   * \brief Method allowing an option parameter to be added to the list
+   * of option parameters.
    *
-   * \warning Les deux paramètres ne sont pas copiés ! On ne récupère qu'une vue. L'utilisateur
-   * de cette classe doit gérer la durée de vie de ces objets.
+   * \warning The two parameters are not copied! Only a view is retrieved. The user
+   * of this class must manage the lifetime of these objects.
    *
-   * \param parameter Le paramètre d'option brut (avec les "//" au début).
-   * \param value La valeur de l'option.
+   * \param parameter The raw option parameter (with "//" at the beginning).
+   * \param value The value of the option.
    */
   void addParameter(const String& parameter, const String& value);
 
@@ -275,48 +276,48 @@ ParameterOptionElementsCollection
   //   return m_elements[index];
   // }
 
-  // Un StringView "vide" est éqal à un StringView "nul".
-  // Comme on travaille avec des String et que la distinction
-  // vide/nul est importante, on passe par un std::optional.
+  // An empty StringView is equal to a null StringView.
+  // Since we are working with Strings and the distinction
+  // empty/null is important, we use std::optional.
   std::optional<StringView> value(const ParameterOptionAddr& addr);
 
   /*!
-   * \brief Méthode permettant de savoir si une adresse est présente dans la liste d'éléments.
-   * Les ANY_TAG/ANY_INDEX sont pris en compte.
-   * \param addr L'adresse à rechercher.
-   * \return true si l'adresse est trouvé.
+   * \brief Method allowing to know if an address is present in the list of elements.
+   * ANY_TAG/ANY_INDEX are taken into account.
+   * \param addr The address to search for.
+   * \return true if the address is found.
    */
   bool isExistAddr(const ParameterOptionAddr& addr);
 
   /*!
-   * \brief Méthode permettant de savoir combien de fois une adresse est présente dans la liste d'élements.
-   * Méthode particulièrement utile avec les ANY_TAG/ANY_INDEX.
+   * \brief Method allowing to know how many times an address is present in the list of elements.
+   * Method particularly useful with ANY_TAG/ANY_INDEX.
    *
-   * \param addr L'adresse à rechercher.
-   * \return Le nombre de correspondances trouvé.
+   * \param addr The address to search for.
+   * \return The number of matches found.
    */
   Integer countAddr(const ParameterOptionAddr& addr);
 
   /*!
-   * \brief Méthode permettant de récupérer un ou plusieurs indices dans la liste d'adresses.
+   * \brief Method allowing one or more indices to be retrieved in the list of addresses.
    *
-   * Le fonctionnement de cette méthode est simple.
-   * Nous avons les adresses suivantes :      "aaa[1]/bbb[2]/ccc[1]/\@name[1]".
-   *                                          "aaa[1]/bbb[2]/ccc[2]/\@name[1]".
+   * The functioning of this method is simple.
+   * We have the following addresses: "aaa[1]/bbb[2]/ccc[1]/@name[1]".
+   *                                          "aaa[1]/bbb[2]/ccc[2]/@name[1]".
    *                                          "ddd[1]/eee[2]".
    *                                          "fff[1]/ggg[2]/hhh[4]".
-   * L'adresse en paramètre est la suivante : "aaa[1]/bbb[2]/ccc[GET_INDEX]/\@name[1]".
-   * Les indices ajoutés dans le tableau en paramètre seront 1 et 2.
+   * The address in the parameter is the following: "aaa[1]/bbb[2]/ccc[GET_INDEX]/@name[1]".
+   * The indices added in the parameter array will be 1 and 2.
    *
-   * Attention : Avoir une adresse en entrée avec plusieurs "GET_INDEX" est autorisé mais
-   * ça peut être dangereux si le nombre d'indices trouvé par adresse est différent pour
-   * chaque adresse (s'il y a deux "GET_INDEX" mais que dans une des adresses, il n'y a
-   * pas deux correspondances, ces éventuelles correspondances ne seront pas prises en
-   * compte).
+   * Warning: Having an input address with multiple "GET_INDEX" is allowed but
+   * it can be dangerous if the number of indices found per address is different for
+   * each address (if there are two "GET_INDEX" but in one of the addresses, there are not
+   * two matches, these potential matches will not be taken into
+   * account).
    *
-   * \param addr_with_get_index L'adresse contenant des indices "GET_INDEX".
-   * \param indexes [OUT] Le tableau dans lequel sera ajouté le ou les indices (le tableau
-   * n'est pas effacé avant utilisation).
+   * \param addr_with_get_index The address containing "GET_INDEX" indices.
+   * \param indexes [OUT] The array where the index or indices will be added (the array
+   * is not cleared before use).
    */
   void getIndexInAddr(const ParameterOptionAddr& addr_with_get_index, UniqueArray<Integer>& indexes);
 
@@ -324,7 +325,6 @@ ParameterOptionElementsCollection
 
   UniqueArray<ParameterOptionElement> m_elements;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -334,4 +334,4 @@ ParameterOptionElementsCollection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

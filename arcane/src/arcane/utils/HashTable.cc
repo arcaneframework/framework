@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HashTable.cc                                                (C) 2000-2023 */
 /*                                                                           */
-/* Table de hachage.                                                         */
+/* Hash table.                                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,8 +56,7 @@ _throwNotFound() const
 Integer HashTableBase::
 nearestPrimeNumber(Integer n)
 {
-  // Nouvelle liste avec plus d'éléments pour réduire l'usage
-  // mémoire
+  // New list with more elements to reduce memory usage
   static Integer PRIME_NUMBER[] = {
     53l,
     97l,
@@ -121,7 +120,7 @@ nearestPrimeNumber(Integer n)
     19386313l,
     23263577l,
     27916297l,
-    //TODO AJOUTER ICI d'autres valeurs
+    //TODO ADD OTHER VALUES HERE
     50331653l,
     100663319l,
     201326611l,

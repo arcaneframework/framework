@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SHA3HashAlgorithm.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Calcule de fonction de hashage SHA-3.                                     */
+/* Calculates SHA-3 hashing function.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,10 +17,10 @@
 
 #include <cstring>
 
-// L'algorithme est decrit ici;
+// The algorithm is described here;
 // https://en.wikipedia.org/wiki/SHA-3
 
-// L'implémentation est issue du dépot suivant:
+// The implementation is based on the following repository:
 // https : //github.com/rhash/RHash
 
 /* sha3.c - an implementation of Secure Hash Algorithm 3 (Keccak).
@@ -115,7 +115,7 @@ class SHA3
   void sha3_final(ByteArray& output_hash);
 };
 
-// Valide pour little-endian
+// Valid for little-endian
 //@{
 #define le2me_64(x) (x)
 #define me64_to_le_str(to, from, length) std::memcpy((to), (from), (length))
@@ -138,8 +138,8 @@ keccak_init(unsigned int bits)
   bool is_ok = (rate <= 1600 && (rate % 64) == 0);
   if (!is_ok)
     ARCANE_FATAL("Bad value for rate '{0}'", rate);
-  // La taille de bloc est au maximum de 144 pour SHA3-224
-  // Au dela, la fonction 'sha3_process_block' ne fonctionne pas
+  // The block size is maximum 144 for SHA3-224
+  // Beyond that, the function 'sha3_process_block' does not work
   if (m_context.block_size > 144)
     ARCANE_FATAL("Block size is too big (v={0}) max_allowed=144", m_context.block_size);
 }
@@ -255,7 +255,7 @@ keccak_pi(uint64_t* A)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define CHI_STEP(i)                             \
+#define CHI_STEP(i) \
   A0 = A[0 + (i)]; \
   A1 = A[1 + (i)]; \
   A[0 + (i)] ^= ~A1 & A[2 + (i)]; \
@@ -335,8 +335,8 @@ sha3_permutation(uint64_t* state)
 void SHA3::
 sha3_process_block(uint64_t hash[25], const uint64_t* block, size_t block_size)
 {
-  // La taille de bloc est au maximum de 144 pour SHA3-224
-  // Cela est testé dans keccak_init().
+  // The block size is maximum 144 for SHA3-224
+  // This is tested in keccak_init().
 
   // expanded loop
   hash[0] ^= le2me_64(block[0]);

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArithmeticException.h                                       (C) 2000-2014 */
 /*                                                                           */
-/* Exception lorsqu'une erreur arithmétique survient.                        */
+/* Exception when an arithmetic error occurs.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARITHMETICEXCEPTION_H
 #define ARCANE_UTILS_ARITHMETICEXCEPTION_H
@@ -19,27 +19,31 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une erreur arithmétique survient.
+ * \brief Exception when an arithmetic error occurs.
  *
- * Cette exception survient notamment lorsqu'un signal SIGFPE survient
+ * This exception occurs notably when a SIGFPE signal occurs
  */
 class ARCANE_UTILS_EXPORT ArithmeticException
 : public Exception
 {
  public:
-	
+
   ArithmeticException(const TraceInfo& where);
-  ArithmeticException(const TraceInfo& where,const String& message);
-  ArithmeticException(const TraceInfo& where,const StackTrace& stack_trace);
-  ArithmeticException(const TraceInfo& where,const String& message,
+  ArithmeticException(const TraceInfo& where, const String& message);
+  ArithmeticException(const TraceInfo& where, const StackTrace& stack_trace);
+  ArithmeticException(const TraceInfo& where, const String& message,
                       const StackTrace& stack_trace);
-  ArithmeticException(const ArithmeticException& ex) : Exception(ex){}
+  ArithmeticException(const ArithmeticException& ex)
+  : Exception(ex)
+  {}
   ~ArithmeticException() ARCANE_NOEXCEPT {}
 
  public:
@@ -50,13 +54,9 @@ class ARCANE_UTILS_EXPORT ArithmeticException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

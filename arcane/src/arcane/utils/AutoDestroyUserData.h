@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AutoDestroyUserData.h                                       (C) 2000-2012 */
 /*                                                                           */
-/* UserData s'auto-détruisant une fois détaché.                              */
+/* UserData that self-destructs once detached.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_AUTODESTROYUSERDATA_H
 #define ARCANE_UTILS_AUTODESTROYUSERDATA_H
@@ -19,47 +19,54 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class DeleteOnDestroyBehaviour
 {
  public:
-  static void destroy(T* t){ delete t; }
+
+  static void destroy(T* t) { delete t; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief UserData s'auto-détruisant une fois détaché.
+ * \brief UserData that self-destructs once detached.
  * \ingroup Core
  *
- * Une instance de cette classe doit être allouée via new()
- * et est détruite automatiquement ainsi que sa donnée associée lorsqu'elle
- * est détachée d'un IUserDataList via IUserDataList::removeData().
+ * An instance of this class must be allocated via new()
+ * and is automatically destroyed along with its associated data when it
+ * is detached from an IUserDataList via IUserDataList::removeData().
  *
- * Par défaut, elle appelle l'opérateur delete pour sa donnée
- * mais il est possible de changer son comportement via le
- * paramètre template DestroyBehaviour.
+ * By default, it calls the delete operator for its data
+ * but it is possible to change its behavior via the
+ * DestroyBehaviour template parameter.
  */
-template<typename T,typename DestroyBehaviour = DeleteOnDestroyBehaviour<T> >
+template <typename T, typename DestroyBehaviour = DeleteOnDestroyBehaviour<T>>
 class AutoDestroyUserData
 : public IUserData
 {
  public:
-  
-  AutoDestroyUserData(T* adata): m_data(adata){}
+
+  AutoDestroyUserData(T* adata)
+  : m_data(adata)
+  {}
+
  private:
+
   ~AutoDestroyUserData()
   {
   }
 
  public:
 
-  virtual void notifyAttach(){}
+  virtual void notifyAttach() {}
 
   virtual void notifyDetach()
   {
@@ -67,20 +74,20 @@ class AutoDestroyUserData
     m_data = 0;
     delete this;
   }
-  
+
   T* data() { return m_data; }
 
  private:
+
   T* m_data;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

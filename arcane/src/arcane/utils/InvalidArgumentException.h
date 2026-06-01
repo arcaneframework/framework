@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* InvalidArgumentException.h                                  (C) 2000-2016 */
 /*                                                                           */
-/* Exception lorsqu'un argument est invalide.                                */
+/* Exception when an argument is invalid.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INVALIDARGUMENTEXCEPTION_H
 #define ARCANE_UTILS_INVALIDARGUMENTEXCEPTION_H
@@ -19,55 +19,54 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception lorsqu'une erreur fatale est survenue.
+ * \brief Exception when a fatal error has occurred.
  */
 class ARCANE_UTILS_EXPORT InvalidArgumentException
 : public Exception
 {
  public:
 
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,int arg);
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,double arg);
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,const String& arg);
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,const void* arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, int arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, double arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, const String& arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, const void* arg);
 
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,const String& message,int arg);
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,const String& message,double arg);
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,const String& message,const String& arg);
-  InvalidArgumentException(const TraceInfo& where,const String& arg_name,const String& message,const void* arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, const String& message, int arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, const String& message, double arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, const String& message, const String& arg);
+  InvalidArgumentException(const TraceInfo& where, const String& arg_name, const String& message, const void* arg);
 
   InvalidArgumentException(const InvalidArgumentException& ex);
 
   ~InvalidArgumentException() ARCANE_NOEXCEPT {}
 
  public:
-	
+
   virtual void explain(std::ostream& m) const;
 
  private:
-  
+
   String m_arg_name;
   String m_arg_value;
   String m_message;
 
-  template<typename U>
+  template <typename U>
   void _init(const U& arg_value);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Real3x3.cc                                                  (C) 2000-2023 */
 /*                                                                           */
-/* Matrice 3x3 de 'Real'.                                                    */
+/* 3x3 matrix of 'Real'.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ printXyz(std::ostream& o) const
 std::istream& Real3x3Proxy::
 assign(std::istream& i)
 {
-  // TODO marquer acces
+  // TODO mark access
   return m_value.assign(i);
 }
 

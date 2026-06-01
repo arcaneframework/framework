@@ -1,14 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParameterOption.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Classe représentant l'ensemble des paramètres pouvant modifier les        */
-/* options du jeu de données.                                                */
+/* Class representing the set of parameters that can modify the              */
+/* dataset options.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -154,7 +154,7 @@ ParameterOptionAddr(const StringView addr_str_view)
   Integer begin = 0;
   Integer size = 0;
   Integer index_begin = -1;
-  // On interdit les options qui s'appliquent à toutes les caseoptions.
+  // Options that apply to all case options are forbidden.
   bool have_a_no_any = false;
 
   // aaa[0]
@@ -177,7 +177,7 @@ ParameterOptionAddr(const StringView addr_str_view)
         ARCANE_FATAL("Invalid parameter option (']' found without '[' before) -- Current read : {0}", current);
       }
 
-      // Motif spécial "[]" (= ANY_INDEX)
+      // Special pattern "[]" (= ANY_INDEX)
       if (index_begin == i) {
         m_parts.add(makeRef(new ParameterOptionAddrPart(addr_str_view.subView(begin, size), ParameterOptionAddrPart::ANY_INDEX)));
         have_a_no_any = true;
@@ -203,7 +203,7 @@ ParameterOptionAddr(const StringView addr_str_view)
 
       if (index_begin == -1) {
         size = i - begin;
-        // Cas ou on a un any_tag any_index ("truc1//truc2").
+        // Case where we have an any_tag any_index ("truc1//truc2").
         if (size == 0) {
           m_parts.add(makeRef(new ParameterOptionAddrPart()));
         }
@@ -236,8 +236,8 @@ ParameterOptionAddr(const StringView addr_str_view)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// On ne doit pas bloquer les multiples ParameterOptionAddrPart(ANY) :
-// Construction par iteration : aaaa/bb/ANY/ANY/cc
+// We must not block multiple ParameterOptionAddrPart(ANY):
+// Construction by iteration: aaaa/bb/ANY/ANY/cc
 void ParameterOptionAddr::
 addAddrPart(ParameterOptionAddrPart* part)
 {
@@ -431,9 +431,9 @@ addElement(StringView addr, StringView value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Un StringView "vide" est éqal à un StringView "nul".
-// Comme on travaille avec des String et que la distinction
-// vide/nul est importante, on passe par un std::optional.
+// An empty StringView is equivalent to a null StringView.
+// Since we are working with Strings and the distinction
+// empty/null is important, we use std::optional.
 std::optional<StringView> ParameterOptionElementsCollection::
 value(const ParameterOptionAddr& addr)
 {

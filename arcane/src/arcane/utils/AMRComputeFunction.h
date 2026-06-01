@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AMRComputeFunction.h                                        (C) 2000-2017 */
 /*                                                                           */
-/* Classe fonctor de transport de variables .                                */
+/* Variable transport functor class.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_AMRCOMPUTEFUNCTION_H
 #define ARCANE_AMRCOMPUTEFUNCTION_H
@@ -16,53 +16,48 @@
 
 #include "arcane/utils/AMRTransportFunctor.h"
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- \brief Interface de la classe fonctor de transport d'une CellVariable.
+ \brief Interface for the CellVariable transport functor class.
  */
-
 class AMRComputeFunction
 : public IAMRTransportFunctor
 {
  public:
 
-  template<typename ClassType>
+  template <typename ClassType>
   AMRComputeFunction(ClassType* instance, void (ClassType::*func)(Array<ItemInternal*>&, AMROperationType))
-  : m_functor(new AMRTransportFunctorT<ClassType>(instance,func))
+  : m_functor(new AMRTransportFunctorT<ClassType>(instance, func))
   {
   }
-  template<typename ClassType>
+  template <typename ClassType>
   AMRComputeFunction(ClassType* instance, void (ClassType::*func)(Array<Cell>&, AMROperationType))
-  : m_functor(new AMRTransportFunctorT<ClassType>(instance,func))
+  : m_functor(new AMRTransportFunctorT<ClassType>(instance, func))
   {
   }
-  virtual ~AMRComputeFunction(){ delete m_functor; } //!< Libère les ressources
+  virtual ~AMRComputeFunction() { delete m_functor; } //!< Releases resources
 
  public:
 
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   virtual void executeFunctor(Array<ItemInternal*>& cells, AMROperationType op)
   {
-    m_functor->executeFunctor(cells,op);
+    m_functor->executeFunctor(cells, op);
   }
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   virtual void executeFunctor(Array<Cell>& cells, AMROperationType op)
   {
-    m_functor->executeFunctor(cells,op);
+    m_functor->executeFunctor(cells, op);
   }
 
  private:
@@ -73,10 +68,9 @@ class AMRComputeFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

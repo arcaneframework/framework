@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HashSuite.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Fonction de hachage d'une suite de valeur.                                */
+/* Hash function for a sequence of values.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_HASHSUITE_H
 #define ARCANE_UTILS_HASHSUITE_H
@@ -27,19 +27,18 @@ namespace Arcane
 
 /*!
  * \internal
- * \brief Classe permettant de calculer un hash de manière itératif.
- * \warning L'ordre dans lequel les valeurs sont données via la méthode add() est important.
+ * \brief Class allowing for iterative hash calculation.
+ * \warning The order in which values are provided via the add() method is important.
  */
-
 class IntegerHashSuite
 {
  public:
 
   /*!
-   * \brief Méthode permettant d'ajouter une valeur dans le calcul du hash.
-   * \warning L'ordre dans lequel les valeurs sont données via la méthode
-   * add() est important.
-   * \param value La valeur à ajouter.
+   * \brief Method allowing a value to be added to the hash calculation.
+   * \warning The order in which values are provided via the method
+   * add() is important.
+   * \param value The value to add.
    */
   template <class T>
   void add(T value)
@@ -49,9 +48,9 @@ class IntegerHashSuite
   }
 
   /*!
-   * \brief Méthode permettant de récupérer le hash calculé à partir de
-   * toutes les valeurs passées à la méthode add().
-   * \return Le hash.
+   * \brief Method allowing retrieval of the hash calculated from
+   * all values passed to the add() method.
+   * \return The hash.
    */
   Int64 hash() const
   {
@@ -60,7 +59,7 @@ class IntegerHashSuite
 
  private:
 
-  UInt64 m_hash{0};
+  UInt64 m_hash{ 0 };
 };
 
 /*---------------------------------------------------------------------------*/

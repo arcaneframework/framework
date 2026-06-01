@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VersionInfo.cc                                              (C) 2000-2018 */
 /*                                                                           */
-/* Informations sur une version d'un objet.                                  */
+/* Information about an object's version.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +39,7 @@ VersionInfo()
 /*---------------------------------------------------------------------------*/
 
 VersionInfo::
-VersionInfo(int vmajor,int vminor,int vpatch)
+VersionInfo(int vmajor, int vminor, int vpatch)
 : m_major(vmajor)
 , m_minor(vminor)
 , m_patch(vpatch)
@@ -49,15 +50,15 @@ VersionInfo(int vmajor,int vminor,int vpatch)
 /*---------------------------------------------------------------------------*/
 
 static void
-_parseStr(std::istream& istr,int& version)
+_parseStr(std::istream& istr, int& version)
 {
   if (!istr.good())
     return;
   int z = 0;
   char buf[2];
   istr >> z;
-  istr.read(buf,1);
-  if (z<0)
+  istr.read(buf, 1);
+  if (z < 0)
     z = 0;
   version = z;
 }
@@ -72,9 +73,9 @@ VersionInfo(const String& version_str)
 , m_patch(0)
 {
   std::istringstream istr(version_str.localstr());
-  _parseStr(istr,m_major);
-  _parseStr(istr,m_minor);
-  _parseStr(istr,m_patch);
+  _parseStr(istr, m_major);
+  _parseStr(istr, m_minor);
+  _parseStr(istr, m_patch);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,14 +93,14 @@ write(std::ostream& o) const
 String VersionInfo::
 versionAsString() const
 {
-  return String::format("{0}.{1}.{2}",versionMajor(),versionMinor(),versionPatch());
+  return String::format("{0}.{1}.{2}", versionMajor(), versionMinor(), versionPatch());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const VersionInfo& vi)
+operator<<(std::ostream& o, const VersionInfo& vi)
 {
   vi.write(o);
   return o;
@@ -108,8 +109,7 @@ operator<<(std::ostream& o,const VersionInfo& vi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
