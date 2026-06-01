@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,8 +38,8 @@ ArrayShape(Span<const Int32> v)
 void ArrayShape::
 setNbDimension(Int32 nb_dim)
 {
-  if (nb_dim<0 || nb_dim>=MAX_NB_DIMENSION)
-    ARCANE_THROW(ArgumentException,"Bad value for argument 'nb_value'");
+  if (nb_dim < 0 || nb_dim >= MAX_NB_DIMENSION)
+    ARCANE_THROW(ArgumentException, "Bad value for argument 'nb_value'");
   m_nb_dim = nb_dim;
 }
 
@@ -51,7 +51,7 @@ _set(SmallSpan<const Int32> v)
 {
   Int32 vsize = v.size();
   if (vsize >= MAX_NB_DIMENSION)
-    ARCANE_FATAL("Bad size '{0}' for shape. Maximum size is {1}",vsize,MAX_NB_DIMENSION);
+    ARCANE_FATAL("Bad size '{0}' for shape. Maximum size is {1}", vsize, MAX_NB_DIMENSION);
   m_nb_dim = CheckedConvert::toInt32(vsize);
   for (Int32 i = 0; i < vsize; ++i)
     m_dims[i] = v[i];

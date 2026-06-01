@@ -43,7 +43,7 @@ template <typename T, int Size>
 class NumVector
 {
   static_assert(Size > 1, "Size has to be strictly greater than 1");
-  static_assert(std::is_same_v<T,Real>,"Only type 'Real' is allowed");
+  static_assert(std::is_same_v<T, Real>, "Only type 'Real' is allowed");
 
  public:
 

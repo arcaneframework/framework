@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ class Vector2
 
  public:
 
-   //! Adds \a b to the instance
+  //! Adds \a b to the instance
   constexpr ARCCORE_HOST_DEVICE void operator+=(const T& b)
   {
     x += b;
@@ -191,7 +191,6 @@ class Vector2
 
   //! Returns the opposite of the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const { return ThatClass(-x, -y); }
-
 
   //! Multiplies each component of \a b by \a a
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const T& a, const ThatClass& b)

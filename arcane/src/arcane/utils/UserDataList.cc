@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,8 @@ ARCANE_BEGIN_NAMESPACE
 class UserDataList::Impl
 {
  public:
-  typedef std::map<String,IUserData*> MapType;
+
+  typedef std::map<String, IUserData*> MapType;
   MapType m_list;
 };
 
@@ -63,7 +65,7 @@ clear()
 {
   Impl::MapType::const_iterator begin = m_p->m_list.begin();
   Impl::MapType::const_iterator end = m_p->m_list.end();
-  for( ; begin!=end; ++begin )
+  for (; begin != end; ++begin)
     begin->second->notifyDetach();
   m_p->m_list.clear();
 }
@@ -72,12 +74,12 @@ clear()
 /*---------------------------------------------------------------------------*/
 
 void UserDataList::
-setData(const String& name,IUserData* ud)
+setData(const String& name, IUserData* ud)
 {
   Impl::MapType::const_iterator i = m_p->m_list.find(name);
-  if (i!=m_p->m_list.end())
-    throw ArgumentException(A_FUNCINFO,String::format("key '{0}' already exists",name));
-  m_p->m_list.insert(std::make_pair(name,ud));
+  if (i != m_p->m_list.end())
+    throw ArgumentException(A_FUNCINFO, String::format("key '{0}' already exists", name));
+  m_p->m_list.insert(std::make_pair(name, ud));
   ud->notifyAttach();
 }
 
@@ -85,13 +87,13 @@ setData(const String& name,IUserData* ud)
 /*---------------------------------------------------------------------------*/
 
 IUserData* UserDataList::
-data(const String& name,bool allow_null) const
+data(const String& name, bool allow_null) const
 {
   Impl::MapType::const_iterator i = m_p->m_list.find(name);
-  if (i==m_p->m_list.end()){
+  if (i == m_p->m_list.end()) {
     if (allow_null)
       return 0;
-    throw ArgumentException(A_FUNCINFO,String::format("key '{0}' not found",name));
+    throw ArgumentException(A_FUNCINFO, String::format("key '{0}' not found", name));
   }
   return i->second;
 }
@@ -100,13 +102,13 @@ data(const String& name,bool allow_null) const
 /*---------------------------------------------------------------------------*/
 
 void UserDataList::
-removeData(const String& name,bool allow_null)
+removeData(const String& name, bool allow_null)
 {
   Impl::MapType::iterator i = m_p->m_list.find(name);
-  if (i==m_p->m_list.end()){
+  if (i == m_p->m_list.end()) {
     if (allow_null)
       return;
-    throw ArgumentException(A_FUNCINFO,String::format("key '{0}' not found",name));
+    throw ArgumentException(A_FUNCINFO, String::format("key '{0}' not found", name));
   }
   i->second->notifyDetach();
   m_p->m_list.erase(i);
@@ -115,7 +117,7 @@ removeData(const String& name,bool allow_null)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

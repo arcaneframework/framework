@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ StringViewInputStream(StringView v)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(double& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -113,13 +113,13 @@ builtInGetValue(float& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(long& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(int& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -161,7 +161,7 @@ builtInGetValue(unsigned short& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(long long& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -188,7 +188,7 @@ builtInGetValue(Real2& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3& v, StringView s)
 {
-  if (Convert::Impl::ConvertPolicy::isUseSameConvertForAllReal()){
+  if (Convert::Impl::ConvertPolicy::isUseSameConvertForAllReal()) {
     s = Convert::Impl::_removeLeadingSpaces(s);
     v = {};
     const bool is_verbose = Convert::Impl::ConvertPolicy::verbosity() > 0;

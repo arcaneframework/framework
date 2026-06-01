@@ -24,15 +24,12 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class IOnlineDebuggerService;
 class IProfilingService;
 class IProcessorAffinityService;
 class IDynamicLibraryLoader;
 class ISymbolizerService;
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +39,7 @@ class ISymbolizerService;
  *
  *  This namespace contains all platform-dependent functions.
  */
-namespace platform
+namespace Arcane::platform
 {
 
 /*!
@@ -77,12 +74,11 @@ getProcessorAffinityService();
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IProcessorAffinityService*
-setProcessorAffinityService(IProcessorAffinityService* service);
+ARCANE_UTILS_EXPORT IProcessorAffinityService* setProcessorAffinityService(IProcessorAffinityService* service);
 
 /*!
  * \brief Service used to obtain profiling information.
- * 
+ *
  * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IProfilingService*
@@ -90,16 +86,15 @@ getProfilingService();
 
 /*!
  * \brief Sets the service used to obtain profiling information.
- * 
+ *
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IProfilingService*
-setProfilingService(IProfilingService* service);
+ARCANE_UTILS_EXPORT IProfilingService* setProfilingService(IProfilingService* service);
 
 /*!
  * \brief Service used to set up an online debug architecture.
- * 
+ *
  * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IOnlineDebuggerService*
@@ -107,16 +102,15 @@ getOnlineDebuggerService();
 
 /*!
  * \brief Sets the service to be used for the online debug architecture.
- * 
+ *
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IOnlineDebuggerService*
-setOnlineDebuggerService(IOnlineDebuggerService* service);
+ARCANE_UTILS_EXPORT IOnlineDebuggerService* setOnlineDebuggerService(IOnlineDebuggerService* service);
 
 /*!
  * \brief Service used to manage threads.
- * 
+ *
  * May return null if no service is available.
  */
 extern "C++" ARCANE_UTILS_EXPORT IThreadImplementation*
@@ -124,12 +118,11 @@ getThreadImplementationService();
 
 /*!
  * \brief Sets the service used to manage threads.
- * 
+ *
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IThreadImplementation*
-setThreadImplementationService(IThreadImplementation* service);
+ARCANE_UTILS_EXPORT IThreadImplementation* setThreadImplementationService(IThreadImplementation* service);
 
 /*!
  * \brief Sets the service used to manage internal processor counters.
@@ -137,8 +130,7 @@ setThreadImplementationService(IThreadImplementation* service);
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IPerformanceCounterService*
-setPerformanceCounterService(IPerformanceCounterService* service);
+ARCANE_UTILS_EXPORT IPerformanceCounterService* setPerformanceCounterService(IPerformanceCounterService* service);
 
 /*!
  * \brief Service used to obtain internal processor counters.
@@ -190,8 +182,7 @@ callDotNETGarbageCollector();
  * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: Use MemoryUtils::getDefaultDataAllocator() instead.")
-ARCANE_UTILS_EXPORT IMemoryAllocator*
-getAcceleratorHostMemoryAllocator();
+ARCANE_UTILS_EXPORT IMemoryAllocator* getAcceleratorHostMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -205,8 +196,7 @@ getAcceleratorHostMemoryAllocator();
  * \deprecated This method is internal to Arcane.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IMemoryAllocator*
-setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
+ARCANE_UTILS_EXPORT IMemoryAllocator* setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -239,8 +229,7 @@ getDefaultDataAllocator();
  * \deprecated This method is internal to Arcane.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
-ARCANE_UTILS_EXPORT IMemoryRessourceMng*
-setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
+ARCANE_UTILS_EXPORT IMemoryRessourceMng* setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -255,8 +244,7 @@ setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
  * instead.
  */
 extern "C++" ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Use methods from MemoryUtils instead.")
-ARCANE_UTILS_EXPORT IMemoryRessourceMng*
-getDataMemoryRessourceMng();
+ARCANE_UTILS_EXPORT IMemoryRessourceMng* getDataMemoryRessourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -366,17 +354,17 @@ getLLDBStack();
 //   #pragma clang loop vectorize(enable)
 // but it does not force vectorization.
 #ifdef __clang__
-#  define ARCANE_PRAGMA_IVDEP_VALUE "clang loop vectorize(enable)"
+#define ARCANE_PRAGMA_IVDEP_VALUE "clang loop vectorize(enable)"
 #else
-#  ifdef __INTEL_COMPILER
-#    define ARCANE_PRAGMA_IVDEP_VALUE "ivdep"
-#  else
-#    ifdef __GNUC__
-#      if (__GNUC__>=5)
-#        define ARCANE_PRAGMA_IVDEP_VALUE "GCC ivdep"
-#      endif
-#    endif
-#  endif
+#ifdef __INTEL_COMPILER
+#define ARCANE_PRAGMA_IVDEP_VALUE "ivdep"
+#else
+#ifdef __GNUC__
+#if (__GNUC__ >= 5)
+#define ARCANE_PRAGMA_IVDEP_VALUE "GCC ivdep"
+#endif
+#endif
+#endif
 #endif
 
 #ifdef ARCANE_PRAGMA_IVDEP_VALUE
@@ -389,12 +377,7 @@ getLLDBStack();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace platform
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane
+} // namespace Arcane::platform
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

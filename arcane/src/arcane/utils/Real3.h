@@ -77,7 +77,7 @@ struct Real3POD
    */
   ARCCORE_HOST_DEVICE Real& operator[](Integer i)
   {
-    ARCCORE_CHECK_AT(i,3);
+    ARCCORE_CHECK_AT(i, 3);
     return (&x)[i];
   }
 
@@ -92,7 +92,7 @@ struct Real3POD
    */
   ARCCORE_HOST_DEVICE Real& operator()(Integer i)
   {
-    ARCCORE_CHECK_AT(i,3);
+    ARCCORE_CHECK_AT(i, 3);
     return (&x)[i];
   }
 
@@ -180,7 +180,7 @@ class ARCANE_UTILS_EXPORT Real3
 
   //! Constructs the triplet (av[0], av[1], av[2])
   constexpr ARCCORE_HOST_DEVICE Real3(ConstArrayView<Real> av)
-    : Real3POD()
+  : Real3POD()
   {
     x = av[0];
     y = av[1];

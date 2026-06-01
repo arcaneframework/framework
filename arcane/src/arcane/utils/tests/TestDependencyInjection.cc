@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,6 +24,7 @@ using namespace Arcane::DependencyInjection;
 class IA
 {
  public:
+
   virtual ~IA() = default;
   virtual int value() const = 0;
 };
@@ -31,6 +32,7 @@ class IA
 class IB
 {
  public:
+
   virtual ~IB() = default;
   virtual int value() const = 0;
 };
@@ -38,6 +40,7 @@ class IB
 class IA2
 {
  public:
+
   virtual ~IA2() = default;
   virtual int value() const = 0;
   virtual IB* bValue() const = 0;
@@ -46,6 +49,7 @@ class IA2
 class IB2
 {
  public:
+
   virtual ~IB2() = default;
   virtual int value() const = 0;
   virtual String stringValue() const = 0;
@@ -54,6 +58,7 @@ class IB2
 class IC
 {
  public:
+
   virtual ~IC() = default;
   virtual int value() const = 0;
 };
@@ -61,12 +66,14 @@ class IC
 class ID
 {
  public:
+
   virtual ~ID() = default;
 };
 
 class IE
 {
  public:
+
   virtual ~IE() = default;
   virtual int intValue() const = 0;
   virtual String stringValue() const = 0;
@@ -83,6 +90,7 @@ class AImpl
 : public IA
 {
  public:
+
   AImpl() {}
   int value() const override { return 5; }
 };
@@ -91,6 +99,7 @@ class BImpl
 : public IB
 {
  public:
+
   BImpl() {}
   int value() const override { return 12; }
 };
@@ -99,6 +108,7 @@ class B2Impl
 : public IB2
 {
  public:
+
   B2Impl(const String& x)
   : m_test(x)
   {}
@@ -106,6 +116,7 @@ class B2Impl
   String stringValue() const override { return m_test; }
 
  private:
+
   String m_test;
 };
 
@@ -113,6 +124,7 @@ class EImpl
 : public IE
 {
  public:
+
   EImpl(Int32 int_value, const String& string_value)
   : m_string_value(string_value)
   , m_int_value(int_value)
@@ -122,6 +134,7 @@ class EImpl
   String stringValue() const override { return m_string_value; }
 
  private:
+
   String m_string_value;
   Int32 m_int_value;
 };
@@ -131,11 +144,20 @@ class CDImpl
 , public IC
 {
  public:
-  CDImpl(int a,double b) : m_int_value(a+(int)b){}
-  CDImpl(int a) : m_int_value(a){}
-  CDImpl() : m_int_value(2){}
+
+  CDImpl(int a, double b)
+  : m_int_value(a + (int)b)
+  {}
+  CDImpl(int a)
+  : m_int_value(a)
+  {}
+  CDImpl()
+  : m_int_value(2)
+  {}
   int value() const override { return m_int_value; }
+
  private:
+
   int m_int_value;
 };
 
@@ -143,17 +165,23 @@ class A2Impl
 : public IA2
 {
  public:
-  A2Impl(int a,IB* ib,IA*) : m_a(a), m_ib(ib) {}
+
+  A2Impl(int a, IB* ib, IA*)
+  : m_a(a)
+  , m_ib(ib)
+  {}
   A2Impl(int a, IB* ib)
   : m_a(a)
   , m_ib(ib)
   {}
 
  public:
+
   int value() const override { return m_a; }
   IB* bValue() const override { return m_ib; }
 
  private:
+
   int m_a;
   IB* m_ib;
 };
@@ -201,7 +229,7 @@ ARCANE_DI_REGISTER_PROVIDER(CDImpl,
                             ARCANE_DI_EMPTY_CONSTRUCTOR());
 } // namespace DI_Test
 
-TEST(DependencyInjection,TestPrintFactories)
+TEST(DependencyInjection, TestPrintFactories)
 {
   using namespace Arcane::DependencyInjection;
   Injector injector;
@@ -242,7 +270,7 @@ TEST(DependencyInjection, TestNotFound)
   ASSERT_EQ(ic2.get(), nullptr);
 }
 
-TEST(DependencyInjection,TestBind1)
+TEST(DependencyInjection, TestBind1)
 {
   using namespace Arcane::DependencyInjection;
   std::cout << "INJECTOR TEST\n";
@@ -252,10 +280,10 @@ TEST(DependencyInjection,TestBind1)
   injector.bind(ref_tm);
   Ref<ITraceMng> tm2 = injector.get<Ref<ITraceMng>>();
   std::cout << "TM=" << tm << "TM2=" << tm2.get() << "\n";
-  ASSERT_EQ(tm,tm2.get()) << "Bad Get Reference";
+  ASSERT_EQ(tm, tm2.get()) << "Bad Get Reference";
 }
 
-TEST(DependencyInjection,ProcessGlobalProviders)
+TEST(DependencyInjection, ProcessGlobalProviders)
 {
   using namespace Arcane::DependencyInjection;
   using namespace DI_Test;
@@ -265,15 +293,15 @@ TEST(DependencyInjection,ProcessGlobalProviders)
 
   Ref<IA> ia = injector.createInstance<IA>({});
   EXPECT_TRUE(ia.get());
-  ASSERT_EQ(ia->value(),5);
+  ASSERT_EQ(ia->value(), 5);
 
   Ref<IA> ia2 = injector.createInstance<IA>("AImplProvider");
   EXPECT_TRUE(ia2.get());
-  ASSERT_EQ(ia2->value(),5);
+  ASSERT_EQ(ia2->value(), 5);
 
   Ref<IB> ib = injector.createInstance<IB>({});
   EXPECT_TRUE(ib.get());
-  ASSERT_EQ(ib->value(),12);
+  ASSERT_EQ(ib->value(), 12);
 }
 
 void _TestBindValue()
@@ -316,12 +344,12 @@ void _TestBindValue()
   }
 }
 
-TEST(DependencyInjection,TestBindValue)
+TEST(DependencyInjection, TestBindValue)
 {
-  try{
+  try {
     _TestBindValue();
   }
-  catch(const Exception& ex){
+  catch (const Exception& ex) {
     std::cerr << "ERROR=" << ex << "\n";
     throw;
   }
@@ -353,12 +381,12 @@ TEST(DependencyInjection, ConstructorCall)
   }
 }
 
-TEST(DependencyInjection,Impl2)
+TEST(DependencyInjection, Impl2)
 {
   using namespace DI_Test;
   namespace di = Arcane::DependencyInjection;
 
-  try{
+  try {
     {
       // Test with the CDImpl(int) constructor
       Injector injector;
@@ -367,7 +395,7 @@ TEST(DependencyInjection,Impl2)
       injector.bind<int>(25);
       Ref<IC> ic = injector.createInstance<IC>("CDImplProvider2");
       ARCANE_CHECK_POINTER(ic.get());
-      ASSERT_EQ(ic->value(),25);
+      ASSERT_EQ(ic->value(), 25);
     }
     {
       // Test with the no-argument constructor (CDImpl())
@@ -377,7 +405,7 @@ TEST(DependencyInjection,Impl2)
       injector.fillWithGlobalFactories();
       Ref<IC> ic = injector.createInstance<IC>("CDImplProvider3");
       ARCANE_CHECK_POINTER(ic.get());
-      ASSERT_EQ(ic->value(),2);
+      ASSERT_EQ(ic->value(), 2);
     }
     {
       // Test with the constructor having 2 arguments (CDImpl(int,double))
@@ -389,11 +417,14 @@ TEST(DependencyInjection,Impl2)
       injector.bind<double>(12.0);
       Ref<IC> ic = injector.createInstance<IC>("CDImplProvider4");
       ARCANE_CHECK_POINTER(ic.get());
-      ASSERT_EQ(ic->value(),37);
+      ASSERT_EQ(ic->value(), 37);
     }
   }
-  catch(const Exception& ex){
+  catch (const Exception& ex) {
     std::cerr << "ERROR=" << ex << "\n";
     throw;
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

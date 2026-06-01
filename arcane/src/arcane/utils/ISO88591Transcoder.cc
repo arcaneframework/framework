@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,10 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +42,7 @@ build()
 /*---------------------------------------------------------------------------*/
 
 void ISO88591Transcoder::
-transcodeToUtf16(const Byte* src,Integer src_len,UChar* out)
+transcodeToUtf16(const Byte* src, Integer src_len, UChar* out)
 {
   const Byte* src_current = src;
   const Byte* src_end = src + src_len;
@@ -56,23 +54,23 @@ transcodeToUtf16(const Byte* src,Integer src_len,UChar* out)
 /*---------------------------------------------------------------------------*/
 
 void ISO88591Transcoder::
-transcodeFromUtf16(const UChar* src,Integer src_len,Byte* out)
+transcodeFromUtf16(const UChar* src, Integer src_len, Byte* out)
 {
   const UChar* src_current = src;
   const UChar* src_end = src + src_len;
   bool has_error = false;
-  while (src_current < src_end){
-    if (*src_current < 256){
+  while (src_current < src_end) {
+    if (*src_current < 256) {
       *out++ = Byte(*src_current);
     }
-    else{
+    else {
       // Conversion impossible. Replace with a whitespace character
       has_error = true;
       *out++ = 0x1A;
     }
     ++src_current;
   }
-  if (has_error){
+  if (has_error) {
     cerr << "ARCANE: Bad transcoding from UTF16 to ISO88591\n";
   }
 }
@@ -80,7 +78,7 @@ transcodeFromUtf16(const UChar* src,Integer src_len,Byte* out)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

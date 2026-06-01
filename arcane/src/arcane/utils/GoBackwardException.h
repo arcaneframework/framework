@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,20 +33,20 @@ class ARCANE_UTILS_EXPORT GoBackwardException
 : public Exception
 {
  public:
-	
+
   GoBackwardException(const String& where);
-  GoBackwardException(const String& where,const String& message);
+  GoBackwardException(const String& where, const String& message);
   GoBackwardException(const TraceInfo& where);
-  GoBackwardException(const TraceInfo& where,const String& message);
+  GoBackwardException(const TraceInfo& where, const String& message);
   ~GoBackwardException() ARCANE_NOEXCEPT {}
 
  public:
-	
+
   virtual void explain(std::ostream& m) const;
 
  private:
 
-	String m_message;
+  String m_message;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -54,7 +55,7 @@ class ARCANE_UTILS_EXPORT GoBackwardException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

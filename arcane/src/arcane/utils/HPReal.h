@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,8 +23,10 @@
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Class implementing a High-Precision real number.
  
@@ -156,6 +158,7 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT HPReal
 {
  public:
+
   /*!
    * \brief Default constructor without initialization.
    */
@@ -238,10 +241,12 @@ class ARCANE_UTILS_EXPORT HPReal
   std::ostream& printPretty(std::ostream& o) const;
 
  public:
+
   //! Zero value.
   static HPReal zero() { return HPReal(0.0); }
 
  public:
+
   static HPReal accumulate(Real a, HPReal b)
   {
     HPReal x(_doTwoSum(a, b.value()));
@@ -293,10 +298,12 @@ class ARCANE_UTILS_EXPORT HPReal
   }
 
  private:
+
   Real m_value;
   Real m_correction;
 
  private:
+
   // Correction of ()
   static HPReal _doTwoSum(Real a, Real b)
   {

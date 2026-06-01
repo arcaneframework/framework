@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,21 +41,21 @@ void arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func,
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 {
-  arccoreSequentialFor(bounds,func);
+  arccoreSequentialFor(bounds, func);
 }
 
 //! Applies the functor \a func on a 3D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
 {
-  arccoreSequentialFor(bounds,func);
+  arccoreSequentialFor(bounds, func);
 }
 
 //! Applies the functor \a func on a 4D loop.
 template <typename IndexType, template <int, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
 {
-  arccoreSequentialFor(bounds,func);
+  arccoreSequentialFor(bounds, func);
 }
 
 /*---------------------------------------------------------------------------*/

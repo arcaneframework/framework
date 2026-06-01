@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@
  * \brief Functions to convert one type to another.
  * \namespace Arcane::Convert
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,29 +32,29 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-static char global_hexa[16] = {'0','1', '2', '3', '4', '5', '6', '7', '8', '9',
-                               'a', 'b', 'c', 'd', 'e', 'f' };
+static char global_hexa[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                                'a', 'b', 'c', 'd', 'e', 'f' };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace
 {
-String
-_toHexaString(Span<const std::byte> input)
-{
-  UniqueArray<Byte> out_buf;
-  Int64 len = input.size();
-  out_buf.resize((len*2)+1);
-  for( Int64 i=0; i<len; ++i ){
-    int v = std::to_integer<int>(input[i]);
-    out_buf[(i*2)] = global_hexa[v/16];
-    out_buf[(i*2)+1] = global_hexa[v%16];
+  String
+  _toHexaString(Span<const std::byte> input)
+  {
+    UniqueArray<Byte> out_buf;
+    Int64 len = input.size();
+    out_buf.resize((len * 2) + 1);
+    for (Int64 i = 0; i < len; ++i) {
+      int v = std::to_integer<int>(input[i]);
+      out_buf[(i * 2)] = global_hexa[v / 16];
+      out_buf[(i * 2) + 1] = global_hexa[v % 16];
+    }
+    out_buf[len * 2] = '\0';
+    return String(out_buf);
   }
-  out_buf[len*2] = '\0';
-  return String(out_buf);
-}
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,12 +78,12 @@ toHexaString(ByteConstArrayView input)
 /*---------------------------------------------------------------------------*/
 
 void Convert::
-toHexaString(Int64 input,Span<Byte> output)
+toHexaString(Int64 input, Span<Byte> output)
 {
-  for (Integer i=0; i<8; ++i ){
+  for (Integer i = 0; i < 8; ++i) {
     Byte v = (Byte)(input % 256);
-    output[(i*2)] = global_hexa[v/16];
-    output[(i*2)+1] = global_hexa[v%16];
+    output[(i * 2)] = global_hexa[v / 16];
+    output[(i * 2) + 1] = global_hexa[v % 16];
     input = input / 256;
   }
 }
@@ -93,7 +94,7 @@ toHexaString(Int64 input,Span<Byte> output)
 String Convert::
 toHexaString(Real input)
 {
-  return toHexaString(ByteConstArrayView(sizeof(Real),(Byte*)&input));
+  return toHexaString(ByteConstArrayView(sizeof(Real), (Byte*)&input));
 }
 
 /*---------------------------------------------------------------------------*/

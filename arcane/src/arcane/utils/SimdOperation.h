@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,216 +41,216 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 inline SimdReal3
-operator+(const SimdReal3& a,const SimdReal3& b)
+operator+(const SimdReal3& a, const SimdReal3& b)
 {
-  return SimdReal3(a.x + b.x,a.y + b.y,a.z + b.z);
+  return SimdReal3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 inline SimdReal3
 operator-(const SimdReal3& a)
 {
-  return SimdReal3(-a.x,-a.y,-a.z);
+  return SimdReal3(-a.x, -a.y, -a.z);
 }
 
 inline SimdReal3
-operator-(const SimdReal3& a,const SimdReal3& b)
+operator-(const SimdReal3& a, const SimdReal3& b)
 {
-  return SimdReal3(a.x - b.x,a.y - b.y,a.z - b.z);
+  return SimdReal3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 inline SimdReal3
-operator*(const SimdReal3& a,Real b)
+operator*(const SimdReal3& a, Real b)
 {
-  return SimdReal3(a.x * b,a.y * b,a.z * b);
+  return SimdReal3(a.x * b, a.y * b, a.z * b);
 }
 
 inline SimdReal3
-operator*(const SimdReal3& a,const SimdReal& b)
+operator*(const SimdReal3& a, const SimdReal& b)
 {
-  return SimdReal3(a.x * b,a.y * b,a.z * b);
+  return SimdReal3(a.x * b, a.y * b, a.z * b);
 }
 
 inline SimdReal3
-operator*(Real b,const SimdReal3& a)
+operator*(Real b, const SimdReal3& a)
 {
-  return SimdReal3(b * a.x,b * a.y,b * a.z);
+  return SimdReal3(b * a.x, b * a.y, b * a.z);
 }
 
 inline SimdReal3
-operator*(const SimdReal& b,const SimdReal3& a)
+operator*(const SimdReal& b, const SimdReal3& a)
 {
-  return SimdReal3(b * a.x,b * a.y,b * a.z);
+  return SimdReal3(b * a.x, b * a.y, b * a.z);
 }
 
 inline SimdReal3
-operator*(const SimdReal3& a,const SimdReal3& b)
+operator*(const SimdReal3& a, const SimdReal3& b)
 {
-  return SimdReal3(a.x * b.x,a.y * b.y,a.z * b.z);
+  return SimdReal3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
 inline SimdReal3
-operator/(const SimdReal3& a,const SimdReal& b)
+operator/(const SimdReal3& a, const SimdReal& b)
 {
-  return SimdReal3(a.x / b,a.y / b,a.z / b);
+  return SimdReal3(a.x / b, a.y / b, a.z / b);
 }
 
 inline SimdReal3
-operator/(const SimdReal3& a,Real b)
+operator/(const SimdReal3& a, Real b)
 {
-  return SimdReal3(a.x / b,a.y / b,a.z / b);
+  return SimdReal3(a.x / b, a.y / b, a.z / b);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline SimdReal2
-operator+(const SimdReal2& a,const SimdReal2& b)
+operator+(const SimdReal2& a, const SimdReal2& b)
 {
-  return SimdReal2(a.x + b.x,a.y + b.y);
+  return SimdReal2(a.x + b.x, a.y + b.y);
 }
 
 inline SimdReal2
-operator-(const SimdReal2& a,const SimdReal2& b)
+operator-(const SimdReal2& a, const SimdReal2& b)
 {
-  return SimdReal2(a.x - b.x,a.y - b.y);
+  return SimdReal2(a.x - b.x, a.y - b.y);
 }
 
 inline SimdReal2
-operator*(const SimdReal2& a,Real b)
+operator*(const SimdReal2& a, Real b)
 {
-  return SimdReal2(a.x * b,a.y * b);
+  return SimdReal2(a.x * b, a.y * b);
 }
 
 inline SimdReal2
-operator*(Real b,const SimdReal2& a)
+operator*(Real b, const SimdReal2& a)
 {
-  return SimdReal2(b * a.x,b * a.y);
+  return SimdReal2(b * a.x, b * a.y);
 }
 
 inline SimdReal2
-operator*(const SimdReal2& a,const SimdReal2& b)
+operator*(const SimdReal2& a, const SimdReal2& b)
 {
-  return SimdReal2(a.x * b.x,a.y * b.y);
+  return SimdReal2(a.x * b.x, a.y * b.y);
 }
 
 inline SimdReal2
-operator/(const SimdReal2& a,const SimdReal& b)
+operator/(const SimdReal2& a, const SimdReal& b)
 {
-  return SimdReal2(a.x / b,a.y / b);
+  return SimdReal2(a.x / b, a.y / b);
 }
 
 inline SimdReal2
-operator/(const SimdReal2& a,Real b)
+operator/(const SimdReal2& a, Real b)
 {
-  return SimdReal2(a.x / b,a.y / b);
+  return SimdReal2(a.x / b, a.y / b);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline SimdReal3x3
-operator+(const SimdReal3x3& a,const SimdReal3x3& b)
+operator+(const SimdReal3x3& a, const SimdReal3x3& b)
 {
-  return SimdReal3x3(a.x + b.x,a.y + b.y,a.z + b.z);
+  return SimdReal3x3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 inline SimdReal3x3
 operator-(const SimdReal3x3& a)
 {
-  return SimdReal3x3(-a.x,-a.y,-a.z);
+  return SimdReal3x3(-a.x, -a.y, -a.z);
 }
 
 inline SimdReal3x3
-operator-(const SimdReal3x3& a,const SimdReal3x3& b)
+operator-(const SimdReal3x3& a, const SimdReal3x3& b)
 {
-  return SimdReal3x3(a.x - b.x,a.y - b.y,a.z - b.z);
+  return SimdReal3x3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 inline SimdReal3x3
-operator*(const SimdReal3x3& a,Real b)
+operator*(const SimdReal3x3& a, Real b)
 {
-  return SimdReal3x3(a.x * b,a.y * b,a.z * b);
+  return SimdReal3x3(a.x * b, a.y * b, a.z * b);
 }
 
 inline SimdReal3x3
-operator*(const SimdReal3x3& a,const SimdReal& b)
+operator*(const SimdReal3x3& a, const SimdReal& b)
 {
-  return SimdReal3x3(a.x * b,a.y * b,a.z * b);
+  return SimdReal3x3(a.x * b, a.y * b, a.z * b);
 }
 
 inline SimdReal3x3
-operator*(Real b,const SimdReal3x3& a)
+operator*(Real b, const SimdReal3x3& a)
 {
-  return SimdReal3x3(b * a.x,b * a.y,b * a.z);
+  return SimdReal3x3(b * a.x, b * a.y, b * a.z);
 }
 
 inline SimdReal3x3
-operator*(const SimdReal& b,const SimdReal3x3& a)
+operator*(const SimdReal& b, const SimdReal3x3& a)
 {
-  return SimdReal3x3(b * a.x,b * a.y,b * a.z);
+  return SimdReal3x3(b * a.x, b * a.y, b * a.z);
 }
 
 inline SimdReal3x3
-operator*(const SimdReal3x3& a,const SimdReal3x3& b)
+operator*(const SimdReal3x3& a, const SimdReal3x3& b)
 {
-  return SimdReal3x3(a.x * b.x,a.y * b.y,a.z * b.z);
+  return SimdReal3x3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
 inline SimdReal3x3
-operator/(const SimdReal3x3& a,const SimdReal& b)
+operator/(const SimdReal3x3& a, const SimdReal& b)
 {
-  return SimdReal3x3(a.x / b,a.y / b,a.z / b);
+  return SimdReal3x3(a.x / b, a.y / b, a.z / b);
 }
 
 inline SimdReal3x3
-operator/(const SimdReal3x3& a,Real b)
+operator/(const SimdReal3x3& a, Real b)
 {
-  return SimdReal3x3(a.x / b,a.y / b,a.z / b);
+  return SimdReal3x3(a.x / b, a.y / b, a.z / b);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline SimdReal2x2
-operator+(const SimdReal2x2& a,const SimdReal2x2& b)
+operator+(const SimdReal2x2& a, const SimdReal2x2& b)
 {
-  return SimdReal2x2(a.x + b.x,a.y + b.y);
+  return SimdReal2x2(a.x + b.x, a.y + b.y);
 }
 
 inline SimdReal2x2
-operator-(const SimdReal2x2& a,const SimdReal2x2& b)
+operator-(const SimdReal2x2& a, const SimdReal2x2& b)
 {
-  return SimdReal2x2(a.x - b.x,a.y - b.y);
+  return SimdReal2x2(a.x - b.x, a.y - b.y);
 }
 
 inline SimdReal2x2
-operator*(const SimdReal2x2& a,Real b)
+operator*(const SimdReal2x2& a, Real b)
 {
-  return SimdReal2x2(a.x * b,a.y * b);
+  return SimdReal2x2(a.x * b, a.y * b);
 }
 
 inline SimdReal2x2
-operator*(Real b,const SimdReal2x2& a)
+operator*(Real b, const SimdReal2x2& a)
 {
-  return SimdReal2x2(b * a.x,b * a.y);
+  return SimdReal2x2(b * a.x, b * a.y);
 }
 
 inline SimdReal2x2
-operator*(const SimdReal2x2& a,const SimdReal2x2& b)
+operator*(const SimdReal2x2& a, const SimdReal2x2& b)
 {
-  return SimdReal2x2(a.x * b.x,a.y * b.y);
+  return SimdReal2x2(a.x * b.x, a.y * b.y);
 }
 
 inline SimdReal2x2
-operator/(const SimdReal2x2& a,const SimdReal& b)
+operator/(const SimdReal2x2& a, const SimdReal& b)
 {
-  return SimdReal2x2(a.x / b,a.y / b);
+  return SimdReal2x2(a.x / b, a.y / b);
 }
 
 inline SimdReal2x2
-operator/(const SimdReal2x2& a,Real b)
+operator/(const SimdReal2x2& a, Real b)
 {
-  return SimdReal2x2(a.x / b,a.y / b);
+  return SimdReal2x2(a.x / b, a.y / b);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -68,16 +68,15 @@ arcaneGlobalTrueMemoryInfo()
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
-static void*(*old_malloc_hook)(size_t,const void*);
-static void(*old_free_hook)(void*,const void*);
-static void*(*old_realloc_hook)(void* __ptr,
-                                size_t __size,
-                                __const void*);
-
+static void* (*old_malloc_hook)(size_t, const void*);
+static void (*old_free_hook)(void*, const void*);
+static void* (*old_realloc_hook)(void* __ptr,
+                                 size_t __size,
+                                 __const void*);
 
 static Arcane::Int64 global_nb_malloc = 1;
-static void* my_malloc_hook(size_t size,const void* caller);
-static void my_free_hook(void* ptr,const void* caller);
+static void* my_malloc_hook(size_t size, const void* caller);
+static void my_free_hook(void* ptr, const void* caller);
 static void* my_realloc_hook(void* __ptr,
                              size_t __size,
                              __const void*);
@@ -94,38 +93,38 @@ static void _popHook()
   __realloc_hook = my_realloc_hook;
 }
 
-static void* my_malloc_hook(size_t size,const void* /*caller*/)
+static void* my_malloc_hook(size_t size, const void* /*caller*/)
 {
   _pushHook();
   void* r = malloc(size);
   ++global_nb_malloc;
   //std::cerr << "*ALLOC = " << r << " s=" << size << '\n';
-  arcaneGlobalTrueMemoryInfo()->addInfo(0,r,size);
-  arcaneGlobalTrueMemoryInfo()->checkMemory(0,size);
+  arcaneGlobalTrueMemoryInfo()->addInfo(0, r, size);
+  arcaneGlobalTrueMemoryInfo()->checkMemory(0, size);
   _popHook();
   return r;
 }
-static void my_free_hook(void* ptr,const void* /*caller*/)
+static void my_free_hook(void* ptr, const void* /*caller*/)
 {
   _pushHook();
-  arcaneGlobalTrueMemoryInfo()->removeInfo(0,ptr,true);
+  arcaneGlobalTrueMemoryInfo()->removeInfo(0, ptr, true);
   //std::cerr << "*FREE = " << ptr << '\n';
   ++global_nb_malloc;
   free(ptr);
   _popHook();
 }
-static void* my_realloc_hook(void* ptr,size_t size,const void* /*caller*/)
+static void* my_realloc_hook(void* ptr, size_t size, const void* /*caller*/)
 {
   _pushHook();
   //free(ptr);
   ++global_nb_malloc;
   //std::cerr << "*REFREE = " << ptr << '\n';
-  arcaneGlobalTrueMemoryInfo()->removeInfo(0,ptr,true);
-  void* r = realloc(ptr,size);
+  arcaneGlobalTrueMemoryInfo()->removeInfo(0, ptr, true);
+  void* r = realloc(ptr, size);
   ++global_nb_malloc;
   //std::cerr << "*REALLOC = " << r << " s=" << size << '\n';
-  arcaneGlobalTrueMemoryInfo()->addInfo(0,r,size);
-  arcaneGlobalTrueMemoryInfo()->checkMemory(0,size);
+  arcaneGlobalTrueMemoryInfo()->addInfo(0, r, size);
+  arcaneGlobalTrueMemoryInfo()->checkMemory(0, size);
   _popHook();
   return r;
 }
@@ -167,7 +166,7 @@ extern "C++" void
 arcaneInitCheckMemory()
 {
   String s = platform::getEnvironmentVariable("ARCANE_CHECK_MEMORY");
-  if (!s.null()){
+  if (!s.null()) {
     global_check_memory = true;
     arcaneGlobalMemoryInfo()->beginCollect();
   }
@@ -214,10 +213,10 @@ MemoryInfo::
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-setOwner(const void* owner,const TraceInfo& ti)
+setOwner(const void* owner, const TraceInfo& ti)
 {
   MemoryTraceInfoMap::iterator i = m_owner_infos.find(owner);
-  if (i!=m_owner_infos.end()){
+  if (i != m_owner_infos.end()) {
     i->second = ti;
   }
 }
@@ -226,27 +225,27 @@ setOwner(const void* owner,const TraceInfo& ti)
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-addInfo(const void* owner,const void* ptr,Int64 size)
+addInfo(const void* owner, const void* ptr, Int64 size)
 {
   //NOTE: This method must be reentrant.
   //TODO: verify owner present.
   MemoryInfoMap::const_iterator i = m_infos.find(ptr);
   String stack_value;
   //cout << "** ADD: " << ptr << '\n';
-  if (i==m_infos.end()){
-    MemoryInfoChunk c(owner,size,m_alloc_id,m_iteration);
+  if (i == m_infos.end()) {
+    MemoryInfoChunk c(owner, size, m_alloc_id, m_iteration);
     //if (size>5000)
     //std::cout << " ALLOC size=" << size << " ptr=" << ptr << '\n';
-    if (size>=m_info_big_alloc && m_is_stack_trace_active){
+    if (size >= m_info_big_alloc && m_is_stack_trace_active) {
       IStackTraceService* s = platform::getStackTraceService();
-      if (s){
+      if (s) {
         stack_value = s->stackTrace(2).toString();
         c.setStackTrace(stack_value);
       }
     }
-    m_infos.insert(MemoryInfoMap::value_type(ptr,c));
+    m_infos.insert(MemoryInfoMap::value_type(ptr, c));
   }
-  else{
+  else {
     //cout << "** OLD VALUE file=" << i->second->m_file << " line=" << i->second->m_line;
     //if (i->second->m_name)
     //cout << " name=" << i->second->m_name << '\n';
@@ -261,14 +260,14 @@ addInfo(const void* owner,const void* ptr,Int64 size)
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-createOwner(const void* owner,const TraceInfo& trace_info)
+createOwner(const void* owner, const TraceInfo& trace_info)
 {
   MemoryTraceInfoMap::iterator i = m_owner_infos.find(owner);
-  if (i==m_owner_infos.end()){
+  if (i == m_owner_infos.end()) {
     //cout << "** CREATE OWNER " << owner << "\n";
-    m_owner_infos.insert(MemoryTraceInfoMap::value_type(owner,trace_info));
+    m_owner_infos.insert(MemoryTraceInfoMap::value_type(owner, trace_info));
   }
-  else{
+  else {
     cout << "** createOwner() ALREADY IN MAP VALUE=" << owner << '\n';
     //throw FatalErrorException("MemoryInfo::createOwner() owner already in map");
   }
@@ -278,29 +277,29 @@ createOwner(const void* owner,const TraceInfo& trace_info)
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-addInfo(const void* owner,const void* ptr,Int64 size,const void* /*old_ptr*/)
+addInfo(const void* owner, const void* ptr, Int64 size, const void* /*old_ptr*/)
 {
-  addInfo(owner,ptr,size);
+  addInfo(owner, ptr, size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-changeOwner(const void* new_owner,const void* ptr)
+changeOwner(const void* new_owner, const void* ptr)
 {
   MemoryTraceInfoMap::iterator i_owner = m_owner_infos.find(new_owner);
-  if (i_owner==m_owner_infos.end()){
+  if (i_owner == m_owner_infos.end()) {
     cerr << "** UNKNOWN NEW OWNER " << new_owner << '\n';
     throw FatalErrorException("MemoryInfo::changeOwner() unknown new owner");
   }
-  if (ptr){
+  if (ptr) {
     MemoryInfoMap::iterator i = m_infos.find(ptr);
-    if (i==m_infos.end()){
+    if (i == m_infos.end()) {
       cout << "** BAD VALUE=" << ptr << '\n';
       throw FatalErrorException("MemoryInfo::changeOwner() pointer not in map");
     }
-    else{
+    else {
       i->second.setOwner(i_owner->first);
     }
   }
@@ -313,7 +312,7 @@ void MemoryInfo::
 _removeOwner(const void* owner)
 {
   MemoryTraceInfoMap::iterator i = m_owner_infos.find(owner);
-  if (i!=m_owner_infos.end()){
+  if (i != m_owner_infos.end()) {
     //cout << "** REMOVE OWNER " << owner << "\n";
     m_owner_infos.erase(i);
   }
@@ -332,24 +331,24 @@ removeOwner(const void* owner)
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-removeInfo(const void* owner,const void* ptr,bool can_fail)
+removeInfo(const void* owner, const void* ptr, bool can_fail)
 {
   if (!ptr)
     return;
   MemoryInfoMap::iterator i = m_infos.find(ptr);
   //cout << "** REMOVE: " << ptr << '\n';
-  if (i==m_infos.end()){
+  if (i == m_infos.end()) {
     if (can_fail)
       return;
     cout << "MemoryInfo::removeInfo() pointer not in map";
     //throw FatalErrorException("MemoryInfo::removeInfo() pointer not in map");
   }
-  else{
+  else {
     MemoryInfoChunk& chunk = i->second;
     Int64 size = chunk.size();
     //if (size>5000)
     //std::cout << " FREE size=" << size << " ptr=" << ptr << '\n';
-    _removeMemory(owner,size);
+    _removeMemory(owner, size);
     m_infos.erase(i);
   }
 }
@@ -360,44 +359,64 @@ removeInfo(const void* owner,const void* ptr,bool can_fail)
 class MemoryInfo::MemoryInfoSorter
 {
  public:
-  MemoryInfoSorter() : m_size(0), m_alloc_id(-1), m_iteration(0), m_ptr(0), m_owner(0) {}
-  MemoryInfoSorter(Int64 size,Int64 alloc_id,Integer iteration, const void* ptr,
-                   const void* owner,const String& stack_trace) 
-    : m_size(size), m_alloc_id(alloc_id), m_iteration(iteration), m_ptr(ptr)
-    , m_owner(owner), m_stack_trace(stack_trace) {}
+
+  MemoryInfoSorter()
+  : m_size(0)
+  , m_alloc_id(-1)
+  , m_iteration(0)
+  , m_ptr(0)
+  , m_owner(0)
+  {}
+  MemoryInfoSorter(Int64 size, Int64 alloc_id, Integer iteration, const void* ptr,
+                   const void* owner, const String& stack_trace)
+  : m_size(size)
+  , m_alloc_id(alloc_id)
+  , m_iteration(iteration)
+  , m_ptr(ptr)
+  , m_owner(owner)
+  , m_stack_trace(stack_trace)
+  {}
+
  public:
+
   Int64 m_size;
   Int64 m_alloc_id;
   Integer m_iteration;
   const void* m_ptr;
   const void* m_owner;
   String m_stack_trace;
+
  public:
+
   bool operator<(const MemoryInfoSorter& rhs) const
   {
     return m_size > rhs.m_size;
   }
 };
 
-
 class MemoryInfo::TracePrinter
 {
  public:
-  TracePrinter(const TraceInfo* ti) : m_trace_info(ti) {}
+
+  TracePrinter(const TraceInfo* ti)
+  : m_trace_info(ti)
+  {}
   void print(std::ostream& o) const
   {
-    if (m_trace_info){
+    if (m_trace_info) {
       o << " name=" << m_trace_info->name()
         << " file=" << m_trace_info->file()
         << " line=" << m_trace_info->line();
     }
   }
+
  private:
+
   const TraceInfo* m_trace_info;
 };
 
 std::ostream&
-operator<<(std::ostream& o,const MemoryInfo::TracePrinter& tp)
+operator<<(std::ostream& o, const MemoryInfo::TracePrinter& tp)
 {
   tp.print(o);
   return o;
@@ -415,10 +434,10 @@ printInfos(std::ostream& ostr)
   // collection, we disable the hooks for the duration of the call.
   if (is_collecting)
     _pushHook();
-  try{
+  try {
     _printInfos(ostr);
   }
-  catch(...){
+  catch (...) {
     if (is_collecting)
       _popHook();
     throw;
@@ -439,26 +458,26 @@ _printInfos(std::ostream& ostr)
   size_t nb_chunk = m_infos.size();
   std::vector<MemoryInfoSorter> sorted_chunk;
   sorted_chunk.reserve(nb_chunk);
-  for( const auto& i : m_infos ){
-    sorted_chunk.push_back(MemoryInfoSorter(i.second.size(),i.second.allocId(),
+  for (const auto& i : m_infos) {
+    sorted_chunk.push_back(MemoryInfoSorter(i.second.size(), i.second.allocId(),
                                             i.second.iteration(),
-                                            i.first,i.second.owner(),i.second.stackTrace()));
+                                            i.first, i.second.owner(), i.second.stackTrace()));
   }
-  std::sort(sorted_chunk.begin(),sorted_chunk.end());
+  std::sort(sorted_chunk.begin(), sorted_chunk.end());
 
-  for( const auto& i : sorted_chunk){
+  for (const auto& i : sorted_chunk) {
     const void* v = i.m_ptr;
     const void* owner = i.m_owner;
     Int64 size = i.m_size;
     const TraceInfo* ti = 0;
     {
       MemoryTraceInfoMap::iterator i_owner = m_owner_infos.find(owner);
-      if (i_owner!=m_owner_infos.end()){
+      if (i_owner != m_owner_infos.end()) {
         ti = &i_owner->second;
       }
     }
     total_size += size;
-    if (size>=m_info_big_alloc){
+    if (size >= m_info_big_alloc) {
       ostr << " Remaining: " << v << " size=" << size << " id=" << i.m_alloc_id
            << " iteration=" << i.m_iteration
            << TracePrinter(ti) << " trace=" << i.m_stack_trace << '\n';
@@ -471,30 +490,30 @@ _printInfos(std::ostream& ostr)
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-printAllocatedMemory(std::ostream& ostr,Integer iteration)
+printAllocatedMemory(std::ostream& ostr, Integer iteration)
 {
   ostr << " INFO_ALLOCATION: current= " << m_current_allocated
        << " ITERATION= " << iteration
        << " NB_CHUNK=" << m_infos.size()
        << " ID=" << m_alloc_id
        << '\n';
-  for( ConstIterT<MemoryInfoMap> i(m_infos); i(); ++i ){
+  for (ConstIterT<MemoryInfoMap> i(m_infos); i(); ++i) {
     const MemoryInfoChunk& mi = i->second;
-    if (mi.iteration()!=iteration)
+    if (mi.iteration() != iteration)
       continue;
     Int64 size = mi.size();
-    if (size>=m_info_big_alloc){
+    if (size >= m_info_big_alloc) {
       ostr << " Allocated: " << " iteration=" << iteration
            << " size=" << size << " id=" << mi.allocId()
            << " trace=" << mi.stackTrace() << '\n';
     }
   }
-  for( ConstIterT<MemoryInfoMap> i(m_infos); i(); ++i ){
+  for (ConstIterT<MemoryInfoMap> i(m_infos); i(); ++i) {
     const MemoryInfoChunk& mi = i->second;
-    if (mi.iteration()!=iteration)
+    if (mi.iteration() != iteration)
       continue;
     Int64 size = mi.size();
-    if (size<m_info_big_alloc){
+    if (size < m_info_big_alloc) {
       ostr << " Allocated: " << " iteration=" << iteration
            << " size=" << size << " id=" << mi.allocId() << '\n';
     }
@@ -516,12 +535,12 @@ setTraceMng(ITraceMng* trace)
 void MemoryInfo::
 beginCollect()
 {
-  if (m_is_first_collect){
+  if (m_is_first_collect) {
     String s = platform::getEnvironmentVariable("ARCANE_CHECK_MEMORY_BLOCK_SIZE");
-    if (!s.null()){
+    if (!s.null()) {
       Int64 block_size = 0;
-      bool is_bad = builtInGetValue(block_size,s);
-      if (!is_bad && block_size>2){
+      bool is_bad = builtInGetValue(block_size, s);
+      if (!is_bad && block_size > 2) {
         m_info_big_alloc = block_size;
         m_info_biggest_minimal = block_size * 2;
         m_info_peak_minimal = block_size * 10;
@@ -556,11 +575,11 @@ isCollecting() const
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-checkMemory(const void* owner,Int64 size)
+checkMemory(const void* owner, Int64 size)
 {
-  if (m_current_allocated>m_max_allocated){
+  if (m_current_allocated > m_max_allocated) {
     m_max_allocated = m_current_allocated;
-    if (m_display_max_alloc && m_max_allocated>m_info_peak_minimal && size>5000 && m_trace && !m_in_display){
+    if (m_display_max_alloc && m_max_allocated > m_info_peak_minimal && size > 5000 && m_trace && !m_in_display) {
       m_in_display = true;
       m_trace->info() << "Memory:PEAK_MEM: iteration=" << m_iteration
                       << " max allocation reached: max="
@@ -570,23 +589,23 @@ checkMemory(const void* owner,Int64 size)
       m_in_display = false;
     }
   }
-  if (size>m_biggest_allocated){
+  if (size > m_biggest_allocated) {
     m_biggest_allocated = size;
-    if (m_display_max_alloc && m_biggest_allocated>m_info_biggest_minimal && m_trace && !m_in_display){
+    if (m_display_max_alloc && m_biggest_allocated > m_info_biggest_minimal && m_trace && !m_in_display) {
       m_in_display = true;
       m_trace->info() << "Memory:PEAK_ALLOC: biggest allocation : " << size << " "
-                    << " id=" << m_alloc_id << " "
-                    << TracePrinter(_getTraceInfo(owner));
+                      << " id=" << m_alloc_id << " "
+                      << TracePrinter(_getTraceInfo(owner));
       m_in_display = false;
     }
   }
-  if (m_info_big_alloc>0 && size>m_info_big_alloc){
-    if (m_display_max_alloc && m_trace && !m_in_display){
+  if (m_info_big_alloc > 0 && size > m_info_big_alloc) {
+    if (m_display_max_alloc && m_trace && !m_in_display) {
       m_in_display = true;
       String stack_value;
       IStackTraceService* s = platform::getStackTraceService();
-      if (s){
-        stack_value= s->stackTrace(2).toString();
+      if (s) {
+        stack_value = s->stackTrace(2).toString();
       }
 #if 0
       m_trace->info() << "Memory:BIG_ALLOC: iteration=" << m_iteration
@@ -605,7 +624,7 @@ checkMemory(const void* owner,Int64 size)
 /*---------------------------------------------------------------------------*/
 
 void MemoryInfo::
-_removeMemory(const void* /*owner*/,Int64 size)
+_removeMemory(const void* /*owner*/, Int64 size)
 {
   m_current_allocated -= size;
 }
@@ -617,7 +636,7 @@ TraceInfo* MemoryInfo::
 _getTraceInfo(const void* owner)
 {
   MemoryTraceInfoMap::iterator i = m_owner_infos.find(owner);
-  if (i==m_owner_infos.end())
+  if (i == m_owner_infos.end())
     return 0;
   return &i->second;
 }
@@ -630,7 +649,7 @@ visitAllocatedBlocks(IFunctorWithArgumentT<const MemoryInfoChunk&>* functor) con
 {
   if (!functor)
     return;
-  for( ConstIterT<MemoryInfoMap> i(m_infos); i(); ++i ){
+  for (ConstIterT<MemoryInfoMap> i(m_infos); i(); ++i) {
     const MemoryInfoChunk& mic = i->second;
     functor->executeFunctor(mic);
   }

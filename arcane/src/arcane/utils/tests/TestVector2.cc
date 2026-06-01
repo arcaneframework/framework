@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,13 +45,13 @@ TEST(TestVector2, Misc)
     ASSERT_TRUE(v4 < v5);
   }
   {
-    Int64x2 v2({1});
+    Int64x2 v2({ 1 });
     ASSERT_EQ(v2.x, 1);
     ASSERT_EQ(v2.y, 0);
-    Int64x2 v3({1,2});
+    Int64x2 v3({ 1, 2 });
     ASSERT_EQ(v3.x, 1);
     ASSERT_EQ(v3.y, 2);
-    Int64x2 v4({1,2,3});
+    Int64x2 v4({ 1, 2, 3 });
     ASSERT_EQ(v4.x, 1);
     ASSERT_EQ(v4.y, 2);
   }

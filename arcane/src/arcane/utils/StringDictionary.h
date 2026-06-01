@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,6 +35,7 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT StringDictionary
 {
  private:
+
   class Impl; //!< Implementation
  public:
 
@@ -44,7 +45,7 @@ class ARCANE_UTILS_EXPORT StringDictionary
   //! Constructs a dictionary
   StringDictionary(const StringDictionary& rhs);
   ~StringDictionary(); //!< Releases resources
-  
+
  public:
 
   /*! \brief Adds the (key, value) pair to the dictionary.
@@ -52,7 +53,7 @@ class ARCANE_UTILS_EXPORT StringDictionary
    * If a value already exists for \a key, it is replaced by
    * the new one.
    */
-  void add(const String& key,const String& value);
+  void add(const String& key, const String& value);
 
   /*! \brief Removes the value associated with \a key.
    *
@@ -69,12 +70,13 @@ class ARCANE_UTILS_EXPORT StringDictionary
    * \a throw_exception is true, in which case an exception is thrown
    * if no value corresponding to \a key exists.
    */
-  String find(const String& key,bool throw_exception=false) const;
+  String find(const String& key, bool throw_exception = false) const;
 
   //! Fills \a keys and \a values with the corresponding values from the dictionary
-  void fill(StringList& param_names,StringList& values) const;
+  void fill(StringList& param_names, StringList& values) const;
 
  private:
+
   Impl* m_p; //!< Implementation
 };
 

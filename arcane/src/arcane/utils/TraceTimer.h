@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,11 +11,11 @@
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_TRACETIMER_H
 #define ARCANE_UTILS_TRACETIMER_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,20 +24,20 @@ ARCANE_BEGIN_NAMESPACE
 
 #include <cassert>
 
-#if   defined(MPI_TRACE_TIMER)
+#if defined(MPI_TRACE_TIMER)
 #elif defined(DAY_TRACE_TIMER)
 #elif defined(CPU_TRACE_TIMER)
 #elif defined(SCPU_TRACE_TIMER)
 #else
 #error "TraceTimer type not defined"
-/* MPI_TRACE_TIMER  : uses the MPI_Wtime function from MPI 
+/* MPI_TRACE_TIMER  : uses the MPI_Wtime function from MPI
  * DAY_TRACE_TIMER  : measures the elapsed time (** SVr4, BSD 4.3 **)
  * CPU_TRACE_TIMER  : measures the number of CPU 'ticks' (** SVR4, SVID, POSIX, X/OPEN, BSD 4.3 **)
  *                  : (it can distinguish the process itself from its children and system calls)
  *                  : for more info see 'man times'
  * SCPU_TRACE_TIMER : like CPU_TRACE_TIMER but includes system and child times
  *
- * We can also use 
+ * We can also use
  * return ((double) clock())/CLOCKS_PER_SEC;
  * which counts consumed cycles and is limited to 72min (32bit arch) [need <time.h>]
  * or getrusage which resembles times() but provides more parameters
@@ -46,96 +46,134 @@ ARCANE_BEGIN_NAMESPACE
 
 #if defined(MPI_TRACE_TIMER)
 #include "mpi.h"
-class InnerTimer_MPI {
-protected:
-  double systemTime() const {
+class InnerTimer_MPI
+{
+ protected:
+
+  double systemTime() const
+  {
     return MPI_Wtime();
   }
-public:
-  static const char * type() { return "MPI Timer"; }
+
+ public:
+
+  static const char* type() { return "MPI Timer"; }
 };
 #endif /* MPI_TRACE_TIMER */
 
 #if defined(DAY_TRACE_TIMER)
-class InnerTimer_DAY {
-protected:
-  double systemTime() {
+class InnerTimer_DAY
+{
+ protected:
+
+  double systemTime()
+  {
     return platform::getRealTime();
   }
-public:
-  static const char * type() { return "Day Timer"; }
+
+ public:
+
+  static const char* type() { return "Day Timer"; }
 };
 #endif /* DAY_TRACE_TIMER */
 
 #if defined(CPU_TRACE_TIMER)
-#include <unistd.h>    // sysconf()
+#include <unistd.h> // sysconf()
 #include <sys/times.h> // times()
-class InnerTimer_CPU {
-protected:
+class InnerTimer_CPU
+{
+ protected:
+
   struct tms tp;
-  double systemTime() {
+  double systemTime()
+  {
     static const long _CLK_TCK = sysconf(_SC_CLK_TCK);
     times(&tp);
-    return static_cast<double>(tp.tms_utime)/_CLK_TCK; // user only
+    return static_cast<double>(tp.tms_utime) / _CLK_TCK; // user only
   }
-public:
-  static const char * type() { return "Cpu Timer"; }
+
+ public:
+
+  static const char* type() { return "Cpu Timer"; }
 };
 #endif /* CPU_TRACE_TIMER */
 
 #if defined(SCPU_TRACE_TIMER)
-#include <unistd.h>    // sysconf()
+#include <unistd.h> // sysconf()
 #include <sys/times.h> // times()
-class InnerTimer_SysCPU {
-protected:
+class InnerTimer_SysCPU
+{
+ protected:
+
   struct tms tp;
-  double systemTime() {
+  double systemTime()
+  {
     static const long _CLK_TCK = sysconf(_SC_CLK_TCK);
-    return static_cast<double>(times(&tp))/_CLK_TCK; // user+system+children
+    return static_cast<double>(times(&tp)) / _CLK_TCK; // user+system+children
   }
-public:
-  static const char * type() { return "SysCpu Timer"; }
+
+ public:
+
+  static const char* type() { return "SysCpu Timer"; }
 };
 #endif /* SCPU_TRACE_TIMER */
 
+template <typename Model>
+class TraceTimerT : public Model
+{
+ public:
 
-template<typename Model>
-class TraceTimerT : public Model {
-public:
-  enum ClockState { init, stopped, running };
-private:
+  enum ClockState
+  {
+    init,
+    stopped,
+    running
+  };
+
+ private:
+
   //! Timer State
   ClockState state;
 
   //! Initial and last time
-  double t0,t1;
+  double t0, t1;
 
   //! Cumulate time
   double total;
-public:
+
+ public:
+
   //! New timer
   /*! Autostart by default */
   TraceTimerT(const bool _start = true)
-    : state(init), t0(0), t1(0), total(0) { 
-    if (_start) start();
+  : state(init)
+  , t0(0)
+  , t1(0)
+  , total(0)
+  {
+    if (_start)
+      start();
   }
 
   //! reset timer
-  void reset() {
+  void reset()
+  {
     state = init;
     total = 0;
     t0 = t1 = 0;
   }
 
   //! start the timer or restart without cumulate
-  void start() {
+  void start()
+  {
     state = running;
     t0 = this->systemTime();
   }
 
   //! start or restart the timer and cumuluate
   /*! Usefull for starting the count of a new partial time and keep the cumulative timer */
-  void restart() {
+  void restart()
+  {
     if (state == running) {
       t1 = this->systemTime();
       total += t1 - t0;
@@ -145,21 +183,24 @@ public:
   }
 
   //! stop timer
-  double stop() {
+  double stop()
+  {
     assert(state == running);
     state = stopped;
     t1 = this->systemTime();
     total += t1 - t0;
     return t1 - t0;
   }
-  
+
   //! return state of timer
-  ClockState getState() const {
+  ClockState getState() const
+  {
     return state;
   }
 
   //! get partial time
-  double getTime() {
+  double getTime()
+  {
     assert(state != init);
     if (state == running)
       t1 = this->systemTime();
@@ -167,7 +208,8 @@ public:
   }
 
   //! get total time
-  double getCumulTime() {
+  double getCumulTime()
+  {
     assert(state != init);
     if (state == running)
       return total + this->systemTime() - t0;
@@ -177,20 +219,20 @@ public:
   }
 };
 
-#if   defined(MPI_TRACE_TIMER)
-typedef TraceTimerT<InnerTimer_MPI>     TraceTimer;
+#if defined(MPI_TRACE_TIMER)
+typedef TraceTimerT<InnerTimer_MPI> TraceTimer;
 #elif defined(DAY_TRACE_TIMER)
-typedef TraceTimerT<InnerTimer_DAY>     TraceTimer;
+typedef TraceTimerT<InnerTimer_DAY> TraceTimer;
 #elif defined(CPU_TRACE_TIMER)
-typedef TraceTimerT<InnerTimer_CPU>     TraceTimer;
+typedef TraceTimerT<InnerTimer_CPU> TraceTimer;
 #elif defined(SCPU_TRACE_TIMER)
-typedef TraceTimerT<InnerTimer_SysCPU>  TraceTimer;
+typedef TraceTimerT<InnerTimer_SysCPU> TraceTimer;
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

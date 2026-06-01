@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,51 +38,51 @@ ARCANE_BEGIN_NAMESPACE
 
 namespace
 {
-template<typename SimdRealType> void
-_printSimd(std::ostream& o,const SimdRealType& s)
-{
-  for( Integer z=0, n=SimdRealType::BLOCK_SIZE; z<n; ++z ){
-    if (z!=0)
-      o << ' ';
-    o << s[z];
+  template <typename SimdRealType> void
+  _printSimd(std::ostream& o, const SimdRealType& s)
+  {
+    for (Integer z = 0, n = SimdRealType::BLOCK_SIZE; z < n; ++z) {
+      if (z != 0)
+        o << ' ';
+      o << s[z];
+    }
   }
-}
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_HAS_AVX512
 std::ostream&
-operator<<(std::ostream& o,const AVX512SimdReal& s)
+operator<<(std::ostream& o, const AVX512SimdReal& s)
 {
-  _printSimd(o,s);
+  _printSimd(o, s);
   return o;
 }
 #endif
 
 #ifdef ARCANE_HAS_AVX
 std::ostream&
-operator<<(std::ostream& o,const AVXSimdReal& s)
+operator<<(std::ostream& o, const AVXSimdReal& s)
 {
-  _printSimd(o,s);
+  _printSimd(o, s);
   return o;
 }
 #endif
 
 #ifdef ARCANE_HAS_SSE
 std::ostream&
-operator<<(std::ostream& o,const SSESimdReal& s)
+operator<<(std::ostream& o, const SSESimdReal& s)
 {
-  _printSimd(o,s);
+  _printSimd(o, s);
   return o;
 }
 #endif
 
 std::ostream&
-operator<<(std::ostream& o,const EMULSimdReal& s)
+operator<<(std::ostream& o, const EMULSimdReal& s)
 {
-  _printSimd(o,s);
+  _printSimd(o, s);
   return o;
 }
 
@@ -91,28 +92,28 @@ operator<<(std::ostream& o,const EMULSimdReal& s)
 void SimdEnumeratorBase::
 _checkValidHelper()
 {
-  arcaneCheckAlignment(m_local_ids,SimdIndexType::Alignment);
+  arcaneCheckAlignment(m_local_ids, SimdIndexType::Alignment);
   if (!arcaneIsCheck())
     return;
   Integer size = m_count;
-  if (size==0)
+  if (size == 0)
     return;
   Integer padding_size = arcaneSizeWithPadding(size);
-  if (padding_size==size)
+  if (padding_size == size)
     return;
 
   // Checks that the padding is done with the last valid value.
-  Int32 last_local_id = m_local_ids[size-1];
-  for( Integer k=size; k<padding_size; ++k )
-    if (m_local_ids[k]!=last_local_id)
+  Int32 last_local_id = m_local_ids[size - 1];
+  for (Integer k = size; k < padding_size; ++k)
+    if (m_local_ids[k] != last_local_id)
       ARCANE_FATAL("Bad padding value i={0} expected={1} value={2}",
-                   k,last_local_id,m_local_ids[k]);
+                   k, last_local_id, m_local_ids[k]);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

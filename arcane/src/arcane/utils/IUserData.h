@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,23 +32,23 @@ ARCANE_BEGIN_NAMESPACE
 class ARCANE_UTILS_EXPORT IUserData
 {
  public:
-	
+
   //! Releases resources
-  virtual ~IUserData(){}
+  virtual ~IUserData() {}
 
  public:
 
   //! Method executed when the instance is attached.
-  virtual void notifyAttach() =0;
+  virtual void notifyAttach() = 0;
 
   //! Method executed when the instance is detached.
-  virtual void notifyDetach() =0;
+  virtual void notifyDetach() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

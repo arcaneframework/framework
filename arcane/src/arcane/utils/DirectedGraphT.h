@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Comment on file content.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DIRECTEDGRAPHT_H_ 
-#define ARCANE_DIRECTEDGRAPHT_H_ 
+#ifndef ARCANE_DIRECTEDGRAPHT_H_
+#define ARCANE_DIRECTEDGRAPHT_H_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,11 +18,11 @@
 #include "arcane/utils/GraphBaseT.h"
 #include "arcane/utils/ITraceMng.h"
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,13 +32,14 @@ ARCANE_BEGIN_NAMESPACE
  */
 template <class VertexType, class EdgeType>
 class DirectedGraphT
-: public GraphBaseT<VertexType,EdgeType>
+: public GraphBaseT<VertexType, EdgeType>
 {
-public:
+ public:
 
   /** Constructor of the class */
   DirectedGraphT(ITraceMng* trace_mng)
-  : GraphBaseT<VertexType,EdgeType>(trace_mng) {}
+  : GraphBaseT<VertexType, EdgeType>(trace_mng)
+  {}
 
   /** Destructor of the class */
   virtual ~DirectedGraphT() {}
@@ -47,9 +48,9 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* DIRECTEDGRAPHT_H_ */
+#endif

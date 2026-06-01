@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,8 +32,8 @@ inline apfloat
 log(apfloat v)
 {
 #ifdef ARCANE_CHECK_MATH
-  if (v==0.0 || v<0.0)
-    arcaneMathError(Convert::toDouble(v),"log");
+  if (v == 0.0 || v < 0.0)
+    arcaneMathError(Convert::toDouble(v), "log");
 #endif
   return ::log(v);
 }
@@ -69,8 +69,8 @@ inline apfloat
 sqrt(apfloat v)
 {
 #ifdef ARCANE_CHECK_MATH
-  if (v<0.)
-    arcaneMathError(Convert::toDouble(v),"sqrt");
+  if (v < 0.)
+    arcaneMathError(Convert::toDouble(v), "sqrt");
 #endif
   return ::sqrt(v);
 }
@@ -86,14 +86,14 @@ sqrt(apfloat v)
  * \pre x>=0 or y is an integer
  */
 inline apfloat
-pow(apfloat x,apfloat y)
+pow(apfloat x, apfloat y)
 {
 #ifdef ARCANE_CHECK_MATH
   // Arguments invalides si x est négatif et y non entier
-  if (x<0.0 && ::floor(y)!=y)
-    arcaneMathError(Convert::toDouble(x),Convert::toDouble(y),"pow");
+  if (x < 0.0 && ::floor(y) != y)
+    arcaneMathError(Convert::toDouble(x), Convert::toDouble(y), "pow");
 #endif
-  return ::pow(x,y);
+  return ::pow(x, y);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,9 +104,9 @@ pow(apfloat x,apfloat y)
  * \ingroup GroupMathUtils
  */
 inline apfloat
-min(apfloat a,apfloat b)
+min(apfloat a, apfloat b)
 {
-  return ( (a<b) ? a : b );
+  return ((a < b) ? a : b);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -117,9 +117,9 @@ min(apfloat a,apfloat b)
  * \ingroup GroupMathUtils
  */
 inline apfloat
-max(apfloat a,apfloat b)
+max(apfloat a, apfloat b)
 {
-  return ( (a<b) ? b : a );
+  return ((a < b) ? b : a);
 }
 
 /*---------------------------------------------------------------------------*/

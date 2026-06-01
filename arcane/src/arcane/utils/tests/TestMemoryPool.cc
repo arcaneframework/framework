@@ -26,7 +26,7 @@ class MyMemoryPoolAllocator
 : public IMemoryPoolAllocator
 {
   void* allocateMemory(Int64 size) override { return std::malloc(size); }
-  void freeMemory(void* address,Int64) override { std::free(address); }
+  void freeMemory(void* address, Int64) override { std::free(address); }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,31 +28,31 @@ ARCANE_BEGIN_NAMESPACE
 /*!
  * \brief Interface of a binary mathematical function.
  */
-template<typename Arg1,typename Arg2,typename ReturnType>
+template <typename Arg1, typename Arg2, typename ReturnType>
 class IBinaryMathFunctor
 {
  public:
-	
+
   //! Releases resources
-  virtual ~IBinaryMathFunctor(){}
+  virtual ~IBinaryMathFunctor() {}
 
  public:
 
   //! Executes the associated method
-  virtual ReturnType apply(Arg1 a1,Arg2 a2) =0;
+  virtual ReturnType apply(Arg1 a1, Arg2 a2) = 0;
 
   //! Executes the associated method
-  virtual void apply(ConstArrayView<Arg1> a1,ConstArrayView<Arg2> a2,ArrayView<ReturnType> result)
+  virtual void apply(ConstArrayView<Arg1> a1, ConstArrayView<Arg2> a2, ArrayView<ReturnType> result)
   {
-    for( Integer i=0,n=result.size(); i<n; ++i )
-      result[i] = apply(a1[i],a2[i]);
+    for (Integer i = 0, n = result.size(); i < n; ++i)
+      result[i] = apply(a1[i], a2[i]);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

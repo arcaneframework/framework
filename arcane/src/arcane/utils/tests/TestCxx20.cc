@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,12 +23,12 @@ using namespace Arcane;
 template <class T>
 concept integral = std::is_integral_v<T>;
 
-TEST(TestCxx20,Atomic)
+TEST(TestCxx20, Atomic)
 {
   Int32 x = 25;
   std::atomic_ref<Int32> ax(x);
   ax.fetch_add(32);
-  ASSERT_EQ(x,57);
+  ASSERT_EQ(x, 57);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -36,19 +36,18 @@ TEST(TestCxx20,Atomic)
 
 namespace
 {
-template<integral DataType> DataType _testAdd(DataType a,DataType b)
+template <integral DataType> DataType _testAdd(DataType a, DataType b)
 {
-  return a+b;
+  return a + b;
 }
-}
+} // namespace
 
-TEST(TestCxx20,Concept)
+TEST(TestCxx20, Concept)
 {
   Int32 a = 12;
   Int32 b = -48;
-  ASSERT_EQ(_testAdd(a,b),(a+b));
+  ASSERT_EQ(_testAdd(a, b), (a + b));
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

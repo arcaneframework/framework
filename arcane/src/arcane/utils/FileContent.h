@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,13 +32,20 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT FileContent
 {
  public:
+
   static const Int32 CURRENT_VERSION = 1;
+
  public:
 
   //! Creates empty content.
-  FileContent() : m_version(CURRENT_VERSION) {}
-  FileContent(Span<const Byte> abytes,Int32 version,const String& compression)
-  : m_bytes(abytes), m_version(version), m_compression(compression){}
+  FileContent()
+  : m_version(CURRENT_VERSION)
+  {}
+  FileContent(Span<const Byte> abytes, Int32 version, const String& compression)
+  : m_bytes(abytes)
+  , m_version(version)
+  , m_compression(compression)
+  {}
 
  public:
 

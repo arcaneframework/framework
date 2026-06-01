@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,16 +20,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace functor
+namespace Arcane::functor
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Specialization for a lambda function with one argument
-template<typename LambdaType,typename A1> StdFunctorWithArgumentT<A1>
-make(const LambdaType& f,void (LambdaType::*)(A1 r) const)
+template <typename LambdaType, typename A1> StdFunctorWithArgumentT<A1>
+make(const LambdaType& f, void (LambdaType::*)(A1 r) const)
 {
   return StdFunctorWithArgumentT<A1>(f);
 }
@@ -42,15 +41,15 @@ make(const LambdaType& f,void (LambdaType::*)(A1 r) const)
  * The returned object is of type IFunctorWithArgumentT<ArgType> with
  * \a ArgType being the only parameter of \a f.
  */
-template<typename LambdaType> auto
-make(const LambdaType& f) -> decltype(make(f,&LambdaType::operator()))
+template <typename LambdaType> auto
+make(const LambdaType& f) -> decltype(make(f, &LambdaType::operator()))
 {
-  return make(f,&LambdaType::operator());
+  return make(f, &LambdaType::operator());
 }
 
 //! Specialization for a lambda function with one argument
-template<typename LambdaType,typename A1>  StdFunctorWithArgumentT<A1>*
-makePointer(const LambdaType& f,void (LambdaType::*)(A1 r) const)
+template <typename LambdaType, typename A1> StdFunctorWithArgumentT<A1>*
+makePointer(const LambdaType& f, void (LambdaType::*)(A1 r) const)
 {
   return new StdFunctorWithArgumentT<A1>(f);
 }
@@ -64,10 +63,10 @@ makePointer(const LambdaType& f,void (LambdaType::*)(A1 r) const)
  * \a ArgType being the only parameter of \a f.
  * The returned pointer must be destroyed by the delete operator.
  */
-template<typename LambdaType> auto
-makePointer(const LambdaType& f) -> decltype(makePointer(f,&LambdaType::operator()))
+template <typename LambdaType> auto
+makePointer(const LambdaType& f) -> decltype(makePointer(f, &LambdaType::operator()))
 {
-  return makePointer(f,&LambdaType::operator());
+  return makePointer(f, &LambdaType::operator());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,18 +97,17 @@ makePointer(const LambdaType& f) -> decltype(makePointer(f,&LambdaType::operator
  * }
  * \endcode
  */
-template<typename LambdaType,typename T,typename ArgType> void
-apply(T* x,void (T::*ptr)(IFunctorWithArgumentT<ArgType>*),const LambdaType& f)
+template <typename LambdaType, typename T, typename ArgType> void
+apply(T* x, void (T::*ptr)(IFunctorWithArgumentT<ArgType>*), const LambdaType& f)
 {
   auto xstr = make(f);
   (x->*ptr)(&xstr);
 }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane::functor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

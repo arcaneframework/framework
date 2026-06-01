@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,24 +22,32 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class ArrayFullAccessorT
 {
  public:
-  ArrayFullAccessorT(Array<T>& v) : m_array(&v) {}
+
+  ArrayFullAccessorT(Array<T>& v)
+  : m_array(&v)
+  {}
   ~ArrayFullAccessorT() {}
+
  public:
+
   T operator[](Integer i) const { return m_array->item(i); }
   T& operator[](Integer i) { return (*m_array)[i]; }
   Integer size() const { return m_array->size(); }
-  void resize(Integer s){ m_array->resize(s); }
-  void add(T v){ m_array->add(v); }
+  void resize(Integer s) { m_array->resize(s); }
+  void add(T v) { m_array->add(v); }
+
  private:
+
   Array<T>* m_array;
 };
 
@@ -76,7 +84,7 @@ applySimdPadding(Array<Real>& ids);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,26 +40,45 @@ ARCANE_BEGIN_NAMESPACE
 class ARCANE_UTILS_EXPORT Real2Proxy
 {
  public:
- 
+
   //! Constructs the pair (ax,ay)
-  Real2Proxy(Real2& value,const MemoryAccessInfo& info)
-  : x(value.x,info), y(value.y,info), m_value(value), m_info(info) {}
+  Real2Proxy(Real2& value, const MemoryAccessInfo& info)
+  : x(value.x, info)
+  , y(value.y, info)
+  , m_value(value)
+  , m_info(info)
+  {}
 
   //! Constructs a pair identical to \a f
   Real2Proxy(const Real2Proxy& f)
-  : x(f.x), y(f.y), m_value(f.m_value), m_info(f.m_info) {}
+  : x(f.x)
+  , y(f.y)
+  , m_value(f.m_value)
+  , m_info(f.m_info)
+  {}
   const Real2& operator=(Real2Proxy f)
-    { x=f.x; y=f.y; return m_value; }
+  {
+    x = f.x;
+    y = f.y;
+    return m_value;
+  }
   const Real2& operator=(Real2 f)
-    { x=f.x; y=f.y; return m_value; }
+  {
+    x = f.x;
+    y = f.y;
+    return m_value;
+  }
 
   //! Assigns the pair (v,v) to the instance.
   const Real2& operator=(Real v)
-    { x = y = v; return m_value; }
+  {
+    x = y = v;
+    return m_value;
+  }
   operator Real2() const
-    {
-      return getValue();
-    }
+  {
+    return getValue();
+  }
   //operator Real2&()
   //{
   //  return getValueMutable();
@@ -79,15 +99,27 @@ class ARCANE_UTILS_EXPORT Real2Proxy
   Real2 copy() const { return m_value; }
 
   //! Resets the pair with default constructors.
-  Real2Proxy& reset() { x = y = 0.; return (*this); }
+  Real2Proxy& reset()
+  {
+    x = y = 0.;
+    return (*this);
+  }
 
   //! Assigns the pair (ax,ay,az) to the instance
-  Real2Proxy& assign(Real ax,Real ay)
-    { x = ax; y = ay; return (*this); }
+  Real2Proxy& assign(Real ax, Real ay)
+  {
+    x = ax;
+    y = ay;
+    return (*this);
+  }
 
   //! Copies the pair \a f
   Real2Proxy& assign(Real2 f)
-    { x = f.x; y = f.y; return (*this); }
+  {
+    x = f.x;
+    y = f.y;
+    return (*this);
+  }
 
   /*!
    * \brief Compares the pair with the zero pair.
@@ -105,17 +137,21 @@ class ARCANE_UTILS_EXPORT Real2Proxy
    * \retval false otherwise.
    */
   bool isNearlyZero() const
-    {
-      return math::isNearlyZero(x.getValue()) && math::isNearlyZero(y.getValue());
-    }
+  {
+    return math::isNearlyZero(x.getValue()) && math::isNearlyZero(y.getValue());
+  }
 
   //! Returns the squared norm of the pair \f$x^2+y^2+z^2\f$
   Real abs2() const
-    { return x*x + y*y; }
+  {
+    return x * x + y * y;
+  }
 
   //! Returns the norm of the pair \f$\sqrt{x^2+y^2+z^2}\f$
   Real abs() const
-    { return _sqrt(abs2()); }
+  {
+    return _sqrt(abs2());
+  }
 
   /*!
    * \brief Reads a pair from the stream \a i
@@ -130,28 +166,68 @@ class ARCANE_UTILS_EXPORT Real2Proxy
   ostream& printXy(ostream& o) const;
 
   //! Adds \a b to the pair
-  Real2Proxy& add(Real2 b) { x+=b.x; y+=b.y; return (*this); }
+  Real2Proxy& add(Real2 b)
+  {
+    x += b.x;
+    y += b.y;
+    return (*this);
+  }
 
   //! Subtracts \a b from the pair
-  Real2Proxy& sub(Real2 b) { x-=b.x; y-=b.y; return (*this); }
+  Real2Proxy& sub(Real2 b)
+  {
+    x -= b.x;
+    y -= b.y;
+    return (*this);
+  }
 
   //! Multiplies each component of the pair by the corresponding component of \a b
-  Real2Proxy& mul(Real2 b) { x*=b.x; y*=b.y; return (*this); }
+  Real2Proxy& mul(Real2 b)
+  {
+    x *= b.x;
+    y *= b.y;
+    return (*this);
+  }
 
   //! Divides each component of the pair by the corresponding component of \a b
-  Real2Proxy& div(Real2 b) { x/=b.x; y/=b.y; return (*this); }
+  Real2Proxy& div(Real2 b)
+  {
+    x /= b.x;
+    y /= b.y;
+    return (*this);
+  }
 
   //! Adds \a b to each component of the pair
-  Real2Proxy& addSame(Real b) { x+=b; y+=b; return (*this); }
+  Real2Proxy& addSame(Real b)
+  {
+    x += b;
+    y += b;
+    return (*this);
+  }
 
   //! Subtracts \a b from each component of the pair
-  Real2Proxy& subSame(Real b) { x-=b; y-=b; return (*this); }
+  Real2Proxy& subSame(Real b)
+  {
+    x -= b;
+    y -= b;
+    return (*this);
+  }
 
   //! Multiplies each component of the pair by \a b
-  Real2Proxy& mulSame(Real b) { x*=b; y*=b; return (*this); }
+  Real2Proxy& mulSame(Real b)
+  {
+    x *= b;
+    y *= b;
+    return (*this);
+  }
 
   //! Divides each component of the pair by \a b
-  Real2Proxy& divSame(Real b) { x/=b; y/=b; return (*this); }
+  Real2Proxy& divSame(Real b)
+  {
+    x /= b;
+    y /= b;
+    return (*this);
+  }
 
   //! Adds \a b to the pair.
   Real2Proxy& operator+=(Real2 b) { return add(b); }
@@ -163,50 +239,58 @@ class ARCANE_UTILS_EXPORT Real2Proxy
   Real2Proxy& operator*=(Real2 b) { return mul(b); }
 
   //! Multiplies each component of the pair by the real \a b
-  void  operator*=(Real b) { x*=b; y*=b; }
+  void operator*=(Real b)
+  {
+    x *= b;
+    y *= b;
+  }
 
   //! Divides each component of the pair by the corresponding component of \a b
   Real2Proxy& operator/=(Real2 b) { return div(b); }
 
   //! Divides each component of the pair by the real \a b
-  void  operator/=(Real  b) { x/=b; y/=b; }
+  void operator/=(Real b)
+  {
+    x /= b;
+    y /= b;
+  }
 
   //! Creates a pair that equals this pair added to \a b
-  Real2 operator+(Real2 b)  const { return Real2(x+b.x,y+b.y); }
+  Real2 operator+(Real2 b) const { return Real2(x + b.x, y + b.y); }
 
   //! Creates a pair that equals \a b subtracted from this pair
-  Real2 operator-(Real2 b)  const { return Real2(x-b.x,y-b.y); }
+  Real2 operator-(Real2 b) const { return Real2(x - b.x, y - b.y); }
 
   //! Creates a pair opposite to the current pair
-  Real2 operator-() const { return Real2(-x,-y); }
+  Real2 operator-() const { return Real2(-x, -y); }
 
   /*!
    * \brief Creates a pair that equals this pair where each component has been
    * multiplied by the corresponding component of \a b.
    */
-  Real2 operator*(Real2 b) const { return Real2(x*b.x,y*b.y); }
+  Real2 operator*(Real2 b) const { return Real2(x * b.x, y * b.y); }
 
   /*!
    * \brief Creates a pair that equals this pair where each component has been divided
    * by the corresponding component of \a b.
    */
-  Real2 operator/(Real2 b) const { return Real2(x/b.x,y/b.y); }
-										
+  Real2 operator/(Real2 b) const { return Real2(x / b.x, y / b.y); }
+
   /*!
    * \brief Normalizes the pair.
-   * 
+   *
    * If the pair is non-zero, divides each component by the norm of the pair
    * (abs()), such that after calling this method, abs() equals \a 1.
    * If the pair is zero, does nothing.
    */
   Real2Proxy& normalize()
-    {
-      Real d = abs();
-      if (!math::isZero(d))
-        divSame(d);
-      return (*this);
-    }
-	
+  {
+    Real d = abs();
+    if (!math::isZero(d))
+      divSame(d);
+    return (*this);
+  }
+
   /*!
    * \brief Compares the pair to \a b.
    *
@@ -224,7 +308,9 @@ class ARCANE_UTILS_EXPORT Real2Proxy
    * \retval false otherwise.
    */
   bool operator==(Real2 b) const
-    { return _eq(x,b.x) && _eq(y,b.y); }
+  {
+    return _eq(x, b.x) && _eq(y, b.y);
+  }
 
   /*!
    * \brief Compares two pairs.
@@ -233,21 +319,23 @@ class ARCANE_UTILS_EXPORT Real2Proxy
    * \retval false otherwise.
    */
   bool operator!=(Real2 b) const
-    { return !operator==(b); }
+  {
+    return !operator==(b);
+  }
 
  public:
 
   Real2 getValue() const
-    {
-      m_info.setRead();
-      return m_value;
-    }
+  {
+    m_info.setRead();
+    return m_value;
+  }
   Real2& getValueMutable()
-    {
-      m_info.setReadOrWrite();
-      return m_value;
-    }
- 
+  {
+    m_info.setReadOrWrite();
+    return m_value;
+  }
+
  private:
 
   /*!
@@ -255,12 +343,16 @@ class ARCANE_UTILS_EXPORT Real2Proxy
    * \retval true if \a a and \a b are equal,
    * \retval false otherwise.
    */
-  static bool _eq(Real a,Real b)
-    { return math::isEqual(a,b); }
+  static bool _eq(Real a, Real b)
+  {
+    return math::isEqual(a, b);
+  }
 
   //! Returns the square root of \a a
   static Real _sqrt(Real a)
-    { return math::sqrt(a); }
+  {
+    return math::sqrt(a);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -269,9 +361,9 @@ class ARCANE_UTILS_EXPORT Real2Proxy
 /*!
  * \brief Multiplication by a scalar.
  */
-inline Real2 operator*(Real sca,const Real2Proxy& vec)
+inline Real2 operator*(Real sca, const Real2Proxy& vec)
 {
-  return Real2(vec.x*sca,vec.y*sca);
+  return Real2(vec.x * sca, vec.y * sca);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -281,9 +373,9 @@ inline Real2 operator*(Real sca,const Real2Proxy& vec)
  * \brief Multiplication by a scalar.
  */
 inline Real2
-operator*(const Real2Proxy& vec,Real sca)
+operator*(const Real2Proxy& vec, Real sca)
 {
-  return Real2(vec.x*sca,vec.y*sca);
+  return Real2(vec.x * sca, vec.y * sca);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -293,9 +385,9 @@ operator*(const Real2Proxy& vec,Real sca)
  * \brief Division by a scalar.
  */
 inline Real2
-operator/(const Real2Proxy& vec,Real sca)
+operator/(const Real2Proxy& vec, Real sca)
 {
-  return Real2(vec.x/sca,vec.y/sca);
+  return Real2(vec.x / sca, vec.y / sca);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -308,7 +400,7 @@ operator/(const Real2Proxy& vec,Real sca)
  * in std::set
  */
 inline bool
-operator<(const Real2Proxy& v1,const Real2Proxy& v2)
+operator<(const Real2Proxy& v1, const Real2Proxy& v2)
 {
   return v1.getValue() < v2.getValue();
 }
@@ -321,7 +413,7 @@ operator<(const Real2Proxy& v1,const Real2Proxy& v2)
  * \relates Real2Proxy
  */
 inline ostream&
-operator<< (ostream& o,Real2Proxy t)
+operator<<(ostream& o, Real2Proxy t)
 {
   return t.printXy(o);
 }
@@ -331,7 +423,7 @@ operator<< (ostream& o,Real2Proxy t)
  * \relates Real2Proxy
  */
 inline istream&
-operator>> (istream& i,Real2Proxy& t)
+operator>>(istream& i, Real2Proxy& t)
 {
   return t.assign(i);
 }
@@ -339,7 +431,7 @@ operator>> (istream& i,Real2Proxy& t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

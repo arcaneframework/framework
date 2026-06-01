@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,18 +25,19 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename TypeA,typename TypeB>
+template <typename TypeA, typename TypeB>
 class DefaultConverter
 {
  public:
-  void convertFromAToB(ConstArrayView<TypeA> input,ArrayView<TypeB> output)
+
+  void convertFromAToB(ConstArrayView<TypeA> input, ArrayView<TypeB> output)
   {
-    for( Integer i=0, is=input.size(); i<is; ++i )
+    for (Integer i = 0, is = input.size(); i < is; ++i)
       output[i] = (TypeB)input[i];
   }
-  void convertFromBToA(ConstArrayView<TypeB> input,ArrayView<TypeA> output)
+  void convertFromBToA(ConstArrayView<TypeB> input, ArrayView<TypeA> output)
   {
-    for( Integer i=0, is=input.size(); i<is; ++i )
+    for (Integer i = 0, is = input.size(); i < is; ++i)
       output[i] = (TypeA)input[i];
   }
 };
@@ -47,58 +48,67 @@ class DefaultConverter
 /*!
  * \brief Conversion of an array from one type to another type.
  */
-template<typename InputType,typename OutputType,
-  typename Converter = DefaultConverter<InputType,OutputType> >
+template <typename InputType, typename OutputType,
+          typename Converter = DefaultConverter<InputType, OutputType>>
 class ArrayConverter
 {
  public:
+
   typedef UniqueArray<OutputType> OutputArrayType;
   typedef typename OutputArrayType::iterator iterator;
   typedef typename OutputArrayType::const_iterator const_iterator;
   typedef typename OutputArrayType::pointer pointer;
   typedef typename OutputArrayType::const_pointer const_pointer;
+
  public:
 
   ArrayConverter() {}
-  ArrayConverter(Converter & conv)
-  : m_converter(conv) 
+
+  ArrayConverter(Converter& conv)
+  : m_converter(conv)
   {
   }
 
-  ArrayConverter(Integer nb,InputType* values)
+  ArrayConverter(Integer nb, InputType* values)
   {
-    m_input_array = ArrayView<InputType>(nb,values);
+    m_input_array = ArrayView<InputType>(nb, values);
     _init();
   }
+
   ArrayConverter(ArrayView<InputType> values)
   {
     m_input_array = values;
     _init();
   }
+
   ArrayConverter(ArrayView<InputType> values, Converter& conv)
-  :m_converter(conv)
+  : m_converter(conv)
   {
     m_input_array = values;
     _init();
   }
-  ~ArrayConverter() noexcept(false)
 
+  ~ArrayConverter() noexcept(false)
   {
-    m_converter.convertFromBToA(m_output_array,m_input_array);
+    m_converter.convertFromBToA(m_output_array, m_input_array);
   }
+
   void operator=(ArrayView<InputType> values)
   {
     m_input_array = values;
     _init();
   }
+
   void notifyOutputChanged()
   {
-    m_converter.convertFromBToA(m_output_array,m_input_array);
+    m_converter.convertFromBToA(m_output_array, m_input_array);
   }
+
   void notifyInputChanged()
   {
-    m_converter.convertFromAToB(m_input_array,m_output_array);
+    m_converter.convertFromAToB(m_input_array, m_output_array);
   }
+
  public:
 
   /*!
@@ -116,10 +126,10 @@ class ArrayConverter
 
  private:
 
-  void _init() 
+  void _init()
   {
     m_output_array.resize(m_input_array.size());
-    m_converter.convertFromAToB(m_input_array,m_output_array);
+    m_converter.convertFromAToB(m_input_array, m_output_array);
   }
 
   ArrayView<InputType> m_input_array;
@@ -135,29 +145,35 @@ class ArrayConverter
  *
  * Specialization for the case where the input and output types are the same.
  */
-template<typename InputType>
-class ArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
+template <typename InputType>
+class ArrayConverter<InputType, InputType, DefaultConverter<InputType, InputType>>
 {
  public:
+
   typedef ArrayView<InputType> OutputArrayType;
   typedef typename OutputArrayType::iterator iterator;
   typedef typename OutputArrayType::const_iterator const_iterator;
   typedef typename OutputArrayType::pointer pointer;
   typedef typename OutputArrayType::const_pointer const_pointer;
+
  public:
 
   ArrayConverter()
   {
   }
-  ArrayConverter(Integer nb,InputType* values)
+
+  ArrayConverter(Integer nb, InputType* values)
   {
-    m_input_array = ArrayView<InputType>(nb,values);
+    m_input_array = ArrayView<InputType>(nb, values);
   }
+
   ArrayConverter(ArrayView<InputType> values)
   {
     m_input_array = values;
   }
-  ~ArrayConverter(){}
+
+  ~ArrayConverter() {}
+
   void operator=(ArrayView<InputType> values)
   {
     m_input_array = values;
@@ -191,37 +207,41 @@ class ArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
 /*!
  * \brief Conversion of an array from one type to another type.
  */
-template<typename InputType,typename OutputType,
-  typename Converter = DefaultConverter<InputType,OutputType> >
+template <typename InputType, typename OutputType,
+          typename Converter = DefaultConverter<InputType, OutputType>>
 class ConstArrayConverter
 {
  public:
+
   typedef ConstArrayView<OutputType> OutputArrayType;
   typedef typename OutputArrayType::const_iterator const_iterator;
   typedef typename OutputArrayType::const_pointer const_pointer;
+
  public:
 
   ConstArrayConverter()
   {
   }
 
-  ConstArrayConverter(Converter & conv)
-  : m_converter(conv) 
+  ConstArrayConverter(Converter& conv)
+  : m_converter(conv)
   {
   }
 
-  ConstArrayConverter(Integer nb,const InputType* values)
+  ConstArrayConverter(Integer nb, const InputType* values)
   {
-    m_input_array = ConstArrayView<InputType>(nb,values);
+    m_input_array = ConstArrayView<InputType>(nb, values);
     _init();
   }
+
   ConstArrayConverter(ConstArrayView<InputType> values)
   {
     m_input_array = values;
     _init();
   }
+
   ConstArrayConverter(ConstArrayView<InputType> values, Converter& conv)
-  :m_converter(conv)
+  : m_converter(conv)
   {
     m_input_array = values;
     _init();
@@ -243,7 +263,7 @@ class ConstArrayConverter
   void _init()
   {
     m_output_array.resize(m_input_array.size());
-    m_converter.convertFromAToB(m_input_array,m_output_array);   
+    m_converter.convertFromAToB(m_input_array, m_output_array);
   }
 
   ConstArrayView<InputType> m_input_array;
@@ -259,27 +279,31 @@ class ConstArrayConverter
  *
  * Specialization for the case where the input and output types are the same.
  */
-template<typename InputType>
-class ConstArrayConverter<InputType,InputType,DefaultConverter<InputType,InputType> >
+template <typename InputType>
+class ConstArrayConverter<InputType, InputType, DefaultConverter<InputType, InputType>>
 {
  public:
+
   typedef ConstArrayView<InputType> OutputArrayType;
   typedef typename OutputArrayType::const_iterator const_iterator;
   typedef typename OutputArrayType::const_pointer const_pointer;
+
  public:
 
   ConstArrayConverter()
   {
   }
-  ConstArrayConverter(Integer nb,const InputType* values)
+
+  ConstArrayConverter(Integer nb, const InputType* values)
   {
-    m_input_array = ConstArrayView<InputType>(nb,values);
+    m_input_array = ConstArrayView<InputType>(nb, values);
   }
 
   ConstArrayConverter(ConstArrayView<InputType> values)
   {
     m_input_array = values;
   }
+
   ~ConstArrayConverter()
   {
   }
@@ -301,7 +325,7 @@ class ConstArrayConverter<InputType,InputType,DefaultConverter<InputType,InputTy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

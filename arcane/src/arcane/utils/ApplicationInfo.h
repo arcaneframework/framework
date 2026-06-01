@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,15 +41,15 @@ class ARCANE_UTILS_EXPORT ApplicationInfo
  public:
 
   ApplicationInfo();
-  ApplicationInfo(int* argc,char*** argv,const String& name,const VersionInfo& version);
-  ApplicationInfo(const StringList& args,const String& name,const VersionInfo& version);
-  ApplicationInfo(const CommandLineArguments& args,const String& name,const VersionInfo& version);
+  ApplicationInfo(int* argc, char*** argv, const String& name, const VersionInfo& version);
+  ApplicationInfo(const StringList& args, const String& name, const VersionInfo& version);
+  ApplicationInfo(const CommandLineArguments& args, const String& name, const VersionInfo& version);
   ApplicationInfo(const ApplicationInfo& rhs);
   ~ApplicationInfo();
   ApplicationInfo& operator=(const ApplicationInfo& rhs);
 
  public:
-	
+
   //! Application name
   const String& applicationName() const;
   //! Version number
@@ -113,7 +113,9 @@ class ARCANE_UTILS_EXPORT ApplicationInfo
   //! Sets the code version number
   ARCCORE_DEPRECATED_2020("use setCodeVersion() instead")
   void setVersionInfo(const VersionInfo& version_info)
-  { setCodeVersion(version_info); }
+  {
+    setCodeVersion(version_info);
+  }
   //! Sets the application name
   void setApplicationName(const String& v);
   //! Sets the version number
@@ -156,7 +158,7 @@ class ARCANE_UTILS_EXPORT ApplicationInfo
   ApplicationInfoPrivate* m_p;
 
  private:
-  
+
   void _init(const String& name);
   void _setArgs();
 };

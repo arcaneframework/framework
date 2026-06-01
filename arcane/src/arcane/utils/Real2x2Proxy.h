@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,22 +32,42 @@ ARCANE_BEGIN_NAMESPACE
 class ARCANE_UTILS_EXPORT Real2x2Proxy
 {
  public:
- 
+
   //! Constructs the pair (ax,ay)
-  Real2x2Proxy(Real2x2& value,const MemoryAccessInfo& info) 
-  : x(value.x,info), y(value.y,info), m_value(value), m_info(info) {}
+  Real2x2Proxy(Real2x2& value, const MemoryAccessInfo& info)
+  : x(value.x, info)
+  , y(value.y, info)
+  , m_value(value)
+  , m_info(info)
+  {}
 
   //! Constructs a pair identical to \a f
   Real2x2Proxy(const Real2x2Proxy& f)
-  : x(f.x), y(f.y), m_value(f.m_value), m_info(f.m_info) {}
+  : x(f.x)
+  , y(f.y)
+  , m_value(f.m_value)
+  , m_info(f.m_info)
+  {}
   const Real2x2Proxy& operator=(const Real2x2Proxy& f)
-    { x=f.x; y=f.y; return (*this); }
+  {
+    x = f.x;
+    y = f.y;
+    return (*this);
+  }
   const Real2x2Proxy& operator=(Real2x2 f)
-    { x=f.x; y=f.y; return (*this); }
+  {
+    x = f.x;
+    y = f.y;
+    return (*this);
+  }
 
   //! Assigns the triplet (v,v,v) to the instance.
   const Real2x2Proxy& operator=(Real v)
-    { x = v; y = v; return (*this); }
+  {
+    x = v;
+    y = v;
+    return (*this);
+  }
 
  public:
 
@@ -64,19 +85,31 @@ class ARCANE_UTILS_EXPORT Real2x2Proxy
   Real2x2 copy() const { return getValue(); }
 
   //! Resets the pair using default constructors.
-  Real2x2Proxy& reset() { *this = Real2x2::null(); return (*this); }
+  Real2x2Proxy& reset()
+  {
+    *this = Real2x2::null();
+    return (*this);
+  }
 
   //! Assigns the triplet (ax,ay,az) to the instance
-  Real2x2Proxy& assign(Real2 ax,Real2 ay)
-    { x = ax; y = ay; return (*this); }
+  Real2x2Proxy& assign(Real2 ax, Real2 ay)
+  {
+    x = ax;
+    y = ay;
+    return (*this);
+  }
 
   //! Copies the pair \a f
   Real2x2Proxy& assign(Real2x2Proxy f)
-    { x = f.x; y = f.y; return (*this); }
+  {
+    x = f.x;
+    y = f.y;
+    return (*this);
+  }
   operator const Real2x2&() const
-    {
-      return getValue();
-    }
+  {
+    return getValue();
+  }
   //operator Real2x2&()
   //{
   //  return getValueMutable();
@@ -94,7 +127,9 @@ class ARCANE_UTILS_EXPORT Real2x2Proxy
    * \retval false otherwise.
    */
   bool isNearlyZero() const
-    { return x.isNearlyZero() && y.isNearlyZero(); }
+  {
+    return x.isNearlyZero() && y.isNearlyZero();
+  }
 
   /*!
    * \brief Reads the matrix from the stream \a i
@@ -109,28 +144,63 @@ class ARCANE_UTILS_EXPORT Real2x2Proxy
   ostream& printXy(ostream& o) const;
 
   //! Adds \a b to the pair
-  Real2x2Proxy& add(Real2x2 b) { x+=b.x; y+=b.y; return (*this); }
+  Real2x2Proxy& add(Real2x2 b)
+  {
+    x += b.x;
+    y += b.y;
+    return (*this);
+  }
 
   //! Subtracts \a b from the pair
-  Real2x2Proxy& sub(Real2x2 b) { x-=b.x; y-=b.y; return (*this); }
+  Real2x2Proxy& sub(Real2x2 b)
+  {
+    x -= b.x;
+    y -= b.y;
+    return (*this);
+  }
 
   //! Multiplies each component of the pair by the corresponding component of \a b
   //Real2x2Proxy& mul(Real2x2Proxy b) { x*=b.x; y*=b.y; return (*this); }
 
   //! Divides each component of the pair by the corresponding component of \a b
-  Real2x2Proxy& div(Real2x2 b) { x/=b.x; y/=b.y; return (*this); }
+  Real2x2Proxy& div(Real2x2 b)
+  {
+    x /= b.x;
+    y /= b.y;
+    return (*this);
+  }
 
   //! Adds \a b to each component of the pair
-  Real2x2Proxy& addSame(Real2 b) { x+=b; y+=b; return (*this); }
+  Real2x2Proxy& addSame(Real2 b)
+  {
+    x += b;
+    y += b;
+    return (*this);
+  }
 
   //! Subtracts \a b from each component of the pair
-  Real2x2Proxy& subSame(Real2 b) { x-=b; y-=b; return (*this); }
+  Real2x2Proxy& subSame(Real2 b)
+  {
+    x -= b;
+    y -= b;
+    return (*this);
+  }
 
   //! Multiplies each component of the pair by \a b
-  Real2x2Proxy& mulSame(Real2 b) { x*=b; y*=b; return (*this); }
+  Real2x2Proxy& mulSame(Real2 b)
+  {
+    x *= b;
+    y *= b;
+    return (*this);
+  }
 
   //! Divides each component of the pair by \a b
-  Real2x2Proxy& divSame(Real2 b) { x/=b; y/=b; return (*this); }
+  Real2x2Proxy& divSame(Real2 b)
+  {
+    x /= b;
+    y /= b;
+    return (*this);
+  }
 
   //! Adds \a b to the pair.
   Real2x2Proxy& operator+=(Real2x2 b) { return add(b); }
@@ -142,22 +212,30 @@ class ARCANE_UTILS_EXPORT Real2x2Proxy
   //Real2x2Proxy& operator*=(Real2x2Proxy b) { return mul(b); }
 
   //! Multiplies each component of the matrix by the real \a b
-  void operator*=(Real b) { x*=b; y*=b; }
+  void operator*=(Real b)
+  {
+    x *= b;
+    y *= b;
+  }
 
   //! Divides each component of the pair by the corresponding component of \a b
   //Real2x2Proxy& operator/= (Real2x2 b) { return div(b); }
 
   //! Divides each component of the matrix by the real \a b
-  void operator/= (Real b) { x/=b; y/=b; }
+  void operator/=(Real b)
+  {
+    x /= b;
+    y /= b;
+  }
 
   //! Creates a pair that equals this pair added to \a b
-  Real2x2 operator+(Real2x2 b) const { return Real2x2(x+b.x,y+b.y); }
+  Real2x2 operator+(Real2x2 b) const { return Real2x2(x + b.x, y + b.y); }
 
   //! Creates a pair that equals \a b subtracted from this pair
-  Real2x2 operator-(Real2x2 b)  const { return Real2x2(x-b.x,y-b.y); }
+  Real2x2 operator-(Real2x2 b) const { return Real2x2(x - b.x, y - b.y); }
 
   //! Creates a tensor opposite to the current tensor
-  Real2x2 operator-() const { return Real2x2(-x,-y); }
+  Real2x2 operator-() const { return Real2x2(-x, -y); }
 
   /*!
    * \brief Creates a pair that equals this pair whose each component has been
@@ -172,16 +250,18 @@ class ARCANE_UTILS_EXPORT Real2x2Proxy
   //Real2x2Proxy operator/(Real2x2Proxy b) const { return Real2x2Proxy(x/b.x,y/b.y); }
 
  public:
+
   const Real2x2& getValue() const
-    {
-      m_info.setRead();
-      return m_value;
-    }
+  {
+    m_info.setRead();
+    return m_value;
+  }
   Real2x2& getValueMutable()
-    {
-      m_info.setReadOrWrite();
-      return m_value;
-    }
+  {
+    m_info.setReadOrWrite();
+    return m_value;
+  }
+
  private:
 
   /*!
@@ -189,46 +269,48 @@ class ARCANE_UTILS_EXPORT Real2x2Proxy
    * \retval true if \a a and \a b are equal,
    * \retval false otherwise.
    */
-  static bool _eq(Real a,Real b)
-    { return TypeEqualT<Real>::isEqual(a,b); }
+  static bool _eq(Real a, Real b)
+  {
+    return TypeEqualT<Real>::isEqual(a, b);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline bool
-operator==(const Real2x2& a,const Real2x2Proxy& b)
+operator==(const Real2x2& a, const Real2x2Proxy& b)
 {
-  return a==b.getValue();
+  return a == b.getValue();
 }
 inline bool
-operator==(const Real2x2Proxy& a,const Real2x2& b)
+operator==(const Real2x2Proxy& a, const Real2x2& b)
 {
-  return a.getValue()==b;
+  return a.getValue() == b;
 }
 inline bool
-operator==(const Real2x2Proxy& a,const Real2x2Proxy& b)
+operator==(const Real2x2Proxy& a, const Real2x2Proxy& b)
 {
-  return a.getValue()==b.getValue();
+  return a.getValue() == b.getValue();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline bool
-operator!=(const Real2x2& a,const Real2x2Proxy& b)
+operator!=(const Real2x2& a, const Real2x2Proxy& b)
 {
-  return a!=b.getValue();
+  return a != b.getValue();
 }
 inline bool
-operator!=(const Real2x2Proxy& a,const Real2x2& b)
+operator!=(const Real2x2Proxy& a, const Real2x2& b)
 {
-  return a.getValue()!=b;
+  return a.getValue() != b;
 }
 inline bool
-operator!=(const Real2x2Proxy& a,const Real2x2Proxy& b)
+operator!=(const Real2x2Proxy& a, const Real2x2Proxy& b)
 {
-  return a.getValue()!=b.getValue();
+  return a.getValue() != b.getValue();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -239,7 +321,7 @@ operator!=(const Real2x2Proxy& a,const Real2x2Proxy& b)
  * \relates Real2x2Proxy
  */
 inline ostream&
-operator<< (ostream& o,const Real2x2Proxy& t)
+operator<<(ostream& o, const Real2x2Proxy& t)
 {
   return t.printXy(o);
 }
@@ -249,7 +331,7 @@ operator<< (ostream& o,const Real2x2Proxy& t)
  * \relates Real2x2Proxy
  */
 inline istream&
-operator>> (istream& i,Real2x2Proxy& t)
+operator>>(istream& i, Real2x2Proxy& t)
 {
   return t.assign(i);
 }
@@ -259,9 +341,9 @@ operator>> (istream& i,Real2x2Proxy& t)
 
 /*! \brief Multiplication by a scalar. */
 inline Real2x2
-operator*(Real sca,const Real2x2Proxy& vec)
+operator*(Real sca, const Real2x2Proxy& vec)
 {
-  return Real2x2(vec.x*sca,vec.y*sca);
+  return Real2x2(vec.x * sca, vec.y * sca);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -269,9 +351,9 @@ operator*(Real sca,const Real2x2Proxy& vec)
 
 /*! \brief Multiplication by a scalar. */
 inline Real2x2
-operator*(const Real2x2Proxy& vec,Real sca)
+operator*(const Real2x2Proxy& vec, Real sca)
 {
-  return Real2x2(vec.x*sca,vec.y*sca);
+  return Real2x2(vec.x * sca, vec.y * sca);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -279,9 +361,9 @@ operator*(const Real2x2Proxy& vec,Real sca)
 
 /*! \brief Division by a scalar. */
 inline Real2x2
-operator/(const Real2x2Proxy& vec,Real sca)
+operator/(const Real2x2Proxy& vec, Real sca)
 {
-  return Real2x2(vec.x/sca,vec.y/sca);
+  return Real2x2(vec.x / sca, vec.y / sca);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -294,18 +376,15 @@ operator/(const Real2x2Proxy& vec,Real sca)
  * in std::set
  */
 inline bool
-operator<(const Real2x2Proxy& v1,const Real2x2Proxy& v2)
+operator<(const Real2x2Proxy& v1, const Real2x2Proxy& v2)
 {
-  return (v1.getValue()<v2.getValue());
+  return (v1.getValue() < v2.getValue());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

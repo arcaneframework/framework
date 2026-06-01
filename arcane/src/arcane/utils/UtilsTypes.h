@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,11 +40,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class MultiArray2View;
-template<typename T> class ConstMultiArray2View;
-template<typename T> class MultiArray2;
-template<typename DataType> class UniqueMultiArray2;
-template<typename DataType> class SharedMultiArray2;
+template <typename T> class MultiArray2View;
+template <typename T> class ConstMultiArray2View;
+template <typename T> class MultiArray2;
+template <typename DataType> class UniqueMultiArray2;
+template <typename DataType> class SharedMultiArray2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,12 +59,12 @@ using Int64x3 = Vector3<Int64>;
 using Int32x3 = Vector3<Int32>;
 using Int64x2 = Vector2<Int64>;
 using Int32x2 = Vector2<Int32>;
-template<typename T,int Size> class NumVector;
-template<typename T,int RowSize,int ColumnSize = RowSize> class NumMatrix;
-using RealN2 = NumVector<Real,2>;
-using RealN3 = NumVector<Real,3>;
-using RealN2x2 = NumMatrix<Real,2>;
-using RealN3x3 = NumMatrix<Real,3>;
+template <typename T, int Size> class NumVector;
+template <typename T, int RowSize, int ColumnSize = RowSize> class NumMatrix;
+using RealN2 = NumVector<Real, 2>;
+using RealN3 = NumVector<Real, 3>;
+using RealN2x2 = NumMatrix<Real, 2>;
+using RealN3x3 = NumMatrix<Real, 3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -96,9 +96,9 @@ class ParallelLoopOptions;
 class ParallelFor1DLoopInfo;
 class TaskContext;
 class ITaskFunctor;
-template<typename InstanceType>
+template <typename InstanceType>
 class TaskFunctor;
-template<typename InstanceType>
+template <typename InstanceType>
 class TaskFunctorWithContext;
 class ITask;
 class ITaskImplementation;
@@ -108,9 +108,9 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 
 // For compatibility with existing code (to be removed after version 3.8)
-template<typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
-template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
-template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
+template <typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
+template <int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
+template <int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -440,7 +440,7 @@ typedef MultiArray2<Real3x3> Real3x3MultiArray2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-				
+
 //! C equivalent of a 1D array of pointers
 typedef ArrayView<Pointer> PointerArrayView;
 //! C equivalent of a 1D array of characters

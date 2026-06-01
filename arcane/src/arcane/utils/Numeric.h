@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ namespace Arcane
  * considers two numbers equal if their relative difference is
  * less than an epsilon.
  */
-template<class T>
+template <class T>
 class TypeEqualT
 {
  public:
@@ -51,9 +51,9 @@ class TypeEqualT
    * \retval true if \a a is zero within an epsilon,
    * \retval false otherwise.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool isNearlyZero (const T& a)
+  constexpr ARCCORE_HOST_DEVICE static bool isNearlyZero(const T& a)
   {
-    return (a==T());
+    return (a == T());
   }
 
   /*!
@@ -61,9 +61,9 @@ class TypeEqualT
    * \retval true if \a a is exactly zero,
    * \retval false otherwise.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool isZero (const T& a)
+  constexpr ARCCORE_HOST_DEVICE static bool isZero(const T& a)
   {
-    return (a==T());
+    return (a == T());
   }
 
   /*!
@@ -71,9 +71,9 @@ class TypeEqualT
    * \retval true if \a a and \b are equal within an epsilon,
    * \retval false otherwise.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqual(const T& a,const T& b)
+  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqual(const T& a, const T& b)
   {
-    return (a==b);
+    return (a == b);
   }
 
   /*!
@@ -81,9 +81,9 @@ class TypeEqualT
    * \retval true if \a a and \b are equal within an epsilon,
    * \retval false otherwise.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqualWithEpsilon(const T& a,const T& b,const T&)
+  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqualWithEpsilon(const T& a, const T& b, const T&)
   {
-    return (a==b);
+    return (a == b);
   }
 
   /*!
@@ -91,9 +91,9 @@ class TypeEqualT
    * \retval true if \a a and \b are exactly equal,
    * \retval false otherwise.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool isEqual(const T& a,const T& b)
+  constexpr ARCCORE_HOST_DEVICE static bool isEqual(const T& a, const T& b)
   {
-    return (a==b);
+    return (a == b);
   }
 };
 
@@ -107,54 +107,57 @@ class TypeEqualT
  * \note Eventually, it should use the 'numeric_limits' class
  * from the STL when it is implemented.
  */
-template<class T>
+template <class T>
 class FloatEqualT
 {
  private:
+
   constexpr ARCCORE_HOST_DEVICE static T nepsilon() { return FloatInfo<T>::nearlyEpsilon(); }
+
  public:
+
   constexpr ARCCORE_HOST_DEVICE static bool isNearlyZero(T a)
   {
-    return ( (a<0.) ? a>-nepsilon() : a<nepsilon() );
+    return ((a < 0.) ? a > -nepsilon() : a < nepsilon());
   }
-  
+
   /*!
    * \brief Compares \a a to zero within \a epsilon.
-   * 
+   *
    * \a epsilon must be positive.
    *
    * \retval true if abs(a)<epilon
    * \retval false otherwise
    */
-  constexpr ARCCORE_HOST_DEVICE static bool isNearlyZeroWithEpsilon(T a,T epsilon)
+  constexpr ARCCORE_HOST_DEVICE static bool isNearlyZeroWithEpsilon(T a, T epsilon)
   {
-    return ( (a<0.) ? a>-epsilon : a<epsilon );
-  }
-  
-  /*! \brief Compares \a with \a b*epsilon.
-   * \warning b must be positive. */
-  ARCCORE_HOST_DEVICE static bool isNearlyZero(T a,T b)
-  {
-    return ( (a<0.) ? a>-(b*nepsilon()) : a<(b*nepsilon()) );
+    return ((a < 0.) ? a > -epsilon : a < epsilon);
   }
 
-  constexpr ARCCORE_HOST_DEVICE static bool isTrueZero(T a) { return (a==FloatInfo<T>::zero()); }
-  constexpr ARCCORE_HOST_DEVICE static bool isZero(T a) { return (a==FloatInfo<T>::zero()); }
-  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqual(T a,T b)
+  /*! \brief Compares \a with \a b*epsilon.
+   * \warning b must be positive. */
+  ARCCORE_HOST_DEVICE static bool isNearlyZero(T a, T b)
+  {
+    return ((a < 0.) ? a > -(b * nepsilon()) : a < (b * nepsilon()));
+  }
+
+  constexpr ARCCORE_HOST_DEVICE static bool isTrueZero(T a) { return (a == FloatInfo<T>::zero()); }
+  constexpr ARCCORE_HOST_DEVICE static bool isZero(T a) { return (a == FloatInfo<T>::zero()); }
+  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqual(T a, T b)
   {
     T s = math::abs(a) + math::abs(b);
     T d = a - b;
-    return (d==FloatInfo<T>::zero()) ? true : isNearlyZero(d/s);
+    return (d == FloatInfo<T>::zero()) ? true : isNearlyZero(d / s);
   }
-  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqualWithEpsilon(T a,T b,T epsilon)
+  constexpr ARCCORE_HOST_DEVICE static bool isNearlyEqualWithEpsilon(T a, T b, T epsilon)
   {
     T s = math::abs(a) + math::abs(b);
     T d = a - b;
-    return (d==FloatInfo<T>::zero()) ? true : isNearlyZeroWithEpsilon(d/s,epsilon);
+    return (d == FloatInfo<T>::zero()) ? true : isNearlyZeroWithEpsilon(d / s, epsilon);
   }
-  constexpr ARCCORE_HOST_DEVICE static bool isEqual(T a,T b)
+  constexpr ARCCORE_HOST_DEVICE static bool isEqual(T a, T b)
   {
-    return a==b;
+    return a == b;
   }
 };
 
@@ -162,7 +165,7 @@ class FloatEqualT
  * \internal
  * \brief Specialization of TypeEqualT for the <tt>float</tt> type.
  */
-template<>
+template <>
 class TypeEqualT<float>
 : public FloatEqualT<float>
 {};
@@ -171,7 +174,7 @@ class TypeEqualT<float>
  * \internal
  * \brief Specialization of TypeEqualT for the <tt>double</tt> type.
  */
-template<>
+template <>
 class TypeEqualT<double>
 : public FloatEqualT<double>
 {};
@@ -180,7 +183,7 @@ class TypeEqualT<double>
  * \internal
  * \brief Specialization of TypeEqualT for the <tt>long double</tt> type.
  */
-template<>
+template <>
 class TypeEqualT<long double>
 : public FloatEqualT<long double>
 {};
@@ -190,7 +193,7 @@ class TypeEqualT<long double>
  * \internal
  * \brief Specialization of TypeEqualT for the <tt>Real</tt> type.
  */
-template<>
+template <>
 class TypeEqualT<Real>
 : public FloatEqualT<Real>
 {};
@@ -202,7 +205,7 @@ class TypeEqualT<Real>
 namespace math
 {
 
-/*!
+  /*!
  * \brief Tests if two values are approximately equal.
  * For integer types, this function is equivalent to IsEqual().
  * In the case of real types, the two numbers are considered equal
@@ -212,20 +215,20 @@ namespace math
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyEqual(const _Type& a,const _Type& b)
-{
-  return TypeEqualT<_Type>::isNearlyEqual(a,b);
-}
+  template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
+  isNearlyEqual(const _Type& a, const _Type& b)
+  {
+    return TypeEqualT<_Type>::isNearlyEqual(a, b);
+  }
 
-//! Overload for reals
-constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyEqual(Real a,Real b)
-{
-  return TypeEqualT<Real>::isNearlyEqual(a,b);
-}
+  //! Overload for reals
+  constexpr ARCCORE_HOST_DEVICE inline bool
+  isNearlyEqual(Real a, Real b)
+  {
+    return TypeEqualT<Real>::isNearlyEqual(a, b);
+  }
 
-/*!
+  /*!
  * \brief Tests if two values are approximately equal.
  * For integer types, this function is equivalent to IsEqual().
  * In the case of real types, the two numbers are considered equal
@@ -235,38 +238,38 @@ isNearlyEqual(Real a,Real b)
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyEqualWithEpsilon(const _Type& a,const _Type& b,const _Type& epsilon)
-{
-  return TypeEqualT<_Type>::isNearlyEqualWithEpsilon(a,b,epsilon);
-}
+  template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
+  isNearlyEqualWithEpsilon(const _Type& a, const _Type& b, const _Type& epsilon)
+  {
+    return TypeEqualT<_Type>::isNearlyEqualWithEpsilon(a, b, epsilon);
+  }
 
-//! Overload for reals
-ARCCORE_HOST_DEVICE constexpr inline bool
-isNearlyEqualWithEpsilon(Real a,Real b,Real epsilon)
-{
-  return TypeEqualT<Real>::isNearlyEqualWithEpsilon(a,b,epsilon);
-}
+  //! Overload for reals
+  ARCCORE_HOST_DEVICE constexpr inline bool
+  isNearlyEqualWithEpsilon(Real a, Real b, Real epsilon)
+  {
+    return TypeEqualT<Real>::isNearlyEqualWithEpsilon(a, b, epsilon);
+  }
 
-/*!
+  /*!
  * \brief Tests the bit-by-bit equality between two values.
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isEqual(const _Type& a,const _Type& b)
-{
-  return TypeEqualT<_Type>::isEqual(a,b);
-}
+  template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
+  isEqual(const _Type& a, const _Type& b)
+  {
+    return TypeEqualT<_Type>::isEqual(a, b);
+  }
 
-//! Overload for reals
-ARCCORE_HOST_DEVICE constexpr inline bool
-isEqual(Real a,Real b)
-{
-  return TypeEqualT<Real>::isEqual(a,b);
-}
+  //! Overload for reals
+  ARCCORE_HOST_DEVICE constexpr inline bool
+  isEqual(Real a, Real b)
+  {
+    return TypeEqualT<Real>::isEqual(a, b);
+  }
 
-/*!
+  /*!
  * \brief Tests if a value is approximately equal to zero within an epsilon.
  *
  * For integer types, this function is equivalent to IsZero().
@@ -276,35 +279,35 @@ isEqual(Real a,Real b)
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyZeroWithEpsilon(const _Type& a,const _Type& epsilon)
-{
-  return TypeEqualT<_Type>::isNearlyZeroWithEpsilon(a,epsilon);
-}
+  template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
+  isNearlyZeroWithEpsilon(const _Type& a, const _Type& epsilon)
+  {
+    return TypeEqualT<_Type>::isNearlyZeroWithEpsilon(a, epsilon);
+  }
 
-/*!
+  /*!
  * \brief Tests if a value is approximately equal to zero using the standard epsilon.
  *
  * The standard epsilon is the one returned by FloatInfo<_Type>::nearlyEpsilon().
  *
  * \sa isNearlyZero(const _Type& a,const _Type& epsilon).
  */
-template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyZero(const _Type& a)
-{
-  return TypeEqualT<_Type>::isNearlyZero(a);
-}
+  template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
+  isNearlyZero(const _Type& a)
+  {
+    return TypeEqualT<_Type>::isNearlyZero(a);
+  }
 
-/*!
+  /*!
  * \brief Tests if a value is exactly equal to zero.
  * \retval true if \a is zero,
  * \retval false otherwise.
  */
-template<class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isZero(const _Type& a)
-{
-  return TypeEqualT<_Type>::isZero(a);
-}
+  template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
+  isZero(const _Type& a)
+  {
+    return TypeEqualT<_Type>::isZero(a);
+  }
 } // namespace math
 
 /*---------------------------------------------------------------------------*/

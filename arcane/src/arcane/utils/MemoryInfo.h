@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,36 +36,40 @@ class ARCANE_UTILS_EXPORT MemoryInfo
 : public IMemoryInfo
 {
  public:
+
   class MemoryInfoSorter;
   class TracePrinter;
+
  public:
- 
+
   MemoryInfo();
   virtual ~MemoryInfo();
 
  public:
 
-  virtual void createOwner(const void* owner,const TraceInfo& trace_info);
+  virtual void createOwner(const void* owner, const TraceInfo& trace_info);
 
-  virtual void setOwner(const void* owner,const TraceInfo& new_info);
+  virtual void setOwner(const void* owner, const TraceInfo& new_info);
 
   virtual void removeOwner(const void* owner);
 
  public:
 
-  virtual void addInfo(const void* owner,const void* ptr,Int64 size);
+  virtual void addInfo(const void* owner, const void* ptr, Int64 size);
 
-  virtual void addInfo(const void* owner,const void* ptr,Int64 size,const void* old_ptr);
+  virtual void addInfo(const void* owner, const void* ptr, Int64 size, const void* old_ptr);
 
-  virtual void removeInfo(const void* owner,const void* ptr,bool can_fail);
+  virtual void removeInfo(const void* owner, const void* ptr, bool can_fail);
 
-  virtual void changeOwner(const void* new_owner,const void* ptr);
+  virtual void changeOwner(const void* new_owner, const void* ptr);
 
   virtual void printInfos(std::ostream& ostr);
 
   virtual void setIteration(Integer iteration)
-    { m_iteration = iteration; }
-  virtual void printAllocatedMemory(std::ostream& ostr,Integer iteration);
+  {
+    m_iteration = iteration;
+  }
+  virtual void printAllocatedMemory(std::ostream& ostr, Integer iteration);
   virtual void setTraceMng(ITraceMng* trace);
 
  public:
@@ -87,13 +92,13 @@ class ARCANE_UTILS_EXPORT MemoryInfo
 
  public:
 
-  void checkMemory(const void* owner,Int64 size);
+  void checkMemory(const void* owner, Int64 size);
 
  private:
 
-  typedef std::map<const void*,MemoryInfoChunk> MemoryInfoMap;
-  typedef std::map<const void*,TraceInfo> MemoryTraceInfoMap;
-  
+  typedef std::map<const void*, MemoryInfoChunk> MemoryInfoMap;
+  typedef std::map<const void*, TraceInfo> MemoryTraceInfoMap;
+
   MemoryInfoMap m_infos;
   MemoryTraceInfoMap m_owner_infos;
 
@@ -114,8 +119,8 @@ class ARCANE_UTILS_EXPORT MemoryInfo
  private:
 
   void _removeOwner(const void* owner);
-  void _addMemory(const void* owner,Int64 size,const String& stack_value);
-  void _removeMemory(const void* owner,Int64 size);
+  void _addMemory(const void* owner, Int64 size, const String& stack_value);
+  void _removeMemory(const void* owner, Int64 size);
   TraceInfo* _getTraceInfo(const void* owner);
   void _printInfos(std::ostream& ostr);
 };
@@ -133,7 +138,7 @@ arcaneExitCheckMemory();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

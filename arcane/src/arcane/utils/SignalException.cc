@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,14 +19,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 SignalException::
-SignalException(const String& where,eSignalType st,int signal_number)
-: Exception("Signal",where)
+SignalException(const String& where, eSignalType st, int signal_number)
+: Exception("Signal", where)
 , m_signal_type(st)
 , m_signal_number(signal_number)
 {
@@ -36,9 +37,9 @@ SignalException(const String& where,eSignalType st,int signal_number)
 /*---------------------------------------------------------------------------*/
 
 SignalException::
-SignalException(const String& where,const StackTrace& stack_trace,
-                eSignalType st,int signal_number)
-: Exception("Signal",where,stack_trace)
+SignalException(const String& where, const StackTrace& stack_trace,
+                eSignalType st, int signal_number)
+: Exception("Signal", where, stack_trace)
 , m_signal_type(st)
 , m_signal_number(signal_number)
 {
@@ -63,10 +64,10 @@ void SignalException::
 explain(std::ostream& m) const
 {
   if (!m_message.null())
-		m << "Message: " << m_message << '\n';
-	
-	m << "A fatal signal has occurred: ";
-	switch(m_signal_type){
+    m << "Message: " << m_message << '\n';
+
+  m << "A fatal signal has occurred: ";
+  switch (m_signal_type) {
   case ST_FloatingException:
     m << "Floating Exception";
     break;
@@ -75,7 +76,7 @@ explain(std::ostream& m) const
     break;
   case ST_BusError:
     m << "Bus Error";
-    break; 
+    break;
   case ST_Alarm:
     m << "Sigalarm";
     break;
@@ -107,7 +108,7 @@ signalNumber() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

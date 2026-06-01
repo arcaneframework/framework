@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -99,12 +99,13 @@
  * \brief Macro to iterate over the indices of a SIMD real or derived vector (Real2, Real3, ...).
  */
 #define ENUMERATE_SIMD_REAL(_iter) \
-  for( ::Arcane::Integer _iter(0); _iter < SimdReal ::BLOCK_SIZE; ++ _iter )
+  for (::Arcane::Integer _iter(0); _iter < SimdReal ::BLOCK_SIZE; ++_iter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -149,31 +150,38 @@ const int SimdSize = SimdReal::Length;
 class ARCANE_UTILS_EXPORT SimdReal3
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal x;
   SimdReal y;
   SimdReal z;
   SimdReal3() {}
-  SimdReal3(SimdReal _x,SimdReal _y,SimdReal _z) : x(_x), y(_y), z(_z){}
-  SimdReal3(const Real3* base,const Int32IndexType& idx)
+  SimdReal3(SimdReal _x, SimdReal _y, SimdReal _z)
+  : x(_x)
+  , y(_y)
+  , z(_z)
+  {}
+  SimdReal3(const Real3* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real3 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real3 operator[](Integer i) const { return Real3(x[i],y[i],z[i]); }
+  const Real3 operator[](Integer i) const { return Real3(x[i], y[i], z[i]); }
 
-  void set(Real3* base,const Int32IndexType& idx) const
+  void set(Real3* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
   // TODO: rename this method
-  void set(Integer i,Real3 r)
+  void set(Integer i, Real3 r)
   {
     x[i] = r.x;
     y[i] = r.y;
@@ -181,7 +189,7 @@ class ARCANE_UTILS_EXPORT SimdReal3
   }
   Real3 get(Integer i) const
   {
-    return Real3(x[i],y[i],z[i]);
+    return Real3(x[i], y[i], z[i]);
   }
 };
 
@@ -195,36 +203,42 @@ class ARCANE_UTILS_EXPORT SimdReal3
 class ARCANE_UTILS_EXPORT SimdReal2
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal x;
   SimdReal y;
   SimdReal2() {}
-  SimdReal2(SimdReal _x,SimdReal _y) : x(_x), y(_y){}
-  SimdReal2(const Real2* base,const Int32IndexType& idx)
+  SimdReal2(SimdReal _x, SimdReal _y)
+  : x(_x)
+  , y(_y)
+  {}
+  SimdReal2(const Real2* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real2 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real2 operator[](Integer i) const { return Real2(x[i],y[i]); }
+  const Real2 operator[](Integer i) const { return Real2(x[i], y[i]); }
 
-  void set(Real2* base,const Int32IndexType& idx) const
+  void set(Real2* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
-  void set(Integer i,Real2 r)
+  void set(Integer i, Real2 r)
   {
     x[i] = r.x;
     y[i] = r.y;
   }
   Real2 get(Integer i) const
   {
-    return Real2(x[i],y[i]);
+    return Real2(x[i], y[i]);
   }
 };
 
@@ -238,39 +252,46 @@ class ARCANE_UTILS_EXPORT SimdReal2
 class ARCANE_UTILS_EXPORT SimdReal3x3
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal3 x;
   SimdReal3 y;
   SimdReal3 z;
   SimdReal3x3() {}
-  SimdReal3x3(SimdReal3 _x,SimdReal3 _y,SimdReal3 _z) : x(_x), y(_y), z(_z){}
-  SimdReal3x3(const Real3x3* base,const Int32IndexType& idx)
+  SimdReal3x3(SimdReal3 _x, SimdReal3 _y, SimdReal3 _z)
+  : x(_x)
+  , y(_y)
+  , z(_z)
+  {}
+  SimdReal3x3(const Real3x3* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real3x3 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real3x3 operator[](Integer i) const { return Real3x3(x[i],y[i],z[i]); }
+  const Real3x3 operator[](Integer i) const { return Real3x3(x[i], y[i], z[i]); }
 
-  void set(Real3x3* base,const Int32IndexType& idx) const
+  void set(Real3x3* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
   // TODO: rename this method
-  void set(Integer i,Real3x3 r)
+  void set(Integer i, Real3x3 r)
   {
-    x.set(i,r.x);
-    y.set(i,r.y);
-    z.set(i,r.z);
+    x.set(i, r.x);
+    y.set(i, r.y);
+    z.set(i, r.z);
   }
   Real3x3 get(Integer i) const
   {
-    return Real3x3(x[i],y[i],z[i]);
+    return Real3x3(x[i], y[i], z[i]);
   }
 };
 
@@ -284,37 +305,43 @@ class ARCANE_UTILS_EXPORT SimdReal3x3
 class ARCANE_UTILS_EXPORT SimdReal2x2
 {
  public:
+
   typedef SimdReal::Int32IndexType Int32IndexType;
+
  public:
+
   SimdReal2 x;
   SimdReal2 y;
   SimdReal2x2() {}
-  SimdReal2x2(SimdReal2 _x,SimdReal2 _y) : x(_x), y(_y){}
-  SimdReal2x2(const Real2x2* base,const Int32IndexType& idx)
+  SimdReal2x2(SimdReal2 _x, SimdReal2 _y)
+  : x(_x)
+  , y(_y)
+  {}
+  SimdReal2x2(const Real2x2* base, const Int32IndexType& idx)
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       Real2x2 v = base[idx[i]];
-      this->set(i,v);
+      this->set(i, v);
     }
   }
-  const Real2x2 operator[](Integer i) const { return Real2x2(x[i],y[i]); }
+  const Real2x2 operator[](Integer i) const { return Real2x2(x[i], y[i]); }
 
-  void set(Real2x2* base,const Int32IndexType& idx) const
+  void set(Real2x2* base, const Int32IndexType& idx) const
   {
-    for( Integer i=0, n=SimdReal::BLOCK_SIZE; i<n; ++i ){
+    for (Integer i = 0, n = SimdReal::BLOCK_SIZE; i < n; ++i) {
       base[idx[i]] = this->get(i);
     }
   }
 
   // TODO: rename this method
-  void set(Integer i,Real2x2 r)
+  void set(Integer i, Real2x2 r)
   {
-    x.set(i,r.x);
-    y.set(i,r.y);
+    x.set(i, r.x);
+    y.set(i, r.y);
   }
   Real2x2 get(Integer i) const
   {
-    return Real2x2(x[i],y[i]);
+    return Real2x2(x[i], y[i]);
   }
 };
 
@@ -328,45 +355,51 @@ class ARCANE_UTILS_EXPORT SimdReal2x2
  * Default instantiation for types that do not have a corresponding vector type.
  * Currently, only the types 'Real', 'Real2', and 'Real3' have one.
  */
-template<typename DataType>
+template <typename DataType>
 class SimdTypeTraits
 {
  public:
+
   typedef void SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real>
 {
  public:
+
   typedef SimdReal SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real2>
 {
  public:
+
   typedef SimdReal2 SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real2x2>
 {
  public:
+
   typedef SimdReal2x2 SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real3>
 {
  public:
+
   typedef SimdReal3 SimdType;
 };
 
-template<>
+template <>
 class SimdTypeTraits<Real3x3>
 {
  public:
+
   typedef SimdReal3x3 SimdType;
 };
 
@@ -389,17 +422,28 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
  public:
 
   SimdEnumeratorBase()
-  : m_local_ids(nullptr), m_index(0), m_count(0) { }
-  SimdEnumeratorBase(const Int32* local_ids,Integer n)
-  : m_local_ids(local_ids), m_index(0), m_count(n)
-  { _checkValid(); }
+  : m_local_ids(nullptr)
+  , m_index(0)
+  , m_count(0)
+  {}
+  SimdEnumeratorBase(const Int32* local_ids, Integer n)
+  : m_local_ids(local_ids)
+  , m_index(0)
+  , m_count(n)
+  {
+    _checkValid();
+  }
   explicit SimdEnumeratorBase(Int32ConstArrayView local_ids)
-  : m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size())
-  { _checkValid(); }
+  : m_local_ids(local_ids.data())
+  , m_index(0)
+  , m_count(local_ids.size())
+  {
+    _checkValid();
+  }
 
  public:
 
-  bool hasNext() { return m_index<m_count; }
+  bool hasNext() { return m_index < m_count; }
 
   //! Local indices
   const Int32* unguardedLocalIds() const { return m_local_ids; }
@@ -412,8 +456,8 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
    */
   inline Integer nbValid() const
   {
-    Integer nb_valid = (m_count-m_index);
-    if (nb_valid>SimdSize)
+    Integer nb_valid = (m_count - m_index);
+    if (nb_valid > SimdSize)
       nb_valid = SimdSize;
     return nb_valid;
   }
@@ -429,7 +473,7 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
   const SimdIndexType* ARCANE_RESTRICT
   _currentSimdIndex() const
   {
-    return (const SimdIndexType*)(m_local_ids+m_index);
+    return (const SimdIndexType*)(m_local_ids + m_index);
   }
 
  private:
@@ -439,7 +483,7 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
   {
 #ifdef ARCANE_SIMD_BENCH
     Int64 modulo = (Int64)(m_local_ids) % SimdIndexType::Alignment;
-    if (modulo!=0){
+    if (modulo != 0) {
       throw BadAlignmentException();
     }
 #else
@@ -452,7 +496,7 @@ class ARCANE_UTILS_EXPORT SimdEnumeratorBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

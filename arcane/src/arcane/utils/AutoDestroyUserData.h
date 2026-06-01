@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,16 +19,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class DeleteOnDestroyBehaviour
 {
  public:
-  static void destroy(T* t){ delete t; }
+
+  static void destroy(T* t) { delete t; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -46,21 +48,25 @@ class DeleteOnDestroyBehaviour
  * but it is possible to change its behavior via the
  * DestroyBehaviour template parameter.
  */
-template<typename T,typename DestroyBehaviour = DeleteOnDestroyBehaviour<T> >
+template <typename T, typename DestroyBehaviour = DeleteOnDestroyBehaviour<T>>
 class AutoDestroyUserData
 : public IUserData
 {
  public:
-  
-  AutoDestroyUserData(T* adata): m_data(adata){}
+
+  AutoDestroyUserData(T* adata)
+  : m_data(adata)
+  {}
+
  private:
+
   ~AutoDestroyUserData()
   {
   }
 
  public:
 
-  virtual void notifyAttach(){}
+  virtual void notifyAttach() {}
 
   virtual void notifyDetach()
   {
@@ -68,17 +74,18 @@ class AutoDestroyUserData
     m_data = 0;
     delete this;
   }
-  
+
   T* data() { return m_data; }
 
  private:
+
   T* m_data;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

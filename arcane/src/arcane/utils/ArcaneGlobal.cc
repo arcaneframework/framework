@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,6 +41,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file utils/ArcaneGlobal.h
  *
@@ -54,6 +55,7 @@
  * All classes and types used in \b Arcane are in this
  * namespace.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,27 +66,27 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError(Int32 i,Int32 max_size)
+arcaneRangeError(Int32 i, Int32 max_size)
 {
   arcaneDebugPause("arcaneRangeError");
-  throw IndexOutOfRangeException(A_FUNCINFO,String(),i,0,max_size);
+  throw IndexOutOfRangeException(A_FUNCINFO, String(), i, 0, max_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError(Int64 i,Int64 max_size)
+arcaneRangeError(Int64 i, Int64 max_size)
 {
   arcaneDebugPause("arcaneRangeError");
-  throw IndexOutOfRangeException(A_FUNCINFO,String(),i,0,max_size);
+  throw IndexOutOfRangeException(A_FUNCINFO, String(), i, 0, max_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-_internalArcaneMathError(long double value,const char* funcname)
+_internalArcaneMathError(long double value, const char* funcname)
 {
   cerr << "** FATAL: Argument error for a mathematical operation:\n";
   cerr << "** FATAL: Argument: " << value << '\n';
@@ -98,7 +100,7 @@ _internalArcaneMathError(long double value,const char* funcname)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-_internalArcaneMathError(long double value1,long double value2,const char* funcname)
+_internalArcaneMathError(long double value1, long double value2, const char* funcname)
 {
   cerr << "** FATAL: Argument error for a mathematical operation:\n";
   cerr << "** FATAL: Argument1: " << value1 << '\n';
@@ -113,8 +115,8 @@ _internalArcaneMathError(long double value1,long double value2,const char* funcn
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneNotYetImplemented(const char* file,const char* func,
-                        unsigned long line,const char* text)
+arcaneNotYetImplemented(const char* file, const char* func,
+                        unsigned long line, const char* text)
 {
   cerr << file << ':' << func << ':' << line << '\n';
   cerr << "sorry, functionality not yet implemented";
@@ -132,16 +134,16 @@ arcaneNullPointerError()
   cerr << "** FATAL: null pointer.\n";
   cerr << "** FATAL: Trying to dereference a null pointer.\n";
   arcaneDebugPause("arcaneNullPointerPtr");
-  throw FatalErrorException(A_FUNCINFO,"null pointer");
+  throw FatalErrorException(A_FUNCINFO, "null pointer");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneThrowNullPointerError(const char* ptr_name,const char* text)
+arcaneThrowNullPointerError(const char* ptr_name, const char* text)
 {
-  throw FatalErrorException(A_FUNCINFO,text ? text : ptr_name);
+  throw FatalErrorException(A_FUNCINFO, text ? text : ptr_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -150,45 +152,45 @@ arcaneThrowNullPointerError(const char* ptr_name,const char* text)
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long long size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long long size)
 {
-  ARCANE_THROW_IF( (size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
-  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
+  ARCANE_THROW_IF((size < 0), ArgumentException, "invalid negative value '{0}' for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned long size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(long size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
-  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
+  ARCANE_THROW_IF((size < 0), ArgumentException, "invalid negative value '{0}' for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(unsigned int size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
   return static_cast<Integer>(size);
 }
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcaneCheckArraySize(int size)
 {
-  ARCANE_THROW_IF((size>=ARCANE_INTEGER_MAX),ArgumentException,"value '{0}' too big for Array size",size);
-  ARCANE_THROW_IF((size<0),ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCANE_THROW_IF((size >= ARCANE_INTEGER_MAX), ArgumentException, "value '{0}' too big for Array size", size);
+  ARCANE_THROW_IF((size < 0), ArgumentException, "invalid negative value '{0}' for Array size", size);
   return static_cast<Integer>(size);
 }
 
@@ -196,14 +198,14 @@ arcaneCheckArraySize(int size)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneCheckAlignment(const void* ptr,Integer alignment)
+arcaneCheckAlignment(const void* ptr, Integer alignment)
 {
-  if (alignment<=0)
+  if (alignment <= 0)
     return;
   Int64 iptr = (intptr_t)ptr;
   Int64 modulo = iptr % alignment;
-  if (modulo!=0)
-    throw BadAlignmentException(A_FUNCINFO,ptr,alignment);
+  if (modulo != 0)
+    throw BadAlignmentException(A_FUNCINFO, ptr, alignment);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -291,7 +293,7 @@ arcaneSizeWithPadding(Integer size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

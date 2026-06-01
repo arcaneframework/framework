@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -52,12 +52,14 @@ class AutoRefT
 
   //! Constructs an instance without a reference
   AutoRefT() = default;
+
   //! Constructs an instance referencing \a t
   explicit AutoRefT(T* t)
   : BaseClass()
   {
     _changeValue(t);
   }
+
   //! Constructs a reference referencing \a from
   AutoRefT(const AutoRefT<T>& from)
   : BaseClass()
@@ -90,12 +92,14 @@ class AutoRefT
     if (m_value)
       m_value->addRef();
   }
+
   //! Removes a reference to the encapsulated object if not null
   void _removeRef()
   {
     if (m_value)
       m_value->removeRef();
   }
+
   //! Changes the referenced object to \a new_value
   void _changeValue(T* new_value)
   {
