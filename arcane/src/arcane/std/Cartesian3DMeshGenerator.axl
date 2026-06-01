@@ -1,59 +1,59 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="Cartesian3DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Générateur de maillage cartésien 3D
+    3D Cartesian Mesh Generator
   </description>
-    
-  <interface name="Arcane::IMeshBuilder" />
+
+  <interface name="Arcane::IMeshBuilder"/>
 
   <options>
-    <simple name="origin" type="real3" >
-      <description>Origine du maillage</description>
+    <simple name="origin" type="real3">
+      <description>Mesh origin</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-x" type="integer" >
-      <description>Nombre de sous-domaine en X</description>
+    <simple name="nb-part-x" type="integer">
+      <description>Number of sub-domains in X</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-y" type="integer" >
-      <description>Nombre de sous-domaine en Y</description>
+    <simple name="nb-part-y" type="integer">
+      <description>Number of sub-domains in Y</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="nb-part-z" type="integer" >
-      <description>Nombre de sous-domaine en Z</description>
+    <simple name="nb-part-z" type="integer">
+      <description>Number of sub-domains in Z</description>
       <userclass>User</userclass>
     </simple>
     <simple name="generate-sod-groups" type="bool" default="false">
-      <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
+      <description>True if generating groups for a SOD test case (internal to Arcane)</description>
     </simple>
 
     <simple name="face-numbering-version" type="integer" default="4">
       <description>
-        Version de l'algorithme pour la numérotation des faces. La
-        version 1 correspond à la numérotation non structurée. La
-        version 4 correspond à la numérotation cartésienne.
+        Algorithm version for face numbering.
+        Version 1 corresponds to unstructured numbering.
+        Version 4 corresponds to Cartesian numbering.
       </description>
       <userclass>User</userclass>
     </simple>
 
     <simple name="edge-numbering-version" type="integer" default="2">
       <description>
-        Version de l'algorithme pour la numérotation des arêtes. Seule
-        la valeur 2 est valide actuellement. Dans ce cas si les arêtes
-        sont activées alors le nombre maximum des noeuds est limité à 2^31.
+        Algorithm version for edge numbering. Only value 2 is currently
+        valid. In this case, if edges are enabled, the maximum number of
+        nodes is limited to 2^31.
       </description>
       <userclass>User</userclass>
     </simple>
 
-    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
-        <description>Nombre de mailles</description>
+      <simple name="n" type="integer">
+        <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
-        <description>Longueur</description>
+      <simple name="length" type="real">
+        <description>Length</description>
         <userclass>User</userclass>
       </simple>
       <simple name="progression" type="real" default="1.0">
@@ -62,14 +62,14 @@
       </simple>
     </complex>
 
-    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
-        <description>Nombre de mailles</description>
+      <simple name="n" type="integer">
+        <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
-        <description>Longueur</description>
+      <simple name="length" type="real">
+        <description>Length</description>
         <userclass>User</userclass>
       </simple>
       <simple name="progression" type="real" default="1.0">
@@ -78,14 +78,14 @@
       </simple>
     </complex>
 
-    <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded" >
+    <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
-      <simple name="n" type="integer" >
-        <description>Nombre de mailles</description>
+      <simple name="n" type="integer">
+        <description>Number of meshes</description>
         <userclass>User</userclass>
       </simple>
-      <simple name="length" type="real" >
-        <description>Longueur</description>
+      <simple name="length" type="real">
+        <description>Length</description>
         <userclass>User</userclass>
       </simple>
       <simple name="progression" type="real" default="1.0">

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArcaneBasicVerifierService.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Service de comparaison des variables.                                     */
+/* Variable comparison service.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -120,9 +120,9 @@ _writeReferenceFile(const String& file_name)
   IParallelMng* pm = sd->parallelMng();
   IVariableMng* vm = sd->variableMng();
   auto open_mode = BasicReaderWriterCommon::OpenModeTruncate;
-  // Pour l'instant utilise la version 1
-  // A partir de janvier 2019, il est possible d'utiliser la version 2 ou 3
-  // car le comparateur C# supporte cette version.
+  // For now, use version 1
+  // Starting from January 2019, it is possible to use version 2 or 3
+  // because the C# comparator supports this version.
   Int32 version = m_wanted_format_version;
   bool want_parallel = pm->isParallel();
   ScopedPtrT<BasicWriter> verif(new BasicWriter(sd->application(), pm, file_name,
@@ -132,9 +132,9 @@ _writeReferenceFile(const String& file_name)
 
   verif->initialize();
 
-  // En parallèle, comme l'écriture nécessite des communications entre les sous-domaines,
-  // il est indispensable que tous les PE aient les mêmes variables. On les filtre pour
-  // garantir cela.
+  // In parallel, since writing requires communication between subdomains,
+  // it is essential that all PEs have the same variables. We filter them to
+  // ensure this.
   VariableCollection used_variables = vm->usedVariables();
   if (pm->isParallel()) {
     bool dump_not_common = true;
@@ -178,9 +178,9 @@ doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost)
   VariableList read_variables;
   _getVariables(read_variables, parallel_sequential);
 
-  // En parallèle, comme la lecture nécessite des communications entre les sous-domaines,
-  // il est indispensable que tous les PE aient les mêmes variables. On les filtre pour
-  // garantir cela.
+  // In parallel, since reading requires communication between subdomains,
+  // it is essential that all PEs have the same variables. We filter them to
+  // ensure this.
   if (pm->isParallel()) {
     IVariableMng* vm = sd->variableMng();
     bool dump_not_common = true;
@@ -220,13 +220,13 @@ _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
   const bool want_parallel = pm->isParallel();
 
   info() << "Check Verif Hash";
-  // Récupère l'algorithm de calcul du hash
+  // Retrieves the hash calculation algorithm
   IHashAlgorithm* ref_compare_hash_algo = ref_reader->comparisonHashAlgorithm();
   if (!ref_compare_hash_algo)
-    // TODO: regarder s'il faut ne rien faire ou s'il faut signaler une erreur.
+    // TODO: check if we should do nothing or signal an error.
     return;
 
-  // Calcul les hash des valeurs courantes des variables
+  // Calculates the hash of the current variable values
   std::map<String, String> current_comparison_hash_map;
   ParallelDataWriterList parallel_data_writers;
   info() << "DoVerifHash";
@@ -234,13 +234,13 @@ _doVerifHash(BasicReader* ref_reader, const VariableCollection& variables)
     IVariable* var = *ivar;
     Ref<IData> allocated_data;
     IData* data = var->data();
-    // En parallèle, trie les entités par uniqueId() croissant.
-    // En séquentiel c'est toujours le cas.
-    // NOTE: pour l'instant on utilise le IParallelMng global mais il faudrait
-    // vérifier s'il ne faut pas utiliser celui associé au maillage de la
-    // variable courante \a var.
+    // In parallel, sort entities by increasing uniqueId().
+    // In sequential mode, this is always the case.
+    // NOTE: for now we use the global IParallelMng but we should
+    // check if we should not use the one associated with the
+    // current variable's mesh \a var.
     if (want_parallel) {
-      // En parallèle, ne compare que les variables sur les entités
+      // In parallel, only compare variables on entities
       ItemGroup group = var->itemGroup();
       if (group.null())
         continue;
@@ -327,9 +327,6 @@ ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierService2,
 ARCANE_REGISTER_SERVICE(ArcaneBasicVerifierServiceV3,
                         ServiceProperty("ArcaneBasicVerifier3", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IVerifierService));
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArcaneCurveWriter.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Ecriture des courbes au format Arcane.                                    */
+/* Writing curves in Arcane format.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,13 +15,13 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/ITimeHistoryCurveWriter2.h"
-#include "arcane/BasicService.h"
-#include "arcane/FactoryService.h"
-#include "arcane/IApplication.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNode.h"
+#include "arcane/core/ITimeHistoryCurveWriter2.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNode.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,9 +32,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecriture des courbes au format spécifique Arcane.
+ * \brief Writing curves in the specific Arcane format.
  *
- * \todo rédiger doc sur le format.
+ * \todo write documentation on the format.
  */
 class ArcaneCurveWriter
 : public BasicService
@@ -121,8 +121,8 @@ void ArcaneCurveWriter::
 beginWrite(const TimeHistoryCurveWriterInfo& infos)
 {
   String path = infos.path();
-  // m_output_path surcharge les infos en argument si non vide.
-  // TODO: regarder s'il faut créer le répertoire
+  // m_output_path overrides the infos argument if not empty.
+  // TODO: check if the directory needs to be created
   if (!m_output_path.empty())
     m_output_path = path;
 
@@ -143,22 +143,20 @@ void ArcaneCurveWriter::
 _writeHeader()
 {
   Byte header[12];
-  // 4 premiers octets pour indiquer qu'il s'agit d'un fichier de courbes
+  // First 4 bytes to indicate that it is a curve file
   // arcane
   header[0] = 'A';
   header[1] = 'C';
   header[2] = 'V';
   header[3] = (Byte)122;
-  // 4 octets suivant pour la version
-  // Actuellement version 1 ou 2. La version 1 ne supporte que les fichiers
-  // de taille sur 32 bits. La seule différence de la version 2 est que
-  // les offsets et longueurs stoquées à la fin du fichier sont sur
-  // 64bit au lieu de 32.
+  // Next 4 bytes for the version
+  // Currently version 1 or 2. Version 1 only supports 32-bit sized files. The only difference in version 2 is that
+  // the offsets and lengths stored at the end of the file are 64-bit instead of 32.
   header[4] = (Byte)m_version;
   header[5] = 0;
   header[6] = 0;
   header[7] = 0;
-  // 4 octets suivant pour indiquer l'indianness.
+  // Next 4 bytes to indicate the endianness.
   Int32 v = 0x01020304;
   Byte* ptr = (Byte*)(&v);
   for (Integer i = 0; i < 4; ++i)
@@ -178,14 +176,14 @@ endWrite()
     Int64 write_info[2];
     write_info[0] = _write(bytes.constView());
     write_info[1] = bytes.largeSize();
-    // Doit toujours être la dernière écriture du fichier
+    // Must always be the last write in the file
     _write(Int64ConstArrayView(2, write_info));
   }
   else if (m_version == 1) {
     Int32 write_info[2];
     write_info[0] = CheckedConvert::toInt32(_write(bytes.constView()));
     write_info[1] = bytes.size();
-    // Doit toujours être la dernière écriture du fichier
+    // Must always be the last write in the file
     _write(Int32ConstArrayView(2, write_info));
   }
   else
@@ -193,7 +191,7 @@ endWrite()
 
   info(4) << "End writing curves";
 
-  // Libère le pointeur
+  // Release the pointer
   m_p = 0;
 }
 
@@ -209,9 +207,9 @@ writeCurve(const TimeHistoryCurveInfo& infos)
   Int32ConstArrayView iterations(infos.iterations());
   Integer nb_val = iterations.size();
   Int32 range_iterations[2];
-  // Regarde si les itérations sont contigues auquel cas
-  // on ne sauvegarde que la première et la dernière pour
-  // gagner de la place.
+  // Check if the iterations are contiguous, in which case
+  // we only save the first and the last to
+  // save space.
   if (nb_val > 3) {
     Int32 first_iter = iterations[0];
     Int32 last_iter = iterations[nb_val - 1];

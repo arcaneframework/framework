@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleMeshGenerator.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Service de génération de maillage 'Simple'.                               */
+/* 'Simple' mesh generation service.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,10 +46,11 @@ SimpleMeshGenerator(IPrimaryMesh* mesh)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute ou récupère le nœud ayant pour coordonnées \a pos.
+ * \brief Adds or retrieves the node with coordinates \a pos.
  *
- * \return Le uniqueId() du noeud.
+ * \return The uniqueId() of the node.
  */
 Integer SimpleMeshGenerator::
 _addNode(Real3 pos)
@@ -67,10 +68,11 @@ _addNode(Real3 pos)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute ou récupère le nœud ayant pour coordonnées \a pos.
+ * \brief Adds or retrieves the node with coordinates \a pos.
  *
- * \return Le uniqueId() du noeud.
+ * \return The uniqueId() of the node.
  */
 Integer SimpleMeshGenerator::
 _addNode(Real x, Real y, Real z)
@@ -91,8 +93,9 @@ _addCell(Int16 type_id, ConstArrayView<Int64> nodes_id)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute une maille avec les coordonnées des noeuds \a nodes_coords.
+ * \brief Adds a cell with the coordinates of the nodes \a nodes_coords.
  */
 void SimpleMeshGenerator::
 _addCell(ItemTypeId type_id, ConstArrayView<Real3> nodes_coords)
@@ -234,9 +237,9 @@ _fillHexaedronCoordinates(ItemTypeId type_id, ArrayView<Real3> coords, Real x0, 
   coords[6] = Real3(x0 + 1., y0 + 1., z2);
   coords[7] = Real3(x0, y0 + 1., z2);
 
-  // Ajoute le centre des faces
+  // Adds the face centers
   if (type_id == ITI_Hexaedron20 || type_id == ITI_Hexaedron27) {
-    // Hexaedre d'ordre 2 ou plus
+    // Hexahedron of order 2 or higher
     coords[8] = _center(coords, 0, 1);
     coords[9] = _center(coords, 1, 2);
     coords[10] = _center(coords, 2, 3);
@@ -251,9 +254,9 @@ _fillHexaedronCoordinates(ItemTypeId type_id, ArrayView<Real3> coords, Real x0, 
     coords[19] = _center(coords, 3, 7);
   }
   if (type_id == ITI_Hexaedron27) {
-    // Ajoute le centre des faces
-    // TODO: Utiliser le type LocalFace du type pour garantir
-    // la cohérence de la numérotation
+    // Adds the face centers
+    // TODO: Use the LocalFace type of the type to ensure
+    // numbering consistency
     coords[20] = _center(coords, 0, 4, 7, 3);
     coords[21] = _center(coords, 1, 2, 6, 5);
     coords[22] = _center(coords, 0, 1, 5, 4);
@@ -261,7 +264,7 @@ _fillHexaedronCoordinates(ItemTypeId type_id, ArrayView<Real3> coords, Real x0, 
     coords[24] = _center(coords, 0, 3, 2, 1);
     coords[25] = _center(coords, 4, 5, 6, 7);
 
-    // Ajoute le centre de la maille
+    // Adds the mesh center
     Real3 center;
     for (Int32 i = 0; i < 8; ++i)
       center += coords[i];
@@ -463,7 +466,7 @@ generateMesh()
 
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {
-    // Remplit la variable contenant les coordonnées des noeuds
+    // Fills the variable containing the node coordinates
     UniqueArray<Int32> nodes_local_id(nodes_unique_id.size());
     IItemFamily* family = mesh->itemFamily(IK_Node);
     family->itemsUniqueIdToLocalId(nodes_local_id, nodes_unique_id);

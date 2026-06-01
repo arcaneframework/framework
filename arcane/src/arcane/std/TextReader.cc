@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TextReader.cc                                               (C) 2000-2021 */
 /*                                                                           */
-/* Lecteur simple.                                                           */
+/* Simple reader.                                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,7 +20,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IDataCompressor.h"
 
-#include "arcane/ArcaneException.h"
+#include "arcane/core/ArcaneException.h"
 
 #include <fstream>
 
@@ -36,9 +36,13 @@ namespace Arcane::impl
 class TextReader::Impl
 {
  public:
+
   Impl(const String& filename)
-  : m_filename(filename) {}
+  : m_filename(filename)
+  {}
+
  public:
+
   String m_filename;
   std::ifstream m_istream;
   Integer m_current_line = 0;
@@ -54,7 +58,7 @@ TextReader(const String& filename)
 : m_p(new Impl(filename))
 {
   std::ios::openmode mode = std::ios::in | std::ios::binary;
-  m_p->m_istream.open(filename.localstr(),mode);
+  m_p->m_istream.open(filename.localstr(), mode);
   if (!m_p->m_istream)
     ARCANE_THROW(ReaderWriterException, "Can not read file '{0}' for reading", filename);
   m_p->m_file_length = platform::getFileLength(filename);
@@ -87,7 +91,7 @@ _checkStream(const char* type, Int64 nb_read_value)
   std::istream& s = m_p->m_istream;
   if (!s)
     ARCANE_THROW(IOException, "Can not read '{0}' (nb_val={1} bad?={2} "
-                 "fail?={3} eof?={4} pos={5}) file='{6}'",
+                              "fail?={3} eof?={4} pos={5}) file='{6}'",
                  type, nb_read_value, s.bad(), s.fail(),
                  s.eof(), s.tellg(), m_p->m_filename);
 }
@@ -162,7 +166,7 @@ _binaryRead(void* values, Int64 len)
     s.read((char*)&compressed_size, sizeof(Int64));
     compressed_values.resize(compressed_size);
     s.read((char*)compressed_values.data(), compressed_size);
-    m_p->m_data_compressor->decompress(compressed_values, Span<std::byte>((std::byte*)values,len));
+    m_p->m_data_compressor->decompress(compressed_values, Span<std::byte>((std::byte*)values, len));
   }
   else {
     s.read((char*)values, len);
@@ -184,7 +188,7 @@ fileName() const
 void TextReader::
 setFileOffset(Int64 v)
 {
-  m_p->m_istream.seekg(v,std::ios::beg);
+  m_p->m_istream.seekg(v, std::ios::beg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,9 +226,6 @@ fileLength() const
 {
   return m_p->m_file_length;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

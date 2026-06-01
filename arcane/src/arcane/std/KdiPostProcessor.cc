@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* KdiPostProcessor.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Pos-traitement avec l'outil KDI.                                          */
+/* Post-processing with the KDI tool.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,12 +35,12 @@
 #include "arcane/core/internal/VtkCellTypes.h"
 #include "arcane/std/internal/Kdi.h"
 
-// Timers. Pas actif pour l'instant
+// Timers. Not active for now
 #define tic(a)
 #define tac(a)
 
-// Pour pouvoir fonctionner il faut que KDI soit installé et les variables
-// suivantes soient positionnées
+// To function, KDI must be installed and the following variables
+// must be set
 // export PYTHONPATH=/path/to/kdi/pykdi/src
 // export KDI_DICTIONARY_PATH=/path/to/kdi/pykdi/src/pykdi/dictionary
 
@@ -77,25 +77,25 @@ class KdiDataWriter
 
   IMesh* m_mesh;
 
-  //! Liste des groupes à sauver
+  //! List of groups to save
   ItemGroupCollection m_groups;
 
-  //! Liste des temps
+  //! List of times
   UniqueArray<Real> m_times;
 
-  //! Nom du fichier HDF courant
+  //! Name of the current HDF file
   String m_full_filename;
 
-  //! Répertoire de sortie.
+  //! Output directory.
   String m_directory_name;
 
   bool m_is_master_io = false;
 
-  //! Nom du fichier HDF courant
+  //! Name of the current HDF file
   std::string m_kdi_full_filename;
-  //! Identifiant KDI de la sortie
+  //! KDI identifier of the output
   KDIBase* m_kdi_base = nullptr;
-  //! Identifiant Chunk de la sortie (vtps, ipart) et (vtps, partless)
+  //! Output Chunk identifier (vtps, ipart) and (vtps, partless)
   KDIChunk* m_kdi_chunk = nullptr;
   KDIChunk* m_kdi_chunk_partless = nullptr;
 
@@ -145,8 +145,8 @@ KdiDataWriter(IMesh* mesh, ItemGroupCollection groups)
     //     << chrono::duration_cast<chrono::milliseconds>(end - start).count()
     //     << " ms" << endl;
     // OLD clock_t end = clock();
-    // OLD calcule le temps écoulé en trouvant la différence (end - begin) et
-    // OLD divisant la différence par CLOCKS_PER_SEC pour convertir en secondes
+    // OLD calculates the elapsed time by finding the difference (end - begin) and
+    // OLD dividing the difference by CLOCKS_PER_SEC to convert to seconds
     // OLD double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     // OLD printf("The elapsed time is %f seconds", time_spent);
     tac("initialize");
@@ -173,7 +173,7 @@ beginWrite(const VariableCollection& vars)
   Int32 time_index = m_times.size();
   const bool is_first_call = (time_index < 2);
   if (is_first_call)
-    pwarning() << "L'implémentation au format 'Kdi' est expérimentale";
+    pwarning() << "The implementation in 'Kdi' format is experimental";
 
   String filename = _getFileNameForTimeIndex(time_index);
 
@@ -195,7 +195,7 @@ beginWrite(const VariableCollection& vars)
   info() << "KDI createBase kdi_full_filename=" << m_kdi_full_filename;
   if (!m_kdi_base) {
     info() << "KDI createBase m_kdi_base=nullptr";
-    //indique si un fichier est lisible (et donc si il existe)
+    // indicates if a file is readable (and thus if it exists)
     std::string filename = m_kdi_full_filename + ".json";
     ifstream fichier(filename.c_str());
     if (!fichier.fail()) {
@@ -211,7 +211,7 @@ beginWrite(const VariableCollection& vars)
       }
       info() << "KDI createBase " << m_kdi_full_filename << " not exist";
       tic("createBase");
-      m_kdi_base = createBase(nb_rank, true); // true : active les traces
+      m_kdi_base = createBase(nb_rank, true); // true : activates traces
       tac("createBase");
       info() << "KDI createBase in memory";
     }
@@ -242,8 +242,8 @@ beginWrite(const VariableCollection& vars)
     }
   }
 
-  // Pour les connectivités, la taille du tableau est égal
-  // au nombre de mailles plus 1.
+  // For connectivity, the array size is equal
+  // to the number of meshes plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
@@ -290,7 +290,7 @@ beginWrite(const VariableCollection& vars)
     info() << "KDI chunk set cells types end";
   }
 
-  // Sauve les uniqueIds, les types et les coordonnées des noeuds.
+  // Saves the unique IDs, types, and coordinates of the nodes.
   {
     UniqueArray<Int64> nodes_uid(nb_node);
     UniqueArray<unsigned char> nodes_ghost_type(nb_node);
@@ -470,12 +470,12 @@ endWrite()
   m_kdi_chunk_partless->saveVTKHDF(m_kdi_full_filename);
   tac("saveVTKHDF");
   // m_kdi_base = loadVTKHDF(m_kdi_full_filename);
-  // N'est pas utile puisqu'on detruit cet objet apres chaque ecriture
+  // Not useful since this object is destroyed after each write
 
-  // Ecrit le fichier contenant les temps (à partir de la version 5.5 de paraview)
+  // Writes the file containing the times (from ParaView version 5.5)
   // https://www.paraview.org/Wiki/ParaView_Release_Notes#JSON_based_new_meta_file_format_for_series_added
   //
-  // Exemple:
+  // Example:
   // {
   //   "file-series-version" : "1.0",
   //   "files" : [
@@ -610,7 +610,7 @@ PyArrayObject* KdiDataWriter::
 _numpyDataSetReal2D(IData* data)
 {
   info() << "KDI _numpyDataSetReal3D var/data begin";
-  // Converti en un tableau de 3 composantes dont la dernière vaudra 0.
+  // Converted into an array of 3 components where the last one will be 0.
   auto* true_data = dynamic_cast<IArrayDataT<Real2>*>(data);
   ARCANE_CHECK_POINTER(true_data);
   SmallSpan<const Real2> values(true_data->view());
@@ -634,8 +634,9 @@ _numpyDataSetReal2D(IData* data)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Post-traitement utilisant Kdi.
+ * \brief Post-processing using Kdi.
  */
 class KdiPostProcessor
 : public ArcaneKdiPostProcessorObject

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelDataReader.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* Lecteur de IData en parallèle.                                            */
+/* Parallel IData Reader.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_PARALLELDATAREADER_H
 #define ARCANE_STD_INTERNAL_PARALLELDATAREADER_H
@@ -26,22 +26,22 @@ class IData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture parallèle.
+ * \brief Parallel reading.
  *
- * Une instance de cette classe est associée à un groupe du maillage.
+ * An instance of this class is associated with a mesh group.
  *
- * Pour pouvoir l'utiliser, chaque rang du IParallelMng doit spécifier:
- * - la liste des uid qu'il souhaite, à remplir dans wantedUniqueIds()
- * - la liste triée par ordre croissant des uids qui sont gérés par ce rang, à remplir
- * dans writtenUniqueIds().
- * Une fois ceci fait, il faut appeler la méthode sort() pour calculer
- * les infos dont on a besoin pour l'envoie et la réception des valeurs.
+ * To use it, each rank of IParallelMng must specify:
+ * - the list of uids it wants, to be filled in wantedUniqueIds()
+ * - the list of uids managed by this rank, sorted in ascending order, to be filled
+ * in writtenUniqueIds().
+ * Once this is done, the sort() method must be called to calculate
+ * the information needed for sending and receiving values.
  *
- * L'instance est alors utilisable pour toutes les variables qui reposent
- * sur ce groupe et il faut appeler getSortedValues() pour récupérer
- * les valeurs pour une variable.
- * 
+ * The instance is then usable for all variables that rely on this group, and getSortedValues()
+ * must be called to retrieve the values for a variable.
+ *
  */
 class ParallelDataReader
 {
@@ -58,7 +58,7 @@ class ParallelDataReader
   Array<Int64>& writtenUniqueIds();
   Array<Int64>& wantedUniqueIds();
   void sort();
-  void getSortedValues(IData* written_data,IData* data);
+  void getSortedValues(IData* written_data, IData* data);
 
  private:
 

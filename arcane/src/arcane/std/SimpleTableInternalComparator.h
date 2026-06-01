@@ -1,25 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternalComparator.h                             (C) 2000-2022 */
 /*                                                                           */
-/* Comparateur de SimpleTableInternal.                                       */
+/* SimpleTableInternal Comparator.                                           */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_SIMPLETABLEINTERNALCOMPARATOR_H
 #define ARCANE_STD_SIMPLETABLEINTERNALCOMPARATOR_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalComparator.h"
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableReaderWriter.h"
+#include "arcane/core/ISimpleTableInternalComparator.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableReaderWriter.h"
 
 #include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/utils/Array.h"
@@ -40,6 +37,7 @@ class SimpleTableInternalComparator
 : public ISimpleTableInternalComparator
 {
  public:
+
   SimpleTableInternalComparator(const Ref<SimpleTableInternal>& sti_ref, const Ref<SimpleTableInternal>& sti_to_compare)
   : m_simple_table_internal_reference(sti_ref)
   , m_simple_table_internal_to_compare(sti_to_compare)
@@ -55,7 +53,7 @@ class SimpleTableInternalComparator
   , m_epsilons_row()
   {
     if (sti_ref.isNull() || sti_to_compare.isNull())
-      ARCANE_FATAL("La réference passée en paramètre est Null.");
+      ARCANE_FATAL("The reference passed as a parameter is Null.");
   }
 
   SimpleTableInternalComparator()
@@ -77,6 +75,7 @@ class SimpleTableInternalComparator
   virtual ~SimpleTableInternalComparator() = default;
 
  public:
+
   bool compare(bool compare_dimension_too) override;
 
   bool compareElem(const String& column_name, const String& row_name) override;
@@ -99,7 +98,6 @@ class SimpleTableInternalComparator
   bool addEpsilonColumn(const String& column_name, Real epsilon) override;
   bool addEpsilonRow(const String& row_name, Real epsilon) override;
 
-
   Ref<SimpleTableInternal> internalRef() override;
   void setInternalRef(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
@@ -107,10 +105,12 @@ class SimpleTableInternalComparator
   void setInternalToCompare(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
  protected:
+
   bool _exploreColumn(const String& column_name);
   bool _exploreRows(const String& row_name);
 
  protected:
+
   Ref<SimpleTableInternal> m_simple_table_internal_reference;
   Ref<SimpleTableInternal> m_simple_table_internal_to_compare;
 
@@ -142,6 +142,3 @@ class SimpleTableInternalComparator
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternalComparator.cc                            (C) 2000-2022 */
 /*                                                                           */
-/* Comparateur de SimpleTableInternal.                                       */
+/* Comparator for SimpleTableInternal.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,8 +50,8 @@ compare(bool compare_dimension_too)
 
   for (Integer i = 0; i < dim1; i++) {
     String row = m_simple_table_internal_mng_reference.rowName(i);
-    // On regarde si l'on doit comparer la ligne actuelle.
-    // On regarde si la ligne est présente dans le STI to_compare.
+    // We check if we should compare the current row.
+    // We check if the row is present in the STI to_compare.
     if (!_exploreRows(row) || m_simple_table_internal_mng_to_compare.rowPosition(row) == -1)
       continue;
 
@@ -63,8 +63,8 @@ compare(bool compare_dimension_too)
 
     for (Integer j = 0; j < dim2; j++) {
       String column = m_simple_table_internal_mng_reference.columnName(j);
-      // On regarde si l'on doit comparer la colonne actuelle.
-      // On regarde si la colonne est présente dans le STI to_compare.
+      // We check if we should compare the current column.
+      // We check if the column is present in the STI to_compare.
       if (!_exploreColumn(column) || m_simple_table_internal_mng_to_compare.columnPosition(column) == -1)
         continue;
 
@@ -233,7 +233,7 @@ void SimpleTableInternalComparator::
 setInternalRef(const Ref<SimpleTableInternal>& sti_ref)
 {
   if (sti_ref.isNull())
-    ARCANE_FATAL("La réference passée en paramètre est Null.");
+    ARCANE_FATAL("The reference passed as parameter is Null.");
   m_simple_table_internal_reference = sti_ref;
   m_simple_table_internal_mng_reference.setInternal(m_simple_table_internal_reference);
 }
@@ -248,7 +248,7 @@ void SimpleTableInternalComparator::
 setInternalToCompare(const Ref<SimpleTableInternal>& sti_to_compare)
 {
   if (sti_to_compare.isNull())
-    ARCANE_FATAL("La réference passée en paramètre est Null.");
+    ARCANE_FATAL("The reference passed as parameter is Null.");
   m_simple_table_internal_to_compare = sti_to_compare;
   m_simple_table_internal_mng_to_compare.setInternal(m_simple_table_internal_to_compare);
 }
@@ -257,17 +257,17 @@ setInternalToCompare(const Ref<SimpleTableInternal>& sti_to_compare)
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Méthode permettant de savoir si la colonne avec le nom column_name
- * doit être exploré ou non.
+ * @brief Method to determine whether the column named column_name
+ * should be explored or not.
  * 
- * @param column_name Le nom de la colonne à verifier.
- * @return true Si la colonne doit être vérifiée.
- * @return false Si la colonne ne doit pas être vérifiée.
+ * @param column_name The name of the column to check.
+ * @return true If the column should be checked.
+ * @return false If the column should not be checked.
  */
 bool SimpleTableInternalComparator::
 _exploreColumn(const String& column_name)
 {
-  // S'il n'y a pas de précisions, on compare toutes les colonnes.
+  // If there are no specifications, all columns are compared.
   if (m_columns_to_compare.empty() && m_regex_columns.empty()) {
     return true;
   }
@@ -276,51 +276,51 @@ _exploreColumn(const String& column_name)
     return !m_is_excluding_array_columns;
   }
 
-  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
+  // If it is not in the table and there is no regex, we return false.
   else if (m_regex_columns.empty()) {
     return m_is_excluding_array_columns;
   }
 
-  // Sinon, on regarde aussi la regex.
-  // TODO : Voir s'il y a un interet de faire des regex en mode JS.
+  // Otherwise, we also check the regex.
+  // TODO: See if there is any benefit to using JS mode regex.
   std::regex self_regex(m_regex_columns.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-  // Si quelque chose dans le nom correspond à la regex.
+  // If something in the name matches the regex.
   if (std::regex_search(column_name.localstr(), self_regex)) {
     return !m_is_excluding_regex_columns;
   }
 
-  // Sinon.
+  // Otherwise.
   return m_is_excluding_regex_columns;
 }
 
 /**
- * @brief Méthode permettant de savoir si la ligne avec le nom column_name
- * doit être exploré ou non.
+ * @brief Method to determine whether the row named column_name
+ * should be explored or not.
  * 
- * @param column_name Le nom de la ligne à verifier.
- * @return true Si la ligne doit être vérifiée.
- * @return false Si la ligne ne doit pas être vérifiée.
+ * @param column_name The name of the row to check.
+ * @return true If the row should be checked.
+ * @return false If the row should not be checked.
  */
 bool SimpleTableInternalComparator::
 _exploreRows(const String& row_name)
 {
-  // S'il n'y a pas de précisions, on compare toutes les lignes.
+  // If there are no specifications, all rows are compared.
   if (m_rows_to_compare.empty() && m_regex_rows.empty()) {
     return true;
   }
 
-  // D'abord, on regarde si le nom de la ligne est dans le tableau.
+  // First, we check if the row name is in the table.
   if (m_rows_to_compare.contains(row_name)) {
     return !m_is_excluding_array_rows;
   }
-  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
+  // If it is not in the table and there is no regex, we return false.
   else if (m_regex_rows.empty()) {
     return m_is_excluding_array_rows;
   }
 
-  // Sinon, on regarde aussi la regex.
-  // TODO : Voir s'il y a un interet de faire des regex en mode JS.
+  // Otherwise, we also check the regex.
+  // TODO: See if there is any benefit to using JS mode regex.
   std::regex self_regex(m_regex_rows.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
   if (std::regex_search(row_name.localstr(), self_regex)) {
     return !m_is_excluding_regex_rows;

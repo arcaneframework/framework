@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshPartitionerBase.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un partitionneur de maillage.                            */
+/* Base class for a mesh partitioner.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_MESHPARTITIONERBASE_H
 #define ARCANE_STD_MESHPARTITIONERBASE_H
@@ -32,9 +32,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Classe de base d'un service d'équilibrage de charge.
+ * \brief Base class for a load balancing service.
  */
 class ARCANE_STD_EXPORT MeshPartitionerBase
 : public AbstractService
@@ -63,7 +64,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   void setComputationTimes(RealConstArrayView v) override { m_computation_times.copy(v); }
   RealConstArrayView computationTimes() const override { return m_computation_times; }
 
-  void setCellsWeight(ArrayView<float> weights,Integer nb_weight) override;
+  void setCellsWeight(ArrayView<float> weights, Integer nb_weight) override;
   ArrayView<float> cellsWeight() const override;
 
   // CORRECT
@@ -71,82 +72,86 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   void setILoadBalanceMng(ILoadBalanceMng* mng) override { m_lbMng = mng; }
   ILoadBalanceMng* loadBalanceMng() const override { return m_lbMng; }
 
-
  public:
 
   void notifyEndPartition() override { loadBalanceMng()->notifyEndPartition(); }
 
  public:
 
-  /*! \brief Positionne les nouveaux propriétaires des noeuds, arêtes
-   * et faces à partir des mailles.
+  /*! \brief Positions the new owners of nodes, edges
+   * and faces based on the meshes.
    *
-   * En considérant que les nouveaux propriétaires des mailles sont
-   * connues (et synchronisées), détermine les nouveaux propriétaires des autres
-   * entités.
+   * Assuming the new owners of the meshes are known (and synchronized),
+   * determines the new owners of the other
+   * entities.
    */
   virtual void changeOwnersFromCells();
 
-  enum eMarkCellWithConstraint {eCellClassical, eCellReference, eCellGrouped, eCellGhost, eCellInAConstraint};
+  enum eMarkCellWithConstraint
+  {
+    eCellClassical,
+    eCellReference,
+    eCellGrouped,
+    eCellGhost,
+    eCellInAConstraint
+  };
 
-  /* \brief Initialise les structures pour le cas avec des contraintes de découpage */
-  virtual void initConstraints(bool uidref=true);
+  /* \brief Initializes structures for the case with partitioning constraints */
+  virtual void initConstraints(bool uidref = true);
 
-  /* \brief Libération des tableaux temporaires */
+  /* \brief Frees temporary arrays */
   virtual void freeConstraints();
 
-  /* \brief Retourne le nombre de Cell après regroupement suivant les contraintes, internes */
+  /* \brief Returns the number of Cells after grouping according to constraints, internal */
   virtual Int32 nbOwnCellsWithConstraints() const;
 
-  /* \brief Renseigne sur la liste des uniqueId des Cell voisines d'une cell en tenant compte des contraintes */
-  virtual Real getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells, Array<float> *commWeights = NULL,
+  /* \brief Provides the list of unique IDs of neighboring Cells of a cell, taking constraints into account */
+  virtual Real getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells, Array<float>* commWeights = NULL,
                                                    bool noCellContrib = false);
 
   virtual Integer nbNeighbourCellsWithConstraints(Cell cell);
 
-  /* \brief Renseigne sur la liste des uniqueId des Nodes voisins, utile pour le modele HG */
+  /* \brief Provides the list of unique IDs of neighboring Nodes, useful for the HG model */
   virtual void getNeighbourNodesUidWithConstraints(Cell cell, Int64UniqueArray neighbournodes);
 
-  /* \brief Retourne le local id pour une Cell en tenant compte des contraintes et en compactant la numérotation
-     retourne -1 pour les mailles à ne pas utiliser */
+  /* \brief Returns the local ID for a Cell, taking constraints into account and compacting
+   * the numbering. Returns -1 for cells not to be used */
   virtual Int32 localIdWithConstraints(Cell cell);
   virtual Int32 localIdWithConstraints(Int32 cell_lid);
 
-  /* \brief Renverse le fonctionnement de  localIdWithConstraints */
+  /* \brief Inverts the functionality of localIdWithConstraints */
   virtual void invertArrayLid2LidCompacted();
 
-  /* \brief Retourne le[s] poids associés aux Cell en tenant compte des contraintes
-     max_nb_weight à 0 s'il n'y a pas de limites
-  */
-  virtual SharedArray<float> cellsWeightsWithConstraints(Int32 max_nb_weight=0, bool ask_lb_cells=false);
+  /* \brief Returns the weight(s) associated with the Cells, taking constraints into
+   * account. max_nb_weight is 0 if there are no limits */
+  virtual SharedArray<float> cellsWeightsWithConstraints(Int32 max_nb_weight = 0, bool ask_lb_cells = false);
 
   virtual SharedArray<float> cellsSizeWithConstraints();
 
-
-  /* \brief Retourne vrai si la maille est utilisée malgrès les contraintes
-     si c'est faux il est nécessaire de la passer lors d'un ENUMERATE_CELL */
+  /* \brief Returns true if the mesh is used despite the constraints. If false, it is
+   * necessary to pass it during an ENUMERATE_CELL */
   virtual bool cellUsedWithConstraints(Cell cell);
 
-  virtual bool cellUsedWithWeakConstraints(std::pair<Int64,Int64>& paired_item);
+  virtual bool cellUsedWithWeakConstraints(std::pair<Int64, Int64>& paired_item);
 
-  /* \brief Affecte le nouveau numéro de proc à la mailles et autres du même groupe/contrainte s'il y a lieu */
+  /* \brief Assigns the new process number to the cell and others in the same
+   * group/constraint if applicable */
   virtual void changeCellOwner(Item cell, VariableItemInt32& cells_new_owner, Int32 new_owner);
 
+  /* \brief Returns true if there are constraints in the mesh. Requires calling
+   * initArrayCellsWithConstraints */
+  virtual bool haveConstraints() { return m_cells_with_constraints.size() > 0; }
 
-  /* \brief Retourne vrai s'il a des contraintes dans le maillage
-   Nécessite d'avoir fait initArrayCellsWithConstraints */
-  virtual bool haveConstraints() {return m_cells_with_constraints.size() > 0;}
-
-  virtual bool haveWeakConstraints() {return m_cells_with_weak_constraints.size() > 0;}
+  virtual bool haveWeakConstraints() { return m_cells_with_weak_constraints.size() > 0; }
 
  protected:
 
-  //! Dump les informations de repartitionnement sur le disque
-  virtual void dumpObject(String filename="toto");
+  //! Dumps the partitioning information to disk
+  virtual void dumpObject(String filename = "toto");
 
   virtual void* getCommunicator() const;
   virtual Parallel::Communicator communicator() const;
-  virtual bool cellComm() {return true; }
+  virtual bool cellComm() { return true; }
 
  protected:
 
@@ -156,7 +161,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   virtual void _initUidRef(VariableCellInteger& cell_renum_uid);
   virtual void _initLid2LidCompacted();
   virtual void _initNbCellsWithConstraints();
-  virtual void  _clearCellWgt();
+  virtual void _clearCellWgt();
 
  protected:
 
@@ -166,8 +171,8 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
  private:
 
   Real _addNgb(const Cell& cell, const Face& face, Int64Array& neighbourcells, Array<bool>& contrib,
-               HashTableMapT<Int64,Int32>& map, Array<float> *ptrcommWeights, Int32 offset,
-               HashTableMapT<Int32,Int32>& lids,  bool special=false);
+               HashTableMapT<Int64, Int32>& map, Array<float>* ptrcommWeights, Int32 offset,
+               HashTableMapT<Int32, Int32>& lids, bool special = false);
   bool _createConstraintsLists(Int64MultiArray2& tied_uid);
 
   SharedArray<float> _cellsProjectWeights(VariableCellArrayReal& cellWgtIn, Int32 nbWgt) const;
@@ -177,7 +182,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
 
   ISubDomain* m_sub_domain = nullptr;
   IMesh* m_mesh = nullptr;
-  IParallelMng* m_pm_sub = nullptr; // sous communicateur pour les bibliotheques de partitionnement.
+  IParallelMng* m_pm_sub = nullptr; // sub communicator for partitioning libraries.
 
  protected:
 
@@ -193,9 +198,9 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
   Real m_max_imbalance = 0.0;
   UniqueArray<Real> m_computation_times;
 
-  // Utile en interne pour construire le graphe/hypergraphe
-  UniqueArray<SharedArray<Cell> > m_cells_with_constraints;
-  std::set<std::pair<Int64, Int64> > m_cells_with_weak_constraints;
+  // Used internally to build the graph/hypergraph
+  UniqueArray<SharedArray<Cell>> m_cells_with_constraints;
+  std::set<std::pair<Int64, Int64>> m_cells_with_weak_constraints;
   Integer m_nb_cells_with_constraints = 0;
   UniqueArray<eMarkCellWithConstraint> m_filter_lid_cells;
   UniqueArray<Int32> m_local_id_2_local_id_compacted;

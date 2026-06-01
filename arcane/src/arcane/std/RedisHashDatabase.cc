@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RedisHashDatabase.cc                                        (C) 2000-2023 */
 /*                                                                           */
-/* Base de données de hash gérée par le système de fichier.                  */
+/* File system managed hash database.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,7 +48,7 @@ class RedisHashDatabase
 
   void writeValues(const HashDatabaseWriteArgs& args, HashDatabaseWriteResult& xresult) override
   {
-    // TODO: ne faire le write que si la clé n'est pas présente
+    // TODO: only write if the key is not present
     m_context->sendBuffer(args.hashValue(), args.values());
     xresult.setHashValueAsString(args.hashValue());
   }

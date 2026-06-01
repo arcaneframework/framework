@@ -1,20 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleCsvReaderWriter.cc                                    (C) 2000-2022 */
 /*                                                                           */
-/* Classe permettant de lire et d'écrire un fichier au format csv.           */
+/* Class allowing reading and writing a file in CSV format.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/std/SimpleCsvReaderWriter.h"
 
-#include "arcane/Directory.h"
 #include "arcane/utils/Iostream.h"
+
+#include "arcane/core/Directory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,23 +46,22 @@ readTable(const Directory& src, const String& file_name)
 
   std::ifstream stream;
 
-  // S'il n'y a pas de fichier, on retourne false.
+  // If there is no file, we return false.
   if (!_openFile(stream, src, file_name + "." + fileType())) {
     return false;
   }
 
   std::string line;
 
-  // S'il n'y a pas de première ligne, on arrête là.
-  // Un fichier écrit par SimpleCsvOutput possède toujours au
-  // moins une ligne.
+  // If there is no first line, we stop here.
+  // A file written by SimpleCsvOutput always has at least one line.
   if (!std::getline(stream, line)) {
     _closeFile(stream);
     return false;
   }
 
-  // Sinon, on a la ligne d'entête, contenant les noms
-  // des colonnes (et le nom du tableau).
+  // Otherwise, we have the header line, containing the column names
+  // (and the table name).
   String ligne(line);
 
   {
@@ -77,45 +77,45 @@ readTable(const Directory& src, const String& file_name)
     m_simple_table_internal->m_column_names = tmp.subConstView(1, tmp.size());
   }
 
-  // S'il n'y a pas d'autres lignes, c'est qu'il n'y a que des
-  // colonnes vides (ou aucunes colonnes) et aucunes lignes.
+  // If there are no other lines, it means there are only empty columns
+  // (or no columns) and no lines.
   if (!std::getline(stream, line)) {
     _closeFile(stream);
     return true;
   }
 
-  // Maintenant que l'on a le nombre de colonnes, on peut définir
-  // la dimension 2 du tableau de valeurs.
+  // Now that we have the number of columns, we can define dimension 2
+  // of the values array.
   m_simple_table_internal->m_values.resize(1, m_simple_table_internal->m_column_names.size());
 
   Integer compt_line = 0;
 
   do {
-    // On n'a pas le nombre de lignes en avance,
-    // donc on doit resize à chaque tour.
+    // We don't know the number of lines in advance, so we must resize
+    // each time.
     m_simple_table_internal->m_values.resize(compt_line + 1);
 
-    // On split la ligne récupérée.
+    // We split the retrieved line.
     StringUniqueArray splitted_line;
     String ligne(line);
     ligne.split(splitted_line, m_separator);
 
-    // S'il y a une ligne vide, on l'a passe.
+    // If there is an empty line, we skip it.
     if (splitted_line.size() == 0) {
       continue;
     }
 
-    // Si le nombre de colonnes de la ligne ne correspond pas au nombre
-    // de nom de colonnes, il y a une erreur dans le fichier.
+    // If the number of columns in the line does not match the number of
+    // column names, there is an error in the file.
     if (splitted_line.size() != m_simple_table_internal->m_column_names.size() + 1) {
       _closeFile(stream);
       return false;
     }
 
-    // Le premier élement est le nom de ligne.
+    // The first element is the row name.
     m_simple_table_internal->m_row_names.add(splitted_line[0]);
 
-    // Les autres élements sont des Reals.
+    // The other elements are Reals.
     for (Integer i = 1; i < splitted_line.size(); i++) {
       std::string std_string = splitted_line[i].localstr();
       std::size_t pos_comma = std_string.find(',');
@@ -132,8 +132,8 @@ readTable(const Directory& src, const String& file_name)
 
   _closeFile(stream);
 
-  // On n'a pas sauvegardé les tailles des lignes/colonnes donc on met la taille max
-  // pour chaque ligne/colonne.
+  // We haven't saved the row/column sizes so we set the max size
+  // for each row/column.
   m_simple_table_internal->m_row_sizes.resize(m_simple_table_internal->m_row_names.size());
   m_simple_table_internal->m_row_sizes.fill(m_simple_table_internal->m_values.dim2Size());
 
@@ -212,7 +212,7 @@ void SimpleCsvReaderWriter::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
   if (simple_table_internal.isNull())
-    ARCANE_FATAL("La réference passée en paramètre est Null.");
+    ARCANE_FATAL("The reference passed as a parameter is Null.");
   m_simple_table_internal = simple_table_internal;
 }
 
@@ -235,7 +235,7 @@ _closeFile(std::ifstream& stream)
 void SimpleCsvReaderWriter::
 _print(std::ostream& stream)
 {
-  // On enregistre les infos du stream pour les restaurer à la fin.
+  // We save the stream info to restore it at the end.
   std::ios_base::fmtflags save_flags = stream.flags();
   std::streamsize save_prec = stream.precision();
 

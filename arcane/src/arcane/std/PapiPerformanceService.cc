@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PapiPerformanceService.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Informations de performances utilisant PAPI.                              */
+/* Performance information using PAPI.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,8 +19,8 @@
 #include "arcane/utils/CriticalSection.h"
 #include "arcane/utils/IPerformanceCounterService.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/IParallelSuperMng.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IParallelSuperMng.h"
 
 #include "arcane/std/ProfilingInfo.h"
 #include "arcane/impl/TimerMng.h"
@@ -36,39 +36,39 @@ namespace Arcane
 
 namespace
 {
-/*
- * Vérifie si PAPI_library_init() a été appelé et si ce n'est pas le cas,
- * appelle cette méthode.
+  /*
+ * Checks if PAPI_library_init() has been called, and if not,
+ * calls this method.
  *
- * A noter que PAPI_library_init() ne peut être appelé qu'une seule fois.
+ * Note that PAPI_library_init() can only be called once.
  */
-void
-_checkInitPAPI()
-{
-  if (PAPI_is_initialized()==PAPI_NOT_INITED){
-    int retval = PAPI_library_init(PAPI_VER_CURRENT);
-    if (retval!=PAPI_VER_CURRENT && retval>0)
-      ARCANE_FATAL("PAPI version mismatch r={0} current={1}",retval,PAPI_VER_CURRENT);
-    if (retval<0)
-      ARCANE_FATAL("Error in PAPI_library_init r={0} msg={1}",retval,PAPI_strerror(retval));
+  void
+  _checkInitPAPI()
+  {
+    if (PAPI_is_initialized() == PAPI_NOT_INITED) {
+      int retval = PAPI_library_init(PAPI_VER_CURRENT);
+      if (retval != PAPI_VER_CURRENT && retval > 0)
+        ARCANE_FATAL("PAPI version mismatch r={0} current={1}", retval, PAPI_VER_CURRENT);
+      if (retval < 0)
+        ARCANE_FATAL("Error in PAPI_library_init r={0} msg={1}", retval, PAPI_strerror(retval));
+    }
   }
-}
 
-}
+} // namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(PapiPerformanceService,
-                        ServiceProperty("PapiProfilingService",ST_Application),
+                        ServiceProperty("PapiProfilingService", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IProfilingService));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*
- * TODO: Avec les threads, utiliser une instance par sous-domaine
- * et utiliser PAPI_register_thread et PAPI_unregister_thread.
- * (voir exemple papi overflow_pthreads.c).
+ * TODO: With threads, use one instance per subdomain
+ * and use PAPI_register_thread and PAPI_unregister_thread.
+ * (see example papi overflow_pthreads.c).
  */
 
 /*---------------------------------------------------------------------------*/
@@ -97,24 +97,24 @@ PapiPerformanceService::
 
 namespace
 {
-ProfInfos* global_infos = nullptr;
-int global_nb_total_call = 0;
-}
+  ProfInfos* global_infos = nullptr;
+  int global_nb_total_call = 0;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void PapiPerformanceService::
-arcane_papi_handler(int EventSet, void *address, long_long overflow_vector, void *context)
+arcane_papi_handler(int EventSet, void* address, long_long overflow_vector, void* context)
 {
   ARCANE_UNUSED(context);
   static bool is_in_handler = false;
-  // Sous Linux avec gcc, les exceptions utilisent la libunwind contenue
-  // dans gcc et cela peut provoquer des deadlocks avec notre utilisation
-  // si cet handler est appelé lors du dépilement d'une exception.
-  // Pour éviter ce problème, on ne fait rien tant qu'une exception est
+  // On Linux with gcc, exceptions use libunwind contained
+  // in gcc and this can cause deadlocks with our usage
+  // if this handler is called during exception unwinding.
+  // To avoid this problem, we do nothing as long as an exception is
   // active.
-  if (Exception::hasPendingException()){
+  if (Exception::hasPendingException()) {
     cout << "** WARNING: PapiHandler in pending exception\n";
     return;
   }
@@ -126,8 +126,8 @@ arcane_papi_handler(int EventSet, void *address, long_long overflow_vector, void
 
   int overflow_event[MAX_COUNTER];
   int nb_overflow_event = MAX_COUNTER;
-  PAPI_get_overflow_event_index(EventSet,overflow_vector,overflow_event,&nb_overflow_event);
-  global_infos->addEvent(address,overflow_event,nb_overflow_event);
+  PAPI_get_overflow_event_index(EventSet, overflow_vector, overflow_event, &nb_overflow_event);
+  global_infos->addEvent(address, overflow_event, nb_overflow_event);
   is_in_handler = false;
 }
 
@@ -135,14 +135,14 @@ arcane_papi_handler(int EventSet, void *address, long_long overflow_vector, void
 /*---------------------------------------------------------------------------*/
 
 bool PapiPerformanceService::
-_addEvent(int event_code,int event_index)
+_addEvent(int event_code, int event_index)
 {
   char event_name[PAPI_MAX_STR_LEN];
   //int event_code = PAPI_TOT_CYC;
-  int retval = PAPI_add_event(m_event_set,event_code);
-  PAPI_event_code_to_name(event_code,event_name);
+  int retval = PAPI_add_event(m_event_set, event_code);
+  PAPI_event_code_to_name(event_code, event_name);
   info() << "Adding Papi event name=" << event_name;
-  if (retval!=PAPI_OK){
+  if (retval != PAPI_OK) {
     pwarning() << "** ERROR in add_event (index=" << event_index << ") r=" << retval
                << " msg=" << PAPI_strerror(retval);
     return false;
@@ -177,66 +177,65 @@ initialize()
   global_infos->setFunctionDepth(5);
 
   int retval = 0;
-  caddr_t start,end;
-  const PAPI_exe_info_t *prginfo;
+  caddr_t start, end;
+  const PAPI_exe_info_t* prginfo;
 
   _checkInitPAPI();
 
-  retval = PAPI_thread_init((unsigned long (*)(void)) (pthread_self));
-  if (retval!=PAPI_OK)
-    ARCANE_FATAL("Error in PAPI_thread_init r={0} msg={1}",retval,PAPI_strerror(retval));
+  retval = PAPI_thread_init((unsigned long (*)(void))(pthread_self));
+  if (retval != PAPI_OK)
+    ARCANE_FATAL("Error in PAPI_thread_init r={0} msg={1}", retval, PAPI_strerror(retval));
 
   prginfo = PAPI_get_executable_info();
-  
+
   start = reinterpret_cast<caddr_t>(prginfo->address_info.text_start);
   end = reinterpret_cast<caddr_t>(prginfo->address_info.text_end);
 
-  info() << "** PROGRAM INFOS: start=" << (long)start << " end=" << (long)end << " length=" << (end-start);
+  info() << "** PROGRAM INFOS: start=" << (long)start << " end=" << (long)end << " length=" << (end - start);
 
-  if ((retval=PAPI_create_eventset(&m_event_set))!=PAPI_OK)
-    ARCANE_FATAL("ERROR in PAPI_create_eventset r={0}",retval);
+  if ((retval = PAPI_create_eventset(&m_event_set)) != PAPI_OK)
+    ARCANE_FATAL("ERROR in PAPI_create_eventset r={0}", retval);
 
   const int NB_EVENT = 3;
   int papi_events[NB_EVENT];
 
-  // L'évènement 0 doit toujours être le PAPI_TOT_CYC car on s'en sert
-  // pour les statistiques
+  // Event 0 must always be PAPI_TOT_CYC because we use it
+  // for statistics
   papi_events[0] = PAPI_TOT_CYC;
-  // TODO: regarder si ses évènements sont supportés par le proc
+  // TODO: check if these events are supported by the processor
   papi_events[1] = PAPI_RES_STL;
   papi_events[2] = PAPI_DP_OPS;
 
   String papi_user_events = platform::getEnvironmentVariable("ARCANE_PAPI_EVENTS");
   int nb_event = NB_EVENT;
-  if (!papi_user_events.null()){
+  if (!papi_user_events.null()) {
     StringUniqueArray strs;
-    papi_user_events.split(strs,':');
+    papi_user_events.split(strs, ':');
     int nb_str = strs.size();
-    nb_str = math::min(NB_EVENT-1,nb_str);
-    for( Integer i=0; i<nb_str; ++i ){
+    nb_str = math::min(NB_EVENT - 1, nb_str);
+    for (Integer i = 0; i < nb_str; ++i) {
       const String& ename = strs[i];
       info() << "USER_EVENT name=" << ename;
       int new_event;
       int retval = PAPI_event_name_to_code((char*)ename.localstr(), &new_event);
-      if (retval!=PAPI_OK){
+      if (retval != PAPI_OK) {
         pwarning() << "Can not set event from name=" << ename << " r=" << retval;
       }
       else
-        papi_events[i+1] = new_event;
+        papi_events[i + 1] = new_event;
     }
-    nb_event = nb_str+1;
+    nb_event = nb_str + 1;
   }
   bool is_valid_event[NB_EVENT];
 
-  for( Integer i=0; i<nb_event; ++i )
-    is_valid_event[i] = _addEvent(papi_events[i],i);
-
+  for (Integer i = 0; i < nb_event; ++i)
+    is_valid_event[i] = _addEvent(papi_events[i], i);
 
   //int period = 500000;
   String period_str = platform::getEnvironmentVariable("ARCANE_PROFILING_PERIOD");
-  if (!period_str.null()){
-    bool is_bad = builtInGetValue(m_period,period_str);
-    if (is_bad){
+  if (!period_str.null()) {
+    bool is_bad = builtInGetValue(m_period, period_str);
+    if (is_bad) {
       pwarning() << "Can not convert '" << period_str << "' to int";
     }
   }
@@ -244,20 +243,20 @@ initialize()
   if (!only_str.null())
     m_only_flops = true;
 
-  if (m_only_flops){
+  if (m_only_flops) {
     _printFlops();
   }
-  else{
-    // Il ne faut pas que la période soit trop petite sinon on passe tout
-    // le temps dans le traitement de 'arcane_papi_handler'.
-    if (m_period<100000)
+  else {
+    // We must not let the period be too small otherwise we spend
+    // all the time in the processing of 'arcane_papi_handler'.
+    if (m_period < 100000)
       m_period = 100000;
-    for( Integer i=0; i<nb_event; ++i ){
-      if (is_valid_event[i]){
+    for (Integer i = 0; i < nb_event; ++i) {
+      if (is_valid_event[i]) {
         retval = PAPI_overflow(m_event_set, papi_events[i], m_period, 0, arcane_papi_handler);
-        if (retval!=PAPI_OK){
-          // L'évènement PAPI_TOT_CYC est indispensable
-          if (i==0){
+        if (retval != PAPI_OK) {
+          // The PAPI_TOT_CYC event is indispensable
+          if (i == 0) {
             fatal() << "** ERROR in papi_overflow i=" << i << " r=" << retval
                     << " msg=" << PAPI_strerror(retval);
           }
@@ -268,10 +267,9 @@ initialize()
         }
       }
     }
-    info() << "Période de sampling: (en évènements) " << m_period;
+    info() << "Sampling period: (in events) " << m_period;
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -283,10 +281,10 @@ startProfiling()
     return;
   ARCANE_CHECK_POINTER(global_infos);
   global_infos->startProfiling();
-  if (!m_is_running){
+  if (!m_is_running) {
     int retval = PAPI_start(m_event_set);
-    if (retval!=PAPI_OK){
-      ARCANE_FATAL("** ERROR in papi_start r={0}",retval);
+    if (retval != PAPI_OK) {
+      ARCANE_FATAL("** ERROR in papi_start r={0}", retval);
     }
     m_is_running = true;
   }
@@ -310,18 +308,18 @@ _printFlops()
   float proc_time = 0.0f;
   long long flpins = 0.0;
   float mflops = 0.0f;
-  // A partir de PAPI 6.0 il n'y a plus PAPI_flops mais à la place
-  // c'est 'PAPI_flops_rate' mais il y a un argument supplémentaire
-  // à mettre pour spécifier le type de flop à calculer (simple précision,
-  // double précision, ...)
-#if PAPI_VERSION >= PAPI_VERSION_NUMBER(6,0,0,0)
+  // Starting from PAPI 6.0, there is no longer PAPI_flops but instead
+  // it is 'PAPI_flops_rate' but there is an additional argument
+  // to specify the type of flop to calculate (single precision,
+  // double precision, ...)
+#if PAPI_VERSION >= PAPI_VERSION_NUMBER(6, 0, 0, 0)
   int retval = PAPI_flops_rate(PAPI_DP_OPS, &real_time, &proc_time, &flpins, &mflops);
 #else
   int retval = PAPI_flops(&real_time, &proc_time, &flpins, &mflops);
 #endif
-  if (retval!=PAPI_OK)
+  if (retval != PAPI_OK)
     error() << "** ERROR in PAPI_flops r=" << retval;
-  else{
+  else {
     info() << "PAPI_Flops: real_time=" << real_time
            << " proc_time=" << proc_time
            << " flpins=" << flpins
@@ -338,17 +336,17 @@ stopProfiling()
   if (!global_infos)
     return;
 
-  if (m_only_flops){
+  if (m_only_flops) {
     _printFlops();
     return;
   }
   CriticalSection cs(m_application->parallelSuperMng()->threadMng());
 
   //info() << "PROFILING: stop profiling nb_call=" << global_nb_total_call;
-  if (m_is_running){
-    int retval = PAPI_stop(m_event_set,0);
-    if (retval!=PAPI_OK){
-      ARCANE_FATAL("** ERROR in papi_stop r={0}",retval);
+  if (m_is_running) {
+    int retval = PAPI_stop(m_event_set, 0);
+    if (retval != PAPI_OK) {
+      ARCANE_FATAL("** ERROR in papi_stop r={0}", retval);
     }
     m_is_running = false;
   }
@@ -379,7 +377,7 @@ dumpJSON(JSONWriter& writer)
 /*---------------------------------------------------------------------------*/
 
 void PapiPerformanceService::
-getInfos(Int64Array &array)
+getInfos(Int64Array& array)
 {
   if (global_infos)
     global_infos->getInfos(array);
@@ -405,31 +403,39 @@ class PapiTimerMng
 : public TimerMng
 {
  public:
+
   explicit PapiTimerMng(ITraceMng* tm)
-  : TimerMng(tm), m_nb_event(0), m_event_set(PAPI_NULL), m_is_started(false),
-    m_is_init(false), m_elapsed_us(0), m_elapsed_cycle()
+  : TimerMng(tm)
+  , m_nb_event(0)
+  , m_event_set(PAPI_NULL)
+  , m_is_started(false)
+  , m_is_init(false)
+  , m_elapsed_us(0)
+  , m_elapsed_cycle()
   {}
   ~PapiTimerMng()
   {
     if (m_is_started)
-      PAPI_stop(m_event_set,m_values.data());
+      PAPI_stop(m_event_set, m_values.data());
   }
+
  public:
+
   void init();
   void _addEvent(int event);
   void start();
   Real stop(const char* msg);
 
-  //! Retourne le temps réel
+  //! Returns the real time
   Real _getRealTime() override
   {
     return stop("test");
   }
 
-  //! Positionne un timer réel
+  //! Sets a real timer
   void _setRealTime() override
   {
-    if (!m_is_init){
+    if (!m_is_init) {
       m_is_init = true;
       init();
       start();
@@ -437,6 +443,7 @@ class PapiTimerMng
   }
 
  private:
+
   int m_nb_event;
   int m_event_set;
   bool m_is_started;
@@ -454,14 +461,14 @@ void PapiTimerMng::
 init()
 {
   _checkInitPAPI();
-    
-  int retval = PAPI_thread_init((unsigned long (*)(void)) (pthread_self));
+
+  int retval = PAPI_thread_init((unsigned long (*)(void))(pthread_self));
   if (retval != PAPI_OK)
-    ARCANE_FATAL("PAPI_thread_init r={0}",retval);
-      
+    ARCANE_FATAL("PAPI_thread_init r={0}", retval);
+
   retval = PAPI_create_eventset(&m_event_set);
-  if (retval!=PAPI_OK)
-    ARCANE_FATAL("PAPI_create_eventset r={0}",retval);
+  if (retval != PAPI_OK)
+    ARCANE_FATAL("PAPI_create_eventset r={0}", retval);
 
   _addEvent(PAPI_TOT_CYC);
   _addEvent(PAPI_DP_OPS);
@@ -472,7 +479,7 @@ init()
 
   retval = PAPI_start(m_event_set);
   if (retval != PAPI_OK)
-    ARCANE_FATAL("PAPI_start r={0}",retval);
+    ARCANE_FATAL("PAPI_start r={0}", retval);
   m_is_started = true;
 }
 
@@ -482,8 +489,8 @@ init()
 void PapiTimerMng::
 _addEvent(int event)
 {
-  int retval = PAPI_add_event(m_event_set,event);
-  if (retval!=PAPI_OK){
+  int retval = PAPI_add_event(m_event_set, event);
+  if (retval != PAPI_OK) {
     cerr << "** CAN NOT FIND EVENT " << event << '\n';
     return;
   }
@@ -496,8 +503,8 @@ _addEvent(int event)
 void PapiTimerMng::
 start()
 {
-  int retval = PAPI_read(m_event_set,m_start_values.data());
-  if (retval!=PAPI_OK){
+  int retval = PAPI_read(m_event_set, m_start_values.data());
+  if (retval != PAPI_OK) {
     cerr << "** CAN NOT START EVENT\n";
   }
   m_elapsed_us = PAPI_get_real_usec();
@@ -510,8 +517,8 @@ start()
 Real PapiTimerMng::
 stop(const char* msg)
 {
-  int retval = PAPI_read(m_event_set,m_values.data());
-  if (retval!=PAPI_OK){
+  int retval = PAPI_read(m_event_set, m_values.data());
+  if (retval != PAPI_OK) {
     cerr << "** CAN NOT STOP EVENT\n";
   }
   long_long elapsed_us = PAPI_get_real_usec() - m_elapsed_us;
@@ -527,9 +534,9 @@ stop(const char* msg)
 
   //cout << "** TIME: " << (elapsed_us) << " CYCLE=" << elapsed_cycle << '\n';
 
-  long_long nb_cycle = m_values[0]-m_start_values[0];
-  long_long nb_flop = m_values[1]-m_start_values[1];
-      
+  long_long nb_cycle = m_values[0] - m_start_values[0];
+  long_long nb_flop = m_values[1] - m_start_values[1];
+
   std::cout.width(15);
   std::cout << nb_cycle << " ";
   std::cout.width(12);
@@ -537,7 +544,7 @@ stop(const char* msg)
 
   std::cout << " (";
   std::cout.width(5);
-  std::cout << nb_flop/elapsed_us;
+  std::cout << nb_flop / elapsed_us;
   std::cout << ")";
 
   std::cout << '\n';
@@ -574,16 +581,20 @@ class PapiPerformanceCounterService
 , public IPerformanceCounterService
 {
  public:
+
   PapiPerformanceCounterService(const ServiceBuildInfo& sbi)
-  : TraceAccessor(sbi.application()->traceMng()), m_nb_event(0),
-    m_event_set(PAPI_NULL), m_is_started(false)
+  : TraceAccessor(sbi.application()->traceMng())
+  , m_nb_event(0)
+  , m_event_set(PAPI_NULL)
+  , m_is_started(false)
   {
   }
   ~PapiPerformanceCounterService()
   {
     if (m_is_started)
-      (void)PAPI_stop(m_event_set,nullptr);
+      (void)PAPI_stop(m_event_set, nullptr);
   }
+
  public:
 
   void build()
@@ -596,15 +607,15 @@ class PapiPerformanceCounterService
 
     _checkInitPAPI();
 
-    retval = PAPI_thread_init((unsigned long (*)(void)) (pthread_self));
+    retval = PAPI_thread_init((unsigned long (*)(void))(pthread_self));
     if (retval != PAPI_OK)
-      ARCANE_FATAL("Error in 'PAPI_thread_init' r={0}",retval);
+      ARCANE_FATAL("Error in 'PAPI_thread_init' r={0}", retval);
 
     //int event_mask = MASK_FP_OPS | MASK_L2_TCM | MASK_TOT_CYC;
     //m_event_set = _makeEventSet(&num_events,&event_mask);
     retval = PAPI_create_eventset(&m_event_set);
-    if (retval!=PAPI_OK)
-      ARCANE_FATAL("Error in 'PAPI_createeventset' r={0}",retval);
+    if (retval != PAPI_OK)
+      ARCANE_FATAL("Error in 'PAPI_createeventset' r={0}", retval);
 
     _addEvent(PAPI_TOT_CYC);
     _addEvent(PAPI_RES_STL);
@@ -612,8 +623,8 @@ class PapiPerformanceCounterService
   }
   void _addEvent(int event)
   {
-    int retval = PAPI_add_event(m_event_set,event);
-    if (retval!=PAPI_OK){
+    int retval = PAPI_add_event(m_event_set, event);
+    if (retval != PAPI_OK) {
       error() << "** CAN NOT FIND EVENT " << event << '\n';
       return;
     }
@@ -625,16 +636,16 @@ class PapiPerformanceCounterService
       ARCANE_FATAL("start() has alredy been called");
     int retval = PAPI_start(m_event_set);
     if (retval != PAPI_OK)
-      ARCANE_FATAL("Error in 'PAPI_start' r={0}",retval);
+      ARCANE_FATAL("Error in 'PAPI_start' r={0}", retval);
     m_is_started = true;
   }
   void stop() final
   {
     if (!m_is_started)
       ARCANE_FATAL("start() has not been called");
-    int retval = PAPI_stop(m_event_set,nullptr);
+    int retval = PAPI_stop(m_event_set, nullptr);
     if (retval != PAPI_OK)
-      ARCANE_FATAL("Error in 'PAPI_stop' r={0}",retval);
+      ARCANE_FATAL("Error in 'PAPI_stop' r={0}", retval);
     m_is_started = false;
   }
   bool isStarted() const final
@@ -642,29 +653,29 @@ class PapiPerformanceCounterService
     return m_is_started;
   }
 
-  Integer getCounters(Int64ArrayView counters,bool do_substract) final
+  Integer getCounters(Int64ArrayView counters, bool do_substract) final
   {
     long_long values[MIN_COUNTER_SIZE];
-    int retval = PAPI_read(m_event_set,values);
-    if (retval!=PAPI_OK){
+    int retval = PAPI_read(m_event_set, values);
+    if (retval != PAPI_OK) {
       error() << "Error in 'PAPI_read' during getCounters() r=" << retval;
     }
     Integer n = m_nb_event;
-    if (do_substract){
-      for( int i=0; i<n; ++i )
+    if (do_substract) {
+      for (int i = 0; i < n; ++i)
         counters[i] = (Int64)values[i] - counters[i];
     }
     else
-      for( int i=0; i<n; ++i )
+      for (int i = 0; i < n; ++i)
         counters[i] = values[i];
     return n;
   }
 
   Int64 getCycles() final
   {
-    std::array<Int64,MIN_COUNTER_SIZE> values;
+    std::array<Int64, MIN_COUNTER_SIZE> values;
     Int64ArrayView view(values);
-    getCounters(view,false);
+    getCounters(view, false);
     return view[0];
   }
 
@@ -679,7 +690,7 @@ class PapiPerformanceCounterService
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(PapiPerformanceCounterService,
-                        ServiceProperty("PapiPerformanceCounterService",ST_Application),
+                        ServiceProperty("PapiPerformanceCounterService", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IPerformanceCounterService));
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="PTScotchMeshPartitioner" parent-name="MeshPartitionerBase" type="caseoption">
   <name lang='fr'>PTScotch</name>
   <userclass>User</userclass>
   <description>
-    Partionneur de maillage utilisant PTScotch
+    Mesh partitioner using PTScotch
   </description>
-    
+
   <interface name="Arcane::IMeshPartitioner" inherited="false"/>
   <interface name="Arcane::IMeshPartitionerBase" inherited="false"/>
 

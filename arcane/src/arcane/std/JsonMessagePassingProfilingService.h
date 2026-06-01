@@ -1,24 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* JsonMessagePassingProfilingService.h                        (C) 2000-2019 */
 /*                                                                           */
-/* Informations de performances du "message passing" au format JSON          */
+/* Performance information for "message passing" in JSON format              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_JSONMESSAGEPASSINGPROFILINGSERVICE_H
 #define ARCANE_STD_JSONMESSAGEPASSINGPROFILINGSERVICE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/AbstractService.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ObserverPool.h"
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/String.h"
+
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ObserverPool.h"
+
 #include "arccore/message_passing/Stat.h"
 
 #include <map>
@@ -26,12 +28,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de profiling du "message passing" au format JSON.
+ * \brief JSON message passing profiling service.
  */
 class JsonMessagePassingProfilingService
 : public AbstractService
@@ -51,7 +55,7 @@ class JsonMessagePassingProfilingService
 
  private:
 
-  //! Liste des statistiques par point d'entree.
+  //! List of statistics per entry point.
   typedef std::map<String, Arccore::MessagePassing::StatData> StatDataMap;
 
  private:
@@ -63,7 +67,7 @@ class JsonMessagePassingProfilingService
   StatDataMap m_ep_mpstat_col;
   String m_impl_name;
 
-private:
+ private:
 
   void _dumpCurrentIterationInJSON();
 
@@ -76,9 +80,9 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,37 +1,34 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+﻿<?xml version="1.0" ?>
 
 <module name="Master" version="1.0" namespace-macro-name="ARCANE" autoload='true'>
- <name lang='en'>master-module</name>
- <name lang='fr'>module-maitre</name>
- <description>
-  Module maître
- </description>
+  <name lang='en'>master-module</name>
+  <name lang='fr'>module-maitre</name>
+  <description>
+    Master module
+  </description>
 
-    <entry-points>
-      <entry-point method-name="masterBuild" 
-                   name="MasterBuild" 
-                   where="build" 
-                   property="auto-load-begin"/>
-    </entry-points>
+  <entry-points>
+    <entry-point method-name="masterBuild"
+                 name="MasterBuild"
+                 where="build"
+                 property="auto-load-begin"/>
+  </entry-points>
 
- <options>
+  <options>
 
-  <!-- Fichier de sortie pour la non-régression -->
-  <service-instance
-   name = "global-service"
-   type = "Arcane::ITimeLoopService"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>service-global</name>
-   <description>
-Service global utilisant la boucle en temps.
-   </description>
-  </service-instance>
+    <!-- Output file for non-regression -->
+    <service-instance
+      name="global-service"
+      type="Arcane::ITimeLoopService"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <name lang='fr'>service-global</name>
+      <description>
+        Global service using the time loop.
+      </description>
+    </service-instance>
 
- </options>
+  </options>
 
 </module>

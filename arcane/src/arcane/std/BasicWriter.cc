@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicWriter.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Ecriture simple pour les protections/reprises.                            */
+/* Simple writing for checkpoints/restorations.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,8 +66,8 @@ initialize()
   m_text_writer->setDataCompressor(m_data_compressor);
   m_text_writer->setHashAlgorithm(m_hash_algorithm);
 
-  // Permet de surcharger le service utilisé pour la compression par une
-  // variable d'environnement si aucun n'est positionné
+  // Allows overriding the compression service used by an environment variable
+  // if none is set
   if (!m_data_compressor.get()) {
     String data_compressor_name = platform::getEnvironmentVariable("ARCANE_DEFLATER");
     if (!data_compressor_name.null()) {
@@ -79,7 +79,7 @@ initialize()
     }
   }
 
-  // Idem pour le service de calcul de hash
+  // Same for the hash calculation service
   if (!m_hash_algorithm.get()) {
     String hash_algorithm_name = platform::getEnvironmentVariable("ARCANE_HASHALGORITHM");
     if (hash_algorithm_name.null())
@@ -92,7 +92,7 @@ initialize()
     m_text_writer->setHashAlgorithm(v);
   }
 
-  // Pour test, permet de spécifier un service pour le calcul du hash global.
+  // For testing, allows specifying a service for global hash calculation.
   if (!m_compare_hash_algorithm.get()) {
     String algo_name = platform::getEnvironmentVariable("ARCANE_COMPAREHASHALGORITHM");
     if (!algo_name.empty()) {
@@ -151,12 +151,12 @@ _directWriteVal(IVariable* var, IData* data)
       write_data = allocated_write_data.get();
     }
     else {
-      // TODO vérifier que les uniqueId() sont bien triés.
-      // Normalement c'est toujours le cas.
+      // TODO check that uniqueId() are sorted.
+      // Normally it is always the case.
       _fillUniqueIds(group, sequential_written_unique_ids);
       written_unique_ids = sequential_written_unique_ids.view();
     }
-    // Ecrit les informations du groupe si c'est la première fois qu'on accède à ce groupe.
+    // Writes the group information if this is the first time accessing this group.
     if (m_written_groups.find(group) == m_written_groups.end()) {
       info(5) << "WRITE GROUP " << group.name();
       const IItemFamily* item_family = group.itemFamily();
@@ -180,16 +180,15 @@ _directWriteVal(IVariable* var, IData* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul un hash de comparaison pour la variable.
+ * \brief Calculates a comparison hash for the variable.
  *
- * Le rang maitre récupère un tableau contenant la concaténation des valeurs
- * de la variable pour tous les rangs et calcul un hash sur ce tableau.
+ * The master rank retrieves an array containing the concatenation of the variable's
+ * values for all ranks and calculates a hash on this array.
  *
- * Comme ce tableau est trié suivant les uniqueId(), il peut servir à
- * comparer directement la valeur de la variable.
+ * Since this array is sorted according to the uniqueId(), it can be used to
+ * directly compare the variable's value.
  *
- * \return le hash sous-forme de chaîne de caratères si un algorithme de hash
- * est spécifié.
+ * \return the hash as a string if a hash algorithm is specified.
  */
 String BasicWriter::
 _computeCompareHash(IVariable* var, IData* write_data)
@@ -219,8 +218,7 @@ write(IVariable* var, IData* data)
 void BasicWriter::
 setMetaData(const String& meta_data)
 {
-  // Dans la version 3, les méta-données de la protection sont dans la
-  // base de données.
+  // In version 3, checkpoint metadata is in the database.
   if (m_version >= 3) {
     Span<const Byte> bytes = meta_data.utf8();
     Int64 length = bytes.length();
@@ -255,7 +253,7 @@ _endWriteV3()
 {
   const Int64 nb_part = m_parallel_mng->commSize();
 
-  // Sauvegarde les informations au format JSON
+  // Saves the information in JSON format
   JSONWriter jsw;
 
   {
@@ -276,7 +274,7 @@ _endWriteV3()
       jsw.write("DataCompressor", data_compressor_name);
       jsw.write("DataCompressorMinSize", String::fromNumber(data_compressor_min_size));
 
-      // Sauve le nom de l'algorithme de hash
+      // Saves the hash algorithm name
       {
         String name;
         if (m_hash_algorithm.get())
@@ -284,7 +282,7 @@ _endWriteV3()
         jsw.write("HashAlgorithm", name);
       }
 
-      // Sauve le nom de l'algorithme de hash pour les comparaisons
+      // Saves the hash algorithm name for comparisons
       {
         String name;
         if (m_compare_hash_algorithm.get())

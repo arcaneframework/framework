@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IHashDatabase.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'une base de données de hash.                                  */
+/* Interface of a hash database.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_IHASHDATABASE_H
 #define ARCANE_STD_INTERNAL_IHASHDATABASE_H
@@ -66,8 +66,9 @@ class HashDatabaseWriteArgs
 
   HashDatabaseWriteArgs() = default;
 
-  HashDatabaseWriteArgs(Span<const std::byte> v,const String& hash_value)
-  : m_values(v), m_hash_value(hash_value)
+  HashDatabaseWriteArgs(Span<const std::byte> v, const String& hash_value)
+  : m_values(v)
+  , m_hash_value(hash_value)
   {}
 
  public:

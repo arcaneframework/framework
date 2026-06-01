@@ -1,23 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleCsvComparatorService.cc                               (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de comparer un ISimpleTableOutput avec un fichier de   */
-/* référence en format csv.                                                  */
+/* Service allowing comparison of an ISimpleTableOutput with a reference     */
+/* file in CSV format.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/std/SimpleCsvComparatorService.h"
 
-#include "arcane/Directory.h"
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
 #include "arcane/utils/Iostream.h"
+
+#include "arcane/core/Directory.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
 
 #include <optional>
 #include <regex>
@@ -35,7 +36,7 @@ namespace Arcane
 void SimpleCsvComparatorService::
 init(ISimpleTableOutput* simple_table_output_ptr)
 {
-  // On enregistre le pointeur qui nous est donné.
+  // We store the provided pointer.
   ARCANE_CHECK_PTR(simple_table_output_ptr);
   m_simple_table_output_ptr = simple_table_output_ptr;
 
@@ -51,7 +52,7 @@ init(ISimpleTableOutput* simple_table_output_ptr)
   m_simple_table_internal_to_compare = m_simple_table_output_ptr->internal();
   m_simple_table_internal_comparator.setInternalToCompare(m_simple_table_internal_to_compare);
 
-  // On déduit l'emplacement des fichiers de réferences.
+  // We deduce the location of the reference files.
   m_output_directory = m_simple_table_output_ptr->outputDirectory();
   m_root_path = Directory(subDomain()->exportDirectory(), m_simple_table_output_ptr->fileType() + "_refs");
   m_reference_path = Directory(m_root_path, m_output_directory);
@@ -96,27 +97,28 @@ print(Integer rank)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /**
- * Méthode effectuant des opérations collectives.
+ * Method performing collective operations.
  */
 bool SimpleCsvComparatorService::
 writeReferenceFile(Integer rank)
 {
   ARCANE_CHECK_PTR(m_simple_table_output_ptr);
-  // On sauvegarde les paramètres d'origines.
+  // We save the original parameters.
   Integer save_preci = m_simple_table_output_ptr->precision();
   bool save_scientific = m_simple_table_output_ptr->isForcedToUseScientificNotation();
   bool save_fixed = m_simple_table_output_ptr->isFixed();
 
-  // On défini la précision max (+2 pour erreurs d'arrondis).
+  // We set the max precision (+2 for rounding errors).
   m_simple_table_output_ptr->setPrecision(std::numeric_limits<Real>::max_digits10);
   m_simple_table_output_ptr->setForcedToUseScientificNotation(true);
   m_simple_table_output_ptr->setFixed(false);
 
-  // On écrit nos fichiers de référence.
+  // We write our reference files.
   bool fin = m_simple_table_output_ptr->writeFile(m_root_path, rank);
 
-  // On remet les paramètres par défault.
+  // We restore the default parameters.
   m_simple_table_output_ptr->setPrecision(save_preci);
   m_simple_table_output_ptr->setForcedToUseScientificNotation(save_scientific);
   m_simple_table_output_ptr->setFixed(save_fixed);
@@ -156,11 +158,11 @@ isReferenceExist(Integer rank)
 bool SimpleCsvComparatorService::
 compareWithReference(Integer rank, bool compare_dimension_too)
 {
-  // Si le proc appelant ne doit pas lire.
+  // If the calling process should not read.
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
     return true;
   }
-  // Si le fichier ne peut pas être lu.
+  // If the file cannot be read.
   if (!m_is_file_read && !readReferenceFile(rank)) {
     error() << "Error with the file reader: invalid file";
     return false;
@@ -175,11 +177,11 @@ compareWithReference(Integer rank, bool compare_dimension_too)
 bool SimpleCsvComparatorService::
 compareElemWithReference(const String& column_name, const String& row_name, Integer rank)
 {
-  // Si le proc appelant ne doit pas lire.
+  // If the calling process should not read.
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
     return true;
   }
-  // Si le fichier ne peut pas être lu.
+  // If the file cannot be read.
   if (!m_is_file_read && !readReferenceFile(rank)) {
     error() << "Error with the file reader: invalid file";
     return false;
@@ -194,11 +196,11 @@ compareElemWithReference(const String& column_name, const String& row_name, Inte
 bool SimpleCsvComparatorService::
 compareElemWithReference(Real elem, const String& column_name, const String& row_name, Integer rank)
 {
-  // Si le proc appelant ne doit pas lire.
+  // If the calling process should not read.
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
     return true;
   }
-  // Si le fichier ne peut pas être lu.
+  // If the file cannot be read.
   if (!m_is_file_read && !readReferenceFile(rank)) {
     error() << "Error with the file reader: invalid file";
     return false;

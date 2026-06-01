@@ -1,30 +1,34 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TypesMetisMeshPartitioner.h                                 (C) 2000-2022 */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_TYPESMETISMESHPARTITIONER
 #define ARCANE_STD_TYPESMETISMESHPARTITIONER
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #include "arcane/utils/ArcaneGlobal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-ARCANE_BEGIN_NAMESPACE
+
+namespace Arcane
+{
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 class TypesMetisMeshPartitioner
 {
-  public:
-  
+ public:
+
   enum class MetisCallStrategy
-  { 
+  {
     all_processors,
     one_processor_per_node,
     two_processors_two_nodes,
@@ -38,9 +42,13 @@ class TypesMetisMeshPartitioner
     TakeFromBiggestPartitionV2
   };
 };
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-ARCANE_END_NAMESPACE
+
+} // namespace Arcane
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #endif

@@ -1,14 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Otf2MpiProfiling.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Implementation de l'interface IMpiProfiling permettant l'instrumentation  */
-/* au format OTF2                              .                             */
+/* Implementation of the IMpiProfiling interface allowing instrumentation    */
+/* in OTF2 format.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_OTF2MPIPROFILING_H
 #define ARCANE_STD_INTERNAL_OTF2MPIPROFILING_H
@@ -31,25 +31,29 @@ using namespace MessagePassing::Mpi;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implementation de l'interface des operations MPI.
- * Decore chacun des appels MPI avec les fonctions de la librairie
- * Otf2 pour faire du profiling.
+ * \brief Implementation of the MPI operations interface.
+ * Decorates each MPI call with functions from the library
+ * Otf2 for profiling.
  */
 class Otf2MpiProfiling
 : public IMpiProfiling
 {
  public:
-  // Pour l'instant void pour des raisons de compatibilité mais devra à terme
-  // être IMpiProfiling::ReturnType
+
+  // For now void for compatibility reasons but will eventually have to
+  // be IMpiProfiling::ReturnType
   using ReturnType = void;
 
  public:
+
   explicit Otf2MpiProfiling(Otf2LibWrapper* otf2_wrapper);
   ~Otf2MpiProfiling() override = default;
 
  public:
+
   // Bcast
   ReturnType broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) final;
   // Gather
@@ -117,9 +121,11 @@ class Otf2MpiProfiling
                       int array_of_indices[], MPI_Status array_of_statuses[]) final;
 
  private:
+
   Otf2LibWrapper* m_otf2_wrapper;
 
  private:
+
   void _doEventEnter(eMpiName event_name);
   void _doEventLeave(eMpiName event_name);
   ReturnType _ret(int r) const
@@ -136,4 +142,4 @@ class Otf2MpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

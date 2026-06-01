@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SodMeshGenerator.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Service de génération d'un maillage à-la 'sod'.                           */
+/* Service for generating a 'sod'-style mesh.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_SODMESHGENERATOR_H
 #define ARCANE_STD_SODMESHGENERATOR_H
@@ -25,22 +25,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Génèrateur de maillage pour un tube à choc.
+ * \brief Mesh generator for a shock tube.
  *
- * Le maillage est un maillage cartésien au format non-structuré
+ * The mesh is a Cartesian mesh in unstructured format
  *
- * Le tube dispose de deux zones ZG et ZD suivant l'axe des x: la première
- * moitié des mailles est pour ZG, la suivante pour ZD.
+ * The tube has two zones, ZG and ZD, along the x-axis: the first
+ * half of the cells is for ZG, the following for ZD.
  *
- * En parallèle, on augmente les couches suivants l'axe z. Chaque sous-domaine
- * possède \a nb_cell_z couches suivant z et partagent une couche avec le
- * sous-domaine précédent et une couche avec le suivant. De cette manière,
- * chaque sous-domaine calcule la même chose et le nombre d'itérations
- * du cas ne change pas quelle que soit le nombre de processeurs.
- * Pour les conditions aux limites, six surfaces sont créées: XMIN, XMAX pour
- * les faces suivant X, YMIN et YMAX pour les faces suivant Y et ZMIN et
- * ZMAX pour celles suivant Z.
+ * In parallel, layers are increased along the z-axis. Each subdomain
+ * has \a nb_cell_z layers along z and shares a layer with the
+ * previous subdomain and a layer with the next one. In this way,
+ * each subdomain calculates the same thing and the number of iterations
+ * of the case does not change regardless of the number of processors.
+ * For boundary conditions, six surfaces are created: XMIN, XMAX for
+ * the faces along X, YMIN and YMAX for the faces along Y and ZMIN and
+ * ZMAX for those along Z.
  */
 class SodMeshGenerator
 : public TraceAccessor
@@ -76,4 +77,4 @@ class SodMeshGenerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

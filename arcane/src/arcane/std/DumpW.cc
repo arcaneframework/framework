@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DumpW.cc                                                    (C) 2000-2022 */
 /*                                                                           */
-/* Wrapper de IDataWriter sous l'ancienne interface IDumpW.                  */
+/* Wrapper of IDataWriter under the old IDumpW interface.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/NotSupportedException.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real3.h"
@@ -25,11 +25,11 @@
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/MultiArray2.h"
 #include "arcane/utils/MultiArray2View.h"
-#include "arcane/IData.h"
-#include "arcane/IVariable.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/VariableCollection.h"
 #include "arcane/std/DumpW.h"
-#include "arcane/AbstractDataVisitor.h"
+#include "arcane/core/AbstractDataVisitor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

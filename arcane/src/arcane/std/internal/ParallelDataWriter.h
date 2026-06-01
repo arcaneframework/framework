@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelDataWriter.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain de IData en parallèle.                                           */
+/* Parallel IData writer.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_PARALLELDATAWRITER_H
 #define ARCANE_STD_INTERNAL_PARALLELDATAWRITER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 #include <map>
 
@@ -26,10 +26,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écrivain parallèle pour faire des sorties par uniqueId() croissant.
+ * \brief Parallel writer for outputting data by increasing uniqueId().
  *
- * Une instance de cette classe est associée à un groupe du maillage.
+ * An instance of this class is associated with a mesh group.
  */
 class ParallelDataWriter
 {
@@ -55,8 +56,9 @@ class ParallelDataWriter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief liste de 'ParallelDataWriter'.
+ * \brief list of 'ParallelDataWriter'.
  */
 class ParallelDataWriterList
 {

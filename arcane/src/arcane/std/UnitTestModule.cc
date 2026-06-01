@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* UnitTestModule.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Module pour les tests unitaires.                                          */
+/* Module for unit tests.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module maître
+ * \brief Master module
  */
 class UnitTestModule
 : public ArcaneUnitTestObject
@@ -61,8 +62,8 @@ class UnitTestModule
 
  private:
 
-  ScopedPtrT<IXmlDocumentHolder> m_tests_doc; //!< Traces des tests unitaires
-  bool m_success = true; //!< Vrai tant qu'un test unitaire n'a pas retourné d'erreur.
+  ScopedPtrT<IXmlDocumentHolder> m_tests_doc; //!< Unit test traces
+  bool m_success = true; //!< True as long as a unit test has not returned an error.
 
  private:
 
@@ -149,7 +150,7 @@ unitTestBuild()
 void UnitTestModule::
 unitTestInit()
 {
-  // Initialise au cas où aucun test ne le fait
+  // Initialize in case no test does it
   m_global_deltat = 1.0;
 
   for (IUnitTest* service : options()->test)
@@ -193,8 +194,8 @@ unitTestExit()
     service->finalizeTest();
 
   if (options()->xmlTest.size() > 0) {
-    // ecriture du rapport XML.
-    // En parallèle, seul le processeur maitre écrit le fichier
+    // writing the XML report.
+    // In parallel, only the master processor writes the file
     IParallelMng* pm = subDomain()->parallelMng();
     if (pm->isMasterIO()) {
       Directory listing_dir(subDomain()->listingDirectory());
@@ -203,7 +204,7 @@ unitTestExit()
       subDomain()->ioMng()->writeXmlFile(m_tests_doc.get(), filename);
     }
 
-    // sortie en exception si demandé
+    // exit with exception if requested
     if (!m_success)
       ARCANE_FATAL("Some errors have occured in the unit tests.");
   }

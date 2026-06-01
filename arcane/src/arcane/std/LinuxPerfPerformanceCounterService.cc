@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* LinuxPerfPerformanceCounterService.cc                       (C) 2000-2022 */
 /*                                                                           */
-/* Récupération des compteurs hardware via l'API 'perf' de Linux.            */
+/* Hardware counter retrieval via the Linux 'perf' API.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,7 +15,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/FactoryService.h"
+#include "arcane/core/FactoryService.h"
 
 #include <linux/perf_event.h>
 #include <linux/hw_breakpoint.h>
@@ -57,7 +57,7 @@ class LinuxPerfPerformanceCounterService
     _checkInitialize();
   }
 
-  //! Ajoute un évènement et retourne true si cela ne fonctionne pas
+  //! Adds an event and returns true if it fails
   bool _addEvent(int event_type, int event_config, bool is_optional = false)
   {
     struct perf_event_attr attr;
@@ -76,7 +76,7 @@ class LinuxPerfPerformanceCounterService
     unsigned long flags = 0;
     long long_fd = syscall(__NR_perf_event_open, &attr, m_process_id, cpu, group_fd, flags);
     info(4) << "AddEvent type=" << attr.type << " id=" << attr.config << " fd=" << long_fd;
-    if (long_fd == (-1)){
+    if (long_fd == (-1)) {
       if (is_optional)
         return true;
       ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, strerror(errno));
@@ -168,17 +168,17 @@ class LinuxPerfPerformanceCounterService
 
     info() << "Initialize LinuxPerfPerformanceCounterService";
     m_process_id = ::getpid();
-    // Nombre de cycles CPU. Ce compteur est indispensable.
+    // CPU cycle count. This counter is essential.
     _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-    // Nombre d'instructions exécutées. Ce compteur est indispensable.
+    // Number of instructions executed. This counter is essential.
     _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
 
-    // Les compteurs suivants ne sont pas indispensables et il n'est
-    // pas toujours facile de savoir ceux qui sont disponibles pour une
-    // plateforme donnée. On essaie dans l'ordre suivant:
-    // 1. Nombre de défaut du dernier niveau de cache (en général le cache L3)
-    // 2. Nombre de cycles où le CPU est en attente de quelque chose.
-    // 3. Nombre de défauts de cache (a priori pour tous les caches)
+    // The following counters are not essential and it is not
+    // always easy to know which ones are available for a
+    // given platform. We try them in the following order:
+    // 1. Last level cache miss count (generally L3 cache)
+    // 2. Number of cycles where the CPU is waiting for something.
+    // 3. Cache miss count (presumably for all caches)
     const bool is_optional = true;
     bool is_bad = true;
     {

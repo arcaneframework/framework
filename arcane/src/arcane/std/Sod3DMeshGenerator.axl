@@ -1,23 +1,23 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="Sod3DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Générateur de tube à choc de Sod
+    Sod Shock Tube Generator
   </description>
-    
+
   <interface name="Arcane::IMeshBuilder" />
 
   <options>
     <simple name="x" type="integer" >
-      <description>Nombre de mailles en X</description>
+      <description>Number of meshes in X</description>
       <userclass>User</userclass>
     </simple>
     <simple name="y" type="integer" >
-      <description>Nombre de mailles en Y</description>
+      <description>Number of meshes in Y</description>
       <userclass>User</userclass>
     </simple>
     <simple name="z" type="integer" >
-      <description>Nombre de mailles en Z</description>
+      <description>Number of meshes in Z</description>
       <userclass>User</userclass>
     </simple>
 

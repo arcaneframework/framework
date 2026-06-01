@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MshParallelMeshReader.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Lecture parallèle d'un fichier au format MSH.				                     */
+/* Parallel reading of an MSH file.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,14 +45,14 @@
 
 /*
  * NOTES:
- * - La bibliothèque `gmsh` fournit un script 'open.py' dans le répertoire
- *   'demos/api' qui permet de générer un fichier '.msh' à partir d'un '.geo'.
- * - Il est aussi possible d'utiliser directement l'exécutable 'gmsh' avec
- *   l'option '-save-all' pour sauver un fichier '.msh' à partir d'un '.geo'
+ * - The `gmsh` library provides an 'open.py' script in the 'demos/api' directory
+ *   that allows generating a '.msh' file from a '.geo'.
+ * - It is also possible to use the 'gmsh' executable directly with
+ *   the '-save-all' option to save a '.msh' file from a '.geo'
  *
  * TODO:
- * - supporter les partitions
- * - pouvoir utiliser la bibliothèque 'gmsh' directement.
+ * - support partitions
+ * - be able to use the 'gmsh' library directly.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -63,21 +63,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecteur de fichiers de maillage au format `msh`.
+ * \brief Mesh file reader in `msh` format.
  *
- * Le format `msh` est celui utilisé par la bibliothèque 
- * [gmsh](https://gmsh.info/).
+ * The `msh` format is used by the [gmsh](https://gmsh.info/) library.
  *
- * Le lecteur supporte la version `4.1` de ce format.
+ * The reader supports version `4.1` of this format.
  *
- * Actuellement, les balises suivantes sont gérées:
+ * Currently, the following tags are supported:
  *
  * - `$PhysicalNames`
  * - `$Entities`
  * - `$Nodes`
  * - `$Elements`
- * - `$Periodic` (en cours)
+ * - `$Periodic` (in progress)
  */
 class MshParallelMeshReader
 : public TraceAccessor
@@ -97,7 +97,7 @@ class MshParallelMeshReader
 
  public:
 
-  //! Informations de correspondance entre le type MSH et le type Arcane
+  //! Mapping information between MSH type and Arcane type
   class MshToArcaneTypeInfo
   {
    public:
@@ -118,48 +118,48 @@ class MshParallelMeshReader
   };
 
   /*!
-   * \brief Infos d'un bloc pour $Elements pour la version 4.
+   * \brief Info of a block for $Elements for version 4.
    *
-   * Dans cette version, les éléments d'un bloc sont tous
-   * de même type (par exemple que des IT_Quad4 ou IT_Triangle3.
+   * In this version, the elements of a block are all
+   * of the same type (e.g., IT_Quad4 or IT_Triangle3).
    *
-   * Si on a \a nb_entity, alors uids.size()==nb_entity
-   * et connectivity.size()==nb_entity*item_nb_node
-   */
+   * If we have \a nb_entity, then uids.size()==nb_entity
+   * and connectivity.size()==nb_entity*item_nb_node
+ */
   struct MshElementBlock
   {
-    Int32 index = -1; //!< Index du bloc dans la liste
-    Int64 nb_entity = 0; //!< Nombre d'entités du bloc
-    ItemTypeId item_type; //!< Type Arcane de l'entité
-    Int32 dimension = -1; //!< Dimension de l'entité
-    Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
+    Int32 index = -1; //!< Block index in the list
+    Int64 nb_entity = 0; //!< Number of entities in the block
+    ItemTypeId item_type; //!< Arcane type of the entity
+    Int32 dimension = -1; //!< Dimension of the entity
+    Int32 item_nb_node = 0; //!< Number of nodes of the entity.
     Int64 entity_tag = -1;
-    bool is_built_as_cells = false; //!< Indique si les entités du bloc sont des mailles
-    //! Si non vide, contient les indirections pour la renumérotation
+    bool is_built_as_cells = false; //!< Indicates if the entities in the block are meshes
+    //! If not empty, contains the indirections for renumbering
     SmallSpan<const Int16> reorder_infos;
-    UniqueArray<Int64> uids; //! < Liste des uniqueId() du bloc
-    UniqueArray<Int64> connectivities; //!< Liste des connectivités du bloc.
+    UniqueArray<Int64> uids; //! < List of uniqueId() of the block
+    UniqueArray<Int64> connectivities; //!< List of connectivities of the block.
   };
 
   /*!
-   * \brief Infos d'un bloc pour $Nodes.
+   * \brief Info of a block for $Nodes.
    */
   struct MshNodeBlock
   {
-    Int32 index = -1; //!< Index du bloc dans la liste
-    Int32 nb_node = 0; //!< Nombre d'entités du bloc
-    Int32 entity_dim = -1; //!< Dimension de l'entité associée
-    Int64 entity_tag = -1; //!< Tag de l'entité associée
-    //! Index dans MshMeshAllocateInfo des noeuds de ce bloc.
+    Int32 index = -1; //!< Block index in the list
+    Int32 nb_node = 0; //!< Number of entities in the block
+    Int32 entity_dim = -1; //!< Dimension of the associated entity
+    Int64 entity_tag = -1; //!< Tag of the associated entity
+    //! Index in MshMeshAllocateInfo of the nodes of this block.
     Int64 index_in_allocation_info = -1;
   };
 
   /*!
-   * \brief Informations pour créer les entités d'un genre.
+   * \brief Information to create entities of a certain kind.
    */
   class MshItemKindInfo
   {
-    // TODO: Allouer la connectivité par bloc pour éviter de trop grosses allocations
+    // TODO: Allocate connectivity per block to avoid overly large allocations
 
    public:
 
@@ -177,18 +177,18 @@ class MshParallelMeshReader
     UniqueArray<Int64> items_infos;
   };
 
-  //! Informations pour créer les entités Arcane.
+  //! Information to create Arcane entities.
   class MshMeshAllocateInfo
   {
    public:
 
     MshItemKindInfo cells_infos;
 
-    //! Coordonnées des noeuds de ma partie
+    //! Coordinates of the nodes of my part
     UniqueArray<Real3> nodes_coordinates;
-    //! UniqueId() des noeuds de ma partie.
+    //! UniqueId() of the nodes of my part.
     UniqueArray<Int64> nodes_unique_id;
-    //! Tableau associatif (uniqueId(),rang) auquel le noeud appartiendra.
+    //! Associative array (uniqueId(),rank) to which the node will belong.
     std::unordered_map<Int64, Int32> nodes_rank_map;
     UniqueArray<MshElementBlock> element_blocks;
     UniqueArray<MshNodeBlock> node_blocks;
@@ -208,18 +208,18 @@ class MshParallelMeshReader
   IParallelMng* m_parallel_mng = nullptr;
   Int32 m_master_io_rank = A_NULL_RANK;
   bool m_is_parallel = false;
-  Ref<IosFile> m_ios_file; // nullptr sauf pour le rang maitre.
+  Ref<IosFile> m_ios_file; // nullptr except for the master rank.
   impl::MshMeshGenerationInfo* m_mesh_info = nullptr;
   MshMeshAllocateInfo m_mesh_allocate_info;
-  //! Nombre de partitions pour la lecture des noeuds et blocs
+  //! Number of partitions for reading nodes and blocks
   Int32 m_nb_part = 4;
-  //! Liste des rangs qui participent à la conservation des données
+  //! List of ranks participating in data conservation
   UniqueArray<Int32> m_parts_rank;
-  //! Vrai si le format est binaire
+  //! True if the format is binary
   bool m_is_binary = false;
-  //! Informations de conversion entre les types MSH et Arcane pour les entités
+  //! Conversion information between MSH and Arcane types for entities
   UniqueArray<MshToArcaneTypeInfo> m_msh_to_arcane_type_infos;
-  //! Niveau de verbosité
+  //! Verbosity level
   Int32 m_verbosity_level = 0;
 
  private:
@@ -267,17 +267,17 @@ class MshParallelMeshReader
 namespace
 {
   /*!
-   * \brief Calcule le début et le nombre d'éléments pour un interval.
+   * \brief Calculates the start and number of elements for an interval.
    *
-   * Calcul le début et le nombre d'éléments du index-ème interval
-   * si le tableau contient \a size élément et qu'on veut \a nb_interval.
+   * Calculates the start and number of elements of the index-th interval
+   * if the array contains \a size elements and we want \a nb_interval.
    */
   inline std::pair<Int64, Int64>
   _interval(Int32 index, Int32 nb_interval, Int64 size)
   {
     Int64 isize = size / nb_interval;
     Int64 ibegin = index * isize;
-    // Pour le dernier interval, prend les elements restants
+    // For the last interval, take the remaining elements
     if ((index + 1) == nb_interval)
       isize = size - ibegin;
     return { ibegin, isize };
@@ -304,8 +304,9 @@ MshParallelMeshReader(ITraceMng* tm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lis la valeur de la prochaine ligne et la broadcast aux autres rangs.
+ * \brief Reads the next line value and broadcasts it to other ranks.
  */
 String MshParallelMeshReader::
 _getNextLineAndBroadcast()
@@ -326,8 +327,9 @@ _getNextLineAndBroadcast()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne \a true si on est à la fin du fichier.
+ * \brief Returns \a true if we are at the end of the file.
  */
 bool MshParallelMeshReader::
 _getIsEndOfFileAndBroadcast()
@@ -510,7 +512,7 @@ _goToNextLine()
 void MshParallelMeshReader::
 _computeNodesPartition()
 {
-  // Détermine la bounding box de la maille
+  // Determines the mesh bounding box
   Real max_value = FloatInfo<Real>::maxValue();
   Real min_value = -max_value;
   Real3 min_box(max_value, max_value, max_value);
@@ -521,15 +523,15 @@ _computeNodesPartition()
     max_box = math::max(max_box, pos);
   }
 
-  //! Rank auquel appartient les noeuds de ma partie.
+  //! Rank to which the nodes of my part belong.
   UniqueArray<Int32> nodes_part(nb_node, 0);
 
-  // Pour la partition, on ne prend en compte que la coordonnée X.
-  // On est sur qu'elle est valable pour toutes les dimensions du maillage.
-  // On partitionne avec des intervalles de même longueur.
-  // NOTE: Cela fonctionne bien si l'ensemble des noeuds est bien réparti.
-  // Si ce n'est pas le cas on pourrait utiliser une bisection en coupant
-  // à chaque fois sur la moyenne.
+  // For partitioning, only the X coordinate is considered.
+  // We are sure it is valid for all mesh dimensions.
+  // We partition using intervals of equal length.
+  // NOTE: This works well if the set of nodes is well distributed.
+  // If not, we could use bisection by cutting
+  // at the average each time.
   Real min_x = min_box.x;
   Real max_x = max_box.x;
   IParallelMng* pm = m_parallel_mng;
@@ -538,8 +540,8 @@ _computeNodesPartition()
   info() << "MIN_MAX_X=" << global_min_x << " " << global_max_x;
 
   Real diff_v = (global_max_x - global_min_x) / static_cast<Real>(m_nb_part);
-  // Ne devrait pas arriver mais c'est nécessaire pour éviter d'éventuelles
-  // divisions par zéro.
+  // Should not happen but necessary to avoid potential
+  // division by zero.
   if (!math::isNearlyEqual(global_min_x, global_max_x)) {
     for (Int64 i = 0; i < nb_node; ++i) {
       Int32 part = static_cast<Int32>((m_mesh_allocate_info.nodes_coordinates[i].x - global_min_x) / diff_v);
@@ -548,7 +550,7 @@ _computeNodesPartition()
     }
   }
   UniqueArray<Int32> nb_node_per_rank(m_nb_part, 0);
-  // Construit la table de hashage des rangs
+  // Builds the rank hash table
   for (Int64 i = 0; i < nb_node; ++i) {
     Int32 rank = m_parts_rank[nodes_part[i]];
     Int64 uid = m_mesh_allocate_info.nodes_unique_id[i];
@@ -561,12 +563,13 @@ _computeNodesPartition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des noeuds du maillage.
+ * \brief Reads mesh nodes.
  *
- * Lit les uniqueId() des noeuds et les coordonnées associées.
+ * Reads the uniqueId() of the nodes and their associated coordinates.
  *
- * Le format est le suivant:
+ * The format is as follows:
  *
  * \code
  $Nodes
@@ -644,10 +647,10 @@ _readNodesOneEntity(MshNodeBlock& node_block)
   if (!m_is_binary)
     _goToNextLine();
 
-  // Dimension de l'entité (pas utile)
+  // Entity dimension (not useful)
   Int32 entity_dim = entity_infos[0];
   node_block.entity_dim = entity_dim;
-  // Tag de l'entité associée
+  // Associated entity tag
   Int32 entity_tag = entity_infos[1];
   node_block.entity_tag = entity_tag;
 
@@ -663,13 +666,13 @@ _readNodesOneEntity(MshNodeBlock& node_block)
   if (parametric_coordinates != 0)
     ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
 
-  // Il est possible que le nombre de noeuds soit 0.
-  // Dans ce cas, il faut directement passer à la ligne suivante
+  // It is possible that the number of nodes is 0.
+  // In this case, we must proceed directly to the next line
   if (nb_node2 == 0)
     return;
 
-  // Partitionne la lecture en \a m_nb_part
-  // Pour chaque i_entity, on a d'abord la liste des identifiants puis la liste des coordonnées
+  // Partition the reading into \a m_nb_part
+  // For each i_entity, we first have the list of identifiers then the list of coordinates
 
   for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
     Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
@@ -679,15 +682,15 @@ _readNodesOneEntity(MshNodeBlock& node_block)
       nodes_uids.resize(nb_to_read);
     }
 
-    // Le rang maitre lit les informations des noeuds pour la partie concernée
-    // et les transfère au rang destination
+    // The master rank reads the node information for the relevant part
+    // and transfers it to the destination rank
     if (ios_file) {
       if (m_is_binary) {
         ios_file->binaryRead(nodes_uids.view());
       }
       else {
         for (Integer i = 0; i < nb_to_read; ++i) {
-          // Conserve le uniqueId() du noeuds.
+          // Keeps the node uniqueId().
           nodes_uids[i] = ios_file->getInt64();
           //info() << "I=" << i << " ID=" << nodes_uids[i];
         }
@@ -700,14 +703,14 @@ _readNodesOneEntity(MshNodeBlock& node_block)
       pm->recv(nodes_uids, m_master_io_rank);
     }
 
-    // Conserve les informations de ma partie
+    // Keeps the information for my part
     if (my_rank == dest_rank) {
       m_mesh_allocate_info.nodes_unique_id.addRange(nodes_uids);
       node_block.nb_node = nodes_uids.size();
     }
   }
 
-  // Lecture par partie des coordonnées
+  // Reading coordinates by part
   for (Int32 i_part = 0; i_part < m_nb_part; ++i_part) {
     Int64 nb_to_read = _interval(i_part, m_nb_part, nb_node2).second;
     Int32 dest_rank = m_parts_rank[i_part];
@@ -716,8 +719,8 @@ _readNodesOneEntity(MshNodeBlock& node_block)
       nodes_coordinates.resize(nb_to_read);
     }
 
-    // Le rang maitre lit les informations des noeuds pour la partie concernée
-    // et les transfère au rang destination
+    // The master rank reads the node information for the relevant part
+    // and transfers it to the destination rank
     if (ios_file) {
       if (m_is_binary) {
         ios_file->binaryRead(nodes_coordinates.view());
@@ -736,7 +739,7 @@ _readNodesOneEntity(MshNodeBlock& node_block)
       pm->recv(nodes_coordinates, m_master_io_rank);
     }
 
-    // Conserve les informations de ma partie
+    // Keeps the information for my part
     if (my_rank == dest_rank) {
       m_mesh_allocate_info.nodes_coordinates.addRange(nodes_coordinates);
     }
@@ -748,8 +751,9 @@ _readNodesOneEntity(MshNodeBlock& node_block)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lit un bloc d'entité de type 'Element'.
+ * \brief Reads an 'Element' type block.
  */
 void MshParallelMeshReader::
 _readOneElementBlock(MshElementBlock& block)
@@ -801,7 +805,7 @@ _readOneElementBlock(MshElementBlock& block)
         }
       }
       else {
-        // Utilise des Int64 pour garantir qu'on ne déborde pas.
+        // Use Int64 to ensure no overflow.
         for (Int64 i = 0; i < nb_uid; ++i) {
           Int64 item_unique_id = ios_file->getInt64();
           uids[i] = item_unique_id;
@@ -827,10 +831,11 @@ _readOneElementBlock(MshElementBlock& block)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des éléments (mailles,faces,...)
+ * \brief Reading of elements (meshes, faces, ...)
  *
- * Voici la description du format:
+ * Here is the format description:
  *
  * \verbatim
  * $Elements
@@ -844,16 +849,16 @@ _readOneElementBlock(MshElementBlock& block)
  * $EndElements
  * \endverbatim
  *
- * Dans la version 4, les éléments sont rangés par genre (eItemKind).
- * Chaque bloc d'entité peut-être de dimension différente Il n'y a pas
- * de dimension associé au maillage. On considère donc que la dimension
- * du maillage est la dimension la plus élevée des blocs qu'on lit.
- * Cela signifie aussi qu'on est obligé de lire tous les blocs avant de pouvoir
- * connaitre la dimension du maillage.
+ * In version 4, elements are sorted by type (eItemKind).
+ * Each entity block may have a different dimension. There is no
+ * mesh dimension associated with it. Therefore, we consider the dimension
+ * of the mesh to be the highest dimension of the blocks we read.
+ * This also means that we are forced to read all blocks before we can
+ * know the mesh dimension.
  *
- * En parallèle, chaque bloc est distribué sur les rangs de \a m_parts_rank.
+ * In parallel, each block is distributed across the ranks in \a m_parts_rank.
  *
- * \return la dimension du maillage.
+ * \return the mesh dimension.
  */
 Integer MshParallelMeshReader::
 _readElementsFromFile()
@@ -886,7 +891,7 @@ _readElementsFromFile()
   blocks.resize(nb_block);
 
   {
-    // Numérote les blocs (pour le débug)
+    // Number the blocks (for debugging)
     Integer index = 0;
     for (MshElementBlock& block : blocks) {
       block.index = index;
@@ -922,10 +927,10 @@ _readElementsFromFile()
     block.entity_tag = entity_tag;
     block.reorder_infos = msh_tinfo.m_reorder_infos;
     if (entity_type == MSH_PNT) {
-      // Si le type est un point, le traitement semble un peu particulier.
-      // Il y a dans ce cas deux entiers dans la ligne suivante:
-      // - un entier qui ne semble pas être utilisé
-      // - le numéro unique du noeud qui nous intéresse
+      // If the type is a point, the processing seems a bit special.
+      // In this case, there are two integers in the following line:
+      // - an integer that does not seem to be used
+      // - the unique node number we are interested in
       Int64 item_unique_id = NULL_ITEM_UNIQUE_ID;
       if (ios_file) {
         [[maybe_unused]] Int64 unused_id = _getInt64();
@@ -947,8 +952,8 @@ _readElementsFromFile()
   if (m_is_binary)
     _goToNextLine();
 
-  // Maintenant qu'on a tous les blocs, la dimension du maillage est
-  // la plus grande dimension des blocs
+  // Now that we have all the blocks, the mesh dimension is
+  // the largest dimension of the blocks
   Integer mesh_dimension = -1;
   for (const MshElementBlock& block : blocks)
     mesh_dimension = math::max(mesh_dimension, block.dimension);
@@ -961,7 +966,7 @@ _readElementsFromFile()
   bool allow_multi_dim_cell = m_mesh->meshKind().isNonManifold();
   bool use_experimental_type_for_cell = false;
   if (allow_multi_dim_cell) {
-    // Par défaut utilise les nouveaux types.
+    // By default, use the new types.
     use_experimental_type_for_cell = true;
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_EXPERIMENTAL_CELL_TYPE", true))
       use_experimental_type_for_cell = (v.value() != 0);
@@ -976,20 +981,20 @@ _readElementsFromFile()
     if (block_dim == mesh_dimension)
       _computeOwnItems(block, m_mesh_allocate_info.cells_infos, false);
     else if (allow_multi_dim_cell) {
-      // Regarde si on peut créé des mailles de dimension inférieures à celles
-      // du maillage.
+      // Check if we can create meshes of dimensions lower than those
+      // of the mesh.
       bool use_sub_dim_cell = false;
       if (mesh_dimension == 3 && (block_dim == 2 || block_dim == 1))
-        // Maille 1D ou 2D dans un maillage 3D
+        // 1D or 2D mesh in a 3D mesh
         use_sub_dim_cell = true;
       else if (mesh_dimension == 2 && block_dim == 1)
-        // Maille 1D dans un maillage 2D
+        // 1D mesh in a 2D mesh
         use_sub_dim_cell = true;
       if (!use_experimental_type_for_cell)
         use_sub_dim_cell = false;
       if (use_sub_dim_cell) {
-        // Ici on va créer des mailles 2D dans un maillage 3D.
-        // On converti le type de base en un type équivalent pour les mailles.
+        // Here we will create 2D meshes in a 3D mesh.
+        // We convert the base type into an equivalent type for the meshes.
         if (mesh_dimension == 3) {
           if (block.item_type == IT_Triangle3)
             block.item_type = ItemTypeId(IT_Cell3D_Triangle3);
@@ -1044,11 +1049,11 @@ namespace
     return view;
   }
   /*!
-   * \brief Broadcast un tableau et retourne une vue dessus.
+   * \brief Broadcast an array and return a view of it.
    *
-   * Si on est le rang \a dest_rank, alors on broadcast \a values.
-   * Les autres rangs récupèrent la valeur dans \a work_values et
-   * retournent une vue dessus.
+   * If we are rank \a dest_rank, we broadcast \a values.
+   * The other ranks retrieve the value in \a work_values and
+   * return a view of it.
    */
   template <typename DataType> inline ArrayView<DataType>
   _broadcastArray(IParallelMng* pm, ArrayView<DataType> values,
@@ -1056,7 +1061,7 @@ namespace
   {
     const Int32 my_rank = pm->commRank();
     Int64 size = 0;
-    // Envoie la taille
+    // Send the size
     if (dest_rank == my_rank)
       size = values.size();
     pm->broadcast(ArrayView<Int64>(1, &size), dest_rank);
@@ -1071,7 +1076,7 @@ namespace
 void MshParallelMeshReader::
 _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool is_generate_uid)
 {
-  // On ne conserve que les entités dont le premier noeud appartient à notre rang.
+  // We only keep entities whose first node belongs to our rank.
 
   IParallelMng* pm = m_parallel_mng;
   const Int32 my_rank = pm->commRank();
@@ -1090,13 +1095,13 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
   if (is_print_level1)
     info() << "Compute own items block_index=" << block.index << " nb_part=" << nb_part
            << " has_reorder?=" << has_reorder_info;
-  // Liste des noeuds de l'élément avec la connectivité Arcane.
+  // List of element nodes with Arcane connectivity.
   SmallArray<Int64> arcane_reordered_uids;
   if (has_reorder_info)
     arcane_reordered_uids.resize(item_nb_node);
   for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
     const Int32 dest_rank = m_parts_rank[i_part];
-    // Broadcast la i_part-ème partie des uids et connectivités des mailles
+    // Broadcast the i_part-th part of the mesh uids and connectivities
     ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities.view(), connectivities, dest_rank);
     ArrayView<Int64> uids_view = _broadcastArray(pm, block.uids.view(), uids, dest_rank);
 
@@ -1104,14 +1109,14 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
     nodes_rank.resize(nb_item);
     nodes_rank.fill(-1);
 
-    // Parcours les entités. Chaque entité appartiendra au rang
-    // de son premier noeud. Si cette partie correspond à mon rang, alors
-    // on conserve la maille.
+    // Iterate through the entities. Each entity will belong to the rank
+    // of its first node. If this part corresponds to my rank, then
+    // we keep the mesh.
     for (Int32 i = 0; i < nb_item; ++i) {
       Int64 first_node_uid = connectivities_view[i * item_nb_node];
       auto x = m_mesh_allocate_info.nodes_rank_map.find(first_node_uid);
       if (x == m_mesh_allocate_info.nodes_rank_map.end())
-        // Le noeud n'est pas dans ma liste
+        // The node is not in my list
         continue;
       Int32 rank = x->second;
       nodes_rank[i] = rank;
@@ -1120,18 +1125,18 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
     for (Int32 i = 0; i < nb_item; ++i) {
       const Int32 rank = nodes_rank[i];
       if (rank != my_rank)
-        // Le noeud n'est pas dans ma partie
+        // The node is not in my part
         continue;
-      // Le noeud est chez moi, j'ajoute l'entité à la liste des
-      // entités que je vais créer.
+      // The node is mine, I add the entity to the list of
+      // entities I will create.
       ConstArrayView<Int64> v = connectivities_view.subView(i * item_nb_node, item_nb_node);
       Int64 uid = uids_view[i];
       if (is_generate_uid)
-        // Le uniqueId() sera généré automatiquement
+        // The uniqueId() will be generated automatically
         uid = NULL_ITEM_UNIQUE_ID;
       if (has_reorder_info) {
-        // Réordonne les noeuds si le type Arcane n'a pas la même numérotation
-        // que le type MSH.
+        // Reorder the nodes if the Arcane type does not have the same numbering
+        // as the MSH type.
         for (Int32 zz = 0; zz < item_nb_node; ++zz)
           arcane_reordered_uids[zz] = v[reorder_infos[zz]];
         v = arcane_reordered_uids.view();
@@ -1144,18 +1149,17 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positionne les coordonnées des noeuds.
+ * \brief Positions the node coordinates.
  *
- * La liste est répartie sur les processeurs des rangs de \a m_parts_rank.
- * On boucle sur les rangs de cette liste et chaque rang envoie aux autres
- * la liste des coordonnées des noeuds qu'il contient. Chaque rang regarde
- * si des noeuds de cette liste lui appartiennent et si c'est le cas positionnent
- * les coordonnées.
+ * The list is distributed across the processors of the ranks in \a m_parts_rank.
+ * We loop through the ranks in this list, and each rank sends to the others
+ * the list of coordinates of the nodes it contains. Each rank checks
+ * if any nodes from this list belong to it, and if so, positions them.
  *
- * \note Cet algorithme envoie par morceau tous les noeuds et n'est donc pas
- * vraiment parallèle sur le temps d'exécution. On pourrait améliorer cela
- * si on connaissait l'intervalle des uniqueId() de chaque partie et ainsi
- * demander directement au rang concerné les coordonnées qu'on souhaite.
+ * \note This algorithm sends all nodes piece by piece and is therefore not
+ * truly parallel in execution time. This could be improved
+ * if we knew the range of uniqueIds() for each part and thus
+ * directly request the desired coordinates from the concerned rank.
  */
 void MshParallelMeshReader::
 _setNodesCoordinates()
@@ -1176,9 +1180,9 @@ _setNodesCoordinates()
     Int32 nb_item = uids.size();
     local_ids.resize(nb_item);
 
-    // Converti les uniqueId() en localId(). S'ils sont non nuls
-    // c'est que l'entité est dans mon sous-domaine et donc on peut
-    // positionner sa coordonnée
+    // Convert uniqueId() to localId(). If they are non-null
+    // it means the entity is in my subdomain and therefore we can
+    // position its coordinate
     node_family->itemsUniqueIdToLocalId(local_ids, uids, false);
     for (Int32 i = 0; i < nb_item; ++i) {
       NodeLocalId nid(local_ids[i]);
@@ -1200,7 +1204,7 @@ _allocateCells()
   Integer nb_cell_node = m_mesh_allocate_info.cells_infos.items_infos.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
-  // Création des mailles
+  // Creating meshes
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   info() << "## Allocating ##";
@@ -1228,8 +1232,8 @@ _allocateGroups()
     physical_name_list.clear();
     Int32 block_index = block.index;
     Int32 block_dim = block.dimension;
-    // On alloue un groupe s'il a un nom physique associé.
-    // Pour cela, il faut déjà qu'il soit associé à une entité.
+    // We allocate a group if it has an associated physical name.
+    // For this, it must already be associated with an entity.
     Int64 block_entity_tag = block.entity_tag;
     if (block_entity_tag < 0) {
       info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
@@ -1270,17 +1274,17 @@ _allocateGroups()
         _addFaceGroup(block, group_name);
       }
       else {
-        // Il s'agit de noeuds
+        // These are nodes
         _addCellOrNodeGroup(block.uids, block.index, group_name, node_family, false);
       }
     }
   }
 
-  // Crée les groupes de noeuds associés aux blocs de $Nodes
+  // Create the node groups associated with the $Nodes blocks
   {
     //bool has_periodic = m_mesh_info->m_periodic_info.hasValues();
     UniqueArray<Int64>& nodes_uids = m_mesh_allocate_info.nodes_unique_id;
-    // Créé les groupes de noeuds issus des blocks dans $Nodes
+    // Create the node groups derived from the blocks in $Nodes
     for (const MshNodeBlock& block : m_mesh_allocate_info.node_blocks) {
       ArrayView<Int64> block_uids = nodes_uids.subView(block.index_in_allocation_info, block.nb_node);
       MshPhysicalName physical_name = m_mesh_info->findPhysicalName(block.entity_dim, block.entity_tag);
@@ -1288,12 +1292,12 @@ _allocateGroups()
       info(4) << "NodeBlock name=" << group_name << " index=" << block.index
               << " index_in_allocation=" << block.index_in_allocation_info
               << " nb_node=" << block.nb_node;
-      // Si on a des infos de périodicité, on crée toujours les groupes de noeuds correspondants
-      // aux blocs, car ils peuvent être référencés par les infos de périodicité.
-      // Dans ce cas, on génère un nom de groupe.
-      // NOTE: désactive cela car cela peut générer un très grand nombre de nombre de groupes
-      // lorsqu'il y a beaucoup d'informations de périodicité et en plus on n'utilise pas encore
-      // cela lors de l'écriture des informations périodiques.
+      // If we have periodicity information, we always create the corresponding node groups
+      // to the blocks, because they can be referenced by the periodicity information.
+      // In this case, we generate a group name.
+      // NOTE: disable this because it can generate a very large number of groups
+      // when there is a lot of periodicity information and furthermore we are not yet using
+      // this when writing the periodic information.
       //if (physical_name.isNull() && has_periodic)
       //group_name = String::format("ArcaneMshInternalNodesDim{0}Entity{1}", block.entity_dim, block.entity_tag);
       if (!group_name.null())
@@ -1304,8 +1308,9 @@ _allocateGroups()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute des faces au groupe \a group_name.
+ * \brief Adds faces to the group \a group_name.
  */
 void MshParallelMeshReader::
 _addFaceGroup(const MshElementBlock& block, const String& group_name)
@@ -1332,11 +1337,11 @@ _addFaceGroupOnePart(const MshElementBlock& block, ConstArrayView<Int64> connect
   const ItemTypeId type_id = block.item_type;
   const Int32 nb_entity = connectivities.size() / item_nb_node;
 
-  // Il peut y avoir plusieurs blocs pour le même groupe.
-  // On récupère le groupe s'il existe déjà.
+  // There may be several blocks for the same group.
+  // We retrieve the group if it already exists.
   FaceGroup face_group = mesh->faceFamily()->findGroup(group_name, true);
 
-  UniqueArray<Int32> faces_id; // Numéro de la face dans le maillage \a mesh
+  UniqueArray<Int32> faces_id; // Face number in the mesh \a mesh
   faces_id.reserve(nb_entity);
 
   const Int32 face_nb_node = nb_entity * item_nb_node;
@@ -1353,10 +1358,10 @@ _addFaceGroupOnePart(const MshElementBlock& block, ConstArrayView<Int64> connect
   NodeInfoListView mesh_nodes(node_family);
   NodesOfItemReorderer m_nodes_reorderer(mesh->itemTypeMng());
 
-  // Réordonne les identifiants des faces retrouver la face dans le maillage.
-  // Pour cela, on récupère le premier noeud de la face et on regarde s'il
-  // se trouve dans notre sous-domaine. Si oui, la face sera ajoutée à notre
-  // partie du maillage
+  // Reorders the face identifiers to find the face in the mesh.
+  // For this, we retrieve the first node of the face and check if it
+  // is located in our subdomain. If so, the face will be added to our
+  // part of the mesh
   for (Integer i_face = 0; i_face < nb_entity; ++i_face) {
     for (Integer z = 0; z < item_nb_node; ++z)
       orig_nodes_id[z] = connectivities[faces_nodes_unique_id_index + z];
@@ -1380,8 +1385,8 @@ _addFaceGroupOnePart(const MshElementBlock& block, ConstArrayView<Int64> connect
       Node current_node(mesh_nodes[faces_first_node_local_id[i_face]]);
       Face face = MeshUtils::getFaceFromNodesUniqueId(current_node, face_nodes_id);
 
-      // En parallèle, il est possible que la face ne soit pas dans notre sous-domaine
-      // même si un de ses noeuds l'est
+      // In parallel, it is possible that the face is not in our subdomain
+      // even if one of its nodes is
       if (face.null()) {
         if (!m_is_parallel) {
           OStringStream ostr;
@@ -1409,8 +1414,9 @@ _addFaceGroupOnePart(const MshElementBlock& block, ConstArrayView<Int64> connect
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute des mailles ou noeuds au groupe \a group_name.
+ * \brief Adds cells or nodes to the group \a group_name.
  */
 void MshParallelMeshReader::
 _addCellOrNodeGroup(ArrayView<Int64> block_uids, Int32 block_index,
@@ -1434,19 +1440,19 @@ _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
 {
   const Int32 nb_entity = uids.size();
 
-  // Il peut y avoir plusieurs blocs pour le même groupe.
-  // On récupère le groupe s'il existe déjà.
+  // There may be several blocks for the same group.
+  // We retrieve the group if it already exists.
   ItemGroup group = family->findGroup(group_name, true);
 
   UniqueArray<Int32> items_lid(nb_entity);
 
   family->itemsUniqueIdToLocalId(items_lid, uids, false);
 
-  // En parallèle, il est possible que certaines entités du groupe ne soient
-  // pas dans notre sous-domaine. Il faut les filtrer.
-  // De même, s'il s'agit d'un groupe issu d'une $Entity node, il est possible
-  // que le noeud n'existe pas s'il n'est pas attaché à une maille
-  // (TODO: à vérifier avec sod3d-misc.msh)
+  // In parallel, it is possible that some entities of the group are not
+  // in our subdomain. They must be filtered.
+  // Similarly, if it is a group derived from a $Entity node, it is possible
+  // that the node does not exist if it is not attached to a mesh
+  // (TODO: to verify with sod3d-misc.msh)
   if (m_is_parallel || filter_invalid) {
     auto items_begin = items_lid.begin();
     Int64 new_size = std::remove(items_begin, items_lid.end(), NULL_ITEM_LOCAL_ID) - items_begin;
@@ -1471,7 +1477,7 @@ _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
 void MshParallelMeshReader::
 _readPhysicalNames()
 {
-  // NOTE: même en binaire, la partie $PhysicalNames est écrite en ASCII.
+  // NOTE: even in binary, the $PhysicalNames section is written in ASCII.
   String quote_mark = "\"";
   Int32 nb_name = _getIntegerAndBroadcast();
   info() << "nb_physical_name=" << nb_name;
@@ -1484,8 +1490,8 @@ _readPhysicalNames()
     String s = _getNextLineAndBroadcast();
     if (dim < 0 || dim > 3)
       ARCANE_FATAL("Invalid value for physical name dimension dim={0}", dim);
-    // Les noms des groupes peuvent commencer par des espaces et contiennent
-    // des guillemets qu'il faut supprimer.
+    // Group names may start with spaces and contain
+    // quotes that must be removed.
     s = String::collapseWhiteSpace(s);
     if (s.startsWith(quote_mark))
       s = s.substring(1);
@@ -1502,10 +1508,11 @@ _readPhysicalNames()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des entités.
+ * \brief Reading entities.
  *
- * Le format est:
+ * The format is:
  *
  * \verbatim
  *    $Entities
@@ -1544,12 +1551,12 @@ _readEntities()
 
   info() << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
          << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
-  // Après le format, on peut avoir les entités mais cela est optionnel
-  // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
+  // After the format, we may have entities, but this is optional
+  // If they are present, we read the file until the end of this section.
   if (!m_is_binary)
     _goToNextLine();
 
-  // Lecture des entités associées à des points
+  // Reading entities associated with points
   for (Int64 i = 0; i < nb_dim_item[0]; ++i) {
     FixedArray<Int64, 2> tag_info;
     if (ios_file) {
@@ -1575,12 +1582,12 @@ _readEntities()
       _goToNextLine();
   }
 
-  // Lecture des entités de dimensions 1, 2 et 3.
+  // Reading entities of dimensions 1, 2, and 3.
   for (Int32 i_dim = 1; i_dim <= 3; ++i_dim)
     for (Int32 i = 0; i < nb_dim_item[i_dim]; ++i)
       _readOneEntity(i_dim, i);
 
-  // En binaire, il faut aller au début de la ligne suivante.
+  // In binary, we must go to the beginning of the next line.
   if (m_is_binary)
     _goToNextLine();
   _readAndCheck("$EndEntities");
@@ -1596,7 +1603,7 @@ _readOneEntity(Int32 entity_dim, Int32 entity_index_in_dim)
   const bool is_print_level1 = m_verbosity_level > 0;
   const bool is_print_level2 = m_verbosity_level > 1;
 
-  // Infos pour les tags
+  // Info for the tags
   // [0] entity_dim
   // [1] tag
   // [2] nb_physical_tag
@@ -1624,7 +1631,7 @@ _readOneEntity(Int32 entity_dim, Int32 entity_index_in_dim)
       if (is_print_level2)
         info(4) << "[Entities] z=" << z << " physical_tag=" << physical_tag;
     }
-    // TODO: Lire les informations numBounding...
+    // TODO: Read the numBounding information...
     Int64 nb_bounding_group = _getInt64();
     dim_and_tag_info.add(nb_bounding_group);
     for (Int64 z = 0; z < nb_bounding_group; ++z) {
@@ -1662,10 +1669,11 @@ _readOneEntity(Int32 entity_dim, Int32 entity_index_in_dim)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des informations périodiques.
+ * \brief Reading periodic information.
  *
- * Le format est:
+ * The format is:
  *
  * \verbatim
  *   $Periodic
@@ -1686,9 +1694,9 @@ _readPeriodic()
   info() << "[Periodic] nb_link=" << nb_link;
   const bool is_print_level1 = m_verbosity_level > 0;
   const bool is_print_level2 = m_verbosity_level > 1;
-  // TODO: pour l'instant, tous les rangs conservent les
-  // données car on suppose qu'il n'y en a pas beaucoup.
-  // A terme, il faudra aussi distribuer ces informations.
+  // TODO: for now, all ranks keep the
+  // data because we assume there aren't many.
+  // In the future, this information will also need to be distributed.
   MshPeriodicInfo& periodic_info = m_mesh_info->m_periodic_info;
   periodic_info.m_periodic_list.resize(nb_link);
   for (Int64 ilink = 0; ilink < nb_link; ++ilink) {
@@ -1726,8 +1734,9 @@ _readPeriodic()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Tente de lire la valeur \a value.
+ * \brief Tries to read the value \a value.
  */
 void MshParallelMeshReader::
 _readAndCheck(const String& expected_value)
@@ -1786,9 +1795,9 @@ _readMeshFromFile()
     ARCANE_UNUSED(data_size);
     if (data_size != 8)
       ARCANE_FATAL("Only 'size_t' of size '8' is allowed (current size is '{0}')", data_size);
-    // En binaire, il a un entier à lire qui vaut 1 et qui permet de savoir si on n'est en big/little endian.
+    // In binary, there is an integer to read that equals 1 and allows us to know if we are in big/little endian.
     if (m_is_binary) {
-      // Il faut lire jusqu'à la fin de la ligne pour le binaire.
+      // We must read until the end of the line for binary.
       _goToNextLine();
       Int32 int_value_one = 0;
       ios_file->binaryRead(SmallSpan<Int32>(&int_value_one, 1));
@@ -1803,19 +1812,19 @@ _readMeshFromFile()
       ARCANE_THROW(IOException, "$EndMeshFormat not found");
   }
 
-  // TODO: Les différentes sections ($Nodes, $Entitites, ...) peuvent
-  // être dans n'importe quel ordre (à part $Nodes qui doit être avant $Elements)
-  // Faire un méthode qui gère cela.
+  // TODO: The different sections ($Nodes, $Entities, ...) can
+  // be in any order (except $Nodes which must be before $Elements)
+  // Create a method that handles this.
 
   String next_line = _getNextLineAndBroadcast();
-  // Noms des groupes
+  // Group names
   if (next_line == "$PhysicalNames") {
     _readPhysicalNames();
     next_line = _getNextLineAndBroadcast();
   }
 
-  // Après le format, on peut avoir les entités mais cela est optionnel
-  // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
+  // After the format, we may have entities but this is optional
+  // If they are present, we read the file until the end of this section.
   if (next_line == "$Entities") {
     _readEntities();
     next_line = _getNextLineAndBroadcast();
@@ -1868,9 +1877,9 @@ _readMeshFromFile()
 void MshParallelMeshReader::
 _initTypes()
 {
-  // Initialise les types.
-  // Il faut le faire au début de la lecture et ne plus en ajouter après.
-  // La connectivité dans GMSH est décrite ici:
+  // Initializes the types.
+  // This must be done at the beginning of the reading and no more added afterward.
+  // Connectivity in GMSH is described here:
   // https://gmsh.info/doc/texinfo/gmsh.html#Node-ordering
   _addMshTypeInfo(MSH_PNT, ITI_Vertex);
   _addMshTypeInfo(MSH_LIN_2, ITI_Line2);
@@ -1936,8 +1945,9 @@ mshToArcaneTypeInfo(Int32 msh_type) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lit le maillage contenu dans le fichier \a filename et le construit dans \a mesh
+ * \brief Reads the mesh contained in the file \a filename and constructs it in \a mesh
  */
 IMeshReader::eReturnType MshParallelMeshReader::
 readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_partition)
@@ -1947,21 +1957,21 @@ readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_parti
          << " use_internal_partition=" << use_internal_partition;
   m_mesh = mesh;
   IParallelMng* pm = mesh->parallelMng();
-  // Lit en séquentiel si les fichiers sont déjà découpés
+  // Reads sequentially if the files are already partitioned
   if (!use_internal_partition)
     pm = pm->sequentialParallelMng();
   m_parallel_mng = pm;
   const Int32 nb_rank = pm->commSize();
 
-  // Détermine les rangs qui vont conserver les données.
-  // Il n'est pas obligatoire que tous les rangs participent
-  // à la conservation des données. L'idéal avec un
-  // grand nombre de rangs serait qu'un rang sur 2 ou 4 participent.
-  // Cependant, cela génère alors des partitions vides (pour
-  // les rangs qui ne participent pas) et cela peut
-  // faire planter certains partitionneurs (comme ParMetis)
-  // lorsqu'il y a des partitions vides. Il faudrait d'abord
-  // corriger ce problème.
+  // Determines the ranks that will keep the data.
+  // It is not mandatory that all ranks participate
+  // in keeping the data. Ideally, with a
+  // large number of ranks, one in 2 or 4 would participate.
+  // However, this then generates empty partitions (for
+  // the ranks that do not participate) and this can
+  // crash certain partitioners (like ParMetis)
+  // when there are empty partitions. This problem should first
+  // be corrected.
   m_nb_part = nb_rank;
   m_parts_rank.resize(m_nb_part);
   for (Int32 i = 0; i < m_nb_part; ++i) {
@@ -1973,8 +1983,8 @@ readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_parti
   m_is_parallel = pm->isParallel();
   m_master_io_rank = master_io_rank;
   FixedArray<Int32, 1> file_readable;
-  // Seul le rang maître va lire le fichier.
-  // On vérifie d'abord qu'il est lisible
+  // Only the master rank will read the file.
+  // We first check if it is readable
   if (is_master_io) {
     bool is_readable = platform::isFileReadable(filename);
     info() << "Is file readable ?=" << is_readable;
@@ -1990,8 +2000,8 @@ readMeshFromMshFile(IMesh* mesh, const String& filename, bool use_internal_parti
   std::ifstream ifile;
   Ref<IosFile> ios_file;
   if (is_master_io) {
-    // Ouvre toujours le fichier en binaire car on
-    // ne sait pas à l'avance s'il est en mode texte ou binaire.
+    // Always open the file in binary because we
+    // do not know in advance if it is in text or binary mode.
     ifile.open(filename.localstr(), ios::binary);
     ios_file = makeRef<IosFile>(new IosFile(&ifile));
   }

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IosFile.cc                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Routines des Lecture/Ecriture d'un fichier.                               */
+/* File Read/Write Routines.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,7 +49,7 @@ getNextLine(const char* comment_char)
     bool is_comment = true; // Comments are searched for by default
     if (!comment_char)
       is_comment = false; // If none has been set, just skip their track of it
-    // Regarde si un caractère de commentaire est présent
+    // Check if a comment character is present
     for (int i = 0; is_comment && i < IOS_BFR_SZE && m_buf[i] != '\0'; ++i) {
       if (!isspace(m_buf[i])) {
         is_comment = (m_buf[i] == *comment_char);
@@ -58,7 +58,7 @@ getNextLine(const char* comment_char)
     }
 
     if (!is_comment) {
-      // Supprime le '\n' ou '\r' final
+      // Remove the final '\n' or '\r'
       for (int i = 0; i < IOS_BFR_SZE && m_buf[i] != '\0'; ++i) {
         //cout << " V=" << m_buf[i] << " I=" << (int)m_buf[i] << "\n";
         if (m_buf[i] == '\n' || m_buf[i] == '\r') {
@@ -83,8 +83,9 @@ getNextLine()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lit tous les caractères jusqu'à un caractère non blanc.
+ * \brief Reads all characters until a non-whitespace character.
  */
 void IosFile::
 goToEndOfLine()
@@ -92,11 +93,11 @@ goToEndOfLine()
   while (m_stream->good()) {
     int c = m_stream->peek();
 #ifdef _MSC_VER
-  #if _MSC_VER < 1930
-    if (std::isspace(c,std::locale::classic()))
-  #else
+#if _MSC_VER < 1930
+    if (std::isspace(c, std::locale::classic()))
+#else
     if (std::isspace(c))
-  #endif
+#endif
 #else
     if (std::isspace(c))
 #endif
@@ -208,10 +209,10 @@ isEqualString(const String& current_value, const String& expected_value)
 void IosFile::
 readBytes(SmallSpan<std::byte> bytes)
 {
-  m_stream->read(reinterpret_cast<char*>(bytes.data()),bytes.size());
+  m_stream->read(reinterpret_cast<char*>(bytes.data()), bytes.size());
   if (!m_stream->good())
     throw IOException("IosFile::readBytes()",
-                      String::format("Can not read '{0}' bytes",bytes.size()));
+                      String::format("Can not read '{0}' bytes", bytes.size()));
 }
 
 /*---------------------------------------------------------------------------*/

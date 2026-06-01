@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MshMeshWriter.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Lecture/Écriture d'un fichier au format MSH.                              */
+/* Reading/Writing an MSH format file.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écriture des fichiers de maillage au format msh.
+ * \brief Writing mesh files in msh format.
  */
 class MshMeshWriter
 : public TraceAccessor
@@ -47,7 +48,7 @@ class MshMeshWriter
 
  public:
 
-  //! Informations de correspondance entre le type MSH et le type Arcane
+  //! Information mapping between MSH type and Arcane type
   class ArcaneToMshTypeInfo
   {
    public:
@@ -147,19 +148,19 @@ class MshMeshWriter
   IMesh* m_mesh = nullptr;
   ItemTypeMng* m_item_type_mng = nullptr;
 
-  // Liste des tags physiques
+  // List of physical tags
   UniqueArray<PhysicalTagInfo> m_physical_tags;
 
-  // Nombre d'entités par dimension
+  // Number of entities by dimension
   FixedArray<Int32, 4> m_nb_entities_by_dim;
 
-  //! Liste des informations à écrire pour chaque groupe
+  //! List of information to write for each group
   std::vector<std::unique_ptr<ItemGroupWriteInfo>> m_groups_write_info_list;
 
   impl::MshMeshGenerationInfo* m_mesh_info = nullptr;
   bool m_has_periodic_info = false;
 
-  //! Informations de conversion entre les types Arcane et MSH pour les entités
+  //! Information on conversion between Arcane and MSH types for entities
   UniqueArray<ArcaneToMshTypeInfo> m_arcane_to_msh_type_infos;
 
  private:
@@ -201,8 +202,8 @@ processGroup(ItemGroup group, Int32 base_entity_index)
   ItemTypeMng* item_type_mng = mesh->itemTypeMng();
   ITraceMng* tm = family->traceMng();
 
-  // Pour GMSH, il faut trier les mailles par leur type (Triangle, Quadrangle, ...)
-  // On fait une entity MSH par type d'entité Arcane.
+  // For GMSH, meshes must be sorted by their type (Triangle, Quadrangle, ...)
+  // We create an MSH entity per Arcane entity type.
 
   ENUMERATE_ (Item, iitem, group) {
     Item item = *iitem;
@@ -213,7 +214,7 @@ processGroup(ItemGroup group, Int32 base_entity_index)
     m_items_by_type[item_type].add(item.localId());
   }
 
-  // Conserve les types pré-définis qui ont des éléments
+  // Keep predefined types that have elements
   Int64 total_nb_item = 0;
   for (Int16 i = 0; i < NB_BASIC_ITEM_TYPE; ++i) {
     Int64 nb_type = m_items_by_type[i].size();
@@ -234,9 +235,9 @@ processGroup(ItemGroup group, Int32 base_entity_index)
     m_entities_by_type.add(entity_info);
   }
 
-  // Si le groupe est vide, il faut quand même un tag physique pour que le
-  // groupe soit créé en lecture et ainsi en parallèle garantir que tous
-  // les sous-domaines ont les mêmes groupes.
+  // If the group is empty, a physical tag is still needed so that the
+  // group is created for reading and thus guarantee in parallel that all
+  // subdomains have the same groups.
   if (nb_existing_type == 0 && !is_all_items) {
     Int32 mesh_dim = mesh->dimension();
     eItemKind ik = family->itemKind();
@@ -249,7 +250,7 @@ processGroup(ItemGroup group, Int32 base_entity_index)
       entity_dim = mesh_dim - 2;
     else
       ARCANE_FATAL("Invalid item kind '{0}' for entity dimension", entity_dim);
-    // TODO: prendre un type qui correspond à la dimension
+    // TODO: take a type that corresponds to the dimension
     EntityInfo entity_info(entity_dim, ITI_Tetraedron4, base_entity_index);
     entity_info.setPhysicalTag(base_entity_index, group_name);
     m_entities_by_type.add(entity_info);
@@ -258,18 +259,19 @@ processGroup(ItemGroup group, Int32 base_entity_index)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détermine la liste des groupes à traiter pour une famille.
+ * \brief Determines the list of groups to process for a family.
  *
- * La liste des groupes à sauver sera ajoutée à \a items_groups.
- * \note Pour l'instant on support que l'ensemble des groupes forme
- * une partition des entités de la famille.
+ * The list of groups to save will be added to \a items_groups.
+ * \note For now, we only support that the set of groups forms
+ * a partition of the family's entities.
  */
 void MshMeshWriter::
 _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
 {
   bool has_group = false;
-  // Parcours tous les groupes de la famille
+  // Iterate over all groups in the family
   for (ItemGroup group : family->groups()) {
     if (group.isAllItems())
       continue;
@@ -279,25 +281,25 @@ _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
     items_groups.add(group);
     has_group = true;
   }
-  // Si pas de groupes dans la famille, on prend celui de toutes les entités
-  // si la famille est celle des mailles.
+  // If there are no groups in the family, we take the all items group
+  // if the family is the mesh family.
   if (!has_group && (family->itemKind() == IK_Cell))
     items_groups.add(family->allItems());
 
-  // TODO: si les groupe traités ne forment pas une partition et qu'il y a
-  // des entités qui ne sont pas dans ces groupes, il faudrait tout de même
-  // les sauver sous la forme d'une $Entity sans groupe physique associé.
+  // TODO: if the processed groups do not form a partition and there are
+  // entities not in these groups, they should still be saved in the form of a $Entity
+  // without an associated physical group.
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Ecrit au format MSH V4.
+ * \brief Writes in MSH V4 format.
  *
- * \param mesh Maillage d'entrée
- * \param file_name Nom du fichier de sortie
- * \retval true pour toute erreur détectée
- * \retval false sinon
+ * \param mesh Input mesh
+ * \param file_name Output file name
+ * \retval true if any error is detected
+ * \retval false otherwise
  */
 void MshMeshWriter::
 writeMesh(const String& file_name)
@@ -321,9 +323,9 @@ writeMesh(const String& file_name)
   }
 
   ofile << "$MeshFormat\n";
-  // 4.1 pour le format
-  // 0 pour ASCII (1 pour binaire)
-  // 8 pour sizeof(size_t)
+  // 4.1 for the format
+  // 0 for ASCII (1 for binary)
+  // 8 for sizeof(size_t)
   ofile << "4.1 0 " << sizeof(size_t) << "\n";
   ofile << "$EndMeshFormat\n";
 
@@ -344,14 +346,13 @@ writeMesh(const String& file_name)
     base_entity_index += entity_index_increment;
   }
 
-  // Pour GMSH, il faut commencer par les 'Entities'.
-  // Il faut une entité par type de maille.
-  // On commence donc par calculer les types de mailles.
-  // Pour les maillages non-manifold les mailles peuvent être de dimension
-  // différentes
+  // For GMSH, we must start with 'Entities'.
+  // We need one entity per mesh type.
+  // We therefore start by calculating the mesh types.
+  // For non-manifold meshes, the meshes can be of different dimensions
 
-  // Calcule le nombre total d'éléments.
-  // Toutes les entités qui ne sont pas de dimension 0 sont des éléments.
+  // Calculates the total number of elements.
+  // All entities that are not dimension 0 are elements.
   Int64 total_nb_cell = 0;
   for (const auto& ginfo : m_groups_write_info_list) {
     for (const EntityInfo& entity_info : ginfo->entitiesByType()) {
@@ -382,7 +383,7 @@ writeMesh(const String& file_name)
     Int32 nb_tag = m_physical_tags.size();
     ofile << nb_tag << "\n";
     for (const PhysicalTagInfo& tag_info : m_physical_tags) {
-      // TODO: vérifier que le nom ne dépasse pas 127 caractères.
+      // TODO: check that the name does not exceed 127 characters.
       ofile << tag_info.m_dimension << " " << tag_info.m_physical_tag << " " << '"' << tag_info.m_name << '"' << "\n";
     }
     ofile << "$EndPhysicalNames\n";
@@ -396,8 +397,9 @@ writeMesh(const String& file_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écrit le bloc contenant les entités ($Entities).
+ * \brief Writes the block containing the entities ($Entities).
  */
 void MshMeshWriter::
 _writeEntities(std::ostream& ofile)
@@ -427,9 +429,9 @@ _writeEntities(std::ostream& ofile)
   // ...
   // $EndEntities
 
-  // On a besoin de la bouding box de chaque entity.
-  // Pour faire simple, on prend celle de tout le maillage mais à terme
-  // ce serait mieux de calculer directement la bonne valeur.
+  // We need the bounding box of each entity.
+  // For simplicity, we take the one for the entire mesh, but eventually
+  // it would be better to calculate the correct value directly.
   const VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
   Real3 node_min_bounding_box;
   Real3 node_max_bounding_box;
@@ -453,9 +455,9 @@ _writeEntities(std::ostream& ofile)
     ofile << m_nb_entities_by_dim[0] << " " << m_nb_entities_by_dim[1]
           << " " << m_nb_entities_by_dim[2] << " " << m_nb_entities_by_dim[3] << "\n";
 
-    // Si on a des informations de périodicité,
-    // on créé une entité de dimension 0 pour que les informations de
-    // périodicité y fassent référence. On lui donne le tag 1.
+    // If we have periodicity information,
+    // we create a dimension 0 entity so that the periodicity information
+    // can refer to it. We give it tag 1.
     if (m_has_periodic_info) {
       ofile << "1 0.0 0.0 0.0 0\n";
     }
@@ -467,14 +469,14 @@ _writeEntities(std::ostream& ofile)
             continue;
           ofile << entity_info.m_entity_tag << " " << node_min_bounding_box.x << " " << node_min_bounding_box.y << " " << node_min_bounding_box.z
                 << " " << node_max_bounding_box.x << " " << node_max_bounding_box.y << " " << node_max_bounding_box.z;
-          // Pas de tag pour l'instant
+          // No tag for now
           Int32 physical_tag = entity_info.m_physical_tag;
           if (physical_tag > 0) {
             ofile << " 1 " << physical_tag;
           }
           else
             ofile << " 0";
-          // Pas de boundary pour l'instant
+          // No boundary for now
           ofile << " 0";
           ofile << "\n";
         }
@@ -486,8 +488,9 @@ _writeEntities(std::ostream& ofile)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écrit le bloc contenant les noeuds ($Nodes).
+ * \brief Writes the block containing the nodes ($Nodes).
  */
 void MshMeshWriter::
 _writeNodes(std::ostream& ofile)
@@ -511,7 +514,7 @@ _writeNodes(std::ostream& ofile)
   // ...
   // $EndNodes
 
-  // Bloc contenant les noeuds
+  // Block containing the nodes
   ofile << "$Nodes\n";
 
   auto [node_min_uid, node_max_uid] = _getFamilyMinMaxUniqueId(node_family);
@@ -520,13 +523,13 @@ _writeNodes(std::ostream& ofile)
   // entityDim(int) entityTag(int) parametric(int; 0 or 1) numNodesInBlock(size_t)
   ofile << "0 " << "100 " << "0 " << mesh_nb_node << "\n";
 
-  // Sauve les uniqueId() des noeuds
+  // Save the uniqueId() of the nodes
   ENUMERATE_ (Node, inode, all_nodes) {
     Int64 uid = inode->uniqueId();
     ofile << uid << "\n";
   }
 
-  // Sauve les coordonnées
+  // Save the coordinates
   VariableNodeReal3& nodes_coords = m_mesh->nodesCoordinates();
   ENUMERATE_ (Node, inode, all_nodes) {
     Real3 coord = nodes_coords[inode];
@@ -538,15 +541,16 @@ _writeNodes(std::ostream& ofile)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écrit le bloc contenant les élements ($Elements).
+ * \brief Writes the block containing the elements ($Elements).
  */
 void MshMeshWriter::
 _writeElements(std::ostream& ofile, Int64 total_nb_cell)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
 
-  // TODO: regarder s'il faut prendre en compte les uniqueId() des faces.
+  // TODO: check if we need to consider the uniqueId() of the faces.
   auto [cell_min_uid, cell_max_uid] = _getFamilyMinMaxUniqueId(cell_family);
 
   // $Elements
@@ -559,7 +563,7 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
   //   ...
   // $EndElements
 
-  // Bloc contenant les mailles
+  // Block containing the meshes
   ofile << "$Elements\n";
 
   Int32 nb_existing_type = m_nb_entities_by_dim[1] + m_nb_entities_by_dim[2] + m_nb_entities_by_dim[3];
@@ -584,7 +588,7 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
       ENUMERATE_ (ItemWithNodes, iitem, item_family->view(items_of_current_type)) {
         ItemWithNodes item = *iitem;
         ofile << item.uniqueId();
-        // Traite l'éventuelle permutation entre numérotation MSH et Arcane
+        // Handle the possible permutation between MSH numbering and Arcane
         if (!reorder_infos.empty()) {
           for (Int32 i = 0; i < nb_node_for_type; ++i)
             ofile << " " << item.node(reorder_infos[i]).uniqueId();
@@ -618,8 +622,8 @@ _writePeriodic(std::ostream& ofile)
   //     ...
   //   $EndPeriodic
 
-  // Les informations de périodicité sont conservées dans \a m_mesh_info
-  // qui n'existe pas si on n'est pas issu d'un maillage MSH.
+  // Periodicity information is stored in \a m_mesh_info
+  // which does not exist if we are not coming from an MSH mesh.
   if (!m_has_periodic_info)
     return;
   ARCANE_CHECK_POINTER(m_mesh_info);
@@ -632,14 +636,14 @@ _writePeriodic(std::ostream& ofile)
   UniqueArray<Int64> corresponding_nodes;
   UniqueArray<Int32> node_local_ids;
   ;
-  // Sauve chaque lien de périodicité.
+  // Save each periodicity link.
   for (const MshPeriodicOneInfo& one_info : periodic_one_infos) {
-    // On ne sauve pas les entités associées au lien, donc on considère
-    // que l'entité est de dimension zéro et les tags valent aussi zéro.
+    // We do not save the entities associated with the link, so we consider
+    // that the entity is of dimension zero and the tags are also zero.
     ofile << "\n";
     ofile << "0 1 1\n";
 
-    // Sauve les valeurs affines associées
+    // Save the associated affine values
     ConstArrayView<double> affine_values = one_info.m_affine_values;
     Int32 nb_affine = affine_values.size();
     ofile << nb_affine;
@@ -647,9 +651,9 @@ _writePeriodic(std::ostream& ofile)
       ofile << " " << affine_values[i];
     ofile << "\n";
 
-    // Sauve les couples de noeuds (esclave/maitre)
-    // On ne sauve que les couples dont au moins l'un de des deux noeuds
-    // est présent dans notre sous-domaine.
+    // Save the node pairs (slave/master)
+    // We only save the pairs where at least one of the two nodes
+    // is present in our sub-domain.
     Int32 nb_orig_node = one_info.m_nb_corresponding_node;
     ConstArrayView<Int64> orig_corresponding_nodes = one_info.m_corresponding_nodes;
     node_local_ids.resize(nb_orig_node * 2);
@@ -701,8 +705,8 @@ void MshMeshWriter::
 _initTypes()
 {
   m_arcane_to_msh_type_infos.resize(NB_BASIC_ITEM_TYPE);
-  // Initialise les types.
-  // Il faut le faire au début de la lecture et ne plus en ajouter après.
+  // Initialize the types.
+  // This must be done at the beginning of reading and no more types added afterwards.
   _addArcaneTypeInfo(ITI_Vertex, MSH_PNT);
   _addArcaneTypeInfo(ITI_Line2, MSH_LIN_2);
   _addArcaneTypeInfo(ITI_Line3, MSH_LIN_3);
@@ -760,8 +764,9 @@ arcaneToMshTypeInfo(ItemTypeId arcane_type) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écriture des fichiers de maillage au format msh.
+ * \brief Writing the mesh files in msh format.
  */
 class MshMeshWriterService
 : public AbstractService
@@ -800,7 +805,7 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Obsolète. Utiliser 'MshMeshReader' à la place
+// Obsolete. Use 'MshMeshReader' instead
 ARCANE_REGISTER_SERVICE(MshMeshWriterService,
                         ServiceProperty("MshNewMeshWriter", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshWriter));

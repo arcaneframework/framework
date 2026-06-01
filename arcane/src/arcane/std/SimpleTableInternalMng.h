@@ -1,23 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternalMng.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Classe permettant de modifier facilement un SimpleTableInternal.          */
+/* Class allowing easy modification of a SimpleTableInternal.                */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_SIMPLETABLEINTERNALMNG_H
 #define ARCANE_STD_SIMPLETABLEINTERNALMNG_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
@@ -33,6 +30,7 @@ class SimpleTableInternalMng
 : public ISimpleTableInternalMng
 {
  public:
+
   SimpleTableInternalMng(Ref<SimpleTableInternal> simple_table_internal)
   : m_simple_table_internal(simple_table_internal)
   {
@@ -48,6 +46,7 @@ class SimpleTableInternalMng
   virtual ~SimpleTableInternalMng() = default;
 
  public:
+
   void clearInternal() override;
 
   Integer addRow(const String& row_name) override;
@@ -125,6 +124,7 @@ class SimpleTableInternalMng
   void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
  protected:
+
   Ref<SimpleTableInternal> m_simple_table_internal;
 };
 
@@ -137,6 +137,3 @@ class SimpleTableInternalMng
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

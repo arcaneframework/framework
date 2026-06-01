@@ -1,29 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableWriterHelper.h                                   (C) 2000-2023 */
 /*                                                                           */
-/* Classe permettant d'écrire un SimpleTableInternal dans un fichier.        */
-/* Simplifie l'utilisation de l'écrivain en gérant le multiprocessus et les  */
-/* noms des fichiers/dossiers.                                               */
+/* Class allowing writing a SimpleTableInternal to a file.                   */
+/* Simplifies the use of the writer by managing multiprocessing and the      */
+/* names of files/directories.                                               */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_SIMPLETABLEWRITERHELPER_H
 #define ARCANE_STD_SIMPLETABLEWRITERHELPER_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableReaderWriter.h"
-#include "arcane/ISimpleTableWriterHelper.h"
+#include "arcane/core/ISimpleTableInternalMng.h"
+#include "arcane/core/ISimpleTableReaderWriter.h"
+#include "arcane/core/ISimpleTableWriterHelper.h"
 
-#include "arcane/Directory.h"
+#include "arcane/core/Directory.h"
 #include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
@@ -52,7 +49,7 @@ class SimpleTableWriterHelper
   , m_name_output_directory_one_file_by_ranks_permited(false)
   {
     if (simple_table_reader_writer.isNull())
-      ARCANE_FATAL("La réference passée en paramètre est Null.");
+      ARCANE_FATAL("The reference passed as a parameter is Null.");
   }
 
   SimpleTableWriterHelper()
@@ -129,9 +126,9 @@ class SimpleTableWriterHelper
   bool m_name_table_computed;
   bool m_name_output_directory_computed;
 
-  // Booleens permettant de savoir si le nom de fichier ou le nom de dossier
-  // possède le symbole "@proc_id@" qui permet l'écriture de fichiers par
-  // plusieurs processus.
+  // Booleans indicating whether the file name or the directory name
+  // contains the "@proc_id@" symbol which allows file writing by
+  // multiple processes.
   bool m_name_table_one_file_by_ranks_permited;
   bool m_name_output_directory_one_file_by_ranks_permited;
 };
@@ -145,6 +142,3 @@ class SimpleTableWriterHelper
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

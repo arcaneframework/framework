@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MshMeshReader.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Lecture/Ecriture d'un fichier au format MSH.                              */
+/* Reading/Writing of an MSH format file.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,23 +46,22 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: A partir de juillet 2024 (version 3.13.8), on utilise par défaut
-// la version parallèle du lecteur (MshParallelMshReader.cc). Cette version
-// sera à terme supprimée.
+// NOTE: Starting in July 2024 (version 3.13.8), the parallel version of the reader
+// (MshParallelMshReader.cc) is used by default. This version will eventually be removed.
 
 /*
  * NOTES:
- * - La bibliothèque `gmsh` fournit un script 'open.py' dans le répertoire
- *   'demos/api' qui permet de générer un fichier '.msh' à partir d'un '.geo'.
- * - Il est aussi possible d'utiliser directement l'exécutable 'gmsh' avec
- *   l'option '-save-all' pour sauver un fichier '.msh' à partir d'un '.geo'
+ * - The `gmsh` library provides an 'open.py' script in the 'demos/api' directory
+ *   that allows generating a '.msh' file from a '.geo'.
+ * - It is also possible to use the 'gmsh' executable directly with
+ *   the '-save-all' option to save a '.msh' file from a '.geo'
  *
  * TODO:
- * - lire les tags des noeuds(uniqueId())
- * - supporter les partitions
- * - pouvoir utiliser la bibliothèque 'gmsh' directement.
- * - améliorer la lecture parallèle en évitant que tous les sous-domaines
- *   lisent le fichier (même si seul le sous-domaine 0 alloue les entités)
+ * - read node tags (uniqueId())
+ * - support partitions
+ * - be able to use the 'gmsh' library directly.
+ * - improve parallel reading by preventing all subdomains
+ *   from reading the file (even if only subdomain 0 allocates entities)
  */
 
 /*---------------------------------------------------------------------------*/
@@ -73,19 +72,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecteur de fichiers de maillage au format `msh`.
+ * \brief Mesh file reader in `msh` format.
  *
- * Le format `msh` est celui utilisé par la bibliothèque 
- * [gmsh](https://gmsh.info/).
+ * The `msh` format is used by the [gmsh](https://gmsh.info/) library.
  *
- * Le lecteur supporte les versions `2.0` et `4.1` de ce format.
+ * The reader supports versions `2.0` and `4.1` of this format.
  *
- * Seules une partie des fonctionnalités du format sont supportées:
+ * Only a portion of the format's features are supported:
  *
- * - seuls les éléments d'ordre 1 sont supportés.
- * - les coordonnées paramétriques ne sont pas supportées
- * - seules les sections `$Nodes` et `$Entities` sont lues
+ * - only order 1 elements are supported.
+ * - parametric coordinates are not supported
+ * - only the `$Nodes` and `$Entities` sections are read
  */
 class MshMeshReader
 : public TraceAccessor
@@ -96,25 +95,25 @@ class MshMeshReader
   using eReturnType = typename IMeshReader::eReturnType;
 
   /*!
-   * \brief Infos d'un bloc pour $Elements pour la version 4.
+   * \brief Information about a block for $Elements for version 4.
    *
-   * Dans cette version, les éléments d'un bloc sont tous
-   * de même type (par exemple que des IT_Quad4 ou IT_Triangle3.
+   * In this version, the elements of a block are all
+   * of the same type (e.g., IT_Quad4 or IT_Triangle3).
    */
   struct MeshV4ElementsBlock
   {
-    Int32 index = 0; //!< Index du bloc dans la liste
-    Int32 nb_entity = 0; //!< Nombre d'entités du bloc
-    Integer item_type = -1; //!< Type Arcane de l'entité
-    Int32 dimension = -1; //!< Dimension de l'entité
-    Int32 item_nb_node = 0; //!< Nombre de noeuds de l'entité.
+    Int32 index = 0; //!< Block index in the list
+    Int32 nb_entity = 0; //!< Number of entities in the block
+    Integer item_type = -1; //!< Arcane type of the entity
+    Int32 dimension = -1; //!< Dimension of the entity
+    Int32 item_nb_node = 0; //!< Number of nodes in the entity.
     Int32 entity_tag = -1;
     UniqueArray<Int64> uids;
     UniqueArray<Int64> connectivity;
   };
 
   /*!
-   * \brief Infos sur un nom physique.
+   * \brief Information about a physical name.
    *
    */
   struct MeshPhysicalName
@@ -132,7 +131,7 @@ class MshMeshReader
   };
 
   /*!
-   * \brief Infos du bloc '$PhysicalNames'.
+   * \brief Information about the '$PhysicalNames' block.
    */
   struct MeshPhysicalNameList
   {
@@ -156,7 +155,7 @@ class MshMeshReader
     UniqueArray<UniqueArray<MeshPhysicalName>> m_physical_names;
   };
 
-  //! Infos pour les entités 0D
+  //! Info for 0D entities
   struct MeshV4EntitiesNodes
   {
     MeshV4EntitiesNodes(Int32 _tag, Int32 _physical_tag)
@@ -167,7 +166,7 @@ class MshMeshReader
     Int32 physical_tag;
   };
 
-  //! Infos pour les entités 1D, 2D et 3D
+  //! Info for 1D, 2D, and 3D entities
   struct MeshV4EntitiesWithNodes
   {
     MeshV4EntitiesWithNodes(Int32 _dim, Int32 _tag, Int32 _physical_tag)
@@ -338,7 +337,7 @@ _readNodesFromAsciiMshV2File(IosFile& ios_file, Array<Real3>& node_coords)
     throw IOException(A_FUNCINFO, String("Invalid number of nodes: n=") + nb_node);
   info() << "[_readNodesFromAsciiMshV2File] nb_node=" << nb_node;
   for (Integer i = 0; i < nb_node; ++i) {
-    // Il faut lire l'id même si on ne s'en sert pas.
+    // Must read the ID even if it is not used.
     [[maybe_unused]] Int32 id = ios_file.getInteger();
     Real nx = ios_file.getReal();
     Real ny = ios_file.getReal();
@@ -374,7 +373,7 @@ _readNodesFromAsciiMshV2File(IosFile& ios_file, Array<Real3>& node_coords)
 IMeshReader::eReturnType MshMeshReader::
 _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 {
-  // Première ligne du fichier
+  // First line of the file
   Integer nb_entity = ios_file.getInteger();
   Integer total_nb_node = ios_file.getInteger();
   Integer min_node_tag = ios_file.getInteger();
@@ -389,9 +388,9 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
 
   UniqueArray<Int32> nodes_uids;
   for (Integer i_entity = 0; i_entity < nb_entity; ++i_entity) {
-    // Dimension de l'entité (pas utile)
+    // Entity dimension (not useful)
     [[maybe_unused]] Integer entity_dim = ios_file.getInteger();
-    // Tag de l'entité (pas utile)
+    // Entity tag (not useful)
     [[maybe_unused]] Integer entity_tag = ios_file.getInteger();
     Integer parametric_coordinates = ios_file.getInteger();
     Integer nb_node2 = ios_file.getInteger();
@@ -402,13 +401,13 @@ _readNodesFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
             << " nb_node2=" << nb_node2;
     if (parametric_coordinates != 0)
       ARCANE_THROW(NotSupportedException, "Only 'parametric coordinates' value of '0' is supported (current={0})", parametric_coordinates);
-    // Il est possible que le nombre de noeuds soit 0.
-    // Dans ce cas, il faut directement passer à la ligne suivante
+    // It is possible that the number of nodes is 0.
+    // In this case, we must directly proceed to the next line
     if (nb_node2 == 0)
       continue;
     nodes_uids.resize(nb_node2);
     for (Integer i = 0; i < nb_node2; ++i) {
-      // Conserve le uniqueId() du noeuds.
+      // Keep the node's uniqueId().
       nodes_uids[i] = ios_file.getInteger();
       //info() << "I=" << i << " ID=" << nodes_uids[i];
     }
@@ -438,8 +437,8 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
   info() << "nb_elements=" << number_of_elements;
 
   //elm-number elm-type number-of-tags < tag > ... node-number-list
-  // Lecture des infos des mailles & de la connectivité
-  // bool pour voir si on est depuis 0 ou 1
+  // Reading mesh and connectivity info
+  // bool to check if we start from 0 or 1
   bool it_starts_at_zero = false;
   for (Integer i = 0; i < number_of_elements; ++i) {
     [[maybe_unused]] Integer elm_number = ios_file.getInteger(); // Index
@@ -484,16 +483,17 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
 
   ios_file.getNextLine(); // Skip current \n\r
 
-  // On ne supporte que les maillage de dimension 3 dans ce vieux format
+  // Only 3D meshes are supported in this old format
   return 3;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des éléments (mailles,faces,...)
+ * \brief Reading elements (meshes, faces, ...)
  *
- * Dans la version 4, les éléments sont rangés par genre (eItemKind)
+ * In version 4, elements are sorted by type (eItemKind)
  *
  * \code
  *$Elements
@@ -528,7 +528,7 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
   blocks.resize(nb_block);
 
   {
-    // Numérote les blocs (pour le débug)
+    // Number the blocks (for debugging)
     Integer index = 0;
     for (MeshV4ElementsBlock& block : blocks) {
       block.index = index;
@@ -555,18 +555,18 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     block.dimension = entity_dim;
     block.entity_tag = entity_tag;
 
-    if (entity_type==MSH_PNT){
-      // Si le type est un point, le traitement semble
-      // un peu particulier. Il y a dans ce cas
-      // deux entiers dans la ligne suivante:
-      // - un entier qui ne semble
-      // - le numéro unique du noeud qui nous intéresse
+    if (entity_type == MSH_PNT) {
+      // If the type is a point, the processing seems
+      // a bit particular. In this case, there are
+      // two integers in the next line:
+      // - an integer that doesn't seem
+      // - the unique node number we are interested in
       [[maybe_unused]] Int64 unused_id = ios_file.getInt64();
       Int64 item_unique_id = ios_file.getInt64();
       info(4) << "Adding unique node uid=" << item_unique_id;
       block.uids.add(item_unique_id);
     }
-    else{
+    else {
       for (Integer i = 0; i < nb_entity_in_block; ++i) {
         Int64 item_unique_id = ios_file.getInt64();
         block.uids.add(item_unique_id);
@@ -576,8 +576,8 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     }
     ios_file.getNextLine(); // Skip current \n\r
   }
-  // Maintenant qu'on a tous les blocks, la dimension du maillage est
-  // la plus grande dimension des blocks
+  // Now that we have all the blocks, the mesh dimension is
+  // the largest dimension of the blocks
   Integer mesh_dimension = -1;
   for (MeshV4ElementsBlock& block : blocks)
     mesh_dimension = math::max(mesh_dimension, block.dimension);
@@ -587,8 +587,8 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
     ARCANE_THROW(NotSupportedException, "mesh dimension '{0}'. Only 2D or 3D meshes are supported", mesh_dimension);
   info() << "Computed mesh dimension = " << mesh_dimension;
 
-  // On ne conserve que les blocs de notre dimension
-  // pour créér les mailles
+  // We only keep blocks of our dimension
+  // to create the meshes
   for (MeshV4ElementsBlock& block : blocks) {
     if (block.dimension != mesh_dimension)
       continue;
@@ -637,12 +637,12 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
   Integer nb_cell_node = mesh_info.cells_connectivity.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
-  // Création des mailles
+  // Creating the meshes
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
-  // Infos pour la création des mailles
-  // par maille: 1 pour son unique id,
-  //             1 pour son type,
-  //             1 pour chaque noeud
+  // Info for cell creation
+  // per cell: 1 for its unique id,
+  //             1 for its type,
+  //             1 for each node
   UniqueArray<Int64> cells_infos;
   Integer connectivity_index = 0;
   UniqueArray<Real3> local_coords;
@@ -670,7 +670,7 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
   pmesh->endAllocate();
   info() << "## Done ##";
 
-  // Positionne les coordonnées
+  // Positioning the coordinates
   {
     VariableNodeReal3& nodes_coord_var(pmesh->nodesCoordinates());
     bool has_map = mesh_info.node_coords.empty();
@@ -700,15 +700,15 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
   for (MeshV4ElementsBlock& block : mesh_info.blocks) {
     Int32 block_index = block.index;
     Int32 block_dim = block.dimension;
-    // On alloue un groupe s'il a un nom physique associé.
-    // Pour cela, il faut déjà qu'il soit associé à une entité.
+    // Allocate a group if it has an associated physical name.
+    // For this, it must already be associated with an entity.
     Int32 block_entity_tag = block.entity_tag;
     if (block_entity_tag < 0) {
       info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
       continue;
     }
     MeshPhysicalName physical_name;
-    // Pour l'instant on ne traite pas les nuages
+    // For now, we do not process clouds
     if (block_dim == 0) {
       MeshV4EntitiesNodes* entity = mesh_info.findNodeEntities(block_entity_tag);
       if (!entity) {
@@ -719,7 +719,7 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
       Int32 entity_physical_tag = entity->physical_tag;
       physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
-    else{
+    else {
       MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim, block_entity_tag);
       if (!entity) {
         info(5) << "[Groups] Skipping block index=" << block_index
@@ -765,11 +765,11 @@ _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
 
-  // Il peut y avoir plusieurs blocs pour le même groupe.
-  // On récupère le groupe s'il existe déjà.
+  // There may be several blocks for the same group.
+  // We retrieve the group if it already exists.
   FaceGroup face_group = mesh->faceFamily()->findGroup(group_name, true);
 
-  UniqueArray<Int32> faces_id(nb_entity); // Numéro de la face dans le maillage \a mesh
+  UniqueArray<Int32> faces_id(nb_entity); // Face number in the mesh \a mesh
 
   const Int32 item_nb_node = block.item_nb_node;
   const Int32 face_nb_node = nb_entity * item_nb_node;
@@ -785,8 +785,8 @@ _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
   IItemFamily* node_family = mesh->nodeFamily();
   NodeInfoListView mesh_nodes(node_family);
 
-  // Réordonne les identifiants des faces pour se conformer à Arcane et retrouver
-  // la face dans le maillage
+  // Reorder face IDs to conform to Arcane and find
+  // the face in the mesh
   for (Integer i_face = 0; i_face < nb_entity; ++i_face) {
     for (Integer z = 0; z < item_nb_node; ++z)
       orig_nodes_id[z] = block.connectivity[faces_nodes_unique_id_index + z];
@@ -833,12 +833,12 @@ _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
 
-  // Il peut y avoir plusieurs blocs pour le même groupe.
-  // On récupère le groupe s'il existe déjà.
+  // There may be several blocks for the same group.
+  // We retrieve the group if it already exists.
   IItemFamily* cell_family = mesh->cellFamily();
   CellGroup cell_group = cell_family->findGroup(group_name, true);
 
-  UniqueArray<Int32> cells_id(nb_entity); // Numéro de la face dans le maillage \a mesh
+  UniqueArray<Int32> cells_id(nb_entity); // Cell number in the mesh \a mesh
 
   cell_family->itemsUniqueIdToLocalId(cells_id, block.uids);
 
@@ -855,8 +855,8 @@ _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
 {
   const Int32 nb_entity = block.nb_entity;
 
-  // Il peut y avoir plusieurs blocs pour le même groupe.
-  // On récupère le groupe s'il existe déjà.
+  // There may be several blocks for the same group.
+  // We retrieve the group if it already exists.
   IItemFamily* node_family = mesh->nodeFamily();
   NodeGroup node_group = node_family->findGroup(group_name, true);
 
@@ -867,15 +867,15 @@ _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
   info(4) << "Adding " << nodes_id.size() << " nodes from block index=" << block.index
           << " to group '" << node_group.name() << "'";
 
-  if (nb_entity<10){
+  if (nb_entity < 10) {
     info(4) << "Nodes UIDS=" << block.uids;
     info(4) << "Nodes LIDS=" << nodes_id;
   }
   node_group.addItems(nodes_id);
 
-  if (nb_entity<10){
+  if (nb_entity < 10) {
     VariableNodeReal3& coords(mesh->nodesCoordinates());
-    ENUMERATE_(Node,inode,node_group){
+    ENUMERATE_ (Node, inode, node_group) {
       info(4) << "Node id=" << ItemPrinter(*inode) << " coord=" << coords[inode];
     }
   }
@@ -903,8 +903,7 @@ _readPhysicalNames(IosFile& ios_file, MeshInfo& mesh_info)
     String s = ios_file.getNextLine();
     if (dim < 0 || dim > 3)
       ARCANE_FATAL("Invalid value for physical name dimension dim={0}", dim);
-    // Les noms des groupes peuvent commencer par des espaces et contiennent
-    // des guillemets qu'il faut supprimer.
+    // Group names may start with spaces and contain quotes that must be removed.
     s = String::collapseWhiteSpace(s);
     if (s.startsWith(quote_mark))
       s = s.substring(1);
@@ -922,9 +921,9 @@ _readPhysicalNames(IosFile& ios_file, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Lecture des entités.
+ * \brief Reading of entities.
  *
- * Le format est:
+ * The format is:
  *
  * \verbatim
  *    $Entities
@@ -961,8 +960,8 @@ _readEntitiesV4(IosFile& ios_file, MeshInfo& mesh_info)
   nb_dim_item[3] = ios_file.getInteger();
   info(4) << "[Entities] nb_0d=" << nb_dim_item[0] << " nb_1d=" << nb_dim_item[1]
           << " nb_2d=" << nb_dim_item[2] << " nb_3d=" << nb_dim_item[3];
-  // Après le format, on peut avoir les entités mais cela est optionnel
-  // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
+  // After the format, entities may be present, but this is optional.
+  // If they are present, we read the file until the end of this section.
   StringView next_line = ios_file.getNextLine();
   for (Int32 i = 0; i < nb_dim_item[0]; ++i) {
     Int32 tag = ios_file.getInteger();
@@ -1077,18 +1076,18 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   if (!ios_file.lookForString("$EndMeshFormat"))
     ARCANE_THROW(IOException, "$EndMeshFormat not found");
 
-  // TODO: Les différentes sections ($Nodes, $Entitites, ...) peuvent
-  // être dans n'importe quel ordre (à part $Nodes qui doit être avant $Elements)
-  // Faire un méthode qui gère cela.
+  // TODO: The different sections ($Nodes, $Entities, ...) can
+  // be in any order (except $Nodes which must be before $Elements)
+  // Implement a method that handles this.
 
   StringView next_line = ios_file.getNextLine();
-  // Noms des groupes
+  // Group names
   if (next_line == "$PhysicalNames") {
     _readPhysicalNames(ios_file, mesh_info);
     next_line = ios_file.getNextLine();
   }
-  // Après le format, on peut avoir les entités mais cela est optionnel
-  // Si elles sont présentes, on lit le fichier jusqu'à la fin de cette section.
+  // After the format, entities may be present, but this is optional.
+  // If they are present, we read the file until the end of this section.
   if (next_line == "$Entities") {
     _readEntitiesV4(ios_file, mesh_info);
     next_line = ios_file.getNextLine();
@@ -1140,7 +1139,7 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
   IParallelMng* pm = mesh->parallelMng();
   bool is_parallel = pm->isParallel();
   Int32 rank = mesh->meshPartInfo().partRank();
-  // En parallèle, seul le rang 0 lit le maillage
+  // In parallel, only rank 0 reads the mesh
   bool is_read_items = !(is_parallel && rank != 0);
   _allocateCells(mesh, mesh_info, is_read_items);
   _allocateGroups(mesh, mesh_info, is_read_items);
@@ -1150,7 +1149,7 @@ _readMeshFromNewMshFile(IMesh* mesh, IosFile& ios_file)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * readMeshFromMshFile switch wether the targetted file is to be read with
+ * readMeshFromMshFile switches whether the targeted file is to be read with
  * _readMeshFromOldMshFile or _readMeshFromNewMshFile function.
  */
 IMeshReader::eReturnType MshMeshReader::
@@ -1184,21 +1183,21 @@ createMshParallelMeshReader(ITraceMng* tm);
 namespace
 {
 
-Ref<IMshMeshReader>
-_internalCreateReader(ITraceMng* tm)
-{
-  bool use_new_reader = true;
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
-    use_new_reader = (v.value()!=0);
-  Ref<IMshMeshReader> reader;
-  if (use_new_reader)
-    reader = createMshParallelMeshReader(tm);
-  else
-    reader = createMshMeshReader(tm);
-  return reader;
-}
+  Ref<IMshMeshReader>
+  _internalCreateReader(ITraceMng* tm)
+  {
+    bool use_new_reader = true;
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_PARALLEL_MSH_READER", true))
+      use_new_reader = (v.value() != 0);
+    Ref<IMshMeshReader> reader;
+    if (use_new_reader)
+      reader = createMshParallelMeshReader(tm);
+    else
+      reader = createMshMeshReader(tm);
+    return reader;
+  }
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1235,7 +1234,7 @@ class MshMeshReaderService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Obsolète. Utiliser 'MshMeshReader' à la place
+// Obsolete. Use 'MshMeshReader' instead
 ARCANE_REGISTER_SERVICE(MshMeshReaderService,
                         ServiceProperty("MshNewMeshReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshReader));

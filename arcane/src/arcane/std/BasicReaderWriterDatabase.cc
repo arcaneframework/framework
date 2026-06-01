@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicReaderWriterDatabase.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Base de donnée pour le service 'BasicReaderWriter'.                       */
+/* Database for the 'BasicReaderWriter' service.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,7 +25,7 @@
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/ArcaneException.h"
+#include "arcane/core/ArcaneException.h"
 
 #include "arcane/std/internal/TextReader2.h"
 #include "arcane/std/internal/TextWriter2.h"
@@ -43,7 +43,7 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe pour calculer le hash d'un tableau
+//! Class to calculate the hash of an array
 class Hasher
 {
  public:
@@ -70,7 +70,7 @@ class Hasher
     if (m_nb_processed_bytes == 0)
       return;
     Real nb_byte_per_second = static_cast<Real>(m_nb_processed_bytes) / (m_hash_time + 1.0e-9);
-    // Pour avoir en Mega-byte par seconde
+    // To get Mega-bytes per second
     nb_byte_per_second /= 1.0e6;
     tm->info() << "Hasher:nb_processed=" << m_nb_processed_bytes
                << " hash_time=" << m_hash_time
@@ -88,14 +88,14 @@ class Hasher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Structure pour gérer l'épilogue.
+//! Structure to manage the epilogue.
 class BasicReaderWriterDatabaseEpilogFormat
 {
  public:
 
-  // La taille de cette structure ne doit pas être modifiée sous peine
-  // de rendre le format incompatible. Pour supporter des évolutions, on fixe
-  // une taille de 128 octets, soit 16 'Int64'
+  // The size of this structure must not be modified under penalty
+  // of making the format incompatible. To support evolution, we fix
+  // a size of 128 bytes, i.e., 16 'Int64'
   static constexpr Int64 STRUCT_SIZE = 128;
 
  public:
@@ -124,8 +124,8 @@ class BasicReaderWriterDatabaseEpilogFormat
 
  private:
 
-  // Version de l'epilogue. A ne pas confondre avec la version du fichier
-  // qui est dans l'en-tête.
+  // Epilogue version. Must not be confused with the file version
+  // which is in the header.
   Int32 m_version = 1;
   Int32 m_padding0 = 0;
   Int64 m_padding1 = 0;
@@ -148,14 +148,14 @@ class BasicReaderWriterDatabaseEpilogFormat
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Structure pour gérer l'en-tête
+//! Structure to manage the header
 class BasicReaderWriterDatabaseHeaderFormat
 {
  public:
 
-  // La taille de cette structure ne doit pas être modifiée sous peine
-  // de rendre le format incompatible. Pour supporter des évolutions, on fixe
-  // une taille de 128 octets, soit 16 'Int64'
+  // The size of this structure must not be modified under penalty
+  // of making the format incompatible. To support evolution, we fix
+  // a size of 128 bytes, i.e., 16 'Int64'
   static constexpr Int64 STRUCT_SIZE = 128;
 
  public:
@@ -177,20 +177,19 @@ class BasicReaderWriterDatabaseHeaderFormat
   Int32 version() const { return m_version; }
   void checkHeader()
   {
-    // Vérifie que le header est correct.
+    // Checks that the header is correct.
     if (m_header_begin[0] != 'A' || m_header_begin[1] != 'C' || m_header_begin[2] != 'R' || m_header_begin[3] != (Byte)39)
       ARCANE_FATAL("Bad header");
-    // TODO: tester indianess
+    // TODO: test endianness
   }
 
  private:
 
-  // 4 premiers octets pour indiquer qu'il s'agit d'un fichier de protections
-  // arcane (ACR pour Arcane Checkpoint Restart)
+  // First 4 bytes to indicate that it is an Arcane Checkpoint Restart file
   std::array<Byte, 4> m_header_begin = { 'A', 'C', 'R', 39 };
-  // 4 octets suivant pour indiquer l'indianness (pas encore utilisé)
+  // Next 4 bytes to indicate endianness (not yet used)
   Int32 m_endian_int = 0x01020304;
-  // Version du fichier (à modifier par l'appelant via setVersion())
+  // File version (to be modified by the caller via setVersion())
   Int32 m_version = 0;
   Int32 m_padding0 = 0;
   Int64 m_padding1 = 0;
@@ -265,7 +264,7 @@ class BasicReaderWriterDatabaseCommon
       }
       else {
         String redis_machine = platform::getEnvironmentVariable("ARCANE_HASHDATABASE_REDIS");
-        if (!redis_machine.null()){
+        if (!redis_machine.null()) {
           info() << "Using Redis database at location '" << redis_machine << "'";
           m_hash_database = createRedisHashDatabase(tm, redis_machine, 6379);
         }
@@ -366,19 +365,20 @@ KeyValueTextWriter::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief En-tête du format de fichier.
+ * \brief File format header.
  *
- * Toute modification dans cette en-tête doit être reportée dans la
- * classe KeyValueTextReader.
+ * Any modification in this header must be reported in the
+ * KeyValueTextReader class.
  */
 void KeyValueTextWriter::Impl::
 _writeHeader()
 {
   BasicReaderWriterDatabaseHeaderFormat header;
 
-  // Actuellement si on passe dans cette partie de code,
-  // la version utilisée est 3 ou plus.
+  // Currently, if we enter this part of the code,
+  // the version used is 3 or higher.
   header.setVersion(m_version);
   binaryWrite(m_writer.stream(), header.bytes());
 }
@@ -389,7 +389,7 @@ _writeHeader()
 void KeyValueTextWriter::Impl::
 _writeEpilog()
 {
-  // Ecrit les méta-données au format JSON.
+  // Writes metadata in JSON format.
   JSONWriter jsw;
   {
     JSONWriter::Object main_object(jsw);
@@ -406,8 +406,8 @@ _writeEpilog()
 
   std::ostream& stream = m_writer.stream();
 
-  // Conserve la position dans le fichier des méta-données
-  // ainsi que leur taille.
+  // Stores the file position of the metadata
+  // as well as their size.
   Int64 file_offset = m_writer.fileOffset();
   StringView buf = jsw.getBuffer();
   Int64 meta_data_size = buf.size();
@@ -417,7 +417,7 @@ _writeEpilog()
   {
     BasicReaderWriterDatabaseEpilogFormat epilog;
     epilog.setJSONDataInfoOffsetAndSize(file_offset, meta_data_size);
-    // Doit toujours être la dernière écriture du fichier
+    // Must always be the last write in the file
     binaryWrite(stream, epilog.bytes());
   }
 }
@@ -432,23 +432,23 @@ setExtents(const String& key_name, SmallSpan<const Int64> extents)
     _addKey(key_name, extents);
   }
   else {
-    // Versions 1 et 2.
-    // On sauve directement dans le fichier à la position courante
-    // les valeurs des dimentions. Le nombre de valeur est donné par la taille
-    // de \a extents
+    // Versions 1 and 2.
+    // The dimension values are saved directly to the file at the current position
+    // The number of values is given by the size
+    // of \a extents
     Integer dimension_array_size = extents.size();
     if (dimension_array_size != 0) {
       String true_key_name = "Extents:" + key_name;
       String comment = String::format("Writing Dim1Size for '{0}'", key_name);
       if (m_version == 1) {
-        // Sauve les dimensions comme un tableau de Int32
+        // Saves dimensions as an array of Int32
         UniqueArray<Integer> dims(dimension_array_size);
         for (Integer i = 0; i < dimension_array_size; ++i)
           dims[i] = CheckedConvert::toInteger(extents[i]);
         m_writer.write(asBytes(dims));
       }
       else
-        // Sauve les dimensions comme un tableau de Int64
+        // Saves dimensions as an array of Int64
         m_writer.write(asBytes(extents));
     }
   }
@@ -678,11 +678,12 @@ _readDirect(Int64 offset, Span<std::byte> bytes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief En-tête du format de fichier.
+ * \brief File format header.
  *
- * Toute modification dans cette en-tête doit être reportée dans la
- * classe KeyValueTextWriter.
+ * Any modification to this header must be reported in the
+ * KeyValueTextWriter class.
  */
 void KeyValueTextReader::Impl::
 _readHeader()
@@ -702,17 +703,17 @@ _readHeader()
 void KeyValueTextReader::Impl::
 _readJSON()
 {
-  // Les informations sur la position dans le fichier et la longueur du
-  // texte JSON sont sauvgegardées dans l'épilogue.
+  // The information about the position in the file and the length of the
+  // JSON text are saved in the epilogue.
   Int64 file_length = m_reader.fileLength();
-  // Vérifie la longueur du fichier par précaution
+  // Checks the file length as a precaution
   Int64 struct_size = BasicReaderWriterDatabaseEpilogFormat::STRUCT_SIZE;
   if (file_length < struct_size)
     ARCANE_FATAL("File is too short length={0} minimum={1}", file_length, struct_size);
 
   BasicReaderWriterDatabaseEpilogFormat epilog;
 
-  // Lit l'épilogue et verifie que la version est supportée.
+  // Reads the epilogue and verifies that the version is supported.
   {
     _readDirect(file_length - struct_size, epilog.bytes());
     const int expected_version = 1;
@@ -723,7 +724,7 @@ _readJSON()
 
   UniqueArray<std::byte> json_bytes;
 
-  // Lit les données JSON
+  // Reads the JSON data
   {
     Int64 file_offset = epilog.jsonDataInfoFileOffset();
     Int64 meta_data_size = epilog.jsonDataInfoSize();
@@ -732,7 +733,7 @@ _readJSON()
     _readDirect(file_offset, json_bytes);
   }
 
-  // Remplit les infos de la base de données à partir du JSON
+  // Fills the database info from the JSON
   {
     JSONDocument json_doc;
     json_doc.parse(json_bytes);
@@ -774,7 +775,7 @@ getExtents(const String& key_name, SmallSpan<Int64> extents)
   }
   else {
     if (m_p->m_version == 1) {
-      // Dans la version 1, les dimensions sont des 'Int32'
+      // In version 1, dimensions are 'Int32'
       IntegerUniqueArray dims;
       if (dimension_array_size > 0) {
         dims.resize(dimension_array_size);
@@ -843,15 +844,15 @@ _read2(const String& key, Span<std::byte> values)
     HashDatabaseReadArgs args(hash_value, values);
     m_hash_database->readValues(args);
 
-    // Vérifie le hash
+    // Verifies the hash
     if (arcaneIsCheck()) {
       Hasher hasher;
       hasher.setHashAlgorithm(hash_algo);
       SmallArray<Byte, 1024> hash_result;
       hasher.computeHash(values, hash_result);
       String check_hash_value = Convert::toHexaString(hash_result);
-      if (check_hash_value!=hash_value)
-        ARCANE_FATAL("Invalid hash expected={0} read={1} key={2}",hash_value,check_hash_value,key);
+      if (check_hash_value != hash_value)
+        ARCANE_FATAL("Invalid hash expected={0} read={1} key={2}", hash_value, check_hash_value, key);
     }
   }
   else
@@ -864,8 +865,8 @@ _read2(const String& key, Span<std::byte> values)
 void KeyValueTextReader::Impl::
 _setFileOffset(const String& key_name)
 {
-  // Avec les versions antérieures à la version 3, c'est l'appelant qui
-  // positionne l'offset car il est le seul à le connaitre.
+  // With versions prior to version 3, the caller
+  // positions the offset because it is the only one that knows it.
   if (m_version >= 3) {
     Impl::DataInfo& data = findData(key_name);
     m_reader.setFileOffset(data.m_file_offset);

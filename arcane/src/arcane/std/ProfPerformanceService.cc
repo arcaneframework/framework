@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ProfPerformanceService.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Informations de performances utilisant les signaux de profiling.          */
+/* Performance information using profiling signals.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,15 +17,15 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/FactoryService.h"
-#include "arcane/AbstractService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/AbstractService.h"
 
 #include "arcane/utils/IProfilingService.h"
 
 #include "arcane/std/ProfilingInfo.h"
 
-// NOTE: Ce fichier nécessitant la libunwind, il n'est compilé que sur
-// les OS de style UNIX.
+// NOTE: Since this file requires libunwind, it is only compiled on
+// UNIX-style OS.
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
@@ -43,8 +43,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de profiling utilisant 'setitimer'.
+ * \brief Profiling service using 'setitimer'.
  */
 class ProfPerformanceService
 : public AbstractService
@@ -105,12 +106,12 @@ _setTimer(Integer usecond)
 {
   struct itimerval time_val;
   struct itimerval otime_val;
-  time_val.it_value.tv_sec     = 0;
-  time_val.it_value.tv_usec    = usecond;
-  time_val.it_interval.tv_sec  = 0;
+  time_val.it_value.tv_sec = 0;
+  time_val.it_value.tv_usec = usecond;
+  time_val.it_interval.tv_sec = 0;
   time_val.it_interval.tv_usec = 0;
-  int r = setitimer(ITIMER_PROF,&time_val,&otime_val);
-  if (r!=0)
+  int r = setitimer(ITIMER_PROF, &time_val, &otime_val);
+  if (r != 0)
     cout << "** ERROR in setitimer r=" << r << '\n';
 }
 
@@ -119,28 +120,28 @@ _setTimer(Integer usecond)
 
 namespace
 {
-int nb_total = 0;
+  int nb_total = 0;
 
-ProfInfos* global_infos = nullptr;
-bool global_is_active = false;
-//! Temps du timer en micro-seconde
-int global_timer_period = 10000;
-}
+  ProfInfos* global_infos = nullptr;
+  bool global_is_active = false;
+  //! Timer time in microseconds
+  int global_timer_period = 10000;
+} // namespace
 
 extern "C" void
 arcane_prof_handler()
 {
   static bool is_in_handler = false;
-  // Sous Linux avec gcc, les exceptions utilisent la libunwind contenue
-  // dans gcc et cela peut provoquer des deadlocks avec notre utilisation
-  // si cet handler est appelé lors du dépilement d'une exception.
-  // Pour éviter ce problème, on ne fait rien tant qu'une exception est
+  // On Linux with gcc, exceptions use libunwind contained
+  // in gcc, and this can cause deadlocks with our usage
+  // if this handler is called during exception unwinding.
+  // To avoid this problem, we do nothing as long as an exception is
   // active.
-  if (Exception::hasPendingException()){
+  if (Exception::hasPendingException()) {
     cout << "** WARNING: ProfHandler in pending exception\n";
     return;
   }
-  if (is_in_handler){
+  if (is_in_handler) {
     cout << "** In handler\n";
     return;
   }
@@ -150,7 +151,7 @@ arcane_prof_handler()
   int overflow_event[MAX_COUNTER];
   int nb_overflow_event = 1;
   overflow_event[0] = 0;
-  
+
   unw_word_t func_ip = 0;
   unw_word_t offset = 0;
   {
@@ -161,10 +162,10 @@ arcane_prof_handler()
     int current_func = 0;
     String message;
 
-    // Le 3 indique le nombre de fonctions avant la bonne
-    // (il y a cette fonction, puis le _arcaneProfilingSigFunc
-    // et le signal lui meme.
-    while (unw_step(&cursor) > 0 && current_func<3) {
+    // 3 indicates the number of functions before the correct one
+    // (there is this function, then _arcaneProfilingSigFunc
+    // and the signal itself.
+    while (unw_step(&cursor) > 0 && current_func < 3) {
       //while (current_func<3) {
       //unw_step(&cursor);
       unw_get_reg(&cursor, UNW_REG_IP, &func_ip);
@@ -178,8 +179,8 @@ arcane_prof_handler()
     }
   }
 
-  global_infos->addEvent((void*)(func_ip+offset),overflow_event,nb_overflow_event);
-  
+  global_infos->addEvent((void*)(func_ip + offset), overflow_event, nb_overflow_event);
+
   is_in_handler = false;
 }
 
@@ -190,19 +191,19 @@ extern "C" void
 _arcaneProfilingSigFunc(int signum)
 {
   //cout << "**SIGPROF=" << global_is_active << "\n";
-  if (signum!=SIGPROF)
+  if (signum != SIGPROF)
     return;
-  if (global_is_active){
+  if (global_is_active) {
     arcane_prof_handler();
-    // Il est préférable de positionner le timer une fois
-    // la fonction de profiling appelée car si le timer est petit,
-    // il peut se déclencher dans la boucle
+    // It is preferable to position the timer once
+    // the profiling function is called because if the timer is small,
+    // it can trigger in the loop
     _setTimer(global_timer_period);
   }
 }
 
 extern "C" void
-_arcaneProfilingSigactionFunc(int val, siginfo_t*,void*)
+_arcaneProfilingSigactionFunc(int val, siginfo_t*, void*)
 {
   _arcaneProfilingSigFunc(val);
 }
@@ -299,7 +300,6 @@ getInfos(Int64Array&)
 {
   throw NotImplementedException(A_FUNCINFO);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

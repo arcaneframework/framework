@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternalMng.cc                                   (C) 2000-2022 */
 /*                                                                           */
-/* Classe permettant de modifier facilement un SimpleTableInternal.          */
+/* Class allowing easy modification of a SimpleTableInternal.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +36,8 @@ clearInternal()
 Integer SimpleTableInternalMng::
 addRow(const String& row_name)
 {
-  if(row_name.empty()) return -1;
+  if (row_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim1Size();
   m_simple_table_internal->m_values.resize(position + 1);
@@ -52,7 +53,8 @@ addRow(const String& row_name)
 Integer SimpleTableInternalMng::
 addRow(const String& row_name, ConstArrayView<Real> elements)
 {
-  if(row_name.empty()) return -1;
+  if (row_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim1Size();
   m_simple_table_internal->m_values.resize(position + 1);
@@ -68,7 +70,8 @@ addRow(const String& row_name, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addRows(StringConstArrayView rows_names)
 {
-  if(rows_names.contains("")) return false;
+  if (rows_names.contains(""))
+    return false;
 
   Integer size = rows_names.size();
   if (size == 0)
@@ -91,7 +94,8 @@ addRows(StringConstArrayView rows_names)
 Integer SimpleTableInternalMng::
 addColumn(const String& column_name)
 {
-  if(column_name.empty()) return -1;
+  if (column_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim2Size();
   m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
@@ -107,7 +111,8 @@ addColumn(const String& column_name)
 Integer SimpleTableInternalMng::
 addColumn(const String& column_name, ConstArrayView<Real> elements)
 {
-  if(column_name.empty()) return -1;
+  if (column_name.empty())
+    return -1;
 
   Integer position = m_simple_table_internal->m_values.dim2Size();
   m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
@@ -123,7 +128,8 @@ addColumn(const String& column_name, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addColumns(StringConstArrayView columns_names)
 {
-  if(columns_names.contains("")) return false;
+  if (columns_names.contains(""))
+    return false;
 
   Integer size = columns_names.size();
   if (size == 0)
@@ -161,13 +167,13 @@ addElementInRow(Integer position, Real element)
   m_simple_table_internal->m_last_column = size_row;
 
   m_simple_table_internal->m_row_sizes[position]++;
-  // Il peut y avoir des élements sur la ligne d'après à la même colonne.
-  // Exemple : addElementInRow(position=L01, element=NEW):
+  // There may be elements in the row after in the same column.
+  // Example: addElementInRow(position=L01, element=NEW):
   // aaa|C00|C01|C02
   // L00|123|456|789
   // L01|147|NEW|
   // L02|159|753|852
-  // Il y a 753 donc la taille de la colonne reste égale à 3.
+  // There is 753 so the column size remains equal to 3.
   m_simple_table_internal->m_column_sizes[size_row] = std::max(position + 1, m_simple_table_internal->m_column_sizes[size_row]);
 
   return true;
@@ -228,7 +234,7 @@ addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool cre
 
   if (position)
     return addElementsInRow(position.value(), elements);
-  // Permet d'avoir un return bool (sinon on pourrait simplement faire addRow(row_name, elements)).
+  // Allows a bool return (otherwise we could simply call addRow(row_name, elements)).
   else if (create_if_not_exist)
     return addElementsInRow(addRow(row_name), elements);
   else
@@ -322,7 +328,7 @@ addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bo
 
   if (position)
     return addElementsInColumn(position.value(), elements);
-  // Permet d'avoir un return bool (sinon on pourrait simplement faire addColumn(column_name, elements)).
+  // Allows a bool return (otherwise we could simply call addColumn(column_name, elements)).
   else if (create_if_not_exist)
     return addElementsInColumn(addColumn(column_name), elements);
   else
@@ -347,7 +353,7 @@ editElementUp(Real element, bool update_last_position)
     return false;
   m_simple_table_internal->m_last_row--;
 
-  // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
+  // No need to adjust column size because we are sure that m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
   if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
     m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
 
@@ -382,7 +388,7 @@ editElementLeft(Real element, bool update_last_position)
     return false;
   m_simple_table_internal->m_last_column--;
 
-  // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
+  // No need to adjust row size because we are sure that m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
   if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
     m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
 
@@ -419,11 +425,11 @@ elementUp(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row - 1 < 0)
     return 0;
 
-  // Par rapport à editElementUp(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_row_sizes.
+  // Compared to editElementUp(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_row_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_row--;
-    // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
+    // No need to adjust the column size because we are sure that m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
     if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
       m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
     return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
@@ -438,8 +444,8 @@ elementDown(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row + 1 >= m_simple_table_internal->m_values.dim1Size())
     return 0;
 
-  // Par rapport à editElementDown(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_row_sizes.
+  // Compared to editElementDown(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_row_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_row++;
 
@@ -458,12 +464,12 @@ elementLeft(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column - 1 < 0)
     return 0;
 
-  // Par rapport à editElementLeft(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_column_sizes.
+  // Compared to editElementLeft(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_column_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_column--;
 
-    // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
+    // No need to adjust the row size because we are sure that m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
     if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
       m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
     return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
@@ -477,8 +483,8 @@ elementRight(bool update_last_position)
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column + 1 >= m_simple_table_internal->m_values.dim2Size())
     return 0;
 
-  // Par rapport à editElementRight(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_simple_table_internal->m_column_sizes.
+  // Compared to editElementRight(), if we do not want to update the last position,
+  // we do not check or modify m_simple_table_internal->m_column_sizes.
   if (update_last_position) {
     m_simple_table_internal->m_last_column++;
 
@@ -754,8 +760,9 @@ editColumnName(const String& column_name, const String& new_name)
 Integer SimpleTableInternalMng::
 addAverageColumn(const String& column_name)
 {
-  if(column_name.empty()) return -1;
-  
+  if (column_name.empty())
+    return -1;
+
   Integer position = addColumn(column_name);
   for (Integer i = 0; i < m_simple_table_internal->m_values.dim1Size(); i++) {
     Real avg = 0.0;
@@ -782,7 +789,7 @@ void SimpleTableInternalMng::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
   if (simple_table_internal.isNull())
-    ARCANE_FATAL("La réference passée en paramètre est Null.");
+    ARCANE_FATAL("The reference passed as a parameter is Null.");
   m_simple_table_internal = simple_table_internal;
 }
 

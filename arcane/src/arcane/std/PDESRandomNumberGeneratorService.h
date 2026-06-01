@@ -1,29 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorService.cc                         (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un générateur de nombres aléatoires LCG.                 */
-/* Inspiré du générateur de Quicksilver (LLNL) et des pages 302-304          */
-/* du livre :                                                                */
+/* Implementation of an LCG random number generator.                         */
+/* Inspired by the Quicksilver generator (LLNL) and pages 302-304            */
+/* from the book:                                                            */
 /*                                                                           */
 /*   Numerical Recipes in C                                                  */
 /*   The Art of Scientific Computing                                         */
 /*   Second Edition                                                          */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
 #define ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IRandomNumberGenerator.h"
+#include "arcane/core/IRandomNumberGenerator.h"
 #include "arcane/std/PDESRandomNumberGenerator_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -39,6 +36,7 @@ class PDESRandomNumberGeneratorService
 : public ArcanePDESRandomNumberGeneratorObject
 {
  public:
+
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
   , m_seed(4294967297)
@@ -46,9 +44,10 @@ class PDESRandomNumberGeneratorService
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
 
-  virtual ~PDESRandomNumberGeneratorService(){};
+  virtual ~PDESRandomNumberGeneratorService() {};
 
  public:
+
   bool initSeed() override;
   bool initSeed(ByteArrayView seed) override;
 
@@ -66,6 +65,7 @@ class PDESRandomNumberGeneratorService
   Real generateRandomNumber(ByteArrayView seed, Integer leap = 0) override;
 
  protected:
+
   void _breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits);
   uint64_t _reconstructUInt64(uint32_t front_bits, uint32_t back_bits);
   void _psdes(uint32_t* lword, uint32_t* irword);
@@ -73,6 +73,7 @@ class PDESRandomNumberGeneratorService
   Real _ran4(Int64* seed, Integer leap);
 
  protected:
+
   Int64 m_seed;
   const Integer m_size_of_seed = sizeof(Int64);
   bool m_with_option;
@@ -92,6 +93,3 @@ ARCANE_REGISTER_SERVICE_PDESRANDOMNUMBERGENERATOR(PDESRandomNumberGenerator, PDE
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

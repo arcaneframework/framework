@@ -1,27 +1,29 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Otf2MessagePassingProfilingService.cc                       (C) 2000-2020 */
 /*                                                                           */
-/* Informations de performances du "message passing" au format Otf2          */
+/* Performance information for "message passing" in Otf2 format              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/std/Otf2MessagePassingProfilingService.h"
 
-#include "arcane/ServiceFactory.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IEntryPoint.h"
 #include "arcane/utils/ITraceMng.h"
+
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IEntryPoint.h"
+
 #include "arcane/parallel/IStat.h"
 
 #include "arccore/message_passing/IMessagePassingMng.h"
@@ -75,47 +77,47 @@ startProfiling()
 	// DBG
 	//info() << "========== OTF2 PROFILING SERVICE ! ==========";
 
-	// On initialise la lib otf2
+	// Initialize the otf2 library
 	m_otf2_wrapper.init(m_sub_domain->application()->applicationName());
 
   IMessagePassingMng* mp_mng = m_sub_domain->parallelMng()->messagePassingMng();
   IControlDispatcher* cd = mp_mng->dispatchers()->controlDispatcher();
   m_control_dispatcher = cd;
 
-	// On sauvegarde l'ancien service de profiling MPI pour le repositionner
+	// Save the old MPI profiling service to reposition it
 	m_prof_backup = cd->profiler();
 
-  // On positionne le decorateur OTF2 pour les appels MPI
+  // Position the OTF2 decorator for MPI calls
 	cd->setProfiler(&m_otf2_prof);
 
-  // Lorsqu'on lance le profiling on commence l'observation des evts du timeLoopMng
-  // Evt de debut de point d'entree
+  // When starting profiling, we begin observing timeLoopMng events
+  // Entry point start event
   m_observer.addObserver(this, &Otf2MessagePassingProfilingService::_updateFromBeginEntryPointEvt,
                          m_sub_domain->timeLoopMng()->observable(eTimeLoopEventType::BeginEntryPoint));
 
-  // Evt de fin de point d'entree
+  // Entry point end event
   m_observer.addObserver(this, &Otf2MessagePassingProfilingService::_updateFromEndEntryPointEvt,
                          m_sub_domain->timeLoopMng()->observable(eTimeLoopEventType::EndEntryPoint));
 
-  // C'est la meme fct pour tous les evts de synchronize
+  // It is the same function for all synchronization events
   auto sync_evt_handler = std::function<void(const Arcane::VariableSynchronizerEventArgs&)>(
 			std::bind(&Otf2MessagePassingProfilingService::_updateFromSynchronizeEvt, this, std::placeholders::_1));
 
-  // Evt de synchro sur les variables aux mailles
+  // Synchronization event on cell variables
   m_sub_domain->defaultMesh()->cellFamily()->allItemsSynchronizer()->onSynchronized().attach(m_observer_pool,
   		                                                                                       sync_evt_handler);
-	// Evt de synchro sur les variables aux noeuds
+	// Synchronization event on node variables
 	m_sub_domain->defaultMesh()->nodeFamily()->allItemsSynchronizer()->onSynchronized().attach(m_observer_pool,
 																																														 sync_evt_handler);
-	// Evt de synchro sur les variables aux arretes
+	// Synchronization event on edge variables
 	m_sub_domain->defaultMesh()->edgeFamily()->allItemsSynchronizer()->onSynchronized().attach(m_observer_pool,
 																																														 sync_evt_handler);
-	// Evt de synchro sur les variables aux faces
+	// Synchronization event on face variables
 	m_sub_domain->defaultMesh()->faceFamily()->allItemsSynchronizer()->onSynchronized().attach(m_observer_pool,
 																																														 sync_evt_handler);
-	// TODO: le faire pour les variables materiaux
+	// TODO: do it for material variables
 
-  // On commence le profiling du programme
+  // Start program profiling
   OTF2_EvtWriter_ProgramBegin(m_otf2_wrapper.getEventWriter(), NULL, Otf2LibWrapper::getTime(),
   		                        m_otf2_wrapper.getApplicationNameId(), 0, NULL);
 }
@@ -126,15 +128,15 @@ startProfiling()
 void Otf2MessagePassingProfilingService::
 stopProfiling()
 {
-	// On enleve le decorateur OTF2 des appels MPI
+	// Remove the OTF2 decorator from MPI calls
 	if (m_control_dispatcher)
     m_control_dispatcher->setProfiler(m_prof_backup);
 
-	// On termine le profiling du programme
+	// Finish program profiling
 	OTF2_EvtWriter_ProgramEnd(m_otf2_wrapper.getEventWriter(), NULL, Otf2LibWrapper::getTime(), 0);
 	m_otf2_wrapper.finalize();
 
-	// Arret des observations
+	// Stop observations
   m_observer.detachAll();
 }
 
@@ -144,7 +146,7 @@ void Otf2MessagePassingProfilingService::
 printInfos(std::ostream& output)
 {
   ARCANE_UNUSED(output);
-	// TODO: fait on qqch ici ?
+	// TODO: should we do something here?
 }
 
 /*---------------------------------------------------------------------------*/
@@ -161,7 +163,7 @@ implName()
 void Otf2MessagePassingProfilingService::
 _updateFromBeginEntryPointEvt()
 {
-	// Recuperation du nom du pt d'entree
+	// Retrieve the entry point name
 	const String& ep_name(m_sub_domain->timeLoopMng()->currentEntryPoint()->fullName());
 
 	OTF2_EvtWriter_Enter(m_otf2_wrapper.getEventWriter(), NULL, Otf2LibWrapper::getTime(),
@@ -174,7 +176,7 @@ _updateFromBeginEntryPointEvt()
 void Otf2MessagePassingProfilingService::
 _updateFromEndEntryPointEvt()
 {
-	// Recuperation du nom du pt d'entree
+	// Retrieve the entry point name
 	const String& ep_name(m_sub_domain->timeLoopMng()->currentEntryPoint()->fullName());
 
 	OTF2_EvtWriter_Leave(m_otf2_wrapper.getEventWriter(), NULL, Otf2LibWrapper::getTime(),

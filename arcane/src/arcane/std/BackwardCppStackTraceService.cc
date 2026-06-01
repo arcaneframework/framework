@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BackwardCppStackTraceService.cc                             (C) 2000-2026 */
 /*                                                                           */
-/* Service de trace des appels de fonctions utilisant 'backward-cpp'.        */
+/* Function call tracing service using 'backward-cpp'.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,7 +22,7 @@
 #include "arcane_packages.h"
 #include "arccore/base/internal/DependencyInjection.h"
 
-//TODO : Ajouter les autres packages.
+//TODO: Add the other packages.
 #define BACKWARD_HAS_DW 1
 
 #if defined(ARCANE_HAS_PACKAGE_LIBUNWIND)
@@ -65,11 +65,11 @@ class BackwardCppStackTraceService
 
   void build() override
   {
-    // 0 : CallStack classique (nom de fonction uniquement)
-    // 1 : CallStack classique avec numéro de ligne et fichier pour les classes/fonctions hors du namespace Arcane
-    // 2 : (default) CallStack classique avec numéro de ligne et fichier pour toutes les classes/fonctions
-    // 3 : CallStack classique avec numéro de ligne, fichier pour toutes les classes/fonctions et snippet pour les classes/fonctions hors du namespace Arcane
-    // 4 : CallStack classique avec numéro de ligne, fichier et snippet pour toutes les classes/fonctions
+    // 0 : Classic CallStack (function name only)
+    // 1 : Classic CallStack with line number and file for classes/functions outside the Arcane namespace
+    // 2 : (default) Classic CallStack with line number and file for all classes/functions
+    // 3 : Classic CallStack with line number, file for all classes/functions and snippet for classes/functions outside the Arcane namespace
+    // 4 : Classic CallStack with line number, file and snippet for all classes/functions
     if (const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CALLSTACK_VERBOSE", true)) {
       if (v.value() < 0 || v.value() > 4) {
         return;
@@ -77,11 +77,11 @@ class BackwardCppStackTraceService
       m_verbose_level = v.value();
     }
 
-    // Permet d'ajouter les espaces entre les appels dans la pile d'appel et
-    // d'afficher le numéro de ligne avant le chemin du fichier source.
-    // Sinon, on affiche le chemin du fichier et le numéro de ligne de manière
-    // lisible par les debuggers/IDE (path:line).
-    // Défaut = true.
+    // Allows adding spaces between calls in the call stack and
+    // displaying the line number before the source file path.
+    // Otherwise, the file path and line number are displayed in a way
+    // readable by debuggers/IDEs (path:line).
+    // Default = true.
     if (const auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CALLSTACK_HUMAN_READABLE", true)) {
       m_human_readable = (v.value() != 0);
     }

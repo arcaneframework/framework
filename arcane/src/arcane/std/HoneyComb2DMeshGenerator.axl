@@ -1,28 +1,28 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="HoneyComb2DMeshGenerator" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Générateur de maillage hexagonal 2D.
+    2D hexagonal mesh generator.
   </description>
 
-  <interface name="Arcane::IMeshBuilder" />
+  <interface name="Arcane::IMeshBuilder"/>
 
   <options>
-    <simple name="origin" type="real2" >
-      <description>Origine du maillage</description>
+    <simple name="origin" type="real2">
+      <description>Mesh origin</description>
       <userclass>User</userclass>
     </simple>
-    <simple name="pitch-size" type="real" >
+    <simple name="pitch-size" type="real">
       <description>
-        Valeur du pitch qui est la distance entre deux côtés opposés d'un hexagone.
-        Doit être strictement positif.
+        Pitch value, which is the distance between two opposite sides of a hexagon.
+        Must be strictly positive.
       </description>
       <userclass>User</userclass>
     </simple>
     <simple name="nb-layer" type="integer">
       <description>
-        Nombre de couches d'hexagones. Si 1, il n'y a que l'hexagone central.
-        Doit être strictement positif.
+        Number of layers of hexagons. If 1, there is only the central hexagon.
+        Must be strictly positive.
       </description>
       <userclass>User</userclass>
     </simple>

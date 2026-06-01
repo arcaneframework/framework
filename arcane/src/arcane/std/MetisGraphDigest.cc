@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MetisGraphDigest.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
+/* Calculates a global checksum of Metis inputs/outputs.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,10 +30,9 @@ namespace Arcane
 
 namespace
 {
-MD5HashAlgorithm hash_algo;
-const Integer idx_t_size = sizeof(idx_t);
-const Integer real_t_size = sizeof(real_t);
-
+  MD5HashAlgorithm hash_algo;
+  const Integer idx_t_size = sizeof(idx_t);
+  const Integer real_t_size = sizeof(real_t);
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -50,10 +49,10 @@ MetisGraphDigest(IParallelMng* pm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief  A partir de la somme locale, calcule la somme globale et retourne une chaine
- * de caractères représentant cette somme (sur le processeur 0 seulement, les
- * autres processeurs ont une chaine vide).
+ * \brief From the local sum, calculates the global sum and returns a string
+ * representing this sum (only on processor 0; other processors have an empty string).
  */
 String MetisGraphDigest::
 _digestString(ConstArrayView<Byte> my_digest)
@@ -103,6 +102,7 @@ _computeHash(Span<const real_t> data, ByteArray& output, const char* name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #define COMPUTE_HASH1(array, output) _computeHash(array, output, #array)
 #define COMPUTE_HASH(array, n, output) _computeHash({ array, n }, output, #array)
 
@@ -114,7 +114,7 @@ computeInputDigest(const bool need_part, const int nb_options, const MetisGraphV
 {
   UniqueArray<Byte> hash_value;
 
-  // Signature du graph lui-meme
+  // Signature of the graph itself
 
   COMPUTE_HASH1(my_graph.xadj, hash_value);
   COMPUTE_HASH1(my_graph.adjncy, hash_value);
@@ -132,7 +132,7 @@ computeInputDigest(const bool need_part, const int nb_options, const MetisGraphV
     COMPUTE_HASH1(my_graph.part, hash_value);
   }
 
-  // Ajout de la signature des options, des dimensions
+  // Addition of the signature of options and dimensions
 
   COMPUTE_HASH(vtxdist, m_nb_rank + 1, hash_value);
   COMPUTE_HASH(wgtflag, 1, hash_value);
@@ -146,7 +146,7 @@ computeInputDigest(const bool need_part, const int nb_options, const MetisGraphV
     COMPUTE_HASH(ipc2redist, 1, hash_value);
   }
 
-  // Cf. doc Metis : si options[0] == 1 alors la taille de "options" est 3 ou 4
+  // Cf. doc Metis : if options[0] == 1 then the size of "options" is 3 or 4
   if ((*options) == 1) {
     COMPUTE_HASH(options, nb_options, hash_value);
   }

@@ -1,54 +1,54 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0"?>
 <service name="SimpleCsvOutput" version="1.0" singleton="true">
 
   <userclass>User</userclass>
   <description>
-    Service de sortie de tableau au format CSV.
+    CSV format table output service.
   </description>
 
-  <interface name="Arcane::ISimpleTableOutput" />
+  <interface name="Arcane::ISimpleTableOutput"/>
 
-	<variables>
+  <variables>
   </variables>
 
-	<options>
+  <options>
     <simple name="tableName" type="string" default="">
       <userclass>User</userclass>
       <description>
-        Nom du tableau (sera écrit dans la première case du tableau et
-        sera aussi le nom du fichier).
-        Ne pas mettre l'extension ".csv".
+        Table name (will be written in the first cell of the table and
+        will also be the file name).
+        Do not include the ".csv" extension.
 
-        Exemple : "MonTableau"
+        Example: "MonTableau"
 
-        Les 'symboles' de nom sont aussi supporté :
-          - @proc_id@ : le rang du processus.
-          - @num_procs@ : le nombre total de processus.
+        Name 'symbols' are also supported:
+        - @proc_id@: the process rank.
+        - @num_procs@: the total number of processes.
 
-        Lors de l'écriture, ces symboles seront remplacés par
-        se qu'il représente au moment de l'exécution.
+        During writing, these symbols will be replaced by
+        what they represent at runtime.
 
-        Exemple : "MonTableau_P@proc_id@"
+        Example: "MonTableau_P@proc_id@"
 
-        Peut aussi être définis lors de l'appel à init().
+        Can also be defined when calling init().
       </description>
     </simple>
 
     <simple name="tableDir" type="string" default="">
       <userclass>User</userclass>
       <description>
-        Nom du répertoire.
+        Directory name.
 
-        Exemple : "MonDossier"
+        Example: "MonDossier"
 
-        En prenant cet exemple, les fichiers CSV seront enregistrés dans le
-        répertoire ./output/csv/MonDossier/
+        Using this example, the CSV files will be saved in the directory
+        ./output/csv/MonDossier/
 
-        Peut aussi être définis lors de l'appel à writeFile().
+        Can also be defined when calling writeFile().
 
-        Si vide, alors les fichiers CSV seront écrit dans le répertoire
+        If empty, the CSV files will be written to the directory
         ./output/csv/
       </description>
     </simple>
-	</options>
+  </options>
 </service>

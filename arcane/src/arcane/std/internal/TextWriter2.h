@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TextWriter2.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Ecrivain de données.                                                      */
+/* Data writer.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_TEXTWRITER2_H
 #define ARCANE_STD_INTERNAL_TEXTWRITER2_H
@@ -30,9 +30,10 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'écriture d'un fichier texte pour les protections/reprises
+ * \brief Class for writing a text file for backups/restorations
  */
 class TextWriter2
 {

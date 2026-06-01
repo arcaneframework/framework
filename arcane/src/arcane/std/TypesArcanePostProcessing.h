@@ -1,32 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TypesArcanePostProcessing.h                                 (C) 2000-2005 */
 /*                                                                           */
-/* Types du module de dépouillement.                                         */
+/* Types of the processing module.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_TYPESPOSTPROCESSING_H
 #define ARCANE_STD_TYPESPOSTPROCESSING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IPostProcessorWriter.h"
 
-#include "arcane/ItemGroup.h"
-#include "arcane/IPostProcessorWriter.h"
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Types pour le module de post-traitement.
+ * \brief Types for the post-processing module.
  */
 class TypesArcanePostProcessing
 {
@@ -36,10 +37,9 @@ class TypesArcanePostProcessing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

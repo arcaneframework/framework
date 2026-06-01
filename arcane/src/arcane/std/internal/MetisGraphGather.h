@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MetisGraphGather.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Regroupement de graphes de 'Parmetis'.                                    */
+/* Gathering of 'Parmetis' graphs.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_METISGRAPHGATHER
 #define ARCANE_STD_INTERNAL_METISGRAPHGATHER
@@ -44,16 +44,16 @@ class MetisGraphGather
  public:
 
   /*!
-   * \brief Effectue un regroupement du graphe ParMetis "my_graph" sur le processeur de
-   * rang 0 dans le communicateur "comm". Le graph résultat est "graph".
+   * \brief Performs a gathering of the ParMetis graph "my_graph" on processor
+   * rank 0 in the communicator "comm". The resulting graph is "graph".
    */
   void gatherGraph(const bool need_part, ConstArrayView<idx_t> vtxdist, const int ncon, MetisGraphView my_graph,
                    MetisGraph& graph);
 
   /*!
-   * \brief Distribue le partitionnement "part" depuis le processeur de rang 0 dans le
-   * communicateur "comm" sur tous les processeurs de ce communicateur. Le resultat
-   * est "my_part", qui doit deja etre dimensionne avant appel.
+   * \brief Distributes the partitioning "part" from processor rank 0 in the
+   * communicator "comm" to all processors in this communicator. The result
+   * is "my_part", which must already be sized before calling.
    */
   void scatterPart(ConstArrayView<idx_t> vtxdist, ConstArrayView<idx_t> part, ArrayView<idx_t> my_part);
 

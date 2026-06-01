@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MetisGraphDigest.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Calcule une somme de contrôle globale des entrées/sorties Metis.          */
+/* Calculates a global checksum of Metis inputs/outputs.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_STD_INTERNAL_METISGRAPHDIGEST
 #define ARCANE_STD_INTERNAL_METISGRAPHDIGEST
@@ -31,8 +31,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule une somme de contrôle globale des entrées/sorties Metis.
+ * \brief Calculates a global checksum of Metis inputs/outputs.
  */
 class MetisGraphDigest
 : public TraceAccessor
@@ -44,10 +45,10 @@ class MetisGraphDigest
  public:
 
   /*!
-   * Calcule une somme de controle "globale" des entrees de Metis et la retourne
-   * seulement pour le processeur de rang 0 dans le communicateur comm. Pour les
-   * autres processeurs, la chaine retournee est vide. La somme de controle est
-   * globale dans le sens ou tous les processeurs participent a sa construction.
+   * Calculates a "global" checksum of Metis inputs and returns it
+   * only for the rank 0 processor in the communicator comm. For
+   * other processors, the returned string is empty. The checksum is
+   * global in the sense that all processors participate in its construction.
    */
   String computeInputDigest(const bool need_part, const int nb_options,
                             const MetisGraphView& my_graph, const idx_t* vtxdist, const idx_t* wgtflag,
@@ -56,10 +57,10 @@ class MetisGraphDigest
                             const idx_t* options);
 
   /*!
-   * Calcule une somme de controle "globale" des sorties de Metis et la retourne
-   * seulement pour le processeur de rang 0 dans le communicateur comm. Pour les
-   * autres processeurs, la chaine retournee est vide. La somme de controle est
-   * globale dans le sens ou tous les processeurs participent a sa construction.
+   * Calculates a "global" checksum of Metis outputs and returns it
+   * only for the rank 0 processor in the communicator comm. For
+   * other processors, the returned string is empty. The checksum is
+   * global in the sense that all processors participate in its construction.
    */
   String computeOutputDigest(const MetisGraphView& my_graph, const idx_t* edgecut);
 
