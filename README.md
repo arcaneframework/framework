@@ -26,7 +26,14 @@ ____
 ![Codacy grade](https://img.shields.io/codacy/grade/9d31bc0a9ae04f858a26342092cb2744?style=for-the-badge)
 ![Coverity Scan](https://img.shields.io/coverity/scan/24734?style=for-the-badge)
 
-Arcane is a development environment for parallel numerical calculation codes. It supports the architectural aspects of a calculation code, such as data structures for meshing and parallelism, as well as more environment-related aspects such as dataset configuration.
+Arcane is a development environment for parallel numerical calculation codes. It supports the architectural aspects of
+a calculation code, such as data structures for meshing and parallelism, as well as more environment-related aspects
+such as dataset configuration.
+
+> [!NOTE]
+> This is the main repository for Arcane Framework. A French clone of this repository is available
+[here](https://github.com/arcaneframework/framework-fr). It is mainly used to generate documentation in French.
+
 ____
 
 Table of Contents:
@@ -51,17 +58,22 @@ Table of Contents:
 
 The documentation is available online and is generated and stored in this [GitHub repository](https://github.com/arcaneframework/arcaneframework.github.io).
 
+[Here](https://arcaneframework.github.io/index.html) you will find an index of all available documentation.
+
 ## Arcane documentation
 
 This documentation is intended for Arcane users.
 
-- [User documentation (French)](https://arcaneframework.github.io/arcane/userdoc/html/index.html)
-- User documentation (English) (Soon)
+- [User documentation (English)](https://arcaneframework.github.io/framework/arcane/doc/en/user/html/index.html)
+- [User documentation (French)](https://arcaneframework.github.io/framework/arcane/doc/fr/user/html/index.html)
 
 This documentation is intended for Arcane developers.
 
-- [Developer documentation (French)](https://arcaneframework.github.io/arcane/devdoc/html/index.html)
-- Developer documentation (English) (Soon)
+- [Developer documentation (English)](https://arcaneframework.github.io/framework/arcane/doc/en/dev/html/index.html)
+- [Developer documentation (French)](https://arcaneframework.github.io/framework/arcane/doc/fr/dev/html/index.html)
+
+> [!NOTE]
+> The English version of the documentation is updated more frequently than the French version.
 
 ## Alien documentation
 
