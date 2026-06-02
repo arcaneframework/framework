@@ -1,4 +1,4 @@
-name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-21 / Full / Debug)'
+name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 24.04-26.04 / GCC 14-15 / CLang 21-22 / Full / Debug)'
 
 on:
   schedule:
@@ -11,26 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - short: 'U22_G12'
-            long: 'ubuntu-2204'
-            compilo_name: 'gcc'
-            compilo_version: '12'
-            date: '20250112'
-            # Disable TBB because the version in ubuntu 2022 is too old
-            # (version 2021+ is required and this is version 2020)
-            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
-            execute_tests: true
-
-          - short: 'U22_C16'
-            long: 'ubuntu-2204'
-            compilo_name: 'clang'
-            compilo_version: '16'
-            date: '20250112'
-            # Disable TBB because the version in ubuntu 2022 is too old
-            # (version 2021+ is required and this is version 2020)
-            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
-            execute_tests: true
-
           - short: 'U24_G14'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
@@ -44,6 +24,24 @@ jobs:
             compilo_name: 'clang'
             compilo_version: '21'
             date: '20250830'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            execute_tests: true
+
+          - short: 'U26_G15'
+            long: 'ubuntu-2604'
+            compilo_name: 'gcc'
+            compilo_version: '15'
+            #            date: '20260528'
+            date: 'latest'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            execute_tests: true
+
+          - short: 'U26_C22'
+            long: 'ubuntu-2604'
+            compilo_name: 'clang'
+            compilo_version: '22'
+            #            date: '20260528'
+            date: 'latest'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -70,7 +68,8 @@ jobs:
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     secrets: inherit
     with:
-      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      #      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
       mpi: OMPI

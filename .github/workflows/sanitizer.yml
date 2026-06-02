@@ -1,4 +1,4 @@
-name: '[Sanitizer] Build/Install/Test Arcane Framework (Ubuntu 24.04 / CLang 21 / Full)'
+name: '[Sanitizer] Build/Install/Test Arcane Framework (Ubuntu 26.04 / CLang 22 / Full)'
 
 on:
   schedule:
@@ -14,7 +14,8 @@ jobs:
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     with:
-      image: ghcr.io/arcaneframework/ubuntu-2404:clang-21_full_stable
+      #      image: ghcr.io/arcaneframework/ubuntu-2604:clang-22_full_stable
+      image: ghcr.io/arcaneframework/ubuntu-2604:clang_full_latest
       compilo_name: clang
       compilo_version: 21
       mpi: OMPI
