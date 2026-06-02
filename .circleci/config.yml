@@ -108,7 +108,7 @@ jobs:
           name: "Set C++ compiler and default MPI"
           command: |
             source /root/scripts/use_openmpi.sh
-            source /root/scripts/use_gcc-14.sh
+            source /root/scripts/use_gcc.sh
 
       - run:
           name: Display set variables
