@@ -1,4 +1,4 @@
-name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-21 / CUDA 13.0 / Minimal-Full)'
+name: '[Check] Build/Install/Test Arcane Framework (Ubuntu 24.04-26.04 / GCC 13-15 / CLang 22 / CUDA 13.1 / Minimal-Full)'
 
 on:
   push:
@@ -36,45 +36,47 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - short: 'U22_G12'
-            long: 'ubuntu-2204'
-            compilo_name: 'gcc'
-            compilo_version: '12'
-            acc_compilo_name: ''
-            acc_compilo_version: ''
-            date: '20250112'
-            # Disable TBB because the version in ubuntu 2022 is too old
-            # (version 2021+ is required and this is version 2020)
-            args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
-            execute_tests: true
 
-          - short: 'U24_G14'
+          - short: 'U24_G13'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
-            compilo_version: '14'
+            compilo_version: '13'
             acc_compilo_name: ''
             acc_compilo_version: ''
             date: '20250830'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_C21'
-            long: 'ubuntu-2404'
+          - short: 'U26_G15'
+            long: 'ubuntu-2604'
+            compilo_name: 'gcc'
+            compilo_version: '15'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            #            date: '20260528'
+            date: 'latest'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            execute_tests: true
+
+          - short: 'U26_C22'
+            long: 'ubuntu-2604'
             compilo_name: 'clang'
-            compilo_version: '21'
+            compilo_version: '22'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20250830'
+            #            date: '20260528'
+            date: 'latest'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_G14_CU130'
-            long: 'ubuntu-2404'
+          - short: 'U26_G15_CU131'
+            long: 'ubuntu-2604'
             compilo_name: 'gcc'
-            compilo_version: '14'
+            compilo_version: '15'
             acc_compilo_name: 'cuda'
-            acc_compilo_version: '130'
-            date: '20250830'
+            acc_compilo_version: '131'
+            #            date: '20260528'
+            date: 'latest'
             # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
@@ -119,9 +121,9 @@ jobs:
           # Certains packages ne sont pas compilés avec MPICH dans les images Full.
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
           # Il n'y a pas CUDA dans les images Minimal.
-          - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
+          - { version: { short: 'M' }, image: { short: 'U26_G15_CU131' } }
           # Ce test est fait par build_tests_required.
-          - { image: { short: 'U24_C21' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
+          - { image: { short: 'U26_C22' }, version: { short: 'M' }, config: { type: 'Check' }, mpi: { implementation: 'OMPI' } }
           # Les tests Full sont faits par les runners M1.
           - { version: { short: 'F' }, runner: { runner_tag: 'ubuntu-latest' } }
           # Les tests Minimal sont faits par les runners GH.
@@ -133,7 +135,8 @@ jobs:
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     secrets: inherit
     with:
-      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      #      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}_${{matrix.version.long}}_${{matrix.image.date}}
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
       acc_compilo_name: ${{ matrix.image.acc_compilo_name }}
