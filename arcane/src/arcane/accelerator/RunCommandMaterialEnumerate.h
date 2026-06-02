@@ -523,7 +523,7 @@ _applyConstituentCells(RunCommand& command, ContainerType items, const Lambda& f
                             launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::SYCL:
-    ARCCORE_KERNEL_SYCL_FUNC((impl::DoMatContainerSYCLLambda<ContainerType, Lambda, RemainingArgs...>{}),
+    ARCCORE_KERNEL_SYCL_FUNC((DoMatContainerSYCLLambda<ContainerType, Lambda, RemainingArgs...>{}),
                              launch_info, func, items, remaining_args...);
     break;
   case eExecutionPolicy::Sequential:
