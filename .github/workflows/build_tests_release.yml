@@ -135,8 +135,14 @@ jobs:
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
     secrets: inherit
     with:
-      #      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
-      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}_${{matrix.version.long}}_${{matrix.image.date}}
+      # image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      image: |-
+        ${{ format(
+          case( 
+            matrix.image.date == 'latest', 'ghcr.io/arcaneframework/{0}:{1}_{3}_latest',
+            'ghcr.io/arcaneframework/{0}:{1}-{2}_{3}_{4}'),
+          matrix.image.long, matrix.image.compilo_name, matrix.image.compilo_version, matrix.version.long, matrix.image.date
+        ) }}
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
       acc_compilo_name: ${{ matrix.image.acc_compilo_name }}
