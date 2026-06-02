@@ -1,4 +1,4 @@
-name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04-26.04 / GCC 12-14-15 / CLang 16-21-22 / CUDA 13.1 / ROCM 7.1.0 / Minimal-Full / Release-Debug)'
+name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04-26.04 / GCC 12-14-15 / CLang 16-19-21-22 / CUDA 13.1 / ROCM 7.1.0 / Minimal-Full / Release-Debug)'
 # Attention : GitHub limite à 20 tests à la fois.
 
 on:
@@ -110,14 +110,14 @@ jobs:
               -DCMAKE_CUDA_ARCHITECTURES=80'
             execute_tests: false
 
-          - short: 'U26_G15_CUC22'
-            long: 'ubuntu-2604'
+          - short: 'U24_G14_CUC19'
+            long: 'ubuntu-2404'
             compilo_name: 'gcc'
-            compilo_version: '15'
+            compilo_version: '14'
             acc_compilo_name: 'clang_cuda'
-            acc_compilo_version: '22'
-            #            date: '20260528'
-            date: 'latest'
+            # CLang 21 doesn't support CUDA 13.0.
+            acc_compilo_version: '19'
+            date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
             args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
             execute_tests: false
