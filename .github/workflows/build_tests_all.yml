@@ -88,12 +88,10 @@ jobs:
             acc_compilo_version: '131'
             #            date: '20260528'
             date: 'latest'
-            # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
-              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
               -DCMAKE_CUDA_ARCHITECTURES=80'
-            execute_tests: false
+            execute_tests: true
 
           - short: 'U26_C20_CU131'
             long: 'ubuntu-2604'
@@ -103,12 +101,10 @@ jobs:
             acc_compilo_version: '131'
             #            date: '20260528'
             date: 'latest'
-            # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
-              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
               -DCMAKE_CUDA_ARCHITECTURES=80'
-            execute_tests: false
+            execute_tests: true
 
           - short: 'U24_G14_CUC19'
             long: 'ubuntu-2404'
@@ -119,7 +115,7 @@ jobs:
             acc_compilo_version: '19'
             date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
           - short: 'U26_G15_RC710'
@@ -130,7 +126,7 @@ jobs:
             acc_compilo_version: '710'
             #            date: '20260528'
             date: 'latest'
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
           - short: 'U26_C22_RC710'
@@ -141,7 +137,7 @@ jobs:
             acc_compilo_version: '710'
             #            date: '20260528'
             date: 'latest'
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
           - short: 'U26_ACPP'
@@ -153,7 +149,7 @@ jobs:
             #            date: '20260528'
             date: 'latest'
             args: '-DARCCORE_CXX_STANDARD=23'
-            execute_tests: false
+            execute_tests: true
 
 
         version:
@@ -179,6 +175,12 @@ jobs:
           - implementation: 'MPICH'
 
         runner:
+          - runner_tag: 'm-1'
+            runner_name: 'M1'
+            excluded_tests: ''
+            excluded_tests_with_labels: ''
+            ctest_parallel_jobs: '-j32'
+
           - runner_tag: 'ubuntu-latest'
             runner_name: 'GH'
             excluded_tests: ''
@@ -197,10 +199,17 @@ jobs:
           - { version: { short: 'M' }, image: { short: 'U26_ACPP' } }
           # Pas possible de compiler Arcane avec AdaptiveCpp en Debug.
           - { config: { type: 'Debug' }, image: { short: 'U26_ACPP' } }
+          # Les tests non-Cuda sont faits par les runners GH.
+          - { image: { acc_compilo_name: '' }, runner: { runner_tag: 'm-1' } }
+          - { image: { acc_compilo_name: 'rocm' }, runner: { runner_tag: 'm-1' } }
+          - { image: { acc_compilo_name: 'acpp' }, runner: { runner_tag: 'm-1' } }
+          # Les tests Cuda sont faits par les runners M1.
+          - { image: { acc_compilo_name: 'cuda' }, runner: { runner_tag: 'ubuntu-latest' } }
 
     name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
+    secrets: inherit
     with:
       # image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
       image: |-
@@ -226,3 +235,4 @@ jobs:
       use_cache: false
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
       runner_tag: ${{ matrix.runner.runner_tag }}
+      runner_gpu: ${{ case(matrix.image.acc_compilo_name == 'cuda', 'true', 'false') }}

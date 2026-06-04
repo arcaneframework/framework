@@ -77,12 +77,10 @@ jobs:
             acc_compilo_version: '131'
             #            date: '20260528'
             date: 'latest'
-            # Disable googletest with CUDA because it requires a GPU driver
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
-              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
               -DCMAKE_CUDA_ARCHITECTURES=80'
-            execute_tests: false
+            execute_tests: true
 
         version:
           - short: 'M'
@@ -109,7 +107,7 @@ jobs:
             runner_name: 'M1'
             excluded_tests: ''
             excluded_tests_with_labels: ''
-            ctest_parallel_jobs: '-j12'
+            ctest_parallel_jobs: '-j32'
 
           - runner_tag: 'ubuntu-latest'
             runner_name: 'GH'
@@ -160,3 +158,4 @@ jobs:
       cache_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
       runner_tag: ${{ matrix.runner.runner_tag }}
+      runner_gpu: ${{ case(matrix.image.acc_compilo_name == 'cuda', 'true', 'false') }}
