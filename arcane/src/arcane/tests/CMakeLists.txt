@@ -2,7 +2,7 @@
 
 set(TEST_LIBS ${ARCANE_ADDITIONNAL_TEST_LIBRARIES})
 if(TARGET arcane_aleph_tests)
-  # Aleph n'est disponible que si on a MPI et Linux
+  # Aleph is only available if we have MPI and Linux
   set(TEST_LIBS ${TEST_LIBS} arcane_aleph_tests)
 endif()
 set(TEST_LIBS ${TEST_LIBS} ${ARCANE_LIBRARIES})
@@ -61,7 +61,7 @@ arcane_add_library(arcane_tests_lib
 add_executable(arcane_tests_exec ${ARCANE_SRC_PATH}/arcane/tests/ArcaneTestMain.cc)
 set(ARCANE_TEST_PATH ${ARCANEBUILDROOT}/src/arcane/tests)
 
-# Recopie dans le répertoire les DLLs nécessaires à l'exécutable de test
+# Copy the DLLs necessary for the test executable into the directory
 if (WIN32)
   add_custom_command(TARGET arcane_tests_exec POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:arcane_tests_exec> $<TARGET_FILE_DIR:arcane_tests_exec>
@@ -82,7 +82,7 @@ file(MAKE_DIRECTORY ${ARCANE_TEST_PATH})
 target_link_libraries(arcane_tests_exec PRIVATE ${ADD_NO_AS_NEEDED} arcane_tests_lib)
 target_link_libraries(arcane_tests_lib PUBLIC ${ADD_NO_AS_NEEDED} ${TEST_LIBS} arcane_full ${ARCANE_LIBRARIES})
 
-# Pour mettre l'executable dans 'lib'
+# To put the executable in 'lib'
 arcane_target_set_standard_path(arcane_tests_exec)
 #set_target_properties(arcane_tests_exec PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 #set_target_properties(arcane_tests_lib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -96,8 +96,8 @@ endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Gestion des tests C#.
-# Il faut le wrapper C# pour pouvoir utiliser ces tests
+# Management of C# tests.
+# The C# wrapper is needed to be able to use these tests
 if (TARGET arcane_dotnet_wrapper_services)
   set(ARCANE_HAS_DOTNET_TESTS TRUE)
   message(STATUS "** ** USING C# TEST LIBS=${ARCANE_LIBRARIES}")
@@ -105,7 +105,7 @@ if (TARGET arcane_dotnet_wrapper_services)
   set(CSPATH ${ARCANE_SRC_PATH}/arcane/tests)
   set(CSOUTPATH ${ARCANEBUILDROOT}/arcane/tests)
   if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
-    # Cette variable est utilisée lors de la génération du fichier '.csproj'
+    # This variable is used when generating the '.csproj' file
     set(_HAS_PYTHON_WRAPPER "true")
   endif()
   configure_file(ArcaneTest.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest/ArcaneTest.csproj @ONLY)
@@ -163,7 +163,7 @@ if (TARGET arcane_dotnet_wrapper_services)
   configure_file(ArcaneTestExe.csproj.in ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTestExe/ArcaneTestExe.csproj @ONLY)
 
   #add_custom_target(arcane_tests_cs_all ALL DEPENDS ${OUTEXE} ${OUTLIB})
-  # Pour que la cible soit automatiquement prise en compte dans les tests
+  # So that the target is automatically included in the tests
   add_dependencies(arcane_tests_exec arcane_test_cs_exe)
 endif()
 
@@ -178,7 +178,7 @@ else()
   set(ARCANE_TEST_DRIVER ${ARCANEBUILDROOT}/bin/arcane_test_driver)
   set(ARCANE_CONVERT_MESH_COMMAND ${ARCANEBUILDROOT}/bin/arcane_convert_mesh)
 endif()
-# Sauve cette variable dans le cache pour que des autres projets utilisant Arcane puissent l'utiliser.
+# Save this variable in the cache so that other projects using Arcane can use it.
 set(ARCANE_TEST_DRIVER ${ARCANE_TEST_DRIVER} CACHE STRING "Driver for test" FORCE)
 
 # ----------------------------------------------------------------------------
@@ -209,8 +209,8 @@ function(ARCANE_COPY_MESH_DIRECT orig_mesh_name)
     ${ARCANE_TEST_PATH}/${orig_mesh_name})
 endfunction()
 
-# Fonction pour recopier les maillages issus de répertoires
-# qui ne sont pas dans les dépots arcane (pour des raisons de taille)
+# Function to copy meshes from directories
+# which are not in the arcane repositories (for size reasons)
 function(ARCANE_COPY_ADDITIONAL_MESH_DIRECT mesh_name)
   if (ARCANE_ADDITIONAL_MESHES_PATH)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ARCANE_ADDITIONAL_MESHES_PATH}/${mesh_name}
@@ -227,7 +227,7 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Copie les maillages de test
+# Copy the test meshes
 message(STATUS "Copying data for tests")
 arcane_copy_mesh(tube5x5x100 sod vtk)
 arcane_copy_mesh(tube5x5x100 tube5x5x100 vtk)
@@ -301,14 +301,12 @@ if (Lima_FOUND)
   #arcane_copy_additional_mesh_direct(soudures_3_cut_4)
 endif ()
 
-# Copie le répertoire des données dans le répertoire d'exécution des tests
-# Cela est nécessaire pour certains cas comme ceux faisant une reprise
-# depuis une ancienne version de Arcane
-
-# La protection pour ce test est issue du test hydro3_cartesian_small
+# Copy the data directory into the test execution directory
+# This is necessary for certain cases such as those performing a restart
+# The protection for this test comes from the hydro3_cartesian_small test
 file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small
   DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
-# La protection pour ce test est issue du test hydro3_cartesian_small_4thread
+# The protection for this test comes from the hydro3_cartesian_small_4thread test
 file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small_4shm
   DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
 
@@ -481,13 +479,13 @@ arcane_add_test_sequential(caseoptions_category testCaseOptions-5.arc -We,ARCANE
 arcane_add_test_sequential(caseoptions_multiplemesh testCaseOptions-multiple-mesh.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(caseoptions_multiplemesh_legacy testCaseOptions-multiple-mesh-legacy.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(casefunction1 testCaseFunction-1.arc)
-# Mettre à vrai pour tester Redis mais il faut que le server tourne
-# (on peut tester cela avec la commande 'redis-cli PING')
+# Set to true to test Redis, but the server must be running
+# (you can test this with the command 'redis-cli PING')
 set(ARCANE_ENABLE_REDIS_TEST FALSE)
 if (hiredis_FOUND AND ARCANE_ENABLE_REDIS_TEST)
-  # Pour ce test on a aussi besoin qu'une base redis soit accessible
-  # Comme il n'y a pas de moyen simple de le savoir, ce test n'est pas actif
-  # par défaut.
+  # For this test, we also need a Redis database to be accessible
+  # Since there is no simple way to know this, this test is not active
+  # by default.
   arcane_add_test_sequential(redis1 testRedis-1.arc)
 endif()
 
@@ -498,7 +496,7 @@ add_test(
   COMMAND ${ARCANE_TEST_DRIVER} launch -D "TestRunDirect1"
   WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR}
   )
-# Test en spécifiant le JDD avec le paramètre 'CaseDatasetFileName'.
+# Test specifying the dataset with the 'CaseDatasetFileName' parameter.
 add_test(
   NAME direct_exec1_case_arg
   COMMAND ${ARCANE_TEST_DRIVER} launch "-A,CaseDatasetFileName=${ARCANE_TEST_CASEPATH}/testRunDirect-1.arc" -D TestRunDirectCartesian
@@ -526,7 +524,7 @@ arcane_add_accelerator_test_all_policies(standalone_subdomain_accelerator dummy.
 
 # ----------------------------------------------------------------------------
 
-# Macro pour tester le message_passing
+# Macro to test message_passing
 macro(add_test_message_passing test_name)
   set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -We,ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE,1 -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
@@ -565,7 +563,7 @@ add_test_message_passing(machine_window)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 
-# Pour la converture de test, lance les tests en mode hybrid mais avec uniquement 4 coeurs
+# For the test conversion, run the tests in hybrid mode but with only 4 cores
 arcane_add_test_message_passing_hybrid(parallelmng_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 
@@ -605,8 +603,8 @@ arcane_add_test_parallel(cell-submesh testSubMesh.arc 12)
 arcane_add_test_parallel(face-submesh testSubMesh2.arc 1)
 arcane_add_test_parallel(face-submesh testSubMesh2.arc 12)
 
-# Le test suivant ne fonctionne en mode hybride que si le
-# partitionneur par défaut est ParMetis
+# The following test only works in hybrid mode if the
+# default partitioner is ParMetis
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel_all(face-submesh_2d testSubMesh2-2D.arc 2 2)
 else()
@@ -697,8 +695,8 @@ if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
 endif()
 if(PARTITIONER_FOUND)
   arcane_add_test_parallel(anyitem testAnyItem.arc 4)
-  # Pour l'instant supprime le test de fusion car il ne marche pas en parallèle
-  # (Il faudrait pour cela ajouter des contraintes au partitionnemenet)
+  # For now, remove the merge test because it doesn't work in parallel
+  # (This would require adding constraints to the partitioning)
   #  arcane_add_test_parallel(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc 4)
 endif()
 
@@ -757,8 +755,8 @@ if(MEDFile_FOUND)
   arcane_add_test(mesh_hexa20_med testMesh-med3.arc)
   arcane_add_test(mesh_polygonal_med testMesh-med-polygonal.arc)
 endif()
-# Désactive temporairement la lecture des mailles quadratiques avec VTK car
-# le maillage n'est pas correct.
+# Temporarily disables reading quadratic meshes with VTK because
+# the mesh is not correct.
 arcane_add_test(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
 arcane_add_test(mesh_tied_interface_2d_1_vtk42 testMesh-tied_interface_2d_1-vtk42.arc)
 arcane_add_test(mesh_sphere_vtk42 testMesh-sphere-vtk42.arc)
@@ -783,7 +781,7 @@ arcane_add_test(meshreader_no_renumbering_onesphere_msh testMeshReader-generate-
 ##############
 
 arcane_add_test(unittest testUnitTest.arc)
-# Ajoute un test avec un échec
+# Adds a test with a failure
 arcane_add_test(unittest_fail testUnitTestFail.arc)
 set_tests_properties(unittest_fail PROPERTIES WILL_FAIL TRUE)
 if (TARGET arcane_mpi)
@@ -811,8 +809,7 @@ configure_file(${ARCANE_ARC_PATH}/matrix/hypre_small_poisson/IJ.out.x.00000
   ${ARCANE_TEST_PATH}/hypre_small_poisson/IJ.out.x.00000 COPYONLY)
 arcane_add_test_sequential(ios ${ARCANE_TEST_PATH}/testIos.arc "-We,ARCANE_USE_PARALLEL_MSH_READER,0")
 arcane_add_test_sequential(mesh_io_simple testMeshIO-simple.arc)
-# Désactive temporairement ce test tant qu'on ne détecte pas correctement la dimension
-# du maillage
+# Temporarily disables this test until the dimension is correctly detected
 #arcane_add_test_sequential(ios_msh testIos-msh.arc)
 arcane_add_test_sequential(ios_msh2 testIos-msh2.arc)
 arcane_add_test_sequential(ios_msh3 testIos-msh3.arc)
@@ -829,7 +826,7 @@ if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_parallel(ios_msh6_parallel testIos-msh6.arc 4)
   arcane_add_test_parallel_thread(ios_msh_binary1 testIos-msh-binary-1.arc 4)
   arcane_add_test_parallel(ios_msh_binary1 testIos-msh-binary-1.arc 4)
-  # Ne fonctionne pas encore
+  # Not working yet
   # arcane_add_test_parallel(ios_msh6_parallel_face5 testIos-msh6.arc 4 "-We,ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION,5")
 endif()
 if(${VTK_PACKAGE_PREFIX}IOXML_FOUND)
@@ -882,7 +879,7 @@ arcane_add_test_parallel_thread(hydro3_cartesian_small_gl0_opt testHydro-3-carte
 arcane_add_test_parallel_thread(hydro3_cartesian_small_gl2_opt testHydro-3-cartesian-small.arc 4 -m 10 "-We,ARCANE_GHOSTLAYER_USE_OPTIMIZED_LAYER,2")
 arcane_add_test_parallel_thread(hydro3_cartesian_small_gl3_opt testHydro-3-cartesian-small.arc 4 -m 10 "-We,ARCANE_GHOSTLAYER_USE_OPTIMIZED_LAYER,3")
 arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian_small.xml)
-# TODO : À réactiver.
+# TODO: To be reactivated.
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 
@@ -951,8 +948,8 @@ arcane_add_test(hydro1 testHydro-1.arc "-m 25")
 arcane_add_test_sequential(hydro1_ucd testHydro-1-UCD.arc "-m 25")
 if (HDF5_FOUND)
   arcane_add_test_generic(hydro1_vtkhdf CASE_FILE testHydro-1-vtkhdf.arc ARGS "-m 50")
-  # Le test suivant ne passe en mode 'mémoire partagée' que si on utilise Metis
-  # comme partitionneur par défaut
+  # The following test only runs in 'shared memory' mode if Metis is used
+  # as the default partitioner
   if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
     arcane_add_test_generic(hydro1_vtkhdfv2 CASE_FILE testHydro-1-vtkhdfv2.arc ARGS "-m 50")
   else()
@@ -986,7 +983,7 @@ endif()
 
 if (ARCANE_HAS_DOTNET_TESTS)
   if (MONO_EXEC)
-    # TODO: faire aussi ces tests dotnet_core
+    # TODO: also do these dotnet_core tests
     arcane_add_test_sequential(direct_exec1_cs none.arc -We,ARCANE_SIMPLE_EXECUTOR,1 -Z)
     arcane_add_test_sequential(direct_exec2_cs none.arc --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} -We,ARCANE_USE_DOTNET_WRAPPER,1 -A,DotNetExecuteClassName=TestClass -A,DotNetExecuteMethodName=Test1 -Z)
     arcane_add_test_sequential(direct_exec3_cs none.arc -A,DotNetExecuteClassName=TestClass -A,DotNetExecuteMethodName=Test1 -Z)
@@ -1063,7 +1060,7 @@ arcane_add_test_parallel_thread(mesh2_basic_geometric_partitioner_3d testMesh-2-
 arcane_add_test_parallel(mesh2_basic_geometric_partitioner_3d testMesh-2-basic-geometric-partitioner-3d.arc 8)
 arcane_add_test_parallel(mesh2_basic_geometric_partitioner_3d_v1 testMesh-2-basic-geometric-partitioner-3d.arc 5 "-We,GEOMETRIC_PARTITIONER_IMPL,1")
 
-# TODO: Indiquer que ces cas tests ne doivent pas être lancés simulatanément
+# TODO: Indicate that these test cases should not be run simultaneously
 if(UNIX AND MPI_FOUND)
   set(CASE_PART_ARGS "-n 2 -p 4 --writer MshMeshWriter tube5x5x100.vtk")
   set(CASE_PART_TEST_FILE "${TEST_PATH}/testHydro-5-msh.arc")
@@ -1232,7 +1229,7 @@ endif()
 #################################################################
 #################################################################
 
-# Test les comparaisons bit à bit entre deux exécutions
+# Test bit-by-bit comparisons between two runs
 arcane_add_test_script(compare_seq_seq compare_seq_seq.xml)
 arcane_add_test_script(compare_seq_seq_v3 compare_seq_seq_v3.xml)
 arcane_add_test_script(compare_seq_seq_localnormmax compare_seq_seq_localnormmax.xml)
@@ -1244,7 +1241,7 @@ if (LZ4_FOUND)
   arcane_add_test_script(compare_seq_seq_lz4_v3 compare_seq_seq_lz4_v3.xml)
 endif()
 if (zstd_FOUND)
-  # Pas encore supporté dans VariableComparer.
+  # Not yet supported in VariableComparer.
   #arcane_add_test_script(compare_seq_seq_zstd compare_seq_seq_zstd.xml)
   #arcane_add_test_script(compare_seq_seq_zstd_v3 compare_seq_seq_zstd_v3.xml)
 endif()
@@ -1265,7 +1262,7 @@ arcane_add_test_script(checkpoint_verifier_4pe_v3 checkpoint_verifier_4pe_v3.xml
 #################################################################
 #################################################################
 
-# Test les reprises en changeant le nombre de sous-domaines
+# Test restarts by changing the number of subdomains
 if (ARCANE_DEFAULT_PARTITIONER_IS_METIS)
   arcane_add_test_script(checkpoint_change_n8_n5_thread checkpoint_change_n8_n5_thread.xml)
 endif()
@@ -1278,7 +1275,7 @@ endif()
 #################################################################
 #################################################################
 
-# Test pour la partie StringVariableReplace.
+# Test for the StringVariableReplace part.
 arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
     "-We,ARCANE_REPLACE_SYMBOLS_IN_DATASET,1"
     "-A,aa=bb"
@@ -1287,13 +1284,13 @@ arcane_add_test_sequential(string_variable_replace testStringVariableReplace.arc
 #################################################################
 #################################################################
 
-# Test pour la partie ParameterOption.
+# Test for the ParameterOption part.
 arcane_add_test_sequential(parameter_option testParameterOption.arc)
 
 #################################################################
 #################################################################
 
-# Test pour les implementations de TimeHistoryAdder.
+# Test for the TimeHistoryAdder implementations.
 arcane_add_test(time_history_adder_1 testTimeHistoryAdder-1.arc -c 2 -m 5 -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1)
 arcane_add_test_parallel(time_history_adder_1_replication testTimeHistoryAdder-1.arc 4 -c 2 -m 5
     -We,ARCANE_ENABLE_NON_IO_MASTER_CURVES,1
@@ -1313,13 +1310,13 @@ function(arcane_add_python_test_sequential test_name script_name case_file)
 endfunction()
 
 #################################################################
-# Test wrapper python en mode embedded
+# Python wrapper test in embedded mode
 message(STATUS "Check add tests for python wrapper (is_active?=${ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER})")
 if (ARCANE_ENABLE_DOTNET_PYTHON_WRAPPER)
   message(STATUS "Try to find 'Python' embedded component for tests")
-  # Il faut trouver le chemin de 'libpython.so' et positionner
-  # la variable d'environnement PYTHONNET_PYDLL pour le mode embedded.
-  # TODO: Positionner directement lors de la compilation la propriété C# Python.Runtime.PythonDLL
+  # We must find the path of 'libpython.so' and position
+  # the PYTHONNET_PYDLL environment variable for embedded mode.
+  # TODO: Directly position the C# Python.Runtime.PythonDLL property during compilation
   set(Python_USE_STATIC_LIBS FALSE)
   find_package(Python COMPONENTS Interpreter Development NumPy)
   message(STATUS "Python FOUND=${Python_FOUND}")
@@ -1373,8 +1370,8 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-# Pour l'instant, les soudures ne sont pas compatibles
-# avec le partitionnement parallele lorqu'on utilise le partitionnement interne
+# For now, ties are not compatible
+# with parallel partitioning when using internal partitioning
 if (Lima_FOUND AND ARCANE_ADDITIONAL_MESHES_PATH)
   arcane_add_test(tied_interface3 testTiedInterface-3.arc "-m 10")
   arcane_add_test(tied_interface_multi1 testTiedInterface-4.arc "-m 2")

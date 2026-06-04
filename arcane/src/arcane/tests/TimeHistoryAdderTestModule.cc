@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeHistoryAdderTestModule.cc                               (C) 2000-2025 */
 /*                                                                           */
-/* Module de test pour les implementations de ITimeHistoryAdder.             */
+/* Test module for the implementations of ITimeHistoryAdder.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -92,30 +92,30 @@ _writer()
   ISubDomain* sd = subDomain();
   Integer iteration = globalIteration();
 
-  // Création d'un adder global.
+  // Creation of a global adder.
   GlobalTimeHistoryAdder global_adder(sd->timeHistoryMng());
 
-  // On ajoute une valeur à l'historique "BBB" commun à tous les sous-domaines.
+  // We add a value to the "BBB" history common to all subdomains.
   global_adder.addValue(TimeHistoryAddValueArg("BBB"), iteration++);
 
-  // On ajoute une valeur à l'historique "BBB" spécifique au sous-domaine 0.
+  // We add a value to the "BBB" history specific to subdomain 0.
   global_adder.addValue(TimeHistoryAddValueArg("BBB", true, 0), iteration++);
 
-  // On ajoute une valeur à l'historique "BBB" spécifique au sous-domaine 1.
+  // We add a value to the "BBB" history specific to subdomain 1.
   global_adder.addValue(TimeHistoryAddValueArg("BBB", true, 1), iteration++);
 
   for (auto mesh : sd->meshes()) {
 
-    // Création d'un adder spécifique au maillage mesh.
+    // Creation of a mesh-specific adder.
     MeshTimeHistoryAdder mesh_adder(sd->timeHistoryMng(), mesh->handle());
 
-    // On ajoute une valeur à l'historique "BBB" spécifique au maillage mesh et commun à tous les sous-domaines.
+    // We add a value to the "BBB" history specific to mesh and common to all subdomains.
     mesh_adder.addValue(TimeHistoryAddValueArg("BBB"), iteration++);
 
-    // On ajoute une valeur à l'historique "BBB" spécifique au maillage mesh et au sous-domaine 0.
+    // We add a value to the "BBB" history specific to mesh and subdomain 0.
     mesh_adder.addValue(TimeHistoryAddValueArg("BBB", true, 0), iteration++);
 
-    // On ajoute une valeur à l'historique "BBB" spécifique au maillage mesh et au sous-domaine 1.
+    // We add a value to the "BBB" history specific to mesh and subdomain 1.
     mesh_adder.addValue(TimeHistoryAddValueArg("BBB", true, 1), iteration++);
   }
 }
@@ -271,7 +271,7 @@ void TimeHistoryAdderTestModule::
 _writer_example1()
 {
   //![snippet_timehistory_example1]
-  // Calcul de la moyenne des pressions du sous-domaine.
+  // Calculation of the subdomain pressure average.
   Real avg_pressure_subdomain = 0;
   ENUMERATE_ (Cell, icell, mesh()->ownCells()) {
     avg_pressure_subdomain += m_pressure[icell];
@@ -285,17 +285,17 @@ _writer_example1()
   Integer my_rank = pm->commRank();
   Integer nb_proc = pm->commSize();
 
-  // Calcul de la pression moyenne globale.
+  // Calculation of the global average pressure.
   Real avg_pressure_global = pm->reduce(IParallelMng::eReduceType::ReduceSum, avg_pressure_subdomain);
   avg_pressure_global /= nb_proc;
 
-  // Création de l'objet permettant d'ajouter des valeurs dans un historique des valeurs.
+  // Creation of the object allowing values to be added to a value history.
   GlobalTimeHistoryAdder global_adder(sd->timeHistoryMng());
 
-  // Ajout de la valeur avg_pressure_subdomain dans l'historique "avg_pressure". Un historique par sous-domaine.
+  // Adding the avg_pressure_subdomain value to the "avg_pressure" history. One history per subdomain.
   global_adder.addValue(TimeHistoryAddValueArg("avg_pressure", true, my_rank), avg_pressure_subdomain);
 
-  // Ajout de la valeur avg_pressure_global dans l'historique "avg_pressure". Historique global.
+  // Adding the avg_pressure_global value to the "avg_pressure" history. Global history.
   global_adder.addValue(TimeHistoryAddValueArg("avg_pressure"), avg_pressure_global);
   //![snippet_timehistory_example1]
 }
@@ -313,16 +313,16 @@ _writer_example2()
   Integer nb_proc = pm->commSize();
   Integer nb_mesh = sd->meshes().size();
 
-  // Contiendra la moyenne des pressions du sous-domaine ("(2)" sur l'image).
+  // Will contain the subdomain pressure average ("(2)" in the image).
   Real avg_pressure_subdomain = 0;
 
-  // Contiendra la moyenne des pressions de tout le domaine ("(4)" sur l'image)
+  // Will contain the pressure average of the entire domain ("(4)" in the image)
   Real avg_pressure_global = 0;
 
-  // Pour chaque maillage.
+  // For each mesh.
   for (auto mesh : sd->meshes()) {
 
-    // Contiendra la moyenne des pressions du sous-domaines et du maillage "mesh" ("(1)" sur l'image).
+    // Will contain the subdomain and mesh "mesh" pressure average ("(1)" in the image).
     Real avg_pressure_subdomain_mesh = 0;
     ENUMERATE_ (Cell, icell, mesh->ownCells()) {
       avg_pressure_subdomain_mesh += m_pressure[icell];
@@ -331,19 +331,19 @@ _writer_example2()
       avg_pressure_subdomain_mesh /= mesh->ownCells().size();
     }
 
-    // Contiendra la moyenne des pressions de tout le domaine et du maillage "mesh" ("(3)" sur l'image).
+    // Will contain the pressure average of the entire domain and mesh "mesh" ("(3)" in the image).
     Real avg_pressure_global_mesh = pm->reduce(IParallelMng::eReduceType::ReduceSum, avg_pressure_subdomain_mesh);
     avg_pressure_global_mesh /= nb_proc;
 
-    // Création de l'objet permettant d'ajouter des valeurs dans un historique des valeurs lié au maillage "mesh".
+    // Creation of the object allowing values to be added to a value history linked to mesh "mesh".
     MeshTimeHistoryAdder mesh_adder(sd->timeHistoryMng(), mesh->handle());
 
-    // Ajout de la valeur avg_pressure_subdomain_mesh dans l'historique "avg_pressure" lié au maillage "mesh".
-    // Un historique par sous-domaine.
+    // Adding the avg_pressure_subdomain_mesh value to the "avg_pressure" history linked to mesh "mesh".
+    // One history per subdomain.
     mesh_adder.addValue(TimeHistoryAddValueArg("avg_pressure", true, my_rank), avg_pressure_subdomain_mesh);
 
-    // Ajout de la valeur avg_pressure_global dans l'historique "avg_pressure" lié au maillage "mesh".
-    // Historique global.
+    // Adding the avg_pressure_global value to the "avg_pressure" history linked to mesh "mesh".
+    // Global history.
     mesh_adder.addValue(TimeHistoryAddValueArg("avg_pressure"), avg_pressure_global_mesh);
 
     avg_pressure_subdomain += avg_pressure_subdomain_mesh;
@@ -355,13 +355,13 @@ _writer_example2()
     avg_pressure_global /= nb_mesh;
   }
 
-  // Création de l'objet permettant d'ajouter des valeurs dans un historique des valeurs.
+  // Creation of the object allowing values to be added to a value history.
   GlobalTimeHistoryAdder global_adder(sd->timeHistoryMng());
 
-  // Ajout de la valeur avg_pressure_subdomain dans l'historique "avg_pressure". Un historique par sous-domaine.
+  // Adding the avg_pressure_subdomain value to the "avg_pressure" history. One history per subdomain.
   global_adder.addValue(TimeHistoryAddValueArg("avg_pressure", true, my_rank), avg_pressure_subdomain);
 
-  // Ajout de la valeur avg_pressure_global dans l'historique "avg_pressure". Historique global.
+  // Adding the avg_pressure_global value to the "avg_pressure" history. Global history.
   global_adder.addValue(TimeHistoryAddValueArg("avg_pressure"), avg_pressure_global);
   //![snippet_timehistory_example2]
 }

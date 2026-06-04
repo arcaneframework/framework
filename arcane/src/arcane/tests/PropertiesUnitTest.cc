@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PropertiesUnitTest.cc                                       (C) 2000-2021 */
 /*                                                                           */
-/* Service de test des propriétés.                                           */
+/* Property test service.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,8 +36,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des propriétés.
+ * \brief Property test service.
  */
 class PropertiesUnitTest
 : public BasicUnitTest
@@ -121,8 +122,8 @@ executeTest()
   }
   {
     info() << "TEST: PROPERTY_MNG: PREPARE_FOR_DUMP";
-    // Vérifie que deux sauvegardes donnent le même hash
-    // et fait de même après une relecture.
+    // Checks that two saves give the same hash
+    // and does the same after a reread.
     UniqueArray<Byte> saved_bytes;
     pm->writeTo(saved_bytes);
     String hash1 = _getHash(saved_bytes);

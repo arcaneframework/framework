@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialTesterModule.cc                                 (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire des matériaux.                             */
+/* Material manager test module.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -146,8 +146,9 @@ _testDumpProperties()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Appelle le service d'EOS s'il est disponible.
+ * \brief Calls the EOS service if available.
  */
 void MeshMaterialTesterModule::
 _applyEos(bool is_init)
@@ -220,12 +221,13 @@ _setDependencies()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste les itérateurs par partie.
+ * \brief Tests the part iterators.
  *
- * Une des deux valeurs \a mat ou \a env doit être non nul.
- * Cela permet via cette méthode de tester à la fois les matériaux et
- * les milieux.
+ * One of the two values \a mat or \a env must be non-null.
+ * This allows testing both materials and
+ * environments via this method.
  */
 void MeshMaterialTesterModule::
 _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
@@ -461,7 +463,7 @@ _doSimd()
   info() << "_doSimd()";
   MaterialVariableCellReal var_tmp(MaterialVariableBuildInfo(m_material_mng,"TestVarTmpReal"));
   var_tmp.fill(-1.0);
-  // TODO: vérifier les valeurs.
+  // TODO: check values.
   ENUMERATE_ENV(ienv,m_material_mng){
     IMeshEnvironment* env = *ienv;
     auto out_var_tmp = viewOut(var_tmp);
@@ -500,9 +502,9 @@ template<typename VectorType> void MeshMaterialTesterModule::
 _checkVectorCopy(VectorType& vec_cells)
 {
   ValueChecker vc(A_FUNCINFO);
-  // Teste la copie.
-  // Normalement il s'agit d'une copie par référence donc les vues associées
-  // pointent vers la même zone mémoire.
+  // Test the copy.
+  // Normally it is a copy by reference, so the associated views
+  // point to the same memory area.
   VectorType vec_cells_copy(vec_cells);
   if (!vec_cells_copy.view()._isSamePointerData(vec_cells.view()))
     ARCANE_FATAL("Bad copy");
@@ -514,8 +516,8 @@ _checkVectorCopy(VectorType& vec_cells)
   vc.areEqual(move_vec_cells.view()._matvarIndexes().data(),vec_cells.view()._matvarIndexes().data(),"bad move 1");
 
   {
-    // Teste le clone.
-    // A la sortie les valeurs des index doivent être les mêmes mais pas les pointeurs.
+    // Test the clone.
+    // At the end, the index values must be the same but not the pointers.
     VectorType clone_vec(vec_cells_copy.clone());
     vc.areEqual(clone_vec.view()._matvarIndexes(),vec_cells.view()._matvarIndexes(),"bad clone 1");
     if (clone_vec.view()._constituentItemListView() != vec_cells.view()._constituentItemListView())
@@ -699,7 +701,7 @@ _checkSubViews(const CellGroup& test_group)
   EnvCellVector env_cells(test_group.view(),env1);
   MatCellVector mat_cells(test_group.view(),m_mat1);
 
-  // Vérifie l'utilisation des sous-vues.
+  // Checks the use of sub-views.
   {
     ComponentItemVectorView test_group_view(env_cells.view());
     Integer nb_item = test_group_view.nbItem();
@@ -762,7 +764,7 @@ _checkSubViews(const CellGroup& test_group)
     }
   }
 
-  // Test en parallèle
+  // Test in parallel
   {
     ComponentItemVectorView test_group_view(env_cells.view());
 
@@ -772,7 +774,7 @@ _checkSubViews(const CellGroup& test_group)
     Integer nb_item = test_group_view.nbItem();
     info() << "ParallelTest with lambda full_size=" << nb_item;
 
-    // Test avec ComponentItemVectorView
+    // Test with ComponentItemVectorView
     {
       std::atomic<Integer> new_total;
       new_total = 0;
@@ -790,7 +792,7 @@ _checkSubViews(const CellGroup& test_group)
       }
     }
 
-    // Test avec EnvItemVectorView
+    // Test with EnvItemVectorView
     {
       EnvItemVectorView env_test_group_view(env_cells.view());
       std::atomic<Integer> new_total;
@@ -809,7 +811,7 @@ _checkSubViews(const CellGroup& test_group)
       }
     }
 
-    // Test avec MatItemVectorView
+    // Test with MatItemVectorView
     {
       MatItemVectorView mat_view(mat_cells.view());
       Integer ref_val = _fillTestVar(mat_view,mat_test_sub_view);
@@ -817,14 +819,14 @@ _checkSubViews(const CellGroup& test_group)
       _checkEqual(ref_val,new_val);
     }
 
-    // Test avec IMeshMaterial
+    // Test with IMeshMaterial
     {
       Integer ref_val = _fillTestVar(m_mat1,mat_test_sub_view);
       Integer new_val = _checkParallelMatItem(m_mat1->matView(),mat_test_sub_view);
       _checkEqual(ref_val,new_val);
     }
 
-    // Test avec MatItemVectorView vide
+    // Test with empty MatItemVectorView
     {
       MatCellVector empty_mat_cells(CellGroup(),m_mat1);
       MatItemVectorView mat_view(empty_mat_cells.view());
@@ -835,15 +837,15 @@ _checkSubViews(const CellGroup& test_group)
 
   }
 
-  // Test en parallèle avec un pointeur sur membre
-  // (teste uniquement cette belle syntaxe que propose le C++ avec std::bind)
+  // Parallel test using a pointer to a member
+  // (only tests this beautiful syntax offered by C++ with std::bind)
   {
     ComponentItemVectorView test_group_view(env_cells.view());
     Integer nb_item = test_group_view.nbItem();
     info() << "NB_ITEM=" << nb_item;
     auto f0 = std::bind(std::mem_fn(&MeshMaterialTesterModule::_subViewFunctor),this,std::placeholders::_1);
     Parallel::Foreach(test_group_view,ParallelLoopOptions(),f0);
-    // Syntaxe avec lambda
+    // Syntax with lambda
     Parallel::Foreach(test_group_view,ParallelLoopOptions(),
     [&](ComponentItemVectorView view){ this->_subViewFunctor(view); }
     );
@@ -871,8 +873,8 @@ _checkFillArrayFromTo(IMeshMaterial* mat,MaterialVariableCellReal& var)
   {
     RealUniqueArray values;
     Integer nb_cell = mat->cells().size();
-    // Récupère les valeurs de \a var dans \a values puis les mets dans
-    // var_tmp et vérifie que tout est OK.
+    // Retrieves the values of \a var into \a values then puts them into
+    // var_tmp and checks that everything is OK.
     Integer index = 0;
     values.resize(nb_cell);
     var.fillToArray(mat,values);
@@ -906,7 +908,7 @@ _checkFillArrayFromTo(IMeshMaterial* mat,MaterialVariableCellReal& var)
       info() << "Indexes=" << indexes;
     }
 
-    // Idem test précédent mais sur un sous-ensemble des valeurs
+    // Same test as before but on a subset of values
 
     RealUniqueArray values;
     Integer nb_index = indexes.size();
@@ -945,15 +947,15 @@ compute()
   if (unit_test)
     unit_test->executeTest();
 
-  // Si non nul, indique qu'il faut vérifier les valeurs suite à un repartitionnement
+  // If not null, indicates that values must be checked after a repartitioning
   if (m_check_spectral_values_iteration!=0){
     info() << "Check spectral values after loadbalancing";
     _setOrCheckSpectralValues(m_check_spectral_values_iteration,true);
     m_check_spectral_values_iteration = 0;
   }
 
-  // Active la variable une itération sur deux pour tester l'activation et désactivation
-  // au cours du temps.
+  // Activates the variable every other iteration to test activation and deactivation
+  // over time.
   m_mat_not_used_real.globalVariable().setUsed((m_global_iteration()%2)==0);
 
   _dumpAverageValues();
@@ -967,7 +969,7 @@ compute()
     _testComponentPart(nullptr,(*ienv));
   }
 
-  // Teste la création de variable et les accesseurs.
+  // Tests variable creation and accessors.
   using namespace Materials;
   MaterialVariableCellReal mat_pressure(MaterialVariableBuildInfo(m_material_mng,"Pressure"));
   mat_pressure.fill(0.0);
@@ -981,14 +983,14 @@ compute()
   }
 
   {
-    // Teste le constructeur de recopie
+    // Tests the copy constructor
     MaterialVariableCellReal mat_pressure2(mat_pressure);
     if (mat_pressure2.materialVariable()!=mat_pressure.materialVariable())
       ARCANE_FATAL("Bad clone");
   }
 
   {
-    // Teste le changement de référence.
+    // Tests reference change.
     MaterialVariableCellReal mat_test_refersto(MaterialVariableBuildInfo(m_material_mng,"TestRefersToVar"));
     mat_test_refersto.refersTo(mat_pressure);
     if (mat_test_refersto.materialVariable()!=mat_pressure.materialVariable())
@@ -1004,7 +1006,7 @@ compute()
 
   }
 
-  // Teste le ENUMERATE_GENERIC_CELL
+  // Tests ENUMERATE_GENERIC_CELL
   {
     MatCellVector mat_cells(ownCells(),m_mat1);
     const MatCellVector& mcref(mat_cells);
@@ -1031,7 +1033,7 @@ compute()
     }
   }
 
-  // Teste le remplissage des valeurs partielles.
+  // Tests filling partial values.
   _checkFillPartialValues();
 
   IMeshMaterialVariable* nv = m_material_mng->findVariable(m_pressure.variable()->fullName());
@@ -1091,7 +1093,7 @@ compute()
     _copyPartialToGlobal(mat,*m_density_post_processing[i],m_mat_density);
   }
 
-  // Supprime des mailles pour test
+  // Remove meshes for testing
   {
     info() << "CheckRemove: Cells in MAT1=" << m_mat1->cells().size();
     ENUMERATE_MATCELL(imatcell,m_mat1){
@@ -1119,9 +1121,9 @@ compute()
     mesh()->modifier()->setDynamic(true);
     mesh()->modifier()->removeCells(remove_lids);
     if (parallelMng()->isParallel()){
-      // En parallèle, comme on supprime les mailles un peu n'importe comment,
-      // on supprime les tests tant que le maillage n'est pas à jour.
-      // TODO: regarder pourquoi le test checkValidMesh() plante.
+      // In parallel, since we are removing meshes somewhat randomly,
+      // we remove the tests until the mesh is up to date.
+      // TODO: check why checkValidMesh() crashes.
       Integer check_level = mesh()->checkLevel();
       mesh()->setCheckLevel(0);
       mesh()->modifier()->endUpdate();
@@ -1132,7 +1134,7 @@ compute()
         mesh()->modifier()->updateGhostLayers();
         if ((m_global_iteration() % 2)==0){
           mmim.endUpdateWithSort();
-          // TODO: vérifier que tout est trié
+          // TODO: verify that everything is sorted
         }
         else
           mmim.endUpdate();
@@ -1147,7 +1149,7 @@ compute()
   }
   if (m_mesh_partitioner){
     Integer iteration = m_global_iteration();
-    // Lance un repartitionnement toute les 3 itérations.
+    // Launches a repartitioning every 3 iterations.
     if ((iteration%3)==0){
       info() << "Registering mesh partition";
       subDomain()->timeLoopMng()->registerActionMeshPartition(m_mesh_partitioner);
@@ -1156,7 +1158,7 @@ compute()
     }
   }
   {
-    // Initialise la densité et l'energie interne dans les nouvelles mailles.
+    // Initializes density and internal energy in new meshes.
     ENUMERATE_MAT(imat,m_material_mng){
       Materials::IMeshMaterial* mat = *imat;
       ENUMERATE_MATCELL(icell,mat){
@@ -1179,7 +1181,7 @@ compute()
 void MeshMaterialTesterModule::
 _checkFillPartialValues()
 {
-  // Teste le remplissage des valeurs partielles par les valeurs globales.
+  // Tests filling partial values with global values.
   info() << "Check MaterialVariableCellReal";
   MaterialVariableCellReal mat_var(MaterialVariableBuildInfo(m_material_mng,"TestFillPartialMat"));
   _checkFillPartialValuesHelper(mat_var);
@@ -1399,7 +1401,7 @@ _checkArrayVariableSynchronize()
 
   _setOrCheckSpectralValues(iteration,false);
 
-  // On utilise la synchro par liste une itération sur deux.
+  // We use synchronization by list every other iteration.
   if ((iteration % 2)==0){
     MeshMaterialVariableSynchronizerList mlist(m_material_mng);
     m_mat_spectral1.synchronize(mlist);
@@ -1433,7 +1435,7 @@ _computeDensity()
   
   Int32UniqueArray mat_to_add_array;
   Int32UniqueArray mat_to_remove_array;
-  // Calcul les mailles dans lesquelles il faut ajouter ou supprimer des matériaux
+  // Calculate the meshes where materials need to be added or removed
   {
     Materials::MeshMaterialModifier modifier(m_material_mng);
     ENUMERATE_ENV(ienv,m_material_mng){
@@ -1454,7 +1456,7 @@ _computeDensity()
     }
   }
 
-  // Met à jour les valeurs.
+  // Update the values.
   {
     ENUMERATE_ENV(ienv,m_material_mng){
       IMeshEnvironment* env = *ienv;
@@ -1463,8 +1465,8 @@ _computeDensity()
       }
     }
   }
-  // Pour que les synchronisations fonctionnent bien,
-  // il faut que les matériaux soient les mêmes dans toutes les mailles.
+  // For synchronization to work correctly,
+  // the materials must be the same in all meshes.
   m_material_mng->synchronizeMaterialsInCells();
   info() << "Synchronize density";
   m_mat_density.synchronize();
@@ -1486,18 +1488,19 @@ _copyPartialToGlobal(IMeshMaterial* mat,VariableCellReal& global_density,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Dans cet exemple, on travaille sur les valeurs partielles d'un matériau.
- * Cette méthode est appelée 2 fois:
- * - la première fois, \a is_compute_mat vaut true et on
- * indique dans \a mat_to_add_array et \a mat_to_remove_array la liste
- * des mailles qui vont être ajoutées ou supprimer pour ce matériau.
- * Cette liste est déterminée en fonction de la valeur de la densité
- * partielle dans les mailles voisines.
- * - la seconde fois, on met à jour la valeur partielle. On ne peut
- * pas le faire lors du premier appel car on ne peut pas remplir les
- * valeurs partielles dans les mailles qui ne possèdent pas encore le
- * matériaux (TODO: prévoir un mécanisme pour éviter cela).
+ * In this example, we work on the partial values of a material.
+ * This method is called 2 times:
+ * - the first time, \a is_compute_mat is true and we
+ * indicate in \a mat_to_add_array and \a mat_to_remove_array the list
+ * of meshes that will be added or removed for this material.
+ * This list is determined based on the partial density value
+ * in neighboring meshes.
+ * - the second time, we update the partial value. We cannot
+ * do this during the first call because we cannot fill the
+ * partial values in meshes that do not yet possess the
+ * material (TODO: plan a mechanism to avoid this).
  */
 void MeshMaterialTesterModule::
 _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
@@ -1510,10 +1513,10 @@ _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
   tmp_node_mat_density.fill(0.0);
   info() << "FILL MAT=" << mat->name();
 
-  // Copy dans tmp_cell_mat_density la valeur partielle de la densité pour \a mat
+  // Copy the partial density value for \a mat into tmp_cell_mat_density
   _copyPartialToGlobal(mat,tmp_cell_mat_density,m_mat_density);
 
-  // La valeur aux noeuds est la moyenne de la valeur aux mailles autour
+  // The value at the nodes is the average of the value in the surrounding cells
   ENUMERATE_NODE(inode,allNodes()){
     Real v = 0.0;
     for( CellLocalId icell : inode->cellIds() )
@@ -1523,8 +1526,8 @@ _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
     tmp_node_mat_density[inode] = v;
   }
   
-  // Phase1, calcule les mailles où le matériau sera créé ou supprimé.
-  // Cela se fait en fonction de certaines valeurs (arbitraires) de la densité.
+  // Phase 1, calculate the meshes where the material will be created or removed.
+  // This is done based on certain (arbitrary) density values.
   if (is_compute_mat){
     ENUMERATE_CELL(icell,allCells()){
       Cell cell = *icell;
@@ -1547,8 +1550,8 @@ _fillDensity(IMeshMaterial* mat,VariableCellReal& tmp_cell_mat_density,
     }
   }
   else{
-    // Phase2: met à jour les valeurs maintenant que le matériau a été
-    // ajouté dans toutes les mailles
+    // Phase 2: update the values now that the material has been
+    // added to all meshes
 
     ENUMERATE_CELL(icell,allCells()){
       Cell cell = *icell;
@@ -1589,8 +1592,9 @@ _checkCreation2(Integer a,Integer n)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test la création à la volée des variables, avec multi-threading.
+ * \brief Test on-the-fly variable creation, with multi-threading.
  */
 void MeshMaterialTesterModule::
 _checkCreation()
@@ -1615,7 +1619,7 @@ _checkCreation()
       for (Int32 i = 0; i < nb_dim2; ++i)
         mat_pressure_array[mmc][i] = 0.3 + static_cast<Real>(i);
     }
-    // Teste la création à partir d'une variable existante.
+    // Test creation from an existing variable.
     MaterialVariableCellReal mat_pressure_ref2(mat_pressure.materialVariable());
     MaterialVariableCellArrayReal mat_pressure_array_ref2(mat_pressure_array.materialVariable());
     ENUMERATE_MATCELL (imatcell, m_mat1) {
@@ -1647,8 +1651,9 @@ _checkCreation()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste IMeshMaterialMng::identitySelectionView().
+ * \brief Tests IMeshMaterialMng::identitySelectionView().
  */
 void MeshMaterialTesterModule::
 _checkIndexedSelection()

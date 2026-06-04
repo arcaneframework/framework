@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorItemInfoUnitTest.cc                              (C) 2000-2025 */
 /*                                                                           */
-/* Service de test unitaire des 'ItemGenericInfoListView'.                   */
+/* Unit test service for 'ItemGenericInfoListView'.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AcceleratorItemInfoUnitTest
 : public BasicUnitTest
@@ -132,7 +133,7 @@ _executeTest1()
     };
   }
 
-  // Vérification
+  // Verification
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
 
@@ -190,7 +191,7 @@ _executeTest2()
     };
   }
 
-  // Vérification
+  // Verification
   ENUMERATE_ (Face, iface, allFaces()) {
     Face face = *iface;
     bool sb = var_subdomain_boundary[face] != 0;

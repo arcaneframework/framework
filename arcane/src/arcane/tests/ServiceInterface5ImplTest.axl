@@ -1,9 +1,9 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <service name="ServiceInterface5ImplTest" version="1.0" namespace-name="ArcaneTest"> 
   <description>
-    Service de test implémentant Module de test des options du jeu de données
-    Test des entités spéciales: 
+    Test service implementing data set options test module
+    Test of special entities: 
   </description>
 
   <interface name="ArcaneTest::IServiceInterface1" />
@@ -37,7 +37,7 @@
       type = "ArcaneTest::IServiceInterface1"
       default = "ServiceTestImpl1"
       >
-      <description>Un service de test pour IServiceInterface1</description>
+      <description>A test service for IServiceInterface1</description>
     </service-instance>
 
   </options>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialTesterModule_Samples.cc                         (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire des matériaux.                             */
+/* Material manager test module.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Exemple pour la documentation. Doit compiler, mais ne sera pas exécuté.
+// Example for documentation. Must compile, but will not be executed.
 class Sample
 : public Arcane::BasicModule
 {
@@ -58,7 +58,7 @@ class Sample
       m_mat_density[mc] = 1.0;
     }
 
-    // Indique que la variable est à jour.
+    // Indicates that the variable is up to date.
     m_mat_density.setUpToDate(mat);
   }
   //![SampleDependenciesComputeFunction]
@@ -67,67 +67,67 @@ class Sample
   {
     //![SampleMaterial]
     //![SampleMaterialCreate]
-    // Création ou récupération du gestionnaire depuis un maillage.
+    // Creation or retrieval of the manager from a mesh.
     Arcane::Materials::IMeshMaterialMng* material_mng = nullptr;
     material_mng = Arcane::Materials::IMeshMaterialMng::getReference(defaultMesh());
     //![SampleMaterialCreate]
 
     //![SampleMaterialCreate2]
-    // Exemple de création de 3 matériaux:
+    // Example of creating 3 materials:
     material_mng->registerMaterialInfo("MAT1");
     material_mng->registerMaterialInfo("MAT2");
     material_mng->registerMaterialInfo("MAT3");
     //![SampleMaterialCreate2]
 
     //![SampleMaterialCreate3]
-    // Création du milieu ENV1 contenant les matériaux MAT1 et MAT2
+    // Creation of environment ENV1 containing materials MAT1 and MAT2
     Arcane::Materials::MeshEnvironmentBuildInfo ebi1("ENV1");
     ebi1.addMaterial("MAT1");
     ebi1.addMaterial("MAT2");
     Arcane::Materials::IMeshEnvironment* env1 = material_mng->createEnvironment(ebi1);
 
-    // Création du milieu ENV2 contenant le matériau MAT2
+    // Creation of environment ENV2 containing material MAT2
     Arcane::Materials::MeshEnvironmentBuildInfo ebi2("ENV2");
     ebi2.addMaterial("MAT2");
     Arcane::Materials::IMeshEnvironment* env2 = material_mng->createEnvironment(ebi2);
 
-    // Création du milieu ENV3 contenant les matériaux MAT3 et MAT1
+    // Creation of environment ENV3 containing materials MAT3 and MAT1
     Arcane::Materials::MeshEnvironmentBuildInfo ebi3("ENV3");
     ebi3.addMaterial("MAT3");
     ebi3.addMaterial("MAT1");
     Arcane::Materials::IMeshEnvironment* env3 = material_mng->createEnvironment(ebi3);
 
-    // Création du bloc BLOCK1 sur le groupe de toutes les mailles
-    // et contenant les milieux ENV1 et ENV2
+    // Creation of block BLOCK1 on the group of all cells
+    // and containing environments ENV1 and ENV2
     Arcane::Materials::MeshBlockBuildInfo mb1("BLOCK1", allCells());
     mb1.addEnvironment(env1);
     mb1.addEnvironment(env2);
     Arcane::Materials::IMeshBlock* block = material_mng->createBlock(mb1);
 
-    // Indique au gestionnaire que l'initialisation est terminée
+    // Indicates to the manager that initialization is complete
     material_mng->endCreate();
     //![SampleMaterialCreate3]
 
     //![SampleMaterialCreate4]
-    info() << env1->id(); // Affiche '0'
-    info() << env1->materials()[0]->id(); // Affiche '0'
-    info() << env1->materials()[1]->id(); // Affiche '1'
-    info() << env2->id(); // Affiche '1'
-    info() << env2->materials()[0]->id(); // Affiche '2'
-    info() << env3->id(); // Affiche '2'
-    info() << env3->materials()[0]->id(); // Affiche '3'
-    info() << env3->materials()[1]->id(); // Affiche '4'
-    info() << block->id(); // Affiche '0'
+    info() << env1->id(); // Displays '0'
+    info() << env1->materials()[0]->id(); // Displays '0'
+    info() << env1->materials()[1]->id(); // Displays '1'
+    info() << env2->id(); // Displays '1'
+    info() << env2->materials()[0]->id(); // Displays '2'
+    info() << env3->id(); // Displays '2'
+    info() << env3->materials()[0]->id(); // Displays '3'
+    info() << env3->materials()[1]->id(); // Displays '4'
+    info() << block->id(); // Displays '0'
     //![SampleMaterialCreate4]
 
     //![SampleMaterialAddMat]
     {
-      // Créé l'instance de modification. Les modifications
-      // seront effectives lors de l'appel au destructeur de
-      // cette classe.
+      // Created the modification instance. The modifications
+      // will be effective when the destructor of
+      // this class is called.
       Arcane::Materials::MeshMaterialModifier modifier(material_mng);
-      // Ajoute les mailles du matériau 1 ou 2 en fonction
-      // de leur localId()
+      // Adds cells of material 1 or 2 based on
+      // their localId()
       Arcane::UniqueArray<Arcane::Int32> mat1_indexes;
       Arcane::UniqueArray<Arcane::Int32> mat2_indexes;
       const Arcane::Int32 nb_cell = allCells().size();
@@ -141,13 +141,13 @@ class Sample
         if (add_to_mat2)
           mat2_indexes.add(local_id);
       }
-      // Ajoute les mailles du matériau 1
+      // Adds cells of material 1
       modifier.addCells(env1->materials()[0], mat1_indexes);
-      // Ajoute les mailles du matériau 2
+      // Adds cells of material 2
       modifier.addCells(env1->materials()[1], mat2_indexes);
     }
-    // A partir d'ici, les matériaux sont mis à jour.
-    info() << env1->materials()[0]->cells().size(); // Nombre de mailles du matériau
+    // From here, the materials are updated.
+    info() << env1->materials()[0]->cells().size(); // Number of cells for the material
     //![SampleMaterialAddMat]
 
     //![SampleMaterialCreateVariable]
@@ -158,8 +158,8 @@ class Sample
     //![SampleMaterialCreateVariable]
 
     //![SampleMaterialIterEnv]
-    // Itération sur tous les milieux, puis tous les matériaux et
-    // toutes les mailles de ce matériau
+    // Iteration over all environments, then all materials and
+    // all cells of this material
     ENUMERATE_ENV (ienv, material_mng) {
       Arcane::Materials::IMeshEnvironment* env = *ienv;
       ENUMERATE_MAT (imat, env) {
@@ -177,7 +177,7 @@ class Sample
     //![SampleMaterialIterEnv]
 
     //![SampleBlockEnvironmentIter]
-    // Itération sur tous les mailles des matériaux des milieux d'un bloc.
+    // Iteration over all cells of materials in a block's environments.
     ENUMERATE_ENV (ienv, block) {
       Arcane::Materials::IMeshEnvironment* env = *ienv;
       ENUMERATE_MAT (imat, env) {
@@ -191,7 +191,7 @@ class Sample
     //![SampleBlockEnvironmentIter]
 
     //![SampleMaterialIterCell]
-    // Itération sur tous les milieux et tous les matériaux d'une maille.
+    // Iteration over all environments and all materials of a cell.
     ENUMERATE_ALLENVCELL (iallenvcell, material_mng, allCells()) {
       Arcane::Materials::AllEnvCell all_env_cell = *iallenvcell;
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
@@ -206,7 +206,7 @@ class Sample
     //![SampleMaterialIterCell]
 
     //![SampleBlockMaterialIterCell]
-    // Itération sur tous les milieux et tous les matériaux d'une maille.
+    // Iteration over all environments and all materials of a cell.
     ENUMERATE_ALLENVCELL (iallenvcell, block) {
       Arcane::AllEnvCell all_env_cell = *iallenvcell;
       ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
@@ -237,8 +237,8 @@ class Sample
     //![SampleMaterial]
 
     //![SampleComponentIter]
-    // Itération sur tous les milieux, puis tous les matériaux et
-    // toutes les mailles de ce matériau via la ComponentCell
+    // Iteration over all environments, then all materials and
+    // all cells of this material via the ComponentCell
     ENUMERATE_ENV (ienv, material_mng) {
       Arcane::Materials::IMeshEnvironment* env = *ienv;
       ENUMERATE_MAT (imat, env) {
@@ -246,13 +246,13 @@ class Sample
         ENUMERATE_COMPONENTCELL (iccell, mat) {
           Arcane::Materials::ComponentCell cc = *iccell;
           info() << "Cell mat=" << cc.componentId();
-          mat_density[cc] = 3.1; // Met à jour la densité du matériau
+          mat_density[cc] = 3.1; // Updates the material density
         }
       }
       ENUMERATE_COMPONENTCELL (iccell, env) {
         Arcane::Materials::ComponentCell cc = *iccell;
         info() << "Cell env=" << cc.componentId();
-        mat_density[cc] = 2.5; // Met à jour la densité du milieu
+        mat_density[cc] = 2.5; // Updates the environment density
       }
     }
     //![SampleComponentIter]
@@ -261,15 +261,15 @@ class Sample
       //![SampleComponentSuperItem]
       Arcane::Materials::MatCell mc;
       Arcane::Materials::ComponentCell cc = mc;
-      // Retourne la maille milieu (EnvCell) du matériau:
+      // Returns the environment cell (EnvCell) of the material:
       Arcane::Materials::ComponentCell cc2 = cc.superCell();
-      // Itère sur les mailles matériaux du milieu
+      // Iterates over the material cells of the environment
       ENUMERATE_CELL_COMPONENTCELL (icc, cc2) {
       }
 
-      // Retourne la maille AllEnvCell du milieu:
+      // Returns the AllEnvCell of the environment:
       Arcane::Materials::ComponentCell cc3 = cc2.superCell();
-      // Itère sur les mailles milieu de la maille.
+      // Iterates over the environment cells of the cell.
       ENUMERATE_CELL_COMPONENTCELL (icc, cc3) {
       }
       //![SampleComponentSuperItem]
@@ -278,14 +278,14 @@ class Sample
     {
       Arcane::Real init_val = 0.0;
       Arcane::Materials::MaterialVariableCellReal& var = mat_density;
-      // Initialise la valeur globale
+      // Initializes the global value
       var.globalVariable().fill(init_val);
       ENUMERATE_ENV (ienv, material_mng) {
-        // Initialise les valeurs milieux
+        // Initializes the environment values
         ENUMERATE_ENVCELL (ienvcell, (*ienv)) {
           var[ienvcell] = init_val;
         }
-        // Initialise les valeurs matériaux
+        // Initializes the material values
         ENUMERATE_MAT (imat, (*ienv)) {
           ENUMERATE_MATCELL (imatcell, (*imat)) {
             var[imatcell] = init_val;
@@ -296,17 +296,17 @@ class Sample
 
     {
       //![SampleDependencies]
-      // Positionne la méthode de calcul.
+      // Sets the calculation method.
       mat_density.setMaterialComputeFunction(this, &Sample::_computeDensity);
-      // Ajoute dépendance sur une variable matériau
+      // Adds dependency on a material variable
       mat_density.addMaterialDepend(mat_pressure);
-      // Ajoute dépendance sur variables globales
+      // Adds dependency on global variables
       mat_density.addMaterialDepend(defaultMesh()->nodesCoordinates());
       mat_density.addMaterialDepend(m_global_time);
 
       ENUMERATE_MAT (imat, material_mng) {
         Arcane::Materials::IMeshMaterial* mat = *imat;
-        // Met à jour la variable sur le matériau \a mat si besoin.
+        // Updates the variable on the material \a mat if needed.
         mat_density.update(mat);
       }
       //![SampleDependencies]
@@ -314,7 +314,7 @@ class Sample
 
     {
       //![SampleConcurrency]
-      // Boucle parallèle sur les mailles du milieu env1
+      // Parallel loop over the environment cells of env1
       Arcane::Materials::IMeshEnvironment* env = env1;
       Arcane::Parallel::Foreach(env->envView(), [&](Arcane::Materials::EnvItemVectorView view) {
         ENUMERATE_ENVCELL (ienvcell, view) {
@@ -322,7 +322,7 @@ class Sample
         }
       });
 
-      // Boucle parallèle sur les mailles du premier matériaux de env1
+      // Parallel loop over the cells of the first material in env1
       Arcane::Materials::IMeshMaterial* mat = env1->materials()[0];
       Arcane::Parallel::Foreach(mat->matView(), [&](Arcane::Materials::MatItemVectorView view) {
         ENUMERATE_MATCELL (imatcell, view) {
@@ -330,18 +330,18 @@ class Sample
         }
       });
 
-      // Functor générique sur un matériau ou milieu.
+      // Generic functor on a material or environment.
       auto func = [&](Arcane::Materials::ComponentItemVectorView view) {
         ENUMERATE_COMPONENTCELL (iccell, view) {
           mat_density[iccell] = 2.5;
         }
       };
-      // Application en parallèle de \a func sur le matériau
+      // Parallel application of \a func on the material
       Arcane::Parallel::Foreach(mat->view(), func);
-      // Application en parallèle de \a func sur le milieu
+      // Parallel application of \a func on the environment
       Arcane::Parallel::Foreach(env->view(), func);
 
-      // Application en parallèle de \a func sur le milieu avec options
+      // Parallel application of \a func on the environment with options
       Arcane::ParallelLoopOptions options;
       Arcane::Parallel::Foreach(env->view(), options, func);
       //![SampleConcurrency]
@@ -356,10 +356,10 @@ class Sample
 
       //![SampleEnumerateSimdComponentItem]
       Arcane::Real nr = 1.0;
-      // Température et volume en lecture seule
+      // Temperature and volume are read-only
       auto in_volume = viewIn(mat_volume);
       auto in_temperature = viewIn(mat_temperature);
-      // Pression en écriture
+      // Pressure is writable
       auto out_pressure = viewOut(mat_pressure);
 
       ENUMERATE_COMPONENTITEM_LAMBDA(EnvPartSimdCell, scell, env)
@@ -373,37 +373,37 @@ class Sample
       Arcane::Materials::IMeshEnvironment* env = env1;
       Arcane::Materials::EnvCellVector env_vector(test_env_group, env);
 
-      // Boucle sur les mailles du milieu \a env
+      // Loop over the environment cells \a env
       ENUMERATE_COMPONENTITEM (Arcane::Materials::EnvCell, ienvcell, env) {
         Arcane::Materials::EnvCell c = *ienvcell;
         mat_pressure[c] = mat_temperature[ienvcell];
       }
 
-      // Boucle sur les mailles du milieu \a env_vector
+      // Loop over the environment cells \a env_vector
       ENUMERATE_COMPONENTITEM (Arcane::Materials::EnvCell, ienvcell, env_vector) {
         Arcane::Materials::EnvCell c = *ienvcell;
         mat_pressure[c] = mat_temperature[ienvcell];
       }
 
-      // Boucle sur les mailles pures du milieu \a env
+      // Loop over the pure environment cells \a env
       ENUMERATE_COMPONENTITEM (Arcane::Materials::EnvPartCell, ienvcell, env->pureEnvItems()) {
         Arcane::Materials::EnvCell c = *ienvcell;
         mat_pressure[c] = mat_temperature[ienvcell];
       }
 
-      // Boucle sur les mailles pures du milieu \a env
+      // Loop over the pure environment cells \a env
       ENUMERATE_COMPONENTITEM (Arcane::Materials::EnvPartCell, ienvcell, env, Arcane::Materials::eMatPart::Pure) {
         Arcane::Materials::EnvCell c = *ienvcell;
         mat_pressure[c] = mat_temperature[ienvcell];
       }
 
-      // Boucle sur les mailles impures du milieu \a env
+      // Loop over the impure environment cells \a env
       ENUMERATE_COMPONENTITEM (Arcane::Materials::EnvPartCell, ienvcell, env->impureEnvItems()) {
         Arcane::Materials::EnvCell c = *ienvcell;
         mat_pressure[c] = mat_temperature[ienvcell];
       }
 
-      // Boucle sur les mailles impures du milieu \a env
+      // Loop over the impure environment cells \a env
       ENUMERATE_COMPONENTITEM (Arcane::Materials::EnvPartCell, ienvcell, env, Arcane::Materials::eMatPart::Impure) {
         Arcane::Materials::EnvCell c = *ienvcell;
         mat_pressure[c] = mat_temperature[ienvcell];
@@ -416,37 +416,37 @@ class Sample
       Arcane::Materials::IMeshMaterial* mat = env1->materials()[0];
       Arcane::Materials::MatCellVector mat_vector(test_mat_group, mat);
 
-      // Boucle sur les mailles du matériau \a mat
+      // Loop over the material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::MatCell, imatcell, mat) {
         Arcane::Materials::MatCell c = *imatcell;
         mat_pressure[c] = mat_temperature[imatcell];
       }
 
-      // Boucle sur les mailles du matériau \a mat_vector
+      // Loop over the material cells \a mat_vector
       ENUMERATE_COMPONENTITEM (Arcane::Materials::MatCell, imatcell, mat_vector) {
         Arcane::Materials::MatCell c = *imatcell;
         mat_pressure[c] = mat_temperature[imatcell];
       }
 
-      // Boucle sur les mailles pures du matériau \a mat
+      // Loop over the pure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::MatPartCell, imatcell, mat->pureMatItems()) {
         Arcane::Materials::MatCell c = *imatcell;
         mat_pressure[c] = mat_temperature[imatcell];
       }
 
-      // Boucle sur les mailles pures du matériau \a mat
+      // Loop over the pure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::MatPartCell, imatcell, mat, Arcane::Materials::eMatPart::Pure) {
         Arcane::MatCell c = *imatcell;
         mat_pressure[c] = mat_temperature[imatcell];
       }
 
-      // Boucle sur les mailles impures du matériau \a mat
+      // Loop over the impure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::MatPartCell, imatcell, mat->impureMatItems()) {
         Arcane::Materials::MatCell c = *imatcell;
         mat_pressure[c] = mat_temperature[imatcell];
       }
 
-      // Boucle sur les mailles impures du matériau \a mat
+      // Loop over the impure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::MatPartCell, imatcell, mat, Arcane::Materials::eMatPart::Impure) {
         Arcane::Materials::MatCell c = *imatcell;
         mat_pressure[c] = mat_temperature[imatcell];
@@ -454,37 +454,37 @@ class Sample
       //![SampleEnumerateComponentItemMat]
 
       //![SampleEnumerateComponentItemComponent]
-      // Boucle générique sur les mailles du matériau \a mat
+      // Generic loop over the material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::ComponentCell, iccell, mat) {
         Arcane::Materials::ComponentCell c = *iccell;
         mat_pressure[c] = mat_temperature[iccell];
       }
 
-      // Boucle générique sur les mailles du matériau \a mat_vector
+      // Generic loop over the material cells \a mat_vector
       ENUMERATE_COMPONENTITEM (Arcane::Materials::ComponentCell, iccell, mat_vector) {
         Arcane::Materials::ComponentCell c = *iccell;
         mat_pressure[c] = mat_temperature[iccell];
       }
 
-      // Boucle générique sur les mailles pures du matériau \a mat
+      // Generic loop over the pure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::ComponentPartCell, iccell, mat->pureItems()) {
         Arcane::Materials::ComponentCell c = *iccell;
         mat_pressure[c] = mat_temperature[iccell];
       }
 
-      // Boucle générique sur les mailles pures du matériau \a mat
+      // Generic loop over the pure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::ComponentPartCell, iccell, mat, Arcane::eMatPart::Pure) {
         Arcane::Materials::ComponentCell c = *iccell;
         mat_pressure[c] = mat_temperature[iccell];
       }
 
-      // Boucle générique sur les mailles impures du matériau \a mat
+      // Generic loop over the impure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::ComponentPartCell, iccell, mat->impureItems()) {
         Arcane::Materials::ComponentCell c = *iccell;
         mat_pressure[c] = mat_temperature[iccell];
       }
 
-      // Boucle générique sur les mailles impures du matériau \a mat
+      // Generic loop over the impure material cells \a mat
       ENUMERATE_COMPONENTITEM (Arcane::Materials::ComponentPartCell, iccell, mat, Arcane::eMatPart::Impure) {
         Arcane::Materials::ComponentCell c = *iccell;
         mat_pressure[c] = mat_temperature[iccell];

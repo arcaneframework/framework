@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterOptionTest.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Service de test de ParameterOption.                                       */
+/* ParameterOption test service.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -145,21 +145,21 @@ _internalStructs()
     const String addr = "module/option2";
     ParameterOptionAddr addr_option(addr.view());
 
-    // En correspondance parfaite, il n'y en a qu'un seul.
+    // In perfect correspondence, there is only one.
     if (poec.countAddr(addr_option) != 1) {
       ARCANE_FATAL("_internalStructs -- Test 4.1");
     }
 
     addr_option.lastAddrPart()->setIndex(2);
 
-    // Avec l'index 2, il n'y en a aussi qu'un seul.
+    // With index 2, there is also only one.
     if (poec.countAddr(addr_option) != 1) {
       ARCANE_FATAL("_internalStructs -- Test 4.2");
     }
 
     addr_option.lastAddrPart()->setIndex(ParameterOptionAddrPart::ANY_INDEX);
 
-    // Avec un ANY_INDEX à la fin, il y en a les deux.
+    // With an ANY_INDEX at the end, there are both.
     if (poec.countAddr(addr_option) != 2) {
       ARCANE_FATAL("_internalStructs -- Test 4.3");
     }
@@ -229,7 +229,7 @@ _internalStructs()
     addr2_option.addrPart(1)->setIndex(ParameterOptionAddrPart::GET_INDEX);
     addr2_option.addrPart(2)->setIndex(ParameterOptionAddrPart::GET_INDEX);
 
-    // On a trois GET_INDEX.
+    // On three GET_INDEX.
     if (addr2_option.nbIndexToGetInAddr() != 3) {
       ARCANE_FATAL("_internalStructs -- Test 9.1");
     }
@@ -260,7 +260,7 @@ _internalStructs()
     UniqueArray<Integer> index(1);
     bool ret = addr1_option.getIndexInAddr(addr2_option, index.view());
 
-    // Impossible de faire un GET_INDEX sur un ANY_INDEX.
+    // Impossible to do a GET_INDEX on an ANY_INDEX.
     if (ret) {
       ARCANE_FATAL("_internalStructs -- Test 10");
     }

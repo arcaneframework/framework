@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AdiProjectionModule.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Module de test d'une projection sur maillage cartésien.                   */
+/* Module for testing a projection on a Cartesian mesh.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -89,7 +89,7 @@ class AdiProjectionModule
 
  public:
 
-  // Fonctions publiques pour CUDA
+  // Public functions for CUDA
   void computePrimalMassFluxBoundary(Integer direction);
   void computeDualMassFluxBoundary(Integer direction);
 };
@@ -139,14 +139,14 @@ copyCurrentVariablesToOldVariables()
 void AdiProjectionModule::
 prepareLagrangianVariables()
 {
-  // Position des noeuds après la phase Lagrange (= position des
-  // noeuds stockée dans le maillage).
+  // Node positions after the Lagrange phase (= node positions
+  // stored in the mesh).
   VariableNodeReal3& nodes_coord = defaultMesh()->nodesCoordinates();
   m_lagrangian_coordinates.copy(nodes_coord);
 
   ENUMERATE_ (Node, inode, allNodes()) {
 
-    // Vitesse de déplacement des noeuds (valable en prédicteur correcteur).
+    // Node displacement velocity (valid in predictor-corrector).
     m_lagrangian_velocity[inode] = 0.5 * (m_old_velocity[inode] + m_velocity[inode]);
   }
 }
@@ -157,17 +157,17 @@ prepareLagrangianVariables()
 void AdiProjectionModule::
 checkLagrangianVariablesConsistency()
 {
-  // Vérifier que : u * dt = x_lagrange - x_euler.
+  // Verify that: u * dt = x_lagrange - x_euler.
 
   Real residu = 0.0;
 
   ENUMERATE_NODE (current_node, allNodes()) {
   }
 
-  info() << "Test de coherence vitesses lagrangiennes/positions lagrangiennes : residu="
+  info() << "Test of Lagrangian velocity/Lagrangian position consistency: residue="
          << residu << "\n";
 
-  // masse = rho * volume.
+  // mass = rho * volume.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,23 +195,23 @@ computePrimalMassFluxBoundary(Integer direction)
 
   CellDirectionMng cdm(m_cartesian_mesh->cellDirection(direction));
 
-  // Calcul des flux de masse pour les mailles de bord dans la direction de calcul.
+  // Calculation of mass fluxes for boundary cells in the direction of calculation.
   command << RUNCOMMAND_ENUMERATE(Cell, current_cell, cdm.outerCells())
   {
-    // Pour maille gauche/maille droite.
+    // For left cell/right cell.
     DirCellLocalId cc(cdm.dirCellId(current_cell));
 
     CellLocalId right_cell = cc.next();
     CellLocalId left_cell = cc.previous();
 
     if (left_cell.isNull()) {
-      // Frontière gauche.
+      // Left boundary.
 
       inout_mass_flux_right[current_cell] = inout_mass_flux_left[right_cell];
       inout_mass_flux_left[current_cell] = inout_mass_flux_right[current_cell];
     }
     else if (right_cell.isNull()) {
-      // Frontière droite.
+      // Right boundary.
 
       inout_mass_flux_left[current_cell] = inout_mass_flux_right[left_cell];
       inout_mass_flux_right[current_cell] = inout_mass_flux_left[current_cell];
@@ -242,23 +242,23 @@ computeDualMassFluxBoundary(Integer direction)
   auto inout_nodal_mass_flux_right = viewInOut(command, m_nodal_mass_flux_right);
   auto inout_nodal_mass_flux_left = viewInOut(command, m_nodal_mass_flux_left);
 
-  // Calcul des flux de masse pour les mailles de bord dans la direction de calcul.
+  // Calculation of mass fluxes for boundary cells in the direction of calculation.
   command << RUNCOMMAND_ENUMERATE(Node, current_node, ndm.outerNodes())
   {
-    // Pour maille gauche/maille droite.
+    // For left cell/right cell.
     DirNodeLocalId cc(ndm.dirNodeId(current_node));
 
     NodeLocalId right_node = cc.next();
     NodeLocalId left_node = cc.previous();
 
     if (left_node.isNull()) {
-      // Frontière gauche.
+      // Left boundary.
 
       inout_nodal_mass_flux_left[current_node] = inout_nodal_mass_flux_left[right_node];
       inout_nodal_mass_flux_right[current_node] = inout_nodal_mass_flux_right[right_node];
     }
     else if (right_node.isNull()) {
-      // Frontière droite.
+      // Right boundary.
 
       inout_nodal_mass_flux_left[current_node] = inout_nodal_mass_flux_left[left_node];
       inout_nodal_mass_flux_right[current_node] = inout_nodal_mass_flux_right[left_node];
@@ -269,7 +269,7 @@ computeDualMassFluxBoundary(Integer direction)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Calcul des quantités primales : densité, énergie interne.
+// Calculation of primal quantities: density, internal energy.
 void AdiProjectionModule::
 evolvePrimalUpwindedVariables(Integer direction)
 {
@@ -277,17 +277,17 @@ evolvePrimalUpwindedVariables(Integer direction)
     _evolvePrimalUpwindedVariablesV2(direction);
     return;
   }
-  // En dur pour l'instant.
+  // Hardcoded for now.
   const Real time_step = m_global_deltat();
   const Real dx = 0.005;
 
   CellDirectionMng cdm(m_cartesian_mesh->cellDirection(direction));
 
-  // Boucle sur les mailles intérieures.
+  // Loop over inner cells.
 
   ENUMERATE_CELL (current_cell, cdm.innerCells()) {
 
-    // Pour maille gauche/maille droite.
+    // For left cell/right cell.
     DirCell cc(cdm.cell(*current_cell));
 
     CellLocalId right_cell = cc.next();
@@ -295,10 +295,10 @@ evolvePrimalUpwindedVariables(Integer direction)
     //Cell::Index right_cell = right_cell_c;
     //Cell::Index left_cell = left_cell_c;
 
-    // Pour maille/noeud directionnel.
+    // For directional cell/node.
     DirCellNode cn(cdm.cellNode(*current_cell));
 
-    // Temporaire pour le 1d. En attendant la connectivite Maille/face directionnelle.
+    // Temporary for 1D. Waiting for Cell/directional face connectivity.
 
     const Real3 left_face_velocity = m_lagrangian_velocity[cn.previousLeft()];
     const Real left_face_velocity_dir = left_face_velocity.x;
@@ -306,7 +306,7 @@ evolvePrimalUpwindedVariables(Integer direction)
     const Real3 right_face_velocity = m_lagrangian_velocity[cn.nextLeft()];
     const Real right_face_velocity_dir = right_face_velocity.x;
 
-    // Calcul des signes pour le décentrement.
+    // Calculation of signs for decentralization.
     const Real sign_left = (left_face_velocity_dir > 0.0 ? 1.0 : -1.0);
     const Real sign_right = (right_face_velocity_dir > 0.0 ? 1.0 : -1.0);
 
@@ -328,7 +328,7 @@ evolvePrimalUpwindedVariables(Integer direction)
     m_density[current_cell] =
     m_density[current_cell] - time_step * (dmass_right - dmass_left) / dx;
 
-    // Décentrement énergie interne.
+    // Decentralization of internal energy.
     const Real nrj_left = 0.5 *
     ((m_nrj_current_cell + m_nrj_left_cell) -
      sign_left * (m_nrj_current_cell - m_nrj_left_cell));
@@ -340,7 +340,7 @@ evolvePrimalUpwindedVariables(Integer direction)
     Real nrj_current_cell = m_old_density[current_cell] * m_nrj_current_cell -
     time_step * (nrj_right * dmass_right - nrj_left * dmass_left) / dx;
 
-    // Terme source PdV.
+    // PdV source term.
     nrj_current_cell = nrj_current_cell -
     time_step * m_pressure[current_cell] * (right_face_velocity_dir - left_face_velocity_dir) / dx;
 
@@ -350,7 +350,7 @@ evolvePrimalUpwindedVariables(Integer direction)
     }
     else {
 
-      info() << "Erreur, densite nulle.\n";
+      info() << "Error, zero density.\n";
       std::abort();
     }
     m_nrj[current_cell] = nrj_current_cell;
@@ -362,17 +362,17 @@ evolvePrimalUpwindedVariables(Integer direction)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Calcul des quantités primales : densité, énergie interne.
+// Calculation of primal quantities: density, internal energy.
 void AdiProjectionModule::
 _evolvePrimalUpwindedVariablesV2(Integer direction)
 {
-  // En dur pour l'instant.
+  // Hardcoded for now.
   const Real time_step = m_global_deltat();
   const Real dx = 0.005;
 
   CellDirectionMng cdm(m_cartesian_mesh->cellDirection(direction));
 
-  // Boucle sur les mailles intérieures.
+  // Loop over inner cells.
 
   VariableCellReal& nrj = m_nrj;
   VariableCellReal& old_density = m_old_density;
@@ -381,7 +381,7 @@ _evolvePrimalUpwindedVariablesV2(Integer direction)
 
   ENUMERATE_CELL (i_current_cell, cdm.innerCells()) {
 
-    // Pour maille gauche/maille droite.
+    // For left cell/right cell.
     DirCell cc(cdm.cell(*i_current_cell));
 
     Cell right_cell_c = cc.next();
@@ -391,14 +391,14 @@ _evolvePrimalUpwindedVariablesV2(Integer direction)
     Cell right_cell = right_cell_c;
     Cell left_cell = left_cell_c;
 
-    // Pour maille/noeud directionnel.
+    // For cell/directional node.
     DirCellNode cn(cdm.cellNode(*i_current_cell));
 
     Real nrj_left_cell = nrj[left_cell];
     Real nrj_right_cell = nrj[right_cell];
     Real nrj_current_cell = nrj[current_cell];
 
-    // Temporaire pour le 1d. En attendant la connectivite Maille/face directionnelle.
+    // Temporary for 1D. Waiting for Cell/directional face connectivity.
 
     const Real3 left_face_velocity = m_lagrangian_velocity[cn.previousLeft()];
     const Real left_face_velocity_dir = left_face_velocity.x;
@@ -406,7 +406,7 @@ _evolvePrimalUpwindedVariablesV2(Integer direction)
     const Real3 right_face_velocity = m_lagrangian_velocity[cn.nextLeft()];
     const Real right_face_velocity_dir = right_face_velocity.x;
 
-    // Calcul des signes pour le décentrement.
+    // Calculate signs for decentralization.
     const Real sign_left = (left_face_velocity_dir > 0.0 ? 1.0 : -1.0);
     const Real sign_right = (right_face_velocity_dir > 0.0 ? 1.0 : -1.0);
 
@@ -423,14 +423,14 @@ _evolvePrimalUpwindedVariablesV2(Integer direction)
 
     density[current_cell] = density[current_cell] - time_step * (dmass_right - dmass_left) / dx;
 
-    // Décentrement énergie interne.
+    // Decentralization of internal energy.
     const Real nrj_left = 0.5 * ((nrj_current_cell + nrj_left_cell) - sign_left * (nrj_current_cell - nrj_left_cell));
 
     const Real nrj_right = 0.5 * ((nrj_right_cell + nrj_current_cell) - sign_right * (nrj_right_cell - nrj_current_cell));
 
     nrj_current_cell = old_density[current_cell] * nrj_current_cell - time_step * (nrj_right * dmass_right - nrj_left * dmass_left) / dx;
 
-    // Terme source PdV.
+    // PdV source term.
     nrj_current_cell = nrj_current_cell - time_step * pressure[current_cell] * (right_face_velocity_dir - left_face_velocity_dir) / dx;
 
     nrj[current_cell] = nrj_current_cell;
@@ -441,7 +441,7 @@ _evolvePrimalUpwindedVariablesV2(Integer direction)
     }
     else {
 
-      info() << "Erreur, densite nulle.\n";
+      info() << "Error, zero density.\n";
       std::abort();
     }
   }
@@ -457,8 +457,8 @@ computePressureGradient(Integer direction)
 {
   ENUMERATE_NODE (current_node, allNodes()) {
 
-    // Le gradient de pression est une variable temporaire qui peut a
-    // priori être cumulée. Il vaut mieux la mettre à 0.
+    // The pressure gradient is a temporary variable that can potentially be
+    // accumulated. It is better to set it to 0.
     m_pressure_gradient[current_node] = 0.0;
   }
 
@@ -466,20 +466,20 @@ computePressureGradient(Integer direction)
 
   ENUMERATE_CELL (current_cell, cdm.innerCells()) {
 
-    // Pour maille gauche/maille droite.
+    // For left cell/right cell.
     DirCell cc(cdm.cell(*current_cell));
 
     //Cell right_cell = cc.next();
     Cell left_cell = cc.previous();
 
-    // Pour maille/noeud directionnel.
+    // For cell/directional node.
     DirCellNode cn(cdm.cellNode(*current_cell));
 
-    //GG: est-ce current_cell ou right_cell ?
+    //GG: is it current_cell or right_cell?
     const Real current_pressure_gradient = m_pressure[current_cell] - m_pressure[left_cell];
 
-    // Chaque point du maillage (sauf aux bords) aura son gradient de
-    // pression calculé 2 fois, mais ca n'est pas grave...
+    // Each point in the mesh (except at the boundaries) will have its pressure
+    // gradient calculated 2 times, but that's okay...
     m_pressure_gradient[cn.previousLeft()] = current_pressure_gradient;
     m_pressure_gradient[cn.previousRight()] = current_pressure_gradient;
   }
@@ -487,13 +487,14 @@ computePressureGradient(Integer direction)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Calcul des quantités duales : vitesse (quantité de mouvement).
+
+// Calculation of dual quantities: velocity (momentum).
 void AdiProjectionModule::
 evolveDualUpwindedVariables(Integer direction)
 {
   NodeDirectionMng ndm(m_cartesian_mesh->nodeDirection(direction));
 
-  // En dur pour l'instant.
+  // Hardcoded for now.
   const Real time_step = m_global_deltat();
   const Real dx = 0.005;
 
@@ -530,7 +531,7 @@ evolveDualUpwindedVariables(Integer direction)
     }
     else {
 
-      info() << "Probleme : densite nodale nulle.\n";
+      info() << "Problem: zero nodal density.\n";
 
       std::abort();
     }
@@ -542,7 +543,7 @@ evolveDualUpwindedVariables(Integer direction)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Calcul des quantités duales : vitesse (quantité de mouvement).
+// Calculation of dual quantities: velocity (momentum).
 void AdiProjectionModule::
 _evolveDualUpwindedVariables1()
 {
@@ -554,7 +555,7 @@ _evolveDualUpwindedVariables1()
     if (nb_cells == 0)
       ARCANE_FATAL("No cell attached to the node");
 
-    // Densités nodales.
+    // Nodal densities.
 
     Real nodal_density_sum = 0.0;
     Real old_nodal_density_sum = 0.0;
@@ -579,8 +580,8 @@ _evolveDualUpwindedVariables1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Application de l'équation d'état. En dur (gaz parfaits, gamma=1.4)
-// pour l'instant.
+// Application of the equation of state. Hardcoded (perfect gas, gamma=1.4)
+// for now.
 void AdiProjectionModule::
 computePressure()
 {
@@ -597,14 +598,13 @@ computePressure()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// On doit avoir conservation de la masse nodale (calculée au moment
-// du décentrement de la quantité de mouvement, à partir de la masse
-// aux mailles). C'est un diagnostic utile.
+// We must have nodal mass conservation (calculated at the moment
+// of momentum decentralization, based on cell mass). This is a useful diagnostic.
 void AdiProjectionModule::
 checkNodalMassConservation()
 {
 
-  // En dur pour l'instant.
+  // Hardcoded for now.
   const Real time_step = m_global_deltat();
   const Real dx = 0.005;
 
@@ -619,7 +619,7 @@ checkNodalMassConservation()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// ATTENTION : à appeler AVANT la phase Lagrange...
+// ATTENTION: call BEFORE the Lagrange phase...
 void AdiProjectionModule::
 copyEulerianCoordinates()
 {
@@ -638,13 +638,13 @@ cartesianHydroStartInit()
   m_old_velocity.fill(Real3::zero());
   m_velocity.fill(Real3::zero());
 
-  // Création des infos de connectivités directionnelles (= cartésiennes).
+  // Creation of directional connectivity info (= Cartesian).
   IMesh* mesh = defaultMesh();
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh, true);
   m_cartesian_mesh->computeDirections();
 
-  // Initialise l'énergie interne en supposant qu'on a un gaz parfait.
+  // Initialize internal energy assuming a perfect gas.
   ENUMERATE_CELL (icell, allCells()) {
     Real pressure = m_pressure[icell];
     Real adiabatic_cst = 1.4;

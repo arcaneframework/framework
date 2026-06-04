@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TestTraceMessageListener.h                                  (C) 2000-2011 */
 /*                                                                           */
-/* Test d'un ITraceMessageListener.                                          */
+/* Test of an ITraceMessageListener.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANETEST_TESTTRACEMESSAGELISTENER_H
 #define ARCANETEST_TESTTRACEMESSAGELISTENER_H
@@ -70,5 +70,4 @@ ARCANETEST_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

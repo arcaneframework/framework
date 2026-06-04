@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test des tests unitaires -->
+<!-- Dataset options for the unit test service -->
 
 <service name="TestUnitTest" version="1.0" type="caseoption" namespace-name="ArcaneTest">
  <interface name="ArcaneTest::ITestBidonInterface" inherited="false" />

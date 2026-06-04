@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* RandomNumberGeneratorUnitTest.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des générateurs de nombres (pseudo-)aléatoires            */
-/* implémentant l'interface IRandomNumberGenerator                           */
+/* Test service for (pseudo-)random number generators implementing the       */
+/* IRandomNumberGenerator interface                                          */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_TESTS_RANDOMNUMBERGENERATORUNITTEST_H

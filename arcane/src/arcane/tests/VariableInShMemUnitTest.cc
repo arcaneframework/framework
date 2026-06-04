@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableInShMemUnitTest.cc                                     (C) 2000-2026 */
+/* VariableInShMemUnitTest.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Module de test de l'AMR type 3.                                           */
+/* Module for testing AMR type 3.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -141,8 +141,8 @@ void VariableInShMemUnitTest::
 compute()
 {
   if (!ParallelMngUtils::isMachineShMemWinAvailable(parallelMng())) {
-    // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
-    // On ne plante pas les tests dans ce cas.
+    // Problem with MPI. May occur if MPICH is compiled in ch3:sock mode.
+    // We do not crash the tests in this case.
     warning() << "Shared memory not supported";
     return;
   }

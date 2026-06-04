@@ -1,13 +1,13 @@
-<?xml version="1.0"?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0"?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le module de test de l'AMR -->
+<!-- Data set options for the AMR test module -->
 
 <module name="AMRTest" version="1.0" namespace-name="ArcaneTest">
   <description>
-    Module de test de l'AMR
+    AMR test module
   </description>
   
   <variables>
@@ -21,12 +21,11 @@
                      >
      <name lang='fr'>format-service</name>
      <description>
-       Indique le type de bibliothèque à utiliser pour les sorties
-       de dépouillement.
+       Specifies the type of library to use for stripping outputs.
      </description>
    </service-instance>
    <simple name="amr-ratio" type="real" default="1.0">
-     <description>Ratio (compris entre 0.0 et 1.0) du nombre de mailles à raffiner</description>
+     <description>Ratio (between 0.0 and 1.0) of the number of meshes to refine</description>
    </simple>
  </options>
 </module>

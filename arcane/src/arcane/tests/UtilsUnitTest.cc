@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UtilsUnitTest.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Test des fonctions utilitaires de Arcane.                                 */
+/* Test of Arcane utility functions.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,8 +48,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des ItemVector
+ * \brief Test service for ItemVector
  */
 class UtilsUnitTest
 : public BasicUnitTest
@@ -180,9 +181,9 @@ executeTest()
   _testConvertFromStringToInt32Array();
   _testStackTrace();
   _printMemoryInfos();
-  // Teste les FPE en dernier car cela ne fonctionne pas avec valgrind
-  // et fait planter le test. En mettant cela en dernier, on peut quand
-  // même utiliser valgrind sur les autres tests.
+  // Tests FPE last because it does not work with valgrind
+  // and crashes the test. By putting this last, we can
+  // still use valgrind on the other tests.
   _testFloatingException();
 
   _testCommandLine();
@@ -197,8 +198,8 @@ executeTest()
 void UtilsUnitTest::
 _testNullPointer()
 {
-  // Vérfie que ARCANE_CHECK_POINTER lance bien une exception de type
-  // FatalErrorException en cas de pointeur nul.
+  // Checks that ARCANE_CHECK_POINTER throws a FatalErrorException when
+  // the pointer is null.
   bool is_ok = false;
   try{
     Int32* x = nullptr;
@@ -211,7 +212,7 @@ _testNullPointer()
   if (!is_ok)
     ARCANE_FATAL("Exception not caught");
 
-  // Vérifie la validité de la macro avec une expression et un message.
+  // Checks the macro validity with an expression and a message.
   IService* x2 = this;
   const BasicUnitTest* bt = ARCANE_CHECK_POINTER(dynamic_cast<const BasicUnitTest*>(x2));
   const BasicUnitTest* bt2 = ARCANE_CHECK_POINTER2(dynamic_cast<const BasicUnitTest*>(x2),"Error");
@@ -405,7 +406,7 @@ _testReal2x2()
   for (int i = 0; i < 4; ++i)
     values[i] = (Real)i;
   {
-    // Vérifie que les accesseurs operator[] de Real3x3 sont corrects.
+    // Checks that the operator[] accessors of Real2x2 are correct.
     Real2x2 r = Real2x2::fromLines(values[0], values[1],
                                    values[2], values[3]);
     for (int i = 0; i < 2; ++i)
@@ -451,7 +452,7 @@ _testReal3x3()
   for (int i = 0; i < 9; ++i)
     values[i] = (Real)i;
   {
-    // Vérifie que les accesseurs operator[] de Real3x3 sont corrects.
+    // Checks that the operator[] accessors of Real3x3 are correct.
     Real3x3 r = Real3x3::fromLines(values[0], values[1], values[2],
                                    values[3], values[4], values[5],
                                    values[6], values[7], values[8]);
@@ -502,7 +503,7 @@ _testUserData()
     udl.setData("Toto",&ud);
     udl.removeData("Toto");
     info() << "NB_ATTACH=" << ud.nb_attach << " NB_DETACH=" << ud.nb_detach;
-    // Vérifie que notifyAttach() et notifyDetach() ont bien été appelé 1 fois.
+    // Checks that notifyAttach() and notifyDetach() were called exactly 1 time.
     if (ud.nb_attach!=1 || ud.nb_detach!=1)
       ARCANE_FATAL("(1) Bad number of call for attach or detach");
   }
@@ -514,15 +515,15 @@ _testUserData()
       UserDataList udl;
       udl.setData("Toto",&ud);
     }
-    // Vérifie que notifyAttach() et notifyDetach() ont bien été appelé 1 fois.
+    // Checks that notifyAttach() and notifyDetach() were called exactly 1 time.
     if (ud.nb_attach!=1 || ud.nb_detach!=1)
       ARCANE_FATAL("(2) Bad number of call for attach or detach");
   }
 
   info() << "TEST3";
   {
-    // Attention a bien declarer \a ud avec \a udl car ce dernier
-    // va l'appeler dans son destructeur.
+    // Note to properly declare \a ud with \a udl because the latter
+    // will call it in its destructor.
     MyUserData ud;
     UserDataList udl;
     udl.setData("Toto",&ud);
@@ -533,7 +534,7 @@ _testUserData()
   }
 
   info() << "TEST4";
-  // Vérifie qu'on a bien une exception si on ne trouve pas un UserData.
+  // Checks that an exception is thrown if a UserData is not found.
   {
     UserDataList udl;
     bool is_catched = false;
@@ -549,7 +550,7 @@ _testUserData()
   }
 
   info() << "TEST5";
-  // Vérifie pas d'exception si demandé
+  // Checks that no exception is thrown if requested
   {
     UserDataList udl;
     IUserData* ud = udl.data("Toto",true);
@@ -558,8 +559,8 @@ _testUserData()
   }
 
   info() << "TEST6";
-  // Vérifie qu'on a bien une exception si on ne trouve pas un UserData
-  // lors d'un remove
+  // Checks that an exception is thrown if a UserData is not found
+  // during a remove operation
   {
     UserDataList udl;
     bool is_catched = false;
@@ -574,14 +575,14 @@ _testUserData()
   }
 
   info() << "TEST7";
-  // Vérifie pas d'exception si demandé
+  // Checks that no exception is thrown if requested
   {
     UserDataList udl;
     udl.removeData("Toto",true);
   }
 
   info() << "TEST8";
-  // Vérifie qu'on ne peut pas ajouter 2 fois pour la même clé.
+  // Checks that you cannot add twice for the same key.
   {
     MyUserData ud1;
     MyUserData ud2;
@@ -600,7 +601,7 @@ _testUserData()
 
   info() << "TEST9";
   {
-    // Doit être positionné à 1 dans le destructeur de MyAutoDestroyTestClass.
+    // Must be positioned at 1 in the destructor of MyAutoDestroyTestClass.
     Int32 value = 0;
     {
       UserDataList udl;
@@ -635,10 +636,10 @@ _testHPReal()
   }
 
   /*
-   * Pour le test suivant, on fait la somme d'un tableau
-   * de réels dans l'ordre croissant des indices puis
-   * dans l'ordre décroissant et on vérifie que
-   * dans les deux cas on a les mêmes valeurs.
+   * For the following test, we sum an array
+   * of real numbers in ascending index order, then
+   * in descending order, and we check that
+   * in both cases we have the same values.
    */
 
   HPReal r(0.0);
@@ -676,9 +677,10 @@ _testHPReal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Pour TEST:
-// MACRO qui permet de n'afficher les messages que si demandé et qui n'évalue pas
-// les arguments si cela n'est pas nécessaire.
+
+// For TEST:
+// MACRO that allows messages to be displayed only if requested and does not evaluate
+// arguments if it is not necessary.
 #if 0
 #define CINFO(category, ...) \
     for (bool qt_category_enabled = category; qt_category_enabled; qt_category_enabled = false) \
@@ -708,10 +710,9 @@ _testTruncateReal()
       int diff_digit = (int)trunc(diff_log);
       info() << " digit z= " << z2 << " tz(" << i << ")=" << tz
              << " diff=" << diff << " log=" << diff_log << " diff_digit=" << diff_digit;
-      // Vérifie que la troncature est au moins du nombre de chiffres
-      // souhaité.
-      // On ne teste que pour plus de 8 chiffres significatifs car en dessous
-      // ce n'est pas précis.
+      // Checks that the truncation is at least the desired number of digits.
+      // We only test for more than 8 significant digits because below that
+      // it is not accurate.
       if (i>=8 && diff_digit>i)
         ARCANE_FATAL("Bad truncate");
     }
@@ -765,7 +766,7 @@ _testFloatingException()
     platform::enableFloatingException(false);
     bool is_enabled2 = platform::isFloatingExceptionEnabled();
     info() << "IS_FloatingPointException2 enabled?=" << is_enabled2;
-    // Ne doit pas provoquer d'exception flottante
+    // Should not cause a floating point exception
     platform::raiseFloatingException();
   }
   {
@@ -774,7 +775,7 @@ _testFloatingException()
     info() << "IS_FloatingPointException3 enabled?=" << is_enabled2;
     if (!is_enabled2)
       ARCANE_FATAL("Can not enable FPE");
-    // Test si on récupère bien une ArithmeticException.
+    // Test if we correctly catch an ArithmeticException.
     bool is_ok = false;
     bool is_ok2 = false;
     try{
@@ -783,7 +784,7 @@ _testFloatingException()
     catch(const ArithmeticException& ex){
       info() << "'ArithmeticException' catched\n";
       is_ok = true;
-      // Regarde si le FPE peut être relancé à l'intérieur.
+      // Check if the FPE can be re-raised internally.
       try{
         platform::raiseFloatingException();
       }
@@ -832,7 +833,7 @@ _printMemoryInfos()
 void UtilsUnitTest::
 _testConvertFromString()
 {
-  // TODO: tester les autres conversions
+  // TODO: test other conversions
   info() << "TEST CONVERT_FROM_STRING";
   String s = "25e3";
   Int32 x = 0;
@@ -848,7 +849,7 @@ _testConvertFromString()
 void UtilsUnitTest::
 _testConvertFromStringToInt32Array()
 {
-  // TODO: tester les autres conversions
+  // TODO: test other conversions
   info() << "TEST CONVERT_FROM_STRING_TO_INT32ARRAY";
   String s = "3 7 9 12";
   UniqueArray<Int32> x;
@@ -883,8 +884,8 @@ _testCommandLine()
   platform::fillCommandLineArguments(arg_list);
   Int32 nb_arg = arg_list.count();
   info() << "NB_ARG=" << nb_arg;
-  // La fonction peut retourner une liste vide si on ne supporte pas la
-  // récupération des arguments de la ligne de commande sur la plateforme.
+  // The function may return an empty list if the
+  // retrieval of command line arguments is not supported on the platform.
   if (nb_arg>=2){
     String arg_case_file = arg_list[nb_arg-1];
     info() << "ARG_CASE_FILE=" <<  arg_case_file;
@@ -959,7 +960,7 @@ _testCheckId(const String& value, bool is_valid)
   }
   else {
     bool is_ok = false;
-    // On s'attend à avoir une exception BadIDException.
+    // We expect a BadIDException.
     try {
       sd->checkId(func_name, value);
     }

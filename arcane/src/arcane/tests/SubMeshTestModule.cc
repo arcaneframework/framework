@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SubMeshTestModule.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Module de test du sous-maillage                                           */
+/* Sub-mesh test module                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,8 +47,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test de sous-maillage dans Arcane.
+ * \brief Sub-mesh test module in Arcane.
  */
 class SubMeshTestModule
 : public ArcaneSubMeshTestObject
@@ -92,9 +93,9 @@ class SubMeshTestModule
 
  private:
 
-  // Les variables de traitement du cas test
+  // Variables for handling the test case
 
-  // Variables de contrôle
+  // Control variables
   VariableNodeInt64* node_uids = nullptr;
   bool check_variable = false;
   VariableCellInt64* new_cell_uids = nullptr;
@@ -103,7 +104,7 @@ class SubMeshTestModule
 
   IMesh* new_mesh = nullptr;
 
-  // Génération d'un sous-maillage du genre demandé
+  // Generation of a sub-mesh of the requested type
   eItemKind parentKind = IK_Unknown;
 
   IItemFamily* myParentFamily = nullptr;
@@ -265,7 +266,7 @@ _checkSubMeshIntegrity()
       Cell cell = *icell;
       Item parent = cell.parent();
       if (do_not_check.find(cell.uniqueId().asInt64()) != do_not_check.end()) {
-        (*new_cell_uids)[cell] = parent.uniqueId(); // mise à jour des non check
+        (*new_cell_uids)[cell] = parent.uniqueId(); // update of non-checked items
       } else {
         if ((*new_cell_uids)[cell] != parent.uniqueId() || cell.uniqueId() != parent.uniqueId()) {
           error() << "Inconsistent sub-mesh uniqueId on item " << ItemPrinter(cell)
@@ -279,7 +280,7 @@ _checkSubMeshIntegrity()
   new_mesh->checkValidMeshFull();
 
 #if 0
-  { // Comparaison des uids entre Item et Item parent à l'écran
+  { // Comparison of uids between Item and parent Item on screen
     eItemKind kinds[] = { IK_Node, IK_Face, IK_Cell };
     Integer nbKind = sizeof(kinds)/sizeof(eItemKind);
     for(Integer i=0;i<nbKind;++i) {
@@ -323,7 +324,7 @@ init()
 //    info() << " Test edge " << FullItemPrinter(*iedge);
 //  }
 
-  // Génération d'un sous-maillage du genre demandé
+  // Generation of a sub-mesh of the requested type
   parentKind = options()->submeshKind(); 
 
   myParentFamily = mesh()->itemFamily(parentKind);
@@ -413,12 +414,12 @@ init()
 
   m_global_deltat = 1.;
 
-  // Données de contrôle
+  // Control data
   node_uids = new VariableNodeInt64(Arcane::VariableBuildInfo(mesh(), "Uids", mesh()->nodeFamily()->name()));
   ENUMERATE_NODE(inode,mesh()->allNodes())
     (*node_uids)[inode] = inode->uniqueId();
 
-  // Teste la connectivité aux arêtes
+  // Test connectivity to edges
   if (options()->submeshKind() == IK_Face)
     _checkEdgeConnectivity();
 }
@@ -447,16 +448,16 @@ continueInit()
 void SubMeshTestModule::
 _compute1CreateMesh() 
 {
-  // Création du sous-maillage
+  // Creation of the sub-mesh
   new_mesh = subDomain()->mainFactory()->createSubMesh(mesh(),
                                                        myParentItems,
                                                        "TestMesh");
-  // Statistiques sur sous-maillage
+  // Statistics on sub-mesh
   MeshStats stats(traceMng(),new_mesh,subDomain()->parallelMng());
   stats.dumpStats();
 
-  // Si le maillage est de dimension 1, vérifie que toutes les mailles
-  // ont bien 2 faces.
+  // If the mesh is dimension 1, check that all meshes
+  // have exactly 2 faces.
   Int32 mesh_dimension = new_mesh->dimension();
   if (mesh_dimension==1){
     ENUMERATE_(Cell,icell,new_mesh -> allCells()) {
@@ -473,7 +474,7 @@ _compute1CreateMesh()
     new_face_uids  = new VariableFaceInt64(Arcane::VariableBuildInfo(new_mesh, "FaceUids", new_mesh->faceFamily()->name()));
     new_node_uids  = new VariableNodeInt64(Arcane::VariableBuildInfo(new_mesh, "NodeUids", new_mesh->nodeFamily()->name()));
 
-    // Mise en place de données de contrôle
+    // Setting up control data
     ENUMERATE_CELL(icell,new_mesh->allCells())
       (*new_cell_uids)[icell] = icell->uniqueId();
     ENUMERATE_FACE(iface,new_mesh->allFaces())
@@ -489,26 +490,26 @@ _compute1CreateMesh()
 void SubMeshTestModule::
 _compute2RemoveItems() 
 {
-  // Suppression d'items du support...
+  // Deletion of items from the support...
   info() << "Remove parent items from group " << myOldParentItems.name() << " " << myOldParentItems.size() << " / " << allParentItems.size();
   ENUMERATE_ITEM(iitem,myOldParentItems) debug(Trace::Highest) << "Removing " << iitem.index() << " " << ItemPrinter(*iitem);
 
   if (parentKind == IK_Cell) {
-    // Suppression depuis le groupe support
+    // Deletion from the support group
     myParentItems.removeItems(myOldParentItems.view().localIds());
-    // On peut aussi supprimer depuis le maillage support, mais ce maillage doit alors être correct (pas d'item orphelin)
-    // Suppression réelle depuis le maillage
+    // We can also delete from the support mesh, but this mesh must then be correct (no orphaned items)
+    // Actual deletion from the mesh
     // mesh()->modifier()->removeCells(myOldParentItems.view().localIds());
     // mesh()->modifier()->endUpdate();
   } else if (parentKind == IK_Face) {
-    // Suppression depuis le groupe support
+    // Deletion from the support group
     myParentItems.removeItems(myOldParentItems.view().localIds());
   } else 
     fatal() << "Not implemented sub-mesh kind " << parentKind;
 
   // SdC add ghost rebuild layer in tests (usage in IFPEN applications)
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(true, true); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true, true); // RELOCATE THE CONCEPT IN ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
@@ -517,13 +518,13 @@ _compute2RemoveItems()
 void SubMeshTestModule::
 _compute3AddItems() 
 {
-  // Ajout de nouveaux items sur le groupe fondation du sous-maillage
-  // induit un retaillage du sous-maillage
+  // Addition of new items to the sub-mesh foundation group
+  // induces a re-meshing of the sub-mesh
   info() << "Add parent items from group " << myNewParentItems.name() << " " << myNewParentItems.size() << " / " << allParentItems.size();
   myParentItems.addItems(myNewParentItems.view().localIds());
 
   if (new_mesh){
-    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true,true); // RELOCATE THE CONCEPT IN ARCANE
       
     // Not sync after addItems (step 3)
     ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(),new_mesh,myNewParentItems.view(),true);
@@ -550,7 +551,7 @@ _compute4TransposeItems()
   if (!new_mesh)
     return;
 
-  // Test de transposition
+  // Transposition test
   ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(),new_mesh,allParentItems.view());
   //     info() << "Parent ParentItems";
   //     ENUMERATE_ITEM(iitem,ParentItems) info() << ItemPrinter(*iitem);
@@ -571,7 +572,7 @@ _compute4TransposeItems()
 void SubMeshTestModule::
 _compute5MoveItems() 
 {
-  // Test de migration
+  // Migration test
   VariableItemInt32& cells_new_owner = mesh()->toPrimaryMesh()->itemsNewOwner(IK_Cell);
   ENUMERATE_FACE(iface,allFaces()) {
     if (!iface->isOwn())
@@ -592,7 +593,7 @@ _compute5MoveItems()
 
   if (new_mesh)
     {
-      // Casse volontairement les données ghosts pour vérifier le bon transfert des originaux
+      // Voluntarily break the ghost data to verify the correct transfer of originals
       ENUMERATE_CELL(icell,new_mesh->allCells())
         if (!icell->isOwn())
           (*new_cell_uids)[icell] = NULL_ITEM_UNIQUE_ID;
@@ -613,7 +614,7 @@ _compute5MoveItems()
   //     ENUMERATE_CELL(icell,mesh()->ownCells()) info() << icell.index() << ": " << ItemPrinter(*icell);
 
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true,true); // RELOCATE THE CONCEPT IN ARCANE
 }
 
 /*---------------------------------------------------------------------------*/

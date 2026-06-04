@@ -1,7 +1,7 @@
+﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-# Gestion des tests C#.
-# Il faut le wrapper C# pour pouvoir utiliser ces tests
+# C# tests.
+# The C# wrapper is required to use these tests
 if (NOT TARGET arcane_dotnet_wrapper_services)
   message(STATUS "Dont use '.Net' tests because 'services' wrapper is not available")
   return()

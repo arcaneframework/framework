@@ -19,17 +19,17 @@ namespace MaterialEos
 using namespace Arcane;
 using namespace Arcane::Materials;
 
-//! Interface du service du modèle de calcul de l'équation d'état.
+//! Interface for the equation of state calculation model service.
 class IMaterialEquationOfState
 {
  public:
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IMaterialEquationOfState() = default;
 
  public:
   /*!
-   *  Initialise l'équation d'état au groupe de mailles passé en argument
-   *  et calcule la vitesse du son et l'énergie interne.
+   *  Initializes the equation of state for the mesh group passed as argument
+   *  and calculates the sound speed and internal energy.
    */
   virtual void initEOS(IMeshMaterial* mat,
                        const MaterialVariableCellReal& pressure,
@@ -38,8 +38,8 @@ class IMaterialEquationOfState
                        MaterialVariableCellReal& sound_speed
                        ) =0;
   /*!
-   *  Applique l'équation d'état au groupe de mailles passé en argument
-   *  et calcule la vitesse du son et la pression.
+   *  Applies the equation of state to the mesh group passed as argument
+   *  and calculates the sound speed and pressure.
    */
   virtual void applyEOS(IMeshMaterial* mat,
                         const MaterialVariableCellReal& density,

@@ -56,11 +56,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * NOTE: pour la version accélérateur, il est important de ne pas
- * avoir d'accès aux membres des classes dans les lambdas. Ces dernières
- * sont implicitements capturées par référence et donc lorsqu'on est
- * sur le GPU cela provoque un plantage car on essaie d'adresser la
- * mémoire où se trouve 'this'.
+ * NOTE: for the accelerator version, it is important not to
+ * have access to class members in lambdas. These are implicitly captured by
+ * reference and thus when running on the GPU it causes a crash because it
+ * tries to address the memory where 'this' is located.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -254,8 +253,8 @@ MiniWeatherArray(IAcceleratorMng* am, ITraceMng* tm, int nb_cell_x, int nb_cell_
   //Output the initial state
   output(nstate, etime);
 
-  // Rend la file asynchrone
-  // Ne le fait pas avec SYCL car cela provoque des résultats faux (avril 2024)
+  // Make the file asynchronous
+  // Do not do this with SYCL because it causes false results (April 2024)
   //if (m_queue.executionPolicy() != eExecutionPolicy::SYCL)
   m_queue.setAsync(true);
 }
@@ -499,7 +498,7 @@ compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux)
     auto in_hy_pressure_int = ax::viewIn(command,hy_pressure_int);
 
     auto state = ax::viewIn(command,nstate);
-    //Compute the hyperviscosity coeficient
+    //Compute the hyperviscosity coefficient
     const double hv_coef = -hv_beta * dx / (16 * dt());
     //Compute fluxes in the x-direction for each cell
     auto out_flux = ax::viewOut(command,flux);
@@ -619,8 +618,8 @@ set_halo_values_x(NumArray3Type& nstate)
       double z = ((double)(k_beg + k) + 0.5) * dz;
       double v = z - 3 * zlen / 4;
       double compare_value = zlen / 16;
-      // Normalement il faut comparer la valeur absolue via math::abs() mais
-      // cette fonction n'est pas disponible avec DPC++ 2024.1 et le back-end CUDA
+      // Normally, we must compare the absolute value via math::abs() but
+      // this function is not available with DPC++ 2024.1 and the CUDA backend
       // if (math::abs(v) <= compare_value) {
       if (v >= -compare_value && v <= compare_value) {
         state_in_out(ID_UMOM, k + hs, i) = (state_in_out(ID_DENS, k + hs, i) + in_hy_dens_cell(k + hs)) * 50.;
@@ -657,9 +656,9 @@ set_halo_values_z(NumArray3Type& nstate)
     }
     else {
       state_in_out(ll,0,i) = state_in_out(ll,hs,i);
-      state_in_out(ll,1,i) = state_in_out(ll,hs,i); // GG: bizarre que ce soit pareil que au dessus.
+      state_in_out(ll,1,i) = state_in_out(ll,hs,i); // GG: it's strange that it's the same as above.
       state_in_out(ll,nz+hs,i) = state_in_out(ll,nz+hs-1,i);
-      state_in_out(ll,nz+hs+1,i) = state_in_out(ll,nz+hs-1,i); // Idem
+      state_in_out(ll,nz+hs+1,i) = state_in_out(ll,nz+hs-1,i); // Same
     }
   };
 }
@@ -809,11 +808,11 @@ init()
   }
 
   {
-    // NOTE: lorsque ce noyau est exécuté sur accélérateur avec CUDA, alors
-    // la fonction 'pow()' utilisée par la suite dans les autres noyaux est la
-    // version précise. Si par contre ce noyau est exécuté sur CPU, alors la
-    // fonction 'pow()' utilisée par la suite est la version rapide.
-    // A étudier pourquoi.
+    // NOTE: when this kernel is executed on an accelerator with CUDA, then
+    // the 'pow()' function used later in other kernels is the
+    // precise version. If, on the other hand, this kernel is executed on CPU, then the
+    // 'pow()' function used later is the fast version.
+    // To study why.
     Runner seq_runner(eExecutionPolicy::Sequential);
     RunQueue seq_queue(makeQueue(seq_runner));
     const bool use_seq_queue = false;
@@ -860,7 +859,8 @@ injection(double x, double z, double &r, double &u, double &w, double &t, double
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//Establish hydrstatic balance using constant potential temperature (thermally neutral atmosphere)
+//Establish hydrostatic balance using constant potential temperature
+//(thermally neutral atmosphere)
 //z is the input coordinate
 //r and t are the output background hydrostatic density and potential temperature
 template<typename LayoutType>
@@ -889,11 +889,11 @@ output(NumArray3Type& state, double etime)
 {
   ARCANE_UNUSED(state);
   ARCANE_UNUSED(etime);
-  // Ne fait rien car on n'est pas branché avec 'NetCDF'.
+  // Does nothing because we are not connected with 'NetCDF'.
 }
 
-// Affiche la somme sur les mailles des variables.
-// Cela est utile pour la validation
+// Displays the sum of variables over the grids.
+// This is useful for validation
 template<typename LayoutType>
 void MiniWeatherArray<LayoutType>::
 doExit(RealArrayView reduced_values)
@@ -901,8 +901,8 @@ doExit(RealArrayView reduced_values)
   int k, i, ll;
   double sum_v[NUM_VARS];
 
-  // Comme le calcul se fait toujours sur l'hôte, il faut copier la valeur
-  // de 'nstate' qui peut être sur le device.
+  // Since the calculation is always done on the host, the value must be copied
+  // of 'nstate' which may be on the device.
   NumArray3Type host_nstate(eMemoryRessource::Host);
   host_nstate.copy(nstate);
 

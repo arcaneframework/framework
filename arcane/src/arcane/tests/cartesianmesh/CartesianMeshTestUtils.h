@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshTestUtils.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
+/* Utility functions for 'CartesianMesh' tests.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CEA_TESTS_CARTESIANMESHTESTUTILS_H
 #define ARCANE_CEA_TESTS_CARTESIANMESHTESTUTILS_H
@@ -34,8 +34,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour tester les variantes de 'CartesianMesh'
+ * \brief Utility class for testing 'CartesianMesh' variants
  */
 class CartesianMeshTestUtils
 : public TraceAccessor
@@ -93,7 +94,7 @@ class CartesianMeshTestUtils
 
  public:
 
-  //! Méthodes publiques car accessibles sur accélérateur
+  //! Public methods because they are accessible on the accelerator
   void _testDirCellAccelerator();
   void _testDirFaceAccelerator(int idir);
   void _testDirCellNodeAccelerator();
@@ -114,5 +115,4 @@ class CartesianMeshTestUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRUnitTest.cc                                              (C) 2000-2022 */
 /*                                                                           */
-/* Service de test du raffinement/dérafinnement facon AMR.                   */
+/* AMR refinement/coarsening test service.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,8 +59,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Mesh test module
  */
 class AMRTestModule
 : public ArcaneAMRTestObject
@@ -159,10 +160,10 @@ init()
 	ENUMERATE_CELL(icell,allCells()) {
     (*old_data)[icell] = 1.;
   }
-	// creation du functor de transport de donnees d'un maillage a l'autre
+	// creation of the data transport functor from one mesh to another
 	AMRComputeFunction f(this,&AMRTestModule::transportFunction);
-	// Enregistrement du functor par le manager des functors associe au maillage
-	// NOTE: l'objet responsable de l'appel au raffinement qui doit faire cet enregistrement
+	// Registration of the functor by the functor manager associated with the mesh
+	// NOTE: the object responsible for calling refinement must perform this registration
 	mesh()->modifier()->registerCallBack(&f);
 
 	FaceGroup face_group = mesh()->allCells().outerFaceGroup();
@@ -170,8 +171,8 @@ init()
 	new_mesh = subDomain()->defaultMesh();
 	{
     //_refine(nb_cell_old);
-    // On peut faire autant de phases qu'on souhaite. Cependant actuellement
-    // pour des raisons de performance on ne fait que 2 phases.
+    // We can perform as many phases as we want. However, currently
+    // for performance reasons, we only perform 2 phases.
 		for( Integer i=0; i<2; ++i ){
       _refine(nb_cell_old);
       _coarsen(nb_cell_old/2);
@@ -186,13 +187,13 @@ init()
 	const Integer nb_cell_new = new_mesh->nbCell();
 	info() << "NB_CELL_OLD= " << nb_cell_old << " NB_CELL_NEW= " << nb_cell_new << "\n";
 
-	// Statistiques sur le nouveau maillage
+	// Statistics on the new mesh
 	MeshStats stats(traceMng(),new_mesh,subDomain()->parallelMng());
 	stats.dumpStats();
 	
-	// NOTE: avant de detruire old_data, on peut le garder pour visualiser la projection
-	// des donnees stocker dedans
-	// old_data sert ici pour afficher les procs en parallele
+	// NOTE: before destroying old_data, we can keep it to visualize the projection
+	// of the data stored inside
+	// old_data is used here to display the parallel procs
   delete old_data;
 	
 	old_data = new VariableCellReal(VariableBuildInfo(new_mesh, "Proc",
@@ -238,7 +239,7 @@ _refine(Integer nb_to_refine)
 	Int32UniqueArray cells_local_id;
 	const Integer nb_cell= mesh()->nbCell();
 	ARCANE_ASSERT((nb_to_refine<=nb_cell),("NB CELL TO REFINE EXCEED NB CELL OF THE MESH"));
-	// Recherche les nb_to_refine premières mailles de type IT_Hexaedron8
+	// Search for the first nb_to_refine cells of type IT_Hexaedron8
 	ENUMERATE_CELL(icell,mesh()->ownActiveCells()){
 		Cell cell = *icell;
 		if (cell.type()==IT_Hexaedron8 || cell.type()==IT_Quad4){
@@ -264,7 +265,7 @@ _coarsen(Integer nb_to_coarsen)
 {
   info() << "Coarsening cells nb_to_coarsen=" << nb_to_coarsen;
 	Int32UniqueArray cells_local_id;
-	// Recherche les nb_to_coarsen premières mailles de type IT_Hexaedron8
+	// Search for the first nb_to_coarsen cells of type IT_Hexaedron8
 	Integer nb_child_to_coarsen= nb_to_coarsen*8;
 	ENUMERATE_CELL(icell,mesh()->ownActiveCells()){
 		Cell cell = *icell;
@@ -294,7 +295,7 @@ _coarsen(Integer nb_to_coarsen)
 void AMRTestModule::
 _loadBalance()
 {
-  // Test de migration
+  // Migration test
   VariableItemInt32& cells_new_owner = mesh()->toPrimaryMesh()->itemsNewOwner(IK_Cell);
   ENUMERATE_FACE(iface,allFaces()) {
     if (!iface->isOwn())
@@ -396,7 +397,7 @@ _checkCreateOutputDir()
 Integer AMRTestModule::
 _executeAnalyticAdaptiveLoop(RealArray& sol,IMesh* mesh)
 {
-  // Parse les options d'adaptation
+  // Parse the adaptation options
   const Integer max_adapt_iters = 4;
   const Integer max_level = 3;
   const Real refine_percentage = 0.5;
@@ -404,59 +405,59 @@ _executeAnalyticAdaptiveLoop(RealArray& sol,IMesh* mesh)
 
   singularity = true;
 
-  // Création de l'objet ExactSolution et  attachement des functors solution
+  // Creation of the ExactSolution object and attachment of solution functors
   ErrorEstimate exact_sol;
   exact_sol.attachExactValue(exact3DSolution);
   exact_sol.attachExactGradient(exact3DGradient);
 
-  // boucle adaptative.
+  // Adaptive loop.
   Integer adapt_iter;
   RealUniqueArray error;
   for (adapt_iter=0; adapt_iter<max_adapt_iters-1; adapt_iter++) {
 	info() << "Beginning Adaptive Loop " << adapt_iter << "\n";
-	//  bloc d'adaptation
+	// Adaptation block
 	{
 	  info() << "  Refining the mesh..." << "\n";
 
-	  // un objet \p ErrorEstimate interroge une solution approchée
-	  // et affecte à chaque maille une valeur d'erreur positive
-	  // Cette valeur est utilisée pour la prise de décision raffinement
-	  // déraffinement.
-	  // Pour ce cas test simple, nous utilisons une erreur
-	  // d'interpolation sur la solution exacte
-	  // Pour des cas réels, nous avons besoins d'un indicateur d'erreur
-	  // sur la solution approchée.
+	  // an ErrorEstimate object queries an approximate solution
+	  // and assigns a positive error value to each cell
+	  // This value is used for refinement decision making
+	  // coarsening.
+	  // For this simple test case, we use an error
+	  // of interpolation on the exact solution
+	  // For real cases, we need an error indicator
+	  // on the approximate solution.
 
-	  // Calcul de l'erreur pour chaque maille active en utilisant l'indicateur d'erreur
-	  // Note: dans le cas général, il faut un estimateur d'erreur specifique
-	  // à l'application.
+	  // Calculate the error for each active cell using the error indicator
+	  // Note: in the general case, a specific error estimator is needed
+	  // for the application.
 	  exact_sol.computeError(error,mesh);
 
 	  // infos
 	  info() << "L2-Error is: " << exact_sol.l2Error() << "\n";
 	  info() << "LInf-Error is: " << exact_sol.lInfError() << "\n";
 
-	  // A partir de l'erreur calculée dans \p error on décide quelle maille va être
-	  // raffinée ou déraffinée.  Dans cet exemple l'approche est la suivante:
-	  // chaque maille avec un pourcentage de 20% de l'erreur maximale
-	  // va être raffinée, et chaque maille avec 10% de l'erreur minimale va peut être déraffinée
-	  // Il faut noter que les mailles flaguées pour raffinement vont être raffinées,
-	  // mais les mailles  flaguées pour déraffinement peuvent être déraffinées.
+	  // Based on the error calculated in \p error, we decide which cell will be
+	  // refined or coarsened. In this example, the approach is as follows:
+	  // each cell with a percentage of 20% of the maximum error
+	  // will be refined, and each cell with 10% of the minimum error can be coarsened
+	  // It should be noted that cells flagged for refinement will be refined,
+	  // but cells flagged for coarsening can be coarsened.
 	  // ErrorToFlagConverter(error);
 	  exact_sol.errorToFlagConverter(error,refine_percentage,coarsen_percentage,max_level,mesh);
 
-	  // Adapter le maillage en raffinant déraffinant les mailles flaguées.
-  	  //  Projection des solutions, paramètres, etc.
-	  // de l'ancien maillage au nouveau maillage. Pour cela des callbacks
-	  // se font dans la classe MeshRefinement
+	  // Adapt the mesh by refining and coarsening the flagged cells.
+  	  // Projection of solutions, parameters, etc.
+	  // from the old mesh to the new mesh. For this, callbacks
+	  // are made in the MeshRefinement class
 	  mesh->modifier()->adapt();
 	}
   }
-  // la derniere iteration pour calcul l erreur
+  // the last iteration to calculate the error
   {
     info() << "Beginning Adaptive Loop " << adapt_iter << "\n";
 
-    // Calcul de l'erreur.
+    // Calculate the error.
     exact_sol.computeError(error,mesh);
     info() << "L2-Error is: " << exact_sol.l2Error() << "\n";
     info() << "LInf-Error is: " << exact_sol.lInfError() << "\n";
@@ -469,15 +470,15 @@ _executeAnalyticAdaptiveLoop(RealArray& sol,IMesh* mesh)
 }
 
 // -------------------------------------------------------------------
-// Exemple d'une fonction callback permettant la projection des
-// variables/solutions lors d'une iteration AMR.
-// Cette fonction sera enregistree par le module AMRTest et sera
-// donc appelee tout au long des iterations AMR.
+// Example of a callback function allowing the projection of
+// variables/solutions during an AMR iteration.
+// This function will be registered by the AMRTest module and will be
+// therefore called throughout the AMR iterations.
 // --------------------------------------------------------------------
 void AMRTestModule::
 transportFunction (Array<ItemInternal*>& old_items, AMROperationType op)
 {
-  // Prolongement/Restriction en fonction de l'operation maillage
+  // Prolongation/Restriction depending on the mesh operation
   VariableCellReal& data = *this->getData();
   switch (op){
   case Restriction:

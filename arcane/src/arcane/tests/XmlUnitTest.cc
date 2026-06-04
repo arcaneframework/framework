@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlUnitTest.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Test du lecteur/ecrivain Xml.                                             */
+/* Test of the XML reader/writer.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test du lecteur/ecrivain Xml.
+ * \brief XML reader/writer test service.
  */
 class XmlUnitTest
 : public BasicUnitTest
@@ -182,7 +183,7 @@ _doDoc(Integer i)
   String attr_value2 = dom_element.getAttribute("attr1");
   if (attr_value2!=attr_value)
     ARCANE_FATAL("Bad value for attribute (2)");
-    
+
   test.clear();
   test.createAndAppendElement("iteration4",String::fromNumber(i+4));
   test.createAndAppendElement("iteration5","TestIteration5");
@@ -248,7 +249,7 @@ _testXml_2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Test la lecture d'un élément contenant un élément de 50Mo.
+ * \brief Test reading an element containing a 50MB element.
  */
 void XmlUnitTest::
 _testXml_Huge()

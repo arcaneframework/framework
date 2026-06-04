@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayUnitTest.cc                                            (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des tableaux.                                             */
+/* Array test service.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -206,7 +206,7 @@ class Array2UnitTest
       _setArray(array);
       _checkArray(array,3,5,3);
       
-      // Teste reduction de taille
+      // Test size reduction
       array.resize(7,2);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
       _check(array.dim1Size()==7,"Bad size (1)");
@@ -214,7 +214,7 @@ class Array2UnitTest
       _checkArray(array,3,5,2);
       info() << " NB NEW1=" << Wrapper<Real>::nb_new;
 
-      // Teste augmentation de taille
+      // Test size augmentation
       array.resize(9,5);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
       _printArray(array);
@@ -223,7 +223,7 @@ class Array2UnitTest
       _checkArray(array,3,5,2);
       info() << " NB NEW2=" << Wrapper<Real>::nb_new;
 
-      // Teste reduction de taille de la premiere dimension
+      // Test size reduction of the first dimension
       array.resize(7,5);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
       _check(array.dim1Size()==7,"Bad size (3)");
@@ -250,8 +250,8 @@ class Array2UnitTest
     }
 
     {
-      // Vérifie que la copie se passe bien si uniquement la
-      // première dimension est allouée.
+      // Checks that the copy works correctly even if only the
+      // first dimension is allocated.
       info() << "Test 5.2";
       UniqueArray2<DataType> array;
       info() << array.dim2Size();
@@ -271,7 +271,7 @@ class Array2UnitTest
       _check(array4.dim2Size()==0,"Bad dim2size (4.4)");
     }
 
-    // Vérifie qu'on n'a pas touché à ArrayImplBase::shared_null
+    // Checks that ArrayImplBase::shared_null has not been touched
     {
       info() << "Test 5.3";
       UniqueArray2<DataType> array;
@@ -364,11 +364,11 @@ class UniqueArray2UnitTest
 
   void _testSwap(bool use_own_swap)
   {
-    // Test std::move() via std::swap() (si use_own_swap==false)
-    // ou UniqueArray2::swap() (si use_own_swap==true)
+    // Test std::move() via std::swap() (if use_own_swap==false)
+    // or UniqueArray2::swap() (if use_own_swap==true)
     info() << "TestSwap use_own_swap=" << use_own_swap;
 
-    // Normalement les pointeurs des 2 tableaux doivent juste être échangés.
+    // Normally, the pointers of the 2 arrays should just be swapped.
     UniqueArray2<DataType> c1(7,5);
     DataType* x1 = c1.viewAsArray().data();
     info() << "** C1_this = " << &c1;
@@ -404,14 +404,14 @@ class UniqueArray2UnitTest
     _setArray(array);
     _checkArray(array,3,5,3);
 
-    // Teste reduction de taille
+    // Test size reduction
     array.resize(7,2);
     _check(array.dim1Size()==7,"Bad size (2)");
     _check(array.dim2Size()==2,"Bad dim2size (1)");
     _checkArray(array,3,5,2);
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
-    // Teste augmentation de taille
+    // Test size augmentation
     array.resize(9,5);
     _check(array.dim1Size()==9,"Bad size (2)");
     _check(array.dim2Size()==5,"Bad dim2size (1)");
@@ -419,7 +419,7 @@ class UniqueArray2UnitTest
     _printArray(array);
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
-    // Teste reduction de taille de la premiere dimension
+    // Test size reduction of the first dimension
     array.resize(7,5);
     _check(array.dim1Size()==7,"Bad size (2)");
     _check(array.dim2Size()==5,"Bad dim2size (1)");
@@ -516,13 +516,13 @@ class UniqueArray2UnitTest
       }
     }
 
-    // Teste les échanges.
+    // Test swaps.
     {
       _testSwap(false);
       _testSwap(true);
     }
 
-    // Test std::move() avec la même origine et destination
+    // Test std::move() with the same origin and destination
     {
       UniqueArray2<DataType> c1(7,5);
       DataType* x1 = c1.viewAsArray().data();
@@ -533,7 +533,7 @@ class UniqueArray2UnitTest
              << " dim1size=" << c1.dim1Size()
              << " dim2size=" << c1.dim2Size();
       _check(x1==after_x1,"Bad value after same std::move() [1]");
-      // Dump le tableau pour vérifier que les adresses sont valides.
+      // Dump the array to verify that the addresses are valid.
       dumpArray(std::cout,c1.viewAsArray().constView(),0);
     }
   }
@@ -650,14 +650,14 @@ class SharedArray2UnitTest
       _setArray(array);
       _checkArray(array,3,5,3);
       
-      // Teste reduction de taille
+      // Test reduction of size
       array.resize(7,2);
       _check(array.dim1Size()==7,"Bad size (2)");
       _check(array.dim2Size()==2,"Bad dim2size (1)");
       _checkArray(array,3,5,2);
       info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
-      // Teste augmentation de taille
+      // Test size increase
       array.resize(9,5);
       _check(array.dim1Size()==9,"Bad size (2)");
       _check(array.dim2Size()==5,"Bad dim2size (1)");
@@ -665,7 +665,7 @@ class SharedArray2UnitTest
       _printArray(array);
       info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
-      // Teste reduction de taille de la premiere dimension
+      // Test reduction of size of the first dimension
       array.resize(7,5);
       _check(array.dim1Size()==7,"Bad size (2)");
       _check(array.dim2Size()==5,"Bad dim2size (1)");
@@ -714,7 +714,7 @@ class SharedArray2UnitTest
       SharedArray2<DataType> new_array(array);
       _checkSame(new_array,array);
 
-      // Les tableaux sont partages et doivent avoir le meme pointeur de base.
+      // The arrays are shared and must have the same base pointer.
       const void* r1 = array.viewAsArray().unguardedBasePointer();
       const void* r2 = new_array.viewAsArray().unguardedBasePointer();
       _check(r1==r2,"Bad same pointer");          
@@ -875,7 +875,7 @@ class MultiArray2UnitTest
         _setArray(array);
         _printArray(array);
 
-        // Vérifie une augmentation de la taille
+        // Verify a size increase
         sizes.resize(9);
         for( Integer i=0, is=sizes.size(); i<is; ++i )
           sizes[i] = (2+i) % 4;
@@ -885,7 +885,7 @@ class MultiArray2UnitTest
         _setArray(array);
         _printArray(array);
 
-        // Vérifie une diminution de la taille
+        // Verify a size decrease
         sizes.resize(7);
         for( Integer i=0, is=sizes.size(); i<is; ++i )
           sizes[i] = (i) % 5;
@@ -893,7 +893,7 @@ class MultiArray2UnitTest
         _checkSize(array,sizes);
         _printArray(array);
 
-        // Vérifie un resize ne changeant pas la taille
+        // Verify a resize that does not change the size
         array.resize(sizes);
         _checkSize(array,sizes);
         _printArray(array);
@@ -909,7 +909,7 @@ class MultiArray2UnitTest
         {
           SharedMultiArray2<DataType> cloned_array(array.clone());
           _checkSame(array,cloned_array);
-          // Modifie le clone et vérifie que l'original n'a pas changé.
+          // Modify the clone and verify that the original has not changed.
           DataType zero{0};
           cloned_array[2][3] = zero;
           _check(array[2][3]!=zero,"Bad value (test clone)");
@@ -930,18 +930,18 @@ class MultiArray2UnitTest
         SharedMultiArray2<DataType> new_array(array);
         _checkSame(new_array,array);
         {
-          // Modifie la nouvelle référence et vérifie que l'original a changé.
+          // Modify the new reference and verify that the original has changed.
           new_array[2][3] = 0.0;
           _check(array[2][3]==0.0,"Bad value (test shared)");
         }
 
-        // Les tableaux sont partages et doivent avoir le meme pointeur de base.
+        // The arrays are shared and must have the same base pointer.
         const void* r1 = array.viewAsArray().unguardedBasePointer();
         const void* r2 = new_array.viewAsArray().unguardedBasePointer();
         _check(r1==r2,"Bad same pointer");
       }
 
-      // Test copie à partir d'un SharedArray
+      // Test copy from a SharedArray
       {
         UniqueArray<Integer> sizes(5);
         for( Integer i=0, n=sizes.size(); i<n; ++i )
@@ -953,13 +953,13 @@ class MultiArray2UnitTest
           UniqueMultiArray2<DataType> new_array(array);
           _checkSame(new_array,array);
 
-          // Les tableaux ne sont pas partagés et ne doivent avoir le meme pointeur de base.
+          // The arrays are not shared and must not have the same base pointer.
           const void* r1 = array.viewAsArray().unguardedBasePointer();
           const void* r2 = new_array.viewAsArray().unguardedBasePointer();
           _check(r1!=r2,"Bad same pointer for unique array");
 
           {
-            // Modifie la nouvelle référence et vérifie que l'original n'a pas changé.
+            // Modify the new reference and verify that the original has not changed.
             new_array[2][3] = 0.0;
             _check(array[2][3]!=0.0,"Bad value (test shared with unique array)");
           }
@@ -972,14 +972,14 @@ class MultiArray2UnitTest
           _checkSame(new2_array,new_array);
           new2_array[2][3] = -5.0;
           {
-            // Modifie la nouvelle référence et vérifie que l'original n'a pas changé.
+            // Modifies the new reference and checks that the original remains unchanged.
             _check(new_array[2][3]==0.0,"Bad value (test clone unique array)");
           }
         }
       }
 
       {
-        // Test accès en mode check lorsque certaines tailles sont nulles.
+        // Test access in check mode when certain sizes are null.
         IntegerUniqueArray d;
         UniqueMultiArray2<Real> ma;
         Integer n = 10;
@@ -1060,8 +1060,9 @@ class ArrayList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Mesh test module
  */
 class ArrayUnitTest
 : public BasicUnitTest
@@ -1204,7 +1205,7 @@ Int64ConstArrayView _viewInterval(Int64Array& array,Integer index,Integer nb_int
   Integer n = array.size();
   Integer isize = n / nb_interval;
   Integer ibegin = index * isize;
-  // Pour le dernier interval, prend les elements restants
+  // For the last interval, takes the remaining elements
   if ((index+1)==nb_interval)
     isize = n - ibegin;
   return Int64ConstArrayView(isize,array.data()+ibegin);

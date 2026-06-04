@@ -1,7 +1,7 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <module name="TimeHistoryTest" version="1.0" namespace-name="ArcaneTest" >
   <description>
-    Module de test des services singletons
+    Module for testing singleton services
   </description>
 
   <entry-points>

@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" ?>
 <service name="PerfectGasEOS" version="1.0" type="caseoption">
 
-	<description>Jeu de données du service PerfectGasEOS</description>
+	<description>PerfectGasEOS service dataset</description>
   <interface name="IEquationOfState" inherited='false'/>
 
 	<variables>
@@ -68,7 +68,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- 	CARACTERISTIC LENGTH	 -->
+		<!-- 	CHARACTERISTIC LENGTH	 -->
 		<variable
 			field-name="caracteristic_length"
 			name="CaracteristicLength"

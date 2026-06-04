@@ -1,5 +1,4 @@
-
-set(ARCANE_TEST_CASEPATH ${TEST_PATH}/accelerator)
+﻿set(ARCANE_TEST_CASEPATH ${TEST_PATH}/accelerator)
 
 if (ARCANE_HAS_ACCELERATOR_API)
 

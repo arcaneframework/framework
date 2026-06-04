@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HllcSchemeTypes.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Types et constantes pour le schéma HLLC.                                  */
+/* Types and constants for the HLLC scheme.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANETEST_HLLCSCHEMETYPES_H
 #define ARCANETEST_HLLCSCHEMETYPES_H
@@ -26,23 +26,24 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Types pour le schéma hydro HLLC.
+ * \brief Types for the HLLC hydro scheme.
  */
 class TypesHllcScheme
 {
  public:
 
-  //! Type de condition aux limites
+  //! Boundary condition type
   enum eBoundaryCondition
   {
-    Wall,       //!< Paroi glissante (vitesse normale nulle)
-    Inflow,     //!< Entrée (vitesse et densité imposées)
-    Outflow,    //!< Sortie libre (gradient nul)
-    Unknown     //!< Type inconnu
+    Wall,       //!< Sliding wall (zero normal velocity)
+    Inflow,     //!< Inflow (imposed velocity and density)
+    Outflow,    //!< Outflow (zero gradient)
+    Unknown     //!< Unknown type
   };
 
-  //! Type de limiteur pour la reconstruction MUSCL
+  //! Limiter type for MUSCL reconstruction
   enum eLimiter
   {
     MinMod,
@@ -54,8 +55,9 @@ class TypesHllcScheme
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief État conservatif: densité, quantité de mouvement, énergie totale.
+ * \brief Conservative state: density, momentum, total energy.
  */
 struct ConservativeState
 {
@@ -71,8 +73,9 @@ struct ConservativeState
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief État primitif: densité, vitesse, pression.
+ * \brief Primitive state: density, velocity, pressure.
  */
 struct PrimitiveState
 {
@@ -94,8 +97,9 @@ struct PrimitiveState
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Flux à travers une face de normale donnée.
+ * \brief Flux across a given normal face.
  */
 struct FluxState
 {
@@ -106,8 +110,9 @@ struct FluxState
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule l'état primitif à partir de l'état conservatif et de gamma.
+ * \brief Calculates the primitive state from the conservative state and gamma.
  */
 inline ARCCORE_HOST_DEVICE PrimitiveState
 conservativeToPrimitive(const ConservativeState& c, Real gamma)
@@ -122,8 +127,9 @@ conservativeToPrimitive(const ConservativeState& c, Real gamma)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule l'état conservatif à partir de l'état primitif.
+ * \brief Calculates the conservative state from the primitive state.
  */
 inline ARCCORE_HOST_DEVICE ConservativeState
 primitiveToConservative(const PrimitiveState& p, Real gamma)
@@ -138,10 +144,11 @@ primitiveToConservative(const PrimitiveState& p, Real gamma)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule le flux d'Euler 3D à travers une face de normale \a n.
+ * \brief Calculates the 3D Euler flux across a face with normal \a n.
  *
- * Le flux retourné est projeté sur la normale: F·n.
+ * The returned flux is projected onto the normal: F·n.
  */
 inline ARCCORE_HOST_DEVICE FluxState
 eulerFlux(const PrimitiveState& p, const Real3& normal, Real gamma)
@@ -160,36 +167,37 @@ eulerFlux(const PrimitiveState& p, const Real3& normal, Real gamma)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Solveur de Riemann HLLC.
+ * \brief HLLC Riemann solver.
  *
- * Calcule le flux numérique à l'interface entre les états gauche et droit
- * en utilisant le solveur HLL avec les vitesses d'onde améliorées
- * (estimateur d'Einfeldt via la moyenne de Roe).
+ * Calculates the numerical flux at the interface between the left and right states
+ * using the HLL solver with improved wave speeds
+ * (Einfeldt estimator via Roe average).
  *
- * \param left  état primitif gauche
- * \param right état primitif droit
- * \param normal normale unitaire à la face (pointant de gauche vers droite)
- * \param gamma coefficient adiabatique
- * \return flux numérique projeté sur la normale
+ * \param left  left primitive state
+ * \param right right primitive state
+ * \param normal unit normal at the face (pointing from left to right)
+ * \param gamma adiabatic coefficient
+ * \return numerical flux projected onto the normal
  */
 inline ARCCORE_HOST_DEVICE FluxState
 hllcFlux(const PrimitiveState& left, const PrimitiveState& right,
          const Real3& normal, Real gamma)
 {
-  // Vitesses normales
+  // Normal velocities
   Real ul = math::dot(left.velocity, normal);
   Real ur = math::dot(right.velocity, normal);
 
-  // Vitesses du son
+  // Sound speeds
   Real cl = left.speedOfSound(gamma);
   Real cr = right.speedOfSound(gamma);
 
-  // Enthalpies totales
+  // Total enthalpies
   Real hl = (left.totalEnergy(gamma) + left.pressure) / left.density;
   Real hr = (right.totalEnergy(gamma) + right.pressure) / right.density;
 
-  // Moyenne de Roe
+  // Roe average
   Real sqrt_rho_l = math::sqrt(left.density);
   Real sqrt_rho_r = math::sqrt(right.density);
   Real sum_sqrt_rho = sqrt_rho_l + sqrt_rho_r;
@@ -198,15 +206,15 @@ hllcFlux(const PrimitiveState& left, const PrimitiveState& right,
   Real h_tilde = (sqrt_rho_l * hl + sqrt_rho_r * hr) / sum_sqrt_rho;
   Real c_tilde = math::sqrt((gamma - Real(1.0)) * (h_tilde - Real(0.5) * u_tilde * u_tilde));
 
-  // Vitesses d'onde HLLC (Einfeldt)
+  // HLLC wave speeds (Einfeldt)
   Real s_l = math::min(ul - cl, u_tilde - c_tilde);
   Real s_r = math::max(ur + cr, u_tilde + c_tilde);
 
-  // États conservatifs gauche et droit
+  // Left and right conservative states
   ConservativeState wl = primitiveToConservative(left, gamma);
   ConservativeState wr = primitiveToConservative(right, gamma);
 
-  // Flux d'Euler gauche et droit
+  // Left and right Euler fluxes
   FluxState fl = eulerFlux(left, normal, gamma);
   FluxState fr = eulerFlux(right, normal, gamma);
 
@@ -236,8 +244,9 @@ hllcFlux(const PrimitiveState& left, const PrimitiveState& right,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Limiteur MUSCL basé sur le rapport des pentes.
+ * \brief MUSCL limiter based on the ratio of slopes.
  */
 inline ARCCORE_HOST_DEVICE Real
 limiter(TypesHllcScheme::eLimiter type, Real r)

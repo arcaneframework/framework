@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngTest.cc                                          (C) 2000-2026 */
 /*                                                                           */
-/* Test des opérations de base du parallèlisme.                              */
+/* Test of basic parallelism operations.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -62,8 +62,9 @@ using namespace Arcane::Parallel;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test des opérations de base du IParallelMng
+ * \brief Test of basic IParallelMng operations
  */
 class ParallelMngTest
 : public TraceAccessor
@@ -75,7 +76,7 @@ class ParallelMngTest
 
  public:
 
-  //! Exécute l'opération du service
+  //! Executes the service operation
   void execute();
 
  private:
@@ -159,8 +160,8 @@ execute()
   _launchTest("named_barrier",&ParallelMngTest::_testNamedBarrier);
   _launchTest("broadcast_string",&ParallelMngTest::_testBroadcastStringAndMemoryBuffer);
 
-  //TODO ajouter tests broadcast avec n'importe quel proc comme destinataire
-  //TODO ajouter tests send/recv avec n'importe quel proc comme destinataire
+  //TODO add broadcast tests with any proc as destination
+  //TODO add send/recv tests with any proc as destination
 
   _launchTest("barrier",&ParallelMngTest::_testBarrier);
   _launchTest("process_messages",&ParallelMngTest::_testProcessMessages);
@@ -233,7 +234,7 @@ _testSendRecvNonBlocking3()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Meme test que le precedent mais on utilise WaitSome au lieu de WaitAll.
+// Same test as the previous one but using WaitSome instead of WaitAll.
 
 void ParallelMngTest::
 _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
@@ -264,7 +265,7 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
     vc.areEqual(nb_expected_request,requests->size(),"Bad number of expected request");
 
     Integer received = 0;
-    // Tableau pour vérifier que chaque requête a bien été appelée une et une seule fois.
+    // Array to verify that each request was called exactly once.
     UniqueArray<Int32> nb_done_requests(nb_expected_request,0);
     UniqueArray<Int32> nb_expected_done_requests(nb_expected_request,1);
     Integer iteration = 0;
@@ -281,10 +282,10 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
         info() << "END WAIT iter=" << iteration << " nb_done=" << nb_done
                << " total=" << total_nb_done;
 
-      if (nb_done==0){ // Plus de requêtes à attendre
-        // En mode WaitSome, on sort uniquement s'il n'y a plus de requêtes
-        // En node WaitSomeNonBlocking, on sort si on a fait autant de requêtes qu'attendu
-        // car il est normal d'avoir \a nb_done==0 si on est en train d'attendre
+      if (nb_done==0){ // No more requests to wait for
+        // In WaitSome mode, we exit only if there are no more requests
+        // In node WaitSomeNonBlocking mode, we exit if we have made as many requests as expected
+        // because it is normal to have \a nb_done==0 if we are waiting
         if (is_non_blocking){
           if (total_nb_done==nb_expected_request)
             break;
@@ -293,18 +294,18 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
           break;
       }
       ++iteration;
-      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      // Wait a short pause of 1ms to avoid a too fast loop.
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if (iteration>25000)
         ARCANE_FATAL("Too many iteration. probably a deadlock");
-      // On récupère à partir du numéro de la requête le rang d'origine et
-      // le numéro du message
+      // We retrieve the original rank and
+      // the message number from the request number
       for( Integer iter_val : requests->doneRequestIndexes() ) {
         info() << "Receiving request request_id=" << iter_val;
         ++nb_done_requests[iter_val];
         Integer orig = iter_val/nb_message;
         Integer z = iter_val-orig*nb_message;
-    		orig += 1; // On commence a 1.
+    		orig += 1; // Start from 1.
     		received ++;
         info() << "Request orig=" << orig << " z=" << z << " first_value=" << all_bufs[orig][z][0];
     		if (m_verbose)
@@ -354,22 +355,23 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
 void ParallelMngTest::
 _doTestSerializeSize(bool is_non_blocking)
 {
-  // L'implémentation MPI n'utilise pas le même mécanisme suivant la taille
-  // du buffer. Il faut donc être sur de choisir les tailles qui testent les
-  // deux mécanismes. Actuellement, la taille limite est de 50000 octets.
-  // ATTENTION: l'argument passé à nb_value n'est pas la taille en octet
-  // mais un nombre d'éléments.
+  // The MPI implementation does not use the same mechanism depending on the
+  // buffer size.
+  // Therefore, it is necessary to ensure that the sizes chosen test both
+  // mechanisms.
+  // Currently, the limit size is 50000 bytes.
+  // WARNING: the argument passed to nb_value is not the size in bytes but
+  // a number of elements.
 
-  // Cette taille correspond à une mémoire utilisée d'environ 4Go par rang.
-  // Il ne donc faire le test que si la machine a au moins une mémoire
-  // supérieure à 4Go * commSize(). Cela permet de tester des messages
-  // dont la taille est légement supérieure à 2Go (2^31).
+  // This size corresponds to approximately 4GB of memory used per rank.
+  // Therefore, the test should only be performed if the machine has at least
+  // 4GB * commSize() of memory. This allows testing messages slightly larger
+  // than 2GB (2^31).
   //_testSerializeSize(120000000);
 
-  // Le test ci dessous permet de tester les messages de taille supérieur
-  // à 4Go (2^32). Certaines implémentations MPI utilisent un 'unsigned int'
-  // pour la taille de message et ce test permet de vérifier si ce n'est pas
-  // le cas.
+  // The test below allows testing messages larger than 4GB (2^32). Some MPI
+  // implementations use an 'unsigned int' for message size, and this test
+  // verifies if that is the case.
   //_testSerializeSize(220000000);
 
   if (is_non_blocking){
@@ -398,9 +400,9 @@ _doTestSerializeSize(bool is_non_blocking)
 void ParallelMngTest::
 _doTestSerializeMessageList()
 {
-  // TODO: pour l'instant on ne teste pas en séquentiel car cela n'est
-  // pas implémenté mais il faudrait pouvoir utiliser le gestionnaire
-  // en mémoire partagé pour gérer cela.
+  // TODO: for now, we are not testing sequentially because it is not
+  // implemented, but it would be necessary to be able to use the shared
+  // memory manager to handle this.
   if (!m_parallel_mng->isParallel())
     return;
   _doTestSerializeMessageList2(WaitAll);
@@ -414,8 +416,7 @@ _doTestSerializeMessageList()
 void ParallelMngTest::
 _doTestSerializeMessageList2(eWaitType wait_mode)
 {
-  // Comme pour _doTestSerializeSize(), il faudrait tester des messages
-  // de plus de 4Go.
+  // As with _doTestSerializeSize(), messages larger than 4GB should be tested.
 
   _testSerializeMessageList(1000,wait_mode);
   _testSerializeMessageList(100017,wait_mode);
@@ -472,7 +473,7 @@ class ParallelMngTest::SerializerTestValues
  public:
   void init(Integer nb_value)
   {
-    // Création des tableaux contenant les valeurs de référence.
+    // Creation of arrays containing reference values.
     ref_i16_values.resize(nb_value);
     for( Integer i=0, s=ref_i16_values.size(); i<s; ++i )
       ref_i16_values[i] = (Int16)(i+1);
@@ -557,15 +558,15 @@ _testSerializeSize(Integer nb_value)
   info() << "Test serialize nb_value=" << nb_value
          << " test_broadcast=" << m_test_broadcast_serializer;
 
-  // Création des tableaux contenant les valeurs de référence.
+  // Creation of arrays containing reference values.
   SerializerTestValues test_values;
   test_values.init(nb_value);
   ValueChecker vc(A_FUNCINFO);
 
-  // Certaines implémentations MPI ne supportent pas les collectives
-  // dont la taille dépasse 2Go.
-  // TODO: mettre INT64_MAX si le IParallelMng est en mémoire partagé
-  // et INT32_MAX si on utilise MPI.
+  // Some MPI implementations do not support collectives
+  // whose size exceeds 2Go.
+  // TODO: set INT64_MAX if IParallelMng is in shared memory
+  // and INT32_MAX if we use MPI.
 
   constexpr Int64 broadcast_max_size = INT32_MAX;
 
@@ -626,7 +627,7 @@ _testNonBlockingSerializeSize(Integer nb_value)
   ITraceMng* tm = pm->traceMng();
   info() << "Test non blocking serialize nb_value=" << nb_value;
 
-  // Création des tableaux contenant les valeurs de référence.
+  // Creation of arrays containing reference values.
   SerializerTestValues test_values;
   test_values.init(nb_value);
   ValueChecker vc(A_FUNCINFO);
@@ -678,7 +679,7 @@ _testProbeSerialize(Integer nb_value,bool use_one_message)
          << " is_one_message=" << use_one_message;
   tm->flush();
 
-  // Création des tableaux contenant les valeurs de référence.
+  // Creation of arrays containing reference values.
   SerializerTestValues test_values;
   test_values.init(nb_value);
   ValueChecker vc(A_FUNCINFO);
@@ -742,7 +743,7 @@ _testSerializeMessageList(Integer nb_value,eWaitType wait_mode)
   info() << "Test SerializeMessageList nb_value=" << nb_value
          << " wait_mode=" << wait_mode;
 
-  // Création des tableaux contenant les valeurs de référence.
+  // Creation of arrays containing reference values.
   SerializerTestValues test_values;
   test_values.init(nb_value);
   ValueChecker vc(A_FUNCINFO);
@@ -775,7 +776,7 @@ _testSerializeMessageList(Integer nb_value,eWaitType wait_mode)
     message_mng->waitMessages(WaitAll);
     if (my_rank!=sender_rank){
       for( Ref<ISerializeMessage> s : messages ){
-        // Il faut que le message soit terminé car on a fait un WaitAll.
+        // The message must be finished because we performed a WaitAll.
         if (!s->finished())
           ARCANE_FATAL("Message is not finished");
         test_values.getAndCheckValues(s->serializer(),vc,"Deserialize");
@@ -789,7 +790,7 @@ _testSerializeMessageList(Integer nb_value,eWaitType wait_mode)
       messages = remaining_messages;
       remaining_messages.clear();
       for( Ref<ISerializeMessage> s : messages ){
-        // Il faut que le message soit terminé car on a fait un WaitAll.
+        // The message must be finished because we performed a WaitAll.
         if (s->finished()){
           if (my_rank!=sender_rank){
             test_values.getAndCheckValues(s->serializer(),vc,"Deserialize");
@@ -818,7 +819,7 @@ _testSerializerWithMessageInfo(Integer nb_value,bool use_wait)
   info() << "Test SerializerWithMessageInfo nb_value=" << nb_value
          << " use_wait=" << use_wait;
 
-  // Création des tableaux contenant les valeurs de référence.
+  // Creation of arrays containing reference values.
   SerializerTestValues test_values;
   test_values.init(nb_value);
   ValueChecker vc(A_FUNCINFO);
@@ -826,7 +827,7 @@ _testSerializerWithMessageInfo(Integer nb_value,bool use_wait)
   Integer nb_message = 3;
   UniqueArray<ISerializer*> serializers;
   UniqueArray<Request> requests;
-  // TODO: pouvoir changer le nombre de messages
+  // TODO: be able to change the number of messages
   if (my_rank==0){
     for( Integer k=0; k<nb_message; ++k ){
       for( Integer i=min_rank; i<nb_rank; ++i ){
@@ -852,7 +853,7 @@ _testSerializerWithMessageInfo(Integer nb_value,bool use_wait)
       }
     }
   }
-  // TODO: ajouter test avec IRequestList et les trois modes de wait.
+  // TODO: add test with IRequestList and the three wait modes.
   if (use_wait){
     info() << "WaitAll requests";
     pm->waitAllRequests(requests);
@@ -965,8 +966,8 @@ _testProcessMessages(const ParallelExchangerOptions* exchange_options)
     Int32 dest_rank = sm->destination().value();
     Integer message_size = base_size + dest_rank + rank;
     s->setMode(ISerializer::ModeReserve);
-    s->reserveInteger(1); // Pour le nombre d'elements
-    s->reserveInt32(message_size); // Pour les elements
+    s->reserveInteger(1); // For the number of elements
+    s->reserveInt32(message_size); // For the elements
     s->allocateBuffer();
     s->setMode(ISerializer::ModePut);
     s->putInteger(message_size);
@@ -1018,7 +1019,7 @@ void ParallelMngTest::
 _testContigMachineShMemWin()
 {
   {
-    // nb_elem doit être paire pour ce test.
+    // nb_elem must be even for this test.
     //![snippet_arcanedoc_parallel_shmem_usage_1]
     constexpr Integer nb_elem = 14;
 
@@ -1026,8 +1027,8 @@ _testContigMachineShMemWin()
     Integer my_rank = pm->commRank();
 
     if (!ParallelMngUtils::isMachineShMemWinAvailable(pm)) {
-      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
-      // On ne plante pas les tests dans ce cas.
+      // Problem with MPI. May occur if MPICH is compiled in ch3:sock mode.
+      // We do not crash the tests in this case.
       warning() << "Shared memory not supported";
       return;
     }
@@ -1043,8 +1044,8 @@ _testContigMachineShMemWin()
     // {
     //   Ref<IParallelTopology> topo = ParallelMngUtils::createTopologyRef(pm);
     //   if (topo->machineRanks().size() != machine_ranks.size()) {
-    //     // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
-    //     // On ne plante pas les tests dans ce cas.
+    //     // Problem with MPI. May occur if MPICH is compiled in ch3:sock mode.
+    //     // We do not crash the tests in this case.
     //     warning() << "Shared memory not supported"
     //               << " -- Nb machine ranks with ParallelTopo : " << topo->machineRanks().size()
     //               << " -- Nb machine ranks with MPI_COMM_TYPE_SHARED : " << machine_ranks.size();
@@ -1231,7 +1232,7 @@ _testContigMachineShMemWin()
       else {
         test.addToAnotherSegment(add_in, test.segmentConstView());
         test.resize(0);
-        test.add(test.segmentConstView(add_in).subSpan(0, 15)); // Ne fonctionne pas sans reserve.
+        test.add(test.segmentConstView(add_in).subSpan(0, 15)); // Does not work without reserve.
       }
     }
     debug() << "Test : " << test.segmentConstView();
@@ -1242,8 +1243,8 @@ _testContigMachineShMemWin()
     IParallelMng* pm = m_parallel_mng;
 
     if (!ParallelMngUtils::isMachineShMemWinAvailable(pm)) {
-      // Problème avec MPI. Peut intervenir si MPICH est compilé en mode ch3:sock.
-      // On ne plante pas les tests dans ce cas.
+      // Problem with MPI. May occur if MPICH is compiled in ch3:sock mode.
+      // We do not crash the tests in this case.
       warning() << "Shared memory not supported";
       return;
     }
@@ -1284,8 +1285,8 @@ _testContigMachineShMemWin()
         break;
       }
     }
-    // Remarque : ici, pos_in_machine_ranks correspond au rang du processus
-    // dans le communicateur MPI "machine".
+    // Note: here, pos_in_machine_ranks corresponds to the rank of the process
+    // in the MPI communicator "machine".
     {
       UniqueArray<Integer> buf;
       if (pos_in_machine_ranks == 0) {
@@ -1312,10 +1313,10 @@ _testContigMachineShMemWin()
       voisin = machine_ranks[pos_in_machine_ranks - 1];
     }
 
-    // On efface les éléments déjà présents dans les segments.
+    // Clear the elements already present in the segments.
     window.resize(0);
 
-    // Si l'on n'a pas de voisins, on ajoute rien.
+    // If there are no neighbors, add nothing.
     if (voisin == -1) {
       window.addToAnotherSegment();
     }
@@ -1326,7 +1327,7 @@ _testContigMachineShMemWin()
       }
       window.addToAnotherSegment(voisin, buf);
     }
-    info() << "Segment final : " << window.segmentConstView();
+    info() << "Final segment : " << window.segmentConstView();
     window.shrink();
     //![snippet_arcanedoc_parallel_shmem_usage_13]
   }
@@ -1468,7 +1469,7 @@ _testBroadcastSerializer2(Integer n)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette méthode est dans ParallelMngDataTypeTest
+// This method is in ParallelMngDataTypeTest
 extern "C++" void
 _testParallelMngDataType(IParallelMng* pm);
 
@@ -1560,7 +1561,7 @@ _testNamedBarrier()
     info() << "First test ok for named barrier";
   }
 
-  // Test avec une longue chaine de caractères
+  // Test with a long string
   {
     char buf[2048];
     for( Integer i=0; i<2000; ++i )
@@ -1582,9 +1583,9 @@ _testNamedBarrier()
     catch(const FatalErrorException& ex){
       has_exception = true;
     }
-    // Seul le rang 0 doit lever une exception (attention cela
-    // dépendant des valeurs de barrier_name car l'implémentation
-    // utilise une reduction max).
+    // Only rank 0 should throw an exception (note that this
+    // depends on the values of barrier_name because the implementation
+    // uses a max reduction).
     if (my_rank==0)
       if (!has_exception)
         ARCANE_FATAL("No exception for named barrier for rank 0");
@@ -1628,10 +1629,10 @@ class ParallelMngTestService
 
   void build() override {}
 
-  //! Exécute l'opération du service
+  //! Executes the service operation
   void execute() override;
 
-  //! Vrai si le service est actif
+  //! True if the service is active
   bool isActive() const override { return true; }
 
   void setParallelMng(IParallelMng* pm) override
@@ -1666,16 +1667,16 @@ _doExecuteSub(IParallelMng* pm)
 {
   info() << "DO SUB_PARALLEL_MNG";
   Int32 nb_rank = pm->commSize();
-  // TODO: le plus simple serait de tester cela de manière récursive en
-  // gardant à chaque fois 1 rang sur 2.
-  // On pourra aussi à terme tester des choses plus compliquées comme ne
-  // pas garder le rang 0 et/ou pas le même nombre de rangs locaux en
-  // mode hybride (mais cela n'est pas supporté pour le moment).
+  // TODO: the simplest way would be to test this recursively by
+  // keeping 1 rank out of 2 each time.
+  // We can also eventually test more complicated things like not
+  // keeping rank 0 and/or not the same number of local ranks in
+  // hybrid mode (but this is not supported for now).
 
-  // Les tests avec 4 PE sont en mode MPI ou mémoire partagée
+  // Tests with 4 PE are in MPI or shared memory mode
   if (nb_rank==4){
     UniqueArray<Int32> kept_ranks;
-    // Prend 1 coeur sur 2.
+    // Takes 1 core out of 2.
     for( Integer i=0; i<nb_rank; ++i )
       if ((i%2)==0)
         kept_ranks.add(i);
@@ -1683,18 +1684,18 @@ _doExecuteSub(IParallelMng* pm)
     if (sub_pm.get())
       _doExecute(sub_pm.get());
   }
-  // Les tests avec 12 PE sont en mode hybride (3 MPI * 4 threads)
+  // Tests with 12 PE are in hybrid mode (3 MPI * 4 threads)
   if (nb_rank==12){
-    // En mode hybride, chaque processus MPI doit avoir le même nombre
-    // de rang en mémoire partagée. On teste 3 MPI * 2 threads (1 coeur sur 2)
-    // et 3 MPI uniquement (1 coeur sur 4) ce qui revient à faire comme
-    // si on était en mode MPI pure.
+    // In hybrid mode, each MPI process must have the same number
+    // of ranks in shared memory. We test 3 MPI * 2 threads (1 core out of 2)
+    // and 3 MPI only (1 core out of 4), which is equivalent to doing
+    // it as if we were in pure MPI mode.
 
     UniqueArray<Int32> kept_ranks;
 
     const bool do_one = false;
     if (do_one){
-      // Prend un rang sur 2
+      // Takes 1 rank out of 2
       for( Integer i=0; i<nb_rank; ++i )
         if ((i%2)==0)
           kept_ranks.add(i);
@@ -1707,7 +1708,7 @@ _doExecuteSub(IParallelMng* pm)
 
     bool do_4 = true;
     if (do_4){
-      // Prend un rang sur 4
+      // Takes 1 rank out of 4
       kept_ranks.clear();
       for( Integer i=0; i<nb_rank; ++i )
         if ((i%4)==0)
@@ -1720,13 +1721,13 @@ _doExecuteSub(IParallelMng* pm)
     }
   }
 
-  // Teste le sous-communicateur à la MPI_Comm_split.
-  // Ne fonctionne qu'avec MPI.
+  // Tests the sub-communicator using MPI_Comm_split.
+  // Only works with MPI.
   if (((nb_rank % 2) == 0) && !pm->isThreadImplementation() && !pm->isHybridImplementation()) {
     info() << "Test SubParallelMng with (color,key) nb_rank=" << nb_rank;
     Int32 my_rank = pm->commRank();
     Int32 middle = nb_rank / 2;
-    // Créé deux instances. Une avec les (nb_rank/2) premiers rangs et une avec les autres.
+    // Creates two instances. One with the first (nb_rank/2) ranks and one with the others.
     Int32 color = 1;
     Int32 expected_total = (middle * (middle + 1)) / 2;
     if (my_rank >= middle) {
@@ -1735,8 +1736,8 @@ _doExecuteSub(IParallelMng* pm)
     }
     Ref<IParallelMng> sub_pm = ParallelMngUtils::createSubParallelMngRef(pm, color, my_rank);
     ARCANE_CHECK_POINTER(sub_pm.get());
-    // Pour vérifier que tout est Ok, on fait une réduction avec comme valeur
-    // notre (rang+1) et on doit trouver la somme de N entiers consécutifs.
+    // To verify that everything is OK, we perform a reduction with the value
+    // (rank+1) and we must find the sum of N consecutive integers.
     Int32 total = sub_pm->reduce(ReduceSum, my_rank + 1);
     Int32 sub_nb_rank = sub_pm->commSize();
     if (sub_nb_rank != middle)
@@ -1755,8 +1756,8 @@ execute()
 {
   m_test_name = platform::getEnvironmentVariable("MESSAGE_PASSING_TEST");
 
-  // Si le nom du test commence par 'sub', cela signifie qu'il faut créer
-  // et utiliser les sous IParallelMng.
+  // If the test name starts with 'sub', it means that sub IParallelMngs
+  // must be created and used.
   bool do_sub = false;
   if (m_test_name.startsWith("sub_")){
     do_sub = true;
@@ -1784,8 +1785,9 @@ ARCANE_REGISTER_APPLICATION_FACTORY(ParallelMngTestService,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test exécution des coeurs non alloués pour les sous-domaines.
+ * \brief Test execution of unallocated cores for sub-domains.
  */
 class ParallelTestIdleService
 : public AbstractService
@@ -1800,13 +1802,13 @@ class ParallelTestIdleService
 
  public:
 
-  //! Exécute l'opération du service
+  //! Executes the service operation
   void execute() override
   {
     info() << "TEST ParallelTestIdleService";
   }
 
-  //! Vrai si le service est actif
+  //! True if the service is active
   bool isActive() const override { return true; }
 
   void setParallelMng(IParallelMng* pm) override

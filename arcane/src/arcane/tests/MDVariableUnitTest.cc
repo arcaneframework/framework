@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MDVariableUnitTest.cc                                       (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des variables multi-dimension.                            */
+/* Multi-dimensional variable test service.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,8 +36,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des variables
+ * \brief Variable test module
  */
 class MDVariableUnitTest
 : public ArcaneMDVariableUnitTestObject
@@ -114,7 +115,7 @@ _testCustomVariable()
   info() << "TEST CUSTOM VARIABLE";
 
   {
-    // Teste variable 2D
+    // Test 2D variable
     m_scalar_var2d.reshape({ 3, 4 });
     info() << "MyCustomVar=" << m_scalar_var2d.name();
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -124,7 +125,7 @@ _testCustomVariable()
         ARCANE_FATAL("Bad value (2)");
     }
 
-    // Teste vue 3D d'une variable avec shape 2D
+    // Test 3D view of a variable with 2D shape
     ENUMERATE_ (Cell, icell, allCells()) {
       Real x = m_scalar_var2d_as_3d(icell, 1, 2, 0);
       if (x != 3.0)
@@ -132,7 +133,7 @@ _testCustomVariable()
     }
   }
   {
-    // Teste variable 1D
+    // Test 1D variable
     const Int32 size2 = 12;
     m_scalar_var1d.reshape({ size2 });
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -149,7 +150,7 @@ _testCustomVariable()
     }
   }
   {
-    // Teste variable 0D
+    // Test 0D variable
     m_scalar_var1d.reshape({});
     ENUMERATE_ (Cell, icell, allCells()) {
       m_scalar_var0d(icell) = static_cast<Real>(icell.itemLocalId() + 1);
@@ -171,7 +172,7 @@ _testVectorMDVariable()
 {
   info() << "TEST VECTOR VARIABLE";
 
-  // Variable 0D
+  // 0D Variable
   {
     m_vector_var0d.reshape({});
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -197,7 +198,7 @@ _testVectorMDVariable()
     }
   }
 
-  // Variable 1D
+  // 1D Variable
   {
     const Int32 size2 = 12;
     m_vector_var1d.reshape({ size2 });
@@ -228,7 +229,7 @@ _testMatrixMDVariable()
 {
   info() << "TEST MATRIX VARIABLE";
 
-  // Variable 0D
+  // 0D Variable
   {
     m_matrix_var0d.reshape({});
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -261,7 +262,7 @@ _testMatrixMDVariable()
     }
   }
 
-  // Variable 1D
+  // 1D Variable
   {
     const Int32 size2 = 7;
     m_matrix_var1d.reshape({ size2 });
@@ -319,24 +320,24 @@ void MDVariableUnitTest::
 samples1()
 {
   //![SampleMDVariableScalar]
-  // Déclare une variable 2D aux mailles de type Real
+  // Declares a 2D variable on Real cells
   //
-  // La déclaration équivalente dans le fichier AXL est:
+  // The equivalent declaration in the AXL file is:
   // <variable field-name="cell_var_2d" name="Var1"
   //           data-type="real" item-kind="cell" shape-dim="2"
   // />
   Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
   Arcane::MeshMDVariableRefT<Cell, Real, MDDim2> cell_var_2d(vbi);
 
-  // Positionne les deux dimensions à 3x4.
-  // Chaque maille aura 3x4 = 12 valeurs
+  // Positions the two dimensions to 3x4.
+  // Each cell will have 3x4 = 12 values
   cell_var_2d.reshape({ 3, 4 });
 
   ENUMERATE_ (Cell, icell, allCells()) {
-    // Positionne la valeur pour l'indice (2,1)
+    // Positions the value for index (2,1)
     cell_var_2d(icell, 2, 1) = 2.3;
 
-    // Affiche la valeur pour l'indice (2,1)
+    // Displays the value for index (2,1)
     info() << cell_var_2d(icell, 2, 1);
   }
   //![SampleMDVariableScalar]
@@ -349,9 +350,9 @@ void MDVariableUnitTest::
 samples2()
 {
   //![SampleMDVariableVector]
-  // Déclare une variable 2D aux mailles d'un vecteur de 7 Real
+  // Declares a 2D variable on cells of a vector of 7 Reals
   //
-  // La déclaration équivalente dans le fichier AXL est:
+  // The equivalent declaration in the AXL file is:
   // <variable field-name="cell_var_2d" name="Var1"
   //           data-type="real" item-kind="cell" shape-dim="2"
   //           extent0="7"
@@ -359,17 +360,17 @@ samples2()
   Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
   Arcane::MeshVectorMDVariableRefT<Cell, Real, 7, MDDim2> cell_var_2d(vbi);
 
-  // Positionne les deux dimensions à 2x3.
-  // Chaque maille aura 2x3 = 6 valeurs de 7 réels
+  // Positions the two dimensions to 2x3.
+  // Each cell will have 2x3 = 6 values of 7 reals
   cell_var_2d.reshape({ 3, 4 });
 
   ENUMERATE_ (Cell, icell, allCells()) {
     Arcane::NumVector<Real, 7> v({ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 });
 
-    // Positionne la valeur pour l'indice (2,1)
+    // Positions the value for index (2,1)
     cell_var_2d(icell, 2, 1) = v;
 
-    // Affiche la valeur du 6-ème élément du vecteur pour l'indice (2,1)
+    // Displays the value of the 6th element of the vector for index (2,1)
     info() << cell_var_2d(icell, 2, 1)(5);
   }
   //![SampleMDVariableVector]
@@ -382,9 +383,9 @@ void MDVariableUnitTest::
 samples3()
 {
   //![SampleMDVariableMatrix]
-  // Déclare une variable 1D aux mailles d'une matrix 2x5 de Real
+  // Declares a 1D variable on cells of a 2x5 Real matrix
   //
-  // La déclaration équivalente dans le fichier AXL est:
+  // The equivalent declaration in the AXL file is:
   // <variable field-name="cell_var_2d" name="Var1"
   //           data-type="real" item-kind="cell" shape-dim="2"
   //           extent0="2" extent1="5"
@@ -392,18 +393,18 @@ samples3()
   Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
   Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1> cell_var_2d(vbi);
 
-  // Positionne la dimension à 9.
-  // Chaque maille aura 9 valeurs de 2x5 = 10 réels
+  // Positions the dimension to 9.
+  // Each cell will have 9 values of 2x5 = 10 reals
   cell_var_2d.reshape({ 9 });
 
   ENUMERATE_ (Cell, icell, allCells()) {
     Arcane::NumMatrix<Real, 2, 5> v({ 1.1, 2.2, 3.3, 4.4, 5.5 },
                                     { 1.0, 2.0, 3.0, 4.0, 5.0 });
 
-    // Positionne la valeur pour l'indice (2,1)
+    // Positions the value for index (2,1)
     cell_var_2d(icell, 7) = v;
 
-    // Affiche la valeur du (1,4) de la matrice pour l'indice (6)
+    // Displays the value of (1,4) of the matrix for index (6)
     info() << cell_var_2d(icell, 6)(1, 4);
   }
   //![SampleMDVariableMatrix]

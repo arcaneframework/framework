@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CheckpointTesterService.cc                                  (C) 2000-2022 */
 /*                                                                           */
-/* Service de test des protections/reprises.                                 */
+/* Service for testing checkpoints/restorations.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,8 +48,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture de variables au format HDF5.
+ * \brief Reading variables in HDF5 format.
  */
 class CheckpointTesterService
 : public ArcaneCheckpointTesterObject
@@ -61,7 +62,7 @@ class CheckpointTesterService
 
  public:
 
-  //! Cette valeur doit correspondre à la période des sorties du JDD.
+  //! This value must correspond to the output period of the JDD.
   const int CHECKPOINT_PERIOD = 3;
 
  public:
@@ -138,8 +139,7 @@ CheckpointTesterService(const ServiceBuildInfo& sbi)
 , m_variable_with_shape(VariableBuildInfo(sbi.meshHandle(),"TestVariableWithShape"))
 , m_particle_family(nullptr)
 {
-  // Sauve les valeurs des propriétés dans une variable pour vérifier leur
-  // relecture
+  // Save the property values in a variable to verify their reading
   m_observer_pool.addObserver(this,
                               &CheckpointTesterService::_savePropertiesInVariable,
                               subDomain()->variableMng()->writeObservable());
@@ -185,8 +185,8 @@ onTimeLoopStartInit()
   for( Integer i=0; i<5; ++i )
     sizes[i] = i;
 
-  // Créé un maillage 'Mesh2' avec un sequentialParallelMng()
-  // pour vérifier en reprise qu'il est bien recréé comme cela.
+  // Created a 'Mesh2' mesh with a sequentialParallelMng() to verify that it
+  // is correctly recreated upon restart.
   {
     ISubDomain* sd = subDomain();
     IParallelMng* pm = sd->parallelMng();
@@ -199,7 +199,7 @@ onTimeLoopStartInit()
   }
 
   {
-    // Remplit 'm_group_names' avec la liste de tous les groupes existants
+    // Fills 'm_group_names' with the list of all existing groups.
     ItemGroupCollection groups = mesh()->groups();
     Int32 nb_group = groups.count();
     m_group_names.resize(nb_group);
@@ -211,7 +211,7 @@ onTimeLoopStartInit()
     }
   }
 
-  // Positionne la forme de la donnée.
+  // Positions the data shape.
   m_variable_with_shape.resize(24);
   std::array<Int32,3> dims = { 3, 2, 4 };
   ArrayShape shape(dims);
@@ -230,8 +230,7 @@ onTimeLoopContinueInit()
 
   _checkConnectivity();
 
-  // Sauve les valeurs actuelles des propriétés et vérifie qu'elles sont
-  // identiques aux valeurs sauvées.
+  // Saves the current property values and verifies that they are identical to the saved values.
   info() << "OnTimeLoopContinueInit: propertyMng() notify write observers";
   sd->propertyMng()->writeObservable()->notifyAllObservers();
   String properties = _getProperties();
@@ -248,11 +247,10 @@ onTimeLoopContinueInit()
     ARCANE_FATAL("family property 'map' is not handled");
 
   _createParticlesVariables();
-
-  // Vérifie que les valeurs des variables sont correctes
+  // Checks that the variable values are correct
   _compareCheckpoint();
 
-  // Vérifie que les propriétés des variables sont bien conservées après une reprise
+  // Checks that the variable properties are properly preserved after a restart
   {
     int p = m_variable_with_property.property();
     if (p!=full_property)
@@ -265,14 +263,14 @@ onTimeLoopContinueInit()
       ARCANE_FATAL("variable property 'PNoRestore' not handled");
   }
 
-  // Vérifie que le maillage 'Mesh2' est bien créé en reprise
-  // avec le sequentialParallelMng().
+  // Checks that the mesh 'Mesh2' is properly created upon recovery
+  // with the sequentialParallelMng().
   IMesh* mesh2 = sd->findMesh("Mesh2");
   if (mesh2->parallelMng()!=sd->parallelMng()->sequentialParallelMng())
     ARCANE_FATAL("Mesh2 does not use sequentialParallelMng()");
 
 
-  // Vérifie la forme de la donnée.
+  // Checks the data shape.
   ArrayShape shape = m_variable_with_shape.variable()->data()->shape();
   std::array<Int32,3> dims = { 3, 2, 4 };
   ArrayShape ref_shape(dims);
@@ -387,7 +385,7 @@ _writeCheckpoint()
 void CheckpointTesterService::
 _compareCheckpoint()
 {
-  // Vérifie les valeurs
+  // Checks the values
   Integer nb_error = 0;
   IMesh* mesh = this->mesh();
   Integer current_iteration = m_global_iteration();
@@ -471,7 +469,7 @@ _createParticles()
   IParticleFamily* pfamily = m_particle_family->toParticleFamily();
   ParticleVectorView particles = pfamily->addParticles(uids,particles_lid);
   //ItemVectorView particles(m_particle_family->view(particles_lid));
-  // Il faut affecter une maille à chaque particule
+  // It is necessary to assign a mesh to each particle
   {
     Integer index = 0;
     ENUMERATE_CELL(icell,ownCells()){

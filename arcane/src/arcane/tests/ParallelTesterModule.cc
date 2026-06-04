@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelTesterModule.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Module de test du parallèlisme.                                           */
+/* Parallelism test module.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -80,8 +80,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour tester les familles de particule.
+ * \brief Class for testing particle families.
  */
 class ParticleFamilyTester
 : public TraceAccessor
@@ -112,7 +113,7 @@ class ParticleFamilyTester
 
   void computeExtraParticlesToSend() override
   {
-    // NOTE GG: code recopié depuis ParticleUnitTest. a mutualiser.
+    // NOTE GG: code copied from ParticleUnitTest. to be centralized/shared.
     info() << "ComputeExtraParticlesToSend";
     IParallelMng* pm = m_family->parallelMng();
     Int32 comm_rank = pm->commRank();
@@ -155,8 +156,8 @@ class ParticleFamilyTester
  public:
   void addParticles()
   {
-    //TODO: mettre une option du JDD pour le choix de particle_per_cell
-    //TODO: ne pas mettre le même nombre de particules dans chaque maille
+    //TODO: add a JDD option for choosing particle_per_cell
+    //TODO: do not put the same number of particles in every mesh
     Integer particle_per_cell = 12;
     info() << " BuildParticleFamily increment=" << particle_per_cell
            << " nb_particle=" << m_family->nbItem();
@@ -184,7 +185,7 @@ class ParticleFamilyTester
     Int32UniqueArray particles_lid(uids.size());
     IParticleFamily* pf = m_family->toParticleFamily();
     ParticleVectorView particles = pf->addParticles(uids,cells_lid,particles_lid);
-    // Redimensionne la variable pour pouvoir initialiser ses valeurs.
+    // Resize the variable to initialize its values.
     m_family->partialEndUpdateVariable(m_values1.variable());
     ENUMERATE_PARTICLE(ipart,particles){
       Particle particle = *ipart;
@@ -222,7 +223,7 @@ class ParallelTesterSerializeStep
   void serialize(const ItemFamilySerializeArgs&) override {}
   void finalize() override
   {
-    // Normalement il doit y avoir eu 4 appels à notifyAction()
+    // Normally there should have been 4 calls to notifyAction()
     if (m_nb_called!=4)
       ARCANE_FATAL("Bad number of calls for notifyAction() n={0}",m_nb_called);
   }
@@ -235,12 +236,13 @@ class ParallelTesterSerializeStep
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du parallélisme dans Arcane.
+ * \brief Parallelism test module in Arcane.
  *
- * Ce module teste les points suivants:
- * - synchronisations
- * - methodes de IParallelMng
+ * This module tests the following points:
+ * - synchronizations
+ * - IParallelMng methods
  * - accumulate()
  * - getVariableValues()
  */
@@ -493,7 +495,7 @@ _doInit()
   }
 
   {
-    // Créé plusieurs familles de particules avec différentes caractéristiques
+    // Created several particle families with different characteristics
     IItemFamily* pf1 = mesh->createItemFamily(IK_Particle,"Particle1");
     m_particle_family_testers.add(new ParticleFamilyTester(pf1));
 
@@ -519,14 +521,14 @@ void ParallelTesterModule::
 testBuild()
 {
   info() << "TEST BUILD";
-  // Créé un autre maillage pour s'assurer que le partitonneur interne
-  // fonctionne bien avec un 2ème maillage vide.
+  // Created another mesh to ensure that the internal partitioner
+  // works well with a second empty mesh.
   ISubDomain* sd = subDomain();
   IApplication* app = sd->application();
   IPrimaryMesh* new_mesh = app->mainFactory()->createMesh(sd,"Mesh2");
   new_mesh->setDimension(2);
-  // N'alloue pas le maillage pour vérifier que le partitionnement n'a pas lieu
-  // si le maillage n'est pas alloué.
+  // Do not allocate the mesh to verify that partitioning does not occur
+  // if the mesh is not allocated.
   //new_mesh->allocateCells(0,Int64ConstArrayView(),false);
   //new_mesh->endAllocate();
 }
@@ -653,11 +655,11 @@ _testSynchronize()
   info() << "Initialize ArrayCell nb_cell=" << nbCell();
   m_array_cells.initialize();
 
-  // Teste la synchronisation avec une variable vide
+  // Test synchronization with an empty variable
   m_empty_cells_array.synchronize();
   m_empty_cells_array.synchronize();
 
-  // Positionne les valeurs
+  // Position the values
   {
     m_nodes.setValuesWithViews(current_iteration,mesh->ownNodes());
     m_faces.setValuesWithViews(current_iteration,mesh->ownFaces());
@@ -667,7 +669,7 @@ _testSynchronize()
     m_array_cells.setValues(current_iteration,mesh->ownCells());
   }
 
-  // Synchronise les valeurs
+  // Synchronize the values
   for( Integer i=0; i<m_nb_test_synchronize; ++i ){
     m_nodes.synchronize();
     m_faces.synchronize();
@@ -677,7 +679,7 @@ _testSynchronize()
     m_array_cells.synchronize();
   }
 
-  // Vérifie les valeurs
+  // Check the values
   {
     Integer nb_error = 0;
 
@@ -692,24 +694,24 @@ _testSynchronize()
       ARCANE_FATAL("Error in synchronize test: n={0}",nb_error);
   }
 
-  // Meme test en utilisant les vues
+  // Same test using views
   {
     Integer iteration = current_iteration + 2;
-    // Positionne les valeurs
+    // Position the values
     {
       m_nodes.setValues(iteration,mesh->ownNodes());
       m_faces.setValues(iteration,mesh->ownFaces());
       m_cells.setValues(iteration,mesh->ownCells());
     }
 
-    // Synchronise les valeurs
+    // Synchronize the values
     for( Integer i=0; i<m_nb_test_synchronize; ++i ){
       m_nodes.synchronize();
       m_faces.synchronize(); 
       m_cells.synchronize();
     }
 
-    // Vérifie les valeurs
+    // Check the values
     {
       Integer nb_error = 0;
 
@@ -783,7 +785,7 @@ _testPartialSynchronize()
     }
   }
   
-  // Synchronise les items d'UID pair
+  // Synchronize even UID items
   
   m_cells.setEvenValues(current_iteration,mesh->ownCells());
   m_nodes.setEvenValues(current_iteration,mesh->ownNodes());
@@ -798,7 +800,7 @@ _testPartialSynchronize()
     face_vars.each([&](IVariable* v){v->synchronize(even_faces);});
   }
   
-  // Synchronise les items d'UID impair
+  // Synchronize odd UID items
   
   m_cells.setOddValues(current_iteration,mesh->ownCells());
   m_nodes.setOddValues(current_iteration,mesh->ownNodes());
@@ -813,7 +815,7 @@ _testPartialSynchronize()
     face_vars.each([&](IVariable* v){v->synchronize(odd_faces);});
   }
 
-  // Verifie
+  // Verify
   
   {
     Integer nb_error = 0;
@@ -894,7 +896,7 @@ _testPartialMultiSynchronize()
     }
   }
   
-  // Synchronise les items d'UID pair
+  // Synchronize even UID items
   
   m_cells.setEvenValues(current_iteration,mesh->ownCells());
   m_nodes.setEvenValues(current_iteration,mesh->ownNodes());
@@ -909,7 +911,7 @@ _testPartialMultiSynchronize()
     mesh->faceFamily()->synchronize(face_vars, even_faces);
   }
   
-  // Synchronise les items d'UID impair
+  // Synchronize odd UID items
   
   m_cells.setOddValues(current_iteration,mesh->ownCells());
   m_nodes.setOddValues(current_iteration,mesh->ownNodes());
@@ -924,7 +926,7 @@ _testPartialMultiSynchronize()
     mesh->faceFamily()->synchronize(face_vars, odd_faces);
   }
 
-  // Verifie
+  // Verify
   
   {
     Integer nb_error = 0;
@@ -960,7 +962,7 @@ _testSameValuesOnAllReplica()
   info() << "Initialize ArrayCell nb_cell=" << nbCell();
   m_array_cells.initialize();
 
-  // Positionne les valeurs
+  // Position the values
   {
     m_scalars.setValues(current_iteration);
     m_cells.setValues(current_iteration,mesh->allCells());
@@ -974,7 +976,7 @@ _testSameValuesOnAllReplica()
       info() << "VALUE cell=" << cell.uniqueId() << " v=" << m_cells.m_real[icell];
     }
   }
-  // Vérifie les valeurs
+  // Check the values
   {
     Integer nb_error = 0;
 
@@ -991,9 +993,9 @@ _testSameValuesOnAllReplica()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste la comparaison de valeurs entre réplica dans le
- * cas où elles sont différentes.
+ * \brief Tests the comparison of values between replicas when they are different.
  */
 void ParallelTesterModule::
 _testDifferentValuesOnAllReplica()
@@ -1013,22 +1015,22 @@ _testDifferentValuesOnAllReplica()
   Integer seed = current_iteration;
 
   CellGroup all_cells = mesh->allCells();
-  // Positionne les valeurs identiques sur tout le maillage.
+  // Position identical values on the entire mesh.
   {
     m_scalars.setValues(seed+1);
     m_cells.setValues(seed,all_cells);
     m_array_cells.setValues(seed,all_cells);
   }
-  // Créé un sous-groupe et positionne sur ce sous-groupe
-  // des valeurs différentes entre les réplica.
-  // Normalement le nombre d'erreur par variable est
-  // donc égal à la taille de ce groupe.
+  // Create a subgroup and position different values on this subgroup
+  // between replicas.
+  // Normally the number of errors per variable is therefore equal to
+  // the size of this group.
   CellGroup sub_group;
   {
-    // Utilise une variable à laquelle on positionne à 1
-    // les mailles qu'on souhaite ajouter au groupe.
-    // Synchronize cette variable et créé le groupe correspondant
-    // qui est garanti être le même entre tous les sous-domaines
+    // Use a variable where we position 1 on the cells we want to add to
+    // the group.
+    // Synchronize this variable and create the corresponding group which
+    // is guaranteed to be the same across all subdomains
     Integer index = 0;
     Integer next_index = 1;
     Int32UniqueArray local_ids;
@@ -1049,7 +1051,7 @@ _testDifferentValuesOnAllReplica()
     sub_group = mesh->cellFamily()->createGroup("SubGroup",local_ids,true);
     info() << "NB_IN_SUB_GROUP=" << sub_group.size();
   }
-  // Positionne une valeurs différente sur \a sub_group.
+  // Position a different value on the subgroup.
   {
     seed += (1+pr->replicationRank());
     m_scalars.setValues(seed+1);
@@ -1057,13 +1059,13 @@ _testDifferentValuesOnAllReplica()
     m_array_cells.setValues(seed,sub_group);
   }
   Integer nb_expected_error = 0;
-  // Ajoute les erreurs pour les VariableScalar.
-  // On compare tous les types de variable et il y en a 9.
+  // Add errors for VariableScalar.
+  // We compare all variable types and there are 9 of them.
   nb_expected_error += 9;
-  // Ajoute les erreurs pour les VariableArray.
-  // On compare tous les types de variable et il y en a 9 dans m_cells.
+  // Add errors for VariableArray.
+  // We compare all variable types and there are 9 in m_cells.
   nb_expected_error += sub_group.size() * 9;
-  // Ajoutes les erreurs pour les VariableArray2.
+  // Add errors for VariableArray2.
   nb_expected_error += sub_group.size() * (m_array_cells.nbValuePerItem());
 
   {
@@ -1102,7 +1104,7 @@ _testMultiSynchronize()
   m_array_cells.initialize();
 
   Integer wanted_value = current_iteration + 1;
-  // Positionne les valeurs
+  // Position the values
   {
     m_nodes.setValues(wanted_value,mesh->ownNodes());
     m_faces.setValues(wanted_value,mesh->ownFaces());
@@ -1112,7 +1114,7 @@ _testMultiSynchronize()
     m_array_cells.setValues(wanted_value,mesh->ownCells());
   }
 
-  // Synchronise les valeurs
+  // Synchronize the values
   for( Integer i=0; i<m_nb_test_synchronize; ++i ){
     VariableList node_vars;
     m_nodes.addToCollection(node_vars);
@@ -1131,7 +1133,7 @@ _testMultiSynchronize()
   }
 
 
-  // Vérifie les valeurs
+  // Check the values
   {
     Integer nb_error = 0;
 
@@ -1180,7 +1182,7 @@ _testAccumulate()
   ISubDomain* sd = subDomain();
   IParallelMng* pm = sd->parallelMng();
   IMesh* mesh = sd->defaultMesh();
-  eItemKind ik = IK_Cell; // Pour l'instant, test uniquement les mailles
+  eItemKind ik = IK_Cell; // For now, test only cells
 
   //VariableItemInteger& vsid = mesh->itemsSubDomainOwner(ik);
   //VariableArrayInteger& item_unique_id = mesh->itemsUniqueId(ik);
@@ -1189,12 +1191,12 @@ _testAccumulate()
   if (!pm->isParallel())
     return;
 
-  // Au plus, 3 valeurs sont envoyées pour chaque éléments.
+  // At most, 3 values are sent for each element.
   //Integer nb_by_var = sid+1;
   //if (nb_by_var>3)
   //nb_by_var = 3;
 
-  // Calcul le nombre d'éléments fantômes
+  // Calculate the number of ghost elements
   IItemFamily* cell_family = mesh->cellFamily();
   ItemGroup all_items = cell_family->allItems();
   //Integer nb_ghost = all_items.size() - all_items.own().size();
@@ -1224,7 +1226,7 @@ _testAccumulate()
       }
     }
   }
-  // On écrit  uniquement à la première itération
+  // We write only at the first iteration
   bool need_write = m_global_iteration()==1;
   String output_file_name(options()->outputFile());
   if (!output_file_name.empty()){
@@ -1258,10 +1260,10 @@ _testAccumulate()
 void ParallelTesterModule::
 _testLoadBalance()
 {
-  // Test pour l'équilibrage de charge.
-  // Pour avoir un cas déséquilibré, un sous-domaine effectue autant
-  // de fois le calcul que son numéro de sous-domaine.
-  info() << "Teste Equilibrage charge 2\n";
+  // Test for load balancing.
+  // To have an unbalanced case, a subdomain performs the calculation
+  // as many times as its subdomain number.
+  info() << "Testing Load Balancing 2\n";
 
   IMesh* mesh = defaultMesh();
 
@@ -1304,7 +1306,7 @@ _testGetVariableValues()
   if (nb_send_item==0)
     nb_send_item = total_nb_item;
 
-  // Détermine les unique_ids des entités dont on veux les valeurs
+  // Determines the unique_ids of the entities whose values we want
   UniqueArray<Int64> items_wanted_id(nb_send_item);
   for( Integer i=0; i<nb_send_item; ++i )
     items_wanted_id[i] = (i+current_iteration+(sid*nb_send_item+1)) % total_nb_item;
@@ -1334,7 +1336,7 @@ _testGetVariableValues()
     op->getVariableValues(var_values,items_wanted_id,output_values);
   }
 
-  // Maintenant, vérifie que la sortie est correcte
+  // Now, check that the output is correct
   {
     Integer nb_error = 0;
     for( Integer i=0; i<nb_send_item; ++i ){
@@ -1384,7 +1386,7 @@ _testTransferValues()
     send_real[i] = (Real)(my_rank + 2*r);
   }
 
-  // Calcule combien je dois recevoir de valeurs
+  // Calculate how many values I must receive
   Integer nb_expected_recv = 0;
   UniqueArray<Int32> all_send_ranks;
   pm->allGatherVariable(send_ranks,all_send_ranks);
@@ -1441,7 +1443,7 @@ _testGhostItemsReduceOperation()
     for( Integer k=0; k<n; ++k )
       m_cells_nb_shared_array[icell][k] = v + (Real)(k+1);
   }
-  info() << "Test GhostItemsReduceOperation";
+  info() << "Testing GhostItemsReduceOperation";
   IItemFamily* family = mesh()->itemFamily(IK_Cell);
   family->reduceFromGhostItems(m_cells_nb_shared.variable(),Parallel::ReduceSum);
   family->reduceFromGhostItems(m_cells_nb_shared_array.variable(),Parallel::ReduceSum);
@@ -1636,9 +1638,9 @@ void ParallelTesterModule::
 _testPartialVariables()
 {
   Integer nb_error = 0;
-  // Verifie que la variable partielle \a m_partial_cell_variable
-  // a la même valeur que lors de _doInit().
-  // Ce test est pertinent après un repartionnement de maillage par exemple.
+  // Checks that the partial variable \a m_partial_cell_variable
+  // has the same value as during _doInit().
+  // This test is relevant after a mesh repartitioning, for example.
   ENUMERATE_CELL(icell,m_partial_cell_group){
     Cell cell = *icell;
     Real wanted_value = (Real)cell.uniqueId().asInt64() + 2.0;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DoFNodeTestService.cc                                       (C) 2000-2022 */
 /*                                                                           */
-/* Service de test de création de DoF à partir de Node.                      */
+/* Test service for creating DoFs from Nodes.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des variables
+ * \brief Variable test module
  */
 class DoFNodeTestService
 : public BasicUnitTest
@@ -120,7 +121,7 @@ _buildDoFs()
   dof_family->endUpdate();
   info() << "NB_DOF=" << dof_family->allItems().size();
 
-  // Création d'une connectivité Node->DoF
+  // Creation of Node->DoF connectivity
   m_node_dof_connectivity = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(mesh()->nodeFamily(), dof_item_family, "DoFNode");
   auto* cn = m_node_dof_connectivity->connectivity();
   {
@@ -135,7 +136,7 @@ _buildDoFs()
   }
   info() << "End build Dofs";
 
-  // Remplit les 3 DoF par les coordonnées des noeuds
+  // Fill the 3 DoFs with node coordinates
   info() << "Fill DoFs";
   VariableDoFReal dof_var(VariableBuildInfo(dof_item_family, "DofValues"));
   VariableNodeReal3& node_coords(mesh()->nodesCoordinates());

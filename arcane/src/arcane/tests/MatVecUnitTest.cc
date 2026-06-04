@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatVecUnitTest.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des matrices/vecteurs.                                    */
+/* Matrix/vector test service.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,8 +39,9 @@ using namespace MatVec;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Module for mesh testing
  */
 class MatVecUnitTest
 : public ArcaneMatVecUnitTestObject
@@ -272,7 +273,7 @@ _initMatrix()
     ENUMERATE_CELL(icell,cells){
       //const Cell& cell = *icell;
       m_cell_matrix_row[icell] = index;
-      m_cell_matrix_column[icell] = index; // Uniquement valable en sequentiel
+      m_cell_matrix_column[icell] = index; // Only valid in sequential mode
       ++index;
     }
   }
@@ -419,8 +420,8 @@ _testMatrix2()
   rows[5] = 2;
   m.setRowsSize(rows);
    
-  // Normalement cette matrice converge tres difficilement
-  // voire ne converge pas.
+  // Normally this matrix converges very difficultly
+  // or does not converge.
   m.setValue(0,0, 1.31814608610996E-12);
   m.setValue(0,1,-1.31814608610859E-12);
 
@@ -574,12 +575,13 @@ _testArcaneMatrix2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Génère une matrice et le vector solution pour une
- * équation de poisson 3D sur un cube unité.
+ * \brief Generates a matrix and the solution vector for a
+ * 3D Poisson equation on a unit cube.
  *
- * \a cube_size est le nombre d'inconnues par côté. La taille de la matrice
- * est donc `cube_size ^ 3`.
+ * \a cube_size is the number of unknowns per side. The matrix size
+ * is therefore `cube_size ^ 3`.
  */
 void MatVecUnitTest::
 _buildPoissonMatrixAndRHS(Matrix& matrix, Vector& rhs_vector, Int32 cube_size)

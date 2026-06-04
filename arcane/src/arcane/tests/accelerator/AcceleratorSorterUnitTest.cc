@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorSorterUnitTest.cc                                (C) 2000-2024 */
 /*                                                                           */
-/* Service de test des algorithmes accélérateurs de tri.                     */
+/* Test service for sorting accelerator algorithms.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,8 +40,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AcceleratorSorterUnitTest
 : public BasicService

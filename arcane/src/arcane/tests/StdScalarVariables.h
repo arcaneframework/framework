@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdMeshVariables.h                                          (C) 2000-2016 */
 /*                                                                           */
-/* Définition de variables scalaires pour des tests.                         */
+/* Definition of scalar variables for tests.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_STDSCALARVARIABLES_H
 #define ARCANE_TEST_STDSCALARVARIABLES_H
@@ -71,5 +71,4 @@ ARCANETEST_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

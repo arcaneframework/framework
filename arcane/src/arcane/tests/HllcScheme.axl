@@ -1,5 +1,5 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
-<!-- Description du module 'HllcScheme' -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!-- Description of the 'HllcScheme' module -->
 <module name="HllcScheme" version="1.0" namespace-name="ArcaneTest::HllcScheme">
   <variables>
     <!-- DENSITY -->
@@ -162,7 +162,7 @@
       type = "real"
       default = "0.5" >
       <description>
-        Nombre de Courant-Friedrichs-Lewy pour le pas de temps.
+        Courant-Friedrichs-Lewy number for the time step.
       </description>
     </simple>
 
@@ -172,7 +172,7 @@
       type = "real"
       default = "1.0" >
       <description>
-        Temps final de la simulation.
+        Final simulation time.
       </description>
     </simple>
 
@@ -182,7 +182,7 @@
       type = "real"
       default = "1.4" >
       <description>
-        Coefficient adiabatique (ratio des chaleurs spécifiques).
+        Adiabatic coefficient (ratio of specific heats).
       </description>
     </simple>
 
@@ -192,7 +192,7 @@
       type = "real"
       default = "1.0e-4" >
       <description>
-        Pas de temps initial.
+        Initial time step.
       </description>
     </simple>
 
@@ -202,7 +202,7 @@
       type = "ArcaneTest::HllcScheme::TypesHllcScheme::eLimiter"
       default = "VanLeer" >
       <description>
-        Limiteur pour la reconstruction MUSCL.
+        Limiter for MUSCL reconstruction.
       </description>
       <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::MinMod" name="MinMod" />
       <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::VanLeer" name="VanLeer" />
@@ -216,7 +216,7 @@
       type = "int32"
       default = "2" >
       <description>
-        Ordre spatial (1 = premier ordre, 2 = MUSCL second ordre).
+        Spatial order (1 = first order, 2 = MUSCL second order).
       </description>
     </simple>
 

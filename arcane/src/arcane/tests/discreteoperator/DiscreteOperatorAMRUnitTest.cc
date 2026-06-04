@@ -44,21 +44,21 @@ class DiscreteOperatorAMRUnitTest
   : public ArcaneDiscreteOperatorAMRUnitTestObject
 {
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   DiscreteOperatorAMRUnitTest(const ServiceBuildInfo& cb)
     : ArcaneDiscreteOperatorAMRUnitTestObject(cb)
   {
     ;
   }
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~DiscreteOperatorAMRUnitTest() {}
   
 public:
   virtual void initializeTest();
   virtual void executeTest();
 
-  /** Retourne le numéro de version du module */
+  /** Returns the module version number */
   virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1,0,0); }
 
 private:
@@ -340,7 +340,7 @@ DiscreteOperatorAMRUnitTest::
 _refine(Integer nb_to_refine)
 {
 //! AMR
-  // Recherche les nb_to_refine premières mailles de type IT_Hexaedron8
+  // Search for the first nb_to_refine cells of type IT_Hexaedron8
   ENUMERATE_CELL(icell, subDomain()->mesh()->ownActiveCells())
     {
       Cell cell = *icell;
@@ -365,4 +365,3 @@ ARCANE_REGISTER_SERVICE_DISCRETEOPERATORAMRUNITTEST(DiscreteOperatorAMRUnitTest,
 
 
 ARCANETEST_END_NAMESPACE
-

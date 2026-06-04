@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeHistoryTestModule.cc                                    (C) 2000-2018 */
 /*                                                                           */
-/* Module de test de 'ITimeHistoryMng'.                                      */
+/* Test module for 'ITimeHistoryMng'.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,8 +29,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test de sous-maillage dans Arcane.
+ * \brief Sub-domain test module in Arcane.
  */
 class TimeHistoryTestModule
 : public ArcaneTimeHistoryTestObject
@@ -78,11 +79,11 @@ class TimeHistoryTestModule
         info() << "TRANSFORM2: name=" << infos.name;
         CurveValues& cv = x->second;
         info() << "NB_POINT x=" << cv.x.size() << " y=" << cv.y.size();
-        // Multiplie les Y par deux.
+        // Multiplies Y by two.
         ArrayView<Real> y = cv.y;
         for( Integer k=0, kn=y.size(); k<kn; ++k )
           y[k] = y[k] * 2.0;
-        // Modifie en retour les valeurs
+        // Modifies the values in return
         values = y;
         infos.iterations = cv.x;
       }
@@ -115,8 +116,8 @@ class TimeHistoryTestModule
         String new_name = String("New") + infos.name();
         info() << "ADD_NEW_CURVE: " << new_name;
         m_thm->addValue(new_name,1.0);
-        // Sauve les valeurs de la courbe d'origine pour pouvoir les
-        // modifier lors de la transformation.
+        // Saves the values of the original curve in order to
+        // modify them during the transformation.
         m_module->m_curves.insert(std::make_pair(new_name,CurveValues(infos.iterations(),infos.values())));
       }
     }
@@ -192,7 +193,7 @@ computeLoop()
   x = math::sqrt(x);
 
   m_global_deltat = m_global_deltat() + 0.01;
-  // Ajoute des valeurs Ã  chaque itÃ©ration
+  // Adds values at each iteration
   ITimeHistoryMng* thm = subDomain()->timeHistoryMng();
   thm->addValue("Curve1",x);
   thm->addValue("Curve2",math::log(x));
@@ -201,10 +202,9 @@ computeLoop()
       thm->addValue(String("Curve")+i,((Real)x+(Real)i)*2.3);
   }
 
-  // En fin de calcul, rÃ©cupÃ¨re les courbes et applique une transformation
-  // pour les 10 premiÃ¨res courbes. La transformation consiste Ã  crÃ©er une
-  // nouvelle courbe dont les valeurs sont deux fois celle de la courbe
-  // d'origine.
+  // At the end of the calculation, retrieves the curves and applies a transformation
+  // for the first 10 curves. The transformation consists of creating a
+  // new curve whose values are twice those of the original curve.
   if (do_stop){
     Visitor v(this);
     thm->dumpCurves(&v);

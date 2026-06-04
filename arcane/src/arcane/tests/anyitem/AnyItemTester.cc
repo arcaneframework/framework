@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemTester.cc                                            (C) 2000-2013 */
 /*                                                                           */
-/* Service du test avancé de l'outil AnyItem                 .               */
+/* Advanced tool AnyItem test service                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Service de test de AnyItem
+ * \brief AnyItem test service
  */
 class AnyItemTester
   : public ArcaneAnyItemTesterObject
@@ -101,19 +101,19 @@ _test1()
 {
   info() << "************************************** test 1 :";
  
-  // Création d'une famille aggrégeant des groupes de maille et de face
+  // Creation of a family aggregating groups of cells and faces
   AnyItem::Family family;
   family << AnyItem::GroupBuilder( allFaces() ) 
          << AnyItem::GroupBuilder( allCells() );
   
-  // Création d'une variable aggrégeant des variables de maille et de face
+  // Creation of a variable aggregating cell and face variables
   AnyItem::Variable<Real> variable(family);
   variable[allFaces()] << m_face_variable;
   variable[allCells()] << m_cell_variable;
   
   Real value = 0;
   {
-    // Enumération de la variable aggrégée via le groupe aggrégé
+    // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
     ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
       value += variable[iitem];
@@ -122,14 +122,14 @@ _test1()
   info() << "Aggregate iteration : Value = " << value 
          << ", Time = " << m_timer.lastActivationTime();
   
-  // Création d'une variable aggrégeant des variables de maille et de face
+  // Creation of a variable array aggregating cell and face variables
   AnyItem::VariableArray<Real> variable_array(family);
   variable_array[allFaces()] << m_face_variable_array;
   variable_array[allCells()] << m_cell_variable_array;
 
   value = 0;
   {
-    // Enumération de la variable aggrégée via le groupe aggrégé
+    // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
     ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
       for(Arcane::Integer i = 0; i < 3; ++i)
@@ -149,7 +149,7 @@ _test1()
 
   value = 0;
   {
-    // Enumération de la variable aggrégée via le groupe aggrégé
+    // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
     ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
       value += array[iitem];
@@ -169,7 +169,7 @@ _test1()
 
   value = 0;
   {
-    // Enumération de la variable aggrégée via le groupe aggrégé
+    // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
     ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
       for(Arcane::Integer i = 0; i < 3; ++i)
@@ -180,7 +180,7 @@ _test1()
   info() << "Aggregate iteration trought array2 : Value = " << value
          << ", Time = " << m_timer.lastActivationTime();
 
-  // La suite sert simplement pour l'étude de performance
+  // The following section is simply for performance study
   
   value = 0;
   {
@@ -219,7 +219,7 @@ _test2()
 
   Arcane::FaceGroup faces = allCells().innerFaceGroup();
   
-  // Création d'une famille aggrégeant le groupe de maille xmin_cells et de face xmin_faces
+  // Creation of a family aggregating the cell group xmin_cells and face group xmin_faces
   AnyItem::Family family;
   family << AnyItem::GroupBuilder( allFaces() ) 
          << AnyItem::GroupBuilder( allCells() );

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorReduceUnitTest.cc                                (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des réductions sur accélérateur.                          */
+/* Accelerator reduction test service.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,8 +40,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AcceleratorReduceUnitTest
 : public ArcaneAcceleratorReduceUnitTestObject
@@ -216,14 +217,14 @@ _executeTestDataType(Int32 nb_iteration)
 
   _executeTestReduceV2(nb_iteration, t1, sum, min_value, max_value);
 
-  // Les tests suivants avec les réductions historiques ne sont pas supportés en SYCL
+  // The following tests with historical reductions are not supported in SYCL
   if (m_queue.executionPolicy() != eExecutionPolicy::SYCL) {
     info() << "Check reduction V1 (sync)";
     _executeTestReduceSum(nb_iteration, t1, sum);
     _executeTestReduceMin(nb_iteration, t1, min_value);
     _executeTestReduceMax(nb_iteration, t1, max_value);
 
-    // Test aussi en mode asynchrone
+    // Test also in asynchronous mode
     m_queue.setAsync(true);
     info() << "Check reduction V1 (async)";
     _executeTestReduceSum(nb_iteration, t1, sum);
@@ -232,10 +233,10 @@ _executeTestDataType(Int32 nb_iteration)
     m_queue.setAsync(false);
 }
 
-  // Utilisation des kernels spécifiques
+  // Using specific kernels
   _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
 
-  // Utilisation des kernels spécifiques avec index
+  // Using specific kernels with index
   _executeTestReduceWithIndex(nb_iteration, t1, sum, min_value, max_value);
 }
 
@@ -248,7 +249,7 @@ _executeTestReduceDirect(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t
                          DataType expected_min,
                          DataType expected_max)
 {
-  // Utilisation des kernels spécifiques
+  // Using specific kernels
   for (int z = 0; z < nb_iteration; ++z) {
     ax::GenericReducer<DataType> reducer(m_queue);
     reducer.applySum(t1, A_FUNCINFO);

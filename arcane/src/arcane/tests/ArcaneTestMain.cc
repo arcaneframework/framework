@@ -12,10 +12,10 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/launcher/ArcaneLauncher.h"
 
-// Avec MPC, il faut inclure ce fichier car MPC redéfini la fonction
-// 'main' pour pouvoir l'exécuter avec plusieurs threads.
-// Globalement, le programme se comporte alors comme si on exécutait
-// la fonction 'main' une fois pour chaque thread.
+// With MPC, this file must be included because MPC redefines the function
+// 'main' to allow it to be executed with multiple threads.
+// Globally, the program then behaves as if the 'main' function were executed
+// once for each thread.
 #ifdef ARCANE_USE_MPC
 #include <mpi.h>
 #endif
@@ -34,7 +34,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Fonction d'initialisation de ApplicationInfo.
+// ApplicationInfo initialization function.
 extern "C" ARCANE_IMPORT void
 arcaneTestSetApplicationInfo();
 
@@ -63,7 +63,7 @@ arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_arg
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe utilisée pour tester l'appel à ArcaneLauncher::setDefaultMainFactory()
+//! Class used to test the call to ArcaneLauncher::setDefaultMainFactory()
 class TestMainFactory
 : public MainFactory
 {

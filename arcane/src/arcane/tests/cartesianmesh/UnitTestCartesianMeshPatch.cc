@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnitTestCartesianMeshPatch.cc                               (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des vues cartésiennes sur les patchs.                     */
+/* Test service for Cartesian mesh views on patches.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,7 +44,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Classe de tests unitaires pour les vues cartésiennes sur les patchs
+ * Unit test class for Cartesian mesh views on patches
  */
 /*---------------------------------------------------------------------------*/
 
@@ -58,65 +58,65 @@ class UnitTestCartesianMeshPatchService
   const Arcane::String getImplName() const { return serviceInfo()->localName(); }
 
   /*
-   * Operations a faire avant l'ensemble des tests du service
+   * Operations to perform before all service tests
    */
 
   void setUpForClass();
 
   /*
-   * Operations a faire apres l'ensemble des tests du service
+   * Operations to perform after all service tests
    */
 
   void tearDownForClass();
 
   /*
-   * Operations a faire avant chaque test du service
+   * Operations to perform before each service test
    */
 
   void setUp();
 
   /*
-   * Operations a faire apres chaque test du service
+   * Operations to perform after each service test
    */
 
   void tearDown();
 
   /*
-   * Test sur les mailles par niveau de raffinement et leurs parents
+   * Test on meshes by refinement level and their parents
    */
   void testCartesianMeshPatchCellsAndParents();
 
   /*
-   * Test vue cartésienne sur les mailles
+   * Cartesian mesh view test on cells
    */
   void testCartesianMeshPatchCellDirectionMng();
 
   /*
-   * Test vue cartésienne sur les faces
+   * Cartesian mesh view test on faces
    */
   void testCartesianMeshPatchFaceDirectionMng();
 
   /*
-   * Test vue cartésienne sur les noeuds
+   * Cartesian mesh view test on nodes
    */
   void testCartesianMeshPatchNodeDirectionMng();
 
   /*
-   * Test connectivité cartésienne maille -> noeud et noeud -> maille
+   * Test Cartesian connectivity cell -> node and node -> cell
    */
   void testCartesianMeshPatchCartesianConnectivity();
 
  private:
 
-  // Pointeur sur le maillage cartésien contenant les vues
+  // Pointer to the Cartesian mesh containing the views
   Arcane::ICartesianMesh* m_cartesian_mesh = nullptr;
 
-  // Tableaux de mailles et parents par niveau
+  // Arrays of meshes and parents by level
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_uid;
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_p_uid;
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_tp_uid;
 
-  // Tableaux des vues cartésiennes sur les mailles par patch
+  // Arrays of Cartesian views on cells by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_cell_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_celldir_next_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_celldir_prev_uid;
@@ -127,17 +127,17 @@ class UnitTestCartesianMeshPatchService
   std::vector<std::vector<Arcane::Int64>> m_patch_cellnode_lower_right_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_cellnode_lower_left_uid;
 
-  // Tableaux des vues cartésiennes sur les faces par patch
+  // Arrays of Cartesian views on faces by patch
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_facedir_uid{};
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_facedir_next_cell_uid{};
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_facedir_prev_cell_uid{};
 
-  // Tableaux des vues cartésiennes sur les noeuds par patch
+  // Arrays of Cartesian views on nodes by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_node_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_nodedir_next_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_nodedir_prev_uid;
 
-	// Tableaux des connectivités noeuds -> mailles par patch
+	// Arrays of connectivity nodes -> cells by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_upper_right_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_upper_left_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_lower_right_uid;
@@ -147,13 +147,14 @@ class UnitTestCartesianMeshPatchService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction permettant de récupérer la maille en bas à gauche d'un noeud.
+ * \brief Function to retrieve the bottom-left cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en bas à gauche.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en bas à gauche.
- * \param[in] t_lvl : Niveau de raffinement de la maille en bas à gauche recherchée.
- * \return Maille en bas à gauche du noeud.
+ * \param[in] t_node : Node for which the bottom-left cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the bottom-left cell.
+ * \param[in] t_lvl : Refinement level of the sought bottom-left cell.
+ * \return Bottom-left cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell lowerLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
@@ -173,12 +174,12 @@ inline Cell lowerLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille en bas à droite d'un noeud.
+ * \brief Function to retrieve the bottom-right cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en bas à droite.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en bas à droite.
- * \param[in] t_lvl : Niveau de raffinement de la maille en bas à droite recherchée.
- * \return Maille en bas à droite du noeud.
+ * \param[in] t_node : Node for which the bottom-right cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the bottom-right cell.
+ * \param[in] t_lvl : Refinement level of the sought bottom-right cell.
+ * \return Bottom-right cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell lowerRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
@@ -198,12 +199,12 @@ inline Cell lowerRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, cons
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille en haut à gauche d'un noeud.
+ * \brief Function to retrieve the top-left cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en haut à gauche.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en haut à gauche.
- * \param[in] t_lvl : Niveau de raffinement de la maille en haut à gauche recherchée.
- * \return Maille en haut à gauche du noeud.
+ * \param[in] t_node : Node for which the top-left cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the top-left cell.
+ * \param[in] t_lvl : Refinement level of the sought top-left cell.
+ * \return Top-left cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell upperLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
@@ -223,12 +224,12 @@ inline Cell upperLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille en haut à droite d'un noeud.
+ * \brief Function to retrieve the top-right cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en haut à droite.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en haut à droite.
- * \param[in] t_lvl : Niveau de raffinement de la maille en haut à droite recherchée.
- * \return Maille en haut à droite du noeud.
+ * \param[in] t_node : Node for which the top-right cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the top-right cell.
+ * \param[in] t_lvl : Refinement level of the sought top-right cell.
+ * \return Top-right cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell upperRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
@@ -248,11 +249,11 @@ inline Cell upperRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, cons
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille devant une face.
+ * \brief Function to retrieve the cell in front of a face.
  *
- * \param[in] t_dir_face : Info sur les mailles avant et après la face.
- * \param[in] t_lvl : Niveau de raffinement de la maille devant la face recherchée.
- * \return Maille devant la face.
+ * \param[in] t_dir_face : Information on the cells before and after the face.
+ * \param[in] t_lvl : Refinement level of the sought cell in front of the face.
+ * \return Cell in front of the face.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell prevCell(const DirFace& t_dir_face, const Int32 t_lvl)
@@ -267,11 +268,11 @@ inline Cell prevCell(const DirFace& t_dir_face, const Int32 t_lvl)
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille derrière une face.
+ * \brief Function to retrieve the cell behind a face.
  *
- * \param[in] t_dir_face : Info sur les mailles avant et après la face.
- * \param[in] t_lvl : Niveau de raffinement de la maille derrière la face recherchée.
- * \return Maille derrière la face.
+ * \param[in] t_dir_face : Information on the cells before and after the face.
+ * \param[in] t_lvl : Refinement level of the sought cell behind the face.
+ * \return Cell behind the face.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell nextCell(const DirFace& t_dir_face, const Int32 t_lvl)
@@ -286,11 +287,11 @@ inline Cell nextCell(const DirFace& t_dir_face, const Int32 t_lvl)
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille précédente.
+ * \brief Function to retrieve the previous cell.
  *
- * \param[in] t_dir_cell : Info sur les mailles précédente et suivante.
- * \param[in] t_lvl : Niveau de raffinement de la maille précédente recherchée.
- * \return Maille précédente.
+ * \param[in] t_dir_cell : Information on the previous and next cells.
+ * \param[in] t_lvl : Refinement level of the sought previous cell.
+ * \return Previous cell.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell prev(const DirCell& t_dir_cell, const Int32 t_lvl)
@@ -305,11 +306,11 @@ inline Cell prev(const DirCell& t_dir_cell, const Int32 t_lvl)
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille suivante.
+ * \brief Function to retrieve the next cell.
  *
- * \param[in] t_dir_cell : Info sur les mailles précédente et suivante.
- * \param[in] t_lvl : Niveau de raffinement de la maille suivante recherchée.
- * \return Maille suivante.
+ * \param[in] t_dir_cell : Information on the previous and next cells.
+ * \param[in] t_lvl : Refinement level of the sought next cell.
+ * \return Next cell.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell next(const DirCell& t_dir_cell, const Int32 t_lvl)
@@ -337,13 +338,13 @@ UnitTestCartesianMeshPatchService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer pour tous les tests
+ * Actions to perform for all tests
  */
 /*---------------------------------------------------------------------------*/
 void UnitTestCartesianMeshPatchService::
 setUpForClass()
 {
-  // Récupération du pointeur sur le maillage cartésien, raffinement par patch et création des vues
+  // Retrieval of the pointer to the Cartesian mesh, refinement by patch and creation of views
   m_cartesian_mesh = ICartesianMesh::getReference(this->mesh());
   m_cartesian_mesh->refinePatch2D(Real2(0.2, 0.2), Real2(0.4, 0.4));
   m_cartesian_mesh->refinePatch2D(Real2(0.6, 0.6), Real2(0.2, 0.4));
@@ -351,7 +352,7 @@ setUpForClass()
   m_cartesian_mesh->refinePatch2D(Real2(0.3, 0.6), Real2(0.05, 0.1));
   m_cartesian_mesh->computeDirections();
 
-  // Sauvegarde chaque patch au format SVG pour les visualer
+  // Save each patch in SVG format for visualization
   {
     Integer nb_patch = m_cartesian_mesh->nbPatch();
     Directory export_dir(subDomain()->exportDirectory());
@@ -364,7 +365,7 @@ setUpForClass()
     }
   }
 
-  // Maillage :
+  // Mesh:
   //
   // Patch 1 : +
   // Patch 2 : o
@@ -415,7 +416,7 @@ setUpForClass()
 
   // clang-format off
 
-  // Tableaux de mailles et parents par niveau :
+  // Arrays of meshes and parents by level:
   {
     // Level 0
 		{
@@ -481,9 +482,9 @@ setUpForClass()
 		}
   }
 
-  // Tableaux des vues cartésiennes sur les mailles par patch
+  // Tables of Cartesian views on the meshes per patch
 	{
-		// Patch 0 :
+		// Patch 0:
 		{
 			//  55<--86->-56<--90->-57<--93->-58<--96->-59<--99->-60<-102->-61<-105->-62<-108->-63<-111->-64<-114->-65
 			//  |         |         |         |         |         |         |         |         |         |         |
@@ -599,7 +600,7 @@ setUpForClass()
 					44,  45,  46,  47,  48,  49,  50,  51,  52,  53});
 		}
 
-		// Patch 1 :
+		// Patch 1:
 		{
 			//  35<-211->106<-217->-36<-229->112<-233->-37<-245->118<-249->-38<-261->124<-265->-39
 			//  |         |         |         |         |         |         |         |         |
@@ -672,7 +673,7 @@ setUpForClass()
 					24,  74, 102, 100,    25,  82, 104, 108,    26,  90, 110, 114,    27,  98, 116, 120});
 		}
 
-		// Patch 2 :
+		// Patch 2:
 		{
 			//  61<-322->149<-328->-62<-340->155<-344->-63
 			//  |         |         |         |         |
@@ -745,7 +746,7 @@ setUpForClass()
           50, 133, 145, 143,    51, 141, 147, 151});
 		}
 
-		// Patch 3 :
+		// Patch 3:
 		{
 			//  58<------377------>170<------383------>-59
 			//  |                   |                   |
@@ -881,7 +882,7 @@ setUpForClass()
          104, 180, 192, 190,   108, 188, 194, 198});
 		}
 
-		// Patch 4 :
+		// Patch 4:
 		{
 			// 158<------492------>215<------498------>156
 			//  |                   |                   |
@@ -942,7 +943,7 @@ setUpForClass()
 		}
 	}
 
-  // Tableaux des vues cartésiennes sur les faces par patch
+  // Tables of Cartesian views on the faces per patch
 	{
 		// Patch 0
 		{
@@ -1331,7 +1332,7 @@ setUpForClass()
 		}
   }
 
-	// Tableaux des vues cartésiennes sur les noeuds par patch
+	// Tables of Cartesian views on nodes by patch
 	{
 		// Patch 0
 		{
@@ -1455,7 +1456,7 @@ setUpForClass()
 					  74,  24,  25, 100,  82,  26, 108,  90,  27, 114,  98,  28, 120}});
 		}
 
-		// Patch 2 :
+		// Patch 2:
 		{
 			//  61-------149--------62-------155--------63
 			//  |         |         |         |         |
@@ -1511,7 +1512,7 @@ setUpForClass()
 				   133,  50,  51, 143, 141,  52, 151}});
 		}
 
-		// Patch 3 :
+		// Patch 3:
 		{
 			//  58-----------------170------------------59
 			//  |                   |                   |
@@ -1595,7 +1596,7 @@ setUpForClass()
 					  -1, 172,  25,  82, 174,  -1, 182,  26, 184, 180, 104, 108, 190, 188, 110, 198}});
 		}
 
-		// Patch 4 :
+		// Patch 4:
 		{
 			// 158-----------------215-----------------156
 			//  |                   |                   |
@@ -1632,7 +1633,7 @@ setUpForClass()
 		}
 	}
 
-	// Tableaux des connectivités noeuds -> mailles par patch
+	// Tables of node-to-cell connectivities per patch
 	{
 		// Patch -1
 		{
@@ -1768,7 +1769,7 @@ setUpForClass()
 					-1,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49});
 		}
 
-		// Patch 1
+		// Patch 1:
 		{
 			//  35-------106--------36-------112--------37-------118--------38-------124--------39
 			//  |         |         |         |         |         |         |         |         |
@@ -1833,7 +1834,7 @@ setUpForClass()
 				  66,  -1,  67,  68,  70,  71,  72,  74,  75,  76,  78,  79,  80});
 		}
 
-		// Patch 2 :
+		// Patch 2:
 		{
 			//  61-------149--------62-------155--------63
 			//  |         |         |         |         |
@@ -1886,7 +1887,7 @@ setUpForClass()
 				  90,  -1,  91,  92,  94,  95,  96});
 		}
 
-		// Patch 3 :
+		// Patch 3:
 		{
 			//  58-----------------170------------------59
 			//  |                   |                   |
@@ -2042,7 +2043,7 @@ setUpForClass()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer avant chaque test
+ * Actions to perform before each test
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2053,7 +2054,7 @@ UnitTestCartesianMeshPatchService::setUp()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer apres chaque test
+ * Actions to perform after each test
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2064,7 +2065,7 @@ UnitTestCartesianMeshPatchService::tearDown()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer apres tous les tests
+ * Actions to perform after all tests
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2075,7 +2076,7 @@ UnitTestCartesianMeshPatchService::tearDownForClass()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test sur les mailles par niveau de raffinement et leurs parents
+ * Test on cells by refinement level and their parents
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2104,7 +2105,7 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test vue cartésienne sur les mailles
+ * Cartesian view test on cells
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2184,7 +2185,7 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test vue cartésienne sur les faces
+ * Cartesian view test on faces
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2233,7 +2234,7 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test vue cartésienne sur les noeuds
+ * Cartesian view test on nodes
  */
 /*---------------------------------------------------------------------------*/
 void
@@ -2272,13 +2273,13 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test connectivité cartésienne maille -> noeud et noeud -> maille
+ * Test Cartesian connectivity cell -> node and node -> cell
  */
 /*---------------------------------------------------------------------------*/
 void
 UnitTestCartesianMeshPatchService::testCartesianMeshPatchCartesianConnectivity()
 {
-  // Ne fait pas pour l'instant car il ne fonctionne pas.
+  // Not done for now because it does not work.
   warning() << A_FUNCINFO << " This test is not activated because it does not (yet) work.";
   return;
 

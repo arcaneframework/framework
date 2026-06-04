@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseFunctionUnitTest.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Tests unitaires de 'ICaseFunction'.                                       */
+/* Unit tests for 'ICaseFunction'.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,8 +30,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de 'ICaseFunction'.
+ * \brief Test service for 'ICaseFunction'.
  */
 class CaseFunctionUnitTest
 : public BasicUnitTest
@@ -101,7 +102,7 @@ _checkValueEpsilon(ICaseFunction* f, Real x, Real expected_y)
 {
   Real y = 0.0;
   f->value(x, y);
-  // TODO: regarder pourquoi il faut cette valeur de epsilon
+  // TODO: look into why this epsilon value is needed
   if (!math::isNearlyEqualWithEpsilon(y, expected_y, 1.0e-13))
     ARCANE_FATAL("Bad value func={0} x={1} y={2} expected={3}",
                  f->name(), x, y, expected_y);
@@ -120,7 +121,7 @@ _testLinearReal()
   if (!func)
     ARCANE_FATAL("CaseFunction '{0}' not found", func_name);
 
-  // Teste les valeurs exactes de la table
+  // Test exact values from the table
   _checkValue(func, -2.0, 2.0);
   _checkValue(func, 0.0, 2.0);
   _checkValue(func, 4.0, 7.0);
@@ -130,7 +131,7 @@ _testLinearReal()
   _checkValue(func, 14.0, -3.0);
   _checkValue(func, 15.0, -3.0);
 
-  // Test valeurs interpolées
+  // Test interpolated values
   _checkValue(func, 2.0, 4.5);
   _checkValue(func, 4.5, 19.0);
   _checkValue(func, 7.0, 37.25);
@@ -150,8 +151,7 @@ _testBigTable()
   CaseFunctionBuildInfo cfbi(traceMng(), "big-table");
   ScopedPtrT<CaseTable> func(new CaseTable(cfbi, CaseTable::CurveLinear));
   Int32 multiplier = 10;
-  // En débug utilise moins de points pour que le test ne dure pas trop
-  // longtemps.
+  // In debug mode, use fewer points so that the test does not take too long.
   if (arcaneIsDebug())
     multiplier = 1.0;
   const Int32 nb = 1500 * multiplier;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleSimpleHydroSimd.cc                                    (C) 2000-2020 */
 /*                                                                           */
-/* Module Hydrodynamique simple avec vectorisation.                          */
+/* Simple Hydrodynamics Module with Vectorization.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,13 +66,14 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié avec vectorisation et parallélisation
- * par les threads. 
+ * \brief Simplified hydrodynamics module with vectorization and thread
+ * parallelism.
  *
- * Ce module implémente une hydrodynamique simple tri-dimensionnel,
- * parallèle, avec une pseudo-viscosité aux mailles en utilisant
- * les classes de vectorisation fournies par Arcane.
+ * This module implements simple three-dimensional, parallel hydrodynamics
+ * with cell-based pseudo-viscosity using the vectorization classes provided
+ * by Arcane.
  */
 class SimpleHydroSimdService
 : public BasicService
@@ -80,9 +81,9 @@ class SimpleHydroSimdService
 {
  public:
 
-  //! Constructeur
+  //! Constructor
   explicit SimpleHydroSimdService(const ServiceBuildInfo& sbi);
-  ~SimpleHydroSimdService(); //!< Destructeur
+  ~SimpleHydroSimdService(); //!< Destructor
 
  public:
   
@@ -119,29 +120,29 @@ class SimpleHydroSimdService
   inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Cell cell);
 
  private:
-  VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
-  VariableCellInt32 m_sub_domain_id; //!< Numéro du sous-domaine associé à la maille
-  VariableCellReal m_density; //!< Densite par maille
-  VariableCellReal m_pressure; //!< Pression par maille
-  VariableCellReal m_cell_mass; //!< Masse par maille
-  VariableCellReal m_internal_energy;  //!< Energie interne des mailles
-  VariableCellReal m_volume; //!< Volume des mailles
-  VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
-  VariableNodeReal3 m_force;  //!< Force aux noeuds
-  VariableNodeReal3 m_velocity; //!< Vitesse aux noeuds
-  VariableNodeReal m_node_mass; //! Masse nodale
-  VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
-  VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
-  VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
-  VariableCellReal m_caracteristic_length; //!< Longueur caractéristique par maille
-  VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
-  VariableNodeReal3 m_node_coord; //!< Coordonnées des noeuds
-  VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
+  VariableCellInt64 m_cell_unique_id; //!< Unique ID associated with the cell
+  VariableCellInt32 m_sub_domain_id; //!< Sub-domain number associated with the cell
+  VariableCellReal m_density; //!< Density per cell
+  VariableCellReal m_pressure; //!< Pressure per cell
+  VariableCellReal m_cell_mass; //!< Mass per cell
+  VariableCellReal m_internal_energy;  //!< Internal energy of the cells
+  VariableCellReal m_volume; //!< Volume of the cells
+  VariableCellReal m_old_volume; //!< Volume of a cell at the previous iteration
+  VariableNodeReal3 m_force;  //!< Force at the nodes
+  VariableNodeReal3 m_velocity; //!< Velocity at the nodes
+  VariableNodeReal m_node_mass; //! Node mass
+  VariableCellReal m_cell_viscosity_force;  //!< Local contribution of viscosity forces
+  VariableCellReal m_viscosity_work;  //!< Work done by viscosity forces per cell
+  VariableCellReal m_adiabatic_cst; //!< Adiabatic constant per cell
+  VariableCellReal m_caracteristic_length; //!< Characteristic length per cell
+  VariableCellReal m_sound_speed; //!< Speed of sound in the cell
+  VariableNodeReal3 m_node_coord; //!< Coordinates of the nodes
+  VariableCellArrayReal3 m_cell_cqs; //!< Corner results for each cell
 
-  VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
-  VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
-  VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
-  VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+  VariableScalarReal m_density_ratio_maximum; //!< Maximum density increase over a time step
+  VariableScalarReal m_delta_t_n; //!< Delta t n between t^{n-1/2} and t^{n+1/2}
+  VariableScalarReal m_delta_t_f; //!< Delta t n+1/2 between t^{n} and t^{n+1}
+  VariableScalarReal m_old_dt_f; //!< Delta t n-1/2 between t^{n-1} and t^{n}
 
   SimpleHydro::SimpleHydroModuleBase* m_module;
 
@@ -219,8 +220,9 @@ hydroExit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialisation du module hydro lors du démarrage du cas.
+ * \brief Initialization of the hydro module when the case starts.
  */
 void SimpleHydroSimdService::
 hydroStartInit()
@@ -231,12 +233,12 @@ hydroStartInit()
     m_cell_unique_id[icell]=icell->uniqueId();
   }
 
-  // Dimensionne les variables tableaux
+  // Resize array variables
   m_cell_cqs.resize(8);
   
   //info() << "SimpleHydro SIMD initialisation vec_size=" << SimdReal::BLOCK_SIZE;
 
-  // Vérifie que les valeurs initiales sont correctes
+  // Check that initial values are correct
   {
     Integer nb_error = 0;
     auto in_pressure = viewIn(m_pressure);
@@ -248,7 +250,7 @@ hydroStartInit()
       Real adiabatic_cst = in_adiabatic_cst[cid];
       Real density = in_density[cid];
       if (math::isZero(pressure) || math::isZero(density) || math::isZero(adiabatic_cst)){
-        info() << "Null valeur for cell=" << ItemPrinter(*icell)
+        info() << "Null value for cell=" << ItemPrinter(*icell)
                << " density=" << density
                << " pressure=" << pressure
                << " adiabatic_cst=" << adiabatic_cst;
@@ -259,18 +261,18 @@ hydroStartInit()
       fatal() << "Some (" << nb_error << ") cells are not initialised";
   }
   
-  // Initialise le delta-t
+  // Initialize delta-t
   Real deltat_init = m_module->getDeltatInit();
   m_delta_t_n = deltat_init;
   m_delta_t_f = deltat_init;
 
-  // Initialise les données géométriques: volume, cqs, longueurs caractéristiques
+  // Initialize geometric data: volume, cqs, characteristic lengths
   computeGeometricValues();
 
   m_node_mass.fill(ARCANE_REAL(0.0));
   m_velocity.fill(Real3::zero());
 
-  // Initialisation de la masses des mailles et des masses nodale
+  // Initialization of cell masses and node masses
   ENUMERATE_CELL(icell,allCells()){
     Cell cell = *icell;
     m_cell_mass[icell] = m_density[icell] * m_volume[icell];
@@ -283,7 +285,7 @@ hydroStartInit()
 
   m_node_mass.synchronize();
 
-  // Initialise l'énergie et la vitesse du son
+  // Initialize energy and sound speed
   auto in_pressure = viewIn(m_pressure);
   auto in_density = viewIn(m_density);
   auto in_adiabatic_cst = viewIn(m_adiabatic_cst);
@@ -304,20 +306,21 @@ hydroStartInit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des forces au temps courant \f$t^{n}\f$
+ * \brief Calculation of forces at the current time \f$t^{n}\f$
  */
 void SimpleHydroSimdService::
 computeForces()
 {
-  // Remise à zéro du vecteur des forces.
+  // Resetting the force vector.
   m_force.fill(Real3::null());
 
   VariableNodeReal3OutView out_force = viewOut(m_force);
   VariableNodeReal3InView in_force = viewIn(m_force);
 
-  // Calcul pour chaque noeud de chaque maille la contribution
-  // des forces de pression et de la pseudo-viscosite si necessaire
+  // Calculation for each node of each cell the contribution
+  // of pressure forces and pseudo-viscosity if necessary
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
     _computePressureAndCellPseudoViscosityForces();
   }
@@ -335,8 +338,9 @@ computeForces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Pseudo viscosité scalaire aux mailles
+ * \brief Scalar pseudo-viscosity at the cells
  */
 void SimpleHydroSimdService::
 _computePressureAndCellPseudoViscosityForces()
@@ -348,7 +352,7 @@ _computePressureAndCellPseudoViscosityForces()
   auto in_density = viewIn(m_density);
   auto out_cell_viscosity_force = viewOut(m_cell_viscosity_force);
 
-  // Boucle sur les mailles du maillage
+  // Loop over the cells of the mesh
   ENUMERATE_CELL(icell,allCells().view()){
     Cell cell = *icell;
     CellLocalId cid(cell);
@@ -356,13 +360,13 @@ _computePressureAndCellPseudoViscosityForces()
     const Real rho = in_density[cell];
     const Real pressure = in_pressure[icell];
 
-    // Calcul de la divergence de la vitesse
+    // Calculation of the velocity divergence
     Real delta_speed = 0.;
     for( NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node )
       delta_speed += math::scaMul(m_velocity[i_node],m_cell_cqs[icell][i_node.index()]);
     delta_speed /= m_volume[icell];
 
-    // Capture uniquement les chocs
+    // Capture only shocks
     bool shock = (math::min(ARCANE_REAL(0.0),delta_speed)<ARCANE_REAL(0.0));
     if (shock){
       Real sound_speed = m_sound_speed[icell];
@@ -384,8 +388,9 @@ _computePressureAndCellPseudoViscosityForces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase2).
+ * \brief Momentum calculation (phase 2).
  */
 void SimpleHydroSimdService::
 computeVelocity()
@@ -396,7 +401,7 @@ computeVelocity()
   auto in_node_mass = viewIn(m_node_mass);
   auto in_force = viewIn(m_force);
   auto out_velocity = viewOut(m_velocity);
-  // Calcule l'impulsion aux noeuds
+  // Calculate momentum at the nodes
   ENUMERATE_SIMD_NODE(i_node,allNodes()){
     SimdNode node = *i_node;
     SimdReal node_mass  = in_node_mass[node];
@@ -408,8 +413,9 @@ computeVelocity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase3).
+ * \brief Momentum calculation (phase 3).
  */
 void SimpleHydroSimdService::
 computeViscosityWork()
@@ -419,7 +425,7 @@ computeViscosityWork()
       auto in_cell_viscosity_force = viewIn(m_cell_viscosity_force);
       auto out_viscosity_work = viewOut(m_viscosity_work);
 
-      // Calcul du travail des forces de viscosité dans une maille
+      // Calculation of the work done by viscosity forces in a cell
       ENUMERATE_CELL(icell,cells){
         Cell cell = *icell; 
         CellLocalId cid(cell);
@@ -436,8 +442,9 @@ computeViscosityWork()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Prise en compte des conditions aux limites.
+ * \brief Accounting for boundary conditions.
  */
 void SimpleHydroSimdService::
 applyBoundaryCondition()
@@ -448,12 +455,12 @@ applyBoundaryCondition()
     Real value = bc->getValue();
     TypesSimpleHydro::eBoundaryCondition type = bc->getType();
 
-    // boucle sur les faces de la surface
+    // loop over the faces of the surface
     ENUMERATE_FACE(j,face_group){
       Face face = *j;
       Integer nb_node = face.nbNode();
 
-      // boucle sur les noeuds de la face
+      // loop over the nodes of the face
       for( Integer k=0; k<nb_node; ++k ){
         Node node = face.node(k);
         switch(type) {
@@ -469,8 +476,9 @@ applyBoundaryCondition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Déplace les noeuds.
+ * \brief Moves the nodes.
  */
 void SimpleHydroSimdService::
 moveNodes()
@@ -484,9 +492,10 @@ moveNodes()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Mise à jour des densités et calcul de l'accroissements max
- *	  de la densité sur l'ensemble du maillage.
+ * \brief Updates densities and calculates the maximum increase
+ *	  of density across the entire mesh.
  */
 void SimpleHydroSimdService::
 updateDensity()
@@ -511,9 +520,10 @@ updateDensity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'équation d'état et calcul l'énergie interne et la
- * pression.
+ * \brief Applies the equation of state and calculates the internal energy and
+ * pressure.
  */
 void SimpleHydroSimdService::
 applyEquationOfState()
@@ -533,7 +543,7 @@ applyEquationOfState()
   auto out_sound_speed = viewOut(m_sound_speed);
   auto out_pressure = viewOut(m_pressure);
 
-  // Calcul de l'énergie interne
+  // Calculation of internal energy
   arcaneParallelForeach(allCells(),[&](CellVectorView cells){
       ENUMERATE_SIMD_CELL(icell,cells){
         SimdCell vi = *icell;
@@ -545,7 +555,7 @@ applyEquationOfState()
         SimdReal internal_energy = in_internal_energy[vi];
         internal_energy = internal_energy * (numer_accrois_nrj/denom_accrois_nrj);
 
-        // Prise en compte du travail des forces de viscosité 
+        // Accounting for the work done by viscosity forces 
         if (add_viscosity_force)
           internal_energy = internal_energy - deltatf*in_viscosity_work[vi] / (in_cell_mass[vi]*denom_accrois_nrj);
 
@@ -563,15 +573,16 @@ applyEquationOfState()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des nouveaux pas de temps.
+ * \brief Calculates the new time steps.
  */
 void SimpleHydroSimdService::
 computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
 
-  // Calcul du pas de temps pour le respect du critère de CFL
+  // Calculation of the time step to respect the CFL criterion
   
   Real minimum_aux = FloatInfo<Real>::maxValue();
   Real new_dt = FloatInfo<Real>::maxValue();
@@ -586,14 +597,14 @@ computeDeltaT()
 
   new_dt = m_module->getCfl()*minimum_aux;
 
-  // Pas de variations trop brutales à la hausse comme à la baisse
+  // No excessively sudden variations up or down
   Real max_dt = (ARCANE_REAL(1.0)+m_module->getVariationSup())*old_dt;
   Real min_dt = (ARCANE_REAL(1.0)-m_module->getVariationInf())*old_dt;
 
   new_dt = math::min(new_dt,max_dt);
   new_dt = math::max(new_dt,min_dt);
 
-  // control de l'accroissement relatif de la densité
+  // Control of the relative increase of density
   Real dgr = m_module->getDensityGlobalRatio();
   if (m_density_ratio_maximum()>dgr)
     new_dt = math::min(old_dt*dgr/m_density_ratio_maximum(),new_dt);
@@ -601,11 +612,11 @@ computeDeltaT()
   IParallelMng* pm = mesh()->parallelMng();
   new_dt = pm->reduce(Parallel::ReduceMin,new_dt);
 
-  // Respect des valeurs min et max imposées par le fichier de données .plt
+  // Respecting the min and max values imposed by the .plt data file
   new_dt = math::min(new_dt,m_module->getDeltatMax());
   new_dt = math::max(new_dt,m_module->getDeltatMin());
 
-  // Le dernier calcul se fait exactement au temps stopTime()
+  // The last calculation is done exactly at stopTime()
   {
     Real stop_time  = m_module->getFinalTime();
     bool not_yet_finish = ( m_global_time() < stop_time);
@@ -617,7 +628,7 @@ computeDeltaT()
     }
   }
 
-  // Mise à jour des variables
+  // Update variables
   m_old_dt_f.assign(old_dt);
   m_delta_t_n.assign(ARCANE_REAL(0.5)*(old_dt+new_dt));
   m_delta_t_f.assign(new_dt);
@@ -626,10 +637,11 @@ computeDeltaT()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des résultantes aux noeuds d'une maille hexaédrique.
+ * \brief Calculates the results at the nodes of a hexahedral mesh.
  *
- * La méthode utilisée est celle du découpage en quatre triangles.
+ * The method used is the four-triangle decomposition.
  */
 inline void SimpleHydroSimdService::
 computeCQsSimd(SimdReal3 node_coord[8],SimdReal3 face_coord[6],SimdReal3 cqs[8])
@@ -644,37 +656,37 @@ computeCQsSimd(SimdReal3 node_coord[8],SimdReal3 face_coord[6],SimdReal3 cqs[8])
   const Real demi = ARCANE_REAL(0.5);
   const Real five = ARCANE_REAL(5.0);
 
-  // Calcul des normales face 1 :
+  // Calculation of face 1 normals:
   const SimdReal3 n1a04 = demi * math::cross(node_coord[0] - c0 , node_coord[3] - c0);
   const SimdReal3 n1a03 = demi * math::cross(node_coord[3] - c0 , node_coord[2] - c0);
   const SimdReal3 n1a02 = demi * math::cross(node_coord[2] - c0 , node_coord[1] - c0);
   const SimdReal3 n1a01 = demi * math::cross(node_coord[1] - c0 , node_coord[0] - c0);
 
-  // Calcul des normales face 2 :
+  // Calculation of face 2 normals:
   const SimdReal3 n2a05 = demi * math::cross(node_coord[0] - c1 , node_coord[4] - c1);
   const SimdReal3 n2a12 = demi * math::cross(node_coord[4] - c1 , node_coord[7] - c1);
   const SimdReal3 n2a08 = demi * math::cross(node_coord[7] - c1 , node_coord[3] - c1);
   const SimdReal3 n2a04 = demi * math::cross(node_coord[3] - c1 , node_coord[0] - c1);
 
-  // Calcul des normales face 3 :
+  // Calculation of face 3 normals:
   const SimdReal3 n3a01 = demi * math::cross(node_coord[0] - c2 , node_coord[1] - c2);
   const SimdReal3 n3a06 = demi * math::cross(node_coord[1] - c2 , node_coord[5] - c2);
   const SimdReal3 n3a09 = demi * math::cross(node_coord[5] - c2 , node_coord[4] - c2);
   const SimdReal3 n3a05 = demi * math::cross(node_coord[4] - c2 , node_coord[0] - c2);
 
-  // Calcul des normales face 4 :
+  // Calculation of face 4 normals:
   const SimdReal3 n4a09 = demi * math::cross(node_coord[4] - c3 , node_coord[5] - c3);
   const SimdReal3 n4a10 = demi * math::cross(node_coord[5] - c3 , node_coord[6] - c3);
   const SimdReal3 n4a11 = demi * math::cross(node_coord[6] - c3 , node_coord[7] - c3);
   const SimdReal3 n4a12 = demi * math::cross(node_coord[7] - c3 , node_coord[4] - c3);
 	
-  // Calcul des normales face 5 :
+  // Calculation of face 5 normals:
   const SimdReal3 n5a02 = demi * math::cross(node_coord[1] - c4 , node_coord[2] - c4);
   const SimdReal3 n5a07 = demi * math::cross(node_coord[2] - c4 , node_coord[6] - c4);
   const SimdReal3 n5a10 = demi * math::cross(node_coord[6] - c4 , node_coord[5] - c4);
   const SimdReal3 n5a06 = demi * math::cross(node_coord[5] - c4 , node_coord[1] - c4);
       
-  // Calcul des normales face 6 :
+  // Calculation of face 6 normals:
   const SimdReal3 n6a03 = demi * math::cross(node_coord[2] - c5 , node_coord[3] - c5);
   const SimdReal3 n6a08 = demi * math::cross(node_coord[3] - c5 , node_coord[7] - c5);
   const SimdReal3 n6a11 = demi * math::cross(node_coord[7] - c5 , node_coord[6] - c5);
@@ -703,18 +715,19 @@ computeCQsSimd(SimdReal3 node_coord[8],SimdReal3 face_coord[6],SimdReal3 cqs[8])
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul du volume des mailles, des longueurs caractéristiques
- * et des résultantes aux sommets.
+ * \brief Calculates the volume of the meshes, characteristic lengths
+ * and results at the vertices.
  */
 void SimpleHydroSimdService::
 computeGeometricValues()
 {
   auto out_caracteristic_length = viewOut(m_caracteristic_length);
   arcaneParallelForeach(allCells(),[&](CellVectorView cells){
-      // Copie locale des coordonnées des sommets d'une maille
+      // Local copy of the cell vertex coordinates
       SimdReal3 coord[8];
-      // Coordonnées des centres des faces
+      // Coordinates of the face centers
       SimdReal3 face_coord[6];
 
       SimdReal3 cqs[8];
@@ -724,14 +737,14 @@ computeGeometricValues()
         for( CellEnumerator iscell(ivecitem.enumerator()); iscell.hasNext(); ++iscell ){
           Cell cell(*iscell);
           Integer si(iscell.index());
-          // Recopie les coordonnées locales (pour le cache)
+          // Recopy the local coordinates (for the cache)
           for( NodeEnumerator i_node(cell.nodes()); i_node.index()<8; ++i_node ){
             coord[i_node.index()].set(si,m_node_coord[i_node]);
             //info() << "COORD lid=" << cell.localId() << " i=" << i << " index=" << i_node.index() << " v=" << coord[i_node.index()][i];
             }
         }
 
-        // Calcul les coordonnées des centres des faces
+        // Calculate the coordinates of the face centers
         face_coord[0] = ARCANE_REAL(0.25) * ( coord[0] + coord[3] + coord[2] + coord[1] );
         face_coord[1] = ARCANE_REAL(0.25) * ( coord[0] + coord[4] + coord[7] + coord[3] );
         face_coord[2] = ARCANE_REAL(0.25) * ( coord[0] + coord[1] + coord[5] + coord[4] );
@@ -739,7 +752,7 @@ computeGeometricValues()
         face_coord[4] = ARCANE_REAL(0.25) * ( coord[1] + coord[2] + coord[6] + coord[5] );
         face_coord[5] = ARCANE_REAL(0.25) * ( coord[2] + coord[3] + coord[7] + coord[6] );
 
-        // Calcule la longueur caractéristique de la maille.
+        // Calculate the characteristic length of the mesh.
         SimdReal3 median1 = face_coord[0]-face_coord[3];
         SimdReal3 median2 = face_coord[2]-face_coord[5];
         SimdReal3 median3 = face_coord[1]-face_coord[4];
@@ -753,10 +766,10 @@ computeGeometricValues()
 
         //for( Integer i=0; i<NV; ++i ){
           //Cell cell(vitem.item(i));
-          // Calcule les résultantes aux sommets
+          // Calculate the results at the vertices
         computeCQsSimd(coord,face_coord,cqs);
         //}
-        // Calcul des résultantes aux sommets :
+        // Calculate the results at the vertices:
         for( CellEnumerator si(ivecitem.enumerator()); si.hasNext(); ++si ){
           Cell cell(*si);
           Integer sidx(si.index());
@@ -772,7 +785,7 @@ computeGeometricValues()
           }
           }*/
 
-        // Calcule le volume de la maille
+        // Calculate the volume of the mesh
         for( CellEnumerator si(ivecitem.enumerator()); si.hasNext(); ++si ){
           Cell cell(*si);
           Integer sidx(si.index());

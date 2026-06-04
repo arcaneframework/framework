@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ErrorEstimate.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Service de solutions analytiques utilisees pour estimer l'erreur AMR.     */
+/* Service of analytical solutions used to estimate AMR error.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ computeSol(RealArray& sol, IMesh* mesh)
       cellCenter += orig_nodes_coords[cell.node(i)];
     cellCenter /= nb_nodes;
 
-    // calcul de l'erreur au centre de la maille
+    // calculation of the error at the cell center
     Real exact_val = 0.0;
     if (m_exact_value) {
       //exact_val = m_exact_value(cellCenter);
@@ -104,7 +104,7 @@ errorNorm(const NormType& norm)
     return m_error_vals[0];
   case L_INF:
     return m_error_vals[1];
-    // \todo à étendre pour d'autres normes/semi-normes
+    // \todo to extend for other norms/semi-norms
   default:
     ARCANE_THROW(NotImplementedException, "Norm Type is not implemented!");
   }
@@ -116,7 +116,7 @@ errorNorm(const NormType& norm)
 Real ErrorEstimate::
 l2Error()
 {
-  // Return la norme L2 de l'erreur.
+  // Return the L2 norm of the error.
   return m_error_vals[0];
 }
 
@@ -127,7 +127,7 @@ Real ErrorEstimate::
 lInfError()
 {
 
-  // Return la norme inf de l'erreur.
+  // Return the infinity norm of the error.
   return m_error_vals[1];
 }
 
@@ -137,13 +137,13 @@ lInfError()
 void ErrorEstimate::
 _computeError(RealArray& error, IMesh* mesh)
 {
-  // Vérification de la solution et ses dérivées
+  // Verification of the solution and its derivatives
   //ARCANE_ASSERT ((!(m_exact_value && m_exact_gradient)), (""));
 
-  // initialisation à Zero de l'erreur avant sommation
+  // initialization of the error to Zero before summation
   m_error_vals = Real3::null();
 
-  // Les tests sont stationnaires
+  // The tests are stationary
   // const Real time = 0.;//
 
   //
@@ -159,7 +159,7 @@ _computeError(RealArray& error, IMesh* mesh)
       cellCenter += orig_nodes_coords[cell.node(i)];
     cellCenter /= nb_nodes;
 
-    // calcul de l'erreur au centre de la maille
+    // calculation of the error at the cell center
     Real3 grad_exact_value(Real3::null());
     if (m_exact_gradient) {
       //exact_val = m_exact_value(cellCenter);
@@ -170,7 +170,7 @@ _computeError(RealArray& error, IMesh* mesh)
     pow(grad_exact_value[2], 2); // x**2 +y**2+z**2
 
     error.add(math::sqrt(val_error));
-    // Assemblage de l'erreur
+    // Assembly of the error
     m_error_vals[0] += val_error;
     Real norm = math::sqrt(val_error);
 
@@ -200,14 +200,14 @@ _computeError(RealArray& error, IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// passage de l'erreur commise par maille au flag de raffinement
-// Cette méthode pourrait être conçue de manières différentes:
-// 1- implémentation actuelle: l'uilisateur fait la transformation lui-même
-// dans ce cas, il modifie l'objet itemInternal en settant le flag de raffinement
-// 2- l'uilisateur fait la transformation lui-même mais stocke et retourne un tableau des flags
-// la classe MeshRefinement, dans ce cas là, implémente un setter à partir du tableau retourné ici
-// 3- pour éviter la copie du tableau des flags, implémenter le converter directement dans meshRefinement
-// et l'utilisateur ne fait que fournir le tableau d'erreur
+// passing the error committed per cell to the refinement flag
+// This method could be designed in different ways:
+// 1- current implementation: the user performs the transformation themselves
+// in this case, they modify the itemInternal object by setting the refinement flag
+// 2- the user performs the transformation themselves but stores and returns an array of flags
+// the MeshRefinement class, in this case, implements a setter from the array returned here
+// 3- to avoid copying the flags array, implement the converter directly in meshRefinement
+// and the user only provides the error array
 void ErrorEstimate::
 errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
                      const Real& coarsen_frac, const Integer& max_level, IMesh* mesh)
@@ -259,7 +259,7 @@ errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
   // 	    << "     refine_cutoff:  " << refine_cutoff  << "\n"
   // 	    << "     coarsen_cutoff: " << coarsen_cutoff << "\n";
 
-  // Tag les mailles pour adaptation
+  // Tag the meshes for adaptation
   i = 0;
   ENUMERATE_CELL (icell, mesh->ownActiveCells()) { // active cells
     Cell cell = *icell;
@@ -268,14 +268,14 @@ errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
 
     const Real cell_error = error_per_cell[i++];
 
-    // Flag pour deraffinement si error <= coarsen_fraction*delta + error_min
+    // Flag for coarsening if error <= coarsen_fraction*delta + error_min
     if (cell_error <= coarsen_cutoff && cell.level() > 0) {
       if (cell.type() == IT_Hexaedron8) {
         cell.mutableItemBase().addFlags(ItemInternal::II_Coarsen);
       }
     }
 
-    // Flag pour raffinement  si error >= refinement_cutoff.
+    // Flag for refinement if error >= refinement_cutoff.
     if (cell_error >= refine_cutoff && cell.level() < max_level)
       if (cell.type() == IT_Hexaedron8) {
         cell.mutableItemBase().addFlags(ItemInternal::II_Refine);

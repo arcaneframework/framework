@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TestUnitTest.cc                                             (C) 2000-2020 */
 /*                                                                           */
-/* Service de test pour les tests unitaires.                                 */
+/* Test service for unit tests.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,8 +20,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du service
+ * \brief Service interface
  */
 class ITestBidonInterface
 {
@@ -53,8 +54,9 @@ namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test des tests unitaires
+ * \brief Unit test tests
  */
 class TestUnitTest
 : public ITestBidonInterface
@@ -67,12 +69,12 @@ class TestUnitTest
 
  public:
 
-  // le boulot normal du service
+  // the service's normal function
   Real compute() override;
 
  public:
 
-  // les méthodes de test
+  // the test methods
   void setUpForClass() override;
   void tearDownForClass() override;
   void setUp() override;
@@ -154,7 +156,7 @@ tearDown()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En utilisant les macros...
+// Using macros...
 void TestUnitTest::
 myTestMethod1()
 {
@@ -164,7 +166,7 @@ myTestMethod1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En utilisant les macros...
+// Using macros...
 void TestUnitTest::
 myTestMethod1Parallel()
 {
@@ -174,7 +176,7 @@ myTestMethod1Parallel()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En n'utilisant pas les macros...
+// Not using macros...
 void TestUnitTest::
 myTestMethod2()
 {
@@ -186,7 +188,7 @@ myTestMethod2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En n'utilisant pas les macros...
+// Not using macros...
 void TestUnitTest::
 myTestMethod2Parallel()
 {

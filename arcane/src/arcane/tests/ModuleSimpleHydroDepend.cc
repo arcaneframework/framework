@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleSimpleHydroDepend.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Module Hydrodynamique simple utilisant les dépendances.                   */
+/* Simple Hydrodynamics Module using dependencies.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,13 +47,14 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié avec dépendances.
+ * \brief Simplified hydrodynamics module with dependencies.
  *
- * Ce module implémente une hydrodynamique simple tri-dimensionnel,
- * parallèle, avec une pseudo-viscosité aux mailles.
+ * This module implements simple three-dimensional hydrodynamics,
+ * parallel, with cell pseudo-viscosity.
  *
- * Ce module utilise les mécanismes de dépendances des variables
+ * This module uses variable dependency mechanisms
  * \ref arcanedoc_core_types_axl_variable_depends.
  */
 class ModuleSimpleHydroDepend
@@ -75,9 +76,9 @@ class ModuleSimpleHydroDepend
 
  public:
 
-  //! Constructeur
+  //! Constructor
   explicit ModuleSimpleHydroDepend(const ModuleBuilder& cb);
-  ~ModuleSimpleHydroDepend(); //!< Destructeur
+  ~ModuleSimpleHydroDepend(); //!< Destructor
 
  public:
   
@@ -134,28 +135,28 @@ class ModuleSimpleHydroDepend
 
  private:
 
-  VariableCellReal m_density; //!< Densite par maille
-  VariableCellReal m_pressure; //!< Pression par maille
-  VariableCellReal m_cell_mass; //!< Masse par maille
-  VariableCellReal m_internal_energy;  //!< Energie interne des mailles
-  VariableCellReal m_volume; //!< Volume des mailles
-  VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
-  VariableNodeReal3 m_force;  //!< Force aux noeuds
-  VariableNodeReal3 m_velocity; //!< Vitesse aux noeuds
-  VariableNodeReal3 m_lagrangian_velocity; //!< Vitesse aux noeuds
-  VariableNodeReal m_node_mass; //! Masse nodale
-  VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
-  VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
-  VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
-  VariableCellReal m_caracteristic_length; //!< Longueur caractéristique par maille
-  VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
-  VariableNodeReal3 m_node_coord; //!< Coordonnées des noeuds
-  VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
+  VariableCellReal m_density; //!< Density per cell
+  VariableCellReal m_pressure; //!< Pressure per cell
+  VariableCellReal m_cell_mass; //!< Mass per cell
+  VariableCellReal m_internal_energy;  //!< Internal energy of cells
+  VariableCellReal m_volume; //!< Volume of cells
+  VariableCellReal m_old_volume; //!< Volume of a cell at the previous iteration
+  VariableNodeReal3 m_force;  //!< Force at nodes
+  VariableNodeReal3 m_velocity; //!< Velocity at nodes
+  VariableNodeReal3 m_lagrangian_velocity; //!< Velocity at nodes
+  VariableNodeReal m_node_mass; //! Node mass
+  VariableCellReal m_cell_viscosity_force;  //!< Local contribution of viscosity forces
+  VariableCellReal m_viscosity_work;  //!< Work done by viscosity forces per cell
+  VariableCellReal m_adiabatic_cst; //!< Adiabatic constant per cell
+  VariableCellReal m_caracteristic_length; //!< Characteristic length per cell
+  VariableCellReal m_sound_speed; //!< Speed of sound in the cell
+  VariableNodeReal3 m_node_coord; //!< Coordinates of nodes
+  VariableCellArrayReal3 m_cell_cqs; //!< Corner results for each cell
 
-  VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
-  VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
-  VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
-  VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+  VariableScalarReal m_density_ratio_maximum; //!< Maximum density increase over a time step
+  VariableScalarReal m_delta_t_n; //!< Delta t n between t^{n-1/2} and t^{n+1/2}
+  VariableScalarReal m_delta_t_f; //!< Delta t n+1/2 between t^{n} and t^{n+1}
+  VariableScalarReal m_old_dt_f; //!< Delta t n-1/2 between t^{n-1} and t^{n}
 
   SecondaryVariables* m_secondary_variables;
 
@@ -278,16 +279,17 @@ ModuleSimpleHydroDepend::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialisation du module hydro lors du démarrage du cas.
+ * \brief Initialization of the hydro module when the case starts.
  */
 void ModuleSimpleHydroDepend::
 hydroStartInit()
 {
-  // Dimensionne les variables tableaux
+  // Dimension the array variables
   m_cell_cqs.resize(8);
 
-  // Initialise le delta-t
+  // Initialize delta-t
   Real deltat_init = options()->deltatInit();
   m_delta_t_n = deltat_init;
   m_delta_t_f = deltat_init;
@@ -298,13 +300,13 @@ hydroStartInit()
 
   m_node_coord.setUpToDate();
 
-  // Initialise les données géométriques: volume, cqs, longueurs caractéristiques
+  // Initialize geometric data: volume, cqs, characteristic lengths
   computeGeometricValues();
 
   m_velocity.fill(Real3::zero());
   m_velocity.setUpToDate();
 
-  // Initialisation de la masses des mailles et des masses nodale
+  // Initialization of cell masses and node masses
   m_node_mass.fill(0.0);
   ENUMERATE_CELL(icell,allCells()){
     const Cell& cell = *icell;
@@ -320,7 +322,7 @@ hydroStartInit()
   m_node_mass.synchronize();
   m_node_mass.setUpToDate();
 
-  // Initialise l'énergie et la vitesse du son
+  // Initialize energy and speed of sound
   ENUMERATE_CELL(icell,allCells()){
     Real pressure = m_pressure[icell];
     Real adiabatic_cst = m_adiabatic_cst[icell];
@@ -347,7 +349,7 @@ hydroInit1()
   setDensityDepend();
   setGeometricValueDepend();
 
-  // Affiche les infos sur les variables
+  // Display variable information
   IVariableMng* vm = subDomain()->variableMng();
   {
     std::ostringstream ostr;
@@ -377,17 +379,18 @@ setForceDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des forces de pression au temps courant \f$t^{n}\f$
+ * \brief Calculation of pressure forces at the current time $t^n$
  */
 void ModuleSimpleHydroDepend::
 computeForces()
 {
-  // Remise à zéro du vecteur des forces.
+  // Zeroing the force vector.
   m_force.fill(Real3::null());
 
-  // Calcul pour chaque noeud de chaque maille la contribution
-  // des forces de pression
+  // Calculation for each node of each cell of the contribution
+  // of pressure forces
   ENUMERATE_CELL(icell,allCells()){
     Cell cell = *icell;
     Real pressure = m_pressure[cell];
@@ -395,7 +398,7 @@ computeForces()
       m_force[cell.node(i_node)] += pressure * m_cell_cqs[icell][i_node];
   }
 
-  // Prise en compte des forces de viscosité si demandé
+  // Taking into account viscosity forces if requested
   bool add_viscosity_force = (options()->viscosity()!=TypesSimpleHydro::ViscosityNo);
   if (add_viscosity_force){
     ENUMERATE_CELL(icell,allCells()){
@@ -427,8 +430,9 @@ setViscosityForceDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Prise en compte de la pseudo viscosité en fonction des options choisies
+ * \brief Taking into account pseudo-viscosity based on chosen options
  */
 void ModuleSimpleHydroDepend::
 computePseudoViscosity()
@@ -439,19 +443,19 @@ computePseudoViscosity()
   Real linear_coef = options()->viscosityLinearCoef();
   Real quadratic_coef = options()->viscosityQuadraticCoef();
 
-  // Boucle sur les mailles du maillage
+  // Loop over the mesh cells
   ENUMERATE_CELL(icell,allCells()){
     const Cell& cell = *icell;
     const Integer cell_nb_node = cell.nbNode();
     const Real rho = m_density[icell];
 
-    // Calcul de la divergence de la vitesse
+    // Calculation of the velocity divergence
     Real delta_speed = 0.;
     for( Integer i_node=0; i_node<cell_nb_node; ++i_node )
       delta_speed += math::scaMul(m_velocity[cell.node(i_node)],m_cell_cqs[icell][i_node]);
     delta_speed /= m_volume[icell];
 
-    // Capture uniquement les chocs
+    // Capture only shocks
     bool shock = (math::min(Real(0.),delta_speed)<0.);
     if (shock){
       Real sound_speed = m_sound_speed[icell];
@@ -481,8 +485,9 @@ setLagrangianVelocityDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase2).
+ * \brief Calculation of momentum (phase 2).
  */
 void ModuleSimpleHydroDepend::
 computeLagrangianVelocity()
@@ -519,18 +524,18 @@ computeVelocity()
 {
   m_velocity.copy(m_lagrangian_velocity);
 
-  // Prise en compte des conditions aux limites.
+  // Taking into account boundary conditions.
   for( Integer i=0, nb=options()->boundaryCondition.size(); i<nb; ++i){
     FaceGroup face_group = options()->boundaryCondition[i]->surface();
     Real value = options()->boundaryCondition[i]->value();
     TypesSimpleHydro::eBoundaryCondition type = options()->boundaryCondition[i]->type();
 
-    // boucle sur les faces de la surface
+    // loop over the faces of the surface
     ENUMERATE_FACE(j,face_group){
       const Face& face = *j;
       Integer nb_node = face.nbNode();				
 
-      // boucle sur les noeuds de la face
+      // loop over the nodes of the face
       for( Integer k=0; k<nb_node; ++k ){
         const Node& node = face.node(k);
         switch(type) {
@@ -561,13 +566,14 @@ setViscosityWorkDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase3).
+ * \brief Calculation of momentum (phase 3).
  */
 void ModuleSimpleHydroDepend::
 computeViscosityWork()
 {
-  // Calcul du travail des forces de viscosité dans une maille
+  // Calculation of the work done by viscous forces in a cell
   ENUMERATE_CELL(icell,allCells()){
     Cell cell = *icell; 
     Real work = 0.;
@@ -592,8 +598,9 @@ setNodeCoordDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Déplace les noeuds.
+ * \brief Moves the nodes.
  */
 void ModuleSimpleHydroDepend::
 moveNodes()
@@ -621,9 +628,10 @@ setDensityDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Mise à jour des densités et calcul de l'accroissements max
- *	  de la densité sur l'ensemble du maillage.
+ * \brief Update of densities and calculation of the maximum increase
+ *	  of density across the entire mesh.
  */
 void ModuleSimpleHydroDepend::
 updateDensity()
@@ -653,9 +661,10 @@ updateDensity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'équation d'état et calcul l'énergie interne et la
- * pression.
+ * \brief Applies the equation of state and calculates internal energy and
+ * pressure.
  */
 void ModuleSimpleHydroDepend::
 applyEquationOfState()
@@ -668,7 +677,7 @@ applyEquationOfState()
     m_viscosity_work.update();
   }
 
-  // Calcul de l'énergie interne
+  // Calculation of internal energy
   ENUMERATE_CELL(icell,ownCells()){
     Real adiabatic_cst = m_adiabatic_cst[icell];
     Real volume_ratio = m_volume[icell] / m_old_volume[icell];
@@ -678,16 +687,16 @@ applyEquationOfState()
 
     m_internal_energy[icell] *= numer_accrois_nrj/denom_accrois_nrj;
   
-    // Prise en compte du travail des forces de viscosité 
+    // Taking into account the work done by viscous forces 
     if (add_viscosity_force)
       m_internal_energy[icell] -= deltatf*m_viscosity_work[icell] / 
 	(m_cell_mass[icell]*denom_accrois_nrj);
   }
 
-  // Synchronise l'énergie
+  // Synchronize the energy
   m_internal_energy.synchronize();
 
-  // Calcul de la pression et de la vitesse du son
+  // Calculation of pressure and sound speed
   ENUMERATE_CELL(icell,allCells()){
     Real internal_energy = m_internal_energy[icell];
     Real density = m_density[icell];
@@ -703,15 +712,16 @@ applyEquationOfState()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des nouveaux pas de temps.
+ * \brief Calculation of new time steps.
  */
 void ModuleSimpleHydroDepend::
 computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
 
-  // Calcul du pas de temps pour le respect du critère de CFL
+  // Calculation of the time step to satisfy the CFL criterion
   
   Real minimum_aux = FloatInfo<Real>::maxValue();
   Real new_dt = FloatInfo<Real>::maxValue();
@@ -725,25 +735,25 @@ computeDeltaT()
 
   new_dt = options()->cfl()*minimum_aux;
 
-  // Pas de variations trop brutales à la hausse comme à la baisse
+  // No too abrupt variations upwards or downwards
   Real max_dt = (1.+options()->variationSup())*old_dt;
   Real min_dt = (1.-options()->variationInf())*old_dt;
 
   new_dt = math::min(new_dt,max_dt);
   new_dt = math::max(new_dt,min_dt);
 
-  // control de l'accroissement relatif de la densité
+  // control of the relative increase in density
   Real dgr = options()->densityGlobalRatio();
   if (m_density_ratio_maximum()>dgr)
     new_dt = math::min(old_dt*dgr/m_density_ratio_maximum(),new_dt);
 
   new_dt = parallelMng()->reduce(Parallel::ReduceMin,new_dt);
 
-  // respect des valeurs min et max imposées par le fichier de données .plt
+  // respect of min and max values imposed by the .plt data file
   new_dt = math::min(new_dt,options()->deltatMax());
   new_dt = math::max(new_dt,options()->deltatMin());
 
-  // Le dernier calcul se fait exactement au temps stopTime()
+  // The last calculation is performed exactly at stopTime()
   {
     Real stop_time  = options()->finalTime();
     bool not_yet_finish = ( m_global_time() < stop_time);
@@ -755,7 +765,7 @@ computeDeltaT()
     }
   }
 
-  // Mise à jour des variables
+  // Update variables
   m_old_dt_f.assign(old_dt);
   m_delta_t_n.assign(0.5*(old_dt+new_dt));
   m_delta_t_f.assign(new_dt);
@@ -764,10 +774,11 @@ computeDeltaT()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des résultantes aux noeuds d'une maille hexaédrique.
+ * \brief Calculation of nodal forces for a hexahedral cell.
  *
- * La méthode utilisée est celle du découpage en quatre triangles.
+ * The method used is the four-triangle decomposition.
  */
 inline void ModuleSimpleHydroDepend::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Cell cell)
@@ -779,43 +790,43 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Cell cell)
   const Real3 c4 = face_coord[4];
   const Real3 c5 = face_coord[5];
 
-  // Calcul des normales face 1 :
+  // Calculation of normal face 1:
   const Real3 n1a04 = 0.5 * math::vecMul(node_coord[0] - c0 , node_coord[3] - c0);
   const Real3 n1a03 = 0.5 * math::vecMul(node_coord[3] - c0 , node_coord[2] - c0);
   const Real3 n1a02 = 0.5 * math::vecMul(node_coord[2] - c0 , node_coord[1] - c0);
   const Real3 n1a01 = 0.5 * math::vecMul(node_coord[1] - c0 , node_coord[0] - c0);
 
-  // Calcul des normales face 2 :
+  // Calculation of normal face 2:
   const Real3 n2a05 = 0.5 * math::vecMul(node_coord[0] - c1 , node_coord[4] - c1);
   const Real3 n2a12 = 0.5 * math::vecMul(node_coord[4] - c1 , node_coord[7] - c1);
   const Real3 n2a08 = 0.5 * math::vecMul(node_coord[7] - c1 , node_coord[3] - c1);
   const Real3 n2a04 = 0.5 * math::vecMul(node_coord[3] - c1 , node_coord[0] - c1);
 
-  // Calcul des normales face 3 :
+  // Calculation of normal face 3:
   const Real3 n3a01 = 0.5 * math::vecMul(node_coord[0] - c2 , node_coord[1] - c2);
   const Real3 n3a06 = 0.5 * math::vecMul(node_coord[1] - c2 , node_coord[5] - c2);
   const Real3 n3a09 = 0.5 * math::vecMul(node_coord[5] - c2 , node_coord[4] - c2);
   const Real3 n3a05 = 0.5 * math::vecMul(node_coord[4] - c2 , node_coord[0] - c2);
 
-  // Calcul des normales face 4 :
+  // Calculation of normal face 4:
   const Real3 n4a09 = 0.5 * math::vecMul(node_coord[4] - c3 , node_coord[5] - c3);
   const Real3 n4a10 = 0.5 * math::vecMul(node_coord[5] - c3 , node_coord[6] - c3);
   const Real3 n4a11 = 0.5 * math::vecMul(node_coord[6] - c3 , node_coord[7] - c3);
   const Real3 n4a12 = 0.5 * math::vecMul(node_coord[7] - c3 , node_coord[4] - c3);
 	
-  // Calcul des normales face 5 :
+  // Calculation of normal face 5:
   const Real3 n5a02 = 0.5 * math::vecMul(node_coord[1] - c4 , node_coord[2] - c4);
   const Real3 n5a07 = 0.5 * math::vecMul(node_coord[2] - c4 , node_coord[6] - c4);
   const Real3 n5a10 = 0.5 * math::vecMul(node_coord[6] - c4 , node_coord[5] - c4);
   const Real3 n5a06 = 0.5 * math::vecMul(node_coord[5] - c4 , node_coord[1] - c4);
       
-  // Calcul des normales face 6 :
+  // Calculation of normal face 6:
   const Real3 n6a03 = 0.5 * math::vecMul(node_coord[2] - c5 , node_coord[3] - c5);
   const Real3 n6a08 = 0.5 * math::vecMul(node_coord[3] - c5 , node_coord[7] - c5);
   const Real3 n6a11 = 0.5 * math::vecMul(node_coord[7] - c5 , node_coord[6] - c5);
   const Real3 n6a07 = 0.5 * math::vecMul(node_coord[6] - c5 , node_coord[2] - c5);
 
-  // Calcul des résultantes aux sommets :
+  // Calculation of nodal forces:
   m_cell_cqs[cell][0] = (5.*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
 		 (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*(1./12.);
   m_cell_cqs[cell][1] = (5.*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
@@ -852,9 +863,10 @@ setGeometricValueDepend()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul du volume des mailles, des longueurs caractéristiques
- * et des résultantes aux sommets.
+ * \brief Calculation of cell volumes, characteristic lengths
+ * and nodal forces.
  */
 void ModuleSimpleHydroDepend::
 computeGeometricValues()
@@ -862,19 +874,19 @@ computeGeometricValues()
   m_old_volume.copy(m_volume);
   m_old_volume.setUpToDate();
   
-  // Copie locale des coordonnées des sommets d'une maille
+  // Local copy of the cell corner coordinates
   Real3 coord[8];
-  // Coordonnées des centres des faces
+  // Coordinates of the face centers
   Real3 face_coord[6];
 
   ENUMERATE_CELL(icell,allCells()){
     const Cell& cell = *icell;
 
-    // Recopie les coordonnées locales (pour le cache)
+    // Recopy the local coordinates (for the cache)
     for( Integer i = 0; i<8; ++i )
       coord[i] = m_node_coord[cell.node(i)];
 
-    // Calcul les coordonnées des centres des faces
+    // Calculate the coordinates of the face centers
     face_coord[0] = 0.25 * ( coord[0] + coord[3] + coord[2] + coord[1] );
     face_coord[1] = 0.25 * ( coord[0] + coord[4] + coord[7] + coord[3] );
     face_coord[2] = 0.25 * ( coord[0] + coord[1] + coord[5] + coord[4] );
@@ -882,7 +894,7 @@ computeGeometricValues()
     face_coord[4] = 0.25 * ( coord[1] + coord[2] + coord[6] + coord[5] );
     face_coord[5] = 0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] );
 
-    // Calcule la longueur caractéristique de la maille.
+    // Calculate the characteristic length of the cell.
     {
       Real3 median1 = face_coord[0]-face_coord[3];
       Real3 median2 = face_coord[2]-face_coord[5];
@@ -896,10 +908,10 @@ computeGeometricValues()
       m_caracteristic_length[icell] = dx_numerator / dx_denominator;
     }
 
-    // Calcule les résultantes aux sommets
+    // Calculate the nodal forces
     computeCQs(coord,face_coord,cell);
 
-    // Calcule le volume de la maille
+    // Calculate the cell volume
     {
       Real volume = 0.;
       for( Integer i_node=0, nb_node=cell.nbNode(); i_node<nb_node; ++i_node )

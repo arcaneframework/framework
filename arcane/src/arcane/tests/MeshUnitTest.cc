@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshUnitTest.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Service de test du maillage.                                              */
+/* Mesh testing service.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -87,8 +87,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Mesh test module
  */
 class MeshUnitTest
 : public ArcaneMeshUnitTestObject
@@ -307,7 +308,7 @@ executeTest()
   _testEvents();
   Int32 mesh_dim = mesh()->dimension();
   if (mesh_dim == 2 || (mesh_dim == 3 && options()->createEdges())) {
-    // Appelle 2 fois la méthode pour vérifier que le recalcul est correct.
+    // Calls the method 2 times to verify that the recalculation is correct.
     _testNodeNodeViaEdgeConnectivity();
     _testNodeNodeViaEdgeConnectivity();
   }
@@ -384,7 +385,7 @@ _dumpMesh()
   String connectivity_file = base_path.file(file_name + ".xml");
   mesh_utils::writeMeshConnectivity(mesh(), connectivity_file);
 
-  // Relit le fichier de connectivité et vérifie que la checksum est bonne
+  // Reads the connectivity file and verifies that the checksum is correct
   String connectivity_checksum;
   if (pm->isParallel()) {
     Int32 nb_checksum = options()->connectivityFileChecksumParallel.size();
@@ -480,8 +481,8 @@ _dumpTiedInterfaces()
     info() << "No tied interface in the mesh";
   TiedInterfaceCollection tied_interfaces(mesh()->tiedInterfaces());
   info() << "---------------------------------------------------------";
-  info() << "Surfaces liées: n=" << tied_interfaces.count();
-    
+  info() << "Tied surfaces: n=" << tied_interfaces.count();
+
   Integer nb_error = 0;
   Integer max_print_error = 50;
   std::set<Int64> nodes_in_master_face;
@@ -591,7 +592,7 @@ void MeshUnitTest::
 _testGroups()
 {
   {
-    // Vérifie que le groupe nul est trié
+    // Checks that the null group is sorted
     CellGroup null_group;
     if (!null_group.checkIsSorted())
       ARCANE_FATAL("Null group is not sorted");
@@ -610,9 +611,9 @@ _testGroups()
       items.add(i);
     group.setItems(items);
     items.clear();
-    // Ajoute l'entité de localId() à la fin du groupe.
-    // Comme c'est celle avec le plus petit uniqueId(), normalement le groupe
-    // ne doit ensuite plus être trié.
+    // Adds the entity with localId() to the end of the group.
+    // Since it has the smallest uniqueId(), normally the group
+    // should no longer be sorted.
     items.add(0);
     group.addItems(items);
     if (group.size()>1)
@@ -634,12 +635,12 @@ _testGroups()
       items.add(i*2);
     group.removeItems(items);
   }
-  
+
   info() << " GROUP " << group.size() << " addr=" << group.internal();
   NodeGroup nodes = group.nodeGroup();
   info() << " NB NODE in group " << nodes.size() << " addr=" << nodes.internal();
   const char* P_SORT = "sort-subitemitem-group";
-  // Force le tri pour le groupe des faces de 'group' et vérifie si OK.
+  // Forces sorting for the faces group of 'group' and checks if OK.
   bool is_sort = mesh()->properties()->getBoolWithDefault(P_SORT,false);
   mesh()->properties()->setBool(P_SORT,true);
   FaceGroup faces = group.faceGroup();
@@ -647,7 +648,7 @@ _testGroups()
   if (!faces.checkIsSorted()){
     ARCANE_FATAL("FaceGroup should be sorted!");
   }
-  // Remet comme avant.
+  // Resets as before.
   mesh()->properties()->setBool(P_SORT,is_sort);
   CellGroup cells = nodes.cellGroup();
   info() << " NB CELL in nodes " << cells.size() << " addr=" << cells.internal();
@@ -717,12 +718,12 @@ _testItemAdjacency2()
 {
   FaceFaceGroup ad_list(allFaces(),outerFaces(),IK_Node);
   info() << " COMPUTE ITEM ADJENCY LIST2!";
-  
+
   std::set<Integer> boundary_set;
   ENUMERATE_FACE(iface,outerFaces())
     boundary_set.insert(iface->localId());
 
-  // Test l'accès à la valeur via l'itérateur
+  // Test access to the value via the iterator
   VariableFaceInt32 face_id(VariableBuildInfo(mesh(),"FaceId"));
   ENUMERATE_ITEMPAIR(Face,Face,iface,ad_list){
     face_id[iface] = iface.itemLocalId();
@@ -732,7 +733,7 @@ _testItemAdjacency2()
   ENUMERATE_ITEMPAIR(Face,Face,iface,ad_list){
     if (face_id[iface]!=iface.itemLocalId())
       ARCANE_FATAL("Bad value for variable v={0} expected={1}",face_id[iface],iface.itemLocalId());
-    
+
     ENUMERATE_SUB_ITEM(Face,isubface,iface){
       const Face& subface = *isubface;
       total_uid += subface.uniqueId().asInt64();
@@ -751,9 +752,9 @@ _testItemAdjacency2()
 void MeshUnitTest::
 _testItemAdjacency3()
 {
-  // Teste les fonctors pour le calcul des infos des ItemPairGroup.
-  // Le fonctor calcule les mailles voisines aux mailles par les faces
-  // et compare le résultat avec le ItemPairGroup équivalent calculé par
+  // Tests the functors for calculating ItemPairGroup info.
+  // The functor calculates neighboring meshes to meshes by faces
+  // and compares the result with the equivalent ItemPairGroup calculated by
   // Arcane.
   auto f = [](ItemPairGroupBuilder& builder)
     {
@@ -761,8 +762,8 @@ _testItemAdjacency3()
       const ItemGroup& items = pair_group.itemGroup();
       const ItemGroup& sub_items = pair_group.subItemGroup();
 
-      // Marque toutes les entités qui n'ont pas le droit d'appartenir à
-      // la liste des connectivités, car elles ne sont pas dans \a sub_items
+      // Marks all entities that are not allowed to belong to
+      // the connectivity list, because they are not in \a sub_items
       std::set<Int32> allowed_ids;
       ENUMERATE_CELL(iitem,sub_items) {
         allowed_ids.insert(iitem.itemLocalId());
@@ -771,7 +772,7 @@ _testItemAdjacency3()
       Int32UniqueArray local_ids;
       local_ids.reserve(8);
 
-      // Liste des entités déjà traitées pour la maille courante
+      // List of entities already processed for the current mesh
       std::set<Int32> already_in_list;
       ENUMERATE_CELL(icell,items){
         Cell cell = *icell;
@@ -779,21 +780,21 @@ _testItemAdjacency3()
         Int32 current_local_id = icell.itemLocalId();
         already_in_list.clear();
 
-        // Pour ne pas s'ajouter à sa propre liste de connectivité
+        // To avoid adding itself to its own connectivity list
         already_in_list.insert(current_local_id);
 
         for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
           Face face = *iface;
           for( CellEnumerator isubcell(face.cells()); isubcell.hasNext(); ++isubcell ){
             const Int32 sub_local_id = isubcell.itemLocalId();
-            // Vérifie qu'on est dans la liste des mailles autorisées et qu'on
-            // n'a pas encore été traité.
+            // Checks if we are in the list of allowed meshes and if we
+            // have not yet been processed.
             if (allowed_ids.find(sub_local_id)==allowed_ids.end())
               continue;
             if (already_in_list.find(sub_local_id)!=already_in_list.end())
               continue;
-            // Cette maille doit être ajoutée. On la marque pour ne pas
-            // la parcourir et on l'ajoute à la liste.
+            // This mesh must be added. We mark it so we don't
+            // traverse it and we add it to the list.
             already_in_list.insert(sub_local_id);
             local_ids.add(sub_local_id);
           }
@@ -815,7 +816,7 @@ _testItemAdjacency3()
     }
   }
   info() << "NB_ITEM=" << items.size() << " nb_sub_item=" << sub_items.size();
-  // Vérifie que les listes sont les mêmes entre notre functor et la référence.
+  // Checks that the lists are the same between our functor and the reference.
   Int32UniqueArray ref_items;
   Int32UniqueArray ref_sub_items;
   ENUMERATE_ITEMPAIR(Cell,Cell,iitem,ref_ad_list){
@@ -841,7 +842,7 @@ _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
          << " items=" << items.name() << " sub_items=" << subitems.name()
          << " nb_item=" << items.size() << " nb_sub_item=" << subitems.size()
          << " dim=" << items.mesh()->dimension();
-  
+
   Int64 total_uid = 0;
   Integer nb_item = 0;
   ENUMERATE_ITEMPAIR(ItemKind,SubItemKind,iitem,ad_list){
@@ -854,8 +855,8 @@ _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
   if (nb_item!=items.size())
     ARCANE_FATAL("Bad number of items n={0} expected={1}",nb_item,items.size());
 
-  // On ne connait pas la valeur du total mais ce ne doit pas être nul
-  // sauf si le lien est les arêtes où dans certains cas 1D.
+  // We do not know the value of the total but it must not be zero
+  // unless the link is edges where in some cases it is 1D.
   info() << " TOTAL uid=" << total_uid;
   bool may_be_null = (link_kind==IK_Edge);
   if (items.mesh()->dimension()==1){
@@ -896,7 +897,7 @@ _testItemPartialAdjacency()
 {
   info() << " COMPUTE ITEM PARTIAL ADJACENCY LIST!";
 
-  // Choisit une cellule au "milieu" des ownCells().
+  // Chooses a cell in the "middle" of ownCells().
   CellGroup myCells = ownCells();
   Integer nb_my_cells = myCells.size();
   Cell center_cell = myCells.view()[nb_my_cells/2].toCell();
@@ -904,7 +905,7 @@ _testItemPartialAdjacency()
   Int32UniqueArray center_cell_list;
   center_cell_list.add(center_cell.localId());
   CellGroup center_cell_group = mesh()->cellFamily()->createGroup("CenterCell",center_cell_list);
-  
+
   CellCellGroup center_neighbor_pairgroup(center_cell_group,allCells(),IK_Node);
   Int32UniqueArray center_neighbor_list;
 
@@ -918,10 +919,10 @@ _testItemPartialAdjacency()
       center_neighbor_list.add(subcell.localId());
     }
   }
-  
+
   CellGroup center_neighbor_group = mesh()->cellFamily()->createGroup("CenterNeighBor",center_neighbor_list);
-  m_cell_flag.fill(1);                       // Cellules interdites toutes sauf ...
-  m_cell_flag.fill(0,center_neighbor_group); // Cellules autorisées
+  m_cell_flag.fill(1);                       // Forbidden cells except ...
+  m_cell_flag.fill(0,center_neighbor_group); // Allowed cells
   CellCellGroup ad_list(center_neighbor_group,center_neighbor_group,IK_Node);
 
   ENUMERATE_ITEMPAIR(Cell,Cell,icell,ad_list){
@@ -1038,8 +1039,8 @@ _testVisitors()
   };
   IItemFamily* item_family = mesh()->cellFamily();
 
-  // Vérifie que le nombre de passage dans le visiteur est égal au nombre
-  // de groupes de la famille.
+  // Checks that the number of visits in the visitor is equal to the number
+  // of groups in the family.
   info() << "TEST Visit CellFamily";
   MeshUtils::visitGroups(item_family, func);
   vc.areEqual(nb_group,item_family->groups().count(),"Bad number of group for cell family");
@@ -1055,7 +1056,7 @@ _testVisitors()
   vc.areEqual(nb_group,nb_expected_group,"Bad number of group for mesh");
   info() << "Nb group=" << nb_group;
 
-  // Regarde le nombre de groupes triés.
+  // Checks the number of sorted groups.
   {
     int nb_sorted_group = 0;
     nb_group =0;
@@ -1109,7 +1110,7 @@ class MyCellClass
 : public Cell
 {
  public:
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the base entity \a
   explicit MyCellClass(Item aitem) : Cell(aitem) {}
 };
 
@@ -1124,8 +1125,8 @@ _testItemArray()
   ENUMERATE_CELL(icell,family->allItems()){
     local_ids.add((*icell).localId());
   }
-  
-  // Pour tester le constructeur par défaut.
+
+  // To test the default constructor.
   [[maybe_unused]] ItemLocalIdToItemConverter empty_converter;
 
   ItemVectorView v(family,local_ids);
@@ -1301,15 +1302,16 @@ _testProjection()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que les entités appartenant à plusieurs sous-domaine
- * sont bien marquées avec le flag II_Shared.
+ * \brief Checks that entities belonging to multiple subdomains
+ * are correctly marked with the II_Shared flag.
  */
 void MeshUnitTest::
 _testSharedItems()
 {
   info() << "Checking if shared items are marked";
-  // Devra contenir à combien de sous-domaine appartient la maille.
+  // Should contain how many subdomains the mesh belongs to.
   VariableCellInt32 var_counter(VariableBuildInfo(mesh(),"CellCounter"));
   var_counter.fill(1);
   IItemFamily* cell_family = mesh()->cellFamily();
@@ -1337,8 +1339,8 @@ _testSharedItems()
 void MeshUnitTest::
 _testAdditionalMeshes()
 {
-  // Test la lecture de maillages additionnels avec un IParallelMng
-  // séquentiel même si on est en parallèle.
+  // Tests reading additional meshes with a sequential IParallelMng
+  // even if running in parallel.
   ConstArrayView<String> additional_meshes = options()->additionalMesh.view();
   Integer nb_mesh = additional_meshes.size();
   if (nb_mesh==0)
@@ -1361,7 +1363,7 @@ void MeshUnitTest::
 _testCustomMeshTools()
 {
 #ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
-  // Test dépendance outillage externe pour maillage custom (ex polyédrique)
+  // Tests external tooling dependency for custom mesh (e.g., polyhedral)
   Neo::Mesh mesh{"test_mesh"};
   info() << "Neo::Mesh{" << mesh.name() << "}";
 #endif
@@ -1376,13 +1378,13 @@ _testAdditionnalConnectivity()
   info() << A_FUNCINFO;
   ValueChecker vc(A_FUNCINFO);
 
-  // Créé une connectivité maille <-> face contenant pour chaque maille la liste
-  // des faces n'étant pas à la frontière : il s'agit donc des faces qui ont
-  // deux mailles connectées.
+  // Creates a mesh <-> face connectivity containing for each mesh the list
+  // of faces that are not on the boundary: these are faces that have
+  // two connected meshes.
   IItemFamily* cell_family = mesh()->cellFamily();
   IItemFamily* face_family = mesh()->faceFamily();
   CellGroup cells = cell_family->allItems();
-  // NOTE: l'objet est automatiquement détruit par le maillage
+  // NOTE: the object is automatically destroyed by the mesh
   auto idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
   auto* cn = idx_cn->connectivity();
   ENUMERATE_CELL(icell,cells){
@@ -1429,11 +1431,11 @@ _testUnstructuredConnectivities()
   connectivity_view.setMesh(this->mesh());
 
   {
-    // Teste Cell->Face
+    // Tests Cell->Face
     IndexedCellFaceConnectivityView icv(connectivity_view.cellFace());
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
-      // Vérifie la cohérence entre les méthodes
+      // Checks consistency between methods
       auto f1 = icv.faces(icell);
       auto f2 = icv.faceIds(icell);
       auto f3 = cell.faceIds();
@@ -1447,11 +1449,11 @@ _testUnstructuredConnectivities()
   }
 
   {
-    // Teste Cell->Node
+    // Tests Cell->Node
     IndexedCellNodeConnectivityView icv(connectivity_view.cellNode());
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
-      // Vérifie la cohérence entre les méthodes
+      // Checks consistency between methods
       auto f1 = icv.nodes(icell);
       auto f2 = icv.nodeIds(icell);
       auto f3 = cell.nodeIds();
@@ -1465,11 +1467,11 @@ _testUnstructuredConnectivities()
   }
 
   {
-    // Teste Cell->Edge
+    // Tests Cell->Edge
     IndexedCellEdgeConnectivityView icv(connectivity_view.cellEdge());
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
-      // Vérifie la cohérence entre les méthodes
+      // Checks consistency between methods
       auto f1 = icv.edges(icell);
       auto f2 = icv.edgeIds(icell);
       auto f3 = cell.edgeIds();
@@ -1483,11 +1485,11 @@ _testUnstructuredConnectivities()
   }
 
   {
-    // Teste Node->Cell
+    // Tests Node->Cell
     IndexedNodeCellConnectivityView icv(connectivity_view.nodeCell());
     ENUMERATE_(Node,inode,allNodes()){
       Node node = *inode;
-      // Vérifie la cohérence entre les méthodes
+      // Checks consistency between methods
       auto f1 = icv.cells(inode);
       auto f2 = icv.cellIds(inode);
       auto f3 = node.cellIds();
@@ -1503,8 +1505,9 @@ _testUnstructuredConnectivities()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie si les faces connectées aux noeuds sont triées.
+ * \brief Checks if faces connected to nodes are sorted.
  */
 void MeshUnitTest::
 _testSortedNodeFaces()
@@ -1585,10 +1588,10 @@ _testFaces()
     for(Int32 i=0; i<nb_face; ++i ){
       vc.areEqual(faces[i].oppositeCell(cell).itemLocalId(),faces[i].oppositeCellId(cell),"OppositeCell2");
     }
-    // Teste la compatibilité entre ItemVectorView et ItemConnectedListView.
-    // Pour maintenant la compatibilité entre les versions de 3.8+ et antérieures
-    // on doit pouvoir convertir un 'ItemConnectedListView' en un 'ItemVectorView'
-    // et de même pour les itérateurs
+    // Tests compatibility between ItemVectorView and ItemConnectedListView.
+    // To maintain compatibility between versions 3.8+ and earlier
+    // we must be able to convert an 'ItemConnectedListView' into an 'ItemVectorView'
+    // and similarly for iterators
     FaceVectorView faces_as_vector = cell.faces();
     FaceVectorView::const_iterator face_vector_begin2 = cell.faces().begin();
     FaceVectorView::const_iterator face_vector_begin1 = faces_as_vector.begin();
@@ -1609,7 +1612,7 @@ _testDeallocateMesh()
   info() << A_FUNCINFO;
   Integer nb_deallocate = 10;
   IPrimaryMesh* pmesh = mesh()->toPrimaryMesh();
-  // TODO: Utiliser un service qui implémente IMeshBuilder au lieu de IMeshReader
+  // TODO: Use a service that implements IMeshBuilder instead of IMeshReader
   ServiceBuilder<IMeshReader> sbu(subDomain());
   String file_names[3] = { "tied_interface_1.vtk", "sphere_tied_1.vtk", "sphere_tied_2.vtk" };
   for (Integer i = 0; i < nb_deallocate; ++i) {
@@ -1646,7 +1649,7 @@ _testGroupsAsBlocks()
       return;
     BlockIndexList bli;
     BlockIndexListBuilder bli_builder(tm);
-    bli_builder.setBlockSizeAsPowerOfTwo(5); // Bloc de 2^5 = 32
+    bli_builder.setBlockSizeAsPowerOfTwo(5); // Block of 2^5 = 32
     bli_builder.build(bli,group.view().localIds(),group.name());
     UniqueArray<Int32> computed_values;
     bli.fillArray(computed_values);
@@ -1692,7 +1695,7 @@ _testFindOneItem()
 
   IItemFamily* cell_family = mesh()->cellFamily();
 
-  // Teste l'entité nulle
+  // Tests the null entity
   {
     Int64 max_uid = 0;
     ENUMERATE_(Cell,icell,allCells()){
@@ -1726,8 +1729,8 @@ _testFindOneItem()
 void MeshUnitTest::
 _testEvents()
 {
-  // Vérifie que les évènements 'BeginPrepareDump' et 'EndPrepareDump' sont
-  // bien lancés.
+  // Checks that the 'BeginPrepareDump' and 'EndPrepareDump' events are
+  // correctly triggered.
   EventObserverPool pool;
   bool has_call_begin_prepare_dump = false;
   bool has_call_end_prepare_dump = false;
@@ -1752,7 +1755,7 @@ _testNodeNodeViaEdgeConnectivity()
   auto x = Arcane::MeshUtils::computeNodeNodeViaEdgeConnectivity(mesh(), "NodeNodeViaEdge");
   IndexedNodeNodeConnectivityView nn_cv = x->view();
 
-  // Tableau contenant la liste triée des nœuds connectés à un nœud.
+  // Array containing the sorted list of nodes connected to a node.
   UniqueArray<Int32> ref_cx_nodes;
   const bool use_face = mesh()->dimension() == 2;
   ENUMERATE_ (Node, inode, ownNodes()) {
@@ -1773,10 +1776,10 @@ _testNodeNodeViaEdgeConnectivity()
       ref_cx_nodes[i] = connected_node_lid;
     }
     std::sort(ref_cx_nodes.begin(), ref_cx_nodes.end());
-    // Les nœuds de la connectivité 'nn_cv' sont bien triés par indice croissant des nœuds,
-    // mais ce n'est pas forcément le cas de node.edges() car ces derniers sont triés par
-    // uniqueId() des arêtes. On passe par un tableau temporaire qu'on trie pour tester les
-    // valeurs.
+    // The nodes in the 'nn_cv' connectivity are sorted by increasing node index,
+    // but this is not necessarily the case for node.edges() because the latter are sorted by
+    // edge uniqueId(). We use a temporary array that we sort to test the
+    // values.
     for (Int32 i = 0; i < nb_edge; ++i) {
       Int32 ref_cx_node_lid = ref_cx_nodes[i];
       Int32 cx_node_lid = nn_cv.nodeId(node, i);
@@ -1832,7 +1835,7 @@ _testLocalIdsFromConnectivity()
   faces_local_id.resize(faces_nb_node.size());
   mesh()->utilities()->localIdsFromConnectivity(IK_Face, faces_nb_node, faces_connectivity, faces_local_id, false);
 
-  // Vérifie que les indices locaux des faces sont corrects
+  // Checks that the local face indices are correct
   Int32 index = 0;
   ENUMERATE_ (Cell, icell, mesh()->allCells()) {
     for (Face face : icell->faces()) {

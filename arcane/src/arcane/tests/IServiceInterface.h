@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IServiceInterface.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Interfaces pour les tests des services.                                   */
+/* Interfaces for service tests.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_ISERVICEINTERFACE_H
 #define ARCANE_TEST_ISERVICEINTERFACE_H
@@ -99,5 +99,4 @@ class IServiceInterface6
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

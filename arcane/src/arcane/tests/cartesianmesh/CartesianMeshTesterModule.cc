@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshTesterModule.cc                                (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire de maillages cartésiens.                   */
+/* Cartesian mesh manager test module.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,8 +72,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test pour les infos sur les maillages cartésiens.
+ * \brief Brief test module for Cartesian mesh information.
  */
 class CartesianMeshTesterModule
 : public ArcaneCartesianMeshTesterObject
@@ -164,7 +165,7 @@ class CartesianMeshPartitionerService
     info() << "Partitioning with 'CartesianMeshPartitionerService' nb_rank=" << nb_rank;
     ENUMERATE_CELL(icell,mesh->ownCells()){
       Cell cell = *icell;
-      // Utilise des Int64 plutôt que des Int32 pour être sur de ne pas déborder.
+      // Use Int64 instead of Int32 to ensure no overflow.
       Int64 new_owner = ((cell_index * nb_bloc) / nb_cell) % nb_rank;
       cells_new_owner[cell] = CheckedConvert::toInt32(new_owner);
       ++cell_index;
@@ -236,13 +237,12 @@ CartesianMeshTesterModule(const ModuleBuildInfo& mbi)
 , m_cartesian_mesh(nullptr)
 , m_initial_partitioner(nullptr)
 {
-  // Regarde s'il faut tester le partitionnement
+  // Checks if partitioning needs to be tested
   if (!platform::getEnvironmentVariable("TEST_PARTITIONING").null()){
     ISubDomain* sd = mbi.subDomain();
     m_initial_partitioner = new CartesianMeshInitialPartitioner(sd);
     info() << "SETTING INITIAL PARTITIONER";
-    // NOTE: le sous-domaine prend possession du partitionneur. Il ne faut
-    // donc pas le détruire.
+    // NOTE: the subdomain takes ownership of the partitioner. It should therefore not be destroyed.
     sd->setInitialPartitioner(m_initial_partitioner);
   }
 }
@@ -358,7 +358,7 @@ init()
   ids[0] = 5;
   face_family->createGroup("FACE5",ids,true);
 
-  // Calcule le centre des mailles
+  // Calculate the cell centers
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
     ENUMERATE_CELL(icell,allCells()){
@@ -371,7 +371,7 @@ init()
     }
   }
 
-  // Calcule le centre des faces
+  // Calculate the face centers
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
     ENUMERATE_FACE(iface,allFaces()){
@@ -390,10 +390,10 @@ init()
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
   m_utils_v2 = makeRef(new CartesianMeshV2TestUtils(m_cartesian_mesh));
 
-  // Initialise la densité.
-  // On met une densité de 1.0 à l'intérieur
-  // et on ajoute une densité de 5.0 pour chaque direction dans les
-  // mailles de bord.
+  // Initialize the density.
+  // We set a density of 1.0 inside
+  // and add a density of 5.0 for each direction in the
+  // boundary cells.
   m_density.fill(1.0);
   Integer nb_dir = defaultMesh()->dimension();
   for( Integer idir=0; idir<nb_dir; ++idir){
@@ -405,20 +405,20 @@ init()
       Cell next = cc.next();
       Cell prev = cc.previous();
       if (next.null() || prev.null()){
-        // Maille au bord. J'ajoute de la densité.
-        // Ne devrait pas arriver car on est sur les innerCells()
+        // Cell at the boundary. I add density.
+        // Should not happen because we are on the innerCells()
         ++nb_boundary1;
         m_density[icell] += 5.0;
       }
     }
-    // Parcours les mailles frontières pour la direction
+    // Iterate through the boundary cells for the direction
     ENUMERATE_CELL(icell,cdm.outerCells()){
       DirCell cc(cdm[icell]);
       if (icell.index()<5)
         info() << "CELL: cell=" << ItemPrinter(*icell)
                << " next=" << ItemPrinter(cc.next())
                << " previous=" << ItemPrinter(cc.previous());
-      // Maille au bord. J'ajoute de la densité.
+      // Boundary cell. I add density.
       ++nb_boundary2;
       m_density[icell] += 5.0;
     }
@@ -484,8 +484,8 @@ _testCoarsening()
       info() << "Patch i=" << i << " nb_cell=" << p->cells().size();
     }
     coarser->removeRefinedCells();
-    // Le nombre de mailles doit être égal au nombre d'origine
-    // divisé par \a coarse_factor.
+    // The number of cells must be equal to the original number
+    // divided by \a coarse_factor.
     const Int32 nb_final_cell = ownCells().size();
     info() << "nb_orig_cell=" << nb_orig_cell << " nb_final_cell=" << nb_final_cell
            << " coarse_factor=" << coarse_factor;
@@ -513,19 +513,19 @@ compute()
 void CartesianMeshTesterModule::
 _compute1()
 {
-  // Pour test, on parcours les N directions
-  // et pour chaque maille, on modifie sa densité
-  // par la formule new_density = (density+density_next+density_prev) / 3.0.
+  // For testing, we iterate over the N directions
+  // and for each cell, we modify its density
+  // using the formula new_density = (density+density_next+density_prev) / 3.0.
   
-  // Effectue l'operation en deux fois. Une premiere sur les
-  // mailles internes, et une deuxieme sur les mailles externes.
-  // Du coup, il faut passer par une variable intermediaire (m_old_density)
-  // mais on evite un test dans la boucle principale
+  // Performs the operation in two passes. The first on the
+  // internal cells, and the second on the external cells.
+  // Therefore, we must use an intermediate variable (m_old_density)
+  // but we avoid a test in the main loop
   Integer nb_dir = defaultMesh()->dimension();
   for( Integer idir=0; idir<nb_dir; ++idir){
     m_old_density.copy(m_density);
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
-    // Travail sur les mailles internes
+    // Working on internal cells
     ENUMERATE_CELL(icell,cdm.innerCells()){
       DirCell cc(cdm.cell(*icell));
       Cell next = cc.next();
@@ -533,8 +533,8 @@ _compute1()
       Real d = m_old_density[icell] + m_old_density[next] + m_old_density[prev];
       m_density[icell] = d / 3.0;
     }
-    // Travail sur les mailles externes
-    // Test si la maille avant ou apres est nulle.
+    // Working on external cells
+    // Test if the previous or next cell is null.
     ENUMERATE_CELL(icell,cdm.outerCells()){
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
@@ -576,17 +576,17 @@ _compute1()
 void CartesianMeshTesterModule::
 _compute2()
 {
-  // Pour test, on parcours les N directions
-  // et pour chaque maille, on modifie sa densité
-  // par la formule new_density = (density+density_next+density_prev) / 3.0.
+  // For testing, we iterate over the N directions
+  // and for each cell, we modify its density
+  // using the formula new_density = (density+density_next+density_prev) / 3.0.
 
-  // A noter que cette methode ne donne pas le meme comportement que
-  // _compute1() car les mailles de bord et internes sont mises à jour
-  // dans un ordre différent.
+  // Note that this method does not give the same behavior as
+  // _compute1() because the boundary and internal cells are updated
+  // in a different order.
   Integer nb_dir = defaultMesh()->dimension();
   for( Integer idir=0; idir<nb_dir; ++idir){
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
-    // Travail sur toutes les mailles
+    // Working on all cells
     ENUMERATE_CELL(icell,cdm.allCells()){
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
@@ -616,10 +616,10 @@ _sample(ICartesianMesh* cartesian_mesh)
   CartesianConnectivity cc = cartesian_mesh->connectivity();
   ENUMERATE_NODE(inode,allNodes()){
     Node n = *inode;
-    Cell c1 = cc.upperLeft(n); // Maille en haut à gauche
-    Cell c2 = cc.upperRight(n); // Maille en haut à droite
-    Cell c3 = cc.lowerRight(n); // Maille en bas à droite
-    Cell c4 = cc.lowerLeft(n); // Maille en bas à gauche
+    Cell c1 = cc.upperLeft(n); // Top-left cell
+    Cell c2 = cc.upperRight(n); // Top-right cell
+    Cell c3 = cc.lowerRight(n); // Bottom-right cell
+    Cell c4 = cc.lowerLeft(n); // Bottom-left cell
     info(6) << " C1=" << ItemPrinter(c1) << " C2=" << ItemPrinter(c2)
             << " C3=" << ItemPrinter(c3) << " C4=" << ItemPrinter(c4);
   }
@@ -635,8 +635,8 @@ _checkFaceUniqueIdsAreContiguous()
   if (!options()->checkContiguousFaceUniqueIds())
     return;
   info() << "Test " << A_FUNCINFO;
-  // Parcours les faces et vérifie que le uniqueId() de chaque face n'est
-  // pas supérieur au nombre total de face.
+  // Iterate over the faces and verify that the uniqueId() of each face is not
+  // greater than the total number of faces.
   Int64 total_nb_face = allFaces().own().size();
   total_nb_face = parallelMng()->reduce(Parallel::ReduceSum,total_nb_face);
   info() << "TotalNbFace=" << total_nb_face;
@@ -660,7 +660,7 @@ _testXmlInfos()
   if (mesh_elements.size()==0)
     return;
   XmlNode mesh_generator_element = mesh_elements[0].child("meshgenerator");
-  // Si nul, cela signifie qu'on n'utilise pas le 'meshgenerator'.
+  // If null, it means we are not using the 'meshgenerator'.
   if (mesh_generator_element.null()){
     info() << "No element <meshgenerator> found";
     return;
@@ -673,7 +673,7 @@ _testXmlInfos()
   XmlNode origine_node = cartesian_node.child("origine");
   XmlNode nsd_node = cartesian_node.child("nsd");
 
-  // Récupère et affiche les infos pour <lx>.
+  // Retrieves and displays the info for <lx>.
   XmlNodeList lx_node_list = cartesian_node.children("lx");
   info() << "NB_X=" << lx_node_list.size();
   for( XmlNode lx_node : lx_node_list ){
@@ -692,12 +692,12 @@ _testGridPartitioning()
 {
   if (!options()->unstructuredMeshFile.isPresent())
     return;
-  // NOTE: On utilise explicitement le namespace Arcane
-  // pour que la documentation générée par doxygen génère les
-  // liens correctement.
+  // NOTE: We explicitly use the Arcane namespace
+  // so that the documentation generated by doxygen generates the
+  // links correctly.
 
   //![SampleGridMeshPartitioner]
-  // file_name est le nom du fichier de maillage non structuré
+  // file_name is the name of the unstructured mesh file
 
   Arcane::String file_name = options()->unstructuredMeshFile();
   info() << "UnstructuredMeshFileName=" << file_name;
@@ -711,19 +711,19 @@ _testGridPartitioning()
   Arcane::IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2",file_name,pm);
   info() << "MESH=" << new_mesh;
 
-  // Création du service de partitionnement
+  // Creation of the partitioning service
   Arcane::ServiceBuilder<Arcane::IGridMeshPartitioner> sbuilder(sd);
   auto partitioner_ref = sbuilder.createReference("SimpleGridMeshPartitioner",new_mesh);
   Arcane::IGridMeshPartitioner* partitioner = partitioner_ref.get();
 
-  // Positionne les coordonnées de notre sous-domaine dans la grille
+  // Positions the coordinates of our subdomain in the grid
   Int32 sd_x = cartesian_mesh->cellDirection(MD_DirX).subDomainOffset();
   Int32 sd_y = cartesian_mesh->cellDirection(MD_DirY).subDomainOffset();
   Int32 sd_z = cartesian_mesh->cellDirection(MD_DirZ).subDomainOffset();
   partitioner->setPartIndex(sd_x,sd_y,sd_z);
 
-  // Positionne la bounding box de notre sous-domaine.
-  // Pour cela, parcours uniquement nos noeuds et prend les coordonnées min et max
+  // Positions the bounding box of our subdomain.
+  // To do this, iterate only over our nodes and take the min and max coordinates
   Real max_value = FloatInfo<Real>::maxValue();
   Real min_value = -max_value;
   Arcane::Real3 min_box(max_value,max_value,max_value);
@@ -739,12 +739,12 @@ _testGridPartitioning()
   }
   partitioner->setBoundingBox(min_box,max_box);
 
-  // Applique le partitionnement
+  // Applies the partitioning
   partitioner->applyMeshPartitioning(new_mesh);
   //![SampleGridMeshPartitioner]
 
-  // Maintenant, écrit le fichier du maillage non structuré et de notre partie
-  // cartésienne.
+  // Now, write the unstructured mesh file and our
+  // Cartesian part.
   const bool is_debug = false;
   if (is_debug){
     ServiceBuilder<IMeshWriter> sbuilder2(sd);

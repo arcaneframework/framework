@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" ?>
 
 <module name="PartialVariableTester" version="1.0">
-  <description>Descripteur du module PartialVariableTester</description>
+  <description>Descriptor of the PartialVariableTester module</description>
 
   <variables />
 
@@ -27,7 +27,7 @@
       default = "10"
       >
       <name lang='fr'>max-iteration</name>
-      <description>Nombre d'itérations à effectuer</description>
+      <description>Number of iterations to perform</description>
     </simple>
   </options>
 

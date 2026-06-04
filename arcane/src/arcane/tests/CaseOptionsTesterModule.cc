@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionsTesterModule.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Module de test des options du jeu de données.                             */
+/* Data set options test module.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -108,8 +108,9 @@ namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exemple de module.
+ * \brief Example module.
  */
 class CaseOptionsTesterModule
 : public ArcaneCaseOptionsTesterObject
@@ -264,8 +265,8 @@ CaseOptionsTesterModule(const Arcane::ModuleBuildInfo& mb)
     cm->addFunction(new StandardFuncTest(bi));
 
     ICaseDocument* doc = cm->caseDocument();
-    // 'doc' peut être nul lorsqu'on génère le infos sur tous les
-    // modules et service via 'dump_internal'
+    // 'doc' can be null when generating info on all
+    // modules and services via 'dump_internal'
     if (doc){
       info() << "DefaultCategory1=" << doc->fragment()->defaultCategory();
       String xd = platform::getEnvironmentVariable("ARCANE_DEFAULT_CATEGORY");
@@ -275,8 +276,7 @@ CaseOptionsTesterModule(const Arcane::ModuleBuildInfo& mb)
     }
   }
 
-  // Appelle les méthodes _onBeforePhase{1|2} lors des phases de lecture du
-  // jeu de données.
+  // Calls the _onBeforePhase{1|2} methods during the data reading phases.
   m_observers.addObserver(this,&CaseOptionsTesterModule::_onBeforePhase1,
                           cm->observable(eCaseMngEventType::BeginReadOptionsPhase1));
   m_observers.addObserver(this,&CaseOptionsTesterModule::_onBeforePhase2,
@@ -370,10 +370,10 @@ _onBeforePhase2()
   using namespace Arcane;
 
   info() << "Event: BeforeReadPhase2";
-  // Lors de la phase2, le maillage a déjà été lu donc on peut
-  // changer dynamiquement les valeurs en récupérant des infos du maillage.
+  // During phase 2, the mesh has already been read, so we can
+  // dynamically change values by retrieving mesh information.
 
-  // Pour test, positionne l'option avec le nom du premier groupe de face.
+  // For testing, positions the option with the name of the first face group.
   ItemGroupCollection face_groups = defaultMesh()->faceFamily()->groups();
   info() << "NbFaceGroup=" << face_groups.count();
   ItemGroup last_group = face_groups.front();
@@ -420,7 +420,7 @@ arcaneLoop()
 void CaseOptionsTesterModule::
 arcaneLoop2()
 {
-  // Pour tester l'appel spécifique à un point d'entrée.
+  // To test the specific call to an entry point.
   info() << "ArcaneLoop2";
   if (m_arcane_loop_done)
     ARCANE_FATAL("Only this entry point should be called");
@@ -435,7 +435,7 @@ build()
   using namespace Arcane;
 
   info() << "Entering " << A_FUNCNAME;
-  // Vérifie que le module implémente bien l'interface ICaseOptionTestInterface
+  // Checks that the module correctly implements the ICaseOptionTestInterface
   ICaseOptionTestInterface* o = this;
   info() << "ICaseOptionTestInterface=" << o;
   if (options()->hasMultipleMesh())
@@ -692,7 +692,7 @@ class ServiceInterface1ImplTestService
   String meshName() const override { return mesh()->name(); }
   void checkSubMesh(const String& mesh_name) override
   {
-    // Vérifie que les sous-services sont bien associés au maillage \a mesh_name
+    // Checks that the sub-services are associated with the mesh \a mesh_name
     info() << "CHECK_SUB_MESH";
     IPostProcessorWriter* w = options()->postProcessor1();
     ARCANE_CHECK_POINTER(w);
@@ -762,7 +762,7 @@ _testDynamicService()
   ARCANE_CHECK_POINTER(si1.get());
   si1->checkDynamicCreation();
 
-  // Teste référence nulle
+  // Test null reference
   Ref<IServiceInterface1> si2 = builder.createReference("ServiceInterface1ImplTestInvalid",doc,SB_AllowNull);
   if (si2.get())
     ARCANE_FATAL("Service should be null");

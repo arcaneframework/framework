@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableComparatorUnitTest.hh                            (C) 2000-2025 */
 /*                                                                           */
-/* Service de test pour les services implémentant ISimpleTableComparator.    */
+/* Test service for services implementing ISimpleTableComparator.            */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_TESTS_SIMPLETABLECOMPARATORUNITTEST_H

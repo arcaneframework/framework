@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshTestUtils.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
+/* Utility functions for 'CartesianMesh' tests.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,7 +50,7 @@ CartesianMeshV2TestUtils::
 void CartesianMeshV2TestUtils::
 testAll()
 {
-  // Ajouter les tests
+  // Add tests
 }
 
 /*---------------------------------------------------------------------------*/

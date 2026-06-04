@@ -33,14 +33,14 @@ class ParallelCorefinementTest :
   public ArcaneParallelCorefinementTestObject
 {
 public:
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   ParallelCorefinementTest(const Arcane::ServiceBuildInfo & sbi);
   
-  /** Destructeur de la classe */
+  /** Destructor of the class */
   virtual ~ParallelCorefinementTest();
   
 public:
-  /** Retourne le numéro de version du module */
+  /** Returns the module version number */
   virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1,0,0); }
 
   void initializeTest();
@@ -101,7 +101,7 @@ ParallelCorefinementTest::
 initializeTest()
 {
   info() << "init";
-  mesh()->modifier()->setDynamic(true); // permet de modifier le maillage pour le coraffinement
+  mesh()->modifier()->setDynamic(true); // allows mesh modification for corefinement
   m_master_group = mesh()->faceFamily()->findGroup(options()->master(),true);
   m_slave_group = mesh()->faceFamily()->findGroup(options()->slave(),true);
   m_corefinement = options()->corefinement();
@@ -192,7 +192,7 @@ executeTest()
   const IParallelCorefinement::FaceFaceContactList & contacts = m_corefinement->contacts();
   pinfo() << "Local co-refinement size : " << contacts.size();
 
-  // *- Tests complémentaires d'intégrité
+  // *- Additional integrity tests
   Real3 normalA_coref(0,0,0), normalA_local(0,0,0);
   Real3 normalB_coref(0,0,0), normalB_local(0,0,0);
 

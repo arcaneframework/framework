@@ -1,5 +1,5 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
-<!-- Description de la configuration du module 'ModuleSimpleHydro' -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!-- Description of the 'SimpleHydro' module configuration -->
 <module name="SimpleHydro" version="1.0" namespace-macro-name="SIMPLE_HYDRO">
   <interface name="SimpleHydro::SimpleHydroModuleBase" />
   <variables>
@@ -204,8 +204,8 @@
       >
       <userclass>User</userclass>
       <description>
-        Valeur minimale que peut prendre le <em>deltat</em> entre deux
-        itérations.
+        Minimum value that <em>deltat</em> can take between two
+        iterations.
       </description>
     </simple>
 
@@ -216,9 +216,9 @@
       >
       <userclass>User</userclass>
       <description>
-        Valeur maximale que peut prendre le <em>deltat</em> entre deux
-        itérations. Si le deltat calculé est supérieur à cette valeur,
-        il est ramené à cette valeur.
+        Maximum value that <em>deltat</em> can take between two
+        iterations. If the calculated deltat is greater than this value,
+        it is reduced to this value.
       </description>
     </simple>
 
@@ -229,7 +229,7 @@
       >
       <userclass>User</userclass>
       <description>
-        Valeur du <em>deltat</em> au moment du démarrage.
+        Value of <em>deltat</em> at startup.
       </description>
     </simple>
 
@@ -241,9 +241,9 @@
       <name lang='fr'>temps-final</name>
       <userclass>User</userclass>
       <description>
-        Temps auquel on stoppe la simulation. Le code s'arrête dès que
-        le temps courant est <strong>strictement</strong> supérieur à
-        ce temps.
+        Time at which the simulation stops. The code stops as soon as
+        the current time is <strong >strictly</strong > greater than
+        this time.
       </description>
     </simple>
 
@@ -257,9 +257,9 @@
       <name lang='fr'>test-int32</name>
       <userclass>User</userclass>
       <description>
-        Temps auquel on stoppe la simulation. Le code s'arrête dès que
-        le temps courant est <strong>strictement</strong> supérieur à
-        ce temps.
+        Time at which the simulation stops. The code stops as soon as
+        the current time is <strong >strictly</strong > greater than
+        this time.
       </description>
     </simple>
 
@@ -270,7 +270,7 @@
       default  = "0.3"
       >
       <description>
-        Définition de la CFL
+        Definition of CFL
       </description>
     </simple>
     
@@ -281,7 +281,7 @@
       default  = "0.99"
       >
       <description>
-        Amplitude maximale de décroissance du pas de temps
+        Maximum amplitude of time step decrease
       </description>
     </simple>
     
@@ -292,7 +292,7 @@
       default  = "0.10"
       >
       <description>
-        Amplitude maximale de croissance du pas de temps
+        Maximum amplitude of time step increase
       </description>
     </simple>
     
@@ -303,7 +303,7 @@
       default  = "0.1"
       >
       <description>
-        Seuil d'accroissement relatif de la densité pour le contrôle du pas de temps
+        Relative density increase threshold for time step control
       </description>
     </simple>
 
@@ -314,9 +314,9 @@
       default  = "1.0"
       >
       <description>
-        Cette option détermine le coefficient linéaire pour la
-        viscosité scalaire aux mailles ainsi que pour la viscosité
-        tensorielle aux arêtes.
+        This option determines the linear coefficient for the
+        scalar viscosity on cells as well as for the tensorial viscosity
+        on edges.
       </description>
     </simple>
 
@@ -327,9 +327,9 @@
       default  = "1.0"
       >
       <description>
-        Cette option détermine le coefficient quadratique pour la
-        viscosité scalaire aux mailles ainsi que pour la viscosité
-        tensorielle aux arêtes.
+        This option determines the quadratic coefficient for the
+        scalar viscosity on cells as well as for the tensorial viscosity
+        on edges.
       </description>
     </simple>
 
@@ -340,8 +340,8 @@
       default  = "true"
       >
       <description>
-        Vrai s'il faut limiter au maximum l'usage de la mémoire. Cela provoque
-        la désallocation des structures du maillage et empêche les protections.
+        True if memory usage must be limited to a maximum. This causes
+        the deallocation of mesh structures and prevents protections.
       </description>
     </simple>
 
@@ -352,7 +352,7 @@
       default = "none"
       >
       <description>
-        Choix de la viscosité.
+        Choice of viscosity.
       </description>
       <enumvalue genvalue="TypesSimpleHydro::ViscosityNo" name="none" />
       <enumvalue genvalue="TypesSimpleHydro::ViscosityCellScalar" name="cell" />
@@ -365,7 +365,7 @@
       maxOccurs = "unbounded"
       >
       <description>
-        Type de condition aux limites
+        Boundary condition type
       </description>
       <enumvalue genvalue="TypesSimpleHydro::VelocityX" name="Vx" />
       <enumvalue genvalue="TypesSimpleHydro::VelocityY" name="Vy" />
@@ -379,7 +379,7 @@
       maxOccurs = "unbounded"
       >
       <description>
-        Surface sur laquelle s'applique la condition aux limites
+        Surface on which the boundary condition is applied
       </description>
     </extended>
 
@@ -389,7 +389,7 @@
       default = "0"
       >
       <description>
-        Si non nul, indique le numero de l'itération a laquelle on souhaite faire un retour arrière.
+        If not zero, indicates the iteration number to which a rollback is desired.
       </description>
     </simple>
 
@@ -402,7 +402,7 @@
       interface = "SimpleHydro::IBoundaryCondition"
       >
       <description>
-        Condition aux limites
+        Boundary condition
       </description>
 
       <enumeration
@@ -410,7 +410,7 @@
         type = "TypesSimpleHydro::eBoundaryCondition"
         >
         <description>
-          Type de condition aux limites
+          Boundary condition type
         </description>
         <enumvalue genvalue="TypesSimpleHydro::VelocityX" name="Vx" />
         <enumvalue genvalue="TypesSimpleHydro::VelocityY" name="Vy" />
@@ -422,7 +422,7 @@
         type = "Arcane::FaceGroup"
         >
         <description>
-          Surface sur laquelle s'applique la condition aux limites
+          Surface on which the boundary condition is applied
         </description>
       </extended>
 
@@ -431,7 +431,7 @@
         type = "real"
         >
         <description>
-          Valeur de la composante à fixer.
+          Value of the component to be fixed.
         </description>
       </simple>
 
@@ -444,23 +444,23 @@
       default  = "false"
       >
       <description>
-        Si vrai, utilise une gestion spécifique du listing.
+        If true, uses specific listing management.
       </description>
     </simple>
 
     <!-- - - - - - viscosity-linear-coef - - - - -->
     <service-instance name="generic-service" type="SimpleHydro::ISimpleHydroService" optional="true">
       <description>
-        Pour le module hydro générique, spécifie le nom du service implémentant
-        l'hydro.
+        For the generic hydro module, specifies the name of the service implementing
+        the hydro.
       </description>
     </service-instance>
 
     <!-- - - - - - viscosity-linear-coef - - - - -->
     <simple name="check-numerical-result" type="bool" default="false" >
       <description>
-        Indique si on souhaite vérifier numériquement les valeurs (faux par défaut
-        car cela n'est pas implémenté pour toutes les implémentations de l'hydro).
+        Indicates whether to numerically check the values (false by default
+        because it is not implemented for all hydro implementations).
       </description>
     </simple>
 

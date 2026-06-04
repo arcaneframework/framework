@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MultipleMeshUnitTest.cc                                     (C) 2000-2019 */
 /*                                                                           */
-/* Teste l'utilisation de maillage multiples.                                */
+/* Tests the use of multiple meshes.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,8 +46,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test l'utilisation de maillage multiples.
+ * \brief Tests the use of multiple meshes.
  */
 class MultipleMeshUnitTest
 : public ArcaneMeshUnitTestObject
@@ -119,12 +120,12 @@ _testMesh(const String& mesh_name,bool do_output)
   IPrimaryMesh* new_mesh = mf->createMesh(sd,pm->sequentialParallelMng(),mesh_name);
   VariableNodeReal3 mesh_coords(current_mesh->nodesCoordinates());
 
-  // Création d'un nouveau maillage contenant uniquement la première moitié
-  // des mailles du maillage initial.
+  // Creation of a new mesh containing only the first half
+  // of the initial mesh.
 
-  // Pour tester les performances de l'ajout incrémental de maille,
-  // on désactive les vérifications, le compactage et le tri et on appelle endUpdate()
-  // pour chaque maille ajoutée.
+  // To test the performance of incremental mesh addition,
+  // we disable checks, compaction, and sorting and call endUpdate()
+  // for each added mesh.
   new_mesh->setDimension(mesh()->dimension());
   new_mesh->properties()->setBool("compact",false);
   new_mesh->properties()->setBool("sort",false);
@@ -134,16 +135,16 @@ _testMesh(const String& mesh_name,bool do_output)
   VariableNodeReal3 new_mesh_coords(new_mesh->nodesCoordinates());
   VariableCellReal cell_coord(VariableBuildInfo(new_mesh,"CellCoord"));
   Int32UniqueArray new_cells_local_id(1);
-  // Pour tester la destruction d'entités, fait 3 fois la
-  // même opération
+  // To test entity destruction, perform the
+  // same operation 3 times
   Integer max_create = 3;
   for( Integer icreate=0; icreate<max_create; ++icreate ){
     CellGroup all_cells = mesh()->allCells();
     Integer max_index = all_cells.size() / (1 + max_create - icreate);
     info() << "Doing iteration i=" << icreate << " mesh=" << mesh_name << " max_index=" << max_index;
     new_mesh->modifier()->clearItems();
-    // Désactive les vérifications au cours de la création pour
-    // des raisons de performance.
+    // Disables checks during creation for
+    // performance reasons.
     new_mesh->setCheckLevel(0);
     Int64UniqueArray cells_infos;
     IMeshModifier* modifier = new_mesh->modifier();
@@ -169,13 +170,13 @@ _testMesh(const String& mesh_name,bool do_output)
       //if ((index%30)==0)
       //info() << " new_cell_local_id=" << new_cells_local_id[0];
       Cell new_cell = new_cell_family->findOneItem(cell.uniqueId());
-      // met à jour les coordonnées du nouveau maillage à partir de l'ancien
+      // updates the coordinates of the new mesh from the old one
       for( Integer i=0; i<nb_node; ++i )
         new_mesh_coords[new_cell.node(i)] = mesh_coords[cell.node(i)];
       ++index;
     }
 
-    // Vérifie que le maillage est valide.
+    // Checks that the mesh is valid.
     new_mesh->checkValidMesh();
     ENUMERATE_CELL(icell,new_mesh->allCells()){
       Cell cell = *icell;
@@ -184,7 +185,7 @@ _testMesh(const String& mesh_name,bool do_output)
   }
 
   if (do_output){
-    // Pour test, fait une sortie de dépouillement sur ce nouveau maillage.
+    // For testing, performs a post-processing output on this new mesh.
     StringBuilder outdir("test");
     outdir += pm->commRank();
     _writePostProcessing(new_mesh,outdir);

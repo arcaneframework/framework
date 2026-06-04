@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshIntersectionUnitTest.cc                                 (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des variables.                                            */
+/* Variable test service.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,8 +36,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des variables
+ * \brief Variable test module
  */
 class RayMeshIntersectionUnitTest
 : public ArcaneRayMeshIntersectionUnitTestObject
@@ -82,7 +83,7 @@ executeTest()
   Int32 my_rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
   info() << "EXEC TEST rank=" << my_rank << " nb_rank=" << nb_rank;
-  // Creation de n rayons
+  // Creation of n rays
   Integer n0 = 15; // 40 pour un plus gros test.
   Integer nb_segment = (n0*n0) / nb_rank;
   Real3UniqueArray segments_position(nb_segment);
@@ -110,11 +111,11 @@ executeTest()
   ServiceBuilder<IRayMeshIntersection> sb(subDomain());
   auto mi(sb.createReference("BasicRayMeshIntersection"));
 
-  // Calcul avec les segments
+  // Calculation with segments
   mi->compute(segments_position,segments_direction,segments_orig_face,segments_user_value,
               segments_intersection,segments_distance,faces_lid);
 
-  // Calcul avec les rayons sous forme de particule
+  // Calculation with rays in particle form
   IItemFamily* ray_family = mesh()->findItemFamily(IK_Particle,"Rays",true);
   Int64UniqueArray uids(nb_segment);
   Int32UniqueArray local_ids(nb_segment);
@@ -130,7 +131,7 @@ executeTest()
   VariableParticleInt32 user_values(VariableBuildInfo(ray_family,"UserValues"));
   VariableParticleInt32 rays_orig_face(VariableBuildInfo(ray_family,"OriginalFace"));
   VariableParticleInt32 rays_face(VariableBuildInfo(ray_family,"Face"));
-  // Pour test, supprime quelques rayons
+  // For testing, remove some rays
   {
     Int32UniqueArray to_remove_rays;
     for( Integer i=0; i<(nb_segment/10); ++i ){

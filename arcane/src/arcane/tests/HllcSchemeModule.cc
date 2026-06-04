@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HllcSchemeModule.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Schéma HLLC pour les équations d'Euler sur maillage 2D/3D non-structuré. */
+/* HLLC Scheme for Euler equations on unstructured 2D/3D mesh.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,18 +52,19 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module implémentant le schéma HLLC pour les équations d'Euler.
+ * \brief Module implementing the HLLC scheme for Euler equations.
  *
- * Ce module résout les équations d'Euler compressibles 2D/3D sur maillage
- * non-structuré en utilisant un schéma volumes finis avec:
- *   - Solveur de Riemann HLLC (estimateur d'Einfeldt)
- *   - Reconstruction MUSCL avec limiteur (optionnel)
- *   - Pas de temps CFL sur accélérateur
- *   - Loi des gaz parfaits
+ * This module solves compressible 2D/3D Euler equations on unstructured mesh
+ * using a finite volume scheme with:
+ *   - HLLC Riemann solver (Einfeldt estimator)
+ *   - MUSCL reconstruction with limiter (optional)
+ *   - CFL time step on accelerator
+ *   - Ideal gas law
  *
- * Les boucles de calcul principales utilisent l'API accélérateur d'Arcane
- * (RUNCOMMAND_ENUMERATE, vues, réducteurs).
+ * The main calculation loops use the Arcane accelerator API
+ * (RUNCOMMAND_ENUMERATE, views, reducers).
  */
 class HllcSchemeModule
 : public ArcaneHllcSchemeObject
@@ -192,14 +193,14 @@ init()
   if (m_dimension != 2 && m_dimension != 3)
     ARCANE_FATAL("Unsupported mesh dimension {0} (only 2 and 3 are supported)", m_dimension);
 
-  // Initialise les connectivités pour l'accélérateur
+  // Initialise the connectivities for the accelerator
   m_connectivity_view.setMesh(mesh());
 
   _computeGeometry();
 
-  // Initialise les conditions aux limites sur les faces
+  // Initialize boundary conditions on faces
   {
-    // Valeur par défaut: toutes les faces sont à Wall (0)
+    // Default value: all faces are at Wall (0)
     ENUMERATE_(Face, iface, allFaces()) {
       m_face_bc_type[iface] = static_cast<Int32>(TypesHllcScheme::Wall);
     }
@@ -277,15 +278,16 @@ init()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule la normale à une face (ou arête en 2D).
+ * \brief Calculates the normal vector for a face (or edge in 2D).
  *
- * En 3D: normale = somme des demi-produits vectoriels des triangles
- * formés par le centre de la face et chaque arête.
- * Le vecteur résultat a pour norme l'aire de la face.
+ * In 3D: normal = sum of half cross products of triangles
+ * formed by the face center and each edge.
+ * The resulting vector has a norm equal to the area of the face.
  *
- * En 2D: normale = perpendiculaire à l'arête, norme = longueur de l'arête.
- * Soit une arête de p0 à p1: n = (p1.y-p0.y, p0.x-p1.x, 0).
+ * In 2D: normal = perpendicular to the edge, norm = length of the edge.
+ * Given an edge from p0 to p1: n = (p1.y-p0.y, p0.x-p1.x, 0).
  */
 Real3 HllcSchemeModule::
 _faceNormal(const Face& face) const
@@ -358,14 +360,15 @@ _faceCenter(const Face& face) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule les volumes (aires en 2D), normales aux faces et centres.
+ * \brief Calculates volumes (areas in 2D), face normals, and centers.
  *
- * Volume/aire calculé(e) par le théorème de la divergence:
+ * Volume/area calculated by the divergence theorem:
  *   3D: V = (1/3) * Σ_f (x_f · n_f)
  *   2D: A = (1/2) * Σ_e (x_e · n_e)
  *
- * Cette méthode reste sur CPU car elle n'est appelée qu'une fois.
+ * This method remains on the CPU because it is only called once.
  */
 void HllcSchemeModule::
 _computeGeometry()
@@ -409,10 +412,11 @@ _computeGeometry()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule le pas de temps CFL.
+ * \brief Calculates the CFL time step.
  *
- * Longueur caractéristique:
+ * Characteristic length:
  *   3D: dx = V^(1/3)
  *   2D: dx = sqrt(A)
  */
@@ -464,17 +468,17 @@ _computeDeltat()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Met à jour les variables conservatives via les flux HLLC.
+ * \brief Updates the conservative variables via HLLC fluxes.
  *
- * Utilise une approche « cell-loop over faces »: chaque maille parcourt
- * ses faces et accumule la contribution du flux dans des accumulateurs
- * locaux (pas d'opération atomique). Les faces internes sont traitées
- * deux fois (une fois par maille adjacente), ce qui est correct car la
- * contribution est symétrique en signe.
+ * Uses a "cell-loop over faces" approach: each mesh iterates over its faces
+ * and accumulates the flux contribution in local accumulators (no atomic
+ * operation). Internal faces are treated twice (once by each adjacent mesh),
+ * which is correct because the contribution is symmetric in sign.
  *
- * Les conditions aux limites de type paroi glissante sont traitées
- * directement dans la boucle face lorsque nbCell==1.
+ * Slippery wall boundary conditions are handled directly in the face loop
+ * when nbCell==1.
  */
 void HllcSchemeModule::
 _updateConservative()
@@ -486,11 +490,11 @@ _updateConservative()
 
   auto command = makeCommand(m_default_queue);
 
-  // Connectivités accélérateur
+  // Connectivity accelerator
   auto fcc = m_connectivity_view.faceCell();
   auto cfc = m_connectivity_view.cellFace();
 
-  // Vues d'entrée (lecture seule)
+  // Input views (read-only)
   auto in_density = ax::viewIn(command, m_density);
   auto in_momentum = ax::viewIn(command, m_momentum);
   auto in_energy = ax::viewIn(command, m_energy);
@@ -505,7 +509,7 @@ _updateConservative()
   auto in_face_bc_velocity = ax::viewIn(command, m_face_bc_velocity);
   auto in_face_bc_pressure = ax::viewIn(command, m_face_bc_pressure);
 
-  // Vues de sortie (écriture)
+  // Output views (write)
   auto out_density = ax::viewOut(command, m_density);
   auto out_momentum = ax::viewOut(command, m_momentum);
   auto out_energy = ax::viewOut(command, m_energy);
@@ -516,7 +520,7 @@ _updateConservative()
     Real3 flux_mom = Real3::zero();
     Real flux_e = Real(0.0);
 
-    // Parcours des faces de la maille cid
+    // Iterate over the faces of cell cid
     for (FaceLocalId fid : cfc.faces(cid)) {
       auto cells = fcc.cells(fid);
       Int32 nb_face_cell = cells.size();
@@ -527,7 +531,7 @@ _updateConservative()
       Real3 unit_normal = normal * inv_area;
       Real3 fc = in_face_center[fid];
 
-      // -- Face de bord: condition aux limites --
+      // -- Boundary face: boundary condition --
       if (nb_face_cell == 1) {
         Real3 c0 = in_cell_center[cid];
         if (math::dot(fc - c0, unit_normal) < Real(0.0))
@@ -544,19 +548,19 @@ _updateConservative()
         FluxState f;
 
         if (bc_type == static_cast<Int32>(TypesHllcScheme::Outflow)) {
-          // Sortie libre (gradient nul): utiliser l'état de la maille
+          // Free outflow (zero gradient): use the cell state
           p_bc = p_cell;
           f = eulerFlux(p_bc, unit_normal, gamma);
         }
         else if (bc_type == static_cast<Int32>(TypesHllcScheme::Inflow)) {
-          // Entrée imposée: utiliser l'état spécifié
+          // Imposed inflow: use the specified state
           p_bc.density = in_face_bc_density[fid];
           p_bc.velocity = in_face_bc_velocity[fid];
           p_bc.pressure = in_face_bc_pressure[fid];
           f = eulerFlux(p_bc, unit_normal, gamma);
         }
         else {
-          // Paroi glissante (défaut): miroir de la vitesse normale
+          // Slippery wall (default): mirror of the normal velocity
           Real vn = math::dot(p_cell.velocity, unit_normal);
           if (vn < Real(0.0)) {
             p_bc = p_cell;
@@ -576,11 +580,11 @@ _updateConservative()
         continue;
       }
 
-      // -- Face interne: deux mailles adjacentes --
+      // -- Internal face: two adjacent cells --
       CellLocalId cl = cells[0];
       CellLocalId cr = cells[1];
 
-      // États primitifs aux centres des mailles
+      // Primitive states at cell centers
       PrimitiveState pL, pR;
       {
         Real rl = in_density[cl];
@@ -593,7 +597,7 @@ _updateConservative()
         pR.pressure = in_pressure[cr];
       }
 
-      // Oriente la normale pour qu'elle pointe de cl vers cr
+      // Orient the normal to point from cl to cr
       Real3 diff_dir = in_cell_center[cr] - in_cell_center[cl];
       bool swapped = false;
       if (math::dot(diff_dir, unit_normal) < Real(0.0)) {
@@ -601,22 +605,22 @@ _updateConservative()
         swapped = true;
       }
 
-      // Ajuste la paire (pL,pR) si nécessaire pour que
-      // pL corresponde au « côté gauche » de la normale
+      // Adjust the pair (pL,pR) if necessary so that
+      // pL corresponds to the "left side" of the normal
       if (swapped) {
         PrimitiveState tmp = pL;
         pL = pR;
         pR = tmp;
       }
 
-      // Reconstruction MUSCL au second ordre
+      // Second-order MUSCL reconstruction
       if (spatial_order >= 2) {
         Real3 dx_l = fc - in_cell_center[cl];
         Real3 dx_r = fc - in_cell_center[cr];
         Real dx_n_l = math::dot(dx_l, unit_normal);
         Real dx_n_r = math::dot(dx_r, unit_normal);
 
-        // Limiteur simplifié: r = |dq|/(|dq|+eps)
+        // Simplified limiter: r = |dq|/(|dq|+eps)
         auto recon_scalar = [&](Real qL, Real qR, Real dx) -> Real {
           Real dq = qR - qL;
           Real eps = FloatInfo<Real>::epsilon();
@@ -642,15 +646,15 @@ _updateConservative()
         pR.velocity += Real(0.5) * phi_v * dx_n_r * dvn * unit_normal;
       }
 
-      // Flux HLLC à la face
+      // HLLC flux at the face
       FluxState flux = hllcFlux(pL, pR, unit_normal, gamma);
       flux.density_flux *= area;
       flux.momentum_flux *= area;
       flux.energy_flux *= area;
 
-      // Contribution au flux cumulé pour la maille cid:
-      //   Si cid == cl (côté gauche) → signe +  (flux sortant)
-      //   Si cid == cr (côté droit)  → signe -  (flux entrant)
+      // Contribution to the cumulative flux for cell cid:
+      //   If cid == cl (left side) -> + sign (outgoing flux)
+      //   If cid == cr (right side) -> - sign (incoming flux)
       Real side = Real(1.0);
       if (cid == cl)
         side = Real(1.0);
@@ -662,7 +666,7 @@ _updateConservative()
       flux_e += side * flux.energy_flux;
     }
 
-    // Mise à jour conservative: U^{n+1} = U^n - dt/V * Σ(F·n·A)
+    // Conservative update: U^{n+1} = U^n - dt/V * Σ(F·n·A)
     Real inv_vol = Real(1.0) / in_cell_volume[cid];
     Real new_density = in_density[cid] - dt * inv_vol * flux_rho;
     Real3 new_momentum = in_momentum[cid] - dt * inv_vol * flux_mom;
@@ -681,8 +685,9 @@ _updateConservative()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule la pression par la loi des gaz parfaits (sur accélérateur).
+ * \brief Calculates the pressure using the ideal gas law (on accelerator).
  *
  *   p = (γ-1) * (ρE - ½|ρu|²/ρ)
  */

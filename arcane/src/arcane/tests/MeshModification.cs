@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Arcane;
 using Real = System.Double;
 #if ARCANE_64BIT
@@ -169,14 +169,14 @@ public class MeshModificationService
   }
 
   /*!
-   * \brief Raffine certaines mailles en pyramide.
+   * \brief Refines certain meshes into pyramids.
    *
-   * Prend un hexaèdre sur trois:
-   * - créé un noeud au centre de cet hexaèdre
-   * - detache l'héxaèdre
-   * - créé une pyramide (avec le uniqueId() de l'hexaèdre d'origine), en prenant comme base
-   * la première face de l'hexaèdre et comme sommet de la pyramide le noeud créé.
-   * - supprime les mailles détachées.
+   * Takes every third hexahedron:
+   * - creates a node at the center of this hexahedron
+   * - detaches the hexahedron
+   * - creates a pyramid (using the uniqueId() of the original hexahedron), taking as base
+   * the first face of the hexahedron and the created node as the pyramid's apex.
+   * - deletes the detached meshes.
    */
   void _RefineCells()
   {
@@ -194,16 +194,16 @@ public class MeshModificationService
     List<Real3> nodes_to_add_coords = new List<Real3>();
     VariableNodeReal3 nodes_coords = mesh.NodesCoordinates();
     foreach(Cell c in all_cells){
-      //TODO: tester si la maille est un hexaedre
+      //TODO: test if the mesh is a hexahedron
       //if (c.
       ++index;
       if ((index % 3) == 0){
         cells_to_detach.Add(c.LocalId);
 
-        to_add_cells.Add(8); // Pour une pyramide
-        //to_add_cells.Add(max_cell_uid + index); // Pour le uid
-        to_add_cells.Add(c.UniqueId + max_cell_uid); // Pour le uid, reutilise celui de la maille supprimée
-        //to_add_cells.Add(c.UniqueId); // Pour le uid, reutilise celui de la maille supprimée
+        to_add_cells.Add(8); // For a pyramid
+        //to_add_cells.Add(max_cell_uid + index); // For the uid
+        to_add_cells.Add(c.UniqueId + max_cell_uid); // For the uid, reuses the ID of the deleted mesh
+        //to_add_cells.Add(c.UniqueId); // For the uid, reuses the ID of the deleted mesh
         to_add_cells.Add(c.Node(0).UniqueId);
         to_add_cells.Add(c.Node(1).UniqueId);
         to_add_cells.Add(c.Node(2).UniqueId);
@@ -259,12 +259,12 @@ public class MeshModificationService
     }
     Console.WriteLine(".");
 
-    // Avant d'ajouter les nouvelles mailles, il faut détacher les anciennes
+    //Before adding the new meshes, the old ones must be detached
     modifier.DetachCells(cells_to_detach.ConstView);
     modifier.AddCells(nb_cell_to_add,to_add_cells.ConstView);
     modifier.RemoveDetachedCells(cells_to_detach.ConstView);
     modifier.EndUpdate();
-    // Pour l'instant indispensable. Il faudra le supprimer par la suite
+    //For now indispensable. It will have to be removed later
     //nodes_coords.Dispose();
   }
 

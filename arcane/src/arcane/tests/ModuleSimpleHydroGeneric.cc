@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleSimpleHydroGeneric.cc                                 (C) 2000-2024 */
 /*                                                                           */
-/* Module Hydrodynamique simple délégant l'implémentation.                   */
+/* Simple Hydrodynamics Module delegating the implementation.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,16 +54,17 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié générique
- * utilisant un service pour l'implémentation.
+ * \brief Generic simplified hydrodynamics module
+ * using a service for implementation.
  */
 class ModuleSimpleHydroGeneric
 : public ArcaneSimpleHydroObject
 {
  public:
 
-  //! Constructeur
+  //! Constructor
   explicit ModuleSimpleHydroGeneric(const ModuleBuildInfo& mb);
 
  public:

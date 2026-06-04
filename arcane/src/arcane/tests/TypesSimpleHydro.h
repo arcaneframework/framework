@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TypesSimpleHydro.h                                          (C) 2000-2020 */
 /*                                                                           */
-/* Types du module d'hydrodynamique.                                         */
+/* Types of the hydrodynamics module.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANETEST_TYPESSIMPLEHYDRO_H
 #define ARCANETEST_TYPESSIMPLEHYDRO_H
@@ -44,10 +44,10 @@ class TypesSimpleHydro
 
   enum eBoundaryCondition
   {
-    VelocityX, //!< Vitesse X fixée
-    VelocityY, //!< Vitesse Y fixée
-    VelocityZ, //!< Vitesse Z fixée
-    Unknown    //!< Type inconnu
+    VelocityX, //!< Fixed X velocity
+    VelocityY, //!< Fixed Y velocity
+    VelocityZ, //!< Fixed Z velocity
+    Unknown    //!< Unknown type
   };
 };
 
@@ -131,5 +131,4 @@ class ISimpleHydroService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

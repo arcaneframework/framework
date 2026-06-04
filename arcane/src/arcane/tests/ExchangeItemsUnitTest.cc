@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExchangeItemsUnitTest.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Service du test de l'échange d'items.                                     */
+/* Item exchange test service.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -112,7 +112,7 @@ executeTest()
 void ExchangeItemsUnitTest::
 _partitionCells()
 {
-  // Change cells owner
+  // Change cell owner
   VariableItemInt32& cell_new_owners = mesh()->cellFamily()->itemsNewOwner();
   ENUMERATE_CELL(icell, allCells()) {
     cell_new_owners[icell] = 0; // everybody on subdomain 0
@@ -136,7 +136,7 @@ _partitionCells()
 
 
 
-  // une fois tout sur un proc on redispatche pour mimer un partitionement initial
+  // once everything is on one proc we redistribute to mimic an initial partitioning
   ENUMERATE_CELL(icell, allCells()) {
     cell_new_owners[icell] = (icell.index()*subDomain()->parallelMng()->commSize())/mesh()->cellFamily()->nbItem();
   }
@@ -158,7 +158,7 @@ _partitionCells()
 void ExchangeItemsUnitTest::
 _exchangeCellOwner()
 {
-  // Change cells owner
+  // Change cell owner
     VariableItemInt32& cell_new_owners = mesh()->cellFamily()->itemsNewOwner();
     Integer comm_size = mesh()->parallelMng()->commSize();
     ENUMERATE_CELL(icell, allCells()) {
@@ -202,7 +202,7 @@ _computeGhostPPVariable()
       CellVectorView ghost_items(mesh()->cellFamily()->view(synchronizer->sharedItems(i)));
       ENUMERATE_CELL(icell, ghost_items)
         {
-          m_ghostpp[icell][rank] = 2; // ou bien mettre un identifiant du propriï¿½taire
+          m_ghostpp[icell][rank] = 2; // or put an owner identifier
         }
     }
   m_ghostpp.synchronize();
@@ -221,7 +221,7 @@ _computeGhostPPVariable()
       NodeVectorView ghost_items(mesh()->nodeFamily()->view(node_synchronizer->sharedItems(i)));
       ENUMERATE_NODE(inode, ghost_items)
         {
-          m_node_ghostpp[inode][rank] = 2; // ou bien mettre un identifiant du propriétaire
+          m_node_ghostpp[inode][rank] = 2; // or put an owner identifier
         }
     }
   m_node_ghostpp.synchronize();
@@ -247,7 +247,7 @@ _computeGhostPPVariable()
       FaceVectorView ghost_items(mesh()->faceFamily()->view(face_synchronizer->sharedItems(i)));
       ENUMERATE_FACE(iface, ghost_items)
         {
-          m_face_ghostpp[iface][rank] = 2; // ou bien mettre un identifiant du propriétaire
+          m_face_ghostpp[iface][rank] = 2; // or put an owner identifier
         }
     }
   m_face_ghostpp.synchronize();

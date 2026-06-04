@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorMathUnitTest.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Service de test des fonctions mathématiques pour les accélérateurs.       */
+/* Test service for mathematical functions for accelerators.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,8 +33,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'AcceleratorViews'.
+ * \brief Test service for the 'AcceleratorViews' class.
  */
 class AcceleratorMathUnitTest
 : public BasicUnitTest

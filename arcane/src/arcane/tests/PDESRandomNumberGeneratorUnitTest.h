@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorUnitTest.h                         (C) 2000-2025 */
 /*                                                                           */
-/* Service de test du générateur de nombres (pseudo-)aléatoires avec         */
-/* l'algorithme pseudo-DES.                                                  */
+/* Test service for the (pseudo-)random number generator using               */
+/* the pseudo-DES algorithm.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_TESTS_PDESRANDOMNUMBERGENERATORUNITTEST_H

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMergeNodesUnitTest.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Service de test de la fusion des noeuds.                                  */
+/* Node merging test service.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,8 +39,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la fusion des noeuds.
+ * \brief Node merging test service.
  */
 class MeshMergeNodesUnitTest
 : public ArcaneMeshMergeNodesUnitTestObject
@@ -146,13 +147,13 @@ executeTest()
 void MeshMergeNodesUnitTest::
 _fillNodePairMap()
 {
-  // Pour détecter les noeuds à connecter, on suppose que le maillage
-  // a les propriétés suivantes:
-  // - en 2D les noeuds à fusionner sont sur deux verticales, l'une correspond à
-  // un X=0.5 et l'autre à X=0.51. Les noeuds de la seconde seront fusionnés
-  // avec ceux de la première.
-  // - en 3D, le principe est similaire mais la position de référence est 5.0
-  // et 5.1.
+  // To detect the nodes to connect, we assume that the mesh
+  // has the following properties:
+  // - In 2D, the nodes to merge are on two vertical lines, one corresponding to
+  // X=0.5 and the other to X=0.51. The nodes of the second will be merged
+  // with those of the first.
+  // - In 3D, the principle is similar but the reference position is 5.0
+  // and 5.1.
   VariableNodeReal3& coords = mesh()->nodesCoordinates();
   const Real epsilon = 1.0e-4;
   Real ref_pos_left = 0.5;
@@ -215,13 +216,13 @@ initializeTest()
   if (mesh()->parallelMng()->isParallel()) {
     if (mesh()->dimension()!=2)
       ARCANE_FATAL("This test is only valid for specific 'merge_nodes_2d.vtk'");
-    // En parallèle, comme on ne peut pas déterminer la liste des noeuds
-    // connectés car ils ne sont pas forcément dans le même sous-domaine
-    // on remplit directement les valeurs. Du coup ce test ne fonctionne
-    // qu'avec un maillage spécifique qui est actuellement le maillage 2D
-    // NOTE: pour l'insant le test n'est pas actif en parallèle car il faut ajouter
-    // des contraintes pour être sur que deux faces fusionnés sont dans le
-    // même sous-domaine.
+    // In parallel, since we cannot determine the list of connected nodes
+    // because they are not necessarily in the same subdomain,
+    // we fill the values directly. Thus, this test only works
+    // with a specific mesh, which is currently the 2D mesh.
+    // NOTE: for the instant, the test is not active in parallel because
+    // constraints must be added to ensure that two merged faces are in the
+    // same subdomain.
     _addNodePairDirect(-0.5, 6, 3);
     _addNodePairDirect(-0.4, 62, 35);
     _addNodePairDirect(-0.3, 63, 36);

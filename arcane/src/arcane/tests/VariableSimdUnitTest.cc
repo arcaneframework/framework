@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableSimdUnitTest.cc                                     (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des variables.                                            */
+/* Variable testing service.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,7 +51,7 @@ using namespace Arcane;
 namespace
 {
 
-//! Classe pour tester l'utilisation des vues avec une indirection supplémentaire
+//! Class to test the use of views with an additional indirection
 template<typename T>
 class IndirectArrayView
 {
@@ -77,8 +77,9 @@ class IndirectArrayView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la vectorisation sur les variables.
+ * \brief Service for testing vectorization on variables.
  */
 class VariableSimdUnitTest
 : public BasicUnitTest
@@ -100,8 +101,8 @@ class VariableSimdUnitTest
   VariableCellReal m_var3;
   VariableCellReal m_var4;
 
-  // Ces classes gardent une référence sur une vue de la variable associée.
-  // Il faut donc les initialiser qu'une fois que les variables sont allouées
+  // These classes hold a reference to a view of the associated variable.
+  // They must therefore be initialized only after the variables are allocated.
   IndirectArrayView<Real> m_var1_indirect_array_view;
   IndirectArrayView<Real> m_var2_indirect_array_view;
   IndirectArrayView<Real> m_var3_indirect_array_view;
@@ -194,10 +195,9 @@ _doSimdItemDirect()
   auto in_v3 = viewIn(m_var3);
   auto in_v4 = viewIn(m_var4);
   ENUMERATE_SIMD_CELL(icell,m_cells){
-    // ATTENTION pour l'instant il n'y a pas de tests de débordement
-    // dans SimdItemDirect et donc si le nombre d'éléments de m_cells
-    // n'est pas un multiple de la taille d'un vecteur Simd il peut y
-    // avoir plantage.
+    // ATTENTION for now there are no overflow tests
+    // in SimdItemDirect and thus if the number of elements in m_cells
+    // is not a multiple of the size of a Simd vector, a crash may occur.
     SimdItemDirectT<Cell> vi(icell.direct());
     out_v1[vi] = in_v2[vi] * in_v3[vi] + in_v4[vi];
   }
@@ -339,9 +339,9 @@ void VariableSimdUnitTest::
 _doTest( void (VariableSimdUnitTest::*functor)(), const String& name)
 {
   info(4) << "Begin test name=" << name;
-  // Multiplier cette valeur par 40 si on veut faire des tests de performances
+  // Multiply this value by 40 if we want to run performance tests
   Integer nb_z = 500;
-  // Réduit la taille du test en débug pour qu'il ne dure pas trop longtemps
+  // Reduce the test size in debug mode so it doesn't take too long
   //if (arcaneIsDebug())
   //nb_z /= 20;
 
@@ -370,23 +370,22 @@ executeTest()
     m_var4[icell] = x * 3.0 - 5.0;
   }
   
-  info() << "Do vectorisation";
+  info() << "Do vectorization";
 
-  // Vérifie que SimdItemDirect fonctionne bien.
+  // Check that SimdItemDirect works correctly.
   {
     auto out_v1 = viewOut(m_var1);
     auto in_v2 = viewIn(m_var2);
     auto in_v3 = viewIn(m_var3);
     auto in_v4 = viewIn(m_var4);
-    // Vérifie conversion DataType -> SimdType.
+    // Check DataType -> SimdType conversion.
     ENUMERATE_SIMD_CELL(icell,m_cells){
       out_v1[icell] = 3.2;
     }
     ENUMERATE_SIMD_CELL(icell,m_cells){
-      // ATTENTION pour l'instant il n'y a pas de tests de débordement
-      // dans SimdItemDirect et donc si le nombre d'éléments de m_cells
-      // n'est pas un multiple de la taille d'un vecteur Simd il peut y
-      // avoir plantage.
+      // ATTENTION for now there are no overflow tests
+      // in SimdItemDirect and thus if the number of elements in m_cells
+      // is not a multiple of the size of a Simd vector, a crash may occur.
       //SimdItemDirectT<Cell> vi(icell.direct());
       SimdItemT<Cell> vi(*icell);
       out_v1[vi] = in_v2[vi] * in_v3[vi] + in_v4[vi];
@@ -423,9 +422,9 @@ initializeTest()
          << " vector_size=" << SimdReal::Length
          << " index_size=" << SimdInfo::Int32IndexSize;
 
-  // Pour tester toutes les configurations, il faut que le nombre de mailles
-  // soit un nombre premier. Comme cela on est certain lors des ENUMERATE
-  // qu'on ne tombe pas sur un multiple de la taille d'un registre vectoriel.
+  // To test all configurations, the number of meshes
+  // must be a prime number. This ensures that during ENUMERATE
+  // we do not land on a multiple of the vector register size.
 
   Integer n = 10957;
   Int32UniqueArray ids;

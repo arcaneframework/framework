@@ -32,19 +32,20 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des Ios
+ * \brief Test module for Ios
  */
 class DirectedGraphUnitTest
   : public ArcaneDirectedGraphUnitTestObject
 {
 public:
 
-  /** Constructeur de la classe */
+  /** Class constructor */
   DirectedGraphUnitTest(const Arcane::ServiceBuildInfo & sbi)
     : ArcaneDirectedGraphUnitTestObject(sbi) {}
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   ~DirectedGraphUnitTest() {}
 
 public:
@@ -165,25 +166,25 @@ _testDirectedAcyclicGraph()
 
   dag.print();
 
-  // Print topologically oredered graph
+  // Print topologically ordered graph
   for (const String& sorted_vertex : dag.topologicalSort())
     {
       info() << "Sorted Graph has vertex " << sorted_vertex;
     }
 
-  // Print topologically oredered graph in reverse order
+  // Print topologically ordered graph in reverse order
    for (const String& sorted_vertex : dag.topologicalSort().reverseOrder())
     {
        info() << "Reverse order sorted Graph has vertex " << sorted_vertex;
     }
 
-  // Print Spanning tree (arbre couvrant)
+  // Print Spanning tree (covering tree)
   for (const String& edge_tree : dag.spanningTree())
     {
       info() << "Spanning tree has edge " << edge_tree;
     }
 
-  // Print Spanning tree (arbre couvrant) in reverse order
+  // Print Spanning tree (covering tree) in reverse order
   for (const String& edge_tree : dag.spanningTree().reverseOrder())
     {
       info() << "Reverse order spanning tree has edge " << edge_tree;
@@ -199,7 +200,7 @@ _testDirectedAcyclicGraph()
       info() << "Sorted Graph has vertex " << sorted_vertex;
     }
 
-  // Print Spanning tree (arbre couvrant)
+  // Print Spanning tree (covering tree)
   for (const String& edge_tree : dag.spanningTree())
     {
       info() << "Spanning tree has edge " << edge_tree;

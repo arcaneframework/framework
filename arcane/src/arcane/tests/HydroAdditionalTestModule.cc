@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HydroAdditionalTestModule.cc                                 C) 2000-2026 */
 /*                                                                           */
-/* Tests Additionnels couplés au module Hydro.                               */
+/* Additional Tests coupled to the Hydro module.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,11 +55,11 @@ class HydroAdditionalTestModule
 void HydroAdditionalTestModule::
 init()
 {
-  // Créé une connectivité noeud->noeud contenant pour chaque noeuds les
-  // noeuds des mailles connectés à ce noeud ainsi que lui-même.
+  // Created a node->node connectivity containing for each node the
+  // nodes of the meshes connected to this node as well as itself.
   IItemFamily* node_family = mesh()->nodeFamily();
   NodeGroup nodes = node_family->allItems();
-  // NOTE: l'objet est automatiquement détruit par le maillage
+  // NOTE: the object is automatically destroyed by the mesh
   auto* idxm = mesh()->indexedConnectivityMng();
   auto idx_cn = idxm->findOrCreateConnectivity(node_family, node_family, "NodeCellNode");
   auto* cn = idx_cn->connectivity();

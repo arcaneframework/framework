@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" encoding="UTF-8"?><!-- -*- SGML -*- -->
 <module name="MeshPolyhedralTest" version="1.0" namespace-name="ArcaneTest::MeshPolyhedral">
   <description>Module to test custom mesh</description>
   <entry-points>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MiniWeatherModule.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Module pour la miniapplication MiniWeather.                               */
+/* Module for the MiniWeather mini-application.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,11 +30,12 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié.
+ * \brief Simplified hydrodynamic module.
  *
- * Ce module implémente une hydrodynamique simple tri-dimensionnel,
- * parallèle, avec une pseudo-viscosité aux mailles.
+ * This module implements simple three-dimensional hydrodynamics,
+ * parallel, with mesh pseudo-viscosity.
  */
 class MiniWeatherModule
 : public ArcaneMiniWeatherObject
@@ -75,7 +76,7 @@ MiniWeatherModule(const ModuleBuildInfo& mb)
 void MiniWeatherModule::
 staticInitialize(ISubDomain* sd)
 {
-  // Enregistre la boucle en temps associée à ce module
+  // Registers the time loop associated with this module
   ITimeLoopMng* tlm = sd->timeLoopMng();
   ITimeLoop* time_loop = tlm->createTimeLoop("MiniWeatherLoop");
   {
@@ -169,7 +170,7 @@ exit()
   Integer nb_y = options()->nbCellZ();
   Real final_time = options()->finalTime();
 
-  // Compare avec la référence (uniquement valide pour x=400,z=200,final_time=2.0)
+  // Compares with the reference (only valid for x=400, z=200, final_time=2.0)
   if (nb_x==400 && nb_y==200 && final_time==2.0){
     info() << "Compare values with reference";
     for (int ll = 0; ll < NB_VAR; ll++){
@@ -177,8 +178,8 @@ exit()
       double sv = reduced_values[ll];
       Real diff = math::abs((rv-sv)/rv);
       info() << "var=" << ll << " SUM=" << sv << " diff=" << diff;
-      // Il faut utiliser un epsilon assez élevé car les différences peuvent
-      // être importantes entre X64, ARM ou les GPU.
+      // A sufficiently high epsilon must be used because the differences can
+      // be significant between X64, ARM, or GPUs.
       if (!math::isNearlyEqualWithEpsilon(sv,rv,1e-12)){
         ARCANE_FATAL("Bad value ref={0} v={1} var={2} diff={3}",rv, sv, ll, diff);
       }

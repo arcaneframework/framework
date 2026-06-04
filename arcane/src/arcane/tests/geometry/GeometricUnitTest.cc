@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeometricUnitTest.cc                                        (C) 2000-2026 */
 /*                                                                           */
-/* Service de test de la géométrie.                                          */
+/* Geometry test service.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la géométrie.
+ * \brief Geometry test service.
  */
 class GeometricUnitTest
 : public ArcaneGeometricUnitTestObject
@@ -98,7 +99,7 @@ _checkCoords(const CellGroup& cells)
     Cell cell = *icell;
     m_shape_mng.initShape(shape_view,*icell);
 
-    // Vérifie que les coordonnées des noeuds sont OK.
+    // Checks that node coordinates are OK.
     Integer nb_node = cell.nbNode();
     for( Integer z=0; z<nb_node; ++z )
       if (node_coords[cell.node(z)] != shape_view.node(z))
@@ -115,14 +116,14 @@ executeTest()
   ValueChecker vc(A_FUNCINFO);
   VariableNodeReal3& node_coords(mesh()->nodesCoordinates());
 
-  // Met à jour les coordonnées des formes géométriques élément par élément
+  // Updates coordinates of geometric shapes element by element
   ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
     geometric::BarycentricGeomShapeComputer::computeAll(m_shape_mng.mutableShapeView(cell), node_coords, cell);
   }
   _checkCoords(allCells());
 
-  // Met à jour les coordonnées de manière globale.
+  // Updates coordinates globally.
   geometric::BarycentricGeomShapeComputer::computeAll(m_shape_mng, node_coords, allCells());
   _checkCoords(allCells());
 
@@ -132,7 +133,7 @@ executeTest()
     m_shape_mng.initShape(shape_view, *icell);
     Cell shape_cell = shape_view.cell();
 
-    // Vérifie maille OK.
+    // Checks mesh OK.
     if (shape_cell != cell)
       ARCANE_FATAL("Invalid cell for shape '{0}'", cell.uniqueId());
     info() << "Cell type=" << cell.typeInfo()->typeName();

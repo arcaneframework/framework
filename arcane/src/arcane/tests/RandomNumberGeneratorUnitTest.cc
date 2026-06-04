@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* RandomNumberGeneratorUnitTest.cc                            (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des générateurs de nombres (pseudo-)aléatoires            */
-/* implémentant l'interface IRandomNumberGenerator                           */
+/* Test service for (pseudo-)random number generators implementing the       */
+/* IRandomNumberGenerator interface                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -75,7 +75,7 @@ testLeepNumbers()
     ASSERT_EQUAL(result[i], number);
   }
 
-  // On teste aussi les sauts négatifs.
+  // We also test negative jumps.
   for (Integer i = result.size() - 3; i >= 0; i--) {
     Real number = ptrRNG->generateRandomNumber(-2);
     ASSERT_EQUAL(result[i], number);
@@ -105,7 +105,7 @@ testLeepSeeds()
     ASSERT_TRUE(result[i] == seed);
   }
 
-  // On teste aussi les sauts négatifs.
+  // We also test negative jumps.
   for (Integer i = result.size() - 3; i >= 0; i--) {
     ByteUniqueArray seed = ptrRNG->generateRandomSeed(-2);
     ASSERT_TRUE(result[i] == seed);
@@ -115,7 +115,7 @@ testLeepSeeds()
 void RandomNumberGeneratorUnitTest::
 tearDown()
 {
-  // N'est pas exécuté après un test qui a échoué.
+  // Is not executed after a failed test.
 }
 
 void RandomNumberGeneratorUnitTest::

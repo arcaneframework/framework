@@ -1,9 +1,9 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test des ios -->
+<!-- Data set options for the iOS test service -->
 
 <service name="IosUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
@@ -17,7 +17,7 @@
       default = "iosOutput">
       <name lang='fr'>fichier-sortie</name>
       <description>
-	Base du nom du fichier de sortie.
+	Base name of the output file.
       </description>
     </simple>
  
@@ -27,7 +27,7 @@
       default = "true">
       <name lang='fr'>ecriture-vtu</name>
       <description>
-	Vrai pour sauvegarder le maillage arcane dans un fichier VTU.
+	True to save the arcane mesh in a VTU file.
       </description>
     </simple>
     <simple
@@ -36,7 +36,7 @@
       default = "true">
       <name lang='fr'>ecriture-xmf</name>
       <description>
-	Vrai pour sauvegarder le maillage arcane dans un fichier XMF.
+	True to save the arcane mesh in an XMF file.
       </description>
     </simple>
     <simple
@@ -45,7 +45,7 @@
       default = "true">
       <name lang='fr'>ecriture-msh</name>
       <description>
-	Vrai pour sauvegarder le maillage arcane dans un fichier MSH.
+	True to save the arcane mesh in an MSH file.
       </description>
     </simple>
     <simple
@@ -53,7 +53,7 @@
       type = "bool"
       default = "false">
       <description>
-	Vrai pour sauvegarder le maillage arcane au format VtkLegacy
+	True to save the arcane mesh in VtkLegacy format
       </description>
     </simple>
   </options>

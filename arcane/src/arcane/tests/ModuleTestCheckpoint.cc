@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleTestCheckpoint.cc                                     (C) 2000-2006 */
 /*                                                                           */
-/* Module de test des protections/reprises.                                  */
+/* Module for testing protection/recovery.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,8 +52,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des protections/reprises dans Arcane.
+ * \brief Module for testing protection/recovery in Arcane.
  */
 class ModuleTestCheckpoint
 : public ArcaneCheckpointTesterObject
@@ -187,7 +188,7 @@ test()
   {
     IMesh* mesh = subDomain()->defaultMesh();
     
-    // Positionne les valeurs
+    // Positions the values
     {
       m_nodes.setValues(current_iteration, mesh->ownNodes());
       m_faces.setValues(current_iteration, mesh->ownFaces());
@@ -205,11 +206,11 @@ test()
               << " available";
     }
 
-    // Ecrit les variables
+    // Writes the variables
     IVariableMng* vm = subDomain()->variableMng();
     vm->writeCheckpoint(checkpoint_writer);
     
-    // Reinitialise les valeurs avec n'importe quoi
+    // Reinitializes the values with anything
     {
       m_nodes.setValues(0,mesh->ownNodes());
       m_faces.setValues(0,mesh->ownFaces());
@@ -226,10 +227,10 @@ test()
               << " available";
     }
 
-    // Lit les variables
+    // Reads the variables
     vm->readCheckpoint(checkpoint_reader);
     
-    // Vérifie les valeurs
+    // Checks the values
     {
       Integer nb_error = 0;
       nb_error += m_nodes.checkValues(current_iteration,mesh->allNodes());

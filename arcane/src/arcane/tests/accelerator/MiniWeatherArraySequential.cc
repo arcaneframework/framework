@@ -667,7 +667,7 @@ output(NumArray<double,MDDim3>& state, double etime)
 {
   ARCANE_UNUSED(state);
   ARCANE_UNUSED(etime);
-  // Ne fait rien car on n'est pas branché avec 'NetCDF'.
+  // Does nothing because we are not connected with 'NetCDF'.
 }
 
 // Affiche la somme sur les mailles des variables.

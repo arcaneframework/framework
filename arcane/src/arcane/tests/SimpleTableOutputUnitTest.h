@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableOutputUnitTest.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Service de test pour les services implémentant ISimpleTableOutput.        */
+/* Test service for services implementing ISimpleTableOutput.                */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_TESTS_SIMPLETABLEOUTPUTUNITTEST_H

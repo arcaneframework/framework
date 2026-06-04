@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleHeatTestModule.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Module simplifié d'équation de la chaleur explicite.                      */
+/* Simplified module for the explicit heat equation.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,8 +21,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module SimpleHeatTestModule.
+ * \brief SimpleHeatTestModule module.
  */
 class SimpleHeatTestModule
 : public ArcaneSimpleHeatTestObject
@@ -34,15 +35,15 @@ class SimpleHeatTestModule
  public:
 
   /*!
-   * \brief Méthode appelée à chaque itération.
+   * \brief Method called at each iteration.
    */
   void compute() override;
   /*!
-   * \brief Méthode appelée lors de l'initialisation.
+   * \brief Method called during initialization.
    */
   void startInit() override;
 
-  /** Retourne le numéro de version du module */
+  /** Returns the module version number */
   VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 
  private:
@@ -76,8 +77,8 @@ compute()
     return;
   }
 
-  // Mise a jour de la temperature aux noeuds en prenant la moyenne
-  // valeurs aux mailles voisines
+  // Update the temperature at the nodes by taking the average
+  // of the values of neighboring cells
   ENUMERATE_NODE (inode, allNodes()) {
     Node node = *inode;
     Real sumt = 0;
@@ -87,8 +88,8 @@ compute()
   }
   m_node_temperature.synchronize();
 
-  // Mise a jour de la temperature aux mailles en prenant la moyenne
-  // des valeurs aux noeuds voisins
+  // Update the temperature at the cells by taking the average
+  // of the values at neighboring nodes
   ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
     Real sumt = 0;
@@ -110,12 +111,12 @@ startInit()
   m_cell_temperature.fill(0.0);
   m_node_temperature.fill(0.0);
 
-  // Initialise le pas de temps à une valeur fixe
+  // Initialize the time step to a fixed value
   m_global_deltat = 1.0;
 
   const bool is_verbose = false;
 
-  // Calcule le centre des mailles
+  // Calculate the center of the cells
   VariableNodeReal3& nodes_coords(mesh()->nodesCoordinates());
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
@@ -139,7 +140,7 @@ startInit()
 void SimpleHeatTestModule::
 _applyBoundaryCondition()
 {
-  // Positionne la température sur une partie du maillage
+  // Sets the temperature on a part of the mesh
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
     Real3 center = m_cell_center[cell];

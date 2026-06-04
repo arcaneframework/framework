@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshCriteriaLoadBalanceMngTestModule.cc                     (C) 2000-2024 */
 /*                                                                           */
-/* Module de test pour les implementations de MeshCriteriaLoadBalanceMng.    */
+/* Test module for the implementations of MeshCriteriaLoadBalanceMng.        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -124,8 +124,8 @@ init()
             << " -- ReduceSum density : " << m_sum[imesh];
   }
 
-  // On enregistre les critères. On peut le faire ici ou dans loop avec un reset à chaque fois si
-  // l'on change de variables à chaque repartitionnement.
+  // We register the criteria. We can do this here or in loop with a reset every time if
+  // we change variables during each partitioning.
   for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
     VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());

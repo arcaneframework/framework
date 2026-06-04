@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleHydroAcceleratorService.cc                            (C) 2000-2026 */
 /*                                                                           */
-/* Hydrodynamique simplifiée utilisant les accélérateurs.                    */
+/* Simplified hydrodynamics using accelerators.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -65,7 +65,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Valeurs des références pour la validation
+// Reference values for validation
 
 double reference_density_ratio_maximum[50] =
 {
@@ -97,13 +97,12 @@ double reference_global_deltat[50] =
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié avec vectorisation et parallélisation
- * par les threads. 
+ * \brief Simplified hydrodynamic module with vectorization and thread parallelism.
  *
- * Ce module implémente une hydrodynamique simple tri dimensionnelle,
- * parallèle, avec une pseudo-viscosité aux mailles en utilisant
- * les classes de vectorisation fournies par Arcane.
+ * This module implements simple three-dimensional, parallel hydrodynamics,
+ * using pseudo-viscosity on the cells by utilizing the vectorization classes provided by Arcane.
  */
 class SimpleHydroAcceleratorService
 : public ArcaneSimpleHydroAcceleratorObject
@@ -128,14 +127,13 @@ class SimpleHydroAcceleratorService
     ax::RunQueue queue_ref;
   };
 
-  // Note : il faut mettre ce champ statique si on veut que sa valeur
-  // soit correcte lors de la capture avec CUDA (sinon on passe par this et
-  // cela provoque une erreur mémoire)
+  // Note: This field must be static if we want its value
+  // to be correct during CUDA capture (otherwise, passing through this causes a memory error).
   static constexpr Integer MAX_NODE_CELL = 8;
 
  public:
 
-  //! Constructeur
+  //! Constructor
   explicit SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi);
 
  public:
@@ -170,32 +168,32 @@ class SimpleHydroAcceleratorService
 
  private:
 
-  VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
-  VariableCellInt32 m_sub_domain_id; //!< Numéro du sous-domaine associé à la maille
-  VariableCellReal m_density; //!< Densité par maille
-  VariableCellReal m_pressure; //!< Pression par maille
-  VariableCellReal m_cell_mass; //!< Masse par maille
-  VariableCellReal m_internal_energy; //!< Énergie interne des mailles
-  VariableCellReal m_volume; //!< Volume des mailles
-  VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
-  VariableNodeReal3 m_force; //!< Force aux nœuds
-  VariableNodeReal3 m_velocity; //!< Vitesse aux nœuds
-  VariableNodeReal m_node_mass; //! Masse nodale
-  VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
-  VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
-  VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
-  VariableCellReal m_characteristic_length; //!< Longueur caractéristique par maille
-  VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
-  VariableNodeReal3 m_node_coord; //!< Coordonnées des nœuds
-  VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
+  VariableCellInt64 m_cell_unique_id; //!< Unique ID associated with the cell
+  VariableCellInt32 m_sub_domain_id; //!< Sub-domain number associated with the cell
+  VariableCellReal m_density; //!< Density per cell
+  VariableCellReal m_pressure; //!< Pressure per cell
+  VariableCellReal m_cell_mass; //!< Mass per cell
+  VariableCellReal m_internal_energy; //!< Internal energy of the cells
+  VariableCellReal m_volume; //!< Volume of the cells
+  VariableCellReal m_old_volume; //!< Volume of a cell at the previous iteration
+  VariableNodeReal3 m_force; //!< Force at the nodes
+  VariableNodeReal3 m_velocity; //!< Velocity at the nodes
+  VariableNodeReal m_node_mass; //! Node mass
+  VariableCellReal m_cell_viscosity_force;  //!< Local contribution of viscosity forces
+  VariableCellReal m_viscosity_work;  //!< Work done by viscosity forces per cell
+  VariableCellReal m_adiabatic_cst; //!< Adiabatic constant per cell
+  VariableCellReal m_characteristic_length; //!< Characteristic length per cell
+  VariableCellReal m_sound_speed; //!< Speed of sound in the cell
+  VariableNodeReal3 m_node_coord; //!< Node coordinates
+  VariableCellArrayReal3 m_cell_cqs; //!< Vertex results for each cell
 
-  VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
-  VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
-  VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
-  VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+  VariableScalarReal m_density_ratio_maximum; //!< Maximum density increase over a time step
+  VariableScalarReal m_delta_t_n; //!< Delta t n between t^{n-1/2} and t^{n+1/2}
+  VariableScalarReal m_delta_t_f; //!< Delta t n+1/2 between t^{n} and t^{n+1}
+  VariableScalarReal m_old_dt_f; //!< Delta t n-1/2 between t^{n-1} and t^{n}
 
   SimpleHydro::SimpleHydroModuleBase* m_module = nullptr;
-  //! Indice de chaque nœud dans la maille
+  //! Index of each node in the cell
   UniqueArray<Int8> m_node_index_in_cells;
 
   Runner m_runner;
@@ -280,28 +278,29 @@ hydroExit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialisation du module hydro lors du démarrage du cas.
+ * \brief Initialization of the hydro module when the case starts.
  */
 void SimpleHydroAcceleratorService::
 hydroStartInit()
 {
-  // Indique que les connectivités doivent être dupliquées sur accélérateur
-  // et pré-copie leur valeur.
+  // Indicates that connectivities must be duplicated on the accelerator
+  // and pre-copy their value.
   MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(mesh(), &m_default_queue, true);
 
-  // Indique qu'on souhaite allouer la vitesse sur l'accélérateur si c'est actif.
-  // Cela permet de tester l'usage d'une variable côté accélérateur.
+  // Indicates that we want to allocate velocity on the accelerator if it is active.
+  // This allows testing the use of a variable on the accelerator side.
   if (m_default_queue.isAcceleratorPolicy()){
     VariableUtils::experimentalChangeAllocator(m_velocity, eMemoryRessource::Device);
-    // On alloue aussi la force sur le device si possible.
-    // Comme cette variable sera synchronisée, on ne le fait que si MPI le supporte
-    // sinon cela va provoquer un accès mémoire invalide.
+    // We also allocate force on the device if possible.
+    // Since this variable will be synchronized, we only do it if MPI supports it
+    // otherwise, it will cause an invalid memory access.
     if (mesh()->parallelMng()->_internalApi()->isAcceleratorAware())
       VariableUtils::experimentalChangeAllocator(m_force, eMemoryRessource::Device);
   }
 
-  // Juste pour tester l'exemple de calcul du centre des mailles
+  // Just to test the cell center calculation example
   _doTestInit(); 
 
   info() << "START_INIT sizeof(ItemLocalId)=" << sizeof(ItemLocalId);
@@ -312,13 +311,13 @@ hydroStartInit()
     m_cell_unique_id[icell] = icell->uniqueId();
   }
 
-  // Dimensionne les variables tableaux
+  // Dimension the array variables
   m_cell_cqs.resize(8);
   _computeNodeIndexInCells();
   
   //info() << "SimpleHydro SIMD initialisation vec_size=" << SimdReal::BLOCK_SIZE;
 
-  // Vérifie que les valeurs initiales sont correctes
+  // Check that the initial values are correct
   {
     Integer nb_error = 0;
     auto command = makeCommand(m_default_queue);
@@ -331,7 +330,7 @@ hydroStartInit()
       Real adiabatic_cst = in_adiabatic_cst[cid];
       Real density = in_density[cid];
       if (math::isZero(pressure) || math::isZero(density) || math::isZero(adiabatic_cst)){
-        info() << "Null valeur for cell=" << ItemPrinter(*icell)
+        info() << "Null value for cell=" << ItemPrinter(*icell)
                << " density=" << density
                << " pressure=" << pressure
                << " adiabatic_cst=" << adiabatic_cst;
@@ -342,18 +341,18 @@ hydroStartInit()
       ARCANE_FATAL("Some ({0}) cells are not initialised",nb_error);
   }
   
-  // Initialise le delta-t
+  // Initialize delta-t
   Real deltat_init = m_module->getDeltatInit();
   m_delta_t_n = deltat_init;
   m_delta_t_f = deltat_init;
 
-  // Initialise les données géométriques : volume, cqs, longueurs caractéristiques
+  // Initialize geometric data: volume, cqs, characteristic lengths
   computeGeometricValues();
 
   m_node_mass.fill(ARCANE_REAL(0.0));
   m_velocity.fill(Real3::zero(), &m_default_queue);
 
-  // Initialisation de la masse des mailles et des masses nodales
+  // Initialization of cell mass and nodal masses
   ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
     m_cell_mass[icell] = m_density[icell] * m_volume[icell];
@@ -369,7 +368,7 @@ hydroStartInit()
   {
     info() << "Initialize SoundSpeed and InternalEnergy";
     auto command = makeCommand(m_default_queue);
-    // Initialise l'énergie et la vitesse du son
+    // Initialize energy and speed of sound
     auto in_pressure = ax::viewIn(command,m_pressure);
     auto in_density = ax::viewIn(command,m_density);
     auto in_adiabatic_cst = ax::viewIn(command,m_adiabatic_cst);
@@ -387,9 +386,9 @@ hydroStartInit()
     };
   }
 
-  // Remplit la structure contenant les informations sur les conditions aux limites
-  // Cela permet de garantir avec les accélérateurs qu'on pourra accéder
-  // de manière concurrente aux données.
+  // Fills the structure containing boundary condition information
+  // This ensures that with accelerators, we can access the data
+  // concurrently.
   {
     bool use_multiple_queue = options()->useMultipleQueueForBoundaryConditions;
     info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
@@ -413,14 +412,15 @@ hydroStartInit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des forces au temps courant \f$t^{n}\f$
+ * \brief Calculation of forces at the current time \f$t^{n}\f$
  */
 void SimpleHydroAcceleratorService::
 computeForces()
 {
-  // Calcul pour chaque nœud de chaque maille la contribution
-  // des forces de pression et de la pseudo-viscosité si necessaire
+  // Calculation for every node in every mesh cell of the contribution
+  // of pressure forces and pseudo-viscosity if necessary
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
     _computePressureForces();
     _computePseudoViscosityForces();
@@ -443,8 +443,9 @@ computeForces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Pseudo viscosité scalaire aux mailles
+ * \brief Scalar pseudo-viscosity in cells
  */
 void SimpleHydroAcceleratorService::
 _computePressureForces()
@@ -454,7 +455,7 @@ _computePressureForces()
 
   auto cnc = m_connectivity_view.cellNode();
 
-  // Calcul de la divergence de la vitesse et de la viscosité scalaire
+  // Calculation of velocity divergence and scalar viscosity
 
   auto command = makeCommand(m_default_queue);
   auto in_density = ax::viewIn(command,m_density);
@@ -474,7 +475,7 @@ _computePressureForces()
     }
     delta_speed /= in_volume[cid];
 
-    // Capture uniquement les chocs
+    // Capture only shocks
     bool shock = (math::min(ARCANE_REAL(0.0),delta_speed)<ARCANE_REAL(0.0));
     if (shock){
       Real rho = in_density[cid];
@@ -522,8 +523,9 @@ _computePseudoViscosityForces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase2).
+ * \brief Compute velocity (phase 2).
  */
 void SimpleHydroAcceleratorService::
 computeVelocity()
@@ -536,7 +538,7 @@ computeVelocity()
   auto in_out_velocity = ax::viewInOut(command,m_velocity);
   Real delta_t_n = m_delta_t_n();
 
-  // Calcule l'impulsion aux nœuds
+  // Calculates the momentum at the nodes
   command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
   {
     Real node_mass  = in_node_mass[node];
@@ -548,8 +550,9 @@ computeVelocity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase3).
+ * \brief Compute viscosity work (phase 3).
  */
 void SimpleHydroAcceleratorService::
 computeViscosityWork()
@@ -561,7 +564,7 @@ computeViscosityWork()
   auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
   auto cnc = m_connectivity_view.cellNode();
 
-  // Calcul du travail des forces de viscosité dans une maille
+  // Calculation of the work done by viscosity forces in a cell
   command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
   {
     Real work = 0.0;
@@ -579,21 +582,22 @@ computeViscosityWork()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Prise en compte des conditions aux limites.
+ * \brief Apply boundary conditions.
  */
 void SimpleHydroAcceleratorService::
 applyBoundaryCondition()
 {
   auto queue = makeQueue(m_runner);
 
-  // Pour cette méthode, comme les conditions aux limites sont sur des groupes
-  // indépendants (ou alors avec la même valeur si c'est sur les mêmes nœuds),
-  // on peut exécuter les noyaux en asynchrone.
+  // For this method, since boundary conditions are on independent groups
+  // (or have the same value if they are on the same nodes),
+  // we can execute the kernels asynchronously.
   queue.setAsync(true);
   bool use_one_queue = !options()->useMultipleQueueForBoundaryConditions;
 
-  // Repositionne les vues si les groupes associés ont été modifiés
+  // Reposition the views if the associated groups have been modified
   for( auto& bc : m_boundary_conditions )
     bc.view = bc.nodes.view();
 
@@ -607,10 +611,10 @@ applyBoundaryCondition()
       used_queue = queue;
     auto command = makeCommand(used_queue);
     auto in_out_velocity = ax::viewInOut(command,m_velocity);
-    // boucle sur les faces de la surface
+    // loop over the faces of the surface
     command << RUNCOMMAND_ENUMERATE(Node,node,view)
     {
-      // boucle sur les nœuds de la face
+      // loop over the nodes of the face
       switch (type) {
       case TypesSimpleHydro::VelocityX: in_out_velocity[node].setX(value); break;
       case TypesSimpleHydro::VelocityY: in_out_velocity[node].setY(value); break;
@@ -629,8 +633,9 @@ applyBoundaryCondition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Déplace les noeuds.
+ * \brief Move nodes.
  */
 void SimpleHydroAcceleratorService::
 moveNodes()
@@ -650,9 +655,10 @@ moveNodes()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Mise à jour des densités et calcul de l'accroissement max
- *	  de la densité sur l'ensemble du maillage.
+ * \brief Update densities and calculate the maximum increase
+ *	  of density across the entire mesh.
  */
 void SimpleHydroAcceleratorService::
 updateDensity()
@@ -679,9 +685,9 @@ updateDensity()
 
   m_density_ratio_maximum = density_ratio_maximum.reducedValue();
 
-  // Vérifie la validité du ratio calculé. La référence n'est valide
-  // qu'en séquentiel, car ce ratio n'est pas réduit sur tous les
-  // sous-domaines.
+  // Checks the validity of the calculated ratio. The reference is valid
+  // only in sequential mode, because this ratio is not reduced over all
+  // subdomains.
   if (m_module->isCheckNumericalResult()){
     if (!mesh()->parallelMng()->isParallel()){
       Integer iteration = m_global_iteration();
@@ -698,9 +704,10 @@ updateDensity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'équation d'état et calcul l'énergie interne et la
- * pression.
+ * \brief Apply the equation of state and calculate internal energy and
+ * pressure.
  */
 void SimpleHydroAcceleratorService::
 applyEquationOfState()
@@ -720,7 +727,7 @@ applyEquationOfState()
   auto out_sound_speed = ax::viewOut(command,m_sound_speed);
   auto out_pressure = ax::viewOut(command,m_pressure);
 
-  // Calcul de l'énergie interne
+  // Calculation of internal energy
   command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
   {
     Real adiabatic_cst = in_adiabatic_cst[vi];
@@ -731,7 +738,7 @@ applyEquationOfState()
     Real internal_energy = in_out_internal_energy[vi];
     internal_energy = internal_energy * (numer_accrois_nrj/denom_accrois_nrj);
 
-    // Prise en compte du travail des forces de viscosité
+    // Account for the work done by viscosity forces
     if (add_viscosity_force)
       internal_energy = internal_energy - deltatf*in_viscosity_work[vi] / (in_cell_mass[vi]*denom_accrois_nrj);
 
@@ -747,15 +754,16 @@ applyEquationOfState()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des nouveaux pas de temps.
+ * \brief Calculation of new time steps.
  */
 void SimpleHydroAcceleratorService::
 computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
 
-  // Calcul du pas de temps pour le respect du critère de CFL
+  // Calculation of the time step to respect the CFL criterion
 
   Real minimum_aux = 0.0;
 
@@ -777,7 +785,7 @@ computeDeltaT()
 
   Real new_dt = m_module->getCfl()*minimum_aux;
 
-  // Pas de variations trop brutales à la hausse comme à la baisse
+  // No overly drastic variations upwards or downwards
   Real max_dt = (1.0 + m_module->getVariationSup()) * old_dt;
   Real min_dt = (1.0 - m_module->getVariationInf()) * old_dt;
 
@@ -786,7 +794,7 @@ computeDeltaT()
 
   Real max_density_ratio = m_density_ratio_maximum();
 
-  // control de l'accroissement relatif de la densité
+  // control of the relative density increase
   Real dgr = m_module->getDensityGlobalRatio();
   if (max_density_ratio>dgr)
     new_dt = math::min(old_dt*dgr/max_density_ratio,new_dt);
@@ -794,7 +802,7 @@ computeDeltaT()
   IParallelMng* pm = mesh()->parallelMng();
   new_dt = pm->reduce(Parallel::ReduceMin,new_dt);
 
-  // Respect des valeurs min et max imposées par le fichier de données .plt
+  // Respect of min and max values imposed by the .plt data file
   new_dt = math::min(new_dt,m_module->getDeltatMax());
   new_dt = math::max(new_dt,m_module->getDeltatMin());
 
@@ -808,7 +816,7 @@ computeDeltaT()
     }
   }
 
-  // Le dernier calcul se fait exactement au temps stopTime()
+  // The last calculation is done exactly at stopTime()
   {
     Real stop_time  = m_module->getFinalTime();
     bool not_yet_finish = ( m_global_time() < stop_time);
@@ -820,7 +828,7 @@ computeDeltaT()
     }
   }
 
-  // Mise à jour des variables
+  // Update variables
   m_old_dt_f.assign(old_dt);
   m_delta_t_n.assign(ARCANE_REAL(0.5)*(old_dt+new_dt));
   m_delta_t_f.assign(new_dt);
@@ -829,10 +837,11 @@ computeDeltaT()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des résultantes aux nœuds d'une maille hexaédrique.
+ * \brief Calculation of resultant forces at the nodes of a hexahedral mesh.
  *
- * La méthode utilisée est celle du découpage en quatre triangles.
+ * The method used is the one of dividing into four triangles.
  */
 ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
@@ -847,37 +856,37 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
   constexpr Real demi = 0.5;
   constexpr Real five = 5.0;
 
-  // Calcul des normales face 1 :
+  // Calculation of face 1 normals:
   const Real3 n1a04 = demi * math::cross(node_coord[0] - c0 , node_coord[3] - c0);
   const Real3 n1a03 = demi * math::cross(node_coord[3] - c0 , node_coord[2] - c0);
   const Real3 n1a02 = demi * math::cross(node_coord[2] - c0 , node_coord[1] - c0);
   const Real3 n1a01 = demi * math::cross(node_coord[1] - c0 , node_coord[0] - c0);
 
-  // Calcul des normales face 2 :
+  // Calculation of face 2 normals:
   const Real3 n2a05 = demi * math::cross(node_coord[0] - c1 , node_coord[4] - c1);
   const Real3 n2a12 = demi * math::cross(node_coord[4] - c1 , node_coord[7] - c1);
   const Real3 n2a08 = demi * math::cross(node_coord[7] - c1 , node_coord[3] - c1);
   const Real3 n2a04 = demi * math::cross(node_coord[3] - c1 , node_coord[0] - c1);
 
-  // Calcul des normales face 3 :
+  // Calculation of face 3 normals:
   const Real3 n3a01 = demi * math::cross(node_coord[0] - c2 , node_coord[1] - c2);
   const Real3 n3a06 = demi * math::cross(node_coord[1] - c2 , node_coord[5] - c2);
   const Real3 n3a09 = demi * math::cross(node_coord[5] - c2 , node_coord[4] - c2);
   const Real3 n3a05 = demi * math::cross(node_coord[4] - c2 , node_coord[0] - c2);
 
-  // Calcul des normales face 4 :
+  // Calculation of face 4 normals:
   const Real3 n4a09 = demi * math::cross(node_coord[4] - c3 , node_coord[5] - c3);
   const Real3 n4a10 = demi * math::cross(node_coord[5] - c3 , node_coord[6] - c3);
   const Real3 n4a11 = demi * math::cross(node_coord[6] - c3 , node_coord[7] - c3);
   const Real3 n4a12 = demi * math::cross(node_coord[7] - c3 , node_coord[4] - c3);
 	
-  // Calcul des normales face 5 :
+  // Calculation of face 5 normals:
   const Real3 n5a02 = demi * math::cross(node_coord[1] - c4 , node_coord[2] - c4);
   const Real3 n5a07 = demi * math::cross(node_coord[2] - c4 , node_coord[6] - c4);
   const Real3 n5a10 = demi * math::cross(node_coord[6] - c4 , node_coord[5] - c4);
   const Real3 n5a06 = demi * math::cross(node_coord[5] - c4 , node_coord[1] - c4);
       
-  // Calcul des normales face 6 :
+  // Calculation of face 6 normals:
   const Real3 n6a03 = demi * math::cross(node_coord[2] - c5 , node_coord[3] - c5);
   const Real3 n6a08 = demi * math::cross(node_coord[3] - c5 , node_coord[7] - c5);
   const Real3 n6a11 = demi * math::cross(node_coord[7] - c5 , node_coord[6] - c5);
@@ -885,7 +894,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 
   constexpr Real real_1div12 = 1.0 / 12.0;
 
-  // Calcul des résultantes aux sommets :
+  // Calculation of resultant forces at the vertices:
   cqs[0] = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
             (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*real_1div12;
   cqs[1] = (five*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
@@ -906,9 +915,10 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul du volume des mailles, des longueurs caractéristiques
- * et des résultantes aux sommets.
+ * \brief Calculation of mesh volumes, characteristic lengths
+ * and resultant forces at the vertices.
  */
 void SimpleHydroAcceleratorService::
 computeGeometricValues()
@@ -928,7 +938,7 @@ computeGeometricValues()
   {
     auto nodes = cnc.nodes(cid);
 
-    // Copie locale des coordonnées des sommets d'une maille
+    // Local copy of the coordinates of a mesh's vertices
     Real3 coord[8] =
     {
       in_node_coord[nodes[0]],in_node_coord[nodes[1]],
@@ -937,7 +947,7 @@ computeGeometricValues()
       in_node_coord[nodes[6]],in_node_coord[nodes[7]]
     };
 
-    // Coordonnées des centres des faces
+    // Coordinates of the face centers
     Real3 face_coord[6] =
     {
       0.25 * ( coord[0] + coord[3] + coord[2] + coord[1] ),
@@ -948,7 +958,7 @@ computeGeometricValues()
       0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] ),
     };
 
-    // Calcule la longueur caractéristique de la maille.
+    // Calculates the characteristic length of the mesh.
     {
       Real3 median1 = face_coord[0]-face_coord[3];
       Real3 median2 = face_coord[2]-face_coord[5];
@@ -962,10 +972,10 @@ computeGeometricValues()
       out_characteristic_length[cid] = dx_numerator / dx_denominator;
     }
 
-    // Calcule les résultantes aux sommets
+    // Calculates the resultant forces at the vertices
     computeCQs(coord,face_coord,in_out_cell_cqs[cid]);
 
-    // Calcule le volume de la maille
+    // Calculates the volume of the mesh
     {
       SmallSpan<const Real3> in_cqs(in_out_cell_cqs[cid]);
       Real volume = 0.0;
@@ -1002,9 +1012,9 @@ void SimpleHydroAcceleratorService::
 _computeNodeIndexInCells()
 {
   info() << "ComputeNodeIndexInCells with accelerator";
-  // Un nœud est connecté au maximum à MAX_NODE_CELL mailles
-  // Calcule pour chaque nœud son index dans chacune des
-  // mailles à laquelle il est connecté.
+  // A node is connected to a maximum of MAX_NODE_CELL meshes
+  // Calculates for each node its index in each of the
+  // meshes it is connected to.
   NodeGroup nodes = allNodes();
   Integer nb_node = nodes.size();
   m_node_index_in_cells.resize(MAX_NODE_CELL*nb_node);
@@ -1031,7 +1041,7 @@ _computeNodeIndexInCells()
       ++index;
     }
 
-    // Remplit avec la valeur nulle les derniers éléments
+    // Fills the last elements with the null value
     for( ; index<MAX_NODE_CELL; ++index )
       inout_node_index_in_cells[first_pos + index] = -1;
   };

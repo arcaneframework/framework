@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdScalarMeshVariables.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Définition de variables scalaires du maillage pour des tests.             */
+/* Definition of scalar mesh variables for tests.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_STDSCALARMESHVARIABLES_H
 #define ARCANE_TEST_STDSCALARMESHVARIABLES_H
@@ -23,8 +23,9 @@ ARCANETEST_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
-  \brief Définition de variables scalaires du maillage pour des tests.
+  \brief Definition of scalar mesh variables for tests.
 */
 template<typename ItemType>
 class StdScalarMeshVariables
@@ -73,5 +74,4 @@ ARCANETEST_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

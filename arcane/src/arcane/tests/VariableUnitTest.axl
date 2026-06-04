@@ -1,15 +1,15 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test des variables -->
+<!-- Dataset options for the variable testing service -->
 
 <service name="VariableUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
  <options>
 
-  <!-- Fichier de sortie pour les maillages -->
+  <!-- Output file for meshes -->
   <simple
    name = "nb-reference"
    type = "integer"
@@ -17,7 +17,7 @@
   >
    <name lang='fr'>nb-reference</name>
    <description>
-Nombre de reférences à créer pour le test des références.
+Number of references to create for the reference test.
    </description>
   </simple>
 

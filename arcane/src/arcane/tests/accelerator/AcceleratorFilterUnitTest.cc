@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorFilterUnitTest.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des algorithmes de 'Filtrage' sur accélérateur.           */
+/* Test service for 'Filtering' algorithms on the accelerator.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,8 +40,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AcceleratorFilterUnitTest
 : public ArcaneAcceleratorFilterUnitTestObject
@@ -180,7 +181,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
     Int32 nb_out = 0;
     if (test_id == 3) {
       {
-        // Test appel vide
+        // Test empty call
         generic_filterer.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
         Int32 nb_out_empty = generic_filterer.nbOutputElement();
         vc.areEqual(0,nb_out_empty,"ApplyIf 0");
@@ -203,7 +204,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
         output_view[output_index] = input_view[input_index];
       };
       {
-        // Test appel vide
+        // Test empty call
         generic_filterer.applyWithIndex(0, filter_lambda_index, setter_lambda_index);
         Int32 nb_out_empty = generic_filterer.nbOutputElement();
         vc.areEqual(0,nb_out_empty,"ApplyIf 1");
@@ -216,7 +217,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
     t2.resize(nb_out);
     vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray1");
   } break;
-  case 6: // Mode avec flag
+  case 6: // Mode with flag
   {
     NumArray<DataType, MDDim1> t1_bis(t1);
     NumArray<DataType, MDDim1> t2_bis(t2);
@@ -229,7 +230,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
     vc.areEqual(nb_filter, nb_out, "Filter");
     t2.resize(nb_out);
     vc.areEqualArray(t2.to1DSpan(), expected_t2.to1DSpan(), "OutputArray1 (test 6)");
-    // Appelle une deuxième fois l'instance
+    // Call the instance a second time
     filterer.apply(t1_bis.to1DConstSmallSpan(), t2_bis.to1DSmallSpan(), filter_flags_view);
     Int32 nb_out2 = filterer.nbOutputElement();
     info() << "NB_OUT_accelerator2=" << nb_out2;

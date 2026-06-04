@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableUnitTest.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des variables.                                            */
+/* Variable test service.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,8 +45,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des variables
+ * \brief Variable test module
  */
 class VariableUnitTest
 : public ArcaneVariableUnitTestObject
@@ -57,7 +58,7 @@ class VariableUnitTest
     EventTester(ISubDomain* sd)
     : m_trace_mng(sd->traceMng()), m_nb_added(0), m_nb_removed(0)
     {
-      // TODO: Ajouter EventObserverPool pour gerer la destruction des evenements
+      // TODO: Add EventObserverPool to manage event destruction
       IVariableMng* vm = sd->variableMng();
       auto f1 = [&](const VariableStatusChangedEventArgs& e){
         m_trace_mng->debug() << "** ** ADD VARIABLE name=" << e.variable()->fullName();
@@ -224,8 +225,9 @@ _testReferences(Integer nb_ref)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Teste la methode setUsed sur une variable.
+ * \brief Tests the setUsed method on a variable.
  */
 void VariableUnitTest::
 _testUsed()
@@ -257,8 +259,9 @@ _testUsed()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Teste la méthode VariableRef::refersTo().
+ * \brief Tests the VariableRef::refersTo() method.
  */
 void VariableUnitTest::
 _testRefersTo(bool shmem)
@@ -276,7 +279,7 @@ _testRefersTo(bool shmem)
     properties = IVariable::PInShMem;
   }
 
-  // Teste refersTo() pour les variables 0D sur les entités du maillage
+  // Tests refersTo() for 0D variables on mesh entities
   {
     VariableCellReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
     VariableCellReal var2(VariableBuildInfo(mesh(), "CellRealTest2", properties));
@@ -284,7 +287,7 @@ _testRefersTo(bool shmem)
 
     var1.refersTo(var2);
 
-    // Vérifie que ce sont les mêmes variables avec les mêmes valeurs.
+    // Checks that they are the same variables with the same values.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo()");
     vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
 
@@ -294,7 +297,7 @@ _testRefersTo(bool shmem)
     vc.areEqualArray(from_null_var2.asArray().constView(),var2.asArray().constView(),"Bad values");
   }
 
-  // Teste refersTo() pour les variables 1D sur les entités du maillage
+  // Tests refersTo() for 1D variables on mesh entities
   {
     VariableCellArrayReal var1(VariableBuildInfo(mesh(),"CellRealTest1"));
     VariableCellArrayReal var1_bis(VariableBuildInfo(mesh(),"CellRealTest1"));
@@ -306,7 +309,7 @@ _testRefersTo(bool shmem)
 
     var1.refersTo(var2);
 
-    // Vérifie que ce sont les mêmes variables.
+    // Checks that they are the same variables.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for Array");
     vc.areEqual(var1.arraySize(),3,"Bad size (2)");
     //vc.areEqualArray(var1.asArray().constView(),var2.asArray().constView(),"Bad values");
@@ -316,7 +319,7 @@ _testRefersTo(bool shmem)
     vc.areEqual(from_null_array_var2.variable(),var2.variable(),"Bad refersTo() for Array");
     vc.areEqual(from_null_array_var2.arraySize(),3,"Bad size (2)");
 
-    // Teste les accesseurs
+    // Tests the accessors
     {
       const Integer dim2_size = var1.arraySize();
       ENUMERATE_CELL(icell,allCells()){
@@ -336,7 +339,7 @@ _testRefersTo(bool shmem)
     }
   }
 
-  // Teste refersTo() pour les variables 2D
+  // Tests refersTo() for 2D variables
   {
     const Real fill_value = 4.2;
     const Real fill_value2 = fill_value+1.0;
@@ -354,7 +357,7 @@ _testRefersTo(bool shmem)
 
     var1.refersTo(var2);
 
-    // Vérifie que ce sont les mêmes variables.
+    // Checks that they are the same variables.
     vc.areEqual(var1.variable(),var2.variable(),"Bad refersTo() for VariableArray2Real");
     vc.areEqual(var1.arraySize(),12,"Bad size (3)");
     Span2<const Real> var1_view(var1);
@@ -365,8 +368,9 @@ _testRefersTo(bool shmem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Teste un accès simple aux vues.
+ * \brief Tests a simple view access.
  */
 void VariableUnitTest::
 _testSimpleView(bool shmem)
@@ -387,7 +391,7 @@ _testSimpleView(bool shmem)
       var1[icell] = icell.itemLocalId()+1;
     }
     auto v1 = viewIn(var1);
-    // TODO: pouvoir tester que le code suivante ne compile pas
+    // TODO: be able to test that the following code does not compile
     // auto v1 = viewOut(var1);
     auto v2 = viewOut(var2);
     ENUMERATE_CELL(icell,allCells()){
@@ -466,7 +470,7 @@ _testSwapHelper(MeshVarType& cells)
     cells.m_float16.swapValues(cells2.m_float16);
     cells.m_float32.swapValues(cells2.m_float32);
 
-    // Vérifie les valeurs
+    // Checks the values
     {
       Integer nb_error = 0;
 
@@ -480,7 +484,7 @@ _testSwapHelper(MeshVarType& cells)
         fatal() << "Error in variable swapping (1) n=" << nb_error;
     }
   }
-  // Vérifie que si la variable de recopie est libérée tout est encore OK.
+  // Checks that everything is still OK if the copy variable is released.
   {
     Integer nb_error = 0;
 
@@ -523,13 +527,13 @@ _testSwap()
     m_scalars.m_real2x2.swapValues(scalars2.m_real2x2);
     m_scalars.m_real3.swapValues(scalars2.m_real3);
     m_scalars.m_real3x3.swapValues(scalars2.m_real3x3);
-    // Les types suivants ne sont pas encore dans 'StdScalarVariables'
+    // The following types are not yet in 'StdScalarVariables'
     //m_scalars.m_int8.swapValues(scalars2.m_int8);
     //m_scalars.m_bfloat16.swapValues(scalars.m_bfloat16);
     //m_scalars.m_float16.swapValues(scalars.m_float16);
     //m_scalars.m_float32.swapValues(scalars.m_float32);
 
-    // Vérifie les valeurs
+    // Checks the values
     {
       Integer nb_error = 0;
 
@@ -543,7 +547,7 @@ _testSwap()
         fatal() << "Error in variable swapping (1) n=" << nb_error;
     }
   }
-  // Vérifie que si la variable de recopie est libérée tout est encore OK.
+  // Checks that everything is still OK if the copy variable is released.
   {
     Integer nb_error = 0;
 
@@ -561,7 +565,7 @@ _testSwap()
 void VariableUnitTest::
 _testCompression()
 {
-  // Teste la compression/décompression
+  // Tests compression/decompression
   IDataCompressor* compressor = options()->compressor();
   if (!compressor)
     return;
@@ -575,8 +579,8 @@ _testCompression()
     IDataInternal* d = var->data()->_commonInternal();
     d->compressAndClear(data_buffer);
     d->decompressAndFill(data_buffer);
-    // Les appels précédents font évoluer le conteneur sous-jacent
-    // Il faut donc mettre à jour les références.
+    // The previous calls evolve the underlying container
+    // References must therefore be updated.
     var->syncReferences();
   }
 }
@@ -612,7 +616,7 @@ class AlignmentChecker
   {
   }
  public:
-  // Pour les variables 1D
+  // For 1D variables
   template<typename ItemType,typename DataType>
   void operator()(MeshVariableScalarRefT<ItemType,DataType>& var)
   {
@@ -626,7 +630,7 @@ class AlignmentChecker
              << " ptr=" << int_ptr << " modulo=" << modulo;
     }
   }
-  // Pour les variables 2D
+  // For 2D variables
   template<typename ItemType,typename DataType>
   void operator()(MeshVariableArrayRefT<ItemType,DataType>& var)
   {
@@ -648,7 +652,7 @@ class AlignmentChecker
 void VariableUnitTest::
 _testAlignment()
 {
-  // Vérifie que les variables scalaires et tableaux sur les maillages.
+  // Checks that scalar and array variables on the meshes.
 
   info() << "Testing alignment";
   m_array_cells.initialize();

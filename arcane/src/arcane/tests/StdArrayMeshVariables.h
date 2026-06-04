@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdArrayMeshVariables.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Définition de variables tableaux du maillage pour des tests.              */
+/* Definition of mesh array variables for tests.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_STDARRAYMESHVARIABLES_H
 #define ARCANE_TEST_STDARRAYMESHVARIABLES_H
@@ -24,8 +24,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
-  \brief Définition de variables tableaux du maillage pour des tests.
+  \brief Definition of mesh array variables for tests.
 */
 template<typename ItemType>
 class StdArrayMeshVariables
@@ -61,5 +62,4 @@ ARCANETEST_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

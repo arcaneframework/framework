@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TaskUnitTest.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des tâches.                                               */
+/* Task testing service.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ namespace TaskTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Test creation de taches filles
+// Test creation of child tasks
 class Test2
 : public TraceAccessor
 {
@@ -108,8 +108,8 @@ class Test2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Test boucle sur les entites.
-// Effectue un parallel_for et fait une reduction.
+// Test loop over entities.
+// Performs a parallel_for and performs a reduction.
 class Test3
 : public TraceAccessor
 {
@@ -215,7 +215,7 @@ class Test3
   }
   void _exec2()
   {
-    // Idem _exec1 mais avec lambda fonction
+    // Same as _exec1 but with lambda function
     m_total_value = 0.0;
     auto func = [this](NodeVectorView nodes)
     {
@@ -239,7 +239,7 @@ class Test3
     arcaneParallelForeach(nodes, func);
     _checkValid();
 
-    // Teste avec options
+    // Test with options
     {
       info() << "Test ParallelLoopOptions";
       ParallelLoopOptions options;
@@ -248,7 +248,7 @@ class Test3
       _checkValid();
     }
 
-    // Teste avec taille de bloc
+    // Test with block size
     {
       info() << "Test ParallelLoopOptions block_size";
       ParallelLoopOptions options;
@@ -258,7 +258,7 @@ class Test3
       _checkValid();
     }
 
-    // Teste force sequentiel
+    // Test force sequential
     {
       info() << "Test ParallelLoopOptions force sequential";
       Integer nb_loop = 0;
@@ -280,7 +280,7 @@ class Test3
       _checkValid();
     }
 
-    // Teste en changeant le nombre de threads.
+    // Test by changing the number of threads.
     for( Integer x=0; x<32; ++x ){
       info() << "Test ParallelLoopOptions block_size=100 arena_size=" << x;
       ParallelLoopOptions options;
@@ -294,7 +294,7 @@ class Test3
     }
   }
 
-  // Test pour le arcaneParallelForeach qui accepte un nombre arbitraire d'arguments
+  // Test for arcaneParallelForeach which accepts an arbitrary number of arguments
   void _exec3()
   {
     UniqueArray<Real> _x(m_mesh->allNodes().size());
@@ -364,7 +364,7 @@ class Test3
     for( Integer i=0; i<nb_task; ++i ){
       Integer n = nb_node_per_task[i];
       info() << "TASK_NB_NODE t=" << i << " n=" << n;
-      // C'est une erreur si une tâche n'a pas traité de noeuds.
+      // This is an error if a task has not processed any nodes.
       if (n==0){
         info() << "ERROR: task '" << i << "' has no node";
         ++nb_error;
@@ -404,7 +404,7 @@ class Test3
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Test parallel_for avec SpinLock et contention
+// Test parallel_for with SpinLock and contention
 class Test4
 : public TraceAccessor
 {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialSyncUnitTest.cc                                 (C) 2000-2026 */
 /*                                                                           */
-/* Service de test de la synchronisation des matériaux.                      */
+/* Material synchronization test service.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,8 +52,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test pour la gestion des matériaux et des milieux.
+ * \brief Test module for material and environment management.
  */
 class MeshMaterialSyncUnitTest
 : public ArcaneMeshMaterialSyncUnitTestObject
@@ -111,13 +112,13 @@ initializeTest()
   Integer nb_mat = options()->nbMaterial();
   info() << "Number of wanted materials: " << nb_mat;
 
-    // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
+  // Read the materials info from the dataset and register them in the manager
   for( Integer i=0; i<nb_mat; ++i ){
     String mat_name = String("MAT_") + String::fromNumber(i);
     mm->registerMaterialInfo(mat_name);
   }
 
-  // Créé des milieux en fonction du nombre de matériaux du jeu de données.
+  // Create environments based on the number of materials in the dataset.
   {
     Integer env_index = 1;
     Integer mat_index = 0;
@@ -125,13 +126,13 @@ initializeTest()
     while(mat_index<nb_mat){
       String env_name = "ENV_" + String::fromNumber(env_index);
       Materials::MeshEnvironmentBuildInfo env_build(env_name);
-      // Utilise un std::set pour être sur qu'on n'ajoute pas 2 fois le même matériau.
+      // Use a std::set to ensure that the same material is not added twice.
       std::set<String> mats_in_env;
       for( Integer z=0; z<=env_index; ++z ){
         String mat1_name = "MAT_" + String::fromNumber(mat_index);
         mats_in_env.insert(mat1_name);
-        // Ajoute aussi des matériaux qui sont dans les milieux précédents
-        // pour être sur d'avoir des matériaux qui appartiennent à plusieurs milieux.
+        // Also add materials that are in previous environments
+        // to ensure that there are materials belonging to multiple environments.
         String mat2_name = "MAT_" + String::fromNumber(mat_index/2);
         mats_in_env.insert(mat2_name);
 
@@ -174,13 +175,13 @@ executeTest()
 void MeshMaterialSyncUnitTest::
 _doPhase1()
 {
-  // Cette phase se fait juste après l'init donc on a déjà créé les
-  // matériaux mais on n'a pas encore de mailles dedans.
+  // This phase is done right after initialization, so we have already created the
+  // materials but we don't have any meshes in them yet.
 
-  // Ajoute des mailles dans les matériaux.
-  // Pour tester la synchronisation, on n'ajoute que des matériaux aux
-  // mailles propres. Ainsi, il faudra que quelqu'un nous envoie les
-  // informations pour les mailles fantômes.
+  // Add meshes to the materials.
+  // To test synchronization, we only add materials to
+  // own cells. Thus, someone must send us the
+  // information for ghost cells.
 
   IMeshMaterialMng* mm = m_material_mng;
   Integer nb_mat = options()->nbMaterial();
@@ -189,7 +190,7 @@ _doPhase1()
     CellGroup cells = ownCells();
     MeshMaterialModifier mmodifier(m_material_mng);
     Int32UniqueArray ids;
-    // TODO: calculer en fonction du max des uid.
+    // TODO: calculate based on the max uid.
     for( Integer imat=0; imat<nb_mat; ++imat ){
       ids.clear();
       Int64 min_uid = imat*10;
@@ -220,19 +221,19 @@ _doPhase2()
   info() << "Begin phase2";
   IMeshMaterialMng* mm = m_material_mng;
   Integer nb_mat = options()->nbMaterial();
-  // Cette phase doit se faire après la phase1 et supprime
-  // des mailles qui ont été ajoutées dans la phase 1.
+  // This phase must be done after phase1 and removes
+  // meshes that were added in phase 1.
 
-  // Ajoute et supprime des mailles dans les matériaux.
-  // Pour tester la synchronisation, on ne travaille que sur
-  // les mailles dont on est propriétaires. Ainsi, il faudra que
-  // quelqu'un nous envoie les informations pour les mailles fantômes.
+  // Add and remove meshes in the materials.
+  // To test synchronization, we only work on
+  // the meshes we own. Thus, someone must send us the
+  // information for ghost meshes.
   {
     CellGroup cells = ownCells();
     MeshMaterialModifier mmodifier(m_material_mng);
     Int32UniqueArray add_ids;
     Int32UniqueArray remove_ids;
-    // TODO: calculer en fonction du max des uid.
+    // TODO: calculate based on the max uid.
     for( Integer imat=0; imat<nb_mat; ++imat ){
       remove_ids.clear();
       add_ids.clear();
@@ -284,7 +285,7 @@ _doPhase2()
 void MeshMaterialSyncUnitTest::
 _checkVariableSync1()
 {
-  // Vérifie que la synchronisation des variables marche bien
+  // Checks that variable synchronization works correctly
   MaterialVariableCellInt32 mat_indexes(MaterialVariableBuildInfo(m_material_mng,"SyncMatIndexes"));
 
   ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,ownCells()){
@@ -326,11 +327,11 @@ _checkVariableSync1()
 void MeshMaterialSyncUnitTest::
 _checkVariableSync2(bool do_check,Int32 iteration)
 {
-  // TODO: Faire aussi avec les matériaux lorsqu'ils seront disponibles
-  // TODO: Ne pas mettre la même valeur dans chaque maille milieu/matériau (faire un offset du uid)
+  // TODO: Also do this with materials when they are available
+  // TODO: Do not put the same value in every environment/material mesh (make a uid offset)
   Arcane::Accelerator::RunQueue* queue = subDomain()->acceleratorMng()->defaultQueue();
 
-  // Vérifie que la synchronisation des variables marche bien
+  // Checks that variable synchronization works correctly
 
   ENUMERATE_ENV(ienv, m_material_mng) {
     IMeshEnvironment* env = *ienv;
@@ -347,8 +348,7 @@ _checkVariableSync2(bool do_check,Int32 iteration)
     };
   }
 
-  // Avec la version 7 des synchronisations, on teste une fois sur deux la version
-  // non bloquante.
+  // With version 7 of synchronizations, we test the non-blocking version once in two.
   if ((iteration%2)==0 && m_material_mng->synchronizeVariableVersion()==7){
     MeshMaterialVariableSynchronizerList vlist(m_material_mng);
     m_material_uids.synchronize(vlist);

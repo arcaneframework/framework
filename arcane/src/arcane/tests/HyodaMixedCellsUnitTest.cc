@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HyodaMixedCellsUnitTest.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Service du test de l'affichage des mailles mixtes.                        */
+/* Service for testing the display of mixed meshes.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ public:
   // **************************************************************************
   void build(){
     info() << "\33[7m[HyodaMixedCellsUnitTest::build]\33[m";
-    // On demande à HyODA d'afficher les interfaces
+    // Ask HyODA to display the interfaces
     //if (platform::getOnlineDebuggerService()) platform::getOnlineDebuggerService()->doMixedCells();
   }
 
@@ -83,21 +83,21 @@ public:
   // **************************************************************************
   void onTimeLoopStartInit(){
     info() << "\33[7m[HyodaMixedCellsUnitTest::onTimeLoopStartInit]\33[m";
-    // Initialisation du pas de temps
+    // Initialization of time step
     m_global_deltat=1.0;
     
     ENUMERATE_FACE(face,allFaces()){
       m_qedge[face]=(Real)face->uniqueId().asInteger();
     }
     
-    // Lecture des matériaux
+    // Reading materials
     for(Integer i=0,n=options()->material().size(); i<n; ++i){
       String mat_name = options()->material[i].name;
       info() << "Registering material" << mat_name;
       m_material_mng->registerMaterialInfo(mat_name);
     }
 
-    // Lecture des milieux
+    // Reading environments
     for(Integer i=0,n=options()->environment().size(); i<n; ++i){
       String env_name = options()->environment[i].name;
       info() << "Creating environment name=" << env_name;
@@ -109,10 +109,10 @@ public:
       }
       m_material_mng->createEnvironment(env_build);
     }
-    // Signale au gestionnaire que tous les milieux ont été créés et qu'il peut allouer les variables.
+    // Signals to the manager that all environments have been created and that it can allocate variables.
     m_material_mng->endCreate();
 
-    // Récupération des xMax et calcul des incréments en x: ix
+    // Getting maxX and calculating increments in x: ix
     Real maxX=0.0;
     Real maxY=0.0;
     ENUMERATE_CELL(cell, allCells()){
@@ -124,7 +124,7 @@ public:
     m_sub_domain->parallelMng()->reduce(Parallel::ReduceMax,maxX);
     m_sub_domain->parallelMng()->reduce(Parallel::ReduceMax,maxY);
 
-    // On découpe en x les différents milieux
+    // We cut into different environments in x
     Real ix=maxX/options()->environment().size();
     info() << "maxX="<<maxX<<", ix="<<ix;
     info() << "maxY="<<maxY;
@@ -145,14 +145,14 @@ public:
       //if (iMat2!=iMat0) ids[iEnv][iMat2].add(cell.itemLocalId());
     }
 
-    // On rajoute en dur les mailles 1 et 4
+    // We manually add meshes 1 and 4
     ids[0][1].add(1);
     ids[0][1].add(4);
       
-    // Une fois les matériaux et milieux créés, il est possible d'ajouter ou de
-    // supprimer des mailles pour un matériau. Il n'est pas nécessaire de
-    // modifier les mailles par milieu: Arcane se charge de recalculer automatiquement
-    // la liste des mailles d'un milieu en fonction de celles de ses matériaux.
+    // Once materials and environments are created, it is possible to add or
+    // remove meshes for a material. It is not necessary to
+    // modify the meshes by environment: Arcane automatically recalculates
+    // the list of meshes for an environment based on those of its materials.
     for(Integer i=0,n=options()->environment().size(); i<n; ++i){
       IMeshEnvironment *env = m_material_mng->environments()[i];
       info() << "[EnvInit] "<<env->name()<<", nbMaterial="<<env->nbMaterial();
@@ -164,8 +164,8 @@ public:
     }
 
 
-    // Itération sur tous les milieux, puis tous les matériaux et
-    // toutes les mailles de ce matériau
+    // Iterating over all environments, then all materials and
+    // all meshes of that material
      ENUMERATE_ENV(ienv, m_material_mng){
       IMeshEnvironment* env = *ienv;
       ENUMERATE_MAT(imat,env){
@@ -189,7 +189,7 @@ public:
       info()<<"m_density[*cell]="<<m_density[*cell];
     }
 
-    // Initialisation des variables
+    // Initialization of variables
     m_interface_distance.resize(1);
     ENUMERATE_CELL(cell, allCells()){
       //info()<<"\t[onTimeLoopStartInit] cell #"<<cell->uniqueId();

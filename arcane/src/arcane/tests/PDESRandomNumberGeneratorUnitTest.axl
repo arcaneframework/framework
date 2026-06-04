@@ -11,14 +11,14 @@
    class-tear-down="tearDownForClass" 
    test-tear-down="tearDown"
   >
-    <test name="Test valeurs générées" method-name="testHardcodedValues"/>
-    <test name="Test graines générées" method-name="testHardcodedSeeds"/>
+    <test name="Test generated values" method-name="testHardcodedValues"/>
+    <test name="Test generated seeds" method-name="testHardcodedSeeds"/>
   </tests> 
 
 
   <options>
     <service-instance name="pdes-random-number-generator" type="Arcane::IRandomNumberGenerator">
-      <description>Service PDESRandomNumberGenerator</description>
+      <description>PDESRandomNumberGenerator Service</description>
     </service-instance>
   </options>
 

@@ -1,6 +1,6 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
-<!-- Description de la configuration du module 'ModuleSimpleHydro' -->
+<!-- Description of the 'ModuleSimpleHydro' module configuration -->
 <module name="SimpleHydroCS" version="1.0" namespace-macro-name="SIMPLE_HYDRO">
 
   <variables>
@@ -203,8 +203,7 @@
    >
    <userclass>User</userclass>
    <description>
-Valeur minimale que peut prendre le <em>deltat</em> entre deux
-itérations.
+Minimum value that deltat can take between two iterations.
    </description>
   </simple>
 
@@ -215,9 +214,8 @@ itérations.
   >
    <userclass>User</userclass>
    <description>
-Valeur maximale que peut prendre le <em>deltat</em> entre deux
-itérations. Si le deltat calculé est supérieur à cette valeur,
-il est ramené à cette valeur.
+Maximum value that deltat can take between two iterations. If the
+calculated deltat is greater than this value, it is reduced to this value.
    </description>
   </simple>
 
@@ -228,7 +226,7 @@ il est ramené à cette valeur.
   >
    <userclass>User</userclass>
    <description>
-Valeur du <em>deltat</em> au moment du démarrage.
+Value of deltat at startup.
    </description>
   </simple>
 
@@ -240,9 +238,8 @@ Valeur du <em>deltat</em> au moment du démarrage.
    <name lang='fr'>temps-final</name>
    <userclass>User</userclass>
    <description>
-Temps auquel on stoppe la simulation. Le code s'arrête dès que
-le temps courant est <strong>strictement</strong> supérieur à
-ce temps.
+Time at which the simulation stops. The code stops as soon as the current
+time is <strong>strictly</strong> greater than this time.
    </description>
   </simple>
 
@@ -256,9 +253,8 @@ ce temps.
    <name lang='fr'>test-int32</name>
    <userclass>User</userclass>
    <description>
-Temps auquel on stoppe la simulation. Le code s'arrête dès que
-le temps courant est <strong>strictement</strong> supérieur à
-ce temps.
+Time at which the simulation stops. The code stops as soon as the current
+time is <strong>strictly</strong> greater than this time.
    </description>
   </simple>
 
@@ -294,7 +290,7 @@ ce temps.
    default  = "0.3"
   >
    <description>
-Définition de la CFL
+Definition of CFL
    </description>
   </simple>
     
@@ -305,7 +301,7 @@ Définition de la CFL
    default  = "0.99"
   >
    <description>
-Amplitude maximale de décroissance du pas de temps
+Maximum amplitude of time step decay
    </description>
   </simple>
     
@@ -316,7 +312,7 @@ Amplitude maximale de décroissance du pas de temps
    default  = "0.10"
   >
    <description>
-Amplitude maximale de croissance du pas de temps
+Maximum amplitude of time step growth
    </description>
   </simple>
     
@@ -327,7 +323,7 @@ Amplitude maximale de croissance du pas de temps
    default  = "0.1"
   >
    <description>
-Seuil d'accroissement relatif de la densité pour le contrôle du pas de temps
+Relative density increase threshold for time step control
    </description>
   </simple>
 
@@ -338,9 +334,8 @@ Seuil d'accroissement relatif de la densité pour le contrôle du pas de temps
    default  = "1.0"
   >
    <description>
-Cette option détermine le coefficient linéaire pour la
-viscosité scalaire aux mailles ainsi que pour la viscosité
-tensorielle aux arêtes.
+This option determines the linear coefficient for scalar viscosity on
+cells as well as for tensor viscosity on edges.
    </description>
   </simple>
 
@@ -351,9 +346,8 @@ tensorielle aux arêtes.
    default  = "1.0"
   >
    <description>
-Cette option détermine le coefficient quadratique pour la
-viscosité scalaire aux mailles ainsi que pour la viscosité
-tensorielle aux arêtes.
+This option determines the quadratic coefficient for scalar viscosity
+on cells as well as for tensor viscosity on edges.
    </description>
   </simple>
 
@@ -364,8 +358,8 @@ tensorielle aux arêtes.
    default  = "true"
   >
    <description>
-Vrai s'il faut limiter au maximum l'usage de la mémoire. Cela provoque
-la désallocation des structures du maillage et empêche les protections.
+True if the memory usage must be limited to the maximum. This causes
+the deallocation of mesh structures and prevents protections.
    </description>
   </simple>
 
@@ -376,7 +370,7 @@ la désallocation des structures du maillage et empêche les protections.
    default = "none"
   >
    <description>
-Choix de la viscosité.
+Choice of viscosity.
    </description>
    <enumvalue genvalue="TypesSimpleHydro.eViscosity.ViscosityNo" name="none" />
    <enumvalue genvalue="TypesSimpleHydro.eViscosity.ViscosityCellScalar" name="cell" />
@@ -389,7 +383,7 @@ Choix de la viscosité.
     maxOccurs = "unbounded"
    >
     <description>
-Type de condition aux limites
+Type of boundary condition
     </description>
     <enumvalue genvalue="VelocityX" name="Vx" />
     <enumvalue genvalue="VelocityY" name="Vy" />
@@ -403,7 +397,7 @@ Type de condition aux limites
     maxOccurs = "unbounded"
    >
     <description>
-Surface sur laquelle s'applique la condition aux limites
+Surface on which the boundary condition applies
     </description>
    </extended>
 
@@ -414,17 +408,17 @@ Surface sur laquelle s'applique la condition aux limites
     maxOccurs = "unbounded"
    >
     <description>
-Surface sur laquelle s'applique la condition aux limites
+Surface on which the boundary condition applies
     </description>
    </simple>
 
 		<service-instance name="eos-model" type="IEquationOfState">
-				<description>Service d'equation d'état</description>
+				<description>Equation of state service</description>
 		</service-instance>
 
 		<service-instance name="eos-model-array" type="IEquationOfState"     minOccurs = "0"
     maxOccurs = "unbounded" >
-				<description>Service d'equation d'état multi</description>
+				<description>Multi-equation of state service</description>
 		</service-instance>
 
 <!-- - - - - - boundary-condition - - - - -->
@@ -436,7 +430,7 @@ Surface sur laquelle s'applique la condition aux limites
 
   >
    <description>
-Condition aux limites
+Boundary condition
    </description>
 
    <enumeration
@@ -444,7 +438,7 @@ Condition aux limites
     type = "TypesSimpleHydro::eBoundaryCondition"
    >
     <description>
-Type de condition aux limites
+Type of boundary condition
     </description>
     <enumvalue genvalue="TypesSimpleHydro::VelocityX" name="Vx" />
     <enumvalue genvalue="TypesSimpleHydro::VelocityY" name="Vy" />
@@ -456,7 +450,7 @@ Type de condition aux limites
     type = "Arcane::FaceGroup"
    >
     <description>
-Surface sur laquelle s'applique la condition aux limites
+Surface on which the boundary condition applies
     </description>
    </extended>
 
@@ -465,7 +459,7 @@ Surface sur laquelle s'applique la condition aux limites
     type = "real"
    >
     <description>
-Valeur de la composante à fixer.
+Value of the component to fix.
     </description>
    </simple>
 

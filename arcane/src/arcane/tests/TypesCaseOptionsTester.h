@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TypesCaseOptionsTester.h                                    (C) 2000-2018 */
 /*                                                                           */
-/* Types du module de test des options du jeu de données d'Arcane.           */
+/* Types for the test module of Arcane dataset options.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TESTS_TYPESCASEOPTIONSTESTER_H
 #define ARCANE_TESTS_TYPESCASEOPTIONSTESTER_H
@@ -53,5 +53,4 @@ ARCANETEST_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

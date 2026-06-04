@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialSimdUnitTest.cc                                 (C) 2000-2026 */
 /*                                                                           */
-/* Service de test unitaire de la vectorisation des matériaux/milieux.       */
+/* Unit test service for material/environment vectorization.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,12 +41,12 @@
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
-// Pour les définitions, il faut finir par GCC car Clang et ICC définissent
-// la macro __GNU__
-// Pour CLANG, il n'y a pas encore d'équivalent au pragma ivdep.
-// Celui qui s'en approche le plus est:
+// For definitions, GCC must be used last because Clang and ICC define
+// the __GNU__ macro
+// For CLANG, there is no equivalent to pragma ivdep yet.
+// The closest one is:
 //   #pragma clang loop vectorize(enable)
-// mais il ne force pas la vectorisation.
+// but it does not force vectorization.
 #ifdef __clang__
 #  define PRAGMA_IVDEP_VALUE "clang loop vectorize(enable)"
 #else
@@ -54,8 +54,8 @@
 #    define PRAGMA_IVDEP_VALUE "ivdep"
 #  else
 #    ifdef __GNUC__
-// S'assure qu'on compile avec la vectorisation même en '-O2'
-// NOTE: à partir de GCC 12, le '-O2' implique aussi la vectorisation
+// Ensures compilation with vectorization even with '-O2'
+// NOTE: starting from GCC 12, '-O2' also implies vectorization
 #      pragma GCC optimize ("-ftree-vectorize")
 #      define PRAGMA_IVDEP_VALUE "GCC ivdep"
 #    endif
@@ -113,11 +113,11 @@ String getCompilerInfo()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Normalement pour l'EOS il faut utiliser la racine carrée mais GCC 6
-// ne tente pas de vectorisation (au contraire d'ICC 17) si cette opération est présente.
-// Pour vérifier qu'on vectorise bien, on supprime donc l'appel à la
-// racine carrée. On définit la macro USE_SQRT_IN_EOS à 1 pour utiliser la
-// racine carrée, à 0 sinon.
+// Normally for the EOS, the square root must be used, but GCC 6
+// does not attempt vectorization (unlike ICC 17) if this operation is present.
+// To verify that vectorization is working, we therefore remove the call to the
+// square root. We define the macro USE_SQRT_IN_EOS to 1 to use the
+// square root, 0 otherwise.
 #define USE_SQRT_IN_EOS 1
 
 #if USE_SQRT_IN_EOS == 1
@@ -128,9 +128,10 @@ String getCompilerInfo()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur une sous-partie (pure ou partielle) d'un
- * sous-ensemble des mailles d'un composant (matériau ou milieu)
+ * \brief Enumerator over a sub-part (pure or partial) of a
+ * subset of meshes of a component (material or environment)
  */
 class FullComponentPartCellEnumerator
 {
@@ -228,8 +229,9 @@ class PerfTimer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test unitaire de la vectorisation des matériaux/milieux.
+ * \brief Unit test service for material/environment vectorization.
  */
 class MeshMaterialSimdUnitTest
 : public BasicUnitTest
@@ -689,11 +691,11 @@ _executeTest2(Integer nb_z)
 
   for( Integer z=0, iz=nb_z; z<iz; ++z ){
     PRAGMA_IVDEP
-    // Certaines versions du compilateur intel (au moins la version 20.0)
-    // donnent une erreur sur le 'pragma omp simd' car le test de la boucle
-    // est une fonction. Pour éviter une erreur de compilation on supprime
-    // ce pragma avec le compilateur intel. A noter que cela semble fonctionner
-    // avec les versions 2021+ de Intel (icpc, icpx et DPC++).
+    // Some versions of the Intel compiler (at least version 20.0)
+    // give an error on 'pragma omp simd' because the loop test
+    // is a function. To avoid a compilation error, we remove
+    // this pragma with the Intel compiler. Note that this seems to work
+    // with Intel versions 2021+ (icpc, icpx, and DPC++).
 #ifndef __INTEL_COMPILER
     //#pragma omp simd
 #endif
@@ -905,8 +907,8 @@ simple_env_loop2(ComponentPartItemVectorView pure_items,
     Int32ConstArrayView item_indexes = view.valueIndexes();
     PRAGMA_IVDEP
     for( Integer i=0; i<nb_item; ++i ){
-      // On sait pour ce test que les mailles partielles sont contigues
-      // et item_indexes[i] == i.
+      // For this test, we know that the partial meshes are contiguous
+      // and item_indexes[i] == i.
       //MatVarIndex mvi(cpi,item_indexes[i]);
       ComponentItemLocalId mvi(MatVarIndex(cpi,item_indexes[i]));
       lambda(mvi);
@@ -972,7 +974,8 @@ _executeTest9(Integer nb_z)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: mettre dans .h
+
+// TODO: move to .h
 template<typename Lambda> void
 simple_simd_env_loop(const EnvCellVector& env,const Lambda& lambda)
 {

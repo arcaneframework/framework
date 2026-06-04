@@ -1,8 +1,8 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <module name="MaterialHeatTest" version="1.0" namespace-name="ArcaneTest">
   <description>
-    Module de test d'un équation de la chaleur pour les matériaux.
+    Test module for a heat equation for materials.
   </description>
 
   <options>
@@ -26,7 +26,7 @@
       <description>Number of additional array variables to create</description>
     </simple>
 
-    <!-- Infos sur les materiaux -->
+    <!-- Material information -->
     <complex name="material" type="Material" minOccurs="1" maxOccurs="unbounded">
       <description>List of materials</description>
       <simple name="name" type="string">
@@ -34,7 +34,7 @@
       </simple>
     </complex>
 
-    <!-- Liste des milieux et composition des materiaux -->
+    <!-- List of environments and material composition -->
     <complex name="environment" type="Environment" minOccurs="1" maxOccurs="unbounded">
       <description>Milieu</description>
       <simple name = "name" type = "string">
@@ -45,7 +45,7 @@
       </simple>
     </complex>
 
-    <!-- Liste des objects qui vont faire chauffer les matériaux -->
+    <!-- List of objects that will heat the materials -->
     <complex name="heat-object" type="HeatObject" minOccurs="0" maxOccurs="unbounded">
       <simple name="center" type="real3">
         <description>Center of the disk/sphere at t=0</description>
@@ -54,7 +54,7 @@
         <description>Radius of the disk/sphere</description>
       </simple>
       <simple name="velocity" type="real3">
-        <description>Velocity the disk/sphere</description>
+        <description>Velocity of the disk/sphere</description>
       </simple>
       <simple name="material" type="string">
         <description>Name of the material to heat</description>

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRUnitTest.cc                                              (C) 2000-2010 */
 /*                                                                           */
-/* Service de test du raffinement/dérafinnement facon AMR.                   */
+/* Test service for AMR refinement/derefinement.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,8 +42,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Mesh test module
  */
 class AMRUnitTest2
 : public ArcaneAMRUnitTest2Object
@@ -118,7 +119,7 @@ void AMRUnitTest2::
 _refine(Integer nb_to_refine)
 {
 //! AMR
-	// Recherche les nb_to_refine premières mailles de type IT_Hexaedron8
+	// Search for the first nb_to_refine meshes of type IT_Hexaedron8
 	ENUMERATE_CELL(icell,ownCells()){
 		Cell cell = *icell;
 		ItemInternal* iitem = cell.internal();

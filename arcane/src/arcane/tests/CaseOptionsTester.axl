@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0"?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 
 <module name="CaseOptionsTester" version="1.0" namespace-name="ArcaneTest"> 
     <description>
-      Module de test des options du jeu de données
-      Test des entités spéciales: 
+     Data set options test module
+     Test of special entities:
     </description>
     <interface name="ArcaneTest::ICaseOptionTestInterface" />
  <options>
@@ -15,12 +15,12 @@
    name = "test-id"
    type = "integer"
     >
-   <description>Numéro du test (sert pour les vérifications)</description>
+   <description>Test number (used for checks)</description>
   </simple>
 
   <!-- - - - - - has-multiple-mesh - - - - -->
   <simple name = "has-multiple-mesh" type = "bool" default = "false">
-    <description>Indique s'il y a plusieurs maillages dans le jeu de données (sert pour les vérifications)</description>
+   <description>Indicates if there are multiple meshes in the data set (used for checks)</description>
   </simple>
 
   <!-- - - - - - max-iteration - - - - -->
@@ -29,7 +29,7 @@
    type = "integer"
    default = "10"
   >
-   <description>Nombre maximum d'itérations</description>
+   <description>Maximum number of iterations</description>
   </simple>
 
   <!-- - - - - - simple-real - - - - -->
@@ -230,7 +230,7 @@
    type = "real"
    default = "0.5"
   >
-   <description>Test pour fonction standard</description>
+   <description>Test for standard function</description>
   </simple>
 
   <!-- - - - - - simple-enum - - - - -->
@@ -273,7 +273,7 @@
   </extended>
 
   <!-- - - - - - cell-group-with-dynamic-default - - - - -->
-  <!-- NOTE: la valeur par défaut est positionnée dans le code C++ -->
+  <!-- NOTE: the default value is positioned in the C++ code -->
   <extended
    name = "cell-group-with-dynamic-default"
     type     = "Arcane::CellGroup"
@@ -282,7 +282,7 @@
   </extended>
 
   <!-- - - - - - face-group-with-dynamic-default - - - - -->
-  <!-- NOTE: la valeur par défaut est positionnée dans le code C++ -->
+  <!-- NOTE: the default value is positioned in the C++ code -->
   <extended
     name = "face-group-with-dynamic-default"
     type = "Arcane::FaceGroup"
@@ -291,7 +291,7 @@
   </extended>
 
   <!-- - - - - - simple-real-with-dynamic-default - - - - -->
-  <!-- NOTE: la valeur par défaut est positionnée dans le code C++ -->
+  <!-- NOTE: the default value is positioned in the C++ code -->
   <simple
    name = "simple-real-with-dynamic-default"
    type     = "real"
@@ -403,7 +403,7 @@
     maxOccurs="10"
   >
    <name lang='fr'>post-processor1-fr</name>
-   <description>Liste des services de protection</description>
+   <description>List of protection services</description>
   </service-instance>
 
   <!-- - - - - - post-processor3 - - - - -->
@@ -413,7 +413,7 @@
    minOccurs = "0"
    maxOccurs = "unbounded"
   >
-   <description>Liste des services de protection</description>
+   <description>List of protection services</description>
   </service-instance>
 
   <!-- - - - - - post-processor3 - - - - -->
@@ -423,7 +423,7 @@
     mesh-name="Mesh1"
   >
    <name lang='fr'>post-processor3-fr</name>
-   <description>Un service de post-traitement</description>
+   <description>A post-processing service</description>
   </service-instance>
 
   <!-- - - - - - post-processor4 - - - - -->
@@ -431,7 +431,7 @@
    name = "post-processor4"
    type = "Arcane::IPostProcessorWriter"
   >
-   <description>Un service de post-traitement</description>
+   <description>A post-processing service</description>
   </service-instance>
 
   <!-- - - - - - test-service-with-dynamic-default - - - - -->
@@ -439,7 +439,7 @@
     name = "test-service-with-dynamic-default"
     type = "ArcaneTest::IServiceInterface1"
     >
-    <description>Service de test avec valeur par défaut</description>
+   <description>Test service with default value</description>
   </service-instance>
 
   <!-- - - - - - service-instance-test1 - - - - -->
@@ -451,7 +451,7 @@
   >
     <defaultvalue category="X1">ServiceTestImpl2</defaultvalue>
     <defaultvalue category="X2">ServiceTestImpl3</defaultvalue>
-   <description>Un service de test pour IServiceInterface1</description>
+   <description>A test service for IServiceInterface1</description>
   </service-instance>
 
   <!-- - - - - - service-instance-test2 - - - - -->
@@ -461,7 +461,7 @@
     default = "ServiceInterface5Impl"
     mesh-name="Mesh1"
   >
-   <description>Un service de test pour IServiceInterface1</description>
+   <description>A test service for IServiceInterface1</description>
   </service-instance>
 
   <!-- - - - - - complex1 - - - - -->
@@ -591,7 +591,7 @@
      name = "complex3Ref"
      ref = "Complex3"
     >
-    <description>Complex3Ref comme Complex3</description>
+    <description>Complex3Ref like Complex3</description>
    </complex>
 
    <!-- - - - - - complex3 - - - - -->
@@ -624,7 +624,7 @@
        name = "timeloop-tester"
        type = "Arcane::ITimeLoopService"
       >
-      <description>Service de test de protection</description>
+       <description>Protection test service</description>
      </service-instance>
     <extended
      name = "extended-real-int-c3"
@@ -667,7 +667,7 @@
    name = "complex5"
    ref = "Complex4"
   >
-   <description>Complex5 comme Complex4</description>
+   <description>Complex5 like Complex4</description>
    <!-- <simple
     name = "simple-real"
     type = "real"
@@ -682,7 +682,7 @@
    type = "Complex6"
    optional = "true"
   >
-   <description>Complex6 Optionel</description>
+   <description>Optional Complex6</description>
    <simple
     name = "simple-real"
     type = "real"

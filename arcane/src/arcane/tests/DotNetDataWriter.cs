@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Arcane;
 using Real = System.Double;
 
@@ -26,11 +26,11 @@ public class DotNetDataWriter : Arcane.IDataWriter_WrapperService
 
   public override void SetMetaData(string meta_data) {}
   /*!
-   * Cette methode sert uniquement pour tester le multi-threading
-   * dans le wrapping C#. Elle est appelee par TaskUnitTestCS dans
-   * une boucle multi-thread.
-   * Le but est de faire des allocations/desallocations pour
-   * tester l'utilisation du GarbageCollector dans ce cas.
+   * This method is only used to test multi-threading
+   * in the C# wrapping. It is called by TaskUnitTestCS in
+   * a multi-thread loop.
+   * The goal is to perform allocations/deallocations to
+   * test the use of the Garbage Collector in this case.
    */
   public override void Write(IVariable var,IData data)  
   {

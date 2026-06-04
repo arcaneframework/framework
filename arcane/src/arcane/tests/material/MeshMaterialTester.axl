@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 
 <module name="MeshMaterialTester" version="1.0" namespace-name="ArcaneTest"> 
  <description>
-   Module de test du gestionnaire des matériaux.
+   Material manager test module.
   </description>
 
  <options>
@@ -14,7 +14,7 @@
     type = "bool"
     default = "false"
    >
-    <description>Indique si on recréé les informations à partir du dump</description>
+    <description>Indicates whether the information is recreated from the dump</description>
    </simple>
 
    <simple
@@ -22,41 +22,41 @@
     type = "int32"
     default = "0"
    >
-    <description>Flags d'optimisation lors d'une modification dans les matériaux où les milieux</description>
+    <description>Optimization flags during a modification in materials where environments</description>
    </simple>
 
-  <!-- Infos sur les materiaux -->
+  <!-- Info on materials -->
   <complex
    name = "material"
    type = "Material"
     minOccurs = "1"
     maxOccurs = "unbounded"
   >
-   <description>Materiaux</description>
+   <description>Materials</description>
 
    <simple
     name = "name"
     type = "string"
    >
-    <description>Nom du materiau</description>
+    <description>Material name</description>
    </simple>
 
   </complex>
 
-  <!-- Liste des milieux et composition des materiaux -->
+  <!-- List of environments and material composition -->
   <complex
    name = "environment"
    type = "Environment"
     minOccurs = "1"
     maxOccurs = "unbounded"
   >
-   <description>Milieu</description>
+   <description>Environment</description>
 
    <simple
     name = "name"
     type = "string"
    >
-    <description>Nom du milieu</description>
+    <description>Environment name</description>
    </simple>
 
    <simple
@@ -65,7 +65,7 @@
     minOccurs = "1"
     maxOccurs = "unbounded"
    >
-    <description>Nom du materiau</description>
+    <description>Material name</description>
    </simple>
 
   </complex>
@@ -78,11 +78,11 @@
   >
    <name lang='fr'>service-equilibrage-charge</name>
    <description>
-Service utilisé pour l'équilibrage de charge.
+Service used for load balancing.
    </description>
   </service-instance>
 
-  <!-- - - - - - additionnal-test-service - - - - -->
+  <!-- - - - - - additional-test-service - - - - -->
   <service-instance
    name    = "additional-test-service"
    type    = "Arcane::IUnitTest"
@@ -90,12 +90,11 @@ Service utilisé pour l'équilibrage de charge.
   >
    <name lang='fr'>service-additionnel-test-unitaire</name>
    <description>
-     Service additionnel de test unitaire.
-     Si spécifié, le test est exécuté après le démarrage
+     Additional unit test service. If specified, the test is executed after startup.
    </description>
   </service-instance>
 
-  <!-- - - - - - additionnal-eos-service - - - - -->
+  <!-- - - - - - additional-eos-service - - - - -->
   <service-instance
    name    = "additional-eos-service"
    type    = "MaterialEos::IMaterialEquationOfState"
@@ -103,8 +102,7 @@ Service utilisé pour l'équilibrage de charge.
   >
    <name lang='fr'>service-additionnel-eos</name>
    <description>
-     Service additionnel de test d'EOS.
-     Si spécifié, le service est appelé au cours des itérations.
+     Additional EOS test service. If specified, the service is called during iterations.
    </description>
   </service-instance>
 

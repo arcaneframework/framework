@@ -35,13 +35,13 @@ using namespace Arcane::Numerics;
 #include <arcane/IParallelMng.h>
 #include <arcane/utils/Limits.h>
 
-#include <stdlib.h> // pour *rand48
+#include <stdlib.h> // for *rand48
 
-/* Petite note indicative
- * Arcane a quelques problèmes avec les variables partielles
- * - Si m_cell_group and utilise des RealVariable => pb (dans volumeCompute)
- * - Si groupe isOwn possible problème d'enregistrement interne (Arcane) de
- *   de la variable (avec version >= 1.4.0, semble etre de meme)
+/* Small indicative note
+ * Arcane has some issues with partial variables
+ * - If m_cell_group uses RealVariable => problem (in volumeCompute)
+ * - If group isOwn, possible internal registration problem (Arcane) of
+ *   the variable (with version >= 1.4.0, seems to be the same)
  */
 
 /*---------------------------------------------------------------------------*/
@@ -57,21 +57,21 @@ class GeometryUnitTest
 : public ArcaneGeometryUnitTestObject
 {
  public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   GeometryUnitTest(const ServiceBuildInfo& cb)
     : ArcaneGeometryUnitTestObject(cb)
   {
     ;
   }
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~GeometryUnitTest() {}
   
  public:
   virtual void initializeTest();
   virtual void executeTest();
 
-  /** Retourne le numéro de version du module */
+  /** Returns the module version number */
   virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1,0,0); }
   class Toto
   {
@@ -244,4 +244,3 @@ ARCANE_REGISTER_SERVICE_GEOMETRYUNITTEST(GeometryUnitTest,GeometryUnitTest);
 
 
 } // End namespace ArcaneTest
-

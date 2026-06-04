@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExternalPluginTesterModule.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Module de test des plugins externes.                                      */
+/* External plugin test module.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,11 +31,12 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié.
+ * \brief Simplified hydrodynamic module.
  *
- * Ce module implémente une hydrodynamique simple tri-dimensionnel,
- * parallèle, avec une pseudo-viscosité aux mailles.
+ * This module implements simple three-dimensional hydrodynamics,
+ * parallel, with mesh pseudo-viscosity.
  */
 class ExternalPluginTesterModule
 : public ArcaneExternalPluginTesterObject
@@ -76,7 +77,7 @@ ExternalPluginTesterModule(const ModuleBuildInfo& mb)
 void ExternalPluginTesterModule::
 staticInitialize(ISubDomain* sd)
 {
-  // Enregistre la boucle en temps associée à ce module
+  // Registers the time loop associated with this module
   ITimeLoopMng* tlm = sd->timeLoopMng();
   ITimeLoop* time_loop = tlm->createTimeLoop("ExternalPluginTesterLoop");
   {
@@ -139,7 +140,7 @@ computeLoop()
     Cell cell = *icell;
     Real x = static_cast<Real>(current_iteration + cell.uniqueId().asInt64());
     m_density[icell] = x;
-    // La valeur 3.5 est issu du script python 'script4'
+    // The value 3.5 comes from the python script 'script4'
     m_ref_density[icell] = x + 3.5;
   }
 

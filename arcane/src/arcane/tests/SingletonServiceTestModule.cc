@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SingletonServiceTestModule.cc                               (C) 2000-2018 */
 /*                                                                           */
-/* Module de test des services singletons.                                   */
+/* Singleton service test module.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test de sous-maillage dans Arcane.
+ * \brief Sub-domain test module in Arcane.
  */
 class SingletonServiceTestModule
 : public ArcaneSingletonServiceTestObject

@@ -653,8 +653,8 @@ void output(double* state, double etime)
   // Ne fait rien car on n'est pas branché avec 'NetCDF'.
 }
 
-// Affiche la somme sur les mailles des variables.
-// Cela est utile pour la validation
+// Displays the sum of variables over the cells.
+// This is useful for validation
 void print_vars_reduction(RealArrayView reduced_values)
 {
   int k, i, ll;

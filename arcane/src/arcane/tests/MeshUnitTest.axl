@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test du maillage -->
+<!-- Data set options for the mesh test service -->
 
 <service name="MeshUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
@@ -21,7 +21,7 @@
   </variables>
 
  <options>
-  <!-- Fichier de sortie pour les maillages -->
+  <!-- Output file for meshes -->
   <simple
    name = "output-file"
    type = "string"
@@ -29,10 +29,9 @@
   >
    <name lang='fr'>fichier-sortie</name>
    <description>
-Nom du fichier de sortie des infos de maillage. Pour chaque sous-domaine, trois
-fichiers sont écrit: un fichier avec le maillage trié pour comparaisons avec
-un autre maillage, un fichier contenant la connectivité et un fichier écrit
-avec l'écrivain de maillage par défaut.
+Name of the mesh info output file. For each subdomain, three files are written:
+a file with the sorted mesh for comparison with another mesh, a file
+containing the connectivity, and a file written with the default mesh writer.
    </description>
   </simple>
 
@@ -44,7 +43,7 @@ avec l'écrivain de maillage par défaut.
   >
    <name lang='fr'>calcul-normale</name>
    <description>
-Groupe de faces dont on souhaite calculer la normale.
+Group of faces for which the normal is desired to be calculated.
    </description>
   </extended>
 
@@ -56,7 +55,7 @@ Groupe de faces dont on souhaite calculer la normale.
   >
    <name lang='fr'>calcul-direction</name>
    <description>
-Groupe de noeuds formant une ligne dont on souhaite calculer la direction
+Group of nodes forming a line for which the direction is desired to be calculated.
    </description>
   </extended>
 
@@ -67,7 +66,7 @@ Groupe de noeuds formant une ligne dont on souhaite calculer la direction
   >
    <name lang='fr'>test-ecrivain-variable</name>
    <description>
-Vrai si on teste l'ecriture des variables au format HDF5.
+True if we are testing the writing of variables in HDF5 format.
    </description>
   </simple>
 
@@ -78,7 +77,7 @@ Vrai si on teste l'ecriture des variables au format HDF5.
   >
    <name lang='fr'>test-adjacence</name>
    <description>
-Vrai si on teste la création des groupes d'adjacence.
+True if we are testing the creation of adjacency groups.
    </description>
   </simple>
 
@@ -89,7 +88,7 @@ Vrai si on teste la création des groupes d'adjacence.
   >
    <name lang='fr'>ecrire-maillage</name>
    <description>
-Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom est donnee par l'options 'sortie-fichier').
+True if we write the mesh information into a file (whose name is given by the 'output-file' option).
    </description>
   </simple>
 
@@ -99,7 +98,7 @@ Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom es
    default = "Lima"
   >
    <description>
-Nom du service utilisé pour écrire le maillage.
+Name of the service used to write the mesh.
    </description>
   </simple>
 
@@ -109,7 +108,7 @@ Nom du service utilisé pour écrire le maillage.
     optional = "true"
   >
    <description>
-     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas séquentiels
+     SHA3-256 checksum of the sorted connectivity file for sequential cases
    </description>
   </simple>
 
@@ -120,8 +119,8 @@ Nom du service utilisé pour écrire le maillage.
     maxOccurs = "unbounded"
     >
    <description>
-     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas parallèles.
-     La i-ème instance correspond à la checksum du rang i.
+     SHA3-256 checksum of the sorted connectivity file for parallel cases.
+     The i-th instance corresponds to the checksum of rank i.
    </description>
   </simple>
 
@@ -133,7 +132,7 @@ Nom du service utilisé pour écrire le maillage.
   >
    <name lang='fr'>maillage-additionnel</name>
    <description>
-Nom d'un maillage à lire en plus du maillage par défaut.
+Name of a mesh to read in addition to the default mesh.
    </description>
   </simple>
 
@@ -144,7 +143,7 @@ Nom d'un maillage à lire en plus du maillage par défaut.
   >
    <name lang='fr'>test-desallocation-maillage</name>
    <description>
-Teste la désallocation du maillage
+Tests the deallocation of the mesh.
    </description>
   </simple>
 
@@ -154,43 +153,43 @@ Teste la désallocation du maillage
    default = "false"
   >
    <description>
-     Indique si on tri les faces et les arêtes connectées aux noeuds
+     Indicates whether faces and edges connected to nodes are sorted.
    </description>
   </simple>
 
   <simple name = "create-edges" type = "bool" default = "false">
     <description>
-      Indique si en 3D on créé les arêtes.
+      Indicates whether edges are created in 3D.
     </description>
   </simple>
 
   <simple name = "generate-uid-from-nodes-uid" type = "bool" default = "false">
     <description>
-      Si vrai, génère les uniqueId des arêtes et des faces à partir de ceux des noeuds.
+      If true, generates the uniqueIds of edges and faces from those of the nodes.
     </description>
   </simple>
 
   <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
     <description>
-      Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
+      Indicates that we want to check if the variable whose name is given has been created and preserved.
     </description>
   </simple>
 
   <simple name = "compact-mesh" type = "bool" default = "true">
     <description>
-      Indique si on applique la propriété 'compact' et 'compact-after-allocate' au maillage.
+      Indicates whether the 'compact' and 'compact-after-allocate' properties are applied to the mesh.
     </description>
   </simple>
 
   <simple name = "compute-owners-direct" type = "bool" default = "false">
     <description>
-      Si vrai, utilise 'ItemsOwnerBuilder' pour calculer les propriétaires des noeuds et faces.
+      If true, uses 'ItemsOwnerBuilder' to calculate the owners of nodes and faces.
     </description>
   </simple>
 
   <simple name = "check-local-ids-from-connectivity" type = "bool" default = "false">
     <description>
-      Si vrai, test 'IMeshUtilities::localIdsFromConnectivity()'
+      If true, tests 'IMeshUtilities::localIdsFromConnectivity()'.
     </description>
   </simple>
 

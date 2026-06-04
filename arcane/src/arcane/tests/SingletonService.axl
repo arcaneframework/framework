@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test des particules -->
+<!-- Dataset options for the particle test service -->
 
 <service name="SingletonService" version="1.0" type="subdomain" singleton="true" namespace-name="ArcaneTest">
   <interface name="ArcaneTest::IServiceInterface1" inherited="false" />

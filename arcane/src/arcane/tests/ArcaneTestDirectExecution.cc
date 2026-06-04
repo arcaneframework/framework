@@ -79,14 +79,12 @@ extern "C++" ARCANE_EXPORT int
 arcaneTestDirectExecution(const CommandLineArguments& cmd_line_args,
                           const String& direct_execution_method)
 {
-  // Ajoute un groupe nul avant initialisation pour tester la création de variable
-  // globale de groupe.
+  // Adds a null group before initialization to test the creation of a global group variable.
   ItemGroup my_null_group;
 
   StringList all_args;
   cmd_line_args.fillArgs(all_args);
-  // Récupère le jeu de données en considérant qu'il s'agit de la dernière option
-  // de la ligne de commande.
+  // Retrieves the dataset assuming it is the last command-line option.
   Integer nb_arg = all_args.count();
   if (nb_arg>=1)
     simple_exec_case_file_name = all_args[nb_arg-1];

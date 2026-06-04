@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RandomUnitTest.cc                                           (C) 2000-2014 */
 /*                                                                           */
-/* Test des générateurs aléatoires.                                          */
+/* Random generator tests.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des ItemVector
+ * \brief ItemVector test service
  */
 class RandomUnitTest
 : public BasicUnitTest
@@ -132,8 +133,8 @@ executeTest()
     random::MinstdRand mr(53);
     _checkGenerator(mr,"MinstdRand");
   }
-  // TODO pouvoir activer le test et trapper l'exception
-  // Faire de meme avec la valeur 0.
+  // TODO enable the test and catch the exception
+  // Do the same with the value 0.
 #if 0
   {
     random::MinstdRand mr(INT_MAX);
@@ -147,7 +148,7 @@ executeTest()
     _checkGenerator(mr0,"MinstdRand0");
   }
 
-  // TODO pouvoir activer le test et trapper l'exception
+  // TODO enable the test and catch the exception
 #if 0
   {
     // LinearCongruential

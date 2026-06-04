@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+﻿<?xml version="1.0" ?>
 
 <service name="InOutTester" version="1.0" type="caseoption" namespace-name="ArcaneTest" parent-name="Arcane::BasicUnitTest"> 
   <interface name="Arcane::IUnitTest" inherited='false'/>

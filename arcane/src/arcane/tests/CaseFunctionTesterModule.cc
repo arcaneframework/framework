@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseFunctionTesterModule.cc                                 (C) 2000-2023 */
 /*                                                                           */
-/* Module de test des 'CaseFunction'.                                        */
+/* Module for testing 'CaseFunctions'.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,8 +27,9 @@ namespace ArcaneTest
 using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des 'ICaseFunction'.
+ * \brief Module for testing 'ICaseFunctions'.
  */
 class CaseFunctionTesterModule
 : public ArcaneCaseFunctionTesterObject
@@ -139,7 +140,7 @@ loop()
   if (m_global_iteration() > 10)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 
-  // Temps de début d'itération auquel sont calculées les valeurs des fonctions
+  // Start iteration time at which function values are calculated
   Real global_time = m_global_old_time();
   Int32 global_iter = m_global_iteration();
 

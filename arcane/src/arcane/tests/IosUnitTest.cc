@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IosUnitTest.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Service du test des formats d'entrée/sortie du maillage.                  */
+/* Service for testing mesh input/output formats.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,8 +41,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des Ios
+ * \brief I/O test module
  */
 class IosUnitTest
 : public ArcaneIosUnitTestObject
@@ -144,12 +145,12 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Ce test va lancer séquentiellement une écriture suivit d'une lecture
- de l'ensemble des maillages lus à l'initialisation.
- [SOD|SIMPLE(1)|SIMPLE(2)] -> wVTU -> rVTU -> wXMF -> rXMF -> wMsh -> rMsh,
- en checkValidMesh-ant ceux lus.
- Un test plus consistant serait à effectuer d'ailleur sur ceux-ci.
+ * This test will sequentially run a write followed by a read of all meshes found during initialization.
+ * [SOD|SIMPLE(1)|SIMPLE(2)] -> wVTU -> rVTU -> wXMF -> rXMF -> wMsh -> rMsh,
+ * checking the validity of those read.
+ * A more comprehensive test should be performed elsewhere on these.
 */
 void IosUnitTest::
 executeTest()
@@ -179,7 +180,7 @@ executeTest()
       ARCANE_FATAL("Error in >vtk< test");
   }
 
-  // Pour test, affiche les coordonnées des noeuds des 10 premières mailles
+  // For testing, display the coordinates of the nodes of the first 10 meshes
   {
     VariableNodeReal3& nodes_coord_var(mesh()->nodesCoordinates());
     ENUMERATE_(Cell,icell,allCells()){

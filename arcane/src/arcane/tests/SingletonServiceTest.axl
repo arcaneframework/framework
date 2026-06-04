@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+﻿<?xml version="1.0" ?>
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
 <module name="SingletonServiceTest" version="1.0" namespace-name="ArcaneTest" >
   <description>
-    Module de test des services singletons
+    Singleton service test module
   </description>
 
  <entry-points>

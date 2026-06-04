@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableComparatorUnitTest.cc                            (C) 2000-2025 */
 /*                                                                           */
-/* Service de test pour les services implémentant ISimpleTableComparator.    */
+/* Test service for services implementing ISimpleTableComparator.            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -238,7 +238,7 @@ testRegexRow()
   ptrSTC->addRowForComparing("Ma ligne 2");
   ptrSTC->addRowForComparing("Ma ligne 3");
 
-  // 3 inclus.
+  // 3 included.
   ptrSTC->editRegexRows("^.*[3-9]+$");
   ptrSTC->isARegexExclusiveRows(true);
 
@@ -275,7 +275,7 @@ testRegexColumn()
   ptrSTC->addColumnForComparing("Ma colonne 2");
   ptrSTC->addColumnForComparing("Ma colonne 3");
 
-  // 3 inclus.
+  // 3 included.
   ptrSTC->editRegexColumns("^.*[3-9]+$");
   ptrSTC->isARegexExclusiveColumns(true);
 
@@ -507,7 +507,7 @@ testCompareWithElem()
 void SimpleTableComparatorUnitTest::
 tearDown()
 {
-  // N'est pas exécuté après un test qui a échoué.
+  // Not executed after a failed test.
 }
 
 void SimpleTableComparatorUnitTest::

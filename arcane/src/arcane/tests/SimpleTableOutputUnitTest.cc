@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleTableOutputUnitTest.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Service de test pour les services implémentant ISimpleTableOutput.        */
+/* Test service for services implementing ISimpleTableOutput.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,7 +51,7 @@ setUp()
 void SimpleTableOutputUnitTest::
 testInit()
 {
-  // La position de la première ligne et de la première colonne doivent être 0.
+  // The position of the first row and the first column must be 0.
   ptrSTO->addRow("Ma ligne");
   ptrSTO->addColumn("Ma colonne");
 
@@ -159,8 +159,8 @@ testAddColumn3()
 void SimpleTableOutputUnitTest::
 testAddColumn4()
 {
-  // On regarde si les valeurs des lignes non
-  // utilisées sont à 0.
+  // We check if the values of unused rows
+  // are 0.
   RealUniqueArray result = { 0.0, 2.0, 3.0, 0.0, 5.0, 6.0, 7.0, 8.0 };
 
   ptrSTO->addColumn("Ma colonne 1");
@@ -974,7 +974,7 @@ testEditElemUDLR1()
 void SimpleTableOutputUnitTest::
 testEditElemDown1()
 {
-  // Voir testAddRowSameColumn3()
+  // See testAddRowSameColumn3()
   ptrSTO->addColumn("Ma colonne 1");
 
   ptrSTO->addRow("Ma ligne 1");
@@ -1007,7 +1007,7 @@ testEditElemDown1()
 void SimpleTableOutputUnitTest::
 testEditElemRight1()
 {
-  // Voir testAddColumnSameRow3()
+  // See testAddColumnSameRow3()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
   ptrSTO->addColumn("Ma colonne 3");
@@ -1103,7 +1103,7 @@ testWriteFile()
 void SimpleTableOutputUnitTest::
 tearDown()
 {
-  // N'est pas exécuté après un test qui a échoué.
+  // Not executed after a failed test.
 }
 
 void SimpleTableOutputUnitTest::

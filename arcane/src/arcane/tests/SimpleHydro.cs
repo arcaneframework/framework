@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Arcane;
 using Real = System.Double;
 #if ARCANE_64BIT
@@ -19,10 +19,10 @@ public class TypesSimpleHydro
     }
   public enum eBoundaryCondition
     {
-      VelocityX, //!< Vitesse X fixée
-      VelocityY, //!< Vitesse Y fixée
-      VelocityZ, //!< Vitesse Z fixée
-      Unknown    //!< Type inconnu
+      VelocityX, //!< Velocity X fixed
+      VelocityY, //!< Velocity Y fixed
+      VelocityZ, //!< Velocity Z fixed
+      Unknown    //!< Unknown type
     };
 };
 
@@ -38,10 +38,10 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
   private IMesh m_mesh;
 
-  Real m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
-  Real m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
-  Real m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
-  Real m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+  Real m_density_ratio_maximum; //!< Maximum density increase over a time step
+  Real m_delta_t_n; //!< Delta t n between t^{n-1/2} and t^{n+1/2}
+  Real m_delta_t_f; //!< Delta t n+1/2 between t^{n} and t^{n+1}
+  Real m_old_dt_f; //!< Delta t n-1/2 between t^{n-1} and t^{n}
 
   public SimpleHydroModule(ModuleBuildInfo infos) : base(infos)
   {
@@ -51,7 +51,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
   public override void HydroStartInit()
   {
     m_mesh = DefaultMesh();
-    // Dimensionne les variables tableaux
+    // Sizes the array variables
     m_cell_cqs.Resize(8);
 
     m_global_deltat.Value = Options.DeltatInit;
@@ -98,7 +98,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     m_delta_t_f = deltat_init;
 
     Trace.Info("COMPUTE GEOM");
-    // Initialise les données géométriques: volume, cqs, longueurs caractéristiques
+    // Initializes geometric data: volume, cqs, characteristic lengths
     ComputeGeometricValues();
     
     Trace.Info("FILL");
@@ -106,7 +106,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     m_velocity.Fill(Real3.Zero);
 
     Trace.Info("COMPUTE NODE MASS");
-    // Initialisation de la masse des mailles et des masses nodale
+    // Initialization of cell mass and nodal masses
     foreach(Cell icell in AllCells()){
       m_cell_mass[icell] = m_density[icell] * m_volume[icell];
 
@@ -125,7 +125,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     tm.PutTrace("Hello",1);
 
     Trace.Info("Hello");
-    // Initialise l'énergie et la vitesse du son
+    // Initializes energy and sound speed
     Options.EosModel.initEOS(AllCells());
     Trace.Info("NB_EOS_ARRAY={0}",Options.EosModelArray.Length);
     foreach(IEquationOfState eos in Options.EosModelArray){
@@ -139,13 +139,13 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
   public override void ComputePressureForce()
   {
-    // Remise à zéro du vecteur des forces.
+    // Zeroing out the force vector.
     //Real3 null_real3 = new Real3(0.0,0.0,0.0);
     //m_force.Fill(null_real3);
     m_force.Fill(Real3.Zero);
     //Trace.Info("COMPUTE PRESSURE FORCE 2");
-    // Calcul pour chaque noeud de chaque maille la contribution
-    // des forces de pression
+    // Calculation for each node of each cell of the contribution
+    // of pressure forces
     foreach(Cell icell in AllCells()){
       Real pressure = m_pressure[icell];
       foreach(IndexedNode node in icell.Nodes){ // int i=0; i<icell.NbNode; ++i ){
@@ -170,12 +170,11 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     Real linear_coef = Options.ViscosityLinearCoef;
     Real quadratic_coef = Options.ViscosityQuadraticCoef;
 
-    // Boucle sur les mailles du maillage
-    // TODO: normalement on peut utiliser un 'Parallel.ForEach' mais
-    // cela ne fonctionne pas avec '.NetCore' 2.2 avec un message
-    // d'erreur indiquant que la méthode PInvoke ItemGroup.view() ne
-    // fonctionne pas. A étudier mais en attendant on utilise
-    // la version séquentielle.
+    // Loop over the mesh cells
+    // TODO: normally we can use a 'Parallel.ForEach' but
+    // this does not work with '.NetCore' 2.2 with an error message
+    // indicating that the PInvoke ItemGroup.view() method does not work.
+    // To be studied, but for now we use the sequential version.
 #if false
     Parallel.ForEach(AllCells.SubViews(),
                      (ItemVectorView<Cell> sub_view) =>
@@ -185,7 +184,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
             //const Integer cell_nb_node = cell.nbNode();
             Real rho = m_density[icell];
 
-            // Calcul de la divergence de la vitesse
+            // Calculation of the speed divergence
             Real delta_speed = 0.0;
             foreach(IndexedNode node in icell.Nodes){
               //for( int i=0; i<icell.NbNode; ++i )
@@ -194,7 +193,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
             }
             delta_speed /= m_volume[icell];
 
-            // Capture uniquement les chocs
+            // Capture only shocks
             bool shock = (Math.Min(0.0,delta_speed)<0.0);
             if (shock){
               Real sound_speed = m_sound_speed[icell];
@@ -216,7 +215,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
         //const Integer cell_nb_node = cell.nbNode();
         Real rho = m_density[icell];
 
-        // Calcul de la divergence de la vitesse
+        // Calculation of the speed divergence
         Real delta_speed = 0.0;
         foreach(IndexedNode node in icell.Nodes){
           //for( int i=0; i<icell.NbNode; ++i )
@@ -225,7 +224,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
         }
         delta_speed /= m_volume[icell];
 
-        // Capture uniquement les chocs
+        // Capture only shocks
         bool shock = (Math.Min(0.0,delta_speed)<0.0);
         if (shock){
           Real sound_speed = m_sound_speed[icell];
@@ -245,7 +244,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
   public override void AddPseudoViscosityContribution()
   {
     //Trace.Info("ADD PSEUDO VISCOSITY");
-    // Prise en compte des forces de viscosité si demandé
+    // Consideration of viscosity forces if requested
     bool add_viscosity_force = (Options.Viscosity!=TypesSimpleHydro.eViscosity.ViscosityNo);
     if (add_viscosity_force){
       foreach(Cell cell in AllCells()){
@@ -262,7 +261,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
   public override void ComputeVelocity()
   {
     //Trace.Info("COMPUTE VELOCITY");
-    // Calcule l'impulsion aux noeuds
+    // Calculates the momentum at the nodes
     foreach(Node node in AllNodes()){
       Real node_mass  = m_node_mass[node];
 
@@ -276,7 +275,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
   public override void ComputeViscosityWork()
   {
-    // Calcul du travail des forces de viscosité dans une maille
+    // Calculation of the work of viscosity forces in a cell
     foreach(Cell cell in AllCells()){
       Real work = 0.0;
       Real scalar_viscosity = m_cell_viscosity_force[cell];
@@ -293,10 +292,10 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       Real value = Options.BoundaryCondition[i].Value;
       TypesSimpleHydro.eBoundaryCondition type = Options.BoundaryCondition[i].Type;
       //Trace.Info("APPLY BOUNDARY CONDITION group={0}",face_group.name());
-      // boucle sur les faces de la surface
+      // loop over the faces of the surface
       foreach(Face face in face_group){
         Integer nb_node = face.NbNode;
-        // boucle sur les noeuds de la face
+        // loop over the face nodes
         for( Integer k=0; k<nb_node; ++k ){
           Node node = face.Node(k);
           Real3 v = m_velocity[node];
@@ -350,7 +349,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
   
     bool add_viscosity_force = (Options.Viscosity!=TypesSimpleHydro.eViscosity.ViscosityNo);
 
-    // Calcul de l'énergie interne
+    // Calculation of internal energy
     foreach(Cell cell in AllCells()){
       Real adiabatic_cst = m_adiabatic_cst[cell];
       Real volume_ratio = m_volume[cell] / m_old_volume[cell];
@@ -364,12 +363,12 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
         << " denom2=" << denom2 << " denom3=" << denom3 << " denom4=" << denom4;*/
       m_internal_energy[cell] *= numer_accrois_nrj/denom_accrois_nrj;
   
-      // Prise en compte du travail des forces de viscosité 
+      // Taking into account the work done by viscosity forces 
       if (add_viscosity_force)
         m_internal_energy[cell] -= deltatf*m_cell_viscosity_work[cell] /  (m_cell_mass[cell]*denom_accrois_nrj);
     }
 
-    // Synchronise l'énergie
+    // Synchronize the energy
     m_internal_energy.Synchronize();
 
     Options.EosModel.applyEOS(AllCells());
@@ -381,7 +380,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     //m_global_time = 0.1;
     Real old_dt = m_global_deltat.Value;
 
-    // Calcul du pas de temps pour le respect du critère de CFL
+    // Calculation of the time step to respect the CFL criterion
     
     Real minimum_aux = 1.0e100; //FloatInfo<Real>::maxValue();
     Real new_dt = 1.0e100; //FloatInfo<Real>::maxValue();
@@ -401,7 +400,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
     //Real cfl_dt = new_dt;
 
-    // Pas de variations trop brutales à la hausse comme à la baisse
+    // No too sudden variations up or down
     Real max_dt = (1.0+Options.VariationSup)*old_dt;
     Real min_dt = (1.0-Options.VariationInf)*old_dt;
 
@@ -410,20 +409,20 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
     //Real variation_min_max_dt = new_dt;
 
-    // control de l'accroissement relatif de la densité
+    // control of the relative increase in density
     Real dgr = Options.DensityGlobalRatio;
     if (m_density_ratio_maximum>dgr)
       new_dt = Math.Min(old_dt*dgr/m_density_ratio_maximum,new_dt);
 
     new_dt = ParallelMng().Reduce(eReduceType.ReduceMin,new_dt);
 
-    // respect des valeurs min et max imposées par le fichier de données .plt
+    // respect of the min and max values imposed by the .plt data file
     new_dt = Math.Min(new_dt,Options.DeltatMax);
     new_dt = Math.Max(new_dt,Options.DeltatMin);
 
     //Real data_min_max_dt = new_dt;
     
-    // Le dernier calcul se fait exactement au temps stopTime()
+    // The last calculation is done exactly at stopTime()
     {
       Real stop_time  = Options.FinalTime;
       bool not_yet_finish = ( m_global_time.Value < stop_time);
@@ -435,7 +434,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       }
     }
     
-    // Mise à jour des variables
+    // Update variables
     m_old_dt_f = old_dt;
     m_delta_t_n = 0.5*(old_dt+new_dt);
     m_delta_t_f = new_dt;
@@ -455,37 +454,37 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     Real demi = 0.5;
     Real five = 5.0;
 
-    // Calcul des normales face 1 :
+    // Calculation of face 1 normals:
     Real3 n1a04 = demi * Math.VecMul(node_coord[0] - c0 , node_coord[3] - c0);
     Real3 n1a03 = demi * Math.VecMul(node_coord[3] - c0 , node_coord[2] - c0);
     Real3 n1a02 = demi * Math.VecMul(node_coord[2] - c0 , node_coord[1] - c0);
     Real3 n1a01 = demi * Math.VecMul(node_coord[1] - c0 , node_coord[0] - c0);
 
-    // Calcul des normales face 2 :
+    // Calculation of face 2 normals:
     Real3 n2a05 = demi * Math.VecMul(node_coord[0] - c1 , node_coord[4] - c1);
     Real3 n2a12 = demi * Math.VecMul(node_coord[4] - c1 , node_coord[7] - c1);
     Real3 n2a08 = demi * Math.VecMul(node_coord[7] - c1 , node_coord[3] - c1);
     Real3 n2a04 = demi * Math.VecMul(node_coord[3] - c1 , node_coord[0] - c1);
 
-    // Calcul des normales face 3 :
+    // Calculation of face 3 normals:
     Real3 n3a01 = demi * Math.VecMul(node_coord[0] - c2 , node_coord[1] - c2);
     Real3 n3a06 = demi * Math.VecMul(node_coord[1] - c2 , node_coord[5] - c2);
     Real3 n3a09 = demi * Math.VecMul(node_coord[5] - c2 , node_coord[4] - c2);
     Real3 n3a05 = demi * Math.VecMul(node_coord[4] - c2 , node_coord[0] - c2);
 
-    // Calcul des normales face 4 :
+    // Calculation of face 4 normals:
     Real3 n4a09 = demi * Math.VecMul(node_coord[4] - c3 , node_coord[5] - c3);
     Real3 n4a10 = demi * Math.VecMul(node_coord[5] - c3 , node_coord[6] - c3);
     Real3 n4a11 = demi * Math.VecMul(node_coord[6] - c3 , node_coord[7] - c3);
     Real3 n4a12 = demi * Math.VecMul(node_coord[7] - c3 , node_coord[4] - c3);
 	
-    // Calcul des normales face 5 :
+    // Calculation of face 5 normals:
     Real3 n5a02 = demi * Math.VecMul(node_coord[1] - c4 , node_coord[2] - c4);
     Real3 n5a07 = demi * Math.VecMul(node_coord[2] - c4 , node_coord[6] - c4);
     Real3 n5a10 = demi * Math.VecMul(node_coord[6] - c4 , node_coord[5] - c4);
     Real3 n5a06 = demi * Math.VecMul(node_coord[5] - c4 , node_coord[1] - c4);
       
-    // Calcul des normales face 6 :
+    // Calculation of face 6 normals:
     Real3 n6a03 = demi * Math.VecMul(node_coord[2] - c5 , node_coord[3] - c5);
     Real3 n6a08 = demi * Math.VecMul(node_coord[3] - c5 , node_coord[7] - c5);
     Real3 n6a11 = demi * Math.VecMul(node_coord[7] - c5 , node_coord[6] - c5);
@@ -493,7 +492,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
     Real real_1div12 = 1.0 / 12.0;
 
-    // Calcul des résultantes aux sommets :
+    // Calculation of vertex results:
     Real3ArrayView v = m_cell_cqs[cell];
     v[0] = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
             (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*real_1div12;
@@ -520,21 +519,21 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
     Real3Array tmp_coord = new Real3Array(8+6);
     Real3ArrayView tmp_coord_view = tmp_coord.View;
-    // Copie locale des coordonnées des sommets d'une maille
+    // Local copy of the mesh vertex coordinates
     Real3ArrayView coord = tmp_coord_view.SubView(0,8);
-    // Coordonnées des centres des faces
+    // Face center coordinates
     Real3ArrayView face_coord = tmp_coord_view.SubView(8,6);
 
     foreach(Cell cell in AllCells()){
 
-      // Recopie les coordonnées en local (pour le cache)
+      // Recopy coordinates locally (for cache)
       foreach(IndexedNode node in cell.Nodes){
         //Trace.Info("CELL UID={0} I={1} NODE={2} COORD={3}",
         //                  cell.UniqueId,node.Index,((Node)node).UniqueId,m_node_coord[node].x);
         coord[node.Index] = m_node_coord[node];
       }
 
-      // Calcul les coordonnées des centres des faces
+      // Calculate face center coordinates
       face_coord[0] = 0.25 * ( coord[0] + coord[3] + coord[2] + coord[1] );
       face_coord[1] = 0.25 * ( coord[0] + coord[4] + coord[7] + coord[3] );
       face_coord[2] = 0.25 * ( coord[0] + coord[1] + coord[5] + coord[4] );
@@ -542,7 +541,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       face_coord[4] = 0.25 * ( coord[1] + coord[2] + coord[6] + coord[5] );
       face_coord[5] = 0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] );
 
-      // Calcule la longueur caractéristique de la maille.
+      // Calculate the characteristic length of the mesh.
       {
         Real3 median1 = face_coord[0]-face_coord[3];
         Real3 median2 = face_coord[2]-face_coord[5];
@@ -556,10 +555,10 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
         m_caracteristic_length[cell] = dx_numerator / dx_denominator;
       }
 
-      // Calcule les résultantes aux sommets
+      // Calculate vertex results
       computeCQs(coord.ConstView,face_coord.ConstView,cell);
 
-      // Calcule le volume de la maille
+      // Calculate the volume of the mesh
       {
         Real volume = 0.0;
         for( Integer i_node=0; i_node<8; ++i_node )

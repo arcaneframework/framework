@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorLocalMemoryUnitTest.cc                           (C) 2000-2026 */
 /*                                                                           */
-/* Service de test de la mémoire locale pour les accélérateurs.              */
+/* Local memory test service for accelerators.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'AcceleratorViews'.
+ * \brief Brief test service for the 'AcceleratorViews' class.
  */
 class AcceleratorLocalMemoryUnitTest
 : public BasicUnitTest
@@ -109,14 +110,14 @@ _executeTest1()
 {
   _doTestEmpty();
 
-  // Tests avec un nombre de bloc et une taille d'un bloc.
+  // Tests with a number of blocks and a block size.
   _doTest(32, 149);
   _doTest(32 * 4, 137);
   _doTest(32 * 9, 275);
   _doTest(512, 311);
   _doTest(1024, 957);
 
-  // Tests avec un nombre d'éléments qui n'est pas un multiple de la taille d'un bloc.
+  // Tests with a number of elements that is not a multiple of the block size.
   _doTest(0, 1023);
   _doTest(0, 1023 * 1023);
 }
@@ -138,18 +139,17 @@ _doTestEmpty()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Si \a group_size==0, alors nb_block_or_total_nb_element est le
-// nombre total d'éléments. Sinon il s'agit du nombre de bloc.
+// If group_size==0, then nb_block_or_total_nb_element is the
+// total number of elements. Otherwise, it is the number of blocks.
 
 void AcceleratorLocalMemoryUnitTest::
 _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 {
-  // Test simple du parallélisme hiérarchique et de l'utilisation
-  // de la mémoire locale.
+  // Simple test of hierarchical parallelism and local memory usage.
 
-  // Tous les WorkItem d'un groupe incrémentent un compteur
-  // en mémoire partagé. Le dernier WorkItem du groupe recopie
-  // ensuite ce tableau en mémoire globale.
+  // All WorkItems in a group increment a counter
+  // in shared memory. The last WorkItem in the group then copies
+  // this array to global memory.
 
   info() << "DO_TEST group_size=" << group_size
          << " nb_group_or_total_nb_element=" << nb_group_or_total_nb_element;
@@ -168,9 +168,9 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   }
 
   const Int32 nb_group = loop_range.nbBlock();
-  // NOTE: sur accélérateur, la taille d'un WorkGroup doit être
-  // un multiple de 32 et inférieur au nombre maximum de thread d'un bloc
-  // (en général 1024).
+  // NOTE: on accelerator, the size of a WorkGroup must be
+  // a multiple of 32 and less than the maximum number of threads in a block
+  // (generally 1024).
   info() << "DO_LOOP2 LocalMemory nb_group=" << nb_group
          << " group_size=" << group_size
          << " total_nb_element=" << loop_range.nbElement();
@@ -183,8 +183,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   out_array.fillHost(0);
   auto out_span = viewInOut(command, out_array);
 
-  // En multi-thread, sélectionne la taille de grain pour être sur
-  // d'utiliser plusieurs threads.
+  // In multi-thread, selects the grain size to ensure multiple threads are used.
   if (m_queue.executionPolicy() == ax::eExecutionPolicy::Thread) {
     ParallelLoopOptions loop_options;
     loop_options.setGrainSize(nb_group / 4);
@@ -197,34 +196,34 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
     auto local_span_int32 = local_data_int32.span();
     auto local_span_int64 = local_data_int64.span();
 
-    // Le WorkItem 0 du groupe initialise la mémoire partagée
+    // WorkItem 0 of the group initializes the shared memory
     const bool is_rank0 = (work_item.rankInBlock() == 0);
     if (is_rank0) {
       local_span_int32.fill(0);
       local_span_int64.fill(0);
     }
 
-    // S'assure que tous les WorkItem du bloc attendent l'initialisation
+    // Ensures that all WorkItems in the block wait for initialization
     work_block.barrier();
 
-    // Traite chaque indice de la boucle géré par le WorkItem.
-    // Il va ajouter des valeurs à la mémoire partagée.
+    // Processes each loop index managed by the WorkItem.
+    // It will add values to the shared memory.
     for ( Int32 i : work_item.linearIndexes() ) {
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
     }
 
-    // Pour tester le 'constexpr' uniquement sur le device
+    // To test 'constexpr' only on the device
     if constexpr (work_block.isDevice()) {
       if (is_rank0)
         ax::doAtomicAdd(&local_span_int32[0], 2);
     }
 
-    // S'assure que tous les WorkItem ont terminé l'ajout atomique.
+    // Ensures that all WorkItems have finished the atomic addition.
     work_block.barrier();
 
-    // Le WorkItem 0 recopie le tableau partagé dans le tableau de sortie
-    // à l'indice correspondant à son groupe.
+    // WorkItem 0 copies the shared array into the output array
+    // at the index corresponding to its group.
     if (is_rank0) {
       Int32 group_index = work_block.groupRank();
       for (Int32 s : local_span_int32)
@@ -237,13 +236,13 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   bool is_accelerator = m_queue.isAcceleratorPolicy();
   for (Int32 i = 0, n = out_array_size; i < n; ++i) {
     Int32 nb_active_item = loop_range.blockSize();
-    // Pour le dernier bloc, le nombre d'éléments actif n'est pas forcément group_size
+    // For the last block, the number of active elements is not necessarily group_size
     if ((i + 1) == n) {
       nb_active_item = (loop_range.nbElement() - (loop_range.blockSize() * (loop_range.nbBlock() - 1)));
     }
     Int64 out_value = out_span[i];
     const Int32 base_value = nb_active_item + nb_active_item * 10;
-    // Sur accélérateur on ajoute 2 car il y a un ajout dans le 'constexpr' de la lambda
+    // On accelerator, we add 2 because there is an addition in the lambda's 'constexpr' block.
     Int64 expected_value = (is_accelerator) ? (base_value + 2) : base_value;
     if (i < 10)
       info() << "DO_LOOP2 LocalMemory out[" << i << "]=" << out_value;

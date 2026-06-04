@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorScanUnitTest.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Service de test des algorithmes de 'Scan' sur accélérateur.               */
+/* Test service for 'Scan' algorithms on accelerator.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,8 +41,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AcceleratorScanUnitTest
 : public ArcaneAcceleratorScanUnitTestObject
@@ -144,7 +145,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     int to_add = 2 + (rng_distrib(randomizer));
     DataType v = static_cast<DataType>(to_add + ((i * 2) % 2348));
     if ((i % 3) == 0)
-      // Pour avoir des nombres négatifs
+      // To have negative numbers
       v = -v;
     t1[i] = v;
     t2[i] = 0;
@@ -158,7 +159,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
   NumArray<DataType, MDDim1> expected_inclusive_sum(n1);
   NumArray<DataType, MDDim1> expected_inclusive_min(n1);
   NumArray<DataType, MDDim1> expected_inclusive_max(n1);
-  // Effectue la version séquentielle pour test
+  // Performs the sequential version for testing
   {
     DataType sum_value = 0;
     DataType min_value = std::numeric_limits<DataType>::max();
@@ -185,7 +186,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
 
   ax::GenericScanner generic_scanner(*m_queue);
 
-  // Teste la somme exclusive
+  // Tests exclusive sum
   {
     info() << "Check exclusive sum";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -198,7 +199,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     vc.areEqualArray(t2.to1DSpan(), expected_exclusive_sum.to1DSpan(), "ExclusiveScan Sum");
   }
 
-  // Teste la somme exclusive (V2)
+  // Tests exclusive sum (V2)
   {
     info() << "Check exclusive sum (V2)";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -218,7 +219,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     }
   }
 
-  // Teste le minimum exclusif
+  // Tests exclusive minimum
   {
     info() << "Check exclusive min";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -231,7 +232,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     vc.areEqualArray(t2.to1DSpan(), expected_exclusive_min.to1DSpan(), "ExclusiveScan Min");
   }
 
-  // Teste le maximum exclusif
+  // Tests exclusive maximum
   {
     info() << "Check exclusive max";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -244,7 +245,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     vc.areEqualArray(t2.to1DSpan(), expected_exclusive_max.to1DSpan(), "ExclusiveScan Max");
   }
 
-  // Teste la somme inclusive
+  // Tests inclusive sum
   {
     info() << "Check inclusive sum";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -257,7 +258,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     vc.areEqualArray(t2.to1DSpan(), expected_inclusive_sum.to1DSpan(), "InclusiveScan Sum");
   }
 
-  // Teste le minimum inclusif
+  // Tests inclusive minimum
   {
     info() << "Check inclusive min";
     for (int z = 0; z < nb_iteration; ++z) {
@@ -270,7 +271,7 @@ _executeTestDataType(Int32 size, Int32 nb_iteration)
     vc.areEqualArray(t2.to1DSpan(), expected_inclusive_min.to1DSpan(), "InclusiveScan Min");
   }
 
-  // Teste le maximum inclusif
+  // Tests inclusive maximum
   {
     info() << "Check inclusive max";
     for (int z = 0; z < nb_iteration; ++z) {

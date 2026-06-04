@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdMeshVariables.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Définition de variables du maillage pour des tests.                       */
+/* Definition of mesh variables for tests.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_STDMESHVARIABLES_H
 #define ARCANE_TEST_STDMESHVARIABLES_H
@@ -141,10 +141,10 @@ class StdMeshVariables
  public:
 
   /*!
-   * \brief Applique le fonctor \a lambda sur toutes les variables.
+   * \brief Applies the functor/lambda to all variables.
    *
-   * Le fonctor doit définir l'opérateur operator()(T&) avec
-   * \a T le type de la variable.
+   * The functor must define the operator operator()(T&) where
+   * \a T is the variable type.
    */
   template<typename Functor> void
   applyFunctor(Functor& lambda)
@@ -193,5 +193,4 @@ class StdMeshVariables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -106,7 +106,7 @@ _testKind(IMesh* mesh)
   kind.setMeshStructure(eMeshStructure::Polyhedral);
   kind.setMeshAMRKind(eMeshAMRKind::None);
   mesh->_internalApi()->setMeshKind(kind);
-  // Finalize internalApi check. Dof tests done in DoFTester
+  // Finalize internalApi check. DoF tests done in DoFTester
   auto dof_mng = mesh->_internalApi()->dofConnectivityMng();
   if (!dof_mng)
     ARCANE_FATAL("Cannot get DoFConnectivityMng from PolyhedralMesh");
@@ -225,7 +225,7 @@ _testEnumerationAndConnectivities(IMesh* mesh)
       debug(Trace::High) << "edge node lid " << node.localId() << " uid " << node.uniqueId();
     }
   }
-  // Active items : no AMR available with polyhedral mesh but must return all items
+  // Active items: no AMR available with polyhedral mesh but must return all items
   bool is_active_ok = (mesh->allActiveCells().size() == mesh->allCells().size());
   is_active_ok &= (mesh->ownActiveCells().size() == mesh->ownCells().size());
   is_active_ok &= (mesh->allActiveFaces().size() == mesh->allFaces().size());

@@ -1,4 +1,4 @@
-list(APPEND ARCANE_SOURCES
+﻿list(APPEND ARCANE_SOURCES
   accelerator/MiniWeatherArraySequential.cc
   accelerator/MiniWeatherOriginalSequential.cc
 )

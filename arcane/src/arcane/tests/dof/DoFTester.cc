@@ -56,8 +56,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de DoF.
+ * \brief DoF test service.
  */
 class DoFTester
 : public ArcaneDoFTesterObject
@@ -334,7 +335,7 @@ _node2DoFConnectivity()
   // Create a DoF Family to link with mesh nodes
   IDoFFamily* dof_on_node_family = dofMng().getFamily(m_dof_on_node_family_name);
   IItemFamily* node_family = mesh()->nodeFamily();
-  // Generation des uids : proposition d'un utilitaire (basique) dans les outils des dof
+  // UID generation: proposal of a utility (basic) in the dof tools
   Int64UniqueArray uids;
   // Create dof on own node only. Ghost handled in the following by GhostDoFManager
   ENUMERATE_NODE(inode,ownNodes()) {
@@ -422,7 +423,7 @@ _cell2DoFsConnectivity()
 
   Integer nb_dof_per_cell = 3;
 
-  // Generation des uids
+  // UID generation
   Int64UniqueArray uids;
   Int64 max_cell_uid = mesh::DoFUids::getMaxItemUid(mesh()->cellFamily());
   Int64 max_dof_uid  = mesh::DoFUids::getMaxItemUid(dofs_on_cell_family->itemFamily());
@@ -430,7 +431,7 @@ _cell2DoFsConnectivity()
   {
     for (Integer i = 0; i < nb_dof_per_cell; ++i)
       {
-        uids.add(mesh::DoFUids::uid(max_dof_uid,max_cell_uid,icell->uniqueId().asInt64(),i)); // unique id parallel generation = TODO (voir ce que fait Arcane !)
+        uids.add(mesh::DoFUids::uid(max_dof_uid,max_cell_uid,icell->uniqueId().asInt64(),i)); // unique id parallel generation = TODO (see what Arcane does!)
       }
   }
 
@@ -507,7 +508,7 @@ _Face2DoFsMultiConnectivity()
   // Create a DoF Family to link with mesh Faces : variable number of DoFs per face
   IDoFFamily* dofs_multi_on_face_family = dofMng().getFamily(m_dofs_multi_on_face_family_name);
 
-  // Generation des uids
+  // UID generation
   Int64UniqueArray uids;
   IntegerUniqueArray nb_dof_per_faces(mesh()->faceFamily()->maxLocalId(),0); // Be careful not to have any non initialized values in this size array
   Int64 max_face_uid = mesh::DoFUids::getMaxItemUid(mesh()->faceFamily());
@@ -787,13 +788,13 @@ _node2DoFsConnectivityRegistered()
   IItemConnectivityMng* connectivity_mng = dofMng().connectivityMng();
   if (! connectivity_mng->isUpToDate(&node2dofs))
     {
-      // Handle added nodes : create nb_dof_per_node dofs for each own node added
+      // Handle added nodes: create nb_dof_per_node dofs for each own node added
       Int32ArrayView source_family_added_items_lids;
       Int32ArrayView source_family_removed_items_lids;
       connectivity_mng->getSourceFamilyModifiedItems(&node2dofs,source_family_added_items_lids,source_family_removed_items_lids);
       ItemVector source_family_added_items_own(node_family);
       ENUMERATE_NODE(inode,node_family->view(source_family_added_items_lids)) if (inode->isOwn()) source_family_added_items_own.add(inode.localId());
-      // Create new dofs on these new nodes : on the owned node only
+      // Create new dofs on these new nodes: on the owned node only
       Int64UniqueArray uids(source_family_added_items_own.size()*nb_dof_per_node);
       Integer j = 0;
       Int32SharedArray source_family_lids_in_connectivity(source_family_added_items_own.size()*nb_dof_per_node);
@@ -832,7 +833,7 @@ _node2DoFsConnectivityRegistered()
   node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
   node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
 
-  // Update connectivity : set the removed nodes to Null item lid
+  // Update connectivity: set the removed nodes to Null item lid
   if(!connectivity_mng->isUpToDate(&node2dofs))
     {
       Int32ArrayView source_family_added_items_lids;
@@ -861,7 +862,7 @@ _node2DoFsConnectivityRegistered()
       // Update connectivity
       node2dofs.updateConnectivity(source_family_removed_items_lids_in_connectivity,null_item_lids);
       connectivity_mng->setUpToDate(&node2dofs);
-      // Unused dof can be removed if desired. Usefull to remove them to test compaction
+      // Unused dof can be removed if desired. Useful to remove them to test compaction
       dofs_on_node_family->removeDoFs(removed_dofs);
       dofs_on_node_family->endUpdate();
       debug() << "*** REMOVED DOFS " << removed_dofs;
@@ -954,7 +955,7 @@ _node2DoFsMultiConnectivityRegistered()
 
   if (! connectivity_mng->isUpToDate(&node2dofs))
     {
-      // Handle added nodes : create a variable number of dofs for each own node added
+      // Handle added nodes: create a variable number of dofs for each own node added
       Int32ArrayView source_family_added_items_lids;
       Int32ArrayView source_family_removed_items_lids;
       connectivity_mng->getSourceFamilyModifiedItems(&node2dofs,source_family_added_items_lids,source_family_removed_items_lids);
@@ -969,7 +970,7 @@ _node2DoFsMultiConnectivityRegistered()
           nb_new_dofs += nb_dof_per_new_node[i];
         }
       Integer nb_connections  = nb_new_dofs;
-      // Create new dofs on these new nodes : on the owned node only
+      // Create new dofs on these new nodes: on the owned node only
       Int64UniqueArray uids(nb_connections);
       Integer j = 0;
       Int32SharedArray source_family_lids_in_connectivity(nb_connections);
@@ -980,7 +981,7 @@ _node2DoFsMultiConnectivityRegistered()
         for (Integer i = 0; i < nb_dof_per_new_node[inode.index()]; ++i)
           {
             uids[j] = mesh::DoFUids::uid(max_dof_uid,max_item_uid,inode->uniqueId().asInt64(),i);
-            source_family_lids_in_connectivity[j++] = inode.localId(); // Replicate the from item lid each time it used in a connectivity (needed to use updateConnectivity)
+            source_family_lids_in_connectivity[j++] = inode.localId(); // Replicate the from item lid each time it is used in a connectivity (needed to use updateConnectivity)
           }
       }
       Int32SharedArray lids(uids.size());
@@ -1013,7 +1014,7 @@ _node2DoFsMultiConnectivityRegistered()
 
   debug() << "NODES " << Int32UniqueArray(node_family->view().localIds());
 
-  // Update connectivity : set the removed nodes to Null item lid
+  // Update connectivity: set the removed nodes to Null item lid
   if(!connectivity_mng->isUpToDate(&node2dofs))
     {
       Int32ArrayView source_family_added_items_lids;
@@ -1046,7 +1047,7 @@ _node2DoFsMultiConnectivityRegistered()
       Int32SharedArray null_item_lids(source_family_removed_items_lids_in_connectivity.size(),NULL_ITEM_LOCAL_ID);
       // Update connectivity
       node2dofs.updateConnectivity(source_family_removed_items_lids_in_connectivity,null_item_lids);
-      // unused dof can be removed if desired. Usefull to remove them to test compaction
+      // Unused dof can be removed if desired. Useful to remove them to test compaction
       dofs_multi_on_node_family->removeDoFs(removed_dofs);
       dofs_multi_on_node_family->endUpdate();
       connectivity_mng->setUpToDate(&node2dofs);
@@ -1095,7 +1096,8 @@ _node2DoFsMultiConnectivityRegistered()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void DoFTester::
+void
+DoFTester::
 _removeGhost(IDoFFamily* dof_family)
 {
   Int32SharedArray removed_items;

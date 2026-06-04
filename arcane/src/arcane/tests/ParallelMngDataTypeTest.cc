@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngDataTypeTest.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Test des opérations de base du parallèlisme.                              */
+/* Test of basic parallelism operations.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,9 +52,9 @@ namespace ArcaneTest
 
 namespace {
 
-// Classe template permettant d'indique si 'DataType' a une implémentation dans
-// 'Arccore::MessagePassing::IMessagePassingMng'. Pour l'instant c'est le cas
-// uniquement pour les types de base.
+// Template class to indicate if 'DataType' has an implementation in
+// 'Arccore::MessagePassing::IMessagePassingMng'. Currently, this is
+// only the case for base types.
 template<typename DataType>
 class HasMessagePassingMngImplementation
 {
@@ -110,10 +110,11 @@ class ParallelMngDataTypeValueGenerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Pour les Int16, les cas tests utilisent au plus 12 coeurs.
-// Pour les reductions de type 'somme', on fait en sorte que chaque valeur
-// ne dépasse pas 32768 / 12 pour éviter de faire des débordements de valeur
-// dont le comportement n'est pas défini.
+
+// For Int16, test cases use at most 12 cores.
+// For 'sum' type reductions, we ensure that each value
+// does not exceed 32768 / 12 to avoid undefined behavior
+// from value overflows.
 template<>
 class ParallelMngDataTypeValueGenerator<Int16>
 {
@@ -293,9 +294,9 @@ class ParallelMngDataTypeValueGenerator<Real3x3>
 template<>
 class ParallelMngDataTypeValueGenerator<HPReal>
 {
-  // On utilise un log pour avoir des valeurs avec
-  // une précision suffisante pour générer des
-  // erreurs d'arrondi lors de la somme.
+  // We use a logarithm to obtain values with
+  // sufficient precision to generate
+  // rounding errors during summation.
  public:
   static HPReal zero() { return HPReal::zero(); }
   static HPReal generateTriValue(Int32 v1,Int32 v2,Int32 v3)
@@ -315,8 +316,9 @@ class ParallelMngDataTypeValueGenerator<HPReal>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour tester les appels IParallelMng pour le type \a DataType.
+ * \brief Class to test IParallelMng calls for the \a DataType type.
  */
 template<typename DataType>
 class ParallelMngDataTypeTest
@@ -327,17 +329,17 @@ class ParallelMngDataTypeTest
   struct CommInfo
   {
    public:
-    UniqueArray<DataType> ref_values; //!< Valeurs de référence
-    UniqueArray<DataType> send_values; //!< Valeurs à envoyer.
-    UniqueArray<DataType> recv_values; //!< Valeurs à recevoir.
+    UniqueArray<DataType> ref_values; //!< Reference values
+    UniqueArray<DataType> send_values; //!< Values to send.
+    UniqueArray<DataType> recv_values; //!< Values to receive.
   };
 
   struct AllToAllVariableCommInfo
   {
    public:
-    UniqueArray<DataType> ref_values; //!< Valeurs de référence
-    UniqueArray<DataType> send_values; //!< Valeurs à envoyer.
-    UniqueArray<DataType> recv_values; //!< Valeurs à recevoir.
+    UniqueArray<DataType> ref_values; //!< Reference values
+    UniqueArray<DataType> send_values; //!< Values to send.
+    UniqueArray<DataType> recv_values; //!< Values to receive.
 
     UniqueArray<Int32> send_count;
     UniqueArray<Int32> send_index;
@@ -436,7 +438,7 @@ doTests()
   _launchTest("MessageLegacyProbe",&ThatClass::_testMessageLegacyProbe2);
   _launchTest("AllReduce",&ThatClass::_testAllReduce);
   _launchTest("AllReduceAndScan array", &ThatClass::_testAllReduceAndScanArray);
-  // Le ComputeMinMaxSum n'est pas encore disponible pour les threads avec les Real*
+  // ComputeMinMaxSum is not yet available for threads with Real*
   bool no_minmaxsum = (Generator::isMultiReal() && m_parallel_mng->isThreadImplementation());
   if (!no_minmaxsum)
     _launchTest("ComputeMinMaxSum",&ThatClass::_testComputeMinMaxSum);
@@ -475,8 +477,8 @@ _computeArrayMinMaxSum(ConstArrayView<DataType> values)
       max_rank = z;
       max_val = val;
     }
-    // Le cast est nécessaire pour le type 'short' car ce
-    // dernier est converti en 'int' lors des calculs arithmétiques
+    // The cast is necessary for the 'short' type because
+    // the latter is converted to 'int' during arithmetic calculations
     sum_val = (DataType)(sum_val+val);
   }
   return MinMaxSumInfo(min_val,max_val,sum_val,min_rank,max_rank);
@@ -484,9 +486,10 @@ _computeArrayMinMaxSum(ConstArrayView<DataType> values)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que deux instances de MinMaxSum ont les mêmes
- * valeurs pour les champs min, max et sum.
+ * \brief Checks that two MinMaxSum instances have the same // values for the
+ * min, max, and sum fields.
  */
 template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
@@ -496,16 +499,17 @@ _checkMinMaxSumOnlyValues(const MinMaxSumInfo& expected,const MinMaxSumInfo& cur
     ARCANE_FATAL("Bad min_val expected={0} v={1}",expected.min_val,current.min_val);
   if (current.max_val!=expected.max_val)
     ARCANE_FATAL("Bad max_val expected={0} v={1}",expected.max_val,current.max_val);
-  // La comparaison en flottant n'est pas forcément strictement égal si l'ordre des opérations
-  // n'est pas le même ne séquentiel et parallèle.
+  // Floating point comparison is not necessarily strictly equal if the order of
+  // operations is not the same between sequential and parallel execution.
   if (!math::isNearlyEqual(current.sum_val,expected.sum_val))
     ARCANE_FATAL("Bad sum_val expected={0} v={1}",expected.sum_val,current.sum_val);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que deux instances de MinMaxSum sont égales.
+ * \brief Checks that two MinMaxSum instances are equal.
  */
 template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
@@ -549,8 +553,9 @@ _testAllReduce()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit \a c avec les informations pour une réduction ou un scan.
+ * \brief Fills \a c with the information for a reduction or a scan.
  */
 template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
@@ -560,7 +565,7 @@ _fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType r
   Int32 rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
 
-  // Pour un scan, on s'arrête à notre propre rang.
+  // For a scan, we stop at our own rank.
   if (is_scan)
     nb_rank = rank + 1;
 
@@ -578,8 +583,8 @@ _fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType r
     for( Integer z=0; z<nb_rank; ++z ){
       DataType value = Generator::generateBiValue(z,i);
       if (rt==Parallel::ReduceSum){
-        // Le cast est nécessaire pour le type 'short' car ce
-        // dernier est converti en 'int' lors des calculs arithmétiques
+        // The cast is necessary for the 'short' type because
+        // the latter is converted to 'int' during arithmetic calculations
         c.ref_values[i] = static_cast<DataType>(c.ref_values[i] + value);
       }
       else if (rt==Parallel::ReduceMin){
@@ -652,15 +657,15 @@ _testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan)
     _fillAllReduceOrScanArray(sizes[i], comms[i], rt, is_scan);
   }
 
-  // Teste les collectives bloquantes
+  // Testing blocking collectives
   for( Integer i=0; i<nb_size; ++i ){
     info() << "Testing AllReduceArray type=" << m_datatype_name << " size=" << sizes[i];
-    // Comme le tableau envoyé est aussi utilisé en réception, on le copie
-    // sinon il n'aura plus les bonnes valeurs pour les tests non bloquants.
+    // Since the send array is also used for reception, we copy it
+    // otherwise it will no longer have the correct values for non-blocking tests.
     UniqueArray<DataType> send_copy(comms[i].send_values);
     if constexpr (UseMessagePassingMng) {
       if (is_scan)
-        // mpAllScan n'existe pas encore
+        // mpAllScan is not yet available
         pm->scan(rt, send_copy);
       else
         mpAllReduce(mpm, rt, send_copy.span());
@@ -676,12 +681,12 @@ _testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan)
     vc.areEqualArray(send_copy.constView(), comms[i].ref_values.constView(), "AllReduceArray");
   }
 
-  // Pour l'instant pas encore de scan en mode non bloquant
+  // For now, there is no non-blocking scan
   if (is_scan)
     return;
 
-  // Teste les collectives non bloquantes
-  // TODO: Pour l'instant pnbc est nul si les collectives ne sont pas supportées.
+  // Testing non-blocking collectives
+  // TODO: For now, pnbc is null if collectives are not supported.
   IParallelNonBlockingCollective* pnbc = pm->nonBlockingCollective();
   if (pnbc){
     if (pnbc->hasValidReduceForDerivedType()){
@@ -796,7 +801,7 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testMessageProbe2()
 {
-  // TODO Ajouter un test avec MPI_ANY_TAG
+  // TODO Add a test with MPI_ANY_TAG
   IParallelMng* pm = m_parallel_mng;
   Int32 comm_size = pm->commSize();
   bool use_any_source = false;
@@ -817,7 +822,7 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testMessageLegacyProbe2()
 {
-  // TODO Ajouter un test avec MPI_ANY_TAG
+  // TODO Add a test with MPI_ANY_TAG
   IParallelMng* pm = m_parallel_mng;
   Int32 comm_size = pm->commSize();
   bool use_any_source = false;
@@ -920,11 +925,11 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
   ITraceMng* tm = pm->traceMng();
 
   if (rank==rank_to_receive){
-    // Je dois recevoir \a nb_message de chaque PE (sauf moi)
+    // I must receive \a nb_message from each PE (except myself)
     UniqueArray<PointToPointMessageInfo> all_msg_info;
 
-    // Nombre de messages déjà recu. Comme les valeurs des éléments du message
-    // dépend du nombre de message envoyé par chaque PE, il faut le conserver
+    // Number of messages already received. Since the values of the message elements
+    // depend on the number of messages sent by each PE, it must be kept
     UniqueArray<Int32> ranks_message_number(comm_size,0);
 
     //UniqueArray<DataType> all_mem_bufs(comm_size*nb_message*message_size);
@@ -943,7 +948,7 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
       UniqueArray<PointToPointMessageInfo> new_messages;
       for( const auto& p2p_msg : all_msg_info ){
         MessageId msg = pm->probe(p2p_msg);
-        // Limite le nombre d'affichages
+        // Limit the number of displays
         bool do_print = (iteration<50 || (iteration%100)==0);
         if (do_print)
           info() << "I=" << iteration << " MSG=" << p2p_msg << " MSG_ID?=" << msg.isValid();
@@ -951,15 +956,15 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
           new_messages.add(p2p_msg);
           continue;
         }
-        // Effectue un `receive` pour le message sondé.
-        // TODO: tester avec des receives non bloquants
+        // Performs a `receive` for the probed message.
+        // TODO: test with non-blocking receives
         MessageId::SourceInfo si = msg.sourceInfo();
         Int32 orig_rank = si.rank().value();
         if (do_print)
           info() << "I=" << iteration << " VALID_MSG: "
                  << " rank=" << orig_rank << " tag=" << si.tag() << " size=" << si.size();
         UniqueArray<DataType> recv_buf(si.size() / sizeof(DataType));
-        // Poste une réception et vérifie les valeurs
+        // Posts a receive and verifies the values
         PointToPointMessageInfo msg_info(msg);
         pm->receive(recv_buf,msg_info);
         Int32 msg_number = ranks_message_number[orig_rank];
@@ -973,7 +978,7 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
         }
       }
       ++iteration;
-      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      // Makes a small pause of 1ms to avoid a loop that is too fast.
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if (iteration>25000)
         ARCANE_FATAL("Too many iteration. probably a deadlock");
@@ -982,8 +987,8 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
     info() << "END_PROBING";
   }
   else{
-    // La taille du message dépend de mon rang. Cela permet de vérifier que
-    // IParallelMng::probe() permet bien de récupérer cela.
+    // The message size depends on my rank. This allows checking that
+    // IParallelMng::probe() can indeed retrieve this.
     message_size += (((message_size / 10) + 1) * pm->commRank()) + 100;
     UniqueArray2<DataType> all_bufs(nb_message,message_size);
     UniqueArray<Parallel::Request> requests;
@@ -1024,11 +1029,11 @@ _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
   ITraceMng* tm = pm->traceMng();
 
   if (rank==rank_to_receive){
-    // Je dois recevoir \a nb_message de chaque PE (sauf moi)
+    // I must receive \a nb_message from each PE (except myself)
     UniqueArray<PointToPointMessageInfo> all_msg_info;
 
-    // Nombre de messages déjà recu. Comme les valeurs des éléments du message
-    // dépend du nombre de message envoyé par chaque PE, il faut le conserver
+    // Number of messages already received. Since the values of the message elements
+    // depend on the number of messages sent by each PE, it must be kept
     UniqueArray<Int32> ranks_message_number(comm_size,0);
 
     UniqueArray<Parallel::Request> requests;
@@ -1045,7 +1050,7 @@ _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
       UniqueArray<PointToPointMessageInfo> new_messages;
       for( const auto& p2p_msg : all_msg_info ){
         MessageSourceInfo msg = pm->legacyProbe(p2p_msg);
-        // Limite le nombre d'affichages
+        // Limit the number of displays
         bool do_print = (iteration<50 || (iteration%100)==0);
         if (do_print)
           info() << "I=" << iteration << " MSG=" << p2p_msg << " MSG_ID?=" << msg.isValid();
@@ -1054,15 +1059,15 @@ _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
           new_messages.add(p2p_msg);
           continue;
         }
-        // Effectue un `receive` pour le message sondé.
-        // TODO: tester avec des receives non bloquants
+        // Performs a `receive` for the probed message.
+        // TODO: test with non-blocking receives
         MessageSourceInfo si = msg;
         Int32 orig_rank = si.rank().value();
         if (do_print)
           info() << "I=" << iteration << " VALID_MSG: "
                  << " rank=" << orig_rank << " tag=" << si.tag() << " size=" << si.size();
         UniqueArray<DataType> recv_buf(si.size() / sizeof(DataType));
-        // Poste une réception et vérifie les valeurs
+        // Posts a receive and verifies the values
         PointToPointMessageInfo msg_info(msg.rank(),msg.tag());
         pm->receive(recv_buf,msg_info);
         Int32 msg_number = ranks_message_number[orig_rank];
@@ -1076,7 +1081,7 @@ _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
         }
       }
       ++iteration;
-      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      // Makes a small pause of 1ms to avoid a loop that is too fast.
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if (iteration>25000)
         ARCANE_FATAL("Too many iteration. probably a deadlock");
@@ -1085,8 +1090,8 @@ _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
     info() << "END_PROBING";
   }
   else{
-    // La taille du message dépend de mon rang. Cela permet de vérifier que
-    // IParallelMng::probe() permet bien de récupérer cela.
+    // The message size depends on my rank. This allows checking that
+    // IParallelMng::probe() can indeed retrieve this.
     message_size += (((message_size / 10) + 1) * pm->commRank()) + 100;
     UniqueArray2<DataType> all_bufs(nb_message,message_size);
     UniqueArray<Parallel::Request> requests;
@@ -1147,7 +1152,7 @@ template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGatherVariable3(Int32 root_rank,[[maybe_unused]] bool use_generic)
 {
-  // root_rank vaut (-1) si on utilise la version collective (allGather)
+  // root_rank is -1 if the collective version (allGather) is used
   IParallelMng* pm = m_parallel_mng;
   Int32 rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
@@ -1193,7 +1198,7 @@ _testAllGatherVariable3(Int32 root_rank,[[maybe_unused]] bool use_generic)
   }
 
   if (root_rank<0 || root_rank==rank){
-    // Verifie tout est OK si on est concerné
+    // Checks that everything is OK if we are involved
     Int32 index = 0;
     for( Integer z=0; z<nb_rank; ++z ){
       Integer count = z + 1;
@@ -1210,8 +1215,8 @@ _testAllGatherVariable3(Int32 root_rank,[[maybe_unused]] bool use_generic)
     }
   }
   else{
-    // Si je ne suis pas concerné par la collective, le tableau de réception
-    // doit être vide.
+    // If I am not involved in the collective, the receive array
+    // must be empty.
     if (!recv_values.empty())
       ARCANE_FATAL("Receive buffer is not empty");
   }
@@ -1304,7 +1309,7 @@ _testAllGather3(Int32 root_rank,bool use_generic)
   [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
   ValueChecker vc(A_FUNCINFO);
 
-  // Teste les collectives bloquantes
+  // Tests blocking collectives
   for( Integer i=0; i<nb_size; ++i ){
     info() << "Testing Blocking AllGather with nb_value=" << c[i].send_values.size();
     if (root_rank<0){
@@ -1340,8 +1345,8 @@ _testAllGather3(Int32 root_rank,bool use_generic)
       vc.areEqualArray(c[i].recv_values.constView(),c[i].ref_values.constView(),"AllGather");
   }
 
-  // Teste les collectives non bloquantes
-  // TODO: Pour l'instant pnbc est nul si les collectives ne sont pas supportées.
+  // Tests non-blocking collectives
+  // TODO: For now, pnbc is null if collectives are not supported.
   IParallelNonBlockingCollective* pnbc = pm->nonBlockingCollective();
   if (pnbc){
     UniqueArray<Parallel::Request> requests;
@@ -1417,7 +1422,7 @@ _fillAllToAllVariable(Integer nb_value,AllToAllVariableCommInfo& ci)
 
   ci.ref_values.resize(ntotal_recv);
 
-  // Remplit les valeurs de référence.
+  // Fills the reference values.
   for( Integer z=0; z<nb_rank; ++z ){
     Int32 index = ci.recv_index[z];
     Integer count = ci.recv_count[z];

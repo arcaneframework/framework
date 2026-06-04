@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialTesterModule_Init.cc                            (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire des matériaux.                             */
+/* Material manager test module.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -114,9 +114,9 @@ staticInitialize(ISubDomain* sd)
 void MeshMaterialTesterModule::
 buildInit()
 {
-  // La création des milieux et des matériaux doit se faire dans un point
-  // d'entrée de type 'build' pour que la liste des variables créées par les
-  // milieux et les matériaux soient accessibles dans le post-traitement.
+  // The creation of environments and materials must be done in a
+  // 'build' type entry point so that the list of variables created by the
+  // environments and materials is accessible in post-processing.
   info() << "MESH_MATERIAL_TESTER :: buildInit()";
 
   Materials::IMeshMaterialMng* mm = IMeshMaterialMng::getReference(defaultMesh());
@@ -125,7 +125,7 @@ buildInit()
 
   m_material_mng->setMeshModificationNotified(true);
 
-  // En parallèle, test la création de variables milieux aussi sur les matériaux
+  // In parallel, test the creation of environment variables on materials too
   if (parallelMng()->isParallel())
     m_material_mng->setAllocateScalarEnvironmentVariableAsMaterial(true);
 
@@ -134,7 +134,7 @@ buildInit()
   }
   else {
     UniqueArray<MeshMaterialInfo*> materials_info;
-    // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
+    // Reads material info from the dump and registers it in the manager
     for (Integer i = 0, n = options()->material().size(); i < n; ++i) {
       String mat_name = options()->material[i].name;
       info() << "Found material name=" << mat_name;
@@ -144,7 +144,7 @@ buildInit()
     MeshBlockBuildInfo mbbi("BLOCK1", allCells());
     UniqueArray<IMeshEnvironment*> saved_envs;
 
-    // Créé les milieux
+    // Create the environments
     for (Integer i = 0, n = options()->environment().size(); i < n; ++i) {
       String env_name = options()->environment[i].name;
       info() << "Found environment name=" << env_name;
@@ -156,19 +156,19 @@ buildInit()
       }
       IMeshEnvironment* env = mm->createEnvironment(env_build);
       saved_envs.add(env);
-      // Le bloc ne contient que 2 milieux
+      // The block only contains 2 environments
       if (i < 2) {
         info() << "Add environment " << env_name << " to block1";
         mbbi.addEnvironment(env);
       }
     }
 
-    // Création du bloc BLOCK1 sur le groupe de toutes les mailles
-    // et contenant les milieux ENV1 et ENV2
+    // Creation of block BLOCK1 on the group of all meshes
+    // and containing environments ENV1 and ENV2
     m_block1 = mm->createBlock(mbbi);
 
     {
-      // Création d'un deuxième bloc de manière incrémentalle.
+      // Creation of a second block incrementally.
       Integer nb_env = saved_envs.size();
       if (nb_env >= 2) {
         MeshBlockBuildInfo mbbi2("BLOCK2", allCells());
@@ -260,14 +260,14 @@ startInit()
       sub_group_indexes.add(icell.itemLocalId());
   }
 
-  // Ajoute les mailles du milieu 1
+  // Add meshes of environment 1
   {
     Materials::MeshMaterialModifier modifier(m_material_mng);
     modifier.setDoCopyBetweenPartialAndPure(false);
     modifier.setDoInitNewItems(false);
     modifier.setPersistantWorkBuffer(false);
     Materials::IMeshEnvironment* env = m_mat1->environment();
-    // Ajoute les mailles du milieu
+    // Add meshes of the environment
     //modifier.addCells(env,env1_indexes);
     Int32UniqueArray mat1_indexes;
     Int32UniqueArray mat2_indexes;
@@ -281,15 +281,15 @@ startInit()
       if (add_to_mat2)
         mat2_indexes.add(env1_indexes[z]);
     }
-    // Ajoute les mailles du matériau 1
+    // Add meshes of material 1
     modifier.addCells(m_mat1, mat1_indexes);
     Integer nb_mat = env->nbMaterial();
     if (nb_mat > 1)
-      // Ajoute les mailles du matériau 2
+      // Adds the cells of material 2
       modifier.addCells(env->materials()[1], mat2_indexes);
   }
   CellGroup test_group = defaultMesh()->cellFamily()->createGroup("SUB_GROUP_TEST", sub_group_indexes);
-  // Ajoute les mailles du milieu 2
+  // Adds the cells of environment 2
   if (m_mat2) {
     Materials::MeshMaterialModifier modifier(m_material_mng);
     //modifier.addCells(m_mat2->environment(),mat2_indexes);
@@ -301,10 +301,10 @@ startInit()
   m_mat_spectral2.resize(spectral_size * 2);
   m_env_spectral1.resize(spectral_size * 3);
   m_env_spectral2.resize(spectral_size * 4);
-  // NOTE: m_env_empty_int64array ne doit pas avoir de resize
-  // pour pouvoir tester la gestion des variables avec une dim2Size() nulle.
+  // NOTE: m_env_empty_int64array must not have a resize
+  // to be able to test variable management with a zero dim2Size().
 
-  // TODO tester que les valeurs partielles sont correctes
+  // TODO test that the partial values are correct
   m_mat_density.fillPartialValues(3.0);
   m_env_int32.fillPartialValues(5);
   m_mat_int32.fillPartialValues(8);
@@ -350,7 +350,7 @@ startInit()
     info() << oss.str();
   }
 
-  // A supprimer
+  // To be deleted
   //m_mat_density.updateFromInternal();
 
   m_present_material.fill(0);
@@ -359,8 +359,8 @@ startInit()
 
   constexpr IMeshMaterial* null_mat = nullptr;
   constexpr IMeshEnvironment* null_env = nullptr;
-  // Itération sur tous les milieux puis tous les matériaux
-  // et toutes les mailles de ce matériau
+  // Iteration over all environments then all materials
+  // and all cells of that material
   ENUMERATE_ENV (ienv, m_material_mng) {
     IMeshEnvironment* env = *ienv;
     info() << "ENV name=" << env->name();
@@ -390,7 +390,7 @@ startInit()
     }
   }
 
-  // Idem mais à partir d'un bloc.
+  // Same but starting from a block.
   ENUMERATE_ENV (ienv, m_block1) {
     IMeshEnvironment* env = *ienv;
     info() << "BLOCK_ENV name=" << env->name();
@@ -400,19 +400,19 @@ startInit()
     }
   }
 
-  // Idem mais itération sur des milieux sous forme de composants
+  // Same but iteration over environments in the form of components
   ENUMERATE_COMPONENT (icmp, m_material_mng->environmentsAsComponents()) {
     IMeshComponent* cmp = *icmp;
     info() << "ENV COMPONENT name=" << cmp->name();
   }
 
-  // Itération sur les matériaux sous forme de composant.
+  // Iteration over materials in the form of components.
   ENUMERATE_COMPONENT (icmp, m_material_mng->materialsAsComponents()) {
     IMeshComponent* cmp = *icmp;
     info() << "MAT COMPONENT name=" << cmp->name();
   }
 
-  // Itération directement avec tous les matériaux du gestionnaire
+  // Direct iteration with all materials in the manager
   ENUMERATE_MAT (imat, m_material_mng) {
     Materials::IMeshMaterial* mat = *imat;
     info() << "MAT name=" << mat->name()
@@ -454,7 +454,7 @@ startInit()
     }
   }
 
-  // Itération sur tous les milieux et tous les matériaux d'une maille.
+  // Iteration over all environments and all materials of a cell.
   ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, allCells()) {
     AllEnvCell all_env_cell = *iallenvcell;
     Cell global_cell = all_env_cell.globalCell();
@@ -509,7 +509,7 @@ startInit()
     }
 
     const bool test_depend = false;
-    // Ne doit pas être exécuté mais juste compilé pour vérifier la syntaxe
+    // Must not be executed but just compiled to check syntax
     if (test_depend) {
       m_mat_density.addDependCurrentTime(m_density);
       m_mat_density.addDependCurrentTime(m_mat_density2);
@@ -519,7 +519,7 @@ startInit()
     }
   }
 
-  // Teste la récupération de la valeur de la densité partielle par maille et par matériau ou par milieu
+  // Tests the retrieval of the partial density value by cell and by material or by environment
   if (1) {
     CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimdUnitTest.cc                                             (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des classes gérant la vectorisation.                      */
+/* Test service for classes managing vectorization.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,12 +38,13 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des classes de vectorisation.
+ * \brief Test service for vectorization classes.
  *
- * \todo tester tous les mécanismes de vectorisation accessible sur la
- * plateforme et pas seulement celui par défaut (par exemple sur KNL, tester
- * SSE, AVX et AVX512)
+ * \todo test all vectorization mechanisms accessible on the
+ * platform and not just the default one (e.g., on KNL, test
+ * SSE, AVX, and AVX512)
  */
 class SimdUnitTest
 : public BasicUnitTest
@@ -71,11 +72,12 @@ class SimdUnitTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ensemble de valeurs pour les tests SIMD.
+ * \brief Set of values for SIMD tests.
  *
- * \note Pour garantir le respect de l'alignement mémoire des classes Simd,
- * les instances de cette classe ne doivent être allouées que sur la pile.
+ * \note To ensure compliance with the memory alignment of Simd classes,
+ * instances of this class must only be allocated on the stack.
  */
 template<typename SimdRealType>
 class SimdTestValue
@@ -116,8 +118,8 @@ template<typename SimdRealType>
 void SimdTestValue<SimdRealType>::
 initialize(ITraceMng* tm)
 {
-  // m_scalar_a et m_scalar_b contiennent les valeurs de référence sous
-  // forme de tableau de scalaires.
+  // m_scalar_a and m_scalar_b contain the reference values in
+  // scalar array form.
   Integer vec_length = SimdRealType::Length;
   m_scalar_array.resize(vec_length*2);
   m_scalar_a = m_scalar_array.subView(0,vec_length);
@@ -299,15 +301,15 @@ class SimdTester
     }
 
     {
-      // Les tableaux de type 'SimdReal' doivent être alignés
-      // sur un multiple de 64 avec l'AVX512 (qui est le plus restrictif).
-      // TODO: gérer cela dans la classe Array.
+      // Arrays of type 'SimdReal' must be aligned
+      // to a multiple of 64 with AVX512 (which is the most restrictive).
+      // TODO: handle this in the Array class.
       int n = 17;
       char buf[(17 * sizeof(SimdRealType)) + 64];
       void* aligned_buf = nullptr;
-      // Utilise 'buf' comme tableau mémoire temporaire
-      // et récupère depuis buf un bloc aligné sur 32 octets
-      // qu'on stocke dans 'aligned_buf'
+      // Uses 'buf' as a temporary memory array
+      // and retrieves an aligned 32-byte block from buf
+      // which is stored in 'aligned_buf'
       for( Integer i=0; i<64; i+=8 ){
         void* xbuf = buf + i;
         Int64 p = (Int64)(xbuf);
@@ -352,8 +354,8 @@ _doFMATest(const SimdUnitTest& st)
     d[z] = 9.0 * z;
   }
 
-  // Si le compilateur est performant, cette instruction doit pouvoir
-  // être remplacée par un FMA. C'est le cas avec gcc à partir de la
+  // If the compiler is performant, this instruction should be able
+  // to be replaced by an FMA. This is the case with gcc starting from
   // version 5.
   d = (a * b) + c;
 
@@ -378,8 +380,7 @@ _testSimdArray()
     a[i] = 1.0;
     b[i] = 3.0 + (Real)i;
     c[i] = 7.0 + (Real)(i*2);
-    // L'expression suivante doit être la même que pour l'itération Simd
-    // suivante.
+    // The following expression must be the same as for the next Simd iteration.
     expected_result[i] = b[i] + c[i] * a[i];
   }
   applySimdPadding(a);

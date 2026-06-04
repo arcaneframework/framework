@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MiniWeatherTypes.h                                          (C) 2000-2022 */
 /*                                                                           */
-/* Types pour le test 'MiniWeather'                                          */
+/* Types for the 'MiniWeather' test                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANETEST_MINIWEATHERTYPE_H
 #define ARCANETEST_MINIWEATHERTYPE_H
@@ -38,9 +38,8 @@ class IMiniWeatherService
                     eMemoryRessource r,bool use_left_layout) = 0;
   virtual bool loop() = 0;
   /*!
-   * \brief Point d'entrée de fin d'exécution.
-   * Remplit \a reduced_values avec les valeurs réduites des 4 variables
-   * principales.
+   * \brief End-of-execution entry point.
+   * Fills \a reduced_values with the reduced values of the 4 main variables.
    */
   virtual void exit(RealArrayView reduced_values) = 0;
 };
@@ -53,5 +52,4 @@ class IMiniWeatherService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

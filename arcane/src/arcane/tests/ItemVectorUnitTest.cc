@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemVectorUnitTest.cc                                       (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des tableaux.                                             */
+/* Array testing service.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,8 +40,9 @@ class ItemVectorPrinter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour imprimer les infos sur une entité.
+ * \brief Utility class for printing entity information.
  */
 class ItemPrinter2
 {
@@ -270,8 +271,9 @@ _print(std::ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des ItemVector
+ * \brief ItemVector testing service
  */
 class ItemVectorUnitTest
 : public BasicUnitTest
@@ -410,7 +412,7 @@ _executeTest(IItemFamily* item_family)
   info() << iv_printer.assign(vec2.view().subView(0,10)).setName(item_family->name());
 
   {
-    // Teste les itérateurs sur les ItemVectorView
+    // Test the iterators on ItemVectorView
     Integer index = 0;
     ItemVectorView view = vec2.view();
     for( Item x : view ){

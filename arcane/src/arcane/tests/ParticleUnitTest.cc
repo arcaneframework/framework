@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParticleUnitTest.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Service de test de la gestion des particules.                             */
+/* Particle management test service.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,8 +46,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test des particules
+ * \brief Particle test
  */
 class ParticleUnitTest
 : public ArcaneParticleUnitTestObject
@@ -118,8 +119,9 @@ ParticleUnitTest::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialisation du module lors du démarrage du cas.
+ * \brief Module initialization when the case starts.
  */
 void ParticleUnitTest::
 initializeTest()
@@ -141,8 +143,9 @@ initializeTest()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Prise en compte de la pseudo viscosité en fonction des options choisies
+ * \brief Accounting for pseudo viscosity based on chosen options
  */
 void ParticleUnitTest::
 executeTest()
@@ -150,8 +153,8 @@ executeTest()
   m_particle_family->setHasUniqueIdMap(false);
 
   Integer max_iteration = static_cast<Integer>(options()->maxIteration());
-  // doTest2() et doTest3() partagent l'utilisation de m_first_uid.
-  // TODO: utiliser une sous classe pour le test
+  // doTest2() and doTest3() share the use of m_first_uid.
+  // TODO: use a subclass for the test
   m_first_uid = 0;
   for( Integer i=0; i<max_iteration; ++i){
     _doTest2(i,false);
@@ -176,9 +179,9 @@ executeTest()
 void ParticleUnitTest::
 _doTest2(Integer iteration,bool allow_no_cell_particle)
 {
-  // Si \a allow_no_cell_particle est vrai, alors on indique que certaines
-  // particules ne seront pas dans des mailles pour tester ce type de
-  // configuration dans l'échangeur de particule.
+  // If allow_no_cell_particle is true, we indicate that certain
+  // particles will not be in cells to test this type of
+  // configuration in the particle exchanger.
 
   Int64 particle_per_cell = options()->nbParticlePerCell();
   if (iteration==0)
@@ -210,17 +213,17 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
   ParticleVectorView particles = pf->addParticles(uids,particles_lid);
   m_particle_family->endUpdate();
 
-  // Récupère la liste des sous-domaines communiquants. Cela est utilisé
-  // pour les particules qui ne sont pas dans les mailles.
+  // Retrieves the list of communicating subdomains. This is used
+  // for particles that are not in cells.
   UniqueArray<Int32> cell_communicating_sub_domains;
   mesh->cellFamily()->getCommunicatingSubDomains(cell_communicating_sub_domains);
   Int32 nb_cell_communicating_sub_domain = cell_communicating_sub_domains.size();
 
   bool is_parallel = pm->isParallel();
   {
-    // Détermine la liste des mailles sur la frontière (elles sont connectées par
-    // une face à une maille d'un autre sous-domaine).
-    // Note: normalement, cette liste ne change que si le maillage change.
+    // Determines the list of boundary cells (they are connected by
+    // a face to a cell of another subdomain).
+    // Note: normally, this list only changes if the mesh changes.
     UniqueArray<Cell> boundary_cells;
     ENUMERATE_CELL(icell,ownCells()){
       Cell cell = *icell;
@@ -238,15 +241,14 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
     if (nb_boundary_cell==0)
       ARCANE_FATAL("No cells on boundary");
 
-    // Place les nouvelles particules dans ces mailles frontières.
+    // Places the new particles in these boundary cells.
     {
       Integer particle_index = 0;
       Integer nb_created_particle = uids.size();
       while (particle_index<nb_created_particle){
         for( Integer icell=0; icell<nb_boundary_cell; ++icell ){
           Particle p = Particle(particles[particle_index]);
-          // Si on n'autorise les particules sans maille, indique qu'une
-          // particule sur 4 est sans maille.
+          // If we do not allow particles without a cell, indicate that one
           if (allow_no_cell_particle && (icell%4)==0)
             pf->setParticleCell(p,Cell());
           else
@@ -259,7 +261,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
         }
       }
     }
-    // Vérifie que la vue des connectités est correcte.
+    // Checks that the connectivity view is correct.
     {
       IndexedParticleCellConnectivityView particle_cell(pf);
       ENUMERATE_(Particle, ipart, m_particle_family->allItems()){
@@ -324,8 +326,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
               ++nb_particle_tracking_finished;
               continue;
             }
-            // La particule n'a pas de maille, on l'envoie dans un sous-domaine
-            // au hasard.
+            // The particle does not have a cell, so we send it to a subdomain randomly.
             Int64 puid = p.uniqueId();
             Int32 idx = static_cast<Int32>((puid + iteration) % nb_cell_communicating_sub_domain);
             new_owner = cell_communicating_sub_domains[idx];
@@ -361,7 +362,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
   }
   pm->barrier();
   {
-    // Supprime la moitié des particules créées
+    // Deletes half of the created particles
     particles_local_id.clear();
     ParticleGroup all_particles(m_particle_family->allItems());
     Integer nb_particle = all_particles.size();
@@ -381,7 +382,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
     m_particle_family->endUpdate();
   }
 
-  // Compacte toute les 2 itérations pour tester le compactage
+  // Compacts every 2 iterations to test compaction
   if ((iteration % 2) == 0){
     info() << "Compacting particle family";
     m_particle_family->compactItems(true);
@@ -417,7 +418,8 @@ _doTest3(Integer iteration)
       ++first_uid;
     }
   }
-  // TODO: AJOUTER std::map<Particle.uid(),cell.uid> pour verifier apres changement que les cells des particules sont correctes.
+  // TODO: ADD std::map<Particle.uid(),cell.uid> to verify after change that
+  // the particle cells are correct.
   m_first_uid = m_first_uid + uid_increment*comm_size;
 
   info() << "Create " << uids.size() << " particles";

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StackTraceUnitTest.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Test du service de stack trace utilisé dans Application.                  */
+/* Test of the stack trace service used in Application.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,8 +31,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des ItemVector
+ * \brief Test service for ItemVector
  */
 class StackTraceUnitTest
 : public BasicUnitTest

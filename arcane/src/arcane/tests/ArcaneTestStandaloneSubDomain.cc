@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneTestStandaloneArcaneSubDomain.cc                      (C) 2000-2025 */
 /*                                                                           */
-/* Test de ArcaneLauncher::createStandaloneSubDomain().                      */
+/* Test of ArcaneLauncher::createStandaloneSubDomain().                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,7 +48,7 @@ namespace
 #if defined(ARCANE_HAS_ACCELERATOR_API)
 void _testSum(IAcceleratorMng* acc_mng)
 {
-  // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
+  // Test the sum of two arrays 'a' and 'b' into an array 'c'.
 
   int nb_value = 10000;
   NumArray<Int64, MDDim1> a(nb_value);
@@ -178,7 +178,7 @@ _testStandaloneSubDomainLauncher3()
   return 0;
 }
 
-// Teste l'utilisation de plusieurs StandaloneSubDomain à la fois.
+// Tests the use of multiple StandaloneSubDomain at once.
 int
 _testStandaloneSubDomainLauncher4()
 {

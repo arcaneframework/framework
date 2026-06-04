@@ -36,21 +36,21 @@ class DiscreteOperatorUnitTest
   : public ArcaneDiscreteOperatorUnitTestObject
 {
 public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   DiscreteOperatorUnitTest(const ServiceBuildInfo& cb)
     : ArcaneDiscreteOperatorUnitTestObject(cb)
   {
     ;
   }
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~DiscreteOperatorUnitTest() {}
   
 public:
   virtual void initializeTest();
   virtual void executeTest();
 
-  /** Retourne le numéro de version du module */
+  /** Returns the module version number */
   virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1,0,0); }
 
 private:
@@ -153,4 +153,3 @@ ARCANE_REGISTER_SERVICE_DISCRETEOPERATORUNITTEST(DiscreteOperatorUnitTest,Discre
 
 
 ARCANETEST_END_NAMESPACE
-

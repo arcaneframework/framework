@@ -7,7 +7,7 @@
 #if 0
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
-/* Teste l'implémentation des classes templates avec paramètre templates.    */
+/* Tests the implementation of template classes with template parameters.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

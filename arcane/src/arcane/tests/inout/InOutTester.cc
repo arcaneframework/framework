@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* InOutTester.cc                                              (C) 2000-2015 */
 /*                                                                           */
-/* Service du test avancé des variables In/Out               .               */
+/* Advanced test service for In/Out variables.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,7 +31,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Service de test de InOut
+ * \brief InOut test service
  */
 class InOutTester
   : public ArcaneInOutTesterObject

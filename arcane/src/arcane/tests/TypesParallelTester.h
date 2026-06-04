@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TypesParallelTester.h                                       (C) 2000-2021 */
 /*                                                                           */
-/* Types du module de test du parallélisme.                                  */
+/* Types of the parallelism test module.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TESTS_TYPESPARALLELTESTER_H
 #define ARCANE_TESTS_TYPESPARALLELTESTER_H
@@ -46,5 +46,4 @@ struct TypesParallelTester
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

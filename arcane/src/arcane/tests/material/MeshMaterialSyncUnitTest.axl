@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test de la synchronisation des matériaux -->
+<!-- Dataset options for the material synchronization test service -->
 
 <service name="MeshMaterialSyncUnitTest" version="1.0" type="caseoption"
          parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
@@ -14,7 +14,7 @@
     name = "nb-material"
     type = "integer"
    >
-    <description>Nombre de materiaux souhaités</description>
+    <description>Number of desired materials</description>
    </simple>
 
  </options>

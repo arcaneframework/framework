@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshReaderUnitTest.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Service de test de lecture du maillage.                                   */
+/* Mesh reading test service.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,8 +35,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Mesh test module
  */
 class MeshReaderUnitTest
 : public ArcaneMeshReaderUnitTestObject
@@ -95,7 +96,7 @@ executeTest()
   info() << "Execute Test";
   if (options()->swapNodesUniqueId()) {
     
-    // Cela ne fonctionne qu'en séquentiel.
+    // This only works in sequential mode.
     IItemFamily* node_family = mesh()->nodeFamily();
     Int32 nb_node = node_family->allItems().size();
     info() << "Swapping uniqueIds() of nodes nb_node=" << nb_node;
@@ -103,8 +104,8 @@ executeTest()
     std::minstd_rand generator(42);
     std::uniform_int_distribution<int> distribution(0, nb_node-1);
     Int32 nb_swap = nb_node / 2;
-    // Génère deux nombres aléatoires et échange les uniqueId
-    // des deux noeuds ayant comme localId() ceux qui sont générés
+    // Generates two random numbers and swaps the uniqueIds
+    // of the two nodes whose localIds were generated
     
     for (Int32 i = 0; i < nb_swap; ++i) {
       Int32 lid0 = distribution(generator);
