@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Test.sycl.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Fichier contenant les tests pour l'implémentation SYCL.                   */
+/* File containing tests for the SYCL implementation.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +27,8 @@ using namespace Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Test Appel pure SYCL
+
+// Test Pure SYCL Call
 extern "C" int arcaneTestSycl1()
 {
   const int N = 8;
@@ -56,7 +57,7 @@ extern "C" int arcaneTestSycl1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Idem Test1 avec des NumArray
+// Same as Test1 with NumArray
 extern "C" int arcaneTestSycl2()
 {
   const int N = 8;
@@ -84,7 +85,7 @@ extern "C" int arcaneTestSycl2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Idem Test1 avec des NumArray
+// Same as Test1 with NumArray
 extern "C" int arcaneTestSycl3()
 {
   const int N = 12;
@@ -194,13 +195,13 @@ extern "C" int arcaneTestSycl4()
            is_last = true;
        }
        id.barrier(sycl::access::fence_space::local_space);
-       // Je suis le dernier à faire la réduction.
-       // Calcule la réduction finale
+       // I am the last one to perform the reduction.
+       // Calculate the final reduction
        if (is_last) {
          Int64 my_total = 0;
          for (int x = 0; x < nb_block; ++x)
            my_total += inout_data_partial_reduce[x];
-         // Met le résultat final dans le premier élément du tableau.
+         // Put the final result in the first element of the array.
          inout_data_partial_reduce[0] = my_total;
          *atomic_counter_ptr = 0;
        }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorGlobal.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
 #define ARCANE_ACCELERATOR_ACCELERATORGLOBAL_H
@@ -40,8 +40,8 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Initialise \a runner en fonction de
- * la valeur de \a acc_info.
+ * \brief Initializes \a runner based on
+ * the value of \a acc_info.
  */
 extern "C++" ARCANE_ACCELERATOR_EXPORT void
 initializeRunner(Runner& runner, ITraceMng* tm,

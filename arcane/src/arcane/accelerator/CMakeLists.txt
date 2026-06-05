@@ -1,6 +1,6 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Runtime Arcane pour les accélérateurs
+# Arcane Runtime for accelerators
 
 include(srcs.cmake)
 
@@ -21,9 +21,9 @@ target_link_libraries(arcane_accelerator PUBLIC
   "$<TARGET_NAME_IF_EXISTS:Arccore::arccore_accelerator_sycl>"
 )
 
-# Cette cible est optionnelle pour éviter que le code n'utilisant
-# pas les accélérateurs ait besoin d'un runtime accélérateur
-# (par exemple 'cudart')
+# This target is optional to prevent code that does not use
+# the accelerators from needing an accelerator runtime
+# (for example 'cudart')
 arcane_register_library(arcane_accelerator OPTIONAL)
 
 # ----------------------------------------------------------------------------

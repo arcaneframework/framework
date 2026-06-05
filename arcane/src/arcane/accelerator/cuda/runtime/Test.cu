@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Test.cu                                                     (C) 2000-2026 */
 /*                                                                           */
-/* Fichier contenant les tests pour l'implémentation CUDA.                   */
+/* File containing tests for the CUDA implementation.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -268,7 +268,7 @@ int arcaneTestCuda3()
   for( size_t i=0; i<10; ++i )
     std::cout << "V=" << d_out[i] << "\n";
 
-  // Lance un noyau dynamiquement
+  // Launch a kernel dynamically
   {
     _initArrays(d_a,d_b,d_out,2);
 
@@ -292,7 +292,7 @@ int arcaneTestCuda3()
       std::cout << "V2=" << d_out[i] << "\n";
   }
 
-  // Lance une lambda
+  // Launch a lambda
   {
     _initArrays(d_a,d_b,d_out,3);
     Span<const double> d_a_span = d_a.span();
@@ -312,14 +312,14 @@ int arcaneTestCuda3()
 
     _initArrays(d_a,d_b,d_out,4);
 
-    // Appelle la version 'hote' de la lambda
+    // Call the 'host' version of the lambda
     for( int i=0; i<vsize; ++i )
       func(i);
     for( size_t i=0; i<10; ++i )
       std::cout << "V4=" << d_out[i] << "\n";
   }
 
-  // Utilise les Real3
+  // Use Real3
   {
     UniqueArray<Real3> d_a3(cuda_allocator,vsize);
     UniqueArray<Real3> d_b3(cuda_allocator,vsize);
@@ -405,7 +405,7 @@ int arcaneTestCudaNumArray()
   for( int i=0; i<10; ++i )
     std::cout << "V=" << d_out(i) << "\n";
 
-  // Lance un noyau dynamiquement
+  // Launch a kernel dynamically
   {
     _initArrays(d_a,d_b,d_out,2);
 
@@ -429,7 +429,7 @@ int arcaneTestCudaNumArray()
       std::cout << "V2=" << d_out(i) << "\n";
   }
 
-  // Lance une lambda
+  // Launch a lambda
   {
     _initArrays(d_a,d_b,d_out,3);
     MDSpan<const double,MDDim1> d_a_span = d_a.constMDSpan();
@@ -449,14 +449,14 @@ int arcaneTestCudaNumArray()
 
     _initArrays(d_a,d_b,d_out,4);
 
-    // Appelle la version 'hote' de la lambda
+    // Call the 'host' version of the lambda
     for( int i=0; i<vsize; ++i )
       func(i);
     for( int i=0; i<10; ++i )
       std::cout << "V4=" << d_out(i) << "\n";
   }
 
-  // Utilise les Real3 avec un tableau multi-dimensionel
+  // Use Real3 with a multi-dimensional array
   {
     NumArray<Real,MDDim2> d_a3(vsize,3);
     NumArray<Real,MDDim2> d_b3(vsize,3);
@@ -552,7 +552,7 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
 extern "C"
 int arcaneTestCudaReduction()
 {
-  // TODO: tester en ne commancant pas par 0.
+  // TODO: test without starting from 0.
   ax::Runner runner_seq(ax::eExecutionPolicy::Sequential);
   ax::Runner runner_thread(ax::eExecutionPolicy::Thread);
   ax::Runner runner_cuda(ax::eExecutionPolicy::CUDA);

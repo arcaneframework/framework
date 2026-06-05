@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Accelerator.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,14 +27,14 @@
 /*!
  * \file RunCommandEnumerate.h
  *
- * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
+ * \brief Types and macros to manage enumerations of entities on accelerators
  */
 
 /*!
  * \file RunCommandMaterialEnumerate.h
  *
- * \brief Types et macros pour gérer les énumérations des matériaux et
- * milieux sur les accélérateurs
+ * \brief Types and macros to manage enumerations of materials and
+ * media on accelerators
  */
 
 /*---------------------------------------------------------------------------*/

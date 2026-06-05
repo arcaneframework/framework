@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandEnumerate.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Macros pour exécuter une boucle sur une liste d'entités.                  */
+/* Macros for iterating over a list of entities.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_RUNCOMMANDENUMERATE_H
 #define ARCANE_ACCELERATOR_RUNCOMMANDENUMERATE_H
@@ -37,8 +37,9 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour la boucle accélérateur sur les entités.
+ * \brief Information for the accelerator loop over entities.
  */
 template <typename TraitsType_>
 class ItemLocalIdsLoopRanges
@@ -67,7 +68,7 @@ class ItemLocalIdsLoopRanges
 template <typename LoopBoundsType, typename Lambda, typename... RemainingArgs> __global__ void
 doIndirectGPULambda2(LoopBoundsType bounds, Lambda func, RemainingArgs... remaining_args)
 {
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
+  // TODO: to be removed when old reductions are no longer needed
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
@@ -76,8 +77,8 @@ doIndirectGPULambda2(LoopBoundsType bounds, Lambda func, RemainingArgs... remain
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
 
   if constexpr (requires { bounds.nbStride(); }) {
-    // Test expérimental pour utiliser un pas de la taille
-    // de la grille. Le nombre de pas est donné par bounds.nbStride().
+    // Experimental test to use a stride of the grid size. The number of
+    // strides is given by bounds.nbStride().
     using BuilderType = LoopBoundsType::LoopBoundType::BuilderType;
     using LocalIdType = BuilderType::ValueType;
     Int32 nb_grid_stride = bounds.nbStride();
@@ -117,7 +118,7 @@ doIndirectGPULambda2(LoopBoundsType bounds, Lambda func, RemainingArgs... remain
 
 #if defined(ARCCORE_COMPILING_SYCL)
 
-//! Boucle 1D avec indirection
+//! 1D loop with indirection
 template <typename TraitsType, typename Lambda, typename... RemainingArgs>
 class DoIndirectSYCLLambda
 {
@@ -174,9 +175,9 @@ class IteratorWithIndexBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base pour un itérateur permettant de conserver l'index
- * de l'itération.
+ * \brief Base class for an iterator that preserves the iteration index.
  */
 template <typename T>
 class IteratorWithIndex
@@ -248,18 +249,19 @@ namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Concept pour contraintre les valeurs dans RUNCOMMAND_ENUMERATE.
+ * \brief Concept to constrain values in RUNCOMMAND_ENUMERATE.
  *
- * Le type  doit être un type d'entité (Cell, Node, ...) ou un
- * type de numéro local (CellLocalId, NodeLocalId, ...)
+ * The type must be an entity type (Cell, Node, ...) or a
+ * local ID type (CellLocalId, NodeLocalId, ...)
  */
 template <typename T>
 concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item>
  || std::derived_from<T, ItemLocalId>
  || std::derived_from<T, IteratorWithIndexBase>;
 
-//! Template pour connaitre le type d'entité associé à T
+//! Template to know the entity type associated with T
 template <typename T>
 class RunCommandItemEnumeratorSubTraitsT
 {
@@ -270,7 +272,7 @@ class RunCommandItemEnumeratorSubTraitsT
   using BuilderType = Arcane::impl::IterBuilderNoIndex<ValueType>;
 };
 
-//! Spécialisation pour ItemLocalIdT.
+//! Specialization for ItemLocalIdT.
 template <typename T>
 class RunCommandItemEnumeratorSubTraitsT<ItemLocalIdT<T>>
 {
@@ -281,7 +283,7 @@ class RunCommandItemEnumeratorSubTraitsT<ItemLocalIdT<T>>
   using BuilderType = Arcane::impl::IterBuilderNoIndex<ValueType>;
 };
 
-//! Spécialisation pour IteratorWithIndex<T>
+//! Specialization for IteratorWithIndex<T>
 template <typename T>
 requires std::derived_from<T, ItemLocalId> class RunCommandItemEnumeratorSubTraitsT<IteratorWithIndex<T>>
 {
@@ -294,15 +296,16 @@ requires std::derived_from<T, ItemLocalId> class RunCommandItemEnumeratorSubTrai
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur pour RunCommandEnumerate.
+ * \brief Container for RunCommandEnumerate.
  *
- * Le conteneur peut être soit un ItemVectorView, soit un ItemGroup.
+ * The container can be either an ItemVectorView or an ItemGroup.
  *
- * Le but de ce conteneur est d'éviter de faire le padding SIMD pour un
- * ItemGroup s'il est utilisé sur accélérateur. Comme le padding est
- * fait sur le CPU, cela induirait des transferts mémoire lorsqu'on utilise
- * la mémoire unifiée (ce qui est le cas par défaut).
+ * The purpose of this container is to avoid SIMD padding for an
+ * ItemGroup if it is used on an accelerator. Since padding is
+ * done on the CPU, this would induce memory transfers when using
+ * unified memory (which is the default).
  */
 template <typename ItemType>
 class RunCommandItemContainer
@@ -339,14 +342,15 @@ class RunCommandItemContainer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristiques d'un énumérateur d'une commande sur les entités.
+ * \brief Characteristics of an enumerator for a command on entities.
  *
- * Cette classe doit être spécialisée et définir un type \a ValueType
- * qui correspond au type de retour de 'operator*' de l'énumérateur.
+ * This class must be specialized and define a \a ValueType
+ * that corresponds to the return type of 'operator*' of the enumerator.
  *
- * \a IteratorValueType_ doit être un type d'entité (Cell, Node, ...) ou un
- * type de numéro local (CellLocalId, NodeLocalId, ...)
+ * \a IteratorValueType_ must be an entity type (Cell, Node, ...) or a
+ * local ID type (CellLocalId, NodeLocalId, ...)
  */
 template <RunCommandEnumerateIteratorConcept IteratorValueType_>
 class RunCommandItemEnumeratorTraitsT
@@ -396,14 +400,15 @@ void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& fun
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'enumération \a func sur la liste d'entité \a items.
+ * \brief Applies the enumeration \a func on the entity list \a items.
  */
 template <typename TraitsType, typename Lambda, typename... RemainingArgs> void
 _applyItems(RunCommand& command, typename TraitsType::ContainerType items,
             const Lambda& func, const RemainingArgs&... remaining_args)
 {
-  // TODO: fusionner la partie commune avec 'applyLoop'
+  // TODO: merge the common part with 'applyLoop'
   Integer vsize = items.size();
   if (vsize == 0)
     return;
@@ -530,8 +535,9 @@ operator<<(RunCommand& command, const impl::RunCommandItemEnumeratorTraitsT<Item
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Cette méthode est conservée pour compatibilité avec l'existant.
-// A rendre obsolète mi-2024
+
+// This method is kept for compatibility with existing code.
+// To be deprecated mid-2024
 template <typename ItemType> auto
 operator<<(RunCommand& command, const ItemVectorViewT<ItemType>& items)
 {
@@ -539,8 +545,8 @@ operator<<(RunCommand& command, const ItemVectorViewT<ItemType>& items)
   return ItemRunCommand<TraitsType>(command, TraitsType(items));
 }
 
-// Cette méthode est conservée pour compatibilité avec l'existant.
-// A rendre obsolète mi-2024
+// This method is kept for compatibility with existing code.
+// To be deprecated mid-2024
 template <typename ItemType> auto
 operator<<(RunCommand& command, const ItemGroupT<ItemType>& items)
 {
@@ -596,10 +602,11 @@ makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour itérer sur accélérateur sur un groupe d'entités.
+ * \brief Macro to iterate over an accelerator on a group of entities.
  *
- * Conceptuellement, cela est équivalent à la boucle suivante:
+ * Conceptually, this is equivalent to the following loop:
  *
  * \code
  * for( ItemTypeName iter_name : item_group ){
@@ -607,13 +614,13 @@ makeExtendedItemEnumeratorLoop(const ItemContainerType& container_type,
  * }
  * \endcode
  *
- * \a ItemTypeName doit être un type de numéro local (CellLocalId, NodeLocalId).
- * L'utilisation du nom du type de l'entité (Cell, Node, ...) est possible mais est
- * obsolète et il est équivalent à utiliser le type du numéro local (par exemple
- * il faut remplacer \a Cell par \a CellLocalId).
- * \a iter_name est le nom de la variable contenant la valeur courante de l'itérateur.
- * \a item_group est le nom du ItemGroup ou ItemVectorView associé
- * Les arguments supplémentaires servent à spécifier les réductions éventuelles
+ * \a ItemTypeName must be a local ID type (CellLocalId, NodeLocalId).
+ * Using the entity type name (Cell, Node, ...) is possible but is
+ * obsolete and is equivalent to using the local ID type (for example,
+ * you must replace \a Cell with \a CellLocalId).
+ * \a iter_name is the name of the variable containing the current iterator value.
+ * \a item_group is the name of the ItemGroup or ItemVectorView associated
+ * Additional arguments are used to specify potential reductions
  */
 #define RUNCOMMAND_ENUMERATE(ItemTypeName, iter_name, item_group, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::impl::makeExtendedItemEnumeratorLoop<ItemTypeName>(item_group __VA_OPT__(, __VA_ARGS__)) \

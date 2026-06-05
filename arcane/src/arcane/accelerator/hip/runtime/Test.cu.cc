@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Test.cu.cc                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Fichier contenant les tests pour l'implémentation HIP.                    */
+/* File containing tests for the HIP implementation.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -260,7 +260,7 @@ extern "C" int arcaneTestHip3()
   for (size_t i = 0; i < 10; ++i)
     std::cout << "V=" << d_out[i] << "\n";
 
-  // Lance un noyau dynamiquement
+  // Launch a kernel dynamically
   {
     _initArrays(d_a, d_b, d_out, 2);
 
@@ -284,7 +284,7 @@ extern "C" int arcaneTestHip3()
       std::cout << "V2=" << d_out[i] << "\n";
   }
 
-  // Lance une lambda
+  // Launch a lambda
   {
     _initArrays(d_a, d_b, d_out, 3);
     Span<const double> d_a_span = d_a.span();
@@ -303,14 +303,14 @@ extern "C" int arcaneTestHip3()
 
     _initArrays(d_a, d_b, d_out, 4);
 
-    // Appelle la version 'hote' de la lambda
+    // Calls the 'host' version of the lambda
     for (int i = 0; i < vsize; ++i)
       func(i);
     for (size_t i = 0; i < 10; ++i)
       std::cout << "V4=" << d_out[i] << "\n";
   }
 
-  // Utilise les Real3
+  // Use Real3
   {
     UniqueArray<Real3> d_a3(hip_allocator, vsize);
     UniqueArray<Real3> d_b3(hip_allocator, vsize);
@@ -373,7 +373,7 @@ extern "C" int arcaneTestHipNumArray()
   for (int i = 0; i < 10; ++i)
     std::cout << "V=" << d_out(i) << "\n";
 
-  // Lance un noyau dynamiquement
+  // Launch a kernel dynamically
   {
     _initArrays(d_a, d_b, d_out, 2);
 
@@ -397,7 +397,7 @@ extern "C" int arcaneTestHipNumArray()
       std::cout << "V2=" << d_out(i) << "\n";
   }
 
-  // Lance une lambda
+  // Launch a lambda
   {
     _initArrays(d_a, d_b, d_out, 3);
     MDSpan<const double, MDDim1> d_a_span = d_a.constMDSpan();
@@ -416,14 +416,14 @@ extern "C" int arcaneTestHipNumArray()
 
     _initArrays(d_a, d_b, d_out, 4);
 
-    // Appelle la version 'hote' de la lambda
+    // Calls the 'host' version of the lambda
     for (int i = 0; i < vsize; ++i)
       func(i);
     for (int i = 0; i < 10; ++i)
       std::cout << "V4=" << d_out(i) << "\n";
   }
 
-  // Utilise les Real3 avec un tableau multi-dimensionel
+  // Uses Real3 with a multi-dimensional array
   {
     NumArray<Real, MDDim2> d_a3(vsize, 3);
     NumArray<Real, MDDim2> d_b3(vsize, 3);
@@ -630,7 +630,7 @@ int arcaneTestVirtualFunction()
   std::cout << "Calling compute\n";
   std::cout.flush();
 
-  // Appel du kernel
+  // Call the kernel
   //compute<<<1, N>>>(d_result, N, host_func);
   //compute<<<1, N>>>(d_result, N, my_func_ptr);
   compute_virtual<<<1, N>>>(d_result, N, foo_derived);
@@ -653,7 +653,7 @@ int arcaneTestVirtualFunction()
 
 extern "C" int arcaneTestHipReduction()
 {
-  // TODO: tester en ne commancant pas par 0.
+  // TODO: tester does not start from 0.
   std::cout << "Test Reductions\n";
   ax::Runner runner_seq(ax::eExecutionPolicy::Sequential);
   ax::Runner runner_thread(ax::eExecutionPolicy::Thread);

@@ -60,10 +60,10 @@ void _doTestVirtualMethod1(eExecutionPolicy exec_policy)
   if (queue.isAcceleratorPolicy())
     mem_resource = eMemoryResource::Device;
 
-  // Créé une instance de 'DerivedTestClass' dans la mémoire accélérateur.
-  // Il faut pour cela allouer de la mémoire sur l'accélérateur et appeler
-  // le constructeur de 'DerivedTestClass' sur l'accélérateur pour
-  // que la table des méthodes virtuelles soit correctement initialisée.
+  // Create an instance of 'DerivedTestClass' in the accelerator memory.
+  // To do this, you must allocate memory on the accelerator and call
+  // the constructor of 'DerivedTestClass' on the accelerator so that
+  // the virtual method table is correctly initialized.
   NumArray<Byte, MDDim1> instance_memory(mem_resource);
   instance_memory.resize(sizeof(DerivedTestClass));
 
@@ -79,7 +79,7 @@ void _doTestVirtualMethod1(eExecutionPolicy exec_policy)
     };
   }
 
-  // Applique une commande prenant en argument le pointeur sur la classe de base.
+  // Applies a command that takes the base class pointer as an argument.
   const Int32 nb_item = 12;
   NumArray<Int32, MDDim1> compute_array(mem_resource);
   compute_array.resize(nb_item);

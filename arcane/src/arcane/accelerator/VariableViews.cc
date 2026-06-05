@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableViews.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des vues sur les variables pour les accélérateurs.                */
+/* Management of views on variables for accelerators.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,12 +22,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file VariableViews.h
  *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs des variables du maillage.
+ * This file contains the type declarations for managing
+ * views for mesh variable accelerators.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

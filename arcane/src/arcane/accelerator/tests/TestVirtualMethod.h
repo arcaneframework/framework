@@ -1,5 +1,4 @@
-
-class BaseTestClass
+﻿class BaseTestClass
 {
  public:
 

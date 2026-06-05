@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorCoreGlobal.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_CORE_ACCELERATORCOREGLOBAL_H
 #define ARCANE_ACCELERATOR_CORE_ACCELERATORCOREGLOBAL_H

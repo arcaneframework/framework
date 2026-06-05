@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Accelerator.h                                               (C) 2000-2021 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_ACCELERATOR_H
 #define ARCANE_ACCELERATOR_ACCELERATOR_H
@@ -23,4 +23,4 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

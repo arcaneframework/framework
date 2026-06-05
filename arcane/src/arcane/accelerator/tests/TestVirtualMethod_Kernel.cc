@@ -25,7 +25,7 @@ using namespace Arcane::Accelerator;
 extern "C++" void
 _doCallTestVirtualMethod1(RunQueue& queue, NumArray<Int32, MDDim1>& compute_array, BaseTestClass* base_instance)
 {
-  // Applique une commande prenant en argument le pointeur sur la classe de base.
+  // Applies a command taking the base class pointer as an argument.
   const Int32 nb_item = compute_array.dim1Size();
   {
     RunCommand command(makeCommand(queue));

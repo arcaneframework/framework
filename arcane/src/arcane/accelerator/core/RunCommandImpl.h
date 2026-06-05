@@ -4,5 +4,5 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-// La définition de 'RunCommandImpl' est maintenant dans 'internal.
-// Ce fichier est conservé pour des raisons de compatibilité
+// The definition of 'RunCommandImpl' is now in 'internal.'
+// This file is kept for compatibility reasons

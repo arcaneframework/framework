@@ -8,8 +8,8 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// NumArray est maintenant dans arcane/utils.
-// Ajoute un typedef pour compatibilité avec le code actuel.
+// NumArray is now in arcane/utils.
+// Adds a typedef for compatibility with the current code.
 namespace Arcane::Accelerator
 {
 using Arcane::NumArray;

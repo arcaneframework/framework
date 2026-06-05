@@ -1,4 +1,4 @@
-set( ARCANE_SOURCES
+﻿set( ARCANE_SOURCES
   AcceleratorCoreGlobal.h
   AcceleratorRuntimeInitialisationInfo.cc
   AcceleratorRuntimeInitialisationInfo.h
