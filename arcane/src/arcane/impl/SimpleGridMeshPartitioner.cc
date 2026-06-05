@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleGridMeshPartitioner.cc                                (C) 2000-2022 */
 /*                                                                           */
-/* Partitionneur de maillage sur une grille.                                 */
+/* Grid mesh partitioner.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,18 +15,17 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/IGridMeshPartitioner.h"
-#include "arcane/BasicService.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IExtraGhostCellsBuilder.h"
-
-#include "arcane/IMeshPartitionConstraintMng.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IGridMeshPartitioner.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IExtraGhostCellsBuilder.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IItemFamily.h"
 
 #include <array>
 #include <map>
@@ -39,8 +38,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Partitionneur de maillage sur une grille.
+ * \brief Grid mesh partitioner.
  */
 class SimpleGridMeshPartitioner
 : public BasicService
@@ -49,14 +49,14 @@ class SimpleGridMeshPartitioner
  public:
 
   /*!
-   * \brief Informations sur les mailles fantômes supplémentaires.
+   * \brief Information about extra ghost cells.
    *
-   * Il faut conserver les uniqueId() lors de la contruction et les transformer
-   * en localId() uniquement dans computeExtraCellsToSend() car durant
-   * le partitionnement les localId() peuvent changer.
+   * uniqueId() must be preserved during construction and converted
+   * to localId() only in computeExtraCellsToSend() because during
+   * partitioning, localId() may change.
    *
-   * \note Pour l'instant on ne peut pas détruire les instances de cette classe
-   * car on ne peut pas supprimer les références enregistrées dans IMeshModifier.
+   * \note For now, instances of this class cannot be destroyed
+   * because the references registered in IMeshModifier cannot be removed.
    */
   class GhostCellsBuilder
   : public IExtraGhostCellsBuilder
@@ -166,12 +166,13 @@ SimpleGridMeshPartitioner(const ServiceBuildInfo& sbi)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne l'indice dans \a coords de la valeur immédiatement inférieure
- * à \a position.
+ * \brief Returns the index in \a coords of the value immediately lower
+ * than \a position.
  *
- * Le tableau \a coords doit être trié par ordre croissant.
- * // TODO: utiliser une dichotomie.
+ * The array \a coords must be sorted in ascending order.
+ * // TODO: use a dichotomy.
  */
 Int32 SimpleGridMeshPartitioner::
 _findPart(RealConstArrayView coords, Real position)
@@ -179,7 +180,7 @@ _findPart(RealConstArrayView coords, Real position)
   const Int32 nb_value = coords.size();
   if (position < coords[0])
     return 0;
-  if (math::isNearlyEqual(position,coords[0]))
+  if (math::isNearlyEqual(position, coords[0]))
     return 0;
   Int32 part_id = -1;
   for (Int32 z = 0; z < nb_value; ++z) {
@@ -225,7 +226,7 @@ _buildGridInfo()
   IParallelMng* pm = mesh->parallelMng();
   //Int32 nb_rank = pm->commSize();
 
-  // Calcule le nombre de parties par direction
+  // Calculate the number of parts per direction
   std::array<Int32, 3> nb_part_by_direction_buf = { 0, 0, 0 };
   ArrayView<Int32> nb_part_by_direction(3, nb_part_by_direction_buf.data());
   for (Integer i = 0; i < 3; ++i)
@@ -248,7 +249,7 @@ _buildGridInfo()
   pm->reduce(Parallel::ReduceMax, nb_part_by_direction);
   info() << "NB_DIRECTION=" << nb_direction << " NB_PART=" << nb_part_by_direction;
 
-  // Calcul les coordonnées de la grille par direction
+  // Calculate the grid coordinates per direction
   const Real min_value = -FloatInfo<Real>::maxValue();
   auto& grid_coord = m_grid_info->m_grid_coord;
 
@@ -267,7 +268,7 @@ _buildGridInfo()
     info() << "GRID_COORD dir=" << i << " V=" << grid_coord[i];
   }
 
-  // Vérifie que chaque direction de la grille est croissante
+  // Check that each grid direction is increasing
   for (Integer i = 0; i < nb_direction; ++i) {
     ConstArrayView<Real> coords(grid_coord[0].view());
     Int32 nb_value = coords.size();
@@ -303,8 +304,8 @@ partitionMesh([[maybe_unused]] bool initial_partition)
   const Int32 offset_z = m_grid_info->m_offset_z;
   const Int32 nb_direction = m_grid_info->m_nb_direction;
 
-  // Parcours pour chaque maille chaque direction et regarder dans indice dans
-  // la grille elle se trouve. En déduit le nouveau rang.
+  // Iterate over each cell in each direction and check which grid index
+  // it belongs to. Deduce the new rank.
   ENUMERATE_ (Cell, icell, mesh->allCells().own()) {
     Cell cell = *icell;
     std::array<Int32, 3> cell_part = { -1, -1, -1 };
@@ -343,9 +344,10 @@ partitionMesh([[maybe_unused]] bool initial_partition)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Parcours toutes les parties qui intersectent la maille \a cell et envoie
- * cette maille en tant que fantôme.
+ * Iterates over all parts that intersect the mesh \a cell and sends
+ * this mesh as a ghost cell.
  */
 void SimpleGridMeshPartitioner::
 _addCellToIntersectedParts(Cell cell, std::array<Int32, 3> min_part, std::array<Int32, 3> nb_part)
@@ -361,7 +363,7 @@ _addCellToIntersectedParts(Cell cell, std::array<Int32, 3> min_part, std::array<
         Int32 p1 = min_part[1] + k1;
         Int32 p2 = min_part[2] + k2;
         Int32 owner = p0 + (p1 * offset_y) + (p2 * offset_z);
-        // On ne s'envoie pas à soi-même.
+        // Do not send to self.
         if (owner != cell_owner)
           _addGhostCell(owner, cell);
       }
@@ -388,15 +390,15 @@ _computeSpecificGhostLayer()
     std::array<Int32, 3> max_part = { -1, -1, -1 };
     std::array<Int32, 3> nb_node_part = { 1, 1, 1 };
 
-    // Détermine la bounding box de la maille
+    // Determine the bounding box of the mesh
     Real max_value = FloatInfo<Real>::maxValue();
     Real min_value = -max_value;
-    Real3 min_box(max_value,max_value,max_value);
-    Real3 max_box(min_value,min_value,min_value);
+    Real3 min_box(max_value, max_value, max_value);
+    Real3 max_box(min_value, min_value, min_value);
     for (Node node : cell.nodes()) {
       Real3 pos = nodes_coord[node];
-      min_box = math::min(min_box,pos);
-      max_box = math::max(max_box,pos);
+      min_box = math::min(min_box, pos);
+      max_box = math::max(max_box, pos);
     }
 
     for (Integer idir = 0; idir < nb_direction; ++idir) {
@@ -405,20 +407,20 @@ _computeSpecificGhostLayer()
 
       const Real min_pos = min_box[idir];
       const Real max_pos = max_box[idir];
-      Int32 min_part_id = _findPart(coords,min_pos);
-      Int32 max_part_id = _findPart(coords,max_pos);
+      Int32 min_part_id = _findPart(coords, min_pos);
+      Int32 max_part_id = _findPart(coords, max_pos);
 
       if (m_is_verbose)
         info() << " Cell uid=" << cell.uniqueId() << " idir=" << idir
                << " min_pos=" << min_pos << " max_pos=" << max_pos
                << " min_part=" << min_part_id << " max_part_id=" << max_part_id;
 
-      // Si on est au bord d'une partie, prend aussi la partie d'avant ou d'après.
-      // Cela permet d'éviter de rater une appartenance si les coordonnées de la grille
-      // et du maillage à partitionner sont les mêmes
-      if (min_part_id>0 && math::isNearlyEqual(min_pos,coords[min_part_id]))
+      // If we are on the edge of a part, also take the previous or next part.
+      // This prevents missing an ownership if the grid coordinates
+      // and the mesh to be partitioned are the same.
+      if (min_part_id > 0 && math::isNearlyEqual(min_pos, coords[min_part_id]))
         --min_part_id;
-      if (max_part_id<(nb_coord-1) && math::isNearlyEqual(max_pos,coords[max_part_id]))
+      if (max_part_id < (nb_coord - 1) && math::isNearlyEqual(max_pos, coords[max_part_id]))
         ++max_part_id;
       min_part[idir] = min_part_id;
       max_part[idir] = max_part_id;
@@ -454,7 +456,7 @@ _computeSpecificGhostLayer()
 void SimpleGridMeshPartitioner::
 applyMeshPartitioning(IMesh* mesh)
 {
-  //TODO A terme supprimer l'utilisation du maillage issu de l'instance.
+  //TODO Eventually remove the use of the mesh from the instance.
   if (mesh != this->mesh())
     ARCANE_FATAL("mesh argument should be the same mesh that the one used to create this instance");
 
@@ -468,7 +470,7 @@ applyMeshPartitioning(IMesh* mesh)
   m_ghost_cells_builder = scoped_builder.get();
   mesh->modifier()->addExtraGhostCellsBuilder(m_ghost_cells_builder);
 
-  // Recalcule spécifiquement les mailles fantômes pour recouvrir les partitions
+  // Specifically recalculate the ghost cells to cover the partitions
   _computeSpecificGhostLayer();
   mesh->modifier()->updateGhostLayers();
 

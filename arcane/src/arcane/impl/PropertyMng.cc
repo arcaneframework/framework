@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PropertyMng.cc                                              (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des protections.                                             */
+/* Property Manager.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,27 +32,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des protections.
+ * \brief Property Manager.
  */
 class PropertyMng
 : public TraceAccessor
 , public IPropertyMng
 {
  public:
+
   static const Int32 SERIALIZE_VERSION = 1;
 
  public:
+
   explicit PropertyMng(ITraceMng* tm);
   ~PropertyMng() override;
 
  public:
+
   void build();
 
  public:
+
   ITraceMng* traceMng() const override { return TraceAccessor::traceMng(); }
 
  public:
+
   PropertiesImpl* getPropertiesImpl(const String& full_name) override;
   void destroyProperties(const Properties& p) override;
   void registerProperties(const Properties& p) override;
@@ -65,6 +71,7 @@ class PropertyMng
 
  private:
  private:
+
   typedef std::map<String, Properties> PropertiesMapType;
 
   PropertiesMapType m_properties_map;
@@ -143,7 +150,7 @@ getPropertiesImpl(const String& full_name)
 void PropertyMng::
 registerProperties(const Properties& p)
 {
-  //TODO: vérifier pas encore présent.
+  //TODO: check if not yet present.
   m_properties_map.insert(std::make_pair(p.fullName(), p));
 }
 
@@ -191,10 +198,10 @@ serialize(ISerializer* serializer)
 
     Int64 version = serializer->getInt32();
     if (version != SERIALIZE_VERSION) {
-      // La relecture se fait avec une protection issue d'une ancienne version de Arcane
-      // et qui n'est pas compatible. Affiche un avertissement et ne fait rien.
-      // (NOTE: cela risque quand même de poser problême pour ceux qui utilisent les
-      // propriétés donc il faudrait peut-être faire un fatal ?)
+      // Reading is done with a protection from an old version of Arcane
+      // which is not compatible. Displays a warning and does nothing.
+      // (NOTE: this still risks causing problems for those who use the
+      // properties, so perhaps a fatal error should be raised?)
       pwarning() << "Can not reading properties from imcompatible checkpoint";
       return;
     }
@@ -252,7 +259,7 @@ readFrom(Span<const Byte> bytes)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Affiche les propriétés et leurs valeurs sur le flot \a o.
+ * \brief Displays the properties and their values on the stream \a o.
  */
 void PropertyMng::
 print(std::ostream& o) const

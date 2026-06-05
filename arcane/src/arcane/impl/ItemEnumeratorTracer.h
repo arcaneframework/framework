@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemEnumeratorTracer.h                                      (C) 2000-2022 */
 /*                                                                           */
-/* Trace les appels aux énumérateur sur les entités.                         */
+/* Traces calls to enumerators on entities.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_ITEMENUMERATORTRACER_H
 #define ARCANE_IMPL_ITEMENUMERATORTRACER_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un traceur d'énumérateur sur les entités.
+ * \brief Interface for an enumerator tracer on entities.
  */
 class ARCANE_IMPL_EXPORT ItemEnumeratorTracer
 : public TraceAccessor

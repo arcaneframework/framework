@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TimerMng.cc                                                 (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un gestionnaire de timer.                                */
+/* Implementation of a timer manager.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,10 +19,10 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/ArcaneException.h"
-#include "arcane/Timer.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMainFactory.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMainFactory.h"
 
 #include <algorithm>
 
@@ -82,9 +82,8 @@ endTimer(Timer* timer)
 bool TimerMng::
 hasTimer(Timer* timer)
 {
-  return timer->timerMng()==this && timer->isActivated();
+  return timer->timerMng() == this && timer->isActivated();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,7 +101,7 @@ _getRealTime()
 /*---------------------------------------------------------------------------*/
 
 void TimerMng::
-_errorInTimer(const String& msg,int retcode)
+_errorInTimer(const String& msg, int retcode)
 {
   warning() << "In TimerMng::_errorInTimer() "
             << msg << " return code: " << retcode << " errno: " << errno;
@@ -115,4 +114,3 @@ _errorInTimer(const String& msg,int retcode)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

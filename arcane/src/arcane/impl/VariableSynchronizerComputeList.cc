@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableSynchronizerComputeList.cc                          (C) 2000-2024 */
 /*                                                                           */
-/* Calcule de la liste des entités à synchroniser.                           */
+/* Calculation of the list of entities to synchronize.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,25 +51,25 @@ VariableSynchronizerComputeList(VariableSynchronizer* var_sync)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Création de la liste des éléments de synchronisation.
+ * \brief Creation of the synchronization element list.
  *
- * Pour générer les infos de synchronisations, on suppose que le owner()
- * de chaque entité est correcte
+ * To generate synchronization information, it is assumed that the owner()
+ * of each entity is correct.
  *
- * A partir du fichier de communication, contruit les structures pour la
- * synchronisation. Il s'agit d'une liste d'éléments, chaque élément étant
- * composé du rang du processeur avec lequel il faut communiquer et les
- * localId() des entités du maillage qu'on doit lui envoyer et qu'on doit
- * réceptionner.
+ * Based on the communication file, constructs the structures for
+ * synchronization. It is a list of elements, each element consisting
+ * of the processor rank with which communication must occur and the localId()
+ * of the mesh entities that must be sent and received.
  *
- * Si le groupe associé à cette instance est allItems(), on vérifie que toutes
- * les entités de la famille sont soit propres au domaine, soit fantomes.
- * Si une entité n'est pas dans ce cas, alors elle ne sera pas synchronisée et 
- * la cohérence du parallélisme ne sera pas assuré: il s'agit d'une erreur fatale.
+ * If the group associated with this instance is allItems(), it is checked
+ * that all entities in the family are either domain-local or ghosts. If
+ * an entity is not in this case, it will not be synchronized and parallelism
+ * consistency will not be ensured: this is a fatal error.
  *
- * Le fonctionnement sur tout groupe (pluys que allItems) est principalement
- * subordonné au fait que changeLocalIds() soit implementé sur tous les groupes.
+ * Operation on any group (other than allItems) is primarily dependent on
+ * changeLocalIds() being implemented on all groups.
  */
 void VariableSynchronizerComputeList::
 compute()
@@ -153,10 +153,10 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   Real time_after_sendrecv = 0.0;
   Real time_after_sendrecv_wait = 0.0;
 
-  // Table du voisinage connu par items fantomes.
-  // Ceci n'est pas obligatoirement la liste finale pour sync_info->communicatingRanks() dans le cas
-  // de relation non symétrique ghost/shared entre processeurs (si l'un des deux vaut 0)
-  // Le traitement complémentaire apparaît après la section "Réciprocité des communications"
+  // Table of neighborhood known by ghost items.
+  // This is not necessarily the final list for sync_info->communicatingRanks() in the case
+  // of non-symmetric ghost/shared relationship between processors (if one of them is 0)
+  // The complementary processing appears after the "Communication Reciprocity" section
   Int32UniqueArray communicating_ghost_ranks;
   for (Integer i = 0; i < nb_rank; ++i) {
     if (boundary_items[i].empty())
@@ -177,16 +177,16 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   Int32UniqueArray nb_share(nb_rank);
   nb_ghost.fill(0);
 
-  // Nombre maximum de sous-domaines connectés. Sert pour dimensionner
-  // les tableaux pour le allGather()
+  // Maximum number of connected subdomains. Used to dimension
+  // the arrays for the allGather()
   Integer max_comm_rank = pm->reduce(Parallel::ReduceMax, nb_comm_rank);
   debug() << "communicating sub domains my=" << nb_comm_rank
           << " max=" << max_comm_rank;
 
-  // Liste des groupes des mailles fantômes.
+  // List of ghost mesh groups.
   UniqueArray<SharedArray<Int32>> ghost_group_list(boundary_items.size());
 
-  // Récupère les listes des entités fantômes.
+  // Retrieves the lists of ghost entities.
   for (Integer i = 0; i < nb_comm_rank; ++i) {
     Int32 current_rank = communicating_ghost_ranks[i];
     SharedArray<Int32>& ghost_grp = boundary_items[current_rank];
@@ -200,15 +200,15 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     Integer gather_size = 1 + (max_comm_rank * 2);
     Int32UniqueArray global_ghost_info(gather_size * nb_rank);
     {
-      // Chaque sous-domaine construit un tableau indiquand pour
-      // chaque groupe d'éléments fantômes, le processeur concerné et
-      // le nombre d'éléments de ce groupe.
-      // Ce tableau sera ensuite regroupé sur l'ensemble des sous-domaines
-      // (par un allGather()) afin que chaque sous-domaine puisse le parcourir
-      // et ensuite savoir qui possède ses mailles partagés.
+      // Each subdomain constructs an array indicating for
+      // each group of ghost elements, the concerned processor and
+      // the number of elements in this group.
+      // This array will then be gathered across all subdomains
+      // (by an allGather()) so that each subdomain can iterate through it
+      // and then know who owns its shared meshes.
       Int32UniqueArray local_ghost_info(gather_size);
       Integer pos = 0;
-      local_ghost_info[pos++] = nb_comm_rank; // Indique le nombre d'éléments du tableau
+      local_ghost_info[pos++] = nb_comm_rank; // Indicates the number of elements in the array
       debug() << "Send local info " << nb_comm_rank;
       for (Integer index = 0, s = communicating_ghost_ranks.size(); index < s; ++index) {
         local_ghost_info[pos++] = communicating_ghost_ranks[index];
@@ -246,7 +246,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     }
 
     {
-      // Créé les infos concernant les mailles fantômes
+      // Created the infos concerning the ghost meshes
       Integer nb_send = communicating_ghost_ranks.size();
       ghost_rank_info.resize(nb_send);
       for (Integer i = 0; i < nb_send; ++i) {
@@ -259,14 +259,14 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   ItemInfoListView items_internal(item_family);
   {
     {
-      // Réciprocité des communications
-      // Pour que les synchronisations se fassent bien, il faut que
-      // 'share_rank_info' et 'ghost_rank_info' aient
-      // le même nombre d'éléments. Si ce n'est pas le cas, c'est
-      // qu'un processeur 'n' possède des mailles partagés avec le proc 'm'
-      // sans que cela soit réciproque. Si c'est le cas, on rajoute
-      // dans 'share_rank_info' une référence à ce sous-domaine
-      // avec aucun élément à envoyer.
+      // Communication Reciprocity
+      // For synchronizations to work correctly, it is necessary that
+      // 'share_rank_info' and 'ghost_rank_info' have
+      // the same number of elements. If this is not the case, it means
+      // that a processor 'n' owns shared meshes with proc 'm'
+      // without this being reciprocal. If this is the case, we add
+      // a reference to this subdomain in 'share_rank_info'
+      // with no elements to send.
       Integer nb_recv = share_rank_info.size();
       Integer nb_send = ghost_rank_info.size();
 
@@ -312,17 +312,17 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
         ARCANE_FATAL("Problem with the number of subdomain shared ({0}) and ghosts ({1})",
                      share_rank_info.size(), ghost_rank_info.size());
       }
-      // Trie le tableau par numéro croissant de sous-domaine.
+      // Sort the array by increasing subdomain number.
       std::sort(std::begin(share_rank_info), std::end(share_rank_info));
       std::sort(std::begin(ghost_rank_info), std::end(ghost_rank_info));
     }
 
-    // Ok, maintenant on connait la liste des sous-domaines qui possèdent
-    // les mailles partagées de ce sous-domaine et réciproquement, la liste des
-    // sous-domaines intéressé par les mailles propres de ce sous-domaine.
-    // Il ne reste qu'à envoyer et recevoir les informations correspondantes.
-    // Pour cela, et afin d'éviter les blocages, on envoie d'abord les infos
-    // pour les sous-domaines dont le numéro est inférieur à ce sous-domaine.
+    // OK, now we know the list of subdomains that possess
+    // the shared meshes of this subdomain and conversely, the list of
+    // subdomains interested in the own meshes of this subdomain.
+    // All that remains is to send and receive the corresponding information.
+    // To do this, and to avoid deadlocks, we first send the info
+    // for the subdomains whose number is less than this subdomain.
     Integer nb_comm_proc = ghost_rank_info.size();
     info(4) << "Number of communicating processors: " << nb_comm_proc;
     UniqueArray<Parallel::Request> requests;
@@ -330,7 +330,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     {
       //Integer nb_recv = share_rank_info.size();
 
-      // Trie le tableau par numéro croissant de sous-domaine.
+      // Sort the array by increasing subdomain number.
       for (Integer i = 0; i < ghost_rank_info.size(); ++i) {
         const GhostRankInfo& asdi = ghost_rank_info[i];
         debug() << "Ghost: " << i << " " << asdi.nbItem() << ' ' << asdi.rank();
@@ -373,7 +373,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
           }
           if (is_debug) {
             info() << "Number of elements that will be sent to the subdomain " << send_proc
-                   << " " << nb_local << " éléments";
+                   << " " << nb_local << " elements";
             for (Integer z = 0; z < nb_local; ++z) {
               info() << "Unique id " << uids[z];
             }
@@ -388,13 +388,13 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
           asdi.resize();
           Int64ArrayView items_unique_id = asdi.uniqueIds();
           debug() << "Recv proc " << recv_proc;
-          //TODO utiliser non bloquant.
+          //TODO use non-blocking.
           if (!items_unique_id.empty())
             pm->recv(items_unique_id, recv_proc);
           //String group_name(share_name);
           //group_name += recv_proc;
 
-          SharedArray<Int32> items_local_id(items_unique_id.size()); //! Ids des entités du groupe
+          SharedArray<Int32> items_local_id(items_unique_id.size()); //! Ids of group entities
           item_family->itemsUniqueIdToLocalId(items_local_id, items_unique_id);
           SharedArray<Int32> share_group = items_local_id;
           debug() << "Creating shared entities for the subdomain " << recv_proc
@@ -426,7 +426,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   _checkValid(ghost_rank_info, share_rank_info);
   sync_info->recompute();
 
-  // Vérifie que l'on a trouvé tous les ghosts
+  // Verify that all ghosts have been found
   for (Integer i = 0, n = sync_info->size(); i < n; ++i) {
     Int32 target_rank = sync_info->targetRank(i);
     if (sync_info->receiveInfo().nbItem(i) != boundary_items[target_rank].size())
@@ -451,19 +451,19 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
   Integer nb_comm_proc = ghost_rank_info.size();
   Integer nb_error = 0;
   bool has_error = false;
-  const Integer max_error = 10; // Nombre max d'erreurs affichées.
+  const Integer max_error = 10; // Max number of errors displayed.
   Int32 my_rank = m_parallel_mng->commRank();
   IItemFamily* item_family = m_item_group.itemFamily();
   ItemInfoListView items_internal(item_family);
 
-  // Tableau servant à marquer les éléments qui sont soit
-  // propres au sous-domaine, soit fantômes.
-  // Normalement, si les données sont cohérentes cela devrait marquer
-  // tous les éléments.
-  // NOTE: ceci n'est utile que si \a itemGroup() vaut allItems()
+  // Array used to mark elements that are either
+  // owned by the subdomain or ghost.
+  // Normally, if the data is consistent, this should mark
+  // all elements.
+  // NOTE: this is only useful if \a itemGroup() equals allItems()
   UniqueArray<bool> marked_elem(item_family->maxLocalId());
   marked_elem.fill(false);
-  // Marque les éléments propres au sous-domaine
+  // Mark elements owned by the subdomain
   ENUMERATE_ITEM (i_item, m_item_group) {
     Item item = *i_item;
     if (item.isOwn()) {
@@ -497,12 +497,12 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
       continue;
     }
 
-    // Marque les éléments du groupe partagé
+    // Mark elements of the shared group
     for (Integer z = 0, zs = ghost_grp.size(); z < zs; ++z) {
       const Item& elem = items_internal[ghost_grp[z]];
       bool is_marked = marked_elem[elem.localId()];
       if (is_marked) {
-        // L'élément ne doit pas déjà être marqué.
+        // The element should not already be marked.
         if (nb_error < max_error)
           error() << "The entity " << ItemPrinter(elem) << " belongs to another ghost group "
                   << "or is owned by the subdomain.";
@@ -515,7 +515,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
     m_synchronizer->m_sync_info->add(VariableSyncInfo(share_grp, ghost_grp, current_proc));
   }
 
-  // Vérifie que tous les éléments sont marqués
+  // Verify that all elements are marked
   ENUMERATE_ITEM (i, m_item_group) {
     Item item = *i;
     if (!marked_elem[item.localId()]) {
@@ -527,7 +527,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
     }
   }
 
-  // En cas d'erreur, on s'arrête.
+  // If there is an error, we stop.
   if (nb_error != 0) {
     has_error = true;
     if (nb_error >= max_error)

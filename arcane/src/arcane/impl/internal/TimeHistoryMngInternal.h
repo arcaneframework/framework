@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TimeHistoryMngInternal.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Classe interne gérant un historique de valeurs.                           */
+/* Internal class managing a history of values.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_TIMEHISTORYMNGINTERNAL_H
 #define ARCANE_IMPL_INTERNAL_TIMEHISTORYMNGINTERNAL_H
@@ -50,10 +50,10 @@ namespace Arcane
 {
 
 /*!
- * \brief Classe de base d'un historique de valeurs.
+ * \brief Base class for a value history.
  *
- * Un historique contient un ensemble de valeurs pour certaines itérations.
- * Il est caractérisé par un nom.
+ * A history contains a set of values for certain iterations.
+ * It is characterized by a name.
  */
 class TimeHistoryValue
 {
@@ -66,128 +66,129 @@ class TimeHistoryValue
   , m_thpi(thpi)
   {}
 
-  virtual ~TimeHistoryValue() = default; //!< Libére les ressources
+  virtual ~TimeHistoryValue() = default; //!< Frees resources
 
  public:
 
   /*!
-   * \brief Méthode permettant de convertir les variables d'anciennes sauvegardes
-   * vers le nouveau format.
+   * \brief Method allowing the conversion of variables from old saves
+   * to the new format.
    *
-   * \param vm Le VariableMng.
-   * \param default_mesh Le maillage par défaut.
+   * \param vm The VariableMng.
+   * \param default_mesh The default mesh.
    */
   virtual void fromOldToNewVariables(IVariableMng* vm, IMesh* default_mesh) = 0;
 
-  //! Imprime les valeurs de l'historique avec l'écrivain \a writer
+  //! Prints the history values using the writer \a writer
   virtual void dumpValues(ITraceMng* msg,
                           ITimeHistoryCurveWriter2* writer,
                           const TimeHistoryCurveWriterInfo& infos) const = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer les itérations et les valeurs d'un historique de valeur.
+   * \brief Method allowing the retrieval of iterations and values from a value history.
    *
-   * \param iterations [OUT] Les itérations où ont été récupérer chaque valeur.
-   * \param values [OUT] Les valeurs récupérées.
-   * \param infos Les informations nécessaire à la récupération de l'historique.
+   * \param iterations [OUT] The iterations where each value was retrieved.
+   * \param values [OUT] The retrieved values.
+   * \param infos The information necessary to retrieve the history.
    */
   virtual void arrayToWrite(UniqueArray<Int32>& iterations,
                             UniqueArray<Real>& values,
                             const TimeHistoryCurveWriterInfo& infos) const = 0;
 
   /*!
-   * \brief Méthode permettant d'appliquer une transformation sur les valeurs
-   * de l'historique de valeur.
+   * \brief Method allowing the application of a transformation on the values
+   * of the value history.
    *
-   * \param msg Le traceMng où écrire les messages.
-   * \param v Le transformer.
+   * \param msg The traceMng where messages should be written.
+   * \param v The transformer.
    */
   virtual void applyTransformation(ITraceMng* msg,
                                    ITimeHistoryTransformer* v) = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer le nombre de valeurs enregistrées.
+   * \brief Method allowing the retrieval of the number of recorded values.
    *
-   * \return Le nombre de valeurs enregistrées.
+   * \return The number of recorded values.
    */
   virtual Integer size() const = 0;
 
   /*!
-   * \brief Méthode permettant de retirer toutes les valeurs après une certaine itération.
+   * \brief Method allowing the removal of all values after a certain iteration.
    *
-   * \param last_iteration La dernière itération voulu.
+   * \param last_iteration The desired last iteration.
    */
   virtual void removeAfterIteration(Integer last_iteration) = 0;
 
-  //! Nom de l'historique
+  //! History name
   const String& name() const { return m_thpi.timeHistoryAddValueArg().name(); }
 
-  //! Type de données de l'historique
+  //! History data type
   eDataType dataType() const { return m_data_type; }
 
-  //! Index de l'historique dans la liste
+  //! History index in the list
   Integer index() const { return m_index; }
 
   Integer subSize() const { return m_sub_size; }
 
   /*!
-   * \brief Méthode permettant de récupérer le MeshHandle enregistré.
+   * \brief Method allowing the retrieval of the registered MeshHandle.
    *
-   * Attention, pour les historiques globaux, ce MeshHandle est null !
+   * Note: For global histories, this MeshHandle is null!
    *
-   * \return Le MeshHandle.
+   * \return The MeshHandle.
    */
   const MeshHandle& meshHandle() const { return m_thpi.meshHandle(); }
 
   /*!
-   * \brief Méthode permettant de savoir si c'est un historique global ou local à un sous-domaine.
+   * \brief Method allowing determination if it is a global history or local to a subdomain.
    *
    * \sa localProcId()
-   * \return true si c'est un historique local.
+   * \return true if it is a local history.
    */
   bool isLocal() const { return m_thpi.timeHistoryAddValueArg().isLocal(); }
 
   /*!
-   * \brief Méthode permettant de récupérer l'id du sous-domaine à qui appartient cet historique.
+   * \brief Method allowing the retrieval of the subdomain ID to which this history belongs.
    *
-   * \return L'id du sous-domaine.
+   * \return The subdomain ID.
    */
   Integer localSubDomainId() const { return m_thpi.timeHistoryAddValueArg().localSubDomainId(); }
 
  private:
 
-  eDataType m_data_type; //!< Type de la donnée
-  Integer m_index; //!< Index de l'historique dans la liste
+  eDataType m_data_type; //!< Data type
+  Integer m_index; //!< History index in the list
   Integer m_sub_size;
   TimeHistoryAddValueArgInternal m_thpi;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Historique de valeurs du type \a T.
+ * \brief Value history of type \a T.
  *
- * Actuellement, on ne support que trois types de valeurs: Real, \a Int32
- * et \a Int64.
+ * Currently, only three types of values are supported: Real, \a Int32
+ * and \a Int64.
  *
- * Un historique est composé d'un tableau de couples (x,y) avec \a x le
- * numéro de l'itération et \a y la valeur de l'historique.
+ * A history is composed of an array of pairs (x,y) where \a x is the
+ * iteration number and \a y is the history value.
  *
- * Les historiques doivent être rangées par ordre croissant d'itération.
+ * Histories must be sorted in ascending order of iteration.
  */
 template <typename DataType>
 class TimeHistoryValueT
 : public TimeHistoryValue
 {
   /*
-   * ATTENTION CE QUI EST DECRIT DANS CE COMMENTAIRE N'EST PAS ENCORE OPERATIONNEL
-   * Lorsqu'il y a beaucoup de courbes et que le nombre d'itérations
-   * devient important, le stockage consomme de la mémoire. Pour éviter
-   * cela, il est possible de compresser le tableau des itérations.
-   * Si c'est le cas et que les itérations sont consécutives, on
-   * conserve uniquement la première et la dernière. Dans ce cas,
-   * m_iterations à 3 valeurs: [0] = COMPRESSED_TAG, [1] = première
-   * et [2] = dernière.
+   * WARNING: WHAT IS DESCRIBED IN THIS COMMENT IS NOT YET OPERATIONAL
+   * When there are many curves and the number of iterations
+   * becomes significant, storage consumes memory. To avoid
+   * this, it is possible to compress the array of iterations.
+   * If this is the case and the iterations are consecutive, only the first
+   * and the last are kept. In this case,
+   * m_iterations has 3 values: [0] = COMPRESSED_TAG, [1] = first
+   * and [2] = last.
    */
  public:
 
@@ -202,13 +203,13 @@ class TimeHistoryValueT
  public:
 
   /*!
-   * \brief Constructeur permettant de construire un historique de valeur non lié à un maillage.
+   * \brief Constructor for building a value history not linked to a mesh.
    *
-   * \param vm Le variableMng pour créer les variables.
-   * \param thpi Les arguments pour créer l'historique.
-   * \param index L'index des variables globales.
-   * \param nb_element Le nombre de valeurs par itération.
-   * \param shrink S'il y a compression.
+   * \param vm The variableMng to create the variables.
+   * \param thpi The arguments to create the history.
+   * \param index The index of the global variables.
+   * \param nb_element The number of values per iteration.
+   * \param shrink If there is compression.
    */
   TimeHistoryValueT(IVariableMng* vm, const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
@@ -220,12 +221,12 @@ class TimeHistoryValueT
   }
 
   /*!
-   * \brief Constructeur permettant de construire un historique de valeur lié à un maillage.
+   * \brief Constructor for building a value history linked to a mesh.
    *
-   * \param thpi Les arguments pour créer l'historique.
-   * \param index L'index des variables globales.
-   * \param nb_element Le nombre de valeurs par itération.
-   * \param shrink S'il y a compression.
+   * \param thpi The arguments to create the history.
+   * \param index The index of the global variables.
+   * \param nb_element The number of values per iteration.
+   * \param shrink If there is compression.
    */
   TimeHistoryValueT(const TimeHistoryAddValueArgInternal& thpi, Integer index, Integer nb_element, bool shrink)
   : TimeHistoryValue(thpi, DataTypeTraitsT<DataType>::type(), index, nb_element)
@@ -264,10 +265,10 @@ class TimeHistoryValueT
   }
 
   /*!
-   * \brief Méthode permettant d'ajouter des valeurs à une itération.
+   * \brief Method allowing the addition of values to an iteration.
    *
-   * \param values Les valeurs à ajouter.
-   * \param iteration L'itération liée aux valeurs.
+   * \param values The values to add.
+   * \param iteration The iteration linked to the values.
    */
   void addValue(ConstArrayView<DataType> values, Integer iteration)
   {
@@ -276,7 +277,7 @@ class TimeHistoryValueT
     Integer sub_size = values.size();
     if (nb_iteration != 0)
       if (m_iterations[nb_iteration - 1] == iteration) {
-        // Remplace la valeur
+        // Replace the value
         for (Integer i = 0; i < sub_size; ++i)
           m_values[nb_value - sub_size + i] = values[i];
         return;
@@ -305,14 +306,14 @@ class TimeHistoryValueT
     }
   }
 
-  // Ecriture d'une courbe pour les écrivains version 2.
+  // Writing a curve for writers version 2.
   void dumpValues(ITraceMng* msg,
                   ITimeHistoryCurveWriter2* writer,
                   const TimeHistoryCurveWriterInfo& infos) const override
   {
     ARCANE_UNUSED(msg);
 
-    // Pour l'instant, on ne fait rien
+    // For now, we do nothing
     if (m_shrink_history)
       return;
 
@@ -363,8 +364,8 @@ class TimeHistoryValueT
 
   void arrayToWrite(UniqueArray<Int32>& iterations, UniqueArray<Real>& values, const TimeHistoryCurveWriterInfo& infos) const override
   {
-    // Pour vérifier qu'on ne sauve pas plus d'itérations qu'il y en
-    // a actuellement (ce qui peut arriver en cas de retour arrière).
+    // To check that we do not save more iterations than there are
+    // currently (which can happen in case of rollback).
     Integer max_iter = infos.times().size();
     Integer nb_iteration = m_iterations.size();
     Integer sub_size = subSize();
@@ -417,12 +418,13 @@ class TimeHistoryMngInternal
   , m_properties(properties)
   , m_version(2)
   {
-    // TODO AH : Avec la nouvelle API, cette variable devrait pouvoir être toujours true (grâce à m_need_comm). À garder pour l'IFPEN.
+    // TODO AH: With the new API, this variable should always be true
+    // (thanks to m_need_comm). Keep for IFPEN.
     m_enable_non_io_master_curves = !platform::getEnvironmentVariable("ARCANE_ENABLE_NON_IO_MASTER_CURVES").null();
 
     bool enable_all_replicats_write = !platform::getEnvironmentVariable("ARCANE_ENABLE_ALL_REPLICATS_WRITE_CURVES").null();
 
-    // Seul le sous-domaine maître des IO rend actif les time history.
+    // Only the IO master subdomain activates time history.
     IParallelReplication* pr = m_parallel_mng->replication();
     if (pr->hasReplication()) {
       m_is_master_io = (pr->isMasterRank() && m_parallel_mng->isMasterIO());
@@ -511,53 +513,53 @@ class TimeHistoryMngInternal
  private:
 
   /*!
- * \brief Méthode permettant d'ajouter des valeurs à un historique de valeurs.
+ * \brief Method allowing values to be added to a value history.
  *
- * \tparam DataType Les valeurs à ajouter.
- * \param thpi Les paramètres pour ajouter les valeurs.
- * \param values Les valeurs à ajouter.
+ * \tparam DataType The values to be added.
+ * \param thpi The parameters for adding values.
+ * \param values The values to be added.
  */
   template <class DataType>
   void _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<DataType> values);
 
   /*!
-   * \brief Destructeur.
+   * \brief Destructor.
    */
   void _destroyAll();
 
   /*!
-   * \brief Méthode permettant de sortir toutes les courbes avec tous les writers.
+   * \brief Method allowing all curves to be dumped with all writers.
    */
   void _dumpCurvesAllWriters();
 
   /*!
-   * \brief Méthode permettant de sortir un fichier XML avec le nom de
-   * chaque courbe sortie en format GNUPLOT.
+   * \brief Method allowing an XML file to be dumped with the name of
+   * each curve output in GNUPLOT format.
    */
   void _dumpSummaryOfCurvesLegacy();
 
   /*!
- * \brief Méthode permettant de sortir un fichier JSON avec le nom de
-   * chaque courbe sortie en format GNUPLOT ainsi que plusieurs autres
-   * informations.
+ * \brief Method allowing a JSON file to be dumped with the name of
+   * each curve output in GNUPLOT format as well as several other
+   * information.
    */
   void _dumpSummaryOfCurves();
 
   /*!
-   * \brief Méthode permettant de convertir l'ancien format vers le nouveau.
+   * \brief Method allowing conversion from the old format to the new.
    *
-   * \param default_mesh Le maillage par défaut sur lequel les anciennes valeurs sont liées.
+   * \param default_mesh The default mesh on which the old values are linked.
    */
   void _fromLegacyFormat(IMesh* default_mesh);
 
   /*!
-   * \brief Méthode permettant de sauver les propriétés des metadatas.
+   * \brief Method allowing saving the properties of the metadata.
    */
   void _saveProperties();
 
   /*!
-   * \brief Méthode permettant de retirer un écrivain.
-   * \param writer La reference de l'écrivain.
+   * \brief Method allowing removal of a writer.
+   * \param writer The reference of the writer.
    */
   void _removeCurveWriter(const Ref<ITimeHistoryCurveWriter2>& writer);
 
@@ -569,21 +571,21 @@ class TimeHistoryMngInternal
   CommonVariables m_common_variables;
   Directory m_directory;
 
-  bool m_is_master_io; //!< True si je suis le gestionnaire des IO
-  bool m_is_master_io_of_sd; //!< True si je suis le gestionnaire des IO pour mon sous-domaine.
-  bool m_enable_non_io_master_curves; //!< Indique si l'ecriture  de courbes par des procs non io_master est possible
-  bool m_is_active; //!< Indique si le service est actif.
-  bool m_is_shrink_active; //!< Indique si la compression de l'historique est active
-  bool m_is_dump_active; //!< Indique si les dump sont actifs
-  bool m_io_master_write_only; //!< Indique si les writers doivent être appelé par tous les processus.
-  bool m_need_comm; //!< Indique si au moins une courbe est non local (donc nécessite des communications).
+  bool m_is_master_io; //!< True if I am the IO manager
+  bool m_is_master_io_of_sd; //!< True if I am the IO manager for my subdomain.
+  bool m_enable_non_io_master_curves; //!< Indicates if curve writing by non-io_master procs is possible
+  bool m_is_active; //!< Indicates if the service is active.
+  bool m_is_shrink_active; //!< Indicates if history compression is active
+  bool m_is_dump_active; //!< Indicates if dumps are active
+  bool m_io_master_write_only; //!< Indicates if writers must be called by all processes.
+  bool m_need_comm; //!< Indicates if at least one curve is non-local (thus requiring communications).
 
   String m_output_path;
   ObserverPool m_observer_pool;
-  HistoryList m_history_list; //!< Liste des historiques
-  VariableScalarString m_th_meta_data; //!< Infos des historiques
-  VariableArrayReal m_th_global_time; //!< Tableau des instants de temps
-  RealUniqueArray m_global_times; //!< Liste des temps globaux
+  HistoryList m_history_list; //!< List of histories
+  VariableScalarString m_th_meta_data; //!< History info
+  VariableArrayReal m_th_global_time; //!< Array of time instants
+  RealUniqueArray m_global_times; //!< List of global times
   CurveWriter2List m_curve_writers2;
   Ref<Properties> m_properties;
   Integer m_version;

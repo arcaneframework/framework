@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelExchanger.h                                         (C) 2000-2022 */
 /*                                                                           */
-/* Echange d'informations entre processeurs.                                 */
+/* Information exchange between processors.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLELEXCHANGER_H
 #define ARCANE_PARALLELEXCHANGER_H
@@ -19,8 +19,8 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/Timer.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/Timer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,9 +35,10 @@ class SerializeMessage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Echange d'informations entre processeurs.
+ * \brief Information exchange between processors.
  * \sa IParallelExchanger
 */
 class ARCANE_IMPL_EXPORT ParallelExchanger
@@ -84,40 +85,40 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
   String name() const override { return m_name; }
 
  private:
-  
+
   Ref<IParallelMng> m_parallel_mng;
 
-  //! Liste des sous-domaines à envoyer
+  //! List of subdomains to send
   Int32UniqueArray m_send_ranks;
 
-  //! Liste des sous-domaines à recevoir
+  //! List of subdomains to receive
   Int32UniqueArray m_recv_ranks;
-  
-  //! Liste des message à envoyer et recevoir
+
+  //! List of messages to send and receive
   UniqueArray<ISerializeMessage*> m_comms_buf;
 
-  //! Liste des message à recevoir
+  //! List of messages to receive
   UniqueArray<SerializeMessage*> m_recv_serialize_infos;
 
-  //! Liste des message à recevoir
+  //! List of messages to receive
   UniqueArray<SerializeMessage*> m_send_serialize_infos;
 
-  //! Message envoyé à soi-même.
+  //! Message sent to self.
   SerializeMessage* m_own_send_message = nullptr;
 
-  //! Message reçu par soi-même.
+  //! Message received by self.
   SerializeMessage* m_own_recv_message = nullptr;
 
-  //! Mode d'échange.
+  //! Exchange mode.
   eExchangeMode m_exchange_mode = EM_Independant;
 
-  //! Niveau de verbosité
+  //! Verbosity level
   Int32 m_verbosity_level = 0;
 
-  //! Nom de l'instance utilisé pour l'affichage
+  //! Instance name used for display
   String m_name;
 
-  //! Timer pour mesurer le temps passé dans les échanges
+  //! Timer to measure time spent in exchanges
   Timer m_timer;
 
  private:
@@ -142,4 +143,4 @@ createParallelExchangerImpl(Ref<IParallelMng> pm);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

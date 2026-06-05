@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IOMng.cc                                                    (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des entrées-sorties.                                         */
+/* Input/Output Manager.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,28 +19,31 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/DomUtils.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/DomUtils.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des entrées sorties.
+ * \brief Input/Output Manager.
  */
 class IOMng
 : public IIOMng
 {
  public:
+
   IOMng(IParallelSuperMng* psm);
   IOMng(IParallelMng* pm);
   ~IOMng() override;
@@ -48,12 +51,12 @@ class IOMng
   IXmlDocumentHolder* parseXmlFile(const String& filename, const String& schemaname = String()) override;
   IXmlDocumentHolder* parseXmlFile(const String& filename, const String& schemaname, ByteConstArrayView schema_data) override;
   IXmlDocumentHolder* parseXmlBuffer(Span<const Byte> buffer, const String& name) override;
-  IXmlDocumentHolder* parseXmlBuffer(Span<const std::byte> buffer,const String& name) override;
+  IXmlDocumentHolder* parseXmlBuffer(Span<const std::byte> buffer, const String& name) override;
   IXmlDocumentHolder* parseXmlString(const String& str, const String& name) override;
   bool writeXmlFile(IXmlDocumentHolder* doc, const String& filename, const bool indented) override;
   bool collectiveRead(const String& filename, ByteArray& bytes) override
   {
-    return collectiveRead(filename,bytes,true);
+    return collectiveRead(filename, bytes, true);
   }
   bool collectiveRead(const String& filename, ByteArray& bytes, bool is_binary) override;
   bool localRead(const String& filename, ByteArray& bytes) override
@@ -157,7 +160,7 @@ parseXmlFile(const String& filename,
              ByteConstArrayView schema_data)
 {
   dom::DOMImplementation domimp;
-  // Lecture du fichier contenant les informations internes.
+  // Reading the file containing internal information.
   return domimp._load(filename, m_trace_mng, schemaname, schema_data);
 }
 
@@ -188,7 +191,7 @@ parseXmlString(const String& str, const String& name)
   dom::DOMImplementation domimp;
   ByteConstArrayView utf8_buf(str.utf8());
   ByteConstSpan buffer(reinterpret_cast<const std::byte*>(utf8_buf.data()), utf8_buf.size());
-  // Lecture du fichier contenant les informations internes.
+  // Reading the file containing internal information.
   return domimp._load(buffer, name, m_trace_mng);
 }
 
@@ -199,13 +202,13 @@ template <typename ParallelMngType>
 bool IOMng::
 _collectiveRead(ParallelMngType* pm, const String& filename, ByteArray& bytes, bool is_binary)
 {
-  // La lecture necessite deux broadcast: un pour la taille du fichier et
-  // un pour les valeurs du fichier.
+  // The read requires two broadcasts: one for the file size and
+  // one for the file values.
   //IParallelSuperMng* pm = m_application->parallelSuperMng();
   Integer size = 0;
   if (pm->commRank() == 0) {
     if (!localRead(filename, bytes, is_binary)) {
-      // Prévient d'un bug si bytes n'était pas vidé et qu'il y a un problème de lecture
+      // Prevents a bug if bytes was not cleared and there is a read problem
       size = bytes.size();
     }
   }
@@ -237,13 +240,13 @@ collectiveRead(const String& filename, ByteArray& bytes, bool is_binary)
 bool IOMng::
 localRead(const String& filename, ByteArray& bytes, bool is_binary)
 {
-  return platform::readAllFile(filename,is_binary,bytes);
+  return platform::readAllFile(filename, is_binary, bytes);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

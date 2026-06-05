@@ -1,34 +1,35 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="ArcaneCaseMeshMasterService" parent-name="AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Service %Arcane gérant les maillages du jeu de données.
+    Service %Arcane managing the data set meshes.
 
-    Ce service est particulier dans le sens où ses options sont lues
-    avant celles des autres services et modules car il est utilisé
-    pour créer les maillages donc les modules et services ont
-    besoin. A cause de cela, les options de ce service sont toujours
-    en anglais.
+    This service is special in that its options are read before
+    those of other services and modules because it is used to
+    create the meshes, which modules and services require.
+    Because of this, the options for this service are always
+    in English.
 
-    Il est possible de spécifier plusieurs maillages si l'élément
-    \a mesh est présent plusieurs fois. En général c'est le service
-    \ref axldoc_service_ArcaneCaseMeshService_arcane_impl qui sera utilisé
+    It is possible to specify multiple meshes if the \a mesh
+    element is present multiple times. Generally, the service
+    \ref axldoc_service_ArcaneCaseMeshService_arcane_impl will be
+    used
   </description>
-    
-  <interface name="Arcane::ICaseMeshMasterService" />
+
+  <interface name="Arcane::ICaseMeshMasterService"/>
 
   <options>
-    <!-- Service de création/lecture de maillage -->
+    <!-- Mesh creation/reading service -->
     <service-instance
-        name = "mesh"
-        type = "Arcane::ICaseMeshService"
-        minOccurs = "1"
-        maxOccurs = "unbounded"
-        default = "ArcaneCaseMeshService"
-        >
+      name="mesh"
+      type="Arcane::ICaseMeshService"
+      minOccurs="1"
+      maxOccurs="unbounded"
+      default="ArcaneCaseMeshService"
+    >
       <userclass>User</userclass>
       <description>
-        Service de création/lecture de maillage
+        Mesh creation/reading service
       </description>
     </service-instance>
 

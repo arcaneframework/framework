@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TimeLoopReader.h                                            (C) 2000-2006 */
 /*                                                                           */
-/* Chargement d'une boucle en temps.                                         */
+/* Loading a time loop.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MAIN_TIMELOOPREADER_H
 #define ARCANE_MAIN_TIMELOOPREADER_H
@@ -18,12 +18,13 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,41 +34,42 @@ class IApplication;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Functor de chargement d'une boucle en temps.
+ * \brief Time loop loading functor.
  *
- * A partir du jeu de donnée et des options générales, lit le nom de la
- * boucle en temps et l'indique au gestionnaire #m_mng.
+ * Based on the dataset and general options, it reads the name of the
+ * time loop and indicates it to the manager #m_mng.
  */
 class ARCANE_IMPL_EXPORT TimeLoopReader
 : public TraceAccessor
 {
  public:
 
-  //! Crée une instance associée au gestionnaire \a sm
+  //! Creates an instance associated with the manager \a sm
   TimeLoopReader(IApplication* sm);
-  ~TimeLoopReader(); //!< Libère les ressources
+  ~TimeLoopReader(); //!< Frees resources
 
  public:
 
-  //! Effectue la lecture des boucles en temps disponible.
+  //! Performs the reading of available time loops.
   void readTimeLoops();
 
-  //! Enregistre la liste des boucles en temps dans le gestionnaire \a sd
+  //! Registers the list of time loops in the manager \a sd
   void registerTimeLoops(ISubDomain* sd);
 
-  //! Positionne la boucle en temps utilisée dans le gestionnaire \a sd
+  //! Positions the used time loop in the manager \a sd
   void setUsedTimeLoop(ISubDomain* sd);
 
-  //! nom de la boucle en temps à exécuter.
+  //! name of the time loop to execute.
   const String& timeLoopName() const { return m_time_loop_name; }
 
-  //! Liste des boucles en temps lues
+  //! List of read time loops
   TimeLoopCollection timeLoops() const { return m_time_loops; }
 
  private:
 
-  IApplication* m_application; //!< Superviseur.
+  IApplication* m_application; //!< Supervisor.
   TimeLoopList m_time_loops;
   String m_time_loop_name;
 };
@@ -75,9 +77,9 @@ class ARCANE_IMPL_EXPORT TimeLoopReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

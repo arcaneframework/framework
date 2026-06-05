@@ -1,25 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelTopology.h                                          (C) 2000-2011 */
 /*                                                                           */
-/* Informations sur la topologie d'allocation des coeurs de calcul.          */
+/* Information on the topology for allocating computing cores.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_PARALLELTOPOLOGY_H
 #define ARCANE_IMPL_PARALLELTOPOLOGY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelTopology.h"
+#include "arcane/core/IParallelTopology.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,11 +29,11 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur la topologie d'allocation des coeurs de calcul.
+ * \brief Information on the topology for allocating computing cores.
  *
- * Avant utilisation, il faut appeler initialize() qui est une opération
- * collective.
+ * Before use, initialize() must be called, which is a collective operation.
  */
 class ARCANE_IMPL_EXPORT ParallelTopology
 : public IParallelTopology
@@ -40,11 +41,11 @@ class ARCANE_IMPL_EXPORT ParallelTopology
  public:
 
   ParallelTopology(IParallelMng* pm);
-  virtual ~ParallelTopology() {} //!< Libère les ressources.
+  virtual ~ParallelTopology() {} //!< Frees resources.
 
  public:
 
-  //! Initialise l'instance. Cette opération est collective
+  //! Initializes the instance. This operation is collective
   virtual void initialize();
 
  public:
@@ -79,10 +80,9 @@ class ARCANE_IMPL_EXPORT ParallelTopology
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

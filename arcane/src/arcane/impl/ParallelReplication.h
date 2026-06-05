@@ -1,22 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelReplication.h                                       (C) 2000-2020 */
 /*                                                                           */
-/* Informations sur la réplication de sous-domaines.                         */
+/* Information on subdomain replication.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_PARALLELREPLICATION_H
 #define ARCANE_IMPL_PARALLELREPLICATION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelReplication.h"
-#include "arcane/Parallel.h"
 #include "arcane/utils/Ref.h"
+
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,18 +32,19 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Parallel
- * \brief Informations sur la réplication des sous-domaines en parallèle.
+ * \brief Brief information on parallel subdomain replication.
  *
- * La réplication consiste à prendre un ensemble de parallelMng()et à
- * dupliquer cette ensemble plusieurs fois, chaque ensemble effectuant
- * à priori le même traitement sauf code explicite.
- * Par exemple, il est possible d'avoir un calcul qui s'effectue
- * en général sur 8 sous-domaines, et répliquer cet ensemble 4 fois. On
- * utilise alors l'équivalent de 32 processus.
+ * Replication consists of taking a set of parallelMng() and
+ * duplicating this set several times, each set performing
+ * in principle the same treatment unless explicit code dictates otherwise.
+ * For example, it is possible to have a calculation that is performed
+ * generally on 8 subdomains, and replicate this set 4 times. This
+ * then uses the equivalent of 32 processes.
  *
- * Cette classe contient les infos sur la réplication et est accessible
+ * This class contains the information on replication and is accessible
  * via IParallelMng::replication().
  */
 class ARCANE_IMPL_EXPORT ParallelReplication
@@ -50,10 +52,11 @@ class ARCANE_IMPL_EXPORT ParallelReplication
 {
  public:
 
-  //! Constructeur sans réplication
+  //! Constructor without replication
   ParallelReplication();
-  //! Constructeur avec réplication
-  ParallelReplication(Int32 rank,Int32 nb_rank,Ref<IParallelMng> replica_pm);
+
+  //! Constructor with replication
+  ParallelReplication(Int32 rank, Int32 nb_rank, Ref<IParallelMng> replica_pm);
   virtual ~ParallelReplication();
 
  public:
@@ -83,4 +86,4 @@ class ARCANE_IMPL_EXPORT ParallelReplication
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

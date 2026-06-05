@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArcaneCaseMeshMasterService.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Service Arcane gérant les maillages du jeu de données.                    */
+/* Arcane Service managing the dataset meshes.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,8 +47,8 @@ class ArcaneCaseMeshMasterService
     Integer nb_mesh = options()->mesh.size();
     info() << "Creating meshes from 'ArcaneCaseMeshMasterService' nb_mesh=" << nb_mesh;
     Integer index = 0;
-    for( ICaseMeshService* s : options()->mesh ){
-      String name = String("Mesh")+String::fromNumber(index);
+    for (ICaseMeshService* s : options()->mesh) {
+      String name = String("Mesh") + String::fromNumber(index);
       s->createMesh(name);
       ++index;
     }
@@ -62,7 +62,7 @@ class ArcaneCaseMeshMasterService
     if (!m_is_created)
       ARCANE_FATAL("You need to call createMeshes() before allocateMeshes()");
 
-    for( ICaseMeshService* s : options()->mesh )
+    for (ICaseMeshService* s : options()->mesh)
       s->allocateMeshItems();
     m_is_allocated = true;
   }
@@ -71,7 +71,7 @@ class ArcaneCaseMeshMasterService
   {
     if (!m_is_allocated)
       ARCANE_FATAL("Meshes have do be allocated before partitioning. call allocateMeshes() before");
-    for( ICaseMeshService* s : options()->mesh )
+    for (ICaseMeshService* s : options()->mesh)
       s->partitionMesh();
   }
 
@@ -87,7 +87,9 @@ class ArcaneCaseMeshMasterService
   {
     return options()->caseOptions();
   }
+
  private:
+
   ISubDomain* m_sub_domain;
   bool m_is_created = false;
   bool m_is_allocated = false;

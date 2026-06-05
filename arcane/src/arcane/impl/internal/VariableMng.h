@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableMng.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant la liste des maillages.                                     */
+/* Class managing the list of meshes.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_VARIABLEMNG_H
 #define ARCANE_IMPL_INTERNAL_VARIABLEMNG_H
@@ -47,8 +47,9 @@ class VariableSynchronizerMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de variables.
+ * \brief Variable manager.
  */
 class VariableMng
 : public TraceAccessor
@@ -109,7 +110,7 @@ class VariableMng
     typedef Int32 HashValueType;
     static Int32 hashFunction(const VariableNameInfo& key)
     {
-      // garantie que la valeur est positive
+      // ensures the value is positive
       return key.hash() & 0x7fffffff;
     }
   };
@@ -218,27 +219,27 @@ class VariableMng
 
  private:
 
-  //! Type de la liste des variables par nom complet
+  //! Type of the list of variables by full name
   using FullNameVariableMap = std::map<String, IVariable*>;
-  //! Paire de la liste des variables par nom complet
+  //! Pair of the list of variables by full name
   using FullNameVariablePair = FullNameVariableMap::value_type;
 
-  //! Type de la liste des fabriques de variables par nom complet
+  //! Type of the list of variable factories by full name
   using VariableFactoryMap = std::map<String, IVariableFactory*>;
-  //! Paire de la liste des variables par nom complet
+  //! Pair of the list of variables by full name
   using VariableFactoryPair = VariableFactoryMap::value_type;
 
-  //! Gestionnaire de sous-domaine
+  //! Subdomain manager
   ISubDomain* m_sub_domain = nullptr;
   IParallelMng* m_parallel_mng = nullptr;
   ITimeStats* m_time_stats = nullptr;
   InternalApi m_internal_api{ this };
-  VariableRefList m_variables_ref; //!< Liste des variables
+  VariableRefList m_variables_ref; //!< List of variables
   VariableList m_variables;
   VariableList m_used_variables;
   bool m_variables_changed = true;
   bool m_used_variables_changed = true;
-  //! Liste des variables par nom complet
+  //! List of variables by full name
   FullNameVariableMap m_full_name_variable_map;
   VNIMap m_vni_map;
   IObservable* m_write_observable = nullptr;
@@ -246,15 +247,15 @@ class VariableMng
   EventObservable<const VariableStatusChangedEventArgs&> m_on_variable_added;
   EventObservable<const VariableStatusChangedEventArgs&> m_on_variable_removed;
   List<IVariableFactory*> m_variable_factories;
-  //! Liste des variables créées automatiquement lors d'une reprise
+  //! List of variables created automatically during a restart
   List<VariableRef*> m_auto_create_variables;
   VariableFactoryMap m_variable_factory_map;
 
-  Integer m_generate_name_id = 0; //!< Numéro utilisé pour générer un nom de variable
+  Integer m_generate_name_id = 0; //!< Number used to generate a variable name
 
   Int64 m_nb_created_variable_reference = 0;
   Int64 m_nb_created_variable = 0;
-  // Indique dans quel module une variable est créée
+  // Indicates in which module a variable is created
   std::map<IVariable*, IModule*> m_variable_creation_modules;
 
   IVariableUtilities* m_utilities = nullptr;
@@ -266,7 +267,7 @@ class VariableMng
 
  private:
 
-  //! Ecrit la valeur de la variable \a v sur le flot \a o
+  //! Writes the value of variable \a v to the stream \a o
   void _dumpVariable(const VariableRef& v, std::ostream& o);
 
   static const char* _msgClassName() { return "Variable"; }
@@ -278,8 +279,9 @@ class VariableMng
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion de l'écriture pour les variables
+ * \brief Writing management for variables
  */
 class VariableIOWriterMng
 : public TraceAccessor
@@ -325,8 +327,9 @@ class VariableIOWriterMng
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion de la lecture pour les variables
+ * \brief Reading management for variables
  */
 class VariableIOReaderMng
 : public TraceAccessor

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ServiceLoader.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Chargeur des services disponibles dans le code.                           */
+/* Service loader for available services in the code.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,15 +18,15 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CriticalSection.h"
 
-#include "arcane/IServiceLoader.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/Service.h"
-#include "arcane/IModuleFactory.h"
-#include "arcane/IModule.h"
+#include "arcane/core/IServiceLoader.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/IModuleFactory.h"
+#include "arcane/core/IModule.h"
 
-#include "arcane/ServiceInfo.h"
-#include "arcane/IService.h"
+#include "arcane/core/ServiceInfo.h"
+#include "arcane/core/IService.h"
 
 #include <typeinfo>
 
@@ -38,38 +38,38 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Chargeur des services dans l'architecture.
+ * \brief Service loader in the architecture.
  */
 class ServiceLoader
 : public IServiceLoader
 {
  public:
-
  public:
 
   ServiceLoader();
 
   ~ServiceLoader() override;
 
-  //! Charge les services applicatifs disponibles
+  //! Loads available application services
   void loadApplicationServices(IApplication*) override;
-  //! Charge les services de session disponibles
+  //! Loads available session services
   void loadSessionServices(ISession*) override;
-  //! Charge les services de sous-domaine disponibles dans le sous-domaine \a sd
-  void loadSubDomainServices(ISubDomain*parent) override;
-  //! Charge les modules disponibles
-  void loadModules(ISubDomain* sd,bool all_modules) override;
+  //! Loads available subdomain services in the subdomain \a sd
+  void loadSubDomainServices(ISubDomain* parent) override;
+  //! Loads available modules
+  void loadModules(ISubDomain* sd, bool all_modules) override;
 
   void initializeModuleFactories(ISubDomain* sd) override;
 
-  bool loadSingletonService(ISubDomain* sd,const String& name) override;
+  bool loadSingletonService(ISubDomain* sd, const String& name) override;
 
  private:
-  
-  void _loadServices(IApplication* application,const ServiceBuildInfoBase& sbib);
+
+  void _loadServices(IApplication* application, const ServiceBuildInfoBase& sbib);
   SingletonServiceInstanceRef
-  _createSingletonInstance(IServiceMng* sm,IServiceInfo* si,const ServiceBuildInfoBase& sbi);
+  _createSingletonInstance(IServiceMng* sm, IServiceInfo* si, const ServiceBuildInfoBase& sbi);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +106,7 @@ loadApplicationServices(IApplication* parent)
 {
   ITraceMng* trace = parent->traceMng();
   trace->log() << "Loading Application Services";
-  _loadServices(parent,ServiceBuildInfoBase(parent));
+  _loadServices(parent, ServiceBuildInfoBase(parent));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ loadSessionServices(ISession* parent)
 {
   ITraceMng* trace = parent->traceMng();
   trace->log() << "Loading Session Services";
-  _loadServices(parent->application(),ServiceBuildInfoBase(parent));
+  _loadServices(parent->application(), ServiceBuildInfoBase(parent));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -129,7 +129,7 @@ loadSubDomainServices(ISubDomain* parent)
   ITraceMng* trace = parent->traceMng();
   trace->log() << "Loading SubDomain Services";
   {
-    _loadServices(parent->application(),ServiceBuildInfoBase(parent));
+    _loadServices(parent->application(), ServiceBuildInfoBase(parent));
   }
 }
 
@@ -137,26 +137,26 @@ loadSubDomainServices(ISubDomain* parent)
 /*---------------------------------------------------------------------------*/
 
 SingletonServiceInstanceRef ServiceLoader::
-_createSingletonInstance(IServiceMng* sm,IServiceInfo* si,const ServiceBuildInfoBase& sbi)
+_createSingletonInstance(IServiceMng* sm, IServiceInfo* si, const ServiceBuildInfoBase& sbi)
 {
   ITraceMng* tm = sm->traceMng();
   IServiceFactoryInfo* sfi = si->factoryInfo();
   SingletonServiceInstanceRef instance;
 
-  // Si la fabrique singleton existe, on l'utilise. Sinon, on utilise
-  // l'ancien mécanisme. Normalement, la fabrique singleton existe toujours
-  // sauf si on utilise une version de Arcane avec une vieille version de Axlstar.
+  // If the singleton factory exists, we use it. Otherwise, we use
+  // the old mechanism. Normally, the singleton factory always exists
+  // unless we are using an Arcane version with an old version of Axlstar.
   Internal::ISingletonServiceFactory* ssf = si->singletonFactory();
-  if (ssf){
+  if (ssf) {
     instance = ssf->createSingletonServiceInstance(sbi);
-    if (instance.get()){
+    if (instance.get()) {
       if (!sfi->isSingleton())
         tm->info() << "WARNING: singleton service loading'"
                    << si->localName() << "' which is not specified as singleton.";
     }
   }
 
-  if (instance.get()){
+  if (instance.get()) {
     sm->addSingletonInstance(instance);
     String local_name = si->localName();
     VersionInfo vi = si->version();
@@ -165,7 +165,7 @@ _createSingletonInstance(IServiceMng* sm,IServiceInfo* si,const ServiceBuildInfo
               << " (Version " << vi << ")"
               << " (Type " << typeid(instance.get()).name() << ")"
               << " N=" << implemented_interfaces.count();
-    for( StringCollection::Enumerator sc(implemented_interfaces); ++sc; ){
+    for (StringCollection::Enumerator sc(implemented_interfaces); ++sc;) {
       tm->log() << " (Interface implemented '" << *sc << "'";
     }
   }
@@ -177,40 +177,40 @@ _createSingletonInstance(IServiceMng* sm,IServiceInfo* si,const ServiceBuildInfo
 /*---------------------------------------------------------------------------*/
 
 bool ServiceLoader::
-loadSingletonService(ISubDomain* sd,const String& name)
+loadSingletonService(ISubDomain* sd, const String& name)
 {
-  // Normalement, le service doit être singleton pour pouvoir être chargé
-  // de cette maniére. Néanmoins, pour des raisons de compatibilité, on
-  // autorise le chargement en mode singleton de tous les services et on
-  // affiche un avertissement. A terme, do_all sera faux et il faudra spécifier
-  // que le service est singleton
+  // Normally, the service must be a singleton to be loaded
+  // in this manner. Nevertheless, for compatibility reasons, we
+  // allow loading all services in singleton mode and we
+  // display a warning. Eventually, do_all will be false and it will be necessary to specify
+  // that the service is a singleton
   const bool do_all = true;
   ITraceMng* trace = sd->traceMng();
   IServiceMng* service_mng = sd->serviceMng();
 
-  // Vérifie qu'aucune instance de même nom n'existe.
-  // Si c'est le cas, on ne fait rien et on affiche un avertissement.
-  // Peut-être un fatal serait plus approprié.
+  // Checks that no instance of the same name exists.
+  // If so, we do nothing and display a warning.
+  // Maybe a fatal would be more appropriate.
   SingletonServiceInstanceRef old_instance = service_mng->singletonServiceReference(name);
-  if (old_instance.get()){
+  if (old_instance.get()) {
     trace->warning() << "An instance of singleton service; name: '" << name << "' already exists."
                      << " The second instance will not be created !";
     return true;
   }
 
   ServiceFactory2Collection service_factory_infos(sd->application()->serviceFactories2());
-  for( ServiceFactory2Collection::Enumerator i(service_factory_infos); ++i; ){
+  for (ServiceFactory2Collection::Enumerator i(service_factory_infos); ++i;) {
     Internal::IServiceFactory2* sf2 = *i;
     IServiceInfo* si = sf2->serviceInfo();
     IServiceFactoryInfo* sfi = si->factoryInfo();
     if (!do_all)
       if (!sfi->isSingleton())
         continue;
-    if (si->localName()!=name)
+    if (si->localName() != name)
       continue;
 
     ServiceBuildInfoBase sbi(sd);
-    auto instance = _createSingletonInstance(service_mng,si,sbi);
+    auto instance = _createSingletonInstance(service_mng, si, sbi);
     if (instance.get())
       return true;
   }
@@ -219,18 +219,19 @@ loadSingletonService(ISubDomain* sd,const String& name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Charge les services dans le gestionnaire \a base.
+ * \brief Loads services in the base manager.
  */
 void ServiceLoader::
-_loadServices(IApplication* application,const ServiceBuildInfoBase& sbib)
+_loadServices(IApplication* application, const ServiceBuildInfoBase& sbib)
 {
-  // Instantie les services singletons qui se chargent automatiquement
-  // (ils ont la propriété isAutoload() à vrai).
+  // Instantiates singleton services that load automatically
+  // (they have the isAutoload() property set to true).
   IServiceMng* service_mng = sbib.serviceParent()->serviceMng();
- 
+
   ServiceFactory2Collection service_factory_infos(application->serviceFactories2());
-  for( ServiceFactory2Collection::Enumerator i(service_factory_infos); ++i; ){
+  for (ServiceFactory2Collection::Enumerator i(service_factory_infos); ++i;) {
     Internal::IServiceFactory2* sf2 = *i;
     IServiceInfo* si = sf2->serviceInfo();
     IServiceFactoryInfo* sfi = si->factoryInfo();
@@ -239,7 +240,7 @@ _loadServices(IApplication* application,const ServiceBuildInfoBase& sbib)
     if (!sfi->isAutoload())
       continue;
 
-    _createSingletonInstance(service_mng,si,sbib);
+    _createSingletonInstance(service_mng, si, sbib);
   }
 }
 
@@ -247,18 +248,18 @@ _loadServices(IApplication* application,const ServiceBuildInfoBase& sbib)
 /*---------------------------------------------------------------------------*/
 
 void ServiceLoader::
-loadModules(ISubDomain* sd,bool all_modules)
+loadModules(ISubDomain* sd, bool all_modules)
 {
   CriticalSection cs(sd->threadMng());
 
   ITraceMng* trace = sd->traceMng();
   IApplication* app = sd->application();
   ModuleFactoryInfoCollection module_factory_infos(app->moduleFactoryInfos());
-  for( ModuleFactoryInfoCollection::Enumerator i(module_factory_infos); ++i; ){
+  for (ModuleFactoryInfoCollection::Enumerator i(module_factory_infos); ++i;) {
     IModuleFactoryInfo* sf = *i;
     bool is_autoload = sf->isAutoload();
-    if (sf->isAutoload() || all_modules){
-      Ref<IModule> module = sf->createModule(sd,sd->defaultMeshHandle());
+    if (sf->isAutoload() || all_modules) {
+      Ref<IModule> module = sf->createModule(sd, sd->defaultMeshHandle());
       if (module.get())
         trace->info() << "Loading module " << module->name()
                       << " (Version " << module->versionInfo() << ")"
@@ -275,7 +276,7 @@ initializeModuleFactories(ISubDomain* sd)
 {
   IApplication* app = sd->application();
   ModuleFactoryInfoCollection module_factory_infos(app->moduleFactoryInfos());
-  for( ModuleFactoryInfoCollection::Enumerator i(module_factory_infos); ++i; ){
+  for (ModuleFactoryInfoCollection::Enumerator i(module_factory_infos); ++i;) {
     IModuleFactoryInfo* sf = *i;
     sf->initializeModuleFactory(sd);
   }
@@ -288,4 +289,3 @@ initializeModuleFactories(ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StringScalarData.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Donnée scalaire de type 'String'.                                         */
+/* Scalar data of type 'String'.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,11 +40,11 @@
 namespace Arcane
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Donnée scalaire d'une chaîne de caractères unicode.
+ * \brief Scalar data of a unicode string.
  */
 class StringScalarData
 : public ReferenceCounterImpl
@@ -65,7 +65,9 @@ class StringScalarData
   {
    public:
 
-    explicit Internal(StringScalarData* p) : m_p(p){}
+    explicit Internal(StringScalarData* p)
+    : m_p(p)
+    {}
 
    public:
 
@@ -83,7 +85,8 @@ class StringScalarData
 
   explicit StringScalarData(ITraceMng* trace)
   : m_trace(trace)
-  , m_internal(this) {}
+  , m_internal(this)
+  {}
   explicit StringScalarData(const DataStorageBuildInfo& dsbi);
   StringScalarData(const StringScalarData& rhs)
   : m_value(rhs.m_value)
@@ -109,8 +112,16 @@ class StringScalarData
   DataStorageTypeInfo storageTypeInfo() const override;
   StringScalarData* cloneTrue() override { return new ThatClass(*this); }
   StringScalarData* cloneTrueEmpty() override { return new ThatClass(m_trace); }
-  Ref<DataInterfaceType> cloneTrueRef() override { DataInterfaceType* d = new ThatClass(*this); return makeRef(d); }
-  Ref<DataInterfaceType> cloneTrueEmptyRef() override { DataInterfaceType* d = new ThatClass(m_trace); return makeRef(d); }
+  Ref<DataInterfaceType> cloneTrueRef() override
+  {
+    DataInterfaceType* d = new ThatClass(*this);
+    return makeRef(d);
+  }
+  Ref<DataInterfaceType> cloneTrueEmptyRef() override
+  {
+    DataInterfaceType* d = new ThatClass(m_trace);
+    return makeRef(d);
+  }
   void fillDefault() override
   {
     m_value = String();
@@ -124,7 +135,7 @@ class StringScalarData
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
   void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override { return {}; }
-  void setShape(const ArrayShape&) override { }
+  void setShape(const ArrayShape&) override {}
   void setAllocationInfo(const DataAllocationInfo& v) override { m_allocation_info = v; }
   DataAllocationInfo allocationInfo() const override { return m_allocation_info; }
   void visit(IScalarDataVisitor* visitor) override
@@ -146,7 +157,7 @@ class StringScalarData
 
  private:
 
-  DataType m_value; //!< Donnée
+  DataType m_value; //!< Data
   ITraceMng* m_trace;
   Internal m_internal;
   DataAllocationInfo m_allocation_info;
@@ -172,7 +183,7 @@ staticStorageTypeInfo()
   Int32 nb_basic_type = 0;
   Int32 dimension = 1;
   Int32 multi_tag = 1;
-  return DataStorageTypeInfo(bdt,nb_basic_type,dimension,multi_tag);
+  return DataStorageTypeInfo(bdt, nb_basic_type, dimension, multi_tag);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,7 +286,7 @@ serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation)
   ARCANE_UNUSED(sbuf);
   ARCANE_UNUSED(ids);
   ARCANE_UNUSED(operation);
-  // Rien à faire sur ce type de sérialisation.
+  // Nothing to do for this serialization type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -366,9 +377,6 @@ registerStringScalarDataFactory(IDataFactoryMng* dfm)
 {
   DataStorageFactory<StringScalarData>::registerDataFactory(dfm);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

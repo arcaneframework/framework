@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMngInternal.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Classe interne gérant l'équilibre de charge des maillages.                */
+/* Internal class managing the load balance of meshes.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_LOADBALANCEMNGINTERNAL_H
 #define ARCANE_IMPL_INTERNAL_LOADBALANCEMNGINTERNAL_H
@@ -45,33 +45,36 @@ class PartitionerMemoryInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface proxy pour accéder aux variables définissant les poids.
+ * \brief Interface proxy to access variables defining weights.
  *
- * Est indépendante du type de variable (Integer, Real).
- * Est à libération automatique de mémoire (via ObjectImpl).
- * Permet de noter à quelle famille d'objets est associée la variable.
+ * It is independent of the variable type (Integer, Real).
+ * It is automatically memory managed (via ObjectImpl).
+ * Allows noting which object family the variable is associated with.
  */
 class ARCANE_IMPL_EXPORT IProxyItemVariable
 : public ObjectImpl
 {
  public:
-  virtual ~IProxyItemVariable() { }
 
-  //! Accès à la valeur associée à une entité du maillage, sous forme d'un Real.
-  virtual Real operator[](ItemEnumerator i) const =0;
+  virtual ~IProxyItemVariable() {}
 
-  //! Accès au numéro de la famille associée.
-  virtual Integer getPos() const =0;
+  //! Access to the value associated with a mesh entity, in the form of a Real.
+  virtual Real operator[](ItemEnumerator i) const = 0;
+
+  //! Access to the associated family number.
+  virtual Integer getPos() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- *  @brief Classe pour accéder au proxy sans déférencement dans le code.
+ *  @brief Class for accessing the proxy without dereferencing in the code.
  *
- *  Est indepedant du type de variable (Integer, Real).
- *  Est à libération automatique de mémoire (via AutoRefT).
+ *  It is independent of the variable type (Integer, Real).
+ *  It is automatically memory managed (via AutoRefT).
  */
 class ARCANE_IMPL_EXPORT StoreIProxyItemVariable
 {
@@ -79,55 +82,62 @@ class ARCANE_IMPL_EXPORT StoreIProxyItemVariable
 
   StoreIProxyItemVariable(IVariable* var = nullptr, Integer pos = 0)
   {
-    m_var = StoreIProxyItemVariable::proxyItemVariableFactory(var,pos);
+    m_var = StoreIProxyItemVariable::proxyItemVariableFactory(var, pos);
   }
 
-  StoreIProxyItemVariable(const StoreIProxyItemVariable& src) {
+  StoreIProxyItemVariable(const StoreIProxyItemVariable& src)
+  {
     if (m_var != src.m_var)
       m_var = src.m_var;
   }
 
-  //! Accès à la valeur associée à une entité du maillage, sous forme d'un Real.
-  Real operator[](ItemEnumerator i) const {
+  //! Access to the value associated with a mesh entity, in the form of a Real.
+  Real operator[](ItemEnumerator i) const
+  {
     return ((*m_var)[i]);
   }
 
-  StoreIProxyItemVariable& operator=(const StoreIProxyItemVariable& src) {
+  StoreIProxyItemVariable& operator=(const StoreIProxyItemVariable& src)
+  {
     /* if (m_var != src.m_var) */
     m_var = src.m_var;
     return *this;
   }
 
-  Integer getPos() const {
+  Integer getPos() const
+  {
     return m_var->getPos();
   }
 
  protected:
-  //! Factory pour la constructions selon le type de variable initiale.
-  static IProxyItemVariable* proxyItemVariableFactory(IVariable* var, Integer pos=0);
+
+  //! Factory for construction based on the initial variable type.
+  static IProxyItemVariable* proxyItemVariableFactory(IVariable* var, Integer pos = 0);
 
  private:
-  //! Pointeur vers la variable.
+
+  //! Pointer to the variable.
   AutoRefT<IProxyItemVariable> m_var;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de gestion des critèes de partitionnement.
+ * \brief Class for managing partitioning criteria.
  *
- * Sert essentiellement à fournir les informations mémoire associées à chaque
- * entité.
- * Permet d'obtenir le numéro d'entité à partir de son nom.
+ * It essentially serves to provide memory information associated with each
+ * entity.
+ * Allows obtaining the entity number from its name.
  * \note This class is not thread safe.
  */
 class PartitionerMemoryInfo
 {
  public:
 
-  //! Construction en fonction du IVariableMng.
+  //! Construction based on the IVariableMng.
   explicit PartitionerMemoryInfo()
-  : m_family_names(IK_Unknown + 1, "__special__") // +1 car certaines variables sont associées à IK_Unknown
+  : m_family_names(IK_Unknown + 1, "__special__") // +1 because some variables are associated with IK_Unknown
   {
     m_family_names[IK_Cell] = "Cell";
     m_family_names[IK_Face] = "Face";
@@ -136,7 +146,7 @@ class PartitionerMemoryInfo
   }
   ~PartitionerMemoryInfo() = default;
 
-  //! Ajoute une entité et lui attribue un numéro. Un même nom n'est pas dupliqué.
+  //! Adds an entity and assigns it a number. The same name is not duplicated.
   Integer addEntity(const String& entity)
   {
     Integer pos;
@@ -148,8 +158,8 @@ class PartitionerMemoryInfo
     return pos;
   }
 
-  // Calcul de la consommation mémoire pour chaque type d'entité.
-  // Les mailles bénéficient ensuite des contributions des autres entités adjacentes.
+  // Calculates the memory consumption for each entity type.
+  // The meshes then benefit from the contributions of other adjacent entities.
   void computeMemory(IVariableMng* varMng)
   {
     Int32 length = m_family_names.size();
@@ -195,7 +205,7 @@ class PartitionerMemoryInfo
     }
   }
 
-  //! Retourne la mémoire totale associée à une entité.
+  //! Returns the total memory associated with an entity.
   Real getOverallMemory(const String& entity) const
   {
     Integer pos = _findEntity(entity);
@@ -214,7 +224,7 @@ class PartitionerMemoryInfo
     return m_buffer.overall_memory;
   }
 
-  //! Retourne la mémoire "résidente" (à transférer) associée à une entité.
+  //! Returns the "resident" (to be transferred) memory associated with an entity.
   Real getResidentMemory(const String& entity) const
   {
     Integer pos = _findEntity(entity);
@@ -233,7 +243,7 @@ class PartitionerMemoryInfo
     return m_buffer.resident_memory;
   }
 
-  //! Gestion des entités et de leur nom.
+  //! Management of entities and their names.
   Integer operator[](const String& entity) const
   {
     return _findEntity(entity);
@@ -254,7 +264,7 @@ class PartitionerMemoryInfo
     return -1;
   }
 
-  // Pour les mailles, on calcule la contribution mémoire des noeuds, aretes et faces.
+  // For meshes, we calculate the memory contribution of nodes, edges, and faces.
   void _computeMemCell(Cell cell)
   {
     Real contrib;
@@ -277,7 +287,7 @@ class PartitionerMemoryInfo
     m_buffer.resident_memory += contrib * m_resident_memory[IK_Edge];
   }
 
-  //! Calcule de la contribution d'un entité sur les mailles adjacentes.
+  //! Calculates the contribution of an entity to adjacent meshes.
   template <typename ItemKind>
   Real _computeMemContrib(ItemConnectedListViewTypeT<ItemKind> list)
   {
@@ -293,7 +303,7 @@ class PartitionerMemoryInfo
   UniqueArray<Int32> m_overall_memory;
   UniqueArray<Int32> m_resident_memory;
 
-  //! Système de cache pour l'accès aux mémoires relatives à une maille.
+  //! Cache system for accessing memory related to a mesh.
   struct MemInfo
   {
     Int32 id = -1;

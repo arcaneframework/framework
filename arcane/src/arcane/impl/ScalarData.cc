@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ScalarData.cc                                               (C) 2000-2024 */
 /*                                                                           */
-/* Donnée de type scalaire.                                                  */
+/* Scalar type data.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,8 +51,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée scalaire d'un type \a T
+ * \brief Scalar data of type \a T
  */
 template <class DataType>
 class ScalarDataT
@@ -73,7 +74,9 @@ class ScalarDataT
   {
    public:
 
-    explicit Internal(ScalarDataT<DataType>* p) : m_p(p){}
+    explicit Internal(ScalarDataT<DataType>* p)
+    : m_p(p)
+    {}
 
    public:
 
@@ -99,7 +102,7 @@ class ScalarDataT
   : m_value(rhs.m_value)
   , m_trace(rhs.m_trace)
   , m_internal(this)
-    , m_allocation_info(rhs.m_allocation_info)
+  , m_allocation_info(rhs.m_allocation_info)
   {}
 
  public:
@@ -119,8 +122,16 @@ class ScalarDataT
   DataStorageTypeInfo storageTypeInfo() const override;
   DataInterfaceType* cloneTrue() override { return _cloneTrue(); }
   DataInterfaceType* cloneTrueEmpty() override { return _cloneTrueEmpty(); }
-  Ref<DataInterfaceType> cloneTrueRef() override { auto* d = _cloneTrue(); return makeRef(d); }
-  Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
+  Ref<DataInterfaceType> cloneTrueRef() override
+  {
+    auto* d = _cloneTrue();
+    return makeRef(d);
+  }
+  Ref<DataInterfaceType> cloneTrueEmptyRef() override
+  {
+    auto* d = _cloneTrueEmpty();
+    return makeRef(d);
+  }
   void fillDefault() override;
   void setName(const String& name) override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
@@ -154,7 +165,7 @@ class ScalarDataT
 
  private:
 
-  DataType m_value; //!< Donnée
+  DataType m_value; //!< Data
   ITraceMng* m_trace;
   Internal m_internal;
   DataAllocationInfo m_allocation_info;
@@ -168,7 +179,7 @@ class ScalarDataT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> ScalarDataT<DataType>::
+template <typename DataType> ScalarDataT<DataType>::
 ScalarDataT(const DataStorageBuildInfo& dsbi)
 : m_value(DataTypeTraitsT<DataType>::defaultValue())
 , m_trace(dsbi.traceMng())
@@ -188,13 +199,13 @@ staticStorageTypeInfo()
   Int32 nb_basic_type = TraitsType::nbBasicType();
   Int32 dimension = 0;
   Int32 multi_tag = 0;
-  return DataStorageTypeInfo(bdt,nb_basic_type,dimension,multi_tag);
+  return DataStorageTypeInfo(bdt, nb_basic_type, dimension, multi_tag);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 DataStorageTypeInfo ScalarDataT<DataType>::
 storageTypeInfo() const
 {
@@ -258,7 +269,7 @@ template <typename DataType>
 void ScalarDataT<DataType>::
 assignSerializedData(const ISerializedData*)
 {
-  // Rien à faire car \a sdata pointe directement vers m_value
+  // Nothing to do because \a sdata points directly to m_value
 }
 
 /*---------------------------------------------------------------------------*/
@@ -291,7 +302,7 @@ template <typename DataType>
 void ScalarDataT<DataType>::
 serialize(ISerializer*, Int32ConstArrayView, IDataOperation*)
 {
-  // Rien à faire.
+  // Nothing to do.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -334,7 +345,7 @@ void ScalarDataT<DataType>::
 computeHash(DataHashInfo& hash_info) const
 {
   hash_info.setVersion(2);
-  Span<const DataType> value_as_span(&m_value,1);
+  Span<const DataType> value_as_span(&m_value, 1);
   hash_info.context()->updateHash(asBytes(value_as_span));
 }
 

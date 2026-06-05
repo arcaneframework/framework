@@ -1,30 +1,32 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="ArcaneBasicMeshSubdividerService" parent-name="AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Service %Arcane permettant de subdiviser les entités d'un maillage.
+    Arcane service allowing the subdivision of mesh entities.
   </description>
-    
-  <interface name="Arcane::IMeshSubdivider" />
+
+  <interface name="Arcane::IMeshSubdivider"/>
 
   <options>
     <simple name="nb-subdivision"
             type="int32"
-            >
+    >
       <userclass>User</userclass>
       <description>
-        Nombre de subdivision à effectuer.
+        Number of subdivisions to perform.
       </description>
     </simple>
 
     <simple name="different-element-type-output"
             type="int32"
             default="0"
-            >
+    >
       <userclass>User</userclass>
       <description>
-        Permet de définir un autre type de cellule après la subdivision. Ne fonctionne que pour les triangles, quadrangles, tétraèdres, hexaèdres. 
-        Par exemple, considérons un maillage initial avec des éléments quadrangulaire, si cette option est différente de zéro les nouvelle mailles seront des triangles.
+        Allows defining another cell type after subdivision. Only works for triangles,
+        quadrangles, tetrahedrons, and hexahedrons. For example, consider an initial
+        mesh with quadrilateral elements; if this option is different from zero, the
+        new meshes will be triangles.
       </description>
     </simple>
 

@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshFactoryMng.h                                            (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire de fabriques de maillages.                                   */
+/* Mesh factory manager.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_MESHFACTORYMNG_H
 #define ARCANE_IMPL_INTERNAL_MESHFACTORYMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMeshFactoryMng.h"
+#include "arcane/core/IMeshFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,7 @@ class ARCANE_IMPL_EXPORT MeshFactoryMng
 {
  public:
 
-  MeshFactoryMng(IApplication* app,MeshMng* mesh_mng);
+  MeshFactoryMng(IApplication* app, MeshMng* mesh_mng);
 
  public:
 
@@ -58,4 +58,4 @@ class ARCANE_IMPL_EXPORT MeshFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

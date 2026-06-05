@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneSimpleExecutor.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant d'exécuter du code directement via Arcane.              */
+/* Class for executing code directly via Arcane.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNALINFOSDUMPER_H
 #define ARCANE_IMPL_INTERNALINFOSDUMPER_H
@@ -32,24 +32,26 @@ class CommandLineArguments;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe permettant d'exécuter directement du code sans
- * passer par la boucle en temps.
+ * \brief Class for directly executing code without
+ * going through the time loop.
  *
- * Une seule instance de cette classe doit exister à un moment donné.
+ * Only one instance of this class must exist at any given time.
  *
- * Les instances de cette classe utilisent la valeur de
- * ArcaneMain::defaultApplicationInfo() pour s'initialiser et notamment
- * récupérer les arguments de la ligne de commande.
+ * Instances of this class use the value of
+ * ArcaneMain::defaultApplicationInfo() to initialize themselves and notably
+ * retrieve the command line arguments.
  *
- * Il faut appeler la méthode initialize() avant d'appeler d'autres
- * méthodes telles que createSubDomain(). Il est possible de modifier les
- * paramètres de création de l'application en modifiant les valeurs
- * de l'instance retournée par applicationBuildInfo().
+ * The initialize() method must be called before calling other
+ * methods such as createSubDomain(). It is possible to modify the
+ * application creation parameters by modifying the values
+ * of the instance returned by applicationBuildInfo().
  */
 class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 {
   class Impl;
+
  public:
 
   ArcaneSimpleExecutor();
@@ -84,4 +86,4 @@ class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

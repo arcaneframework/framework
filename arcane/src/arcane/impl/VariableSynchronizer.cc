@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableSynchronizer.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Service de synchronisation des variables.                                 */
+/* Variable synchronization service.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -57,11 +57,12 @@ arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'une synchronisation.
+ * \brief Synchronization management.
  *
- * Il est possible d'utiliser plusieurs fois cette instance. Il suffit
- * d'appeler initialize() pour réinitialiser l'instance.
+ * This instance can be used multiple times. You just need to call
+ * initialize() to reset the instance.
  */
 class VariableSynchronizer::SyncMessage
 {
@@ -133,7 +134,7 @@ class VariableSynchronizer::SyncMessage
   Int32 nbVariable() const { return m_variables.size(); }
   ConstArrayView<IVariable*> variables() const { return m_variables; }
 
-  //! Effectue la synchronisation
+  //! Performs the synchronization
   void synchronize()
   {
     Int32 nb_var = m_variables.size();
@@ -203,7 +204,7 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
 {
   m_sync_info = DataSynchronizeInfo::create();
   m_partial_sync_info = DataSynchronizeInfo::create();
-  
+
   if (!implementation_factory.get())
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
@@ -221,9 +222,9 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
       m_trace_sync = true;
   }
 
-  // Indique si on vérifie la cohérence des variables synchronisées
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SYNCHRONIZE_COHERENCE",true))
-    m_is_check_coherence = (v.value()!=0);
+  // Indicates whether the coherence of synchronized variables is checked
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SYNCHRONIZE_COHERENCE", true))
+    m_is_check_coherence = (v.value() != 0);
 
   m_default_message = _buildMessage();
   m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
@@ -252,7 +253,7 @@ _buildMessage()
   if (runner.isInitialized() && is_accelerator_aware) {
     m_runner = runner;
   }
-  
+
   return _buildMessage(m_sync_info);
 }
 
@@ -275,15 +276,15 @@ _buildMessage(Ref<DataSynchronizeInfo>& sync_info)
   auto* internal_pm = m_parallel_mng->_internalApi();
 
   IMemoryAllocator* allocator = nullptr;
-  // Si le IParallelMng gère la mémoire des accélérateurs alors on alloue le
-  // buffer sur le device. On pourrait utiliser la mémoire managée mais certaines
-  // implémentations MPI (i.e: BXI) ne le supportent pas.
+  // If the IParallelMng manages accelerator memory, the buffer is allocated
+  // on the device. We could use managed memory, but some MPI implementations
+  // (i.e.: BXI) do not support it.
   if (m_runner.isInitialized()) {
     buffer_copier->setRunQueue(internal_pm->queue());
     allocator = MemoryUtils::getAllocator(eMemoryRessource::Device);
   }
 
-  // Créé une instance de l'implémentation
+  // Create an instance of the implementation
   Ref<IDataSynchronizeImplementation> sync_impl = m_implementation_factory->createInstance();
   sync_impl->setDataSynchronizeInfo(sync_info.get());
 
@@ -293,8 +294,9 @@ _buildMessage(Ref<DataSynchronizeInfo>& sync_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Création de la liste des éléments de synchronisation.
+ * \brief Creation of the list of synchronization elements.
  */
 void VariableSynchronizer::
 compute()
@@ -320,7 +322,7 @@ _doSynchronize(SyncMessage* message)
 
   _setCurrentDevice();
 
-  // Envoi l'évènement de début de la synchro
+  // Send the start synchronization event
   VariableSynchronizerEventArgs& event_args = message->eventArgs();
   _sendBeginEvent(event_args);
 
@@ -330,8 +332,8 @@ _doSynchronize(SyncMessage* message)
   }
 
   Int32 nb_var = message->nbVariable();
-  // Si une seule variable, affiche le résutat de la comparaison de
-  // la synchronisation
+  // If there is only one variable, display the result of the comparison
+  // synchronization
   if (nb_var == 1 && m_variable_synchronizer_mng->isSynchronizationComparisonEnabled()) {
     eDataSynchronizeCompareStatus s = message->result().compareStatus();
     if (s == eDataSynchronizeCompareStatus::Different) {
@@ -342,7 +344,7 @@ _doSynchronize(SyncMessage* message)
     }
   }
 
-  // Fin de la synchro
+  // End of synchronization
   _sendEndEvent(event_args);
 }
 
@@ -352,65 +354,65 @@ _doSynchronize(SyncMessage* message)
 void VariableSynchronizer::
 _rebuildMessage(Int32ConstArrayView local_ids)
 {
-  // Si les localIds n'ont pas changés depuis le dernier appel, on conserve
-  // les informations de synchronisation déjà calculées
-  
+  // If the localIds have not changed since the last call, we keep
+  // the synchronization information already calculated
+
   if (local_ids == m_partial_local_ids.constView()) {
     //debug(Trace::High) << "Proc " << m_parallel_mng->commRank() << " infos for partial synchronisations are up to date";
     return;
   }
-  
+
   //debug(Trace::High) << "Proc " << m_parallel_mng->commRank() << " recompute infos for partial synchronisations";
-    
+
   m_partial_local_ids.copy(local_ids);
-  
+
   UniqueArray<bool> flags(m_item_group.itemFamily()->maxLocalId());
   flags.fill(false);
-  
+
   for (Int32 lid : local_ids) {
     flags[lid] = true;
   }
-  
+
   Int32ConstArrayView comm_ranks = m_sync_info->communicatingRanks();
   Int32 nb_comm_ranks = comm_ranks.size();
-  
+
   const DataSynchronizeBufferInfoList& send_info = m_sync_info->sendInfo();
   const DataSynchronizeBufferInfoList& recv_info = m_sync_info->receiveInfo();
-  
+
   m_partial_sync_info = DataSynchronizeInfo::create();
-  
+
   if (!local_ids.empty()) {
-    
+
     UniqueArray<Int32> recv_grp;
     UniqueArray<Int32> send_grp;
-    
+
     for (Int32 index = 0; index < nb_comm_ranks; ++index) {
       Int32 target_rank = comm_ranks[index];
       ConstArrayView<Int32> send_lids = send_info.localIds(index);
       ConstArrayView<Int32> recv_lids = recv_info.localIds(index);
-      
+
       recv_grp.clear();
       send_grp.clear();
-      
+
       for (Int32 lid : recv_lids) {
         if (flags[lid]) {
           recv_grp.add(lid);
         }
       }
-      
+
       for (Int32 lid : send_lids) {
         if (flags[lid]) {
           send_grp.add(lid);
         }
       }
-      
+
       if ((!send_grp.empty()) || (!recv_grp.empty())) {
-        // Ajoute les informations sur les echanges avec le rang target_rank
+        // Adds information about exchanges with target_rank
         m_partial_sync_info->add(VariableSyncInfo(send_grp, recv_grp, target_rank));
       }
     }
   }
-  
+
   m_partial_sync_info->recompute();
   m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
   m_partial_message->compute();
@@ -426,7 +428,7 @@ _synchronize(IVariable* var, SyncMessage* message)
 
   IParallelMng* pm = m_parallel_mng;
   if (m_is_check_coherence)
-    MessagePassing::namedBarrier(pm,var->name());
+    MessagePassing::namedBarrier(pm, var->name());
   debug(Trace::High) << " Proc " << pm->commRank() << " Sync variable " << var->fullName();
   if (m_trace_sync) {
     info() << " Synchronize variable " << var->fullName()
@@ -450,7 +452,7 @@ synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronize(IVariable* var, Int32ConstArrayView local_ids)
 {
-  _rebuildMessage(local_ids); 
+  _rebuildMessage(local_ids);
   _synchronize(var, m_partial_message.get());
 }
 
@@ -494,7 +496,6 @@ synchronize(VariableCollection vars, Int32ConstArrayView local_ids)
       _synchronize(*ivar, m_partial_message.get());
     }
   }
-  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -528,18 +529,19 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
   info(4) << "** VariableSynchronizer::changeLocalIds() group=" << m_item_group.name();
   m_sync_info->changeLocalIds(old_to_new_ids);
   m_default_message->compute();
-  // Force le recalcul des informations pour les synchronisations partielles
+  // Forces recalculation of information for partial synchronizations
   _rebuildMessage(Int32ConstArrayView());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Indique si les variables de la liste \a vars peuvent être synchronisées
- * en une seule fois.
+ * \brief Indicates if the variables in the list \a vars can be synchronized
+ * at once.
  *
- * Pour que cela soit possible, il faut que ces variables ne soient pas
- * partielles et reposent sur le même ItemGroup (donc soient de la même famille)
+ * For this to be possible, these variables must not be
+ * partial and must rely on the same ItemGroup (i.e., belong to the same family)
  */
 bool VariableSynchronizer::
 _canSynchronizeMulti(const VariableCollection& vars)
@@ -655,12 +657,13 @@ _checkCreateTimer()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne le device associé à notre RunQueue comme le device courant.
+ * \brief Positions the device associated with our RunQueue as the current device.
  *
- * Si on utilise une RunQueue, positionne le device associé à celui
- * de cette RunQueue. Cela permet de garantir que les allocations mémoires
- * effectuées lors des synchronisations seront sur le bon device.
+ * If a RunQueue is used, it positions the device associated with
+ * that RunQueue. This ensures that memory allocations
+ * performed during synchronizations will be on the correct device.
  */
 void VariableSynchronizer::
 _setCurrentDevice()

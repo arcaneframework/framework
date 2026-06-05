@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDataSynchronizeImplementation.h                            (C) 2000-2023 */
 /*                                                                           */
-/* Interface pour l'implémentation d'une synchronisation de variables.       */
+/* Interface for the implementation of variable synchronization.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_IDATASYNCHRONIZEIMPLEMENTATION_H
@@ -47,8 +47,9 @@ ARCANE_DEPRECATED_REASON("Use 'DataSynchronizeInfo' instead") = DataSynchronizeI
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un dispatcher générique.
+ * \brief Interface for a generic dispatcher.
  */
 class ARCANE_IMPL_EXPORT IDataSynchronizeImplementation
 {
@@ -66,8 +67,9 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeImplementation
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une fabrique dispatcher générique.
+ * \brief Interface for a generic dispatcher factory.
  */
 class ARCANE_IMPL_EXPORT IDataSynchronizeImplementationFactory
 {
@@ -82,10 +84,11 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeImplementationFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Classe de base abstraite pour les implémentations génériques.
+ * \brief Abstract base class for generic implementations.
  *
- * Elle permet de conserver les informations sur le groupe à synchroniser.
+ * It allows retaining information about the group to be synchronized.
  */
 class AbstractDataSynchronizeImplementation
 : public IDataSynchronizeImplementation

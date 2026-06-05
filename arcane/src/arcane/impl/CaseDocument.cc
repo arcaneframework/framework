@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseDocument.cc                                             (C) 2000-2023 */
 /*                                                                           */
-/* Classe gérant un document XML du jeu de données.                          */
+/* Class managing an XML document of the dataset.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,12 +17,12 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/XmlNode.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/CaseNodeNames.h"
-#include "arcane/CaseOptionError.h"
-#include "arcane/DomUtils.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/CaseNodeNames.h"
+#include "arcane/core/CaseOptionError.h"
+#include "arcane/core/DomUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ class CaseDocumentFragment
 {
  public:
 
-  CaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document);
+  CaseDocumentFragment(ITraceMng* tm, IXmlDocumentHolder* document);
 
   ~CaseDocumentFragment()
   {
@@ -87,13 +87,14 @@ class CaseDocumentFragment
  private:
 
   void _assignLanguage(const String& langname);
-  void _printErrorsOrWarnings(std::ostream& o,ConstArrayView<CaseOptionError> errors);
+  void _printErrorsOrWarnings(std::ostream& o, ConstArrayView<CaseOptionError> errors);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant un document XML du jeu de données.
+ * \brief Class managing an XML document of the dataset.
  */
 class CaseDocument
 : public TraceAccessor
@@ -101,7 +102,7 @@ class CaseDocument
 {
  public:
 
-  CaseDocument(ITraceMng* sm,IXmlDocumentHolder* document);
+  CaseDocument(ITraceMng* sm, IXmlDocumentHolder* document);
   ~CaseDocument() override;
 
   void build() override;
@@ -119,7 +120,7 @@ class CaseDocument
   void addError(const CaseOptionError& case_error) override { m_fragment.addError(case_error); }
   void addWarning(const CaseOptionError& case_error) override { m_fragment.addWarning(case_error); }
   bool hasError() const override { return m_fragment.hasError(); }
-  bool hasWarnings() const override  { return m_fragment.hasWarnings(); }
+  bool hasWarnings() const override { return m_fragment.hasWarnings(); }
   void printErrors(std::ostream& o) override { m_fragment.printErrors(o); }
   void printWarnings(std::ostream& o) override { m_fragment.printWarnings(o); }
   void clearErrorsAndWarnings() override { m_fragment.clearErrorsAndWarnings(); }
@@ -160,7 +161,7 @@ class CaseDocument
 
  public:
 
-  // Positionne la langue. Doit être fait avant l'appel à build.
+  // Sets the language. Must be done before calling build.
   void setLanguage(const String& language)
   {
     if (!m_fragment.m_language.null())
@@ -189,17 +190,17 @@ class CaseDocument
   String m_code_unit_system;
 
  private:
-  
-  XmlNode _forceCreateChild(XmlNode& parent,const String& us);
+
+  XmlNode _forceCreateChild(XmlNode& parent, const String& us);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ICaseDocumentFragment*
-arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document)
+arcaneCreateCaseDocumentFragment(ITraceMng* tm, IXmlDocumentHolder* document)
 {
-  auto* doc = new CaseDocumentFragment(tm,document);
+  auto* doc = new CaseDocumentFragment(tm, document);
   doc->init();
   return doc;
 }
@@ -208,9 +209,9 @@ arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ICaseDocument*
-arcaneCreateCaseDocument(ITraceMng* tm,IXmlDocumentHolder* document)
+arcaneCreateCaseDocument(ITraceMng* tm, IXmlDocumentHolder* document)
 {
-  ICaseDocument* doc = new CaseDocument(tm,document);
+  ICaseDocument* doc = new CaseDocument(tm, document);
   doc->build();
   return doc;
 }
@@ -219,10 +220,10 @@ arcaneCreateCaseDocument(ITraceMng* tm,IXmlDocumentHolder* document)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ICaseDocument*
-arcaneCreateCaseDocument(ITraceMng* tm,const String& lang)
+arcaneCreateCaseDocument(ITraceMng* tm, const String& lang)
 {
   IXmlDocumentHolder* xml_doc = domutils::createXmlDocument();
-  CaseDocument* doc = new CaseDocument(tm,xml_doc);
+  CaseDocument* doc = new CaseDocument(tm, xml_doc);
   if (!lang.null())
     doc->setLanguage(lang);
   doc->build();
@@ -233,7 +234,7 @@ arcaneCreateCaseDocument(ITraceMng* tm,const String& lang)
 /*---------------------------------------------------------------------------*/
 
 CaseDocumentFragment::
-CaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document)
+CaseDocumentFragment(ITraceMng* tm, IXmlDocumentHolder* document)
 : TraceAccessor(tm)
 , m_case_node_names(new CaseNodeNames(String()))
 , m_doc_holder(document)
@@ -245,9 +246,9 @@ CaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document)
 /*---------------------------------------------------------------------------*/
 
 CaseDocument::
-CaseDocument(ITraceMng* tm,IXmlDocumentHolder* document)
+CaseDocument(ITraceMng* tm, IXmlDocumentHolder* document)
 : TraceAccessor(tm)
-, m_fragment(tm,document)
+, m_fragment(tm, document)
 {
 }
 
@@ -268,21 +269,21 @@ init()
   CaseNodeNames* cnn = caseNodeNames();
 
   m_root_elem = m_document_node.documentElement();
-  if (m_root_elem.null()){
-    // Nouveau cas, pour l'instant langue francaise par défaut.
+  if (m_root_elem.null()) {
+    // New case, French language by default for now.
     if (m_language.null())
       m_language = String("fr");
     _assignLanguage(m_language);
     cnn = caseNodeNames();
-    m_root_elem = m_document_node.createAndAppendElement(cnn->root,String());
-    m_root_elem.setAttrValue(cnn->lang_attribute,m_language);
+    m_root_elem = m_document_node.createAndAppendElement(cnn->root, String());
+    m_root_elem.setAttrValue(cnn->lang_attribute, m_language);
   }
 
   m_language = m_root_elem.attrValue(cnn->lang_attribute);
 
-  if (m_language.null()){
+  if (m_language.null()) {
     ARCANE_FATAL("Attribute '{0}' not specified in the element <{1}>",
-                 cnn->lang_attribute,m_root_elem.name());
+                 cnn->lang_attribute, m_root_elem.name());
   }
   else
     _assignLanguage(m_language);
@@ -296,27 +297,27 @@ build()
 {
   m_fragment.init();
 
-  // Ces noeuds ont un nom indépendant du langage.
-  m_arcane_elem = _forceCreateChild(m_fragment.m_root_elem,"arcane");
-  m_configuration_elem = _forceCreateChild(m_arcane_elem,"configuration");
+  // These nodes have a name independent of the language.
+  m_arcane_elem = _forceCreateChild(m_fragment.m_root_elem, "arcane");
+  m_configuration_elem = _forceCreateChild(m_arcane_elem, "configuration");
 
-  // Ne pas faire avant 'm_fragment.init()'
+  // Do not do before 'm_fragment.init()'
   CaseNodeNames* cnn = caseNodeNames();
 
-  // NOTE: Si on ajoute ou change des éléments, il faut mettre
-  // à jour la conversion correspondante dans CaseDocumentLangTranslator
-  m_timeloop_elem = _forceCreateChild(m_arcane_elem,cnn->timeloop);
-  m_title_elem = _forceCreateChild(m_arcane_elem,cnn->title);
-  m_description_elem = _forceCreateChild(m_arcane_elem,cnn->description);
+  // NOTE: If elements are added or changed, the corresponding conversion must
+  // be updated in CaseDocumentLangTranslator
+  m_timeloop_elem = _forceCreateChild(m_arcane_elem, cnn->timeloop);
+  m_title_elem = _forceCreateChild(m_arcane_elem, cnn->title);
+  m_description_elem = _forceCreateChild(m_arcane_elem, cnn->description);
   m_modules_elem = _forceCreateChild(m_arcane_elem, cnn->modules);
   m_services_elem = _forceCreateChild(m_arcane_elem, cnn->services);
 
   XmlNode& root_elem = m_fragment.m_root_elem;
 
-  _forceCreateChild(root_elem,cnn->mesh);
+  _forceCreateChild(root_elem, cnn->mesh);
   m_mesh_elems = root_elem.children(cnn->mesh);
 
-  m_functions_elem = _forceCreateChild(root_elem,cnn->functions);
+  m_functions_elem = _forceCreateChild(root_elem, cnn->functions);
   m_meshes_elem = root_elem.child(cnn->meshes);
 
   m_user_class = root_elem.attrValue(cnn->user_class);
@@ -348,11 +349,11 @@ _assignLanguage(const String& langname)
 /*---------------------------------------------------------------------------*/
 
 XmlNode CaseDocument::
-_forceCreateChild(XmlNode& parent,const String& name)
+_forceCreateChild(XmlNode& parent, const String& name)
 {
   XmlNode node(parent.child(name));
   if (node.null())
-    node = parent.createAndAppendElement(name,String());
+    node = parent.createAndAppendElement(name, String());
   return node;
 }
 
@@ -363,7 +364,7 @@ void CaseDocument::
 setUserClass(const String& value)
 {
   m_user_class = value;
-  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->user_class,value);
+  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->user_class, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -373,7 +374,7 @@ void CaseDocument::
 setCodeName(const String& value)
 {
   m_code_name = value;
-  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->code_name,value);
+  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->code_name, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -383,7 +384,7 @@ void CaseDocument::
 setCodeVersion(const String& value)
 {
   m_code_version = value;
-  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->code_version,value);
+  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->code_version, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -393,7 +394,7 @@ void CaseDocument::
 setCodeUnitSystem(const String& value)
 {
   m_code_unit_system = value;
-  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->code_unit,value);
+  m_fragment.m_root_elem.setAttrValue(caseNodeNames()->code_unit, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -423,7 +424,7 @@ addWarning(const CaseOptionError& case_error)
 bool CaseDocumentFragment::
 hasError() const
 {
-  return m_errors.size()!=0;
+  return m_errors.size() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,7 +433,7 @@ hasError() const
 bool CaseDocumentFragment::
 hasWarnings() const
 {
-  return m_warnings.size()!=0;
+  return m_warnings.size() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -441,7 +442,7 @@ hasWarnings() const
 void CaseDocumentFragment::
 printErrors(std::ostream& o)
 {
-  _printErrorsOrWarnings(o,m_errors);
+  _printErrorsOrWarnings(o, m_errors);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -450,7 +451,7 @@ printErrors(std::ostream& o)
 void CaseDocumentFragment::
 printWarnings(std::ostream& o)
 {
-  _printErrorsOrWarnings(o,m_warnings);
+  _printErrorsOrWarnings(o, m_warnings);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -467,10 +468,10 @@ clearErrorsAndWarnings()
 /*---------------------------------------------------------------------------*/
 
 void CaseDocumentFragment::
-_printErrorsOrWarnings(std::ostream& o,ConstArrayView<CaseOptionError> errors)
+_printErrorsOrWarnings(std::ostream& o, ConstArrayView<CaseOptionError> errors)
 {
-  for( const CaseOptionError& error : errors ){
-    if (arcaneIsCheck()){
+  for (const CaseOptionError& error : errors) {
+    if (arcaneIsCheck()) {
       o << "TraceFile: " << error.trace().file() << ":" << error.trace().line() << '\n';
       o << "TraceFunc: " << error.trace().name() << '\n';
     }

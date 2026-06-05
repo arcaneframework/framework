@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDataSynchronizeBuffer.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un buffer générique pour la synchronisation de donnéess.      */
+/* Interface of a generic buffer for data synchronization.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_IDATASYNCHRONIZEBUFFER_H
@@ -25,29 +25,30 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Buffer générique pour la synchronisation de données.
+ * \brief Generic buffer for data synchronization.
  *
- * Cette instance contient des buffers d'envoi et de réception et peut être
- * utilisée quel que soit le type de donnée de la synchronisation.
+ * This instance contains send and receive buffers and can be used regardless
+ * of the data type of the synchronization.
  *
- * Chaque buffer est composé de \a nbRank() parties et chaque
- * partie est associée à un destinataire (sendBuffer() ou receiveBuffer()).
+ * Each buffer is composed of \a nbRank() parts and each part is associated
+ * with a recipient (sendBuffer() or receiveBuffer()).
  *
- * Avant d'utiliser les buffers, il faut recopier les valeurs de la donnée.
- * La méthode copySendAsync() permet de recopier les valeurs de la donnée dans le
- * buffer d'envoi et copyReceiveAsync() permet de recopier le buffer de réception
- * dans la donnée.
+ * Before using the buffers, the data values must be copied.
+ * The copySendAsync() method allows copying the data values into the
+ * send buffer and copyReceiveAsync() allows copying the receive buffer
+ * into the data.
  *
- * \warning Ces méthodes copyReceiveAsync() et copySendAsync() peuvent être asynchrones.
- * Il est donc important d'appeler barrier() avant d'utiliser les données copiées
- * pour être sur que les transferts sont terminées.
+ * \warning These copyReceiveAsync() and copySendAsync() methods may be asynchronous.
+ * It is therefore important to call barrier() before using the copied
+ * data to ensure that the transfers are complete.
  *
- * Si hasGlobalBuffer() est vrai alors les buffers de chaque partie sont issus
- * d'un buffer global et il est possible de le récupérer via globalSendBuffer()
- * pour l'envoi et globalReceiveBuffer() pour la réception. Il est aussi
- * possible dans ce de récupérer le déplacement de chaque sous-partie via
- * les méthodes sendDisplacement() ou receiveDisplacement().
+ * If hasGlobalBuffer() is true, then the buffers of each part come from
+ * a global buffer and it is possible to retrieve it via globalSendBuffer()
+ * for sending and globalReceiveBuffer() for receiving. It is also
+ * possible in this case to retrieve the displacement of each sub-part via
+ * the methods sendDisplacement() or receiveDisplacement().
  */
 class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 {
@@ -57,48 +58,50 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 
  public:
 
-  //! Nombre de rangs.
+  //! Number of ranks.
   virtual Int32 nbRank() const = 0;
 
-  //! Rang cible du \a \a index-ème rang
+  //! Target rank of the \a \a index-th rank
   virtual Int32 targetRank(Int32 index) const = 0;
 
-  //! Indique si les buffers sont globaux.
+  //! Indicates if the buffers are global.
   virtual bool hasGlobalBuffer() const = 0;
 
-  //! Buffer d'envoi
+  //! Send buffer
   virtual MutableMemoryView globalSendBuffer() = 0;
 
-  //! Buffer de réception
+  //! Receive buffer
   virtual MutableMemoryView globalReceiveBuffer() = 0;
 
-  //! Buffer d'envoi pour le \a index-ème rang
+  //! Send buffer for the \a index-th rank
   virtual MutableMemoryView sendBuffer(Int32 index) = 0;
 
-  //! Buffer de réception pour le \a index-ème rang
+  //! Receive buffer for the \a index-th rank
   virtual MutableMemoryView receiveBuffer(Int32 index) = 0;
 
   /*!
-   * \brief Déplacement (en octets) depuis le début de sendBuffer() pour le \a index-ème rang.
+   * \brief Displacement (in bytes) from the start of sendBuffer()
+   * for the \a index-th rank.
    *
-   * Cette valeur n'est significative que si hasGlobalBuffer() est vrai.
+   * This value is only meaningful if hasGlobalBuffer() is true.
    */
   virtual Int64 sendDisplacement(Int32 index) const = 0;
 
   /*!
-   * \brief Déplacement (en octets) depuis le début de receiveBuffer() pour le \a index-ème rang.
+   * \brief Displacement (in bytes) from the start of receiveBuffer()
+   * for the \a index-th rank.
    *
-   * Cette valeur n'est significative que si hasGlobalBuffer() est vrai.
+   * This value is only meaningful if hasGlobalBuffer() is true.
    */
   virtual Int64 receiveDisplacement(Int32 index) const = 0;
 
-  //! Recopie dans les données depuis le buffer de réception du \a index-ème rang.
+  //! Copies into the data from the receive buffer of the \a index-th rank.
   virtual void copyReceiveAsync(Int32 index) = 0;
 
   /*!
-   * \brief Recopie toutes les données depuis le buffer de réception.
+   * \brief Copies all data from the receive buffer.
    *
-   * Cet appel est équivalent à :
+   * This call is equivalent to:
    * \code
    * for (Int32 i = 0; i < nb_rank; ++i)
    *   copySendAsync(i);
@@ -108,9 +111,9 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
   virtual void copyAllReceive();
 
   /*!
-   * \brief Recopie dans le buffer d'envoi les données du \a index-ème rang.
+   * \brief Copies the data of the \a index-th rank into the send buffer.
    *
-   * Cet appel est équivalent à :
+   * This call is equivalent to:
    * \code
    * for (Int32 i = 0; i < nb_rank; ++i)
    *   copyReceiveAsync(i);
@@ -120,17 +123,17 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
   virtual void copySendAsync(Int32 index) = 0;
 
   /*!
-   * \brief Recopie dans le buffer d'envoi toute les données.
+   * \brief Copies all data into the send buffer.
    */
   virtual void copyAllSend();
 
-  //! Taille totale à envoyer en octet
+  //! Total size to send in bytes
   virtual Int64 totalSendSize() const = 0;
 
-  //! Taille totale à recevoir en octet
+  //! Total size to receive in bytes
   virtual Int64 totalReceiveSize() const = 0;
 
-  //! Attend que les copies (copySendAsync() et copyReceiveAsync()) soient terminées
+  //! Waits until the copies (copySendAsync() and copyReceiveAsync()) are finished
   virtual void barrier() = 0;
 };
 
@@ -142,4 +145,4 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

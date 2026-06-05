@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemEnumeratorTracer.cc                                     (C) 2000-2023 */
 /*                                                                           */
-/* Trace les appels aux énumérateur sur les entités.                         */
+/* Traces enumerator calls on entities.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,8 +17,8 @@
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/ForLoopTraceInfo.h"
 
-#include "arcane/ItemEnumerator.h"
-#include "arcane/SimdItem.h"
+#include "arcane/core/ItemEnumerator.h"
+#include "arcane/core/SimdItem.h"
 
 #include "arcane/impl/ItemEnumeratorTracer.h"
 
@@ -32,16 +32,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_IMPL_EXPORT Ref<IItemEnumeratorTracer>
-arcaneCreateItemEnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_counter)
+arcaneCreateItemEnumeratorTracer(ITraceMng* tm, Ref<IPerformanceCounterService> perf_counter)
 {
-  return Arccore::makeRef<IItemEnumeratorTracer>(new ItemEnumeratorTracer(tm,perf_counter));
+  return Arccore::makeRef<IItemEnumeratorTracer>(new ItemEnumeratorTracer(tm, perf_counter));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemEnumeratorTracer::
-ItemEnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_counter)
+ItemEnumeratorTracer(ITraceMng* tm, Ref<IPerformanceCounterService> perf_counter)
 : TraceAccessor(tm)
 , m_perf_counter(perf_counter)
 {
@@ -129,8 +129,8 @@ exitEnumerator(const SimdItemEnumeratorBase&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
   if (m_is_verbose)
-  info() << "EndSimdLoop: cycle=" << eti.counters()[0] << " fp=" << eti.counters()[1]
-         << " L2DCM=" << eti.counters()[2];
+    info() << "EndSimdLoop: cycle=" << eti.counters()[0] << " fp=" << eti.counters()[1]
+           << " L2DCM=" << eti.counters()[2];
 }
 
 /*---------------------------------------------------------------------------*/

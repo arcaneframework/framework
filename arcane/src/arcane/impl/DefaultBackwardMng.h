@@ -1,25 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DefaultBackwardMng.h                                        (C) 2000-2016 */
 /*                                                                           */
-/* Implémentation par défaut d'une stratégie de retour-arrière.              */
+/* Default implementation of a backward strategy.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MAIN_DEFAULTBACKWARDMNG_H
 #define ARCANE_MAIN_DEFAULTBACKWARDMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IBackwardMng.h"
+#include "arcane/core/IBackwardMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,8 +30,9 @@ class IDataReaderWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \Implémentation par défaut d'une stratégie de retour-arrière.
+ * Default implementation of a backward strategy.
  */
 class ARCANE_IMPL_EXPORT DefaultBackwardMng
 : public IBackwardMng
@@ -39,21 +41,21 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
 
   enum eSequence
   {
-    //! Sauvegarde
-    SEQSave ,
-    //! Sauvegarde en force
-    SEQForceSave ,
-    //! Restauration
-    SEQRestore ,
+    //! Save
+    SEQSave,
+    //! Forced save
+    SEQForceSave,
+    //! Restore
+    SEQRestore,
     //! Lock
-    SEQLock ,
+    SEQLock,
     //! Nothing
     SEQNothing
   };
 
  public:
 
-  DefaultBackwardMng(ITraceMng* trace,ISubDomain* sub_domain);
+  DefaultBackwardMng(ITraceMng* trace, ISubDomain* sub_domain);
   ~DefaultBackwardMng();
 
   void init() override {}
@@ -89,19 +91,19 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
   IVariableFilter* m_filter;
   IDataReaderWriter* m_data_io;
 
-  //! Temps du dernier retour demandé
+  //! Time of the last requested backward action
   Real m_backward_time;
 
-  //! Période entre deux sauvegardes pour le retour-arrière
+  //! Period between two saves for backward tracking
   Integer m_period;
 
   //! First save
   bool m_first_save;
 
-  //! Actions authorisées ?
+  //! Actions allowed?
   bool m_action_refused;
 
-  //! Séquence
+  //! Sequence
   eSequence m_sequence;
 
  private:
@@ -113,9 +115,9 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

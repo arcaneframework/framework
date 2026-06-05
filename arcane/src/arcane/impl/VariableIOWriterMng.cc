@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableIOWriterMng.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant les entrées/sorties pour les variables.                     */
+/* Class managing input/output for variables.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -115,7 +115,7 @@ writeVariables(IDataWriter* writer, IVariableFilter* filter, bool use_hash)
   if (!writer)
     ARCANE_FATAL("No writer available for protection");
 
-  // Calcul la liste des variables à sauver
+  // Calculate the list of variables to save
   VariableList vars;
   for (const auto& i : m_variable_mng->m_full_name_variable_map) {
     IVariable* var = i.second;
@@ -130,8 +130,9 @@ writeVariables(IDataWriter* writer, IVariableFilter* filter, bool use_hash)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo prendre en compte le NoDump
+ * \todo take into account NoDump
  */
 void VariableIOWriterMng::
 writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_hash)
@@ -243,9 +244,10 @@ _generateVariablesMetaData(JSONWriter& json_writer, XmlNode variables_node,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * TEMPORAIRE.
- * TODO Cela doit normalement être fait via le 'IMeshMng'.
+ * TEMPORARY.
+ * TODO This should normally be done via 'IMeshMng'.
  */
 void VariableIOWriterMng::
 _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node)
@@ -265,18 +267,18 @@ _generateMeshesMetaData(JSONWriter& json_writer, XmlNode meshes_node)
   for (Integer i = 0, n = meshes.size(); i < n; ++i) {
     IMesh* mesh = meshes[i];
     bool do_dump = mesh->properties()->getBool("dump");
-    // Sauve le maillage s'il est marqué dump ou s'il s'agit du maillage par défaut
+    // Save the mesh if it is marked dump or if it is the default mesh
     if (do_dump || mesh == default_mesh) {
       JSONWriter::Object o(json_writer);
       XmlNode mesh_node = XmlElement(meshes_node, "mesh");
       _writeAttribute(json_writer, mesh_node, "name", mesh->name());
       _writeAttribute(json_writer, mesh_node, "factory-name", mesh->factoryName());
-      // Indique si le maillage utilise le gestionnaire de parallélisme
-      // séquentiel car dans ce cas en reprise il faut le créer avec le
-      // même gestionnaire.
-      // TODO: il faudrait traiter les cas où un maillage est créé
-      // avec un IParallelMng qui n'est ni séquentiel, ni celui du
-      // sous-domaine.
+      // Indicates if the mesh uses the parallelism manager
+      // sequential because in this case, during restart, it must be created with the
+      // same manager.
+      // TODO: cases where a mesh is created
+      // with an IParallelMng that is neither sequential nor the one of the
+      // subdomain.
       if (is_parallel && mesh->parallelMng() == seq_pm)
         _writeAttribute(json_writer, mesh_node, "sequential", true);
     }
@@ -308,7 +310,7 @@ _generateMetaData(const VariableCollection& vars, IHashAlgorithm* hash_algo)
     _generateMeshesMetaData(json_writer, meshes_node);
   }
   {
-    // Sauve la sérialisation JSON dans un élément du fichier XML.
+    // Saves the JSON serialization into an XML file element.
     XmlElement json_node(root_element, "json", json_writer.getBuffer());
   }
   String s = doc->save();
@@ -328,10 +330,10 @@ _writeVariables(IDataWriter* writer, const VariableCollection& vars, bool use_ha
   m_variable_mng->m_write_observable->notifyAllObservers();
   writer->beginWrite(vars);
 
-  // Appelle la notification de l'écriture des variables
-  // Il faut le faire avant de positionner les méta-données
-  // car cela autorise de changer la valeur de la variable
-  // lors de cet appel.
+  // Calls the notification of variable writing
+  // It must be done before positioning the metadata
+  // because this allows changing the variable value
+  // during this call.
   for (VariableCollection::Enumerator i(vars); ++i;) {
     IVariable* var = *i;
     if (var->isUsed())

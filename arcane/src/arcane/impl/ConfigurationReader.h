@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ConfigurationReader.h                                       (C) 2000-2020 */
 /*                                                                           */
-/* Lecteurs de fichiers de configuration.                                    */
+/* Configuration file readers.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_CONFIGURATIONREADER_H
 #define ARCANE_IMPL_CONFIGURATIONREADER_H
@@ -30,8 +30,9 @@ class IConfiguration;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecteurs de fichiers de configuration.
+ * \brief Configuration file readers.
  */
 class ARCANE_IMPL_EXPORT ConfigurationReader
 : public TraceAccessor
@@ -48,35 +49,37 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
 
  public:
 
-  ConfigurationReader(ITraceMng* tm,IConfiguration* config)
-  : TraceAccessor(tm), m_configuration(config) {}
-  /*!
-   * \brief Ajoute des valeurs à la configuration.
-   *
-   * Ajoute à la configuration les valeurs contenus dans les
-   * les éléments fils de \a element. Les éléments pris en compte
-   * sont les éléments de la forme suivante:
-   * - <add name="ConfigName" value="ConfigValue" />
-   *
-   * La méthode IConfiguration::addValue() est appelé pour chaque valeur
-   * avec la priorité \a priority.
-   */
-  void addValuesFromXmlNode(const XmlNode& element,Integer priority);
+  ConfigurationReader(ITraceMng* tm, IConfiguration* config)
+  : TraceAccessor(tm)
+  , m_configuration(config)
+  {}
 
   /*!
-   * \brief Ajoute des valeurs à la configuration.
+   * \brief Adds values to the configuration.
    *
-   * Ajoute à la configuration les valeurs contenus dans les
-   * champs fils de \a jv.
+   * Adds to the configuration the values contained in the child elements
+   * of \a element. The elements considered are those of the following form:
+   * - <add name="ConfigName" value="ConfigValue" />
    *
-   * Les éléments tableaux ne sont pas pris en compte. L'appel
-   * est récursif et les enfants de \a jv sont pris en compte. Cela
-   * est équivalent à faire une sous-section dans la configuration.
-   *
-   * La méthode IConfiguration::addValue() est appelé pour chaque valeur
-   * avec la priorité \a priority.
+   * The IConfiguration::addValue() method is called for each value with
+   * the priority \a priority.
    */
-  void addValuesFromJSON(const JSONValue& jv,Integer priority);
+  void addValuesFromXmlNode(const XmlNode& element, Integer priority);
+
+  /*!
+   * \brief Adds values to the configuration.
+   *
+   * Adds to the configuration the values contained in the child fields
+   * of \a jv.
+   *
+   * Array elements are not considered. The call is recursive and the
+   * children of \a jv are considered. This is equivalent to creating a
+   * subsection in the configuration.
+   *
+   * The IConfiguration::addValue() method is called for each value with
+   * the priority \a priority.
+   */
+  void addValuesFromJSON(const JSONValue& jv, Integer priority);
 
  private:
 
@@ -84,7 +87,7 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
 
  private:
 
-  void _addValuesFromJSON(const JSONValue& jv,Integer priority,const String& base_name);
+  void _addValuesFromJSON(const JSONValue& jv, Integer priority, const String& base_name);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -95,4 +98,4 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Data.cc                                                     (C) 2000-2023 */
 /*                                                                           */
-/* Classes de base d'une donnée.                                             */
+/* Base data classes.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ registerNumArrayDataFactory(IDataFactoryMng* dfm);
 extern "C++" void
 arcaneRegisterSimpleData(IDataFactoryMng* dfm)
 {
-  // Enregistre les types de donnée standard.
+  // Registers the standard data types.
   registerStringScalarDataFactory(dfm);
   registerStringArrayDataFactory(dfm);
   registerScalarDataFactory(dfm);

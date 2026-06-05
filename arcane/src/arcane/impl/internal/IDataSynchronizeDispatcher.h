@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataSynchronizeDispatcher.h                                 (C) 2000-2026 */
 /*                                                                           */
-/* Gestion de la synchronisation d'une instance de 'IData'.                  */
+/* Management of synchronization for an 'IData' instance.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERDISPATCHER_H
@@ -27,6 +27,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 class IDataSynchronizeDispatcher;
@@ -50,8 +51,9 @@ class IBufferCopier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos pour construire un DataSynchronizeDispatcher.
+ * \brief Info to build a DataSynchronizeDispatcher.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
 {
@@ -84,15 +86,16 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface pour gérer la synchronisation d'une donnée.
+ * \brief Interface to manage the synchronization of a data item.
  *
- * Il faut utiliser create() pour créer une implémentation pour cette
+ * You must use create() to create an implementation for this
  * interface.
  *
- * Il faut appeler compute() avant de pouvoir utiliser l'instance et aussi
- * lorsque la famille d'entité associée évolue.
+ * You must call compute() before being able to use the instance, and also
+ * when the associated entity family changes.
  */
 class ARCANE_IMPL_EXPORT IDataSynchronizeDispatcher
 {
@@ -105,28 +108,27 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeDispatcher
  public:
 
   /*!
-   * \brief Recalcule les informations nécessaires après une mise à jour des informations
-   * de \a DataSynchronizeInfo.
+   * \brief Recalculates the necessary information after an update to the \a DataSynchronizeInfo.
    */
   virtual void compute() = 0;
 
   /*!
-   * \brief Positionne le buffer de synchronisation.
+   * \brief Positions the synchronization buffer.
    *
-   * Il faut appeler cette méthode avant beginSynchronize(). Le buffer ne doit pas être
-   * modifié avant l'appel à endSynchronize()
+   * You must call this method before beginSynchronize(). The buffer must not be
+   * modified before calling endSynchronize()
    */
-  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) =0;
+  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) = 0;
 
   /*!
-   * \brief Commence l'exécution pour la synchronisation pour la donnée \a data.
+   * \brief Starts the execution for synchronization for the data \a data.
    */
   virtual void beginSynchronize(INumericDataInternal* data, bool is_compare_sync) = 0;
 
   /*!
-   * \brief Termine la synchronisation.
+   * \brief Ends the synchronization.
    *
-   * Il faut avoir appelé beginSynchronize() avant.
+   * beginSynchronize() must have been called before.
    */
   virtual DataSynchronizeResult endSynchronize() = 0;
 
@@ -138,9 +140,10 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeDispatcher
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface de la synchronisation d'une liste de variables.
+ * \brief Interface for synchronizing a list of variables.
  */
 class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
 {
@@ -151,16 +154,15 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
  public:
 
   /*!
-   * \brief Recalcule les informations nécessaires après une mise à jour des informations
-   * de \a DataSynchronizeInfo.
+   * \brief Recalculates the necessary information after an update to the \a DataSynchronizeInfo.
    */
   virtual void compute() = 0;
   /*!
-   * \brief Positionne le buffer de synchronisation.
+   * \brief Positions the synchronization buffer.
    *
-   * Il faut appeler cette méthode avant synchronize().
+   * You must call this method before synchronize().
    */
-  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) =0;
+  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) = 0;
   virtual void synchronize(ConstArrayView<IVariable*> vars) = 0;
 
  public:

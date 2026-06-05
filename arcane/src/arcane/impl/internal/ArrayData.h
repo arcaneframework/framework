@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArrayData.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Donnée du type 'Array'.                                                   */
+/* Data of type 'Array'.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_ARRAYDATA_H
 #define ARCANE_IMPL_INTERNAL_ARRAYDATA_H
@@ -39,10 +39,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée tableau d'un type \a T
+ * \brief Array data of type \a T
  */
-template<class DataType>
+template <class DataType>
 class ArrayDataT
 : public ReferenceCounterImpl
 , public IArrayDataT<DataType>
@@ -68,8 +69,8 @@ class ArrayDataT
   Integer dimension() const override { return 1; }
   Integer multiTag() const override { return 0; }
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
-  void serialize(ISerializer* sbuf,IDataOperation* operation) override;
-  void serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation) override;
+  void serialize(ISerializer* sbuf, IDataOperation* operation) override;
+  void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
   Array<DataType>& value() override { return m_value; }
   const Array<DataType>& value() const override { return m_value; }
   ConstArrayView<DataType> view() const override { return m_value; }
@@ -82,8 +83,16 @@ class ArrayDataT
   DataStorageTypeInfo storageTypeInfo() const override;
   DataInterfaceType* cloneTrue() override { return _cloneTrue(); }
   DataInterfaceType* cloneTrueEmpty() override { return _cloneTrueEmpty(); }
-  Ref<DataInterfaceType> cloneTrueRef() override { auto* d = _cloneTrue(); return makeRef(d); }
-  Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
+  Ref<DataInterfaceType> cloneTrueRef() override
+  {
+    auto* d = _cloneTrue();
+    return makeRef(d);
+  }
+  Ref<DataInterfaceType> cloneTrueEmptyRef() override
+  {
+    auto* d = _cloneTrueEmpty();
+    return makeRef(d);
+  }
   void fillDefault() override;
   void setName(const String& name) override;
   Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const override;
@@ -91,7 +100,7 @@ class ArrayDataT
   void assignSerializedData(const ISerializedData* sdata) override;
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
-  void computeHash(IHashAlgorithm* algo,ByteArray& output) const override;
+  void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
   void computeHash(DataHashInfo& hash_info) const;
   ArrayShape shape() const override { return m_shape; }
   void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
@@ -115,7 +124,7 @@ class ArrayDataT
   }
   void visitArray2(IArray2DataVisitor*) override
   {
-    ARCANE_THROW(NotSupportedException,"Can not visit array2 data with array data");
+    ARCANE_THROW(NotSupportedException, "Can not visit array2 data with array data");
   }
 
  public:
@@ -133,11 +142,9 @@ class ArrayDataT
   static DataStorageTypeInfo staticStorageTypeInfo();
 
  public:
-
-
  private:
 
-  UniqueArray<DataType> m_value; //!< Donnée
+  UniqueArray<DataType> m_value; //!< Data
   ITraceMng* m_trace;
   IArrayDataInternalT<DataType>* m_internal;
   ArrayShape m_shape;
@@ -145,7 +152,7 @@ class ArrayDataT
 
  private:
 
-  void _serialize(ISerializer* sbuf,Span<const Int32> ids,IDataOperation* operation);
+  void _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation);
   IArrayDataT<DataType>* _cloneTrue() const { return new ThatClass(*this); }
   IArrayDataT<DataType>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
   void _setShape();
@@ -154,14 +161,16 @@ class ArrayDataT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class ArrayDataT<DataType>::Impl
 : public IArrayDataInternalT<DataType>
 , public INumericDataInternal
 {
  public:
 
-  explicit Impl(ArrayDataT<DataType>* p) : m_p(p){}
+  explicit Impl(ArrayDataT<DataType>* p)
+  : m_p(p)
+  {}
 
  public:
 
@@ -169,7 +178,7 @@ class ArrayDataT<DataType>::Impl
   Array<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
   Integer capacity() const override { return m_p->m_value.capacity(); }
   void shrink() const override { m_p->m_value.shrink(); }
-  void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
+  void resize(Integer new_size) override { m_p->m_value.resize(new_size); }
   void dispose() override { m_p->m_value.dispose(); }
   bool compressAndClear(DataCompressionBuffer& buf) override
   {
@@ -178,7 +187,7 @@ class ArrayDataT<DataType>::Impl
       return false;
     Span<const DataType> values = m_p->m_value;
     Span<const std::byte> bytes = asBytes(values);
-    compressor->compress(bytes,buf.m_buffer);
+    compressor->compress(bytes, buf.m_buffer);
     buf.m_original_dim1_size = values.size();
     m_p->m_value.clear();
     m_p->m_value.shrink();
@@ -191,7 +200,7 @@ class ArrayDataT<DataType>::Impl
       return false;
     m_p->m_value.resize(buf.m_original_dim1_size);
     Span<DataType> values = m_p->m_value;
-    compressor->decompress(buf.m_buffer,asWritableBytes(values));
+    compressor->decompress(buf.m_buffer, asWritableBytes(values));
     return true;
   }
   MutableMemoryView memoryView() override
@@ -218,7 +227,7 @@ class ArrayDataT<DataType>::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namesapce Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

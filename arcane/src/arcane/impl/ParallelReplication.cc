@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelReplicationInfo.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Informations sur la réplication de sous-domaines.                         */
+/* Information on subdomain replication.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/impl/ParallelReplication.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,11 +37,11 @@ ParallelReplication()
 /*---------------------------------------------------------------------------*/
 
 ParallelReplication::
-ParallelReplication(Int32 replica_rank,Int32 nb_replica,Ref<IParallelMng> replica_pm)
-: m_is_active(nb_replica!=1)
+ParallelReplication(Int32 replica_rank, Int32 nb_replica, Ref<IParallelMng> replica_pm)
+: m_is_active(nb_replica != 1)
 , m_nb_replication(nb_replica)
 , m_replication_rank(replica_rank)
-, m_is_master_rank(replica_rank==0)
+, m_is_master_rank(replica_rank == 0)
 , m_master_replication_rank(0)
 , m_replica_parallel_mng(replica_pm)
 {

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMng.h                                            (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire pour le partitionnement et l'équilibrage de charge.          */
+/* Manager for partitioning and load balancing.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_LOADBALANCEMNG_H
 #define ARCANE_IMPL_LOADBALANCEMNG_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implantation standard d'une interface d'enregistrement des variables
- * pour l'équilibrage de charge.
+ * \brief Standard implementation of a variable registration interface
+ * for load balancing.
  *
  */
 class ARCANE_IMPL_EXPORT LoadBalanceMng
@@ -40,19 +41,17 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
  public:
 
   /*!
-   * Méthodes utilisées par les modules clients pour définir les critères
-   * de partitionnement.
+   * Methods used by client modules to define partitioning criteria.
    */
-  void addMass(VariableCellInt32& count, const String& entity="") override;
+  void addMass(VariableCellInt32& count, const String& entity = "") override;
   void addCriterion(VariableCellInt32& count) override;
   void addCriterion(VariableCellReal& count) override;
-  void addCommCost(VariableFaceInt32& count, const String& entity="") override;
+  void addCommCost(VariableFaceInt32& count, const String& entity = "") override;
 
   void reset() override;
 
   /*!
-   * Méthodes utilisées par le MeshPartitioner pour accéder à la description
-   * du problème.
+   * Methods used by the MeshPartitioner to access the problem description.
    */
   void setMassAsCriterion(bool active = true) override;
   void setNbCellsAsCriterion(bool active = true) override;
@@ -60,7 +59,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   bool cellCommContrib() const override;
   void setComputeComm(bool active = true) override;
   Integer nbCriteria() override;
-  void initAccess(IMesh* mesh=nullptr) override;
+  void initAccess(IMesh* mesh = nullptr) override;
   const VariableFaceReal& commCost() const override;
   const VariableCellReal& massWeight() const override;
   const VariableCellReal& massResWeight() const override;

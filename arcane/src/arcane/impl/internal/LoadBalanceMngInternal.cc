@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMngInternal.cc                                   (C) 2000-2024 */
 /*                                                                           */
-/* Classe interne gérant l'équilibre de charge des maillages.                */
+/* Internal class managing mesh load balancing.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,7 +23,6 @@
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/ItemEnumerator.h"
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,9 +31,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * @brief Implementation "nulle" de l'interface IProxyItemVariable.
- * Permet d'avoir une variable référence unitaire.
+ * @brief "Null" implementation of the IProxyItemVariable interface.
+ * Allows having a unit reference variable.
  */
 class ProxyItemVariableNull
 : public IProxyItemVariable
@@ -58,15 +58,15 @@ class ProxyItemVariableNull
   void deleteMe() {}
 };
 
-//! Représentant nul de la classe précédente.
+//! Null representation of the previous class.
 static ProxyItemVariableNull nullProxy;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * @brief Implementation de l'interface IProxyItemVariable.
+ * @brief Implementation of the IProxyItemVariable interface.
  *
- * Templaté par le type de données associé à la variable.
+ * Templated by the data type associated with the variable.
  */
 template <typename DataType> class ProxyItemVariable
 : public IProxyItemVariable
@@ -97,10 +97,11 @@ template <typename DataType> class ProxyItemVariable
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * @brief Factory pour la construction de variable proxy.
+ * @brief Factory for constructing proxy variables.
  *
- * Actuellement, seules les variables de type Real et Int32 ont une signification.
+ * Currently, only Real and Int32 type variables are meaningful.
  */
 IProxyItemVariable* StoreIProxyItemVariable::
 proxyItemVariableFactory(IVariable* var, Integer pos)
@@ -308,8 +309,8 @@ _computeEvents()
   tm->info() << "CriteriaMng: Compute Events nb_criteria=" << nb_criteria << " nb_event_var=" << nb_event_var;
 
   VariableCellArrayReal& event_weights = *(m_event_weights);
-  // Si aucun poids de spécifier et qu'on prend les mailles comme critère, alors
-  // remplit directement les poids (sinon ils ne seront pas remplis)
+  // If no weight is specified and cells are taken as criteria, then
+  // directly fill the weights (otherwise they will not be filled)
   if (nb_event_var == 0 && m_nb_cells_as_criterion) {
     ENUMERATE_CELL (icell, m_mesh->ownCells()) {
       event_weights(icell, 0) = 1.0;
@@ -363,7 +364,7 @@ void LoadBalanceMngInternal::
 reset(IMesh* mesh)
 {
   _getCriteria(mesh).resetCriteria();
-  if(mesh) {
+  if (mesh) {
     mesh->traceMng()->debug() << "LoadBalanceInternal -- Mesh : " << mesh->name() << " -- reset()";
   }
 }
@@ -388,8 +389,8 @@ initAccess(IMesh* mesh)
                            << " use_nb_cell=" << mesh_criterion.useNbCellsAsCriterion()
                            << " nb_criteria=" << mesh_criterion.nbCriteria();
 
-  // Si aucun critère n'est défini, utilise le nombre de mailles.
-  // Il faut au moins un critère sinon il n'y aura pas de poids dans le graphe de partitionnement.
+  // If no criterion is defined, use the number of cells.
+  // At least one criterion is needed otherwise there will be no weights in the partitioning graph.
   if (mesh_criterion.nbCriteria() == 0)
     mesh_criterion.setNbCellsAsCriterion(true);
 
@@ -503,7 +504,7 @@ setCellCommContrib(IMesh* mesh, bool active)
 bool LoadBalanceMngInternal::
 cellCommContrib(IMesh* mesh)
 {
-  if(m_mesh_criterion.find(mesh) == m_mesh_criterion.end()){
+  if (m_mesh_criterion.find(mesh) == m_mesh_criterion.end()) {
     return true;
   }
   return _getCriteria(mesh).cellCommContrib();

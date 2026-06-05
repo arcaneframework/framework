@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TimeHistoryMng2.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Module gérant un historique de valeurs (Version 2).                       */
+/* Module managing a history of values (Version 2).                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,24 +17,24 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/ITimeHistoryMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/Directory.h"
-#include "arcane/AbstractModule.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ITimeHistoryCurveWriter2.h"
-#include "arcane/ITimeHistoryTransformer.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/AbstractModule.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/CaseOptionsMain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ITimeHistoryCurveWriter2.h"
+#include "arcane/core/ITimeHistoryTransformer.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/IMeshMng.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
@@ -54,7 +54,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Ecrivain au format GNUPLOT.
+ * \brief GNUPLOT format writer.
  */
 class GnuplotTimeHistoryCurveWriter2
 : public TraceAccessor
@@ -74,12 +74,12 @@ class GnuplotTimeHistoryCurveWriter2
   {
     m_times = infos.times();
     String path = infos.path();
-    // m_output_path surcharge les infos en argument si non vide.
+    // m_output_path overrides the infos argument if not empty.
     if (m_output_path.empty())
       m_output_path = path;
 
     m_gnuplot_path = Directory(Directory(m_output_path), "gnuplot");
-    // Créé le répertoire de sortie.
+    // Create the output directory.
     if (m_gnuplot_path.createDirectory()) {
       warning() << "Can not create gnuplot curve directory '"
                 << m_gnuplot_path.path() << "'";
@@ -139,12 +139,11 @@ class GnuplotTimeHistoryCurveWriter2
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Gestionnaire d'un historique de valeurs.
+ * \brief Manager of a history of values.
  *
- * IMPORTANT: ce module fournit une interface aux autres modules
- * par l'intermédiare de ITimeHistoryMng. Par conséquent, il faut être
- * sur de ne pas toucher aux variables de ce module pendant un appel à une
- * des méthodes de ITimeHistoryMng.
+ * IMPORTANT: this module provides an interface to other modules
+ * via ITimeHistoryMng. Therefore, you must ensure that you do not modify the variables of this module during a call to any
+ * of the ITimeHistoryMng methods.
  */
 class TimeHistoryMng2
 : public AbstractModule
@@ -284,17 +283,17 @@ timeHistoryStartInitEnd()
 void TimeHistoryMng2::
 timeHistoryBegin()
 {
-  // Si on n'est pas actif, on ne grossit pas inutilement le m_global_times
-  // qui sera copié dans la variable backupée 'm_th_global_time'
+  // If not active, do not unnecessarily enlarge m_global_times
+  // which will be copied into the backed-up variable 'm_th_global_time'
   if (isShrinkActive() && !active()) {
-    // On ne fait rien
+    // Do nothing
   }
   else {
     //warning() << "timeHistoryBegin " << m_global_time() << " " << m_global_times.size();
     m_internal->addNowInGlobalTime();
   }
 
-  // Regarde s'il faut imprimer les sorties temporelles
+  // Check if temporal outputs should be printed
   {
     bool force_print_thm = false;
     int th_step = subDomain()->caseOptionsMain()->writeHistoryPeriod();
@@ -348,7 +347,6 @@ timeHistoryInit()
       m_internal->addCurveWriter(wr_ref);
     }
   }
-
 }
 
 /*---------------------------------------------------------------------------*/

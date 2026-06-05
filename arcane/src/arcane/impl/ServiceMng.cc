@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ServiceMng.cc                                               (C) 2000-2013 */
 /*                                                                           */
-/* Classe gérant l'ensemble des services.                                    */
+/* Class managing all services.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,21 +19,23 @@
 #include "arcane/utils/Ref.h"
 #include "arccore/base/ReferenceCounter.h"
 
-#include "arcane/IBase.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/IService.h"
-#include "arcane/IServiceInfo.h"
-#include "arcane/ServiceInstance.h"
+#include "arcane/core/IBase.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/IService.h"
+#include "arcane/core/IServiceInfo.h"
+#include "arcane/core/ServiceInstance.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des services.
+ * \brief Service manager.
  */
 class ServiceMng
 : public IServiceMng
@@ -44,7 +46,7 @@ class ServiceMng
   ~ServiceMng();
 
  public:
-  
+
   ITraceMng* traceMng() const override { return m_base->traceMng(); }
 
   void addSingletonInstance(SingletonServiceInstanceRef sv) override
@@ -61,8 +63,8 @@ class ServiceMng
 
  private:
 
-  IBase* m_base; //!< Gestionnaire principal
-  List<SingletonServiceInstanceRef> m_singleton_instances; //!< Liste des instances singletons
+  IBase* m_base; //!< Main manager
+  List<SingletonServiceInstanceRef> m_singleton_instances; //!< List of singleton instances
 
  private:
 
@@ -101,11 +103,11 @@ ServiceMng::
 SingletonServiceInstanceRef ServiceMng::
 singletonServiceReference(const String& name) const
 {
-  for( const SingletonServiceInstanceRef& sr : m_singleton_instances ){
+  for (const SingletonServiceInstanceRef& sr : m_singleton_instances) {
     IServiceInstance* si = sr.get();
-    if (si){
+    if (si) {
       IServiceInfo* sii = si->serviceInfo();
-      if (sii && sii->localName()==name)
+      if (sii && sii->localName() == name)
         return sr;
     }
   }
@@ -124,8 +126,7 @@ onServicesChanged(const CollectionEventArgs& args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

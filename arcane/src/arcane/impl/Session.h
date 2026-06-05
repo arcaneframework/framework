@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Session.h                                                   (C) 2000-2014 */
 /*                                                                           */
-/* Classe implémentant une session.                                          */
+/* Class implementing a session.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_SESSION_H
 #define ARCANE_IMPL_SESSION_H
@@ -16,12 +16,13 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ISession.h"
+#include "arcane/core/ISession.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +48,7 @@ class ARCANE_IMPL_EXPORT Session
   virtual ~Session();
 
  public:
-	
+
   virtual void build();
   virtual void initialize() {}
 
@@ -72,11 +73,11 @@ class ARCANE_IMPL_EXPORT Session
   virtual bool checkIsValidCaseVersion(const String& version);
 
  public:
-	
+
   const char* msgClassName() const { return "Session"; }
 
  protected:
-  
+
   IApplication* _application() const;
   virtual void _initSubDomain(ISubDomain* sd)
   {
@@ -85,7 +86,7 @@ class ARCANE_IMPL_EXPORT Session
 
  private:
 
-  Impl* m_p; //!< Implémentation
+  Impl* m_p; //!< Implementation
 
  private:
 
@@ -95,10 +96,9 @@ class ARCANE_IMPL_EXPORT Session
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

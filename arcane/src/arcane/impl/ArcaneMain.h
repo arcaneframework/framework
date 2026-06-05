@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArcaneMain.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant l'exécution.                                                */
+/* Class managing execution.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_ARCANEMAIN_H
 #define ARCANE_IMPL_ARCANEMAIN_H
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/IFunctor.h"
-#include "arcane/IArcaneMain.h"
+#include "arcane/core/IArcaneMain.h"
 
 #include <atomic>
 
@@ -37,7 +37,6 @@ class ServiceFactoryInfo;
 class ArcaneMainExecInfo;
 class DotNetRuntimeInitialisationInfo;
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,12 +44,18 @@ class ARCANE_IMPL_EXPORT ArcaneMainExecutionOverrideFunctor
 {
   friend class ArcaneMain;
   friend class ArcaneMainExecInfo;
+
  public:
+
   explicit ArcaneMainExecutionOverrideFunctor(IFunctor* functor)
-  : m_functor(functor), m_application(nullptr){}
+  : m_functor(functor)
+  , m_application(nullptr)
+  {}
   IFunctor* functor() { return m_functor; }
   IApplication* application() { return m_application; }
+
  private:
+
   IFunctor* m_functor;
   IApplication* m_application;
 };
@@ -61,19 +66,23 @@ class ARCANE_IMPL_EXPORT ArcaneMainExecutionOverrideFunctor
 class ARCANE_IMPL_EXPORT IApplicationBuildInfoVisitor
 {
  public:
-  virtual ~IApplicationBuildInfoVisitor(){}
+
+  virtual ~IApplicationBuildInfoVisitor() {}
+
  public:
-  virtual void visit(ApplicationBuildInfo& app_build_info) =0;
+
+  virtual void visit(ApplicationBuildInfo& app_build_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de gestion de l'exécution.
+ * \brief Execution management class.
  *
- * Cette classe est interne à %Arcane et ne doit pas être utilisée
- * directement. Pour initialiser et exécuter le code il faut utiliser la
- * classe ArcaneLauncher.
+ * This class is internal to %Arcane and should not be used
+ * directly. To initialize and execute the code, use the
+ * ArcaneLauncher class.
  */
 class ARCANE_IMPL_EXPORT ArcaneMain
 : public IArcaneMain
@@ -84,10 +93,13 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   class Impl;
 
  public:
-  // TODO: a supprimer.
-  ArcaneMain(const ApplicationInfo& infos,IMainFactory* factory);
+
+  // TODO: to be removed.
+  ArcaneMain(const ApplicationInfo& infos, IMainFactory* factory);
+
  public:
-  ArcaneMain(const ApplicationInfo& app_info,IMainFactory* factory,
+
+  ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
              const ApplicationBuildInfo& app_build_info,
              const DotNetRuntimeInitialisationInfo& dotnet_init_info,
              const AcceleratorRuntimeInitialisationInfo& accelerator_init_info);
@@ -96,206 +108,205 @@ class ARCANE_IMPL_EXPORT ArcaneMain
  public:
 
   /*!
-   * \brief Point d'entrée de l'exécutable dans Arcane.
+   * \brief Entry point of the executable in Arcane.
    *
-   * \note Cette méthode ne doit pas être appelée directement. Il est
-   * préférable d'utiliser la classe ArcaneLauncher pour gérer le
-   * lancement d'une exécution.
+   * \note This method should not be called directly. It is
+   * preferable to use the ArcaneLauncher class to manage the
+   * execution launch.
    *
-   * Cette méthode effectue les appels suivants:
+   * This method performs the following calls:
    *
-   *  - création d'une instance <tt>a</tt> de IArcaneMain par l'appel
-   *    à createArcaneMain().
-   *  - contruit <tt>a</tt> par la méthode IArcaneMain::build() 
-   *  - initialize <tt>a</tt> par la méthode IArcaneMain::initialize()
-   *  - lance l'exécution par la méthode IArcaneMain::execute().
+   *  - creation of an instance <tt>a</tt> of IArcaneMain by calling
+   *    createArcaneMain().
+   *  - construction of <tt>a</tt> by the IArcaneMain::build() method
+   *  - initialization of <tt>a</tt> by the IArcaneMain::initialize() method
+   *  - launching the execution by the IArcaneMain::execute() method.
    *
-   * \param app_info informations sur l'exécutable.
-   * \param factory fabrique des gestionnaires de l'architecture. Si nul,
-   * utilise la fabrique spécifiée par setDefaultMainFactory() sinon
-   * une fabrique par défaut est utilisée.
+   * \param app_info information about the executable.
+   * \param factory builds architecture managers. If null,
+   * uses the factory specified by setDefaultMainFactory() otherwise
+   * a default factory is used.
    *
-   * L'appel à cette méthode doit être précédé de Initialize();
+   * The call to this method must be preceded by Initialize();
    *
-   * \retval 0 si l'exécution s'est déroulée sans erreur
-   * \retval 1 en cas d'erreur inconnue.
-   * \retval 2 en cas d'exception standard (std::exception)
-   * \retval 3 en cas d'exception de l'architecture (IArcaneException)
-   * \retval 4 en cas d'erreur fatale dans Arcane.
+   * \retval 0 if the execution proceeded without error
+   * \retval 1 in case of unknown error.
+   * \retval 2 in case of standard exception (std::exception)
+   * \retval 3 in case of architecture exception (IArcaneException)
+   * \retval 4 in case of fatal error in Arcane.
    *
    */
-  static int arcaneMain(const ApplicationInfo& app_info,IMainFactory* factory=nullptr);
+  static int arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory = nullptr);
 
   /*!
-   * \brief Point d'entrée de l'exécutable dans Arcane.
+   * \brief Entry point of the executable in Arcane.
    *
-   * Cette méthode appelle arcaneMain(const ApplicationInfo&,IMainFactory*)
-   * en utilisant les valeurs de defaultApplicationInfo() et de la fabrique spécifiée
-   * lors des appels à setDefaultMainFactory().
+   * This method calls arcaneMain(const ApplicationInfo&,IMainFactory*)
+   * using the values of defaultApplicationInfo() and the factory specified
+   * during calls to setDefaultMainFactory().
    */
   static int run();
 
-   /*!
-   * \brief Initialise Arcane.
+  /*!
+   * \brief Initializes Arcane.
    *
-   * Cette méthode doit être appelée avant tout utilisation d'un objet de
-   * Arcane. Elle peut être appelée plusieurs fois, auquel cas la méthode
-   * arcaneFinalize() doit être appelée un nombre de fois équivalent.
+   * This method must be called before any use of an Arcane object. It can be called
+   * multiple times, in which case the method
+   * arcaneFinalize() must be called an equivalent number of times.
    *
-   * L'appel à run() provoque l'initialisation. Il n'est donc en général
-   * pas nécessaire de faire appel à cette méthode.
+   * The call to run() triggers the initialization. Therefore, it is generally
+   * not necessary to call this method.
    */
   static void arcaneInitialize();
-  
+
   /*!
-   * \brief Termine l'utilisation Arcane.
+   * \brief Terminates Arcane usage.
    *
-   * Cette méthode doit être appelée à la fin de l'exécution. Une fois
-   * appelée, les objets de Arcane ne doivent plus être utilisés.
+   * This method must be called at the end of the execution. Once
+   * called, Arcane objects must no longer be used.
    *
-   * L'appel à run() gère l'initialisation et l'appel à cette méthode.
-   * Il n'est donc en général pas nécessaire de faire appel directement
-   * à cette méthode.
+   * The call to run() manages the initialization and the call to this method.
+   * Therefore, it is generally not necessary to call this method directly.
    *
    * \sa arcaneInitialize();
    */
   static void arcaneFinalize();
 
   /*!
-   * \brief Indique que certains objets sont gérés par un ramasse-miette.
+   * \brief Indicates that certain objects are managed by a garbage collector.
    *
-   * Cette propriété ne peut être positionnée qu'au démarrage du calcul,
-   * avant l'appel à arcaneInitialize().
+   * This property can only be set at the start of the calculation,
+   * before calling arcaneInitialize().
    */
   static void setHasGarbageCollector();
 
   /*!
-   * \brief Indique que l'on tourne dans le runtime .NET.
+   * \brief Indicates that we are running in the .NET runtime.
    *
-   * Cette propriété ne peut être positionnée qu'au démarrage du calcul,
-   * avant l'appel à arcaneInitialize().
+   * This property can only be set at the start of the calculation,
+   * before calling arcaneInitialize().
    */
   static void setHasDotNETRuntime();
 
   /*!
-   * \brief Positionne la fabrique par défaut.
+   * \brief Sets the default factory.
    *
-   * Cette méthode positionne la fabrique par défaut utilisée si aucune
-   * n'est spécifiée dans l'appel à arcaneMain().
+   * This method sets the default factory used if none
+   * is specified in the call to arcaneMain().
    *
-   * Cette méthode doit être appelée avant arcaneMain().
+   * This method must be called before arcaneMain().
    */
   static void setDefaultMainFactory(IMainFactory* mf);
 
   /*!
-   * \brief Infos par défaut de l'application
+   * \brief Default application info
    *
-   * Cette méthode permet de récupérer l'instance de `ApplicationInfo`
-   * qui sera utilisée lors de l'appel à arcaneMain() sans arguments.
+   * This method allows retrieving the instance of `ApplicationInfo`
+   * which will be used when calling arcaneMain() without arguments.
    *
-   * Il faut donc en général appeler cette méthode
-   * avant l'appel à run().
+   * Therefore, this method should generally be called
+   * before calling run().
    */
   static ApplicationInfo& defaultApplicationInfo();
 
   /*!
-   * \brief Informations pour l'initialisation du runtime '.Net'.
+   * \brief Information for .Net runtime initialization.
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run().
+   * To be taken into account, this information must be modified
+   * before calling run().
    */
   static DotNetRuntimeInitialisationInfo& defaultDotNetRuntimeInitialisationInfo();
 
   /*!
-   * \brief Informations pour l'initialisation des accélerateurs.
+   * \brief Information for accelerator initialization.
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run() ou à rundDirect().
+   * To be taken into account, this information must be modified
+   * before calling run() or rundDirect().
    */
   static AcceleratorRuntimeInitialisationInfo& defaultAcceleratorRuntimeInitialisationInfo();
 
   /*!
-   * \brief Informations pour l'initialisation des accélerateurs.
+   * \brief Information for accelerator initialization.
    *
-   * Pour être prise en compte, ces informations doivent être modifiées
-   * avant l'appel à run() ou à rundDirect().
+   * To be taken into account, this information must be modified
+   * before calling run() or rundDirect().
    */
   static ApplicationBuildInfo& defaultApplicationBuildInfo();
 
   /*!
-   * \brief Appelle le fonctor \a functor en récupérant les éventuelles
+   * \brief Calls the functor \a functor while catching possible
    * exceptions.
    *
-   * En retour \a clean_abort est vrai si le code s'arrête proprement,
-   * c'est à dire en parallèle que l'ensemble des processus et des threads
-   * exécutent le même code. C'est le cas par exemple si tous les procs
-   * détectent la même erreur et lancent par exemple un ParallelFatalErrorException.
-   * Dans ce cas, \a is_print indique si ce processus ou ce thread affiche
-   * les messages d'erreur. Si \a is_print est vrai, le message d'erreur est
-   * affiché sinon il ne l'est pas.
+   * The return value \a clean_abort is true if the code stops cleanly,
+   * meaning that all processes and threads execute the same code in parallel.
+   * This is the case, for example, if all processes
+   * detect the same error and launch, for example, a ParallelFatalErrorException.
+   * In this case, \a is_print indicates whether this process or thread displays
+   * the error messages. If \a is_print is true, the error message is
+   * displayed, otherwise it is not.
    *
-   * Si \ a clean_abort est faux, cela signifie que l'un des processus ou 
-   * thread s'arrête sans que les autres ne le sachent, ce qui en générale
-   * se termine par MPI_Abort en parallèle.
+   * If \ a clean_abort is false, it means that one of the processes or
+   * thread stops without the others knowing, which generally
+   * results in MPI_Abort in parallel.
    */
-  
-  static int callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* amain,
+
+  static int callFunctorWithCatchedException(IFunctor* functor, IArcaneMain* amain,
                                              bool* clean_abort,
-                                             bool is_print=true);
+                                             bool is_print = true);
 
   /*!
-   * brief Fonctor d'exécution.
+   * brief Execution functor.
    *
-   * Cette méthode optionnelle permet de positionner un fonctor qui sera appelée
-   * à la place de execute(). Ce fonctor est appelé une fois l'application
-   * initialisée. 
+   * This optional method allows setting a functor that will be called
+   * instead of execute(). This functor is called once the application
+   * is initialized. 
    *
-   * Comme l'appel à ce fonctor remplace l'exécution normale,
-   * seule une instance de IApplication est disponible.
-   * Il n'y a ni sous-domaine, ni session, ni maillage de disponible.
+   * Since the call to this functor replaces normal execution,
+   * only one IApplication instance is available.
+   * There is no subdomain, session, or mesh available.
    *
-   */  
+   */
   static void setExecuteOverrideFunctor(ArcaneMainExecutionOverrideFunctor* functor);
 
-  //! Indique si on exécute une assembly '.Net' depuis un `main` en C++.
+  //! Indicates if a '.Net' assembly is being executed from a C++ `main`.
   static bool hasDotNetWrapper();
 
   /*!
-   * \brief Retourne le temps (en seconde) pour l'initialisation
-   * des runtimes accélérateurs pour ce processus.
+   * \brief Returns the time (in seconds) for the initialization
+   * of accelerator runtimes for this process.
    *
-   * Retourne 0.0 si aucun runtime accélérateur n'a pas été initialisé.
+   * Returns 0.0 if no accelerator runtime has been initialized.
    */
   static Real initializationTimeForAccelerator();
 
  public:
-  
+
   /*!
-   * \brief Ajoute une fabrique de service.
+   * \brief Adds a service factory.
    *
-   * Cette méthode doit être appelée avant arcaneMain()
+   * This method must be called before arcaneMain()
    */
   static void addServiceFactoryInfo(IServiceFactoryInfo* factory);
 
   /*!
-   * \brief Ajoute une fabrique de module
+   * \brief Adds a module factory
    *
-   * Cette méthode doit être appelée avant arcaneMain()
+   * This method must be called before arcaneMain()
    */
   static void addModuleFactoryInfo(IModuleFactoryInfo* factory);
 
  public:
 
   /*!
-   * \brief Ajoute un visiteur pour remplir ApplicationBuildInfo.
+   * \brief Adds a visitor to fill ApplicationBuildInfo.
    *
-   * Le pointeur passé en argument doit rester valide jusqu'à l'appel à arcaneMain();
-   * Les visiteurs enregistrés sont appelés juste avant de créer l'application.
+   * The pointer passed as an argument must remain valid until the call to arcaneMain();
+   * The registered visitors are called just before the application is created.
    */
   static void addApplicationBuildInfoVisitor(IApplicationBuildInfoVisitor* visitor);
 
  public:
-  
+
   static void redirectSignals();
   static bool isMasterIO() { return m_is_master_io; }
   static void setUseTestLogger(bool v);
@@ -346,12 +357,12 @@ class ARCANE_IMPL_EXPORT ArcaneMain
 
  private:
 
-  static int _arcaneMain(const ApplicationInfo&,IMainFactory*);
+  static int _arcaneMain(const ApplicationInfo&, IMainFactory*);
   void _dumpHelp();
   void _parseApplicationBuildInfoArgs();
-  //! Nombre de fois que arcaneInitialize() a été appelé
+  //! Number of times arcaneInitialize() has been called
   static std::atomic<Int32> m_nb_arcane_init;
-  //! 1 si init terminé, 0 sinon
+  //! 1 if init finished, 0 otherwise
   static std::atomic<Int32> m_is_init_done;
   static void _launchMissingInitException();
   static void _checkHasInit();
@@ -371,4 +382,4 @@ class ARCANE_IMPL_EXPORT ArcaneMain
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

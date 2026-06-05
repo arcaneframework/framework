@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* InternalInfosDumper.h                                       (C) 2000-2019 */
 /*                                                                           */
-/* Sorties des informations internes de Arcane.                              */
+/* Internal information dumping for Arcane.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNALINFOSDUMPER_H
 #define ARCANE_IMPL_INTERNALINFOSDUMPER_H
@@ -33,8 +33,9 @@ class JSONWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sorties des informations internes de Arcane.
+ * \brief Internal information dumping for Arcane.
  */
 class ARCANE_IMPL_EXPORT InternalInfosDumper
 {
@@ -55,7 +56,7 @@ class ARCANE_IMPL_EXPORT InternalInfosDumper
  private:
 
   Ref<ICodeService> _getDefaultService();
-  void _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer);
+  void _dumpSubDomainInternalInfos(ISubDomain* sd, JSONWriter& json_writer);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -66,4 +67,4 @@ class ARCANE_IMPL_EXPORT InternalInfosDumper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

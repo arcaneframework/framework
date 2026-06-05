@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DataFactory.h                                               (C) 2000-2021 */
 /*                                                                           */
-/* Fabrique de donnée.                                                       */
+/* Data factory.                                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_DATAFACTORY_H
 #define ARCANE_IMPL_DATAFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IDataFactory.h"
+#include "arcane/core/IDataFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,14 +24,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une fabrique d'une donnée.
+ * \brief Interface of a data factory.
  */
 class DataFactory
 : public IDataFactory
 {
  public:
-  
+
   DataFactory(IApplication* sm);
   virtual ~DataFactory();
 
@@ -56,5 +57,4 @@ class DataFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

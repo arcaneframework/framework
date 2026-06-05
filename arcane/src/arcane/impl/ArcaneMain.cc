@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneMain.cc                                               (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant l'exécution.                                                */
+/* Execution management class.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -84,6 +84,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 class ArcaneMainStaticInfo
@@ -100,11 +101,11 @@ class ArcaneMainStaticInfo
   String m_dotnet_assembly;
   String m_arcane_lib_path;
   IDirectSubDomainExecuteFunctor* m_direct_exec_functor = nullptr;
-  //! Nombre de fois qu'on a lancé l'auto-détection pour MPI et les accélérateurs
+  //! Number of times auto-detection for MPI and accelerators has been run
   std::atomic<Int32> m_nb_autodetect = 0;
-  //! Code retour pour l'auto-détection
+  //! Return code for auto-detection
   Int32 m_autodetect_return_value = 0;
-  //! Temps passé (en seconde) dans l'initialisation pour les accélérateurs
+  //! Time spent (in seconds) during initialization for accelerators
   Real m_init_time_accelerator = 0.0;
 };
 } // namespace Arcane
@@ -114,7 +115,7 @@ namespace
 Arcane::ArcaneMainStaticInfo* global_static_info = nullptr;
 Arcane::ArcaneMainStaticInfo* _staticInfo()
 {
-  // TODO: voir s'il faut protéger en multi-threading.
+  // TODO: see if it needs to be protected in multi-threading.
   if (!global_static_info)
     global_static_info = new Arcane::ArcaneMainStaticInfo();
   return global_static_info;
@@ -131,7 +132,7 @@ void _deleteStaticInfo()
 
 extern "C" void arcaneEndProgram()
 {
-  // Juste la pour faire un point d'entrée à third.
+  // Just for a third entry point.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -287,11 +288,12 @@ class ArcaneMainExecFunctor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer les appels aux mécanismes d'auto-détection des runtimes (MPI,Accélérateurs).
+ * \brief Class to manage calls to runtime auto-detection mechanisms (MPI, Accelerators).
  *
- * Cette classe permet de garantir que les mécanismes d'auto-détection ne sont
- * appelés qu'une fois. L'auto-détection se fait lors de l'appel à check().
+ * This class ensures that the auto-detection mechanisms are
+ * called only once. Auto-detection occurs when check() is called.
  */
 class ArcaneMainAutoDetectRuntimeHelper
 {
@@ -307,27 +309,27 @@ class ArcaneMainAutoDetectRuntimeHelper
 
     std::chrono::high_resolution_clock clock;
 
-    // TODO: rendre thread-safe
+    // TODO: make thread-safe
     {
       ArcaneMain::_checkAutoDetectMPI();
 
       bool has_accelerator = false;
-      // Mesure le temps de l'initialisation.
-      // Comme ici on n'a pas encore initialié Arcane il ne faut
-      // pas utiliser de méthode du namespace 'platform'.
+      // Measures the initialization time.
+      // Since Arcane has not been initialized yet, methods from the 'platform' namespace
+      // should not be used here.
       auto start_time = clock.now();
       x->m_autodetect_return_value = ArcaneMain::_checkAutoDetectAccelerator(has_accelerator);
       auto end_time = clock.now();
-      // Ne récupère le temps que si on a utilise un accélérateur
+      // Only retrieve the time if an accelerator was used
       if (has_accelerator)
-        x->m_init_time_accelerator = _getTime(end_time,start_time);
+        x->m_init_time_accelerator = _getTime(end_time, start_time);
       ++x->m_nb_autodetect;
     }
     return x->m_autodetect_return_value;
   }
 
-  template<typename TimeType>
-  Real _getTime(TimeType end_time,TimeType start_time)
+  template <typename TimeType>
+  Real _getTime(TimeType end_time, TimeType start_time)
   {
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
     Real x = static_cast<Real>(duration.count());
@@ -337,14 +339,15 @@ class ArcaneMainAutoDetectRuntimeHelper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Création de l'instance 'IArcaneMain'.
+ * \brief Creation of the 'IArcaneMain' instance.
  *
- * Si l'instance est déjà créée, cette méthode ne fait rien.
+ * If the instance is already created, this method does nothing.
  *
- * En cas d'exception, cette méthode retourne une valeur non nulle.
- * En cas d'erreur dans le gestionnaire de licence, \a m_ret_val est
- * positionné à une valeur non nulle mais cette méthode retourne 0.
+ * In case of an exception, this method returns a non-zero value.
+ * In case of a license manager error, \a m_ret_val is
+ * set to a non-zero value but this method returns 0.
  */
 int ArcaneMainExecInfo::
 initialize()
@@ -357,7 +360,7 @@ initialize()
 
   ArcaneMain::redirectSignals();
 
-  // Création de la classe d'exécution
+  // Creation of the execution class
   try {
     if (m_has_build_info) {
       ArcaneMain* x = new ArcaneMain(m_app_info, m_main_factory,
@@ -388,9 +391,9 @@ initialize()
     return ExceptionUtils::print(nullptr);
   }
 
-  // Redirige a nouveau les signaux car certaines
-  // routines d'initialisation (par exemple MPI) peuvent
-  // les detourner.
+  // Redirects signals again because certain
+  // initialization routines (for example MPI) may
+  // divert them.
   ArcaneMain::redirectSignals();
 
   m_ret_val = 0;
@@ -404,12 +407,12 @@ initialize()
     trace->info() << "Initializing license manager";
     FlexLMMng::instance()->init(parallel_super_mng);
 
-    // La politique de licence parallèle est sous-traitée aux applications
+    // The parallel license policy is delegated to the applications
     //     bool is_parallel = parallel_super_mng->isParallel();
     //     FlexLMTools<ArcaneFeatureModel> license_tool;
     //     Integer commSize = parallel_super_mng->commSize();
     //     if (is_parallel && commSize > 1)
-    //       { // La fonctionnalité paralléle n'est activé que si nécessaire
+    //       { // The parallel feature is only activated if necessary
     //         license_tool.getLicense(ArcaneFeatureModel::ArcaneParallel,commSize);
     //       }
   }
@@ -427,7 +430,8 @@ initialize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// NOTE: Cette méthode ne doit pas lancer d'exceptions
+
+// NOTE: This method must not throw exceptions
 void ArcaneMainExecInfo::
 execute()
 {
@@ -439,7 +443,7 @@ execute()
 
   ArcaneMainExecFunctor exec_functor(m_app_info, m_exec_main);
   if (ArcaneMain::m_exec_override_functor) {
-    // Obsolète. Ne plus utiliser.
+    // Obsolete. Do not use.
     IApplication* app = m_exec_main->application();
     ArcaneMain::m_exec_override_functor->m_application = app;
     ITraceMng* trace = app->traceMng();
@@ -457,11 +461,11 @@ execute()
 void ArcaneMainExecInfo::
 finalize()
 {
-  // Désactive les exceptions flottantes
+  // Disables floating exceptions
   platform::enableFloatingException(false);
 
-  // Si l'exécution s'est bien déroulée mais que l'utilisateur a spécifié un
-  // code d'erreur, on le récupère.
+  // If execution went well but the user specified an
+  // error code, we retrieve it.
   int exe_error_code = m_exec_main->errorCode();
   if (m_ret_val == 0 && exe_error_code != 0) {
     m_ret_val = exe_error_code;
@@ -474,10 +478,10 @@ finalize()
   if (m_ret_val != 0 && !m_clean_abort)
     m_exec_main->doAbort();
 
-  // Destruction du code.
-  // Attention à ne pas détruire le gestionnaire avant car lorsqu'une exception
-  // de l'architecture est générée, elle utilise un ITraceMng pour afficher
-  // le message
+  // Code destruction.
+  // Be careful not to destroy the manager beforehand because when an
+  // architecture exception is generated, it uses an ITraceMng to display
+  // the message
   delete m_exec_main;
   m_exec_main = nullptr;
 #ifndef ARCANE_USE_MPC
@@ -487,8 +491,9 @@ finalize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Point d'entrée de l'exécutable.
+ * \brief Executable entry point.
  * \internal
  */
 int ArcaneMain::
@@ -558,7 +563,7 @@ callFunctorWithCatchedException(IFunctor* functor, IArcaneMain* exec_main,
     ret_val = 7;
   }
   catch (const ParallelFatalErrorException& ex) {
-    // TODO: utiliser le code de FatalErrorException en mode collectif.n
+    // TODO: use the FatalErrorException code in collective mode.n
     if (is_parallel) {
       *clean_abort = true;
       ret_val = 5;
@@ -668,10 +673,11 @@ hasDotNetWrapper()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Positionne le chemin contenant les bibliothèques dynamiques de Arcane.
+ * \brief Positions the path containing Arcane dynamic libraries.
  *
- * Il ne faut appeler qu'une seule fois cette méthode.
+ * This method must only be called once.
  */
 void ArcaneMain::
 _setArcaneLibraryPath()
@@ -691,29 +697,29 @@ _setArcaneLibraryPath()
 void ArcaneMain::
 arcaneInitialize()
 {
-  // Le premier thread qui arrive ici fait l'init.
-  // Les autres doivent attendre que l'init soit terminée.
+  // The first thread that arrives here performs the init.
+  // Others must wait for the init to finish.
   if (m_nb_arcane_init.fetch_add(1) == 0) {
     (void)_staticInfo();
     Exception::staticInit();
     dom::DOMImplementation::initialize();
     platform::platformInitialize();
 
-    // Regarde si on souhaite utiliser l'ancien mécanisme (avant la 3.15)
-    // pour convertir les chaînes de caractères en types numériques
+    // Checks if we want to use the old mechanism (before 3.15)
+    // to convert character strings to numeric types
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_BUILTINVALUECONVERT", true))
-      Convert::Impl::ConvertPolicy::setUseFromChars(v.value()==0);
+      Convert::Impl::ConvertPolicy::setUseFromChars(v.value() == 0);
 
-    // Crée le singleton gestionnaire des types
+    // Creates the type manager singleton
     ItemTypeMng::_singleton();
     initializeStringConverter();
     arcaneInitCheckMemory();
-    // Initialise le singleton du groupe vide et garde une référence dessus.
+    // Initializes the empty group singleton and keeps a reference to it.
     ItemGroupImpl::_buildSharedNull();
     m_is_init_done = 1;
   }
   else
-    // Attend que le thread qui fait l'init ait terminé
+    // Waits for the thread performing the init to finish
     while (m_is_init_done.load() == 0)
       ;
 }
@@ -729,7 +735,7 @@ arcaneFinalize()
   if (m_nb_arcane_init.fetch_sub(1) == 1) {
     _deleteStaticInfo();
 
-    //! Supprime notre référence sur ItemGroupImpl::shared_null.
+    //! Removes our reference on ItemGroupImpl::shared_null.
     ItemGroupImpl::_destroySharedNull();
 
     {
@@ -882,8 +888,8 @@ arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory)
 
   default_factory = nullptr;
 
-  // Le code d'erreur 5 représente une erreur en parallèle pour tous les
-  // processeurs.
+  // Error code 5 represents a parallel error for all
+  // processors.
   if (ret != 0 && ret != 5)
     cerr << "* Process return: " << ret << '\n';
   if (ret == 5)
@@ -937,14 +943,14 @@ run()
 
   DotNetRuntimeInitialisationInfo& dotnet_info = defaultDotNetRuntimeInitialisationInfo();
 
-  // Si on arrive ici et que le runtime C# est déjà chargé
-  // (parce que le Main est en C# par exemple), on ne lance pas le wrapper
+  // If we arrive here and the C# runtime is already loaded
+  // (because Main is in C# for example), we do not launch the wrapper
   bool is_in_dotnet = platform::hasDotNETRuntime();
   if (!is_in_dotnet && dotnet_info.isUsingDotNetRuntime()) {
     r = _runDotNet();
-    // Avant la version 3.7.8 on n'appelait par arcaneFinalize() car cela pouvait
-    // poser des problèmes avec le Garbage Collector de '.Net'. Normalement ces
-    // problèmes sont corrigés mais on autorise le comportement d'avant au cas où.
+    // Before version 3.7.8 we called arcaneFinalize() because it could
+    // cause problems with the '.Net' Garbage Collector. Normally these
+    // problems are fixed but we allow the previous behavior just in case.
     bool do_finalize = false;
     String x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
     if (x == "1")
@@ -973,11 +979,11 @@ _runDotNet()
   auto si = _staticInfo();
   si->m_has_dotnet_wrapper = true;
 
-  // TODO: vérifier que l'init n'a pas été faite.
+  // TODO: check that init has not been done.
 
-  // Pour pouvoir exécuter le code .Net, il faut
-  // appeler la méthode 'arcane_mono_main' qui se trouve
-  // dans la bibliothèque dynamique 'arcane_mono'.
+  // To be able to execute .Net code, it is necessary
+  // to call the method 'arcane_mono_main' which is located
+  // in the dynamic library 'arcane_mono'.
 
   typedef int (*DotNetMainFunctor)(const CommandLineArguments& cmd_args, const String& assembly_name);
 
@@ -996,7 +1002,7 @@ _runDotNet()
     String runtime_name = dotnet_info.embeddedRuntime();
 
     if (runtime_name.null() || runtime_name == "mono")
-      // Mono est le défaut si rien n'est spécifié.
+      // Mono is the default if nothing is specified.
       ;
     else if (runtime_name == "coreclr") {
       dll_name = "arcane_dotnet_coreclr";
@@ -1028,7 +1034,7 @@ _runDotNet()
 
   if (my_functor) {
     const CommandLineArguments& cmd_args = app_info.commandLineArguments();
-    // TODO: vérifier que l'assembly 'Arcane.Main.dll' existe bien.
+    // TODO: check that the assembly 'Arcane.Main.dll' exists.
     String new_name = os_dir + "/Arcane.Main.dll";
     return (*my_functor)(cmd_args, new_name);
   }
@@ -1037,14 +1043,15 @@ _runDotNet()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Ne pas appeler directement mais passer par ArcaneMainAutoDetectHelper.
+
+// Do not call directly but go through ArcaneMainAutoDetectHelper.
 void ArcaneMain::
 _checkAutoDetectMPI()
 {
   auto si = _staticInfo();
-  // Pour pouvoir automatiquement enregisrer MPI, il faut
-  // appeler la méthode 'arcaneAutoDetectMessagePassingServiceMPI' qui se trouve
-  // dans la bibliothèque dynamique 'arcane_mpi'.
+  // To automatically register MPI, it is necessary
+  // to call the method 'arcaneAutoDetectMessagePassingServiceMPI' which is located
+  // in the dynamic library 'arcane_mpi'.
 
   typedef void (*ArcaneAutoDetectMPIFunctor)();
 
@@ -1069,15 +1076,16 @@ _checkAutoDetectMPI()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détecte et charge la gestion du runtime des accélérateurs.
+ * \brief Detects and loads accelerator runtime management.
  *
- * En retour, has_accelerator est vrai si on a chargé un runtime accélérateur.
+ * In return, has_accelerator is true if an accelerator runtime was loaded.
  *
- * \retval 0 si tout est OK
+ * \retval 0 if everything is OK
  *
- * \note Il ne faut pas appeler directement cette méthode mais
- * passer par ArcaneMainAutoDetectHelper.
+ * \note Do not call this method directly but
+ * go through ArcaneMainAutoDetectHelper.
  */
 int ArcaneMain::
 _checkAutoDetectAccelerator(bool& has_accelerator)
@@ -1132,9 +1140,9 @@ ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
 ArcaneMain::
 ~ArcaneMain()
 {
-  // S'assure qu'on retire les observateurs associés au TheadBindingMng
-  // avant la finalisation pour éviter de punaiser les threads alors que
-  // cela ne sert plus à rien.
+  // Ensures that observers associated with TheadBindingMng are removed
+  // before finalization to avoid wasting threads when
+  // it is no longer useful.
   m_p->m_thread_binding_mng.finalize();
   delete m_application;
   delete m_p;
@@ -1172,7 +1180,7 @@ _parseApplicationBuildInfoArgs()
 {
   ApplicationBuildInfo& abi = _applicationBuildInfo();
   abi.parseArguments(m_p->m_app_info.commandLineArguments());
-  // Appelle les visiteurs enregistrés.
+  // Calls the registered visitors.
   {
     auto& x = _staticInfo()->m_application_build_info_visitors;
     for (IApplicationBuildInfoVisitor* v : x) {
@@ -1239,8 +1247,8 @@ setErrorCode(int errcode)
 {
   m_error_code = errcode;
   if (errcode != 0) {
-    // Seul le proc maitre écrit le fichier sauf s'il s'agit d'un fatal car
-    // dans ce cas n'importe quel PE peut le faire.
+    // Only the master process writes the file unless it is a fatal error because
+    // in this case, any PE can do it.
     if (ArcaneMain::m_is_master_io || errcode == 4) {
       String errname = "fatal_" + String::fromNumber(errcode);
       std::ofstream ofile(errname.localstr());
@@ -1255,13 +1263,13 @@ setErrorCode(int errcode)
 bool ArcaneMain::
 parseArgs(StringList args)
 {
-  // Si vrai, affichage des informations internes
+  // If true, display internal information
   bool arcane_internal = false;
-  // Si vrai, affichage des informations internes pour chaque boucle en temps
+  // If true, display internal information for each time loop
   bool arcane_all_internal = false;
-  // Si vrai, génère un fichier contenant les infos internes du code.
+  // If true, generates a file containing internal code information.
   bool arcane_database = false;
-  // Si vrai, affichage des informations sur les modules et services présents et une aide sommaire
+  // If true, display information about present modules and services and a brief help
   bool arcane_help = false;
 
   String us_arcane_opt("-arcane_opt");
@@ -1301,8 +1309,8 @@ parseArgs(StringList args)
       is_valid_opt = true;
     }
     if (!is_valid_opt) {
-      // Si l'option n'est pas valide, la rajoute à la liste des options
-      // non traitées
+      // If the option is not valid, add it to the list of
+      // unprocessed options
       unknown_args.add(us_arcane_opt);
       if (!str.null())
         unknown_args.add(str);
@@ -1344,7 +1352,8 @@ parseArgs(StringList args)
 void ArcaneMain::
 _dumpHelp()
 {
-  // Utilise un multimap car plusieurs services peuvent avoir le même nom.
+  // We want to list by IServiceInfo. Since it is possible that a service has multiple
+  // factories, we filter using done_set.
   typedef std::multimap<String, IServiceInfo*> ServiceList;
   ServiceList service_list;
   Integer max_name_size = 0;
@@ -1426,10 +1435,11 @@ _dumpHelp()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction appelee lorsque le programme est interrompu par le signal 'val'.
+ * \brief Brief function called when the program is interrupted by the 'val' signal.
  *
- * Effectue une procedure d'urgence avant de quitter.
+ * Performs an emergency procedure before exiting.
  */
 extern "C" void
 arcaneSignalHandler(int val)
@@ -1469,7 +1479,7 @@ arcaneSignalHandler(int val)
 #ifdef SIGVTALRM
   case SIGVTALRM:
     signal_str = "Sigalarm(VirtualTime)";
-    written_signal_number = SIGALRM; //! Utilise le même identifiant que le SIGALRM
+    written_signal_number = SIGALRM; //! Uses the same identifier as SIGALRM
     is_alarm = true;
     break;
 #endif
@@ -1481,13 +1491,13 @@ arcaneSignalHandler(int val)
 #endif
 
 #ifndef ARCANE_OS_WIN32
-  // Pour éviter que tous les PE écrivent le même fichier pour les SIGALRM,
-  // seul le proc maitre le fait. Dans le cas des autres signaux, tout le monde
-  // le fait.
+  // To prevent all PEs from writing the same file for SIGALRM,
+  // only the master process does it. In the case of other signals, everyone
+  // does it.
   bool create_file = ArcaneMain::isMasterIO() || (!is_alarm);
   if (create_file) {
-    // Crée le fichier 'signal_*' pour indiquer en parallèle qu'un
-    // signal a été envoyé
+    // Creates the 'signal_*' file to indicate in parallel that a
+    // signal has been sent
     mode_t mode = S_IRUSR | S_IWUSR;
     char path[256];
     sprintf(path, "signal_%d", written_signal_number);
@@ -1498,8 +1508,8 @@ arcaneSignalHandler(int val)
   }
 #endif
 
-  // Repositionne les signaux pour la prochaine fois, si le signal est
-  // un signal qui peut être reçu plusieurs fois.
+  // Repositions the signals for next time, if the signal is
+  // one that can be received multiple times.
   arcaneRedirectSignals(arcaneSignalHandler);
 
   Arcane::arcaneCallDefaultSignal(val);

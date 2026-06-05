@@ -1,8 +1,8 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="MeshPartitionerTesterService" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Service Arcane de test de l'équilibrage de charge
+    Arcane Load Balancing Test Service
   </description>
 
   <interface name="Arcane::IMeshPartitionerBase" inherited="false" />
@@ -13,10 +13,10 @@
     <simple name="sub-rank-divider" type="int32" default = "0">
       <userclass>User</userclass>
       <description>
-        Diviseur pour le nombre de rang pour la répartition. Si
-        strictement positif, chaque sous-domaine réparti ses mailles
-        sur un nombre de sous-domaines égal au nombre de rang divisé
-        par la valeur de cette option.
+        Divider for the number of ranks for partitioning. If strictly
+        positive, each subdomain distributes its meshes across a number
+        of subdomains equal to the number of ranks divided by the value
+        of this option.
       </description>
     </simple>
 

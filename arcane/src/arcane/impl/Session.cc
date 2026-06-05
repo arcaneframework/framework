@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,30 +22,31 @@
 #include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/CriticalSection.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/XmlNode.h"
-#include "arcane/CaseNodeNames.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/SubDomainBuildInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/CaseNodeNames.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/SubDomainBuildInfo.h"
 
 #include "arcane/impl/Session.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ISubDomain*
-arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi);
+arcaneCreateSubDomain(ISession* session, const SubDomainBuildInfo& sdbi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,16 +69,17 @@ class Session::Impl
  public:
 
   Impl(IApplication* app)
-  : m_application(app), m_namespace_uri(arcaneNamespaceURI())
-    {}
+  : m_application(app)
+  , m_namespace_uri(arcaneNamespaceURI())
+  {}
   ~Impl() {}
 
  public:
 
-  IApplication* m_application; //!< Superviseur
-  String m_filename; //!< Fichier de configuration
+  IApplication* m_application; //!< Supervisor
+  String m_filename; //!< Configuration file
   SubDomainList m_sub_domains;
-  ScopedPtrT<IServiceMng> m_service_mng; //!< Gestionnaire des services
+  ScopedPtrT<IServiceMng> m_service_mng; //!< Service manager
   String m_namespace_uri;
   String m_local_name;
 };
@@ -100,7 +102,7 @@ Session(IApplication* app)
 Session::
 ~Session()
 {
-  for( SubDomainList::Enumerator i(m_p->m_sub_domains); ++i; ){
+  for (SubDomainList::Enumerator i(m_p->m_sub_domains); ++i;) {
     (*i)->destroy();
   }
   delete m_p;
@@ -118,13 +120,13 @@ build()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * La classe dérivée peut réimplémenter cette méthode pour spécifier
- * son propre mécanisme de versionnage des jeux de données. Sans
- * implémentation particulière, cette méthode retourne toujours \a false
+ * The derived class can re-implement this method to specify
+ * its own dataset versioning mechanism. Without specific implementation, this method always returns \a false
  *
- * \retval true si la version est correcte
- * \retval false sinon
+ * \retval true if the version is correct
+ * \retval false otherwise
  */
 bool Session::
 checkIsValidCaseVersion(const String& version)
@@ -143,12 +145,12 @@ createSubDomain(const SubDomainBuildInfo& sdbi)
   ISubDomain* s = 0;
   {
     CriticalSection cs(sm->threadMng());
-    s = arcaneCreateSubDomain(this,sdbi);
-    //TODO: Utiliser le rang local pour ranger dans l'ordre
+    s = arcaneCreateSubDomain(this, sdbi);
+    //TODO: Use the local rank to sort in order
     m_p->m_sub_domains.add(s);
   }
   s->initialize();
-  // Initialisation spécifique à la classe dérivée si besoin
+  // Specific initialization for the derived class if needed
   _initSubDomain(s);
   return s;
 }
@@ -173,21 +175,51 @@ objectParent() const
   return m_p->m_application;
 }
 
-String Session::objectNamespaceURI() const { return m_p->m_namespace_uri; }
-String Session::objectLocalName() const { return m_p->m_local_name; }
-VersionInfo Session::objectVersion() const { return VersionInfo(1,0,0); }
-IServiceMng* Session::serviceMng() const { return m_p->m_service_mng.get(); }
-IRessourceMng* Session::ressourceMng() const { return 0; }
-IApplication* Session::application() const { return m_p->m_application; }
-ITraceMng* Session::traceMng() const { return TraceAccessor::traceMng(); }
-const String& Session::fileName() const { return m_p->m_filename; }
-SubDomainCollection Session::subDomains() { return m_p->m_sub_domains; }
-IApplication* Session::_application() const { return m_p->m_application; }
+String Session::objectNamespaceURI() const
+{
+  return m_p->m_namespace_uri;
+}
+String Session::objectLocalName() const
+{
+  return m_p->m_local_name;
+}
+VersionInfo Session::objectVersion() const
+{
+  return VersionInfo(1, 0, 0);
+}
+IServiceMng* Session::serviceMng() const
+{
+  return m_p->m_service_mng.get();
+}
+IRessourceMng* Session::ressourceMng() const
+{
+  return 0;
+}
+IApplication* Session::application() const
+{
+  return m_p->m_application;
+}
+ITraceMng* Session::traceMng() const
+{
+  return TraceAccessor::traceMng();
+}
+const String& Session::fileName() const
+{
+  return m_p->m_filename;
+}
+SubDomainCollection Session::subDomains()
+{
+  return m_p->m_sub_domains;
+}
+IApplication* Session::_application() const
+{
+  return m_p->m_application;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

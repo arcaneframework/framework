@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* FlexLMTools.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des protections FlexLM.                .                          */
+/* FlexLM Protection Management.                                             */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_UTILS_FLEXLMTOOLS_H_
@@ -16,17 +16,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneVersion.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Exception.h"
+
+#include "arcane/core/ArcaneVersion.h"
+
 #include <map>
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
+namespace Arcane
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +38,7 @@ class TraceInfo;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Exception de licence
+//! License exception
 class ARCANE_IMPL_EXPORT LicenseErrorException
 : public Exception
 {
@@ -61,60 +63,60 @@ class ARCANE_IMPL_EXPORT LicenseErrorException
 
 //! FlexLM manager
 /*! Singleton for recording all taken feature licenses
- * 
- *  Les contrôles sont effectués par le noeud maître (commRank==0)
- *  Pour vérifier la validité de ce contrôle soit la fonctionnalité ArcaneMasterFlexLM
- *  est disponible (ce qui ne locke pas les autres noeuds de l'exécution parallèle sur 
- *  le noeud de licence) ou que tous les noeuds ont l'autorisation de ArcaneCore. 
- *  Ceci est testé dans la phase init().
+ *
+ *  The checks are performed by the master node (commRank==0)
+ *  To verify the validity of this check, either the ArcaneMasterFlexLM
+ *  feature must be available (which does not lock other nodes of the parallel
+ *  execution on the license node) or all nodes must have ArcaneCore authorization.
+ *  This is tested in the init() phase.
  */
 class ARCANE_IMPL_EXPORT FlexLMMng
 {
  private:
 
-  //! Constructeur
+  //! Constructor
   FlexLMMng();
 
-  //! Destructeur
+  //! Destructor
   virtual ~FlexLMMng() {}
 
  public:
 
-  //! Accès au singleton
+  //! Access to the singleton
   static FlexLMMng* instance();
 
  public:
 
-  //! Initialise le gestionnaire de licences
+  //! Initializes the license manager
   void init(IParallelSuperMng* parallel_super_mng);
 
-  //! Définit une nouvelle périodicité du contrôle des licences
-  /*! La valeur par défaut est 120s.
-   * si t == -1     : désactive le contrôle périodique
-   * si 0 <= t < 30 : la valeur n'est pas prise en compte 
-   * si t >= 30     : définit une nouvelle périodicité du contrôle
+  //! Sets a new license check periodicity
+  /*! The default value is 120s.
+   * if t == -1     : disables periodic checking
+   * if 0 <= t < 30 : the value is ignored
+   * if t >= 30     : sets a new check periodicity
    */
   void setCheckInterval(const Integer t = 120);
 
-  //! Teste la présence d'une fonctionnalité statique
-  /*! Cette fonctionnalité n'utilisera pas de jeton de licence.
-   * \param do_fatal indique s'il faut générer une erreur si non disponible
-   * \return 0 si aucune erreur */
+  //! Tests the presence of a static feature
+  /*! This feature will not use a license token.
+   * \param do_fatal indicates whether to generate an error if unavailable
+   * \return 0 if no error */
   bool checkLicense(const String name, const Real version, bool do_fatal = true) const;
 
-  //! Demande l'allocation de \param nb_licenses licences pour la fonctionnalité \param name
-  /*! Les licences demandées sont indépendantes du nombre de processeurs
-   *  \param nb_licenses vaut par défaut 1
-   *  \return 0 si aucune erreur */
+  //! Requests the allocation of \param nb_licenses licenses for the feature \param name
+  /*! The requested licenses are independent of the number of processors
+   *  \param nb_licenses defaults to 1
+   *  \return 0 if no error */
   void getLicense(const String name, const Real version, Integer nb_licenses = 1);
 
-  //! Relache les licences de la fonctionnalité \param name
-  /*! \param nb_licenses vaut 0 s'il faut relacher toutes les licences
-   *  \return 0 si aucune erreur */
+  //! Releases the licenses for the feature \param name
+  /*! \param nb_licenses is 0 if all licenses should be released
+   *  \return 0 if no error */
   void releaseLicense(const String name, Integer nb_licenses = 0);
 
-  //! Relache toutes les licences allouées
-  /*! \return 0 si aucune erreur */
+  //! Releases all allocated licenses
+  /*! \return 0 if no error */
   void releaseAllLicenses();
 
   //! Return info on feature
@@ -126,28 +128,28 @@ class ARCANE_IMPL_EXPORT FlexLMMng
   FeatureMapType m_features;
   static FlexLMMng* m_instance;
   IParallelSuperMng* m_parallel_super_mng;
-  bool m_is_master; //!< Cet host est il le maître des contrôles ?
+  bool m_is_master; //!< Is this host the master for checks?
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Wrapper pour accéder aux FlexLMMng pour un jeu de fonctionnalités donné
+//! Wrapper to access FlexLMMng for a given set of features
 template <typename FeatureModel>
 class FlexLMTools
 {
  public:
 
-  //! Constructeur
+  //! Constructor
   FlexLMTools() {}
 
-  //! Destructeur
+  //! Destructor
   virtual ~FlexLMTools() {}
 
  public:
 
-  //! Teste la disponibilité d'une fonctionnalité
-  /*! \return true si aucune erreur */
+  //! Tests the availability of a feature
+  /*! \return true if no error */
   bool checkLicense(typename FeatureModel::eFeature feature, const bool do_fatal) const
   {
     const String name = FeatureModel::getName(feature);
@@ -155,17 +157,17 @@ class FlexLMTools
     return FlexLMMng::instance()->checkLicense(name, version, do_fatal);
   }
 
-  //! Teste la disponibilité d'une fonctionnalité sur une version maximale
-  /*! La version peut-être employée pour tester une quantité; ex: 3 pour 3 composantes maximum
-   * \return true si aucune erreur */
+  //! Tests the availability of a feature on a maximum version
+  /*! The version can be used to test a quantity; e.g., 3 for a maximum of 3 components
+   * \return true if no error */
   bool checkLicense(typename FeatureModel::eFeature feature, const Real version, const bool do_fatal) const
   {
     const String name = FeatureModel::getName(feature);
     return FlexLMMng::instance()->checkLicense(name, version, do_fatal);
   }
 
-  //! Demande l'allocation de \param nb_licenses pour la fonctionnalité \param feature
-  /*! \return 0 si aucune erreur */
+  //! Requests the allocation of \param nb_licenses for the feature \param feature
+  /*! \return 0 if no error */
   void getLicense(typename FeatureModel::eFeature feature, Integer nb_licenses = 1)
   {
     const String name = FeatureModel::getName(feature);
@@ -173,8 +175,8 @@ class FlexLMTools
     return FlexLMMng::instance()->getLicense(name, version, nb_licenses);
   }
 
-  //! Relache \param nb_licenses pour la fonctionnalité \param feature
-  /*! \return 0 si aucune erreur */
+  //! Releases \param nb_licenses for the feature \param feature
+  /*! \return 0 if no error */
   void releaseLicense(typename FeatureModel::eFeature feature, Integer nb_licenses = 0)
   {
     const String name = FeatureModel::getName(feature);
@@ -200,9 +202,9 @@ class ArcaneFeatureModel
   typedef enum
   {
 #ifndef ARCANE_TEST_RLM
-    ArcaneCore = 0, //<! Fonctionnalité noyau (liée à l'exécution)
+    ArcaneCore = 0, //<! Core feature (related to execution)
 #else
-    Arcane = 0, //<! Fonctionnalité noyau (liée à l'exécution)
+    Arcane = 0, //<! Core feature (related to execution)
 #endif
   } eFeature;
 
@@ -214,7 +216,7 @@ class ArcaneFeatureModel
   static Real getVersion(eFeature feature)
   {
     ARCANE_UNUSED(feature);
-    // Ecrit une version comparable numériquement; ex: 1.0610 (au lieu de 1.6.1)
+    // Writes a numerically comparable version; e.g., 1.0610 (instead of 1.6.1)
     return (Real)ARCANE_VERSION_MAJOR + (Real)ARCANE_VERSION_MINOR / 100 + (Real)ARCANE_VERSION_RELEASE / 1000 + (Real)ARCANE_VERSION_BETA / 10000;
   }
 
@@ -226,12 +228,9 @@ class ArcaneFeatureModel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /*FLEXLMTOOLS_H_*/
+#endif
