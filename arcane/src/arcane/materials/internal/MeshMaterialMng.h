@@ -174,7 +174,7 @@ class MeshMaterialMng
 
  public:
 
-  MeshMaterialMng(const MeshHandle& mesh_handle,const String& name);
+  MeshMaterialMng(const MeshHandle& mesh_handle, const String& name);
   ~MeshMaterialMng() override;
 
  public:
@@ -191,8 +191,8 @@ class MeshMaterialMng
   MeshMaterialInfo* registerMaterialInfo(const String& name) override;
   IMeshEnvironment* createEnvironment(const MeshEnvironmentBuildInfo& infos) override;
   IMeshBlock* createBlock(const MeshBlockBuildInfo& infos) override;
-  void addEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) override;
-  void removeEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) override;
+  void addEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) override;
+  void removeEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) override;
 
   void endCreate(bool is_continue) override;
 
@@ -225,8 +225,8 @@ class MeshMaterialMng
   ConstArrayView<IMeshComponent*> components() const override { return m_components; }
   ConstArrayView<IMeshBlock*> blocks() const override { return m_blocks; }
 
-  IMeshEnvironment* findEnvironment(const String& name,bool throw_exception=true) override;
-  IMeshBlock* findBlock(const String& name,bool throw_exception=true) override;
+  IMeshEnvironment* findEnvironment(const String& name, bool throw_exception = true) override;
+  IMeshBlock* findBlock(const String& name, bool throw_exception = true) override;
 
   void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) override;
 
@@ -234,7 +234,7 @@ class MeshMaterialMng
   IMeshMaterialVariable* checkVariable(IVariable* global_var) override;
 
   void dumpInfos(std::ostream& o) override;
-  void dumpCellInfos(Cell cell,std::ostream& o) override;
+  void dumpCellInfos(Cell cell, std::ostream& o) override;
 
   void checkValid() override;
 
@@ -316,7 +316,7 @@ class MeshMaterialMng
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
-  void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) override
+  void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create = false) override
   {
     m_is_use_accelerator_envcell_container = is_enable;
     if (force_create)
@@ -344,11 +344,11 @@ class MeshMaterialMng
  private:
 
   //! Type of the list of variables by full name
-  using FullNameVariableMap= std::map<String,IMeshMaterialVariable*>;
+  using FullNameVariableMap = std::map<String, IMeshMaterialVariable*>;
   //! Pair of the list of variables by full name
   using FullNameVariablePair = FullNameVariableMap::value_type;
 
-  using VariableToMaterialVariableMap = std::map<IVariable*,IMeshMaterialVariable*>;
+  using VariableToMaterialVariableMap = std::map<IVariable*, IMeshMaterialVariable*>;
   using VariableToMaterialVariablePair = VariableToMaterialVariableMap::value_type;
 
  private:
@@ -417,7 +417,7 @@ class MeshMaterialMng
   MeshMaterialInfo* _findMaterialInfo(const String& name);
   MeshEnvironment* _findEnvironment(const String& name);
   MeshBlock* _findBlock(const String& name);
-  MeshMaterial* _createMaterial(MeshEnvironment* env,MeshMaterialInfo* infos,const String& name);
+  MeshMaterial* _createMaterial(MeshEnvironment* env, MeshMaterialInfo* infos, const String& name);
   void _addVariableIndexer(MeshMaterialVariableIndexer* var_idx);
   void _checkEndCreate();
   void _addVariableUnlocked(IMeshMaterialVariable* var);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -384,7 +384,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
       };
       functor::apply(mm, &IMeshMaterialMng::visitVariables, func_zero);
 
-      if (do_one_command){
+      if (do_one_command) {
         MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
         m_work_info.m_variables_copy_data.copy(x, &m_queue);
         _applyInitializeWithZero(init_args);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,9 +70,9 @@ namespace
 #if defined(ARCCORE_DEVICE_CODE)
     // With Intel DPC++ 2024.1, using this function with the
     // CUDA backend causes an error in the generated assembly.
-#  if !defined(__INTEL_LLVM_COMPILER)
+#if !defined(__INTEL_LLVM_COMPILER)
     assert(false);
-#  endif
+#endif
 #else
     ARCANE_FATAL("No value to remove '{0}' found in list {1}", value_to_remove, values);
 #endif

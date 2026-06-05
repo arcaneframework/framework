@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -57,8 +57,13 @@ class MeshEnvironment
   : public IMeshComponentInternal
   {
    public:
-    InternalApi(MeshEnvironment* env) : m_environment(env){}
+
+    InternalApi(MeshEnvironment* env)
+    : m_environment(env)
+    {}
+
    public:
+
     MeshMaterialVariableIndexer* variableIndexer() const override
     {
       return m_environment->variableIndexer();
@@ -78,7 +83,7 @@ class MeshEnvironment
 
  public:
 
-  MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int16 env_id);
+  MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id);
 
  public:
 
@@ -122,7 +127,7 @@ class MeshEnvironment
   bool isEnvironment() const override { return true; }
   bool hasSpace(MatVarSpace space) const override
   {
-    return space==MatVarSpace::MaterialAndEnvironment || space==MatVarSpace::Environment;
+    return space == MatVarSpace::MaterialAndEnvironment || space == MatVarSpace::Environment;
   }
   IMeshMaterial* asMaterial() override { return nullptr; }
   IMeshEnvironment* asEnvironment() override { return this; }
@@ -155,7 +160,7 @@ class MeshEnvironment
 
   void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
-    m_data._setConstituentItem(index,id);
+    m_data._setConstituentItem(index, id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 
@@ -211,8 +216,8 @@ class MeshEnvironment
   void _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, RunQueue& queue);
 
  private:
-  
-  void _changeIds(MeshComponentData* component_data,Int32ConstArrayView old_to_new_ids);
+
+  void _changeIds(MeshComponentData* component_data, Int32ConstArrayView old_to_new_ids);
 };
 
 /*---------------------------------------------------------------------------*/

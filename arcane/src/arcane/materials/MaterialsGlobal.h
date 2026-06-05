@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -74,8 +74,8 @@ class MeshMaterialExchangeMng;
 class MeshMaterialModifierImpl;
 
 template <typename DataType> class ItemMaterialVariableScalar;
-template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;
-template <typename ItemType,typename DataType> class MeshMaterialVariableArray;
+template <typename ItemType, typename DataType> class MeshMaterialVariableScalar;
+template <typename ItemType, typename DataType> class MeshMaterialVariableArray;
 
 using MeshMaterialVariableFactoryVariableRefCreateFunc = IMeshMaterialVariable* (*)(const MaterialVariableBuildInfo& vb);
 

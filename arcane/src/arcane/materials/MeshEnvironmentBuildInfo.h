@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,17 +41,26 @@ namespace Arcane::Materials
 class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
 {
  public:
+
   class MatInfo
   {
    public:
-    MatInfo(const String& name) : m_name(name){}
+
+    MatInfo(const String& name)
+    : m_name(name)
+    {}
+
    public:
+
     String m_name;
+
    public:
+
     // The default constructor should not be available but it crashes at
     // compilation with VS2010 if it is absent
     MatInfo() {}
   };
+
  public:
 
   MeshEnvironmentBuildInfo(const String& name);
@@ -92,7 +101,7 @@ class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,36 +40,36 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialVariableSynchronizer
 {
  public:
 
-  virtual ~IMeshMaterialVariableSynchronizer(){}
+  virtual ~IMeshMaterialVariableSynchronizer() {}
 
  public:
 
   //! Associated classical variable synchronizer.
-  virtual IVariableSynchronizer* variableSynchronizer() =0;
+  virtual IVariableSynchronizer* variableSynchronizer() = 0;
 
   /*!
    * \brief List of shared MatVarIndex for index rank \a index
    * in the variableSynchronizer::communicatingRanks() array;
    */
-  virtual ConstArrayView<MatVarIndex> sharedItems(Int32 index) =0;
+  virtual ConstArrayView<MatVarIndex> sharedItems(Int32 index) = 0;
 
   /*!
    * \brief List of ghost MatVarIndex for index rank \a index
    * in the variableSynchronizer::communicatingRanks() array;
    */
-  virtual ConstArrayView<MatVarIndex> ghostItems(Int32 index) =0;
+  virtual ConstArrayView<MatVarIndex> ghostItems(Int32 index) = 0;
 
   //! Recalculates synchronization information.
-  virtual void recompute() =0;
+  virtual void recompute() = 0;
 
   //! Recalculates synchronization information if necessary.
-  virtual void checkRecompute() =0;
+  virtual void checkRecompute() = 0;
 
   //! Common buffer for messages.
-  virtual Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() =0;
+  virtual Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() = 0;
 
   //! Memory resource to use for communication buffers
-  virtual eMemoryRessource bufferMemoryRessource() const =0;
+  virtual eMemoryRessource bufferMemoryRessource() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

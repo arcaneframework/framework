@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,14 +41,14 @@ class MeshMaterialInfo
 
  private:
 
-  MeshMaterialInfo(IMeshMaterialMng* mng,const String& name);
+  MeshMaterialInfo(IMeshMaterialMng* mng, const String& name);
   virtual ~MeshMaterialInfo() = default;
 
  public:
 
   //! Associated manager.
   IMeshMaterialMng* materialMng() { return m_material_mng; }
-  
+
   //! Material name.
   String name() const { return m_name; }
 

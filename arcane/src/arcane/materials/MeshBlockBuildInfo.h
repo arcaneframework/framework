@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,18 +16,14 @@
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/Array.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
 #include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,7 +51,7 @@ class ARCANE_MATERIALS_EXPORT MeshBlockBuildInfo
  public:
 
   //! Creates the information for a block named \a name on the meshes \a cells.
-  MeshBlockBuildInfo(const String& name,const CellGroup& cells);
+  MeshBlockBuildInfo(const String& name, const CellGroup& cells);
   ~MeshBlockBuildInfo();
 
  public:
@@ -92,11 +88,7 @@ class ARCANE_MATERIALS_EXPORT MeshBlockBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

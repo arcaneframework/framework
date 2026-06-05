@@ -6,7 +6,7 @@ arcane_add_library(arcane_materials
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/materials
   FILES ${ARCANE_SOURCES}
-  )
+)
 
 arcane_accelerator_add_source_files(
   AllEnvData.cc

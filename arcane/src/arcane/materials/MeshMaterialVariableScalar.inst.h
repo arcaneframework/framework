@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -61,16 +61,16 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 MaterialVariableScalarTraits<DataType>::
-saveData(IMeshComponent* component,IData* data,
+saveData(IMeshComponent* component, IData* data,
          Array<ContainerViewType>& cviews)
 {
   ConstArrayView<ArrayView<DataType>> views = cviews;
   auto* true_data = dynamic_cast<ValueDataType*>(data);
   ARCANE_CHECK_POINTER(true_data);
   ContainerType& values = true_data->_internal()->_internalDeprecatedValue();
-  ENUMERATE_COMPONENTCELL(icell,component){
+  ENUMERATE_COMPONENTCELL (icell, component) {
     MatVarIndex mvi = icell._varIndex();
     values.add(views[mvi.arrayIndex()][mvi.valueIndex()]);
   }
@@ -105,20 +105,20 @@ copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 MaterialVariableScalarTraits<DataType>::
-resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size)
+resizeAndFillWithDefault(ValueDataType* data, ContainerType& container, Integer dim1_size)
 {
- ARCANE_UNUSED(data);
- //TODO: create an Array2 version that specifies a value to give
- // for initialization during a resize() (like Array::resize()).
- container.resize(dim1_size,DataType());
+  ARCANE_UNUSED(data);
+  //TODO: create an Array2 version that specifies a value to give
+  // for initialization during a resize() (like Array::resize()).
+  container.resize(dim1_size, DataType());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 MaterialVariableScalarTraits<DataType>::
 resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
@@ -132,11 +132,11 @@ resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> ItemMaterialVariableScalar<DataType>::
+template <typename DataType> ItemMaterialVariableScalar<DataType>::
 ItemMaterialVariableScalar(const MaterialVariableBuildInfo& v,
                            PrivatePartType* global_var,
-                           VariableRef* global_var_ref,MatVarSpace mvs)
-: BaseClass(v,global_var,global_var_ref,mvs)
+                           VariableRef* global_var_ref, MatVarSpace mvs)
+: BaseClass(v, global_var, global_var_ref, mvs)
 {
 }
 
@@ -158,16 +158,16 @@ ItemMaterialVariableScalar(const MaterialVariableBuildInfo& v,
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
+fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values)
 {
   // TODO: make a version with IMeshComponent
   Integer index = 0;
-  ENUMERATE_COMPONENTITEM(MatCell,imatcell,mat){
+  ENUMERATE_COMPONENTITEM (MatCell, imatcell, mat) {
     MatCell mc = *imatcell;
     MatVarIndex mvi = mc._varIndex();
-    setValue(mvi,values[index]);
+    setValue(mvi, values[index]);
     ++index;
   }
 }
@@ -187,16 +187,16 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,
+fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values,
               Int32ConstArrayView indexes)
 {
   ConstArrayView<MatVarIndex> mat_indexes = mat->_internalApi()->variableIndexer()->matvarIndexes();
   Integer nb_index = indexes.size();
-  for( Integer i=0; i<nb_index; ++i ){
+  for (Integer i = 0; i < nb_index; ++i) {
     MatVarIndex mvi = mat_indexes[indexes[i]];
-    setValue(mvi,values[i]);
+    setValue(mvi, values[i]);
   }
 }
 
@@ -215,12 +215,12 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-fillToArray(IMeshMaterial* mat,ArrayView<DataType> values)
+fillToArray(IMeshMaterial* mat, ArrayView<DataType> values)
 {
-  Integer index=0;
-  ENUMERATE_COMPONENTITEM(MatCell,imatcell,mat){
+  Integer index = 0;
+  ENUMERATE_COMPONENTITEM (MatCell, imatcell, mat) {
     MatCell mc = *imatcell;
     MatVarIndex mvi = mc._varIndex();
     values[index] = this->operator[](mvi);
@@ -243,13 +243,13 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values)
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes)
+fillToArray(IMeshMaterial* mat, ArrayView<DataType> values, Int32ConstArrayView indexes)
 {
   ConstArrayView<MatVarIndex> mat_indexes = mat->_internalApi()->variableIndexer()->matvarIndexes();
   Integer nb_index = indexes.size();
-  for( Integer i=0; i<nb_index; ++i ){
+  for (Integer i = 0; i < nb_index; ++i) {
     MatVarIndex mvi = mat_indexes[indexes[i]];
     values[i] = this->operator[](mvi);
   }
@@ -261,14 +261,14 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView in
 /*!
  * \brief Fills partial values with the value \a value.
  */
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 fillPartialValues(const DataType& value)
 {
   // The index 0 variable corresponds to the global variable.
   // It should therefore not be taken into account.
   Integer nb_var = m_vars.size();
-  for( Integer i=1; i<nb_var; ++i ){
+  for (Integer i = 1; i < nb_var; ++i) {
     if (m_vars[i])
       m_vars[i]->fill(value);
   }
@@ -277,7 +277,7 @@ fillPartialValues(const DataType& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> Int32
+template <typename DataType> Int32
 ItemMaterialVariableScalar<DataType>::
 dataTypeSize() const
 {
@@ -287,15 +287,15 @@ dataTypeSize() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-_copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
+_copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes, Span<std::byte> bytes) const
 {
   // TODO: Check that the size is a multiple of sizeof(DataType) and that
   // the alignment is correct.
   const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
-  ArrayView<DataType> values(value_size,reinterpret_cast<DataType*>(bytes.data()));
-  for( Integer z=0; z<value_size; ++z ){
+  ArrayView<DataType> values(value_size, reinterpret_cast<DataType*>(bytes.data()));
+  for (Integer z = 0; z < value_size; ++z) {
     values[z] = this->operator[](matvar_indexes[z]);
   }
 }
@@ -303,82 +303,82 @@ _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const
+copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes, ByteArrayView bytes) const
 {
   auto* ptr = reinterpret_cast<std::byte*>(bytes.data());
-  return _copyToBufferLegacy(matvar_indexes,{ptr,bytes.size()});
+  return _copyToBufferLegacy(matvar_indexes, { ptr, bytes.size() });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-_copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
+_copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes, Span<const std::byte> bytes)
 {
   // TODO: Check that the size is a multiple of sizeof(DataType) and that
   // the alignment is correct.
   const Int32 value_size = CheckedConvert::toInt32(bytes.size() / sizeof(DataType));
-  ConstArrayView<DataType> values(value_size,reinterpret_cast<const DataType*>(bytes.data()));
-  for( Integer z=0; z<value_size; ++z ){
-    setValue(matvar_indexes[z],values[z]);
+  ConstArrayView<DataType> values(value_size, reinterpret_cast<const DataType*>(bytes.data()));
+  for (Integer z = 0; z < value_size; ++z) {
+    setValue(matvar_indexes[z], values[z]);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes)
+copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes, ByteConstArrayView bytes)
 {
   auto* ptr = reinterpret_cast<const std::byte*>(bytes.data());
-  return _copyFromBufferLegacy(matvar_indexes,{ptr,bytes.size()});
+  return _copyFromBufferLegacy(matvar_indexes, { ptr, bytes.size() });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 synchronize()
 {
   IParallelMng* pm = m_p->materialMng()->mesh()->parallelMng();
-  Timer timer(pm->timerMng(),"MatTimer",Timer::TimerReal);
+  Timer timer(pm->timerMng(), "MatTimer", Timer::TimerReal);
   Int64 message_size = 0;
   {
     Timer::Sentry ts(&timer);
     message_size = _synchronize2();
   }
-  pm->stat()->add("MaterialSync",timer.lastActivationTime(),message_size);
+  pm->stat()->add("MaterialSync", timer.lastActivationTime(), message_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> Int64
+template <typename DataType> Int64
 ItemMaterialVariableScalar<DataType>::
 _synchronize2()
 {
   Int64 message_size = 0;
   Integer sync_version = m_p->materialMng()->synchronizeVariableVersion();
   // Only versions 6 and later are available for medium variables.
-  if (m_p->space()==MatVarSpace::Environment){
-    if (sync_version<6)
+  if (m_p->space() == MatVarSpace::Environment) {
+    if (sync_version < 6)
       sync_version = 6;
   }
-  if (sync_version>=6){
+  if (sync_version >= 6) {
     MeshMaterialVariableSynchronizerList mmvsl(m_p->materialMng());
     mmvsl.add(this);
     mmvsl.apply();
     message_size = mmvsl.totalMessageSize();
   }
-  else if (sync_version==5 || sync_version==4 || sync_version==3){
+  else if (sync_version == 5 || sync_version == 4 || sync_version == 3) {
     _synchronizeV5();
   }
-  else if (sync_version==2){
+  else if (sync_version == 2) {
     _synchronizeV2();
   }
   else
@@ -389,12 +389,12 @@ _synchronize2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 synchronize(MeshMaterialVariableSynchronizerList& sync_list)
 {
   Integer sync_version = m_p->materialMng()->synchronizeVariableVersion();
-  if (sync_version>=6){
+  if (sync_version >= 6) {
     sync_list.add(this);
   }
   else
@@ -404,7 +404,7 @@ synchronize(MeshMaterialVariableSynchronizerList& sync_list)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _synchronizeV1()
 {
@@ -443,15 +443,15 @@ _synchronizeV1()
     saved_values.copy(var_values);
   }
 
-  ENUMERATE_ENV(ienv,material_mng){
+  ENUMERATE_ENV (ienv, material_mng) {
     IMeshEnvironment* env = *ienv;
-    ENUMERATE_MAT(imat,env){
+    ENUMERATE_MAT (imat, env) {
       IMeshMaterial* mat = *imat;
-      
+
       {
         ArrayView<DataType> var_values = m_global_variable->valueView();
         // Copy material values into the global variable then synchronize
-        ENUMERATE_MATCELL(imatcell,mat){
+        ENUMERATE_MATCELL (imatcell, mat) {
           MatCell mc = *imatcell;
           Cell c = mc.globalCell();
           MatVarIndex mvi = mc._varIndex();
@@ -462,21 +462,20 @@ _synchronizeV1()
       {
         ConstArrayView<DataType> var_values = m_global_variable->valueView();
         // Copy values from the global variable into the material part
-        ENUMERATE_MATCELL(imatcell,mat){
+        ENUMERATE_MATCELL (imatcell, mat) {
           MatCell mc = *imatcell;
           Cell c = mc.globalCell();
           MatVarIndex mvi = mc._varIndex();
-          setValue(mvi,var_values[c.localId()]);
+          setValue(mvi, var_values[c.localId()]);
         }
       }
-
     }
 
     // Do the same for the environment
     {
       ArrayView<DataType> var_values = m_global_variable->valueView();
       // Copy environment values into the global variable then synchronize
-      ENUMERATE_ENVCELL(ienvcell,env){
+      ENUMERATE_ENVCELL (ienvcell, env) {
         EnvCell ec = *ienvcell;
         Cell c = ec.globalCell();
         MatVarIndex mvi = ec._varIndex();
@@ -487,11 +486,11 @@ _synchronizeV1()
     {
       ConstArrayView<DataType> var_values = m_global_variable->valueView();
       // Copy values from the global variable into the environment part
-      ENUMERATE_ENVCELL(ienvcell,env){
+      ENUMERATE_ENVCELL (ienvcell, env) {
         EnvCell ec = *ienvcell;
         Cell c = ec.globalCell();
         MatVarIndex mvi = ec._varIndex();
-        setValue(mvi,var_values[c.localId()]);
+        setValue(mvi, var_values[c.localId()]);
       }
     }
   }
@@ -507,7 +506,7 @@ _synchronizeV1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _synchronizeV2()
 {
@@ -541,25 +540,25 @@ _synchronizeV2()
   tm->info(4) << "MAT_SYNCHRONIZE_V2 name=" << this->name();
   IDataFactoryMng* df = m_global_variable->dataFactoryMng();
 
-  DataStorageTypeInfo storage_type_info(VariableInfo::_internalGetStorageTypeInfo(m_global_variable->dataType(),2,0));
+  DataStorageTypeInfo storage_type_info(VariableInfo::_internalGetStorageTypeInfo(m_global_variable->dataType(), 2, 0));
   DataStorageBuildInfo storage_build_info(tm);
   String storage_full_type = storage_type_info.fullName();
 
-  Ref<IData> xdata(df->createSimpleDataRef(storage_full_type,storage_build_info));
-  auto* data = dynamic_cast< IArray2DataT<DataType>* >(xdata.get());
+  Ref<IData> xdata(df->createSimpleDataRef(storage_full_type, storage_build_info));
+  auto* data = dynamic_cast<IArray2DataT<DataType>*>(xdata.get());
   if (!data)
     ARCANE_FATAL("Bad type");
 
   ConstArrayView<MeshMaterialVariableIndexer*> indexers = material_mng->_internalApi()->variablesIndexer();
   Integer nb_indexer = indexers.size();
-  data->_internal()->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
+  data->_internal()->_internalDeprecatedValue().resize(family->maxLocalId(), nb_indexer + 1);
   Array2View<DataType> values(data->view());
 
   // Copy partial values into the array.
-  for( MeshMaterialVariableIndexer* indexer : indexers ){
+  for (MeshMaterialVariableIndexer* indexer : indexers) {
     ConstArrayView<MatVarIndex> matvar_indexes = indexer->matvarIndexes();
     ConstArrayView<Int32> local_ids = indexer->localIds();
-    for( Integer j=0, n=matvar_indexes.size(); j<n; ++j ){
+    for (Integer j = 0, n = matvar_indexes.size(); j < n; ++j) {
       MatVarIndex mvi = matvar_indexes[j];
       values[local_ids[j]][mvi.arrayIndex()] = this->operator[](mvi);
     }
@@ -567,12 +566,12 @@ _synchronizeV2()
   family->allItemsSynchronizer()->synchronizeData(data);
 
   // Copy the synchronized array into the partial values.
-  for( MeshMaterialVariableIndexer* indexer : indexers ){
+  for (MeshMaterialVariableIndexer* indexer : indexers) {
     ConstArrayView<MatVarIndex> matvar_indexes = indexer->matvarIndexes();
     ConstArrayView<Int32> local_ids = indexer->localIds();
-    for( Integer j=0, n=matvar_indexes.size(); j<n; ++j ){
+    for (Integer j = 0, n = matvar_indexes.size(); j < n; ++j) {
       MatVarIndex mvi = matvar_indexes[j];
-      setValue(mvi,values[local_ids[j]][mvi.arrayIndex()]);
+      setValue(mvi, values[local_ids[j]][mvi.arrayIndex()]);
     }
   }
 
@@ -582,7 +581,7 @@ _synchronizeV2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _synchronizeV5()
 {
@@ -612,47 +611,47 @@ _synchronizeV5()
   {
     Int32ConstArrayView ranks = var_syncer->communicatingRanks();
     Integer nb_rank = ranks.size();
-    std::vector< UniqueArray<DataType> > shared_values(nb_rank);
-    std::vector< UniqueArray<DataType> > ghost_values(nb_rank);
+    std::vector<UniqueArray<DataType>> shared_values(nb_rank);
+    std::vector<UniqueArray<DataType>> ghost_values(nb_rank);
 
     UniqueArray<Parallel::Request> requests;
 
     // Post the receives.
     Int32UniqueArray recv_ranks(nb_rank);
-    for( Integer i=0; i<nb_rank; ++i ){
+    for (Integer i = 0; i < nb_rank; ++i) {
       Int32 rank = ranks[i];
       ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
       Integer total = ghost_matcells.size();
       ghost_values[i].resize(total);
-      Integer total_byte = CheckedConvert::multiply(total,data_type_size);
-      ByteArrayView bytes(total_byte,(Byte*)(ghost_values[i].unguardedBasePointer()));
-      requests.add(pm->recv(bytes,rank,false));
+      Integer total_byte = CheckedConvert::multiply(total, data_type_size);
+      ByteArrayView bytes(total_byte, (Byte*)(ghost_values[i].unguardedBasePointer()));
+      requests.add(pm->recv(bytes, rank, false));
     }
 
     // Post the sends
-    for( Integer i=0; i<nb_rank; ++i ){
+    for (Integer i = 0; i < nb_rank; ++i) {
       Int32 rank = ranks[i];
       ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
       Integer total = shared_matcells.size();
       shared_values[i].resize(total);
       ArrayView<DataType> values(shared_values[i]);
-      for( Integer z=0; z<total; ++z ){
+      for (Integer z = 0; z < total; ++z) {
         values[z] = this->operator[](shared_matcells[z]);
       }
-      Integer total_byte = CheckedConvert::multiply(total,data_type_size);
-      ByteArrayView bytes(total_byte,(Byte*)(values.unguardedBasePointer()));
-      requests.add(pm->send(bytes,rank,false));
+      Integer total_byte = CheckedConvert::multiply(total, data_type_size);
+      ByteArrayView bytes(total_byte, (Byte*)(values.unguardedBasePointer()));
+      requests.add(pm->send(bytes, rank, false));
     }
 
     pm->waitAllRequests(requests);
 
     // Copy the received data into the ghost meshes.
-    for( Integer i=0; i<nb_rank; ++i ){
+    for (Integer i = 0; i < nb_rank; ++i) {
       ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
       Integer total = ghost_matcells.size();
       ConstArrayView<DataType> values(ghost_values[i].constView());
-      for( Integer z=0; z<total; ++z ){
-        setValue(ghost_matcells[z],values[z]);
+      for (Integer z = 0; z < total; ++z) {
+        setValue(ghost_matcells[z], values[z]);
       }
     }
   }
@@ -661,18 +660,18 @@ _synchronizeV5()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-dumpValues(std::ostream& ostr,AllEnvCellVectorView view)
+dumpValues(std::ostream& ostr, AllEnvCellVectorView view)
 {
   ostr << "Dumping values for material variable name=" << this->name() << '\n';
-  ENUMERATE_ALLENVCELL(iallenvcell,view){
+  ENUMERATE_ALLENVCELL (iallenvcell, view) {
     AllEnvCell all_env_cell = *iallenvcell;
     ostr << "Cell uid=" << ItemPrinter(all_env_cell.globalCell()) << " v=" << value(all_env_cell._varIndex()) << '\n';
-    for( CellComponentCellEnumerator ienvcell(all_env_cell); ienvcell.hasNext(); ++ienvcell ){
+    for (CellComponentCellEnumerator ienvcell(all_env_cell); ienvcell.hasNext(); ++ienvcell) {
       MatVarIndex evi = ienvcell._varIndex();
       ostr << "env_value=" << value(evi) << ", mvi=" << evi << '\n';
-      for( CellComponentCellEnumerator imatcell(*ienvcell); imatcell.hasNext(); ++imatcell ){
+      for (CellComponentCellEnumerator imatcell(*ienvcell); imatcell.hasNext(); ++imatcell) {
         MatVarIndex mvi = imatcell._varIndex();
         ostr << "mat_value=" << value(mvi) << ", mvi=" << mvi << '\n';
       }
@@ -683,7 +682,7 @@ dumpValues(std::ostream& ostr,AllEnvCellVectorView view)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 dumpValues(std::ostream& ostr)
 {
@@ -692,15 +691,15 @@ dumpValues(std::ostream& ostr)
   if (!family)
     return;
   IMeshMaterialMng* material_mng = m_p->materialMng();
-  dumpValues(ostr,material_mng->view(family->allItems()));
+  dumpValues(ostr, material_mng->view(family->allItems()));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemMaterialVariableScalar<DataType>::
-serialize(ISerializer* sbuf,Int32ConstArrayView ids)
+serialize(ISerializer* sbuf, Int32ConstArrayView ids)
 {
   IItemFamily* family = m_global_variable->itemFamily();
   if (!family)
@@ -711,69 +710,63 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
   const eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   ItemVectorView ids_view(family->view(ids));
-  bool has_mat = this->space()!=MatVarSpace::Environment;
-  switch(sbuf->mode()){
-  case ISerializer::ModeReserve:
-    {
-      Integer nb_val = 0;
-      ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
-        ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
-          EnvCell envcell = *ienvcell;
-          ++nb_val; // 1 value for the environment
-          if (has_mat)
-            nb_val += envcell.nbMaterial(); // 1 value per material in the environment.
-        }
+  bool has_mat = this->space() != MatVarSpace::Environment;
+  switch (sbuf->mode()) {
+  case ISerializer::ModeReserve: {
+    Integer nb_val = 0;
+    ENUMERATE_ALLENVCELL (iallenvcell, mat_mng, ids_view) {
+      ENUMERATE_CELL_ENVCELL (ienvcell, (*iallenvcell)) {
+        EnvCell envcell = *ienvcell;
+        ++nb_val; // 1 value for the environment
+        if (has_mat)
+          nb_val += envcell.nbMaterial(); // 1 value per material in the environment.
       }
-      tm->info() << "RESERVE: nb_value=" << 1 << " size=" << (nb_val*nb_count);
-      sbuf->reserveInt64(1);  // For the number of values.
-      sbuf->reserveSpan(data_type,nb_val*nb_count);  // For the number of values.
     }
-    break;
-  case ISerializer::ModePut:
-    {
-      UniqueArray<DataType> values;
-      ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
-        ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
-          values.add(value(ienvcell._varIndex()));
-          if (has_mat){
-            ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
-              values.add(value(imatcell._varIndex()));
-            }
-          }
-        }
-      }
-      Integer nb_value = values.size();
-      ConstArrayView<BasicType> basic_values(nb_value*nb_count, reinterpret_cast<BasicType*>(values.data()));
-      tm->info() << "PUT: nb_value=" << nb_value << " size=" << basic_values.size();
-      sbuf->putInt64(nb_value);
-      sbuf->putSpan(basic_values);
-    }
-    break;
-  case ISerializer::ModeGet:
-    {
-      UniqueArray<BasicType> basic_values;
-      Int64 nb_value = sbuf->getInt64();
-      basic_values.resize(nb_value*nb_count);
-      sbuf->getSpan(basic_values);
-      Span<const DataType> data_values(reinterpret_cast<DataType*>(basic_values.data()),nb_value);
-      Integer index = 0;
-      ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
-        ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
-          EnvCell envcell = *ienvcell;
-          setValue(ienvcell._varIndex(),data_values[index]);
-          ++index;
-          if (has_mat){
-            ENUMERATE_CELL_MATCELL(imatcell,envcell){
-              setValue(imatcell._varIndex(),data_values[index]);
-              ++index;
-            }
+    tm->info() << "RESERVE: nb_value=" << 1 << " size=" << (nb_val * nb_count);
+    sbuf->reserveInt64(1); // For the number of values.
+    sbuf->reserveSpan(data_type, nb_val * nb_count); // For the number of values.
+  } break;
+  case ISerializer::ModePut: {
+    UniqueArray<DataType> values;
+    ENUMERATE_ALLENVCELL (iallenvcell, mat_mng, ids_view) {
+      ENUMERATE_CELL_ENVCELL (ienvcell, (*iallenvcell)) {
+        values.add(value(ienvcell._varIndex()));
+        if (has_mat) {
+          ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
+            values.add(value(imatcell._varIndex()));
           }
         }
       }
     }
-    break;
+    Integer nb_value = values.size();
+    ConstArrayView<BasicType> basic_values(nb_value * nb_count, reinterpret_cast<BasicType*>(values.data()));
+    tm->info() << "PUT: nb_value=" << nb_value << " size=" << basic_values.size();
+    sbuf->putInt64(nb_value);
+    sbuf->putSpan(basic_values);
+  } break;
+  case ISerializer::ModeGet: {
+    UniqueArray<BasicType> basic_values;
+    Int64 nb_value = sbuf->getInt64();
+    basic_values.resize(nb_value * nb_count);
+    sbuf->getSpan(basic_values);
+    Span<const DataType> data_values(reinterpret_cast<DataType*>(basic_values.data()), nb_value);
+    Integer index = 0;
+    ENUMERATE_ALLENVCELL (iallenvcell, mat_mng, ids_view) {
+      ENUMERATE_CELL_ENVCELL (ienvcell, (*iallenvcell)) {
+        EnvCell envcell = *ienvcell;
+        setValue(ienvcell._varIndex(), data_values[index]);
+        ++index;
+        if (has_mat) {
+          ENUMERATE_CELL_MATCELL (imatcell, envcell) {
+            setValue(imatcell._varIndex(), data_values[index]);
+            ++index;
+          }
+        }
+      }
+    }
+  } break;
   default:
-    throw NotSupportedException(A_FUNCINFO,"Invalid serialize");
+    throw NotSupportedException(A_FUNCINFO, "Invalid serialize");
   }
 }
 
@@ -783,11 +776,11 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-MeshMaterialVariableScalar<ItemType,DataType>::
-MeshMaterialVariableScalar(const MaterialVariableBuildInfo& v,PrivatePartType* global_var,
-                           VariableRefType* global_var_ref,MatVarSpace mvs)
-: ItemMaterialVariableScalar<DataType>(v,global_var,global_var_ref,mvs)
+template <typename ItemType, typename DataType>
+MeshMaterialVariableScalar<ItemType, DataType>::
+MeshMaterialVariableScalar(const MaterialVariableBuildInfo& v, PrivatePartType* global_var,
+                           VariableRefType* global_var_ref, MatVarSpace mvs)
+: ItemMaterialVariableScalar<DataType>(v, global_var, global_var_ref, mvs)
 , m_true_global_variable_ref(global_var_ref) // Will be destroyed by the base class
 {
 }
@@ -795,8 +788,8 @@ MeshMaterialVariableScalar(const MaterialVariableBuildInfo& v,PrivatePartType* g
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-MeshMaterialVariableScalar<ItemType,DataType>::
+template <typename ItemType, typename DataType>
+MeshMaterialVariableScalar<ItemType, DataType>::
 ~MeshMaterialVariableScalar()
 {
 }
@@ -808,15 +801,15 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ItemMaterialVariableBase< MaterialVariableScalarTraits<type> >;\
-  template class ItemMaterialVariableScalar<type>;\
-  template class MeshMaterialVariableScalar<Cell,type>;\
-  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableScalar<Cell,type>>
+  template class ItemMaterialVariableBase<MaterialVariableScalarTraits<type>>; \
+  template class ItemMaterialVariableScalar<type>; \
+  template class MeshMaterialVariableScalar<Cell, type>; \
+  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableScalar<Cell, type>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::materials
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

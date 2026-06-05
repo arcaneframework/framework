@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ MeshComponentData(IMeshComponent* component, const String& name,
 , m_component(component)
 , m_component_id(component_id)
 , m_name(name)
-, m_constituent_local_id_list(shared_info, String("MeshComponentDataIdList")+name)
+, m_constituent_local_id_list(shared_info, String("MeshComponentDataIdList") + name)
 , m_recompute_part_data_functor(this, &MeshComponentData::_rebuildPartDataDirect)
 {
   if (create_indexer) {
@@ -190,9 +190,9 @@ checkValid()
 
   // Checks that the groups are consistent between this instance
   // and the group in m_variable_indexer
-  if (m_items!=m_variable_indexer->cells())
+  if (m_items != m_variable_indexer->cells())
     ARCANE_FATAL("Incoherent group for component name={0} data={1} indexer={2}",
-                 name(),m_items.name(),m_variable_indexer->cells().name());
+                 name(), m_items.name(), m_variable_indexer->cells().name());
 
   // Checks that the list of indexer->localIds() and the one
   // from the 'cells' group is the same. To do this, an array
@@ -204,17 +204,17 @@ checkValid()
     IItemFamily* family = m_items.itemFamily();
     UniqueArray<Int32> presence(family->maxLocalId());
     presence.fill(0);
-    ENUMERATE_ITEM(iitem,m_items){
+    ENUMERATE_ITEM (iitem, m_items) {
       presence[iitem.itemLocalId()] = 1;
     }
     Int32ConstArrayView indexer_local_ids = m_variable_indexer->localIds();
-    for( Integer i=0, n=indexer_local_ids.size(); i<n; ++i )
+    for (Integer i = 0, n = indexer_local_ids.size(); i < n; ++i)
       presence[indexer_local_ids[i]] += 2;
     ItemInfoListView items_internal = family->itemInfoListView();
     Integer nb_error = 0;
-    for( Integer i=0, n=presence.size(); i<n; ++i ){
+    for (Integer i = 0, n = presence.size(); i < n; ++i) {
       Int32 v = presence[i];
-      if (v==3 || v==0)
+      if (v == 3 || v == 0)
         continue;
       Cell cell(items_internal[i]);
       ++nb_error;
@@ -222,7 +222,7 @@ checkValid()
               << " component=" << name() << " v=" << v
               << " cell=" << ItemPrinter(cell);
     }
-    if (nb_error!=0){
+    if (nb_error != 0) {
       warning() << "WARNING: Incoherence between group and internals "
                 << " component=" << name() << " nb_error=" << nb_error;
     }
@@ -233,14 +233,14 @@ checkValid()
   ConstArrayView<MatVarIndex> mat_var_indexes(m_variable_indexer->matvarIndexes());
   Integer nb_val = mat_var_indexes.size();
   info(4) << "CheckValid component_name=" << name()
-         << " matvar_indexes=" << mat_var_indexes;
+          << " matvar_indexes=" << mat_var_indexes;
   info(4) << "Cells=" << m_variable_indexer->cells().view().localIds();
-  for( Integer i=0; i<nb_val; ++ i){
+  for (Integer i = 0; i < nb_val; ++i) {
     MatVarIndex component_mvi = m_constituent_local_id_list.variableIndex(i);
     MatVarIndex mvi = mat_var_indexes[i];
-    if (component_mvi!=mvi)
+    if (component_mvi != mvi)
       ARCANE_FATAL("Bad 'var_index' environment={3} component='{0}' direct='{1}' i={2}",
-                   component_mvi,mvi,i,name());
+                   component_mvi, mvi, i, name());
   }
 
   if (m_part_data)
@@ -250,7 +250,7 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

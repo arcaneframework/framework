@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -30,6 +30,7 @@
 
 namespace Arcane::Materials
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -94,7 +95,7 @@ checkMaterialsInCells(Integer max_print)
 
   info(4) << "CheckMaterialsInCells";
 
-  VariableCellInt32 indexes(VariableBuildInfo(mesh,"ArcaneMaterialPresenceIndexes"));
+  VariableCellInt32 indexes(VariableBuildInfo(mesh, "ArcaneMaterialPresenceIndexes"));
   _checkComponents(indexes, m_material_mng->materialsAsComponents(), max_print);
   _checkComponents(indexes, m_material_mng->environmentsAsComponents(), max_print);
 
@@ -118,25 +119,25 @@ _checkComponents(VariableCellInt32& indexes,
 
   CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
 
-  for( Integer i=0; i<nb_component; ++i ){
+  for (Integer i = 0; i < nb_component; ++i) {
     indexes.fill(-1);
     IMeshComponent* c = components[i];
-    ENUMERATE_COMPONENTCELL(iccell,c){
+    ENUMERATE_COMPONENTCELL (iccell, c) {
       ComponentCell cc = *iccell;
       indexes[cc.globalCell()] = i;
     }
 
     indexes.synchronize();
 
-    ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,mesh->allCells()){
+    ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, mesh->allCells()) {
       AllEnvCell all_env_cell = *iallenvcell;
       Cell cell = all_env_cell.globalCell();
-      bool has_sync_mat = (indexes[cell]==i);
+      bool has_sync_mat = (indexes[cell] == i);
       ComponentCell cc = c->findComponentCell(all_env_cell);
       bool has_component = !cc.null();
-      if (has_sync_mat!=has_component){
+      if (has_sync_mat != has_component) {
         ++nb_error;
-        if (max_print<0 || nb_error<max_print)
+        if (max_print < 0 || nb_error < max_print)
           error() << "Bad component synchronisation for i=" << i
                   << " name=" << c->name()
                   << " cell_uid=" << cell.uniqueId()
@@ -145,7 +146,7 @@ _checkComponents(VariableCellInt32& indexes,
       }
     }
   }
-  if (nb_error!=0)
+  if (nb_error != 0)
     ARCANE_FATAL("Bad synchronisation");
 }
 

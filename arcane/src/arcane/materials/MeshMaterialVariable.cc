@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -58,19 +58,19 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariablePrivate::
-MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs,
+MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v, MatVarSpace mvs,
                             MeshMaterialVariable* variable)
 : m_name(v.name())
 , m_material_mng(v.materialMng())
 , m_var_space(mvs)
 , m_variable(variable)
 {
- // For testing only
- if (!platform::getEnvironmentVariable("ARCANE_NO_RECURSIVE_DEPEND").null())
-   m_has_recursive_depend = false;
-} 
+  // For testing only
+  if (!platform::getEnvironmentVariable("ARCANE_NO_RECURSIVE_DEPEND").null())
+    m_has_recursive_depend = false;
+}
 
- /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariablePrivate::
@@ -79,7 +79,7 @@ MeshMaterialVariablePrivate::
   if (m_global_variable_changed_observer)
     std::cerr << "WARNING: MeshMaterialVariablePrivate: in destructor: observer is not destroyed\n";
 }
- 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -96,7 +96,7 @@ void MeshMaterialVariablePrivate::
 copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
              Span<std::byte> bytes, RunQueue* queue) const
 {
-  m_variable->_copyToBuffer(matvar_indexes,bytes,queue);
+  m_variable->_copyToBuffer(matvar_indexes, bytes, queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +106,7 @@ void MeshMaterialVariablePrivate::
 copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                Span<const std::byte> bytes, RunQueue* queue)
 {
-  m_variable->_copyFromBuffer(matvar_indexes,bytes,queue);
+  m_variable->_copyFromBuffer(matvar_indexes, bytes, queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -122,19 +122,19 @@ internalCreateSaveDataRef(Integer nb_value)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-saveData(IMeshComponent* component,IData* data)
+saveData(IMeshComponent* component, IData* data)
 {
-  m_variable->_saveData(component,data);
+  m_variable->_saveData(component, data);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariablePrivate::
-restoreData(IMeshComponent* component,IData* data,Integer data_index,
-            Int32ConstArrayView ids,bool allow_null_id)
+restoreData(IMeshComponent* component, IData* data, Integer data_index,
+            Int32ConstArrayView ids, bool allow_null_id)
 {
-  m_variable->_restoreData(component,data,data_index,ids,allow_null_id);
+  m_variable->_restoreData(component, data, data_index, ids, allow_null_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -180,8 +180,8 @@ resizeForIndexer(ResizeVariableIndexerArgs& args)
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariable::
-MeshMaterialVariable(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-: m_p(new MeshMaterialVariablePrivate(v,mvs,this))
+MeshMaterialVariable(const MaterialVariableBuildInfo& v, MatVarSpace mvs)
+: m_p(new MeshMaterialVariablePrivate(v, mvs, this))
 , m_views_as_bytes(MemoryUtils::getAllocatorForMostlyReadOnlyData())
 {
 }
@@ -219,13 +219,13 @@ addVariableRef(MeshMaterialVariableRef* ref)
   Mutex::ScopedLock sl(m_p->materialMng()->variableLock());
   // The increment of m_p->m_nb_reference is done in getReference()
   ref->setNextReference(m_p->m_first_reference);
-  if (m_p->m_first_reference){
+  if (m_p->m_first_reference) {
     MeshMaterialVariableRef* _list = m_p->m_first_reference;
     if (_list->previousReference())
       _list->previousReference()->setNextReference(ref);
     _list->setPreviousReference(ref);
   }
-  else{
+  else {
     ref->setPreviousReference(nullptr);
   }
   m_p->m_first_reference = ref;
@@ -244,7 +244,7 @@ removeVariableRef(MeshMaterialVariableRef* ref)
     tmp->previousReference()->setNextReference(tmp->nextReference());
   if (tmp->nextReference())
     tmp->nextReference()->setPreviousReference(tmp->previousReference());
-  if (m_p->m_first_reference==tmp)
+  if (m_p->m_first_reference == tmp)
     m_p->m_first_reference = m_p->m_first_reference->nextReference();
 
   // The reference may be used later, so we must not forget
@@ -257,12 +257,12 @@ removeVariableRef(MeshMaterialVariableRef* ref)
   // Checks that the number of references is valid.
   // In case of an error, we cannot display anything, because it is possible that m_p has
   // already been destroyed.
-  if (nb_ref<0)
+  if (nb_ref < 0)
     ARCANE_FATAL("Invalid reference number for variable");
 
   // When there are no more references on this variable, it signals to the
   // variable manager and destroys itself
-  if (nb_ref==0){
+  if (nb_ref == 0) {
     // Warning: the observer must first be destroyed,
     // because removeVariable() may destroy the global variable if there are no
     // more references on it and since an observer will remain on it,
@@ -318,7 +318,7 @@ setKeepOnChange(bool v)
 bool MeshMaterialVariable::
 keepOnChange() const
 {
-  return  m_p->m_keep_on_change;
+  return m_p->m_keep_on_change;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -327,12 +327,12 @@ keepOnChange() const
 void MeshMaterialVariable::
 update(IMeshMaterial* mat)
 {
-  if (m_p->hasRecursiveDepend()){
-    for( VariableDependInfo& vdi : m_p->m_depends ){
+  if (m_p->hasRecursiveDepend()) {
+    for (VariableDependInfo& vdi : m_p->m_depends) {
       vdi.variable()->update();
     }
 
-    for( MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends ){
+    for (MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends) {
       vdi.variable()->update(mat);
     }
   }
@@ -340,30 +340,30 @@ update(IMeshMaterial* mat)
 
   bool need_update = false;
   Int64 modified_time = m_p->m_modified_times[mat_id];
-  for( VariableDependInfo& vdi : m_p->m_depends ){
+  for (VariableDependInfo& vdi : m_p->m_depends) {
     Int64 mt = vdi.variable()->modifiedTime();
-    if (mt>modified_time){
+    if (mt > modified_time) {
       need_update = true;
       break;
     }
   }
-  if (!need_update){
-    for( MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends ){
+  if (!need_update) {
+    for (MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends) {
       Int64 mt = vdi.variable()->modifiedTime(mat);
-      if (mt>modified_time){
+      if (mt > modified_time) {
         need_update = true;
         break;
       }
     }
   }
 
-  if (need_update){
+  if (need_update) {
     IMeshMaterialVariableComputeFunction* cf = m_p->m_compute_function.get();
-    if (cf){
+    if (cf) {
       cf->execute(mat);
     }
-    else{
-      ARCANE_FATAL("no compute function for variable '{0}'",name());
+    else {
+      ARCANE_FATAL("no compute function for variable '{0}'", name());
     }
   }
 }
@@ -388,13 +388,13 @@ modifiedTime(IMeshMaterial* mat)
 void MeshMaterialVariable::
 addDepend(IMeshMaterialVariable* var)
 {
-  m_p->m_mat_depends.add(MeshMaterialVariableDependInfo(var,TraceInfo()));
+  m_p->m_mat_depends.add(MeshMaterialVariableDependInfo(var, TraceInfo()));
 }
 
 void MeshMaterialVariable::
-addDepend(IMeshMaterialVariable* var,const TraceInfo& tinfo)
+addDepend(IMeshMaterialVariable* var, const TraceInfo& tinfo)
 {
-  m_p->m_mat_depends.add(MeshMaterialVariableDependInfo(var,tinfo));
+  m_p->m_mat_depends.add(MeshMaterialVariableDependInfo(var, tinfo));
 }
 
 void MeshMaterialVariable::
@@ -407,13 +407,13 @@ removeDepend(IMeshMaterialVariable* var)
 void MeshMaterialVariable::
 addDepend(IVariable* var)
 {
-  m_p->m_depends.add(VariableDependInfo(var,IVariable::DPT_CurrentTime,TraceInfo()));
+  m_p->m_depends.add(VariableDependInfo(var, IVariable::DPT_CurrentTime, TraceInfo()));
 }
 
 void MeshMaterialVariable::
-addDepend(IVariable* var,const TraceInfo& tinfo)
+addDepend(IVariable* var, const TraceInfo& tinfo)
 {
-  m_p->m_depends.add(VariableDependInfo(var,IVariable::DPT_CurrentTime,tinfo));
+  m_p->m_depends.add(VariableDependInfo(var, IVariable::DPT_CurrentTime, tinfo));
 }
 
 void MeshMaterialVariable::
@@ -425,7 +425,7 @@ removeDepend(IVariable* var)
 
 void MeshMaterialVariable::
 setComputeFunction(IMeshMaterialVariableComputeFunction* v)
-{  
+{
   m_p->m_compute_function = v;
 }
 
@@ -439,11 +439,11 @@ void MeshMaterialVariable::
 dependInfos(Array<VariableDependInfo>& infos,
             Array<MeshMaterialVariableDependInfo>& mat_infos)
 {
-  for( VariableDependInfo& vdi : m_p->m_depends ){
+  for (VariableDependInfo& vdi : m_p->m_depends) {
     infos.add(vdi);
   }
 
-  for( MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends ){
+  for (MeshMaterialVariableDependInfo& vdi : m_p->m_mat_depends) {
     mat_infos.add(vdi);
   }
 }
@@ -474,9 +474,9 @@ space() const
 SmallSpan<const Int32> MeshMaterialVariable::
 _toInt32Indexes(SmallSpan<const MatVarIndex> indexes)
 {
-  static_assert(sizeof(MatVarIndex)==2*sizeof(Int32),"Bad size for MatVarIndex");
+  static_assert(sizeof(MatVarIndex) == 2 * sizeof(Int32), "Bad size for MatVarIndex");
   auto* ptr = reinterpret_cast<const Int32*>(indexes.data());
-  return { ptr, indexes.size()*2 };
+  return { ptr, indexes.size() * 2 };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -489,9 +489,9 @@ _copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   const Integer one_data_size = dataTypeSize();
   SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
   const Int32 nb_item = matvar_indexes.size();
-  MutableMemoryView destination_buffer(makeMutableMemoryView(bytes.data(),one_data_size,nb_item));
-  ConstMultiMemoryView source_view(m_views_as_bytes.view(),one_data_size);
-  MemoryUtils::copyWithIndexedSource(destination_buffer,source_view,indexes,queue);
+  MutableMemoryView destination_buffer(makeMutableMemoryView(bytes.data(), one_data_size, nb_item));
+  ConstMultiMemoryView source_view(m_views_as_bytes.view(), one_data_size);
+  MemoryUtils::copyWithIndexedSource(destination_buffer, source_view, indexes, queue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -504,9 +504,9 @@ _copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
   const Int32 one_data_size = dataTypeSize();
   SmallSpan<const Int32> indexes(_toInt32Indexes(matvar_indexes));
   const Int32 nb_item = matvar_indexes.size();
-  MutableMultiMemoryView destination_view(m_views_as_bytes.view(),one_data_size);
-  ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(),one_data_size,nb_item));
-  MemoryUtils::copyWithIndexedDestination(destination_view, source_buffer,indexes,queue);
+  MutableMultiMemoryView destination_view(m_views_as_bytes.view(), one_data_size);
+  ConstMemoryView source_buffer(makeConstMemoryView(bytes.data(), one_data_size, nb_item));
+  MemoryUtils::copyWithIndexedDestination(destination_view, source_buffer, indexes, queue);
 }
 
 /*---------------------------------------------------------------------------*/

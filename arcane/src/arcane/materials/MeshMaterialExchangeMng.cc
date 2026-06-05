@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,12 +13,12 @@
 
 #include "arcane/utils/FunctorUtils.h"
 
-#include "arcane/IItemFamilySerializeStep.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IItemFamilyPolicyMng.h"
-#include "arcane/ItemFamilySerializeArgs.h"
-#include "arcane/ISerializer.h"
+#include "arcane/core/IItemFamilySerializeStep.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IItemFamilyPolicyMng.h"
+#include "arcane/core/ItemFamilySerializeArgs.h"
+#include "arcane/core/ISerializer.h"
 
 #include "arcane/materials/MeshMaterialExchangeMng.h"
 #include "arcane/materials/MeshMaterialIndirectModifier.h"
@@ -40,16 +40,20 @@ class MeshMaterialExchangeMng::ExchangeCellStep
 , public IItemFamilySerializeStep
 {
  public:
-  ExchangeCellStep(MeshMaterialExchangeMng* exchange_mng,IItemFamily* family)
-  : TraceAccessor(family->traceMng()), m_exchange_mng(exchange_mng),
-    m_material_mng(exchange_mng->m_material_mng), m_family(family),
-    m_indirect_modifier(nullptr)
+
+  ExchangeCellStep(MeshMaterialExchangeMng* exchange_mng, IItemFamily* family)
+  : TraceAccessor(family->traceMng())
+  , m_exchange_mng(exchange_mng)
+  , m_material_mng(exchange_mng->m_material_mng)
+  , m_family(family)
+  , m_indirect_modifier(nullptr)
   {
   }
   ~ExchangeCellStep()
   {
     info() << "DESTROY SERIALIZE_CELLS_MATERIAL";
   }
+
  public:
 
   void initialize() override
@@ -65,7 +69,7 @@ class MeshMaterialExchangeMng::ExchangeCellStep
   }
   void notifyAction(const NotifyActionArgs& args) override
   {
-    if (args.action()==eAction::AC_BeginReceive){
+    if (args.action() == eAction::AC_BeginReceive) {
       // Before deserializing, update the materials because the groups associated
       // with materials and media have changed during the exchange phase:
       // some meshes have been deleted and others added.
@@ -80,7 +84,7 @@ class MeshMaterialExchangeMng::ExchangeCellStep
       delete m_indirect_modifier;
       m_indirect_modifier = nullptr;
     }
-    if (args.action()==eAction::AC_EndReceive){
+    if (args.action() == eAction::AC_EndReceive) {
       info() << "NOTIFY_ACTION END_RECEIVE";
       // Now that the values are good for the variables, we must
       // save them because once the receptions are finished, there will be
@@ -98,11 +102,11 @@ class MeshMaterialExchangeMng::ExchangeCellStep
     ISerializer* sbuf = args.serializer();
 
     // Serialize each variable
-    auto serialize_variables_func = [&](IMeshMaterialVariable* mv){
+    auto serialize_variables_func = [&](IMeshMaterialVariable* mv) {
       info() << "SERIALIZE_MESH_MATERIAL_VARIABLE name=" << mv->name();
-      mv->serialize(sbuf,args.localIds());
+      mv->serialize(sbuf, args.localIds());
     };
-    functor::apply(m_material_mng,&MeshMaterialMng::visitVariables,serialize_variables_func);
+    functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, serialize_variables_func);
   }
   void finalize() override
   {
@@ -114,7 +118,9 @@ class MeshMaterialExchangeMng::ExchangeCellStep
   }
   ePhase phase() const override { return IItemFamilySerializeStep::PH_Variable; }
   IItemFamily* family() const override { return m_family; }
+
  public:
+
   MeshMaterialExchangeMng* m_exchange_mng;
   MeshMaterialMng* m_material_mng;
   IItemFamily* m_family;
@@ -128,9 +134,13 @@ class MeshMaterialExchangeMng::ExchangeCellFactory
 : public IItemFamilySerializeStepFactory
 {
  public:
+
   ExchangeCellFactory(MeshMaterialExchangeMng* exchange_mng)
-  : m_exchange_mng(exchange_mng){}
+  : m_exchange_mng(exchange_mng)
+  {}
+
  public:
+
   IItemFamilySerializeStep* createStep(IItemFamily* family) override
   {
     // Only constructs an instance if we want to keep the values
@@ -138,10 +148,12 @@ class MeshMaterialExchangeMng::ExchangeCellFactory
     // user code must then call IMeshMaterialMng::forceRecompute()
     // to update the material information.
     if (m_exchange_mng->materialMng()->isKeepValuesAfterChange())
-      return new ExchangeCellStep(m_exchange_mng,family);
+      return new ExchangeCellStep(m_exchange_mng, family);
     return nullptr;
   }
+
  public:
+
   MeshMaterialExchangeMng* m_exchange_mng;
 };
 
@@ -163,7 +175,7 @@ MeshMaterialExchangeMng(MeshMaterialMng* material_mng)
 MeshMaterialExchangeMng::
 ~MeshMaterialExchangeMng()
 {
-  if (m_serialize_cells_factory){
+  if (m_serialize_cells_factory) {
     IItemFamily* cell_family = m_material_mng->mesh()->cellFamily();
     cell_family->policyMng()->removeSerializeStep(m_serialize_cells_factory);
     delete m_serialize_cells_factory;
@@ -212,7 +224,7 @@ materialMng() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

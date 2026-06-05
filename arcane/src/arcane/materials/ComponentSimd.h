@@ -32,9 +32,9 @@
 /*---------------------------------------------------------------------------*/
 
 #ifdef __INTEL_COMPILER
-#  define A_ALIGNED_64 __attribute__((align_value(64)))
+#define A_ALIGNED_64 __attribute__((align_value(64)))
 #else
-#  define A_ALIGNED_64
+#define A_ALIGNED_64
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -52,14 +52,17 @@ namespace Arcane::Materials
 class ARCANE_MATERIALS_EXPORT ARCANE_ALIGNAS(64) SimdMatVarIndex
 {
  public:
+
   typedef SimdEnumeratorBase::SimdIndexType SimdIndexType;
+
  public:
 
-  SimdMatVarIndex(Int32 array_index,SimdIndexType value_index)
-  : m_value_index(value_index), m_array_index(array_index)
+  SimdMatVarIndex(Int32 array_index, SimdIndexType value_index)
+  : m_value_index(value_index)
+  , m_array_index(array_index)
   {
   }
-  SimdMatVarIndex(){}
+  SimdMatVarIndex() {}
 
  public:
 
@@ -86,19 +89,25 @@ class ARCANE_MATERIALS_EXPORT ComponentPartSimdCellEnumerator
 : public SimdEnumeratorBase
 {
  protected:
-  ComponentPartSimdCellEnumerator(IMeshComponent* component,Int32 component_part_index,
+
+  ComponentPartSimdCellEnumerator(IMeshComponent* component, Int32 component_part_index,
                                   Int32ConstArrayView item_indexes)
-  : SimdEnumeratorBase(item_indexes), m_component_part_index(component_part_index), m_component(component)
+  : SimdEnumeratorBase(item_indexes)
+  , m_component_part_index(component_part_index)
+  , m_component(component)
   {
   }
- public:
-  static ComponentPartSimdCellEnumerator create(ComponentPartItemVectorView v)
-  {
-    return ComponentPartSimdCellEnumerator(v.component(),v.componentPartIndex(),v.valueIndexes());
-  }
+
  public:
 
-  SimdMatVarIndex _varIndex() const { return SimdMatVarIndex(m_component_part_index,*_currentSimdIndex()); }
+  static ComponentPartSimdCellEnumerator create(ComponentPartItemVectorView v)
+  {
+    return ComponentPartSimdCellEnumerator(v.component(), v.componentPartIndex(), v.valueIndexes());
+  }
+
+ public:
+
+  SimdMatVarIndex _varIndex() const { return SimdMatVarIndex(m_component_part_index, *_currentSimdIndex()); }
 
   operator SimdMatVarIndex() const
   {
@@ -106,6 +115,7 @@ class ARCANE_MATERIALS_EXPORT ComponentPartSimdCellEnumerator
   }
 
  protected:
+
   Integer m_component_part_index;
   IMeshComponent* m_component;
 };
@@ -119,21 +129,22 @@ arcaneImplCreateConstituentEnumerator(ComponentPartSimdCell, ComponentPartItemVe
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ENUMERATE_SIMD_COMPONENTCELL(iname,env) \
-  A_ENUMERATE_COMPONENTCELL(ComponentPartSimdCell,iname,env)
+#define ENUMERATE_SIMD_COMPONENTCELL(iname, env) \
+  A_ENUMERATE_COMPONENTCELL(ComponentPartSimdCell, iname, env)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Lambda> void
+template <typename Lambda> void
 simple_simd_env_loop(ComponentPartItemVectorView pure_items,
                      ComponentPartItemVectorView impure_items,
                      const Lambda& lambda)
 {
-  ENUMERATE_COMPONENTITEM(ComponentPartSimdCell,mvi,pure_items){
+  ENUMERATE_COMPONENTITEM (ComponentPartSimdCell, mvi, pure_items) {
     lambda(mvi);
   }
-  ENUMERATE_SIMD_COMPONENTCELL(mvi,impure_items){
+  ENUMERATE_SIMD_COMPONENTCELL(mvi, impure_items)
+  {
     lambda(mvi);
   }
 }
@@ -144,21 +155,32 @@ simple_simd_env_loop(ComponentPartItemVectorView pure_items,
 class ARCANE_MATERIALS_EXPORT LoopFunctorEnvPartSimdCell
 {
  public:
+
   typedef const SimdMatVarIndex& IterType;
+
  public:
+
   LoopFunctorEnvPartSimdCell(ComponentPartItemVectorView pure_items,
                              ComponentPartItemVectorView impure_items)
-  : m_pure_items(pure_items), m_impure_items(impure_items){}
+  : m_pure_items(pure_items)
+  , m_impure_items(impure_items)
+  {}
+
  public:
+
   static LoopFunctorEnvPartSimdCell create(const EnvCellVector& env);
   static LoopFunctorEnvPartSimdCell create(IMeshEnvironment* env);
+
  public:
-  template<typename Lambda>
+
+  template <typename Lambda>
   void operator<<(Lambda&& lambda)
   {
-    simple_simd_env_loop(m_pure_items,m_impure_items,lambda);
+    simple_simd_env_loop(m_pure_items, m_impure_items, lambda);
   }
+
  private:
+
   ComponentPartItemVectorView m_pure_items;
   ComponentPartItemVectorView m_impure_items;
 };
@@ -185,8 +207,8 @@ class ARCANE_MATERIALS_EXPORT LoopFunctorEnvPartSimdCell
  * 'break' or 'continue'. If you want to stop an iteration
  * you must use the keyword 'return'.
  */
-#define ENUMERATE_COMPONENTITEM_LAMBDA(iter_type,iter,container)\
-  Arcane::Materials:: LoopFunctor ## iter_type :: create ( (container) ) << [=]( Arcane::Materials:: LoopFunctor ## iter_type :: IterType iter)
+#define ENUMERATE_COMPONENTITEM_LAMBDA(iter_type, iter, container) \
+  Arcane::Materials::LoopFunctor##iter_type ::create((container)) << [=](Arcane::Materials::LoopFunctor##iter_type ::IterType iter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -197,12 +219,18 @@ class ARCANE_MATERIALS_EXPORT LoopFunctorEnvPartSimdCell
 class MatVariableViewBase
 {
  public:
-  MatVariableViewBase(IMeshMaterialVariable* var) : m_variable(var)
+
+  MatVariableViewBase(IMeshMaterialVariable* var)
+  : m_variable(var)
   {
   }
+
  public:
+
   IMeshMaterialVariable* variable() const { return m_variable; }
+
  private:
+
   IMeshMaterialVariable* m_variable;
 };
 
@@ -212,7 +240,7 @@ class MatVariableViewBase
 /*!
  * \brief Read view on a scalar mesh variable.
  */
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class MatItemVariableScalarInViewT
 : public MatVariableViewBase
 {
@@ -223,15 +251,18 @@ class MatItemVariableScalarInViewT
 
  public:
 
-  MatItemVariableScalarInViewT(IMeshMaterialVariable* var,ArrayView<DataType>* v)
-  : MatVariableViewBase(var), m_value(v), m_value0(v[0].unguardedBasePointer()){}
+  MatItemVariableScalarInViewT(IMeshMaterialVariable* var, ArrayView<DataType>* v)
+  : MatVariableViewBase(var)
+  , m_value(v)
+  , m_value0(v[0].unguardedBasePointer())
+  {}
 
   //! Vector access operator with indirection.
   typename SimdTypeTraits<DataType>::SimdType
   operator[](const SimdMatVarIndex& mvi) const
   {
     typedef typename SimdTypeTraits<DataType>::SimdType SimdType;
-    return SimdType(m_value[mvi.arrayIndex()].data(),mvi.valueIndex());
+    return SimdType(m_value[mvi.arrayIndex()].data(), mvi.valueIndex());
   }
 
   //! Access operator for the \a item entity
@@ -276,6 +307,7 @@ class MatItemVariableScalarInViewT
   }
 
  private:
+
   ArrayView<DataType>* m_value;
   DataTypeAlignedPtr m_value0;
 };
@@ -286,7 +318,7 @@ class MatItemVariableScalarInViewT
 /*!
  * \brief Read view on a scalar mesh variable.
  */
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class MatItemVariableScalarOutViewT
 : public MatVariableViewBase
 {
@@ -297,13 +329,16 @@ class MatItemVariableScalarOutViewT
 
  public:
 
-  MatItemVariableScalarOutViewT(IMeshMaterialVariable* var,ArrayView<DataType>* v)
-  : MatVariableViewBase(var), m_value(v), m_value0(v[0].unguardedBasePointer()){}
+  MatItemVariableScalarOutViewT(IMeshMaterialVariable* var, ArrayView<DataType>* v)
+  : MatVariableViewBase(var)
+  , m_value(v)
+  , m_value0(v[0].unguardedBasePointer())
+  {}
 
   //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](const SimdMatVarIndex& mvi) const
   {
-    return SimdSetter<DataType>(m_value[mvi.arrayIndex()].data(),mvi.valueIndex());
+    return SimdSetter<DataType>(m_value[mvi.arrayIndex()].data(), mvi.valueIndex());
   }
 
   //! Access operator for the \a item entity
@@ -347,6 +382,7 @@ class MatItemVariableScalarOutViewT
   }
 
  private:
+
   ArrayView<DataType>* m_value;
   DataTypeAlignedPtr m_value0;
 };
@@ -357,11 +393,11 @@ class MatItemVariableScalarOutViewT
 /*!
  * \brief Read view.
  */
-template<typename DataType>
-MatItemVariableScalarInViewT<Cell,DataType>
+template <typename DataType>
+MatItemVariableScalarInViewT<Cell, DataType>
 viewIn(const CellMaterialVariableScalarRef<DataType>& var)
 {
-  return MatItemVariableScalarInViewT<Cell,DataType>(var.materialVariable(),var._internalValue());
+  return MatItemVariableScalarInViewT<Cell, DataType>(var.materialVariable(), var._internalValue());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -370,17 +406,17 @@ viewIn(const CellMaterialVariableScalarRef<DataType>& var)
 /*!
  * \brief Write view
  */
-template<typename DataType>
-MatItemVariableScalarOutViewT<Cell,DataType>
+template <typename DataType>
+MatItemVariableScalarOutViewT<Cell, DataType>
 viewOut(CellMaterialVariableScalarRef<DataType>& var)
 {
-  return MatItemVariableScalarOutViewT<Cell,DataType>(var.materialVariable(),var._internalValue());
+  return MatItemVariableScalarOutViewT<Cell, DataType>(var.materialVariable(), var._internalValue());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

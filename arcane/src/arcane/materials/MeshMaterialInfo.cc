@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,8 +13,8 @@
 
 #include "arcane/materials/MeshMaterialInfo.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 
@@ -28,7 +28,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialInfo::
-MeshMaterialInfo(IMeshMaterialMng* mm,const String& name)
+MeshMaterialInfo(IMeshMaterialMng* mm, const String& name)
 : m_material_mng(mm)
 , m_name(name)
 {

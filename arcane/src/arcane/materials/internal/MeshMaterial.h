@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -82,8 +82,8 @@ class MeshMaterial
 
  public:
 
-  MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
-               const String& name,Int16 mat_id);
+  MeshMaterial(MeshMaterialInfo* infos, MeshEnvironment* env,
+               const String& name, Int16 mat_id);
 
  public:
 
@@ -119,7 +119,7 @@ class MeshMaterial
 
   bool isMaterial() const override { return true; }
   bool isEnvironment() const override { return false; }
-  bool hasSpace(MatVarSpace space) const override { return space==MatVarSpace::MaterialAndEnvironment; }
+  bool hasSpace(MatVarSpace space) const override { return space == MatVarSpace::MaterialAndEnvironment; }
   IMeshMaterial* asMaterial() override { return this; }
   IMeshEnvironment* asEnvironment() override { return nullptr; }
 
@@ -148,7 +148,7 @@ class MeshMaterial
 
   void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
-    m_data._setConstituentItem(index,id);
+    m_data._setConstituentItem(index, id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 

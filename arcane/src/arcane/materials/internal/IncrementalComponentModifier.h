@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 
  public:
 
-  IncrementalComponentModifier(AllEnvData* all_env_data,const RunQueue& queue);
+  IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue);
 
  public:
 
@@ -79,7 +79,7 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   void _resetTransformedCells(SmallSpan<const Int32> ids);
   void _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                           SmallSpan<const Int32> local_ids);
-  void _removeItemsInGroup(ItemGroup cells,SmallSpan<const Int32> removed_ids);
+  void _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids);
   void _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue);
   void _applyCopyVariableViews(RunQueue& queue);
   void _applyInitializeWithZero(const InitializeWithZeroArgs& args);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
 
 #include "arcane/materials/IMeshBlock.h"
 #include "arcane/materials/MeshBlockBuildInfo.h"
@@ -24,15 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,8 +44,8 @@ class MeshBlock
 {
  public:
 
-  MeshBlock(IMeshMaterialMng* mm,Int32 block_id,const MeshBlockBuildInfo& infos);
-  virtual ~MeshBlock(){}
+  MeshBlock(IMeshMaterialMng* mm, Int32 block_id, const MeshBlockBuildInfo& infos);
+  virtual ~MeshBlock() {}
 
  public:
 
@@ -87,7 +80,7 @@ class MeshBlock
 
   //! Material manager
   IMeshMaterialMng* m_material_mng;
-  
+
   //! Material identifier (index of this material in the list of materials)
   Int32 m_block_id;
 
@@ -104,11 +97,7 @@ class MeshBlock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
