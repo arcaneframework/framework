@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMainFactory.h"
+#include "arcane/core/IMainFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,7 +58,6 @@ class ARCANE_IMPL_EXPORT MainFactory
   ~MainFactory() override;
 
  public:
-
  public:
 
   //! Creates an instance of IArcaneMain
@@ -73,12 +72,12 @@ class ARCANE_IMPL_EXPORT MainFactory
   ITimeHistoryMng* createTimeHistoryMng(ISubDomain*) override;
   ICaseMng* createCaseMng(ISubDomain*) override;
   ICaseDocument* createCaseDocument(IApplication*) override;
-  ICaseDocument* createCaseDocument(IApplication*,const String& lang) override;
-  ICaseDocument* createCaseDocument(IApplication*,IXmlDocumentHolder* doc) override;
+  ICaseDocument* createCaseDocument(IApplication*, const String& lang) override;
+  ICaseDocument* createCaseDocument(IApplication*, IXmlDocumentHolder* doc) override;
   ITimeStats* createTimeStats(ISubDomain*) override;
-  ITimeStats* createTimeStats(ITimerMng* tim,ITraceMng* trm,const String& name) override;
+  ITimeStats* createTimeStats(ITimerMng* tim, ITraceMng* trm, const String& name) override;
   ITimeLoopMng* createTimeLoopMng(ISubDomain*) override;
-  ITimeLoop* createTimeLoop(IApplication* sm,const String& name) override;
+  ITimeLoop* createTimeLoop(IApplication* sm, const String& name) override;
   IIOMng* createIOMng(IApplication*) override;
   IIOMng* createIOMng(IParallelMng* pm) override;
   IServiceLoader* createServiceLoader() override;
@@ -86,12 +85,12 @@ class ARCANE_IMPL_EXPORT MainFactory
   ICheckpointMng* createCheckpointMng(ISubDomain*) override;
   IPropertyMng* createPropertyMng(ISubDomain*) override;
   Ref<IPropertyMng> createPropertyMngReference(ISubDomain*) override;
-  IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name) override;
-  IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name) override;
-  IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name, bool is_amr) override;
-  IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name, eMeshAMRKind amr_type) override;
-  IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name, bool is_amr) override;
-  IPrimaryMesh* createMesh(ISubDomain* sub_domain,IParallelMng* pm,const String& name, eMeshAMRKind amr_type) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain, const String& name) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm, const String& name) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain, const String& name, bool is_amr) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain, const String& name, eMeshAMRKind amr_type) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm, const String& name, bool is_amr) override;
+  IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm, const String& name, eMeshAMRKind amr_type) override;
   IMesh* createSubMesh(IMesh* mesh, const ItemGroup& group, const String& name) override;
   IDataFactory* createDataFactory(IApplication*) override;
   Ref<IDataFactoryMng> createDataFactoryMngRef(IApplication*) override;

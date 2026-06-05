@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -15,18 +15,17 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/IGridMeshPartitioner.h"
-#include "arcane/BasicService.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IExtraGhostCellsBuilder.h"
-
-#include "arcane/IMeshPartitionConstraintMng.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IGridMeshPartitioner.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IExtraGhostCellsBuilder.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IItemFamily.h"
 
 #include <array>
 #include <map>
@@ -181,7 +180,7 @@ _findPart(RealConstArrayView coords, Real position)
   const Int32 nb_value = coords.size();
   if (position < coords[0])
     return 0;
-  if (math::isNearlyEqual(position,coords[0]))
+  if (math::isNearlyEqual(position, coords[0]))
     return 0;
   Int32 part_id = -1;
   for (Int32 z = 0; z < nb_value; ++z) {
@@ -394,12 +393,12 @@ _computeSpecificGhostLayer()
     // Determine the bounding box of the mesh
     Real max_value = FloatInfo<Real>::maxValue();
     Real min_value = -max_value;
-    Real3 min_box(max_value,max_value,max_value);
-    Real3 max_box(min_value,min_value,min_value);
+    Real3 min_box(max_value, max_value, max_value);
+    Real3 max_box(min_value, min_value, min_value);
     for (Node node : cell.nodes()) {
       Real3 pos = nodes_coord[node];
-      min_box = math::min(min_box,pos);
-      max_box = math::max(max_box,pos);
+      min_box = math::min(min_box, pos);
+      max_box = math::max(max_box, pos);
     }
 
     for (Integer idir = 0; idir < nb_direction; ++idir) {
@@ -408,8 +407,8 @@ _computeSpecificGhostLayer()
 
       const Real min_pos = min_box[idir];
       const Real max_pos = max_box[idir];
-      Int32 min_part_id = _findPart(coords,min_pos);
-      Int32 max_part_id = _findPart(coords,max_pos);
+      Int32 min_part_id = _findPart(coords, min_pos);
+      Int32 max_part_id = _findPart(coords, max_pos);
 
       if (m_is_verbose)
         info() << " Cell uid=" << cell.uniqueId() << " idir=" << idir
@@ -419,9 +418,9 @@ _computeSpecificGhostLayer()
       // If we are on the edge of a part, also take the previous or next part.
       // This prevents missing an ownership if the grid coordinates
       // and the mesh to be partitioned are the same.
-      if (min_part_id>0 && math::isNearlyEqual(min_pos,coords[min_part_id]))
+      if (min_part_id > 0 && math::isNearlyEqual(min_pos, coords[min_part_id]))
         --min_part_id;
-      if (max_part_id<(nb_coord-1) && math::isNearlyEqual(max_pos,coords[max_part_id]))
+      if (max_part_id < (nb_coord - 1) && math::isNearlyEqual(max_pos, coords[max_part_id]))
         ++max_part_id;
       min_part[idir] = min_part_id;
       max_part[idir] = max_part_id;

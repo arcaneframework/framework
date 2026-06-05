@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -57,13 +57,14 @@ class ARCANE_IMPL_EXPORT IProxyItemVariable
 : public ObjectImpl
 {
  public:
-  virtual ~IProxyItemVariable() { }
+
+  virtual ~IProxyItemVariable() {}
 
   //! Access to the value associated with a mesh entity, in the form of a Real.
-  virtual Real operator[](ItemEnumerator i) const =0;
+  virtual Real operator[](ItemEnumerator i) const = 0;
 
   //! Access to the associated family number.
-  virtual Integer getPos() const =0;
+  virtual Integer getPos() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -81,34 +82,40 @@ class ARCANE_IMPL_EXPORT StoreIProxyItemVariable
 
   StoreIProxyItemVariable(IVariable* var = nullptr, Integer pos = 0)
   {
-    m_var = StoreIProxyItemVariable::proxyItemVariableFactory(var,pos);
+    m_var = StoreIProxyItemVariable::proxyItemVariableFactory(var, pos);
   }
 
-  StoreIProxyItemVariable(const StoreIProxyItemVariable& src) {
+  StoreIProxyItemVariable(const StoreIProxyItemVariable& src)
+  {
     if (m_var != src.m_var)
       m_var = src.m_var;
   }
 
   //! Access to the value associated with a mesh entity, in the form of a Real.
-  Real operator[](ItemEnumerator i) const {
+  Real operator[](ItemEnumerator i) const
+  {
     return ((*m_var)[i]);
   }
 
-  StoreIProxyItemVariable& operator=(const StoreIProxyItemVariable& src) {
+  StoreIProxyItemVariable& operator=(const StoreIProxyItemVariable& src)
+  {
     /* if (m_var != src.m_var) */
     m_var = src.m_var;
     return *this;
   }
 
-  Integer getPos() const {
+  Integer getPos() const
+  {
     return m_var->getPos();
   }
 
  protected:
+
   //! Factory for construction based on the initial variable type.
-  static IProxyItemVariable* proxyItemVariableFactory(IVariable* var, Integer pos=0);
+  static IProxyItemVariable* proxyItemVariableFactory(IVariable* var, Integer pos = 0);
 
  private:
+
   //! Pointer to the variable.
   AutoRefT<IProxyItemVariable> m_var;
 };

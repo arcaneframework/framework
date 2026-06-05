@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 
-#include "arcane/IDataFactoryMng.h"
+#include "arcane/core/IDataFactoryMng.h"
 
 #include <map>
 
@@ -45,7 +45,7 @@ class DataFactoryMng
 , public IDataFactoryMng
 {
  public:
-  
+
   DataFactoryMng(IApplication* sm);
   ~DataFactoryMng() override;
 
@@ -55,12 +55,12 @@ class DataFactoryMng
   IApplication* application() { return m_application; }
   ITraceMng* traceMng() const override;
   void registerDataStorageFactory(Ref<IDataStorageFactory> factory) override;
-  Ref<IData> createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info) override;
+  Ref<IData> createSimpleDataRef(const String& storage_type, const DataStorageBuildInfo& build_info) override;
   IDataOperation* createDataOperation(Parallel::eReduceType rt) override;
   Ref<ISerializedData>
-  createSerializedDataRef(eDataType data_type,Int64 memory_size,
-                          Integer nb_dim,Int64 nb_element,
-                          Int64 nb_base_element,bool is_multi_size,
+  createSerializedDataRef(eDataType data_type, Int64 memory_size,
+                          Integer nb_dim, Int64 nb_element,
+                          Int64 nb_base_element, bool is_multi_size,
                           Int64ConstArrayView extents) override;
 
   Ref<ISerializedData> createEmptySerializedDataRef() override;
@@ -70,7 +70,7 @@ class DataFactoryMng
 
   IApplication* m_application;
   IDataFactory* m_old_factory;
-  std::map<String,Ref<IDataStorageFactory>> m_factories;
+  std::map<String, Ref<IDataStorageFactory>> m_factories;
 };
 
 /*---------------------------------------------------------------------------*/

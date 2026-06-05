@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -89,8 +89,8 @@
 #include "arcane/impl/internal/MeshMng.h"
 #include "arcane/impl/internal/LegacyMeshBuilder.h"
 
-#include "arcane/CaseOptionService.h"
-#include "arcane/CaseOptionBuildInfo.h"
+#include "arcane/core/CaseOptionService.h"
+#include "arcane/core/CaseOptionBuildInfo.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/core/DeviceInfo.h"
@@ -110,25 +110,34 @@ namespace Arcane
 class MeshBuilderMaster
 {
  public:
-  MeshBuilderMaster(ICaseMng* cm,const String& default_name)
-  : m_case_options(new Arcane::CaseOptions(cm,".")),
-    m_mesh_service(CaseOptionBuildInfo(_configList(),"meshes", XmlNode(), default_name, 1, 1), false, false)
+
+  MeshBuilderMaster(ICaseMng* cm, const String& default_name)
+  : m_case_options(new Arcane::CaseOptions(cm, "."))
+  , m_mesh_service(CaseOptionBuildInfo(_configList(), "meshes", XmlNode(), default_name, 1, 1), false, false)
   {
-    m_mesh_service.addAlternativeNodeName("fr","maillages");
+    m_mesh_service.addAlternativeNodeName("fr", "maillages");
   }
+
  private:
+
   Arcane::ICaseOptionList* _configList() const
   {
     return m_case_options->configList();
   }
+
  public:
+
   ICaseOptions* options() const { return m_case_options.get(); }
+
  public:
+
   void createMeshes()
   {
     m_mesh_service.instance()->createMeshes();
   }
+
  private:
+
   ReferenceCounter<ICaseOptions> m_case_options;
   CaseOptionServiceT<ICaseMeshMasterService> m_mesh_service;
 };
@@ -154,13 +163,17 @@ class SubDomain
   : public TraceAccessor
   {
    public:
+
     explicit PropertyMngCheckpoint(ISubDomain* sd)
-    : TraceAccessor(sd->traceMng()), m_sub_domain(sd),
-      m_property_values(VariableBuildInfo(sd,"ArcaneProperties",IVariable::PPrivate))
+    : TraceAccessor(sd->traceMng())
+    , m_sub_domain(sd)
+    , m_property_values(VariableBuildInfo(sd, "ArcaneProperties", IVariable::PPrivate))
     {
       init();
     }
+
    public:
+
     void init()
     {
       m_observers.addObserver(this,
@@ -170,7 +183,9 @@ class SubDomain
                               &PropertyMngCheckpoint::_notifyRead,
                               m_property_values.variable()->readObservable());
     }
+
    private:
+
     void _notifyRead()
     {
       info(4) << "PropertyMngCheckpoint: READ";
@@ -182,7 +197,9 @@ class SubDomain
       m_sub_domain->propertyMng()->writeTo(m_property_values._internalTrueData()->_internalDeprecatedValue());
       m_property_values.variable()->syncReferences();
     }
+
    private:
+
     ISubDomain* m_sub_domain;
     ObserverPool m_observers;
     VariableArrayByte m_property_values;
@@ -190,7 +207,7 @@ class SubDomain
 
  public:
 
-  SubDomain(ISession*,Ref<IParallelMng>,Ref<IParallelMng>,const String& filename,ByteConstArrayView bytes);
+  SubDomain(ISession*, Ref<IParallelMng>, Ref<IParallelMng>, const String& filename, ByteConstArrayView bytes);
 
  public:
 
@@ -203,7 +220,7 @@ class SubDomain
   IBase* objectParent() const override { return m_application; }
   String objectNamespaceURI() const override { return m_namespace_uri; }
   String objectLocalName() const override { return m_local_name; }
-  VersionInfo objectVersion() const override { return VersionInfo(1,0,0); }
+  VersionInfo objectVersion() const override { return VersionInfo(1, 0, 0); }
 
  public:
 
@@ -241,13 +258,13 @@ class SubDomain
   IMesh* defaultMesh() override { return m_default_mesh_handle.mesh(); }
   const MeshHandle& defaultMeshHandle() override { return m_default_mesh_handle; }
   IMesh* mesh() override { return m_default_mesh_handle.mesh(); }
-  IMesh* findMesh(const String& name,bool throw_exception) override;
+  IMesh* findMesh(const String& name, bool throw_exception) override;
   bool isInitialized() const override { return m_is_initialized; }
   void setIsInitialized() override;
   const ApplicationInfo& applicationInfo() const override { return m_application->applicationInfo(); }
   ICaseDocument* caseDocument() override { return m_case_mng->caseDocument(); }
   IApplication* application() override { return m_application; }
-  void checkId(const String& where,const String& id) override;
+  void checkId(const String& where, const String& id) override;
   const String& caseFullFileName() const override { return m_case_full_file_name; }
   void setCaseFullFileName(const String& file_name) { m_case_full_file_name = file_name; }
   const String& caseName() const override { return m_case_name; }
@@ -285,11 +302,10 @@ class SubDomain
 
  public:
 
-  void _setLegacyMeshCreation(bool v){ m_is_create_default_mesh_v2 = !v; }
+  void _setLegacyMeshCreation(bool v) { m_is_create_default_mesh_v2 = !v; }
   bool isLegacyMeshCreation() const { return !m_is_create_default_mesh_v2; }
 
  public:
-
  protected:
 
   const char* _msgClassName() const { return "Init"; }
@@ -366,7 +382,7 @@ extern "C" ARCANE_IMPL_EXPORT ISubDomain* _arcaneGetDefaultSubDomain()
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ISubDomain*
-arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi)
+arcaneCreateSubDomain(ISession* session, const SubDomainBuildInfo& sdbi)
 {
   Ref<IParallelMng> pm = sdbi.parallelMng();
   Ref<IParallelMng> all_replica_pm = sdbi.allReplicaParallelMng();
@@ -376,7 +392,7 @@ arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi)
   ITraceMng* tm = pm->traceMng();
   StringBuilder trace_id;
   trace_id += String::fromNumber(pm->commRank());
-  if (all_replica_pm!=pm){
+  if (all_replica_pm != pm) {
     trace_id += ",r";
     trace_id += pm->replication()->replicationRank();
   }
@@ -384,7 +400,7 @@ arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi)
   trace_id += platform::getHostName();
   tm->setTraceId(trace_id.toString());
 
-  auto* sd = new SubDomain(session,pm,all_replica_pm,case_file_name,bytes);
+  auto* sd = new SubDomain(session, pm, all_replica_pm, case_file_name, bytes);
   sd->build();
   //GG: init is done by the caller
   //mng->initialize();
@@ -396,8 +412,8 @@ arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi)
 /*---------------------------------------------------------------------------*/
 
 SubDomain::
-SubDomain(ISession* session,Ref<IParallelMng> pm,Ref<IParallelMng> all_replica_pm,
-          const String& case_file_name,ByteConstArrayView bytes)
+SubDomain(ISession* session, Ref<IParallelMng> pm, Ref<IParallelMng> all_replica_pm,
+          const String& case_file_name, ByteConstArrayView bytes)
 : TraceAccessor2(pm->traceMng())
 , m_session(session)
 , m_application(session->application())
@@ -437,7 +453,7 @@ build()
   m_property_mng = mf->createPropertyMngReference(this);
   m_io_mng = mf->createIOMng(parallelMng());
   m_variable_mng = mf->createVariableMng(this);
-  m_mesh_mng = new MeshMng(m_application,m_variable_mng.get());
+  m_mesh_mng = new MeshMng(m_application, m_variable_mng.get());
   m_default_mesh_handle = m_mesh_mng->createDefaultMeshHandle("Mesh0");
   m_service_mng = mf->createServiceMng(this);
   m_checkpoint_mng = mf->createCheckpointMng(this);
@@ -447,7 +463,7 @@ build()
   m_timer_mng = m_parallel_mng->timerMng();
   m_time_stats = m_parallel_mng->timeStats();
   m_time_loop_mng = mf->createTimeLoopMng(this);
-  m_legacy_mesh_builder = new LegacyMeshBuilder(this,m_default_mesh_handle);
+  m_legacy_mesh_builder = new LegacyMeshBuilder(this, m_default_mesh_handle);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -474,7 +490,7 @@ initialize()
     info() << "DeviceInfo: name=" << device_info.name();
     info() << "DeviceInfo: description=" << device_info.description();
 
-    if (isAcceleratorPolicy(runner.executionPolicy())){
+    if (isAcceleratorPolicy(runner.executionPolicy())) {
       m_parallel_mng->_internalApi()->setDefaultRunner(runner);
       m_all_replica_parallel_mng->_internalApi()->setDefaultRunner(runner);
     }
@@ -495,24 +511,24 @@ initialize()
   // This must be done before mesh creation
   // because the mesh instance depends on the dataset.
   ICaseDocument* case_document = nullptr;
-  if (!m_case_bytes.empty()){
-    case_document = m_case_mng->readCaseDocument(m_case_full_file_name,m_case_bytes);
+  if (!m_case_bytes.empty()) {
+    case_document = m_case_mng->readCaseDocument(m_case_full_file_name, m_case_bytes);
     if (!case_document)
       ARCANE_FATAL("Can not read case options");
     // Adds to the configuration those present in the dataset.
     {
-      ConfigurationReader cr(traceMng(),m_configuration.get());
-      cr.addValuesFromXmlNode(case_document->configurationElement(),ConfigurationReader::P_CaseDocument);
+      ConfigurationReader cr(traceMng(), m_configuration.get());
+      cr.addValuesFromXmlNode(case_document->configurationElement(), ConfigurationReader::P_CaseDocument);
     }
   }
 
-  properties::readFromConfiguration(m_configuration.get(),*this);
+  properties::readFromConfiguration(m_configuration.get(), *this);
 
-  if (case_document){
+  if (case_document) {
     // Checks if there is a <meshes> tag indicating that the creation and
     // reading of the mesh will be managed by a service
     XmlNode meshes_elem = case_document->meshesElement();
-    if (!meshes_elem.null()){
+    if (!meshes_elem.null()) {
       info() << "Using mesh service to create and allocate meshes";
       m_has_mesh_service = true;
     }
@@ -530,7 +546,7 @@ initialize()
   // The master module must always be created before the others so that
   // its entry points are called first and last
   m_module_master = mf->createModuleMaster(this);
-  m_time_history_mng  = mf->createTimeHistoryMng(this);
+  m_time_history_mng = mf->createTimeHistoryMng(this);
 
   service_loader->initializeModuleFactories(this);
   m_lb_mng = mf->createLoadBalanceMng(this);
@@ -563,21 +579,21 @@ _setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& 
   auto* device_list = Runner::deviceInfoList(config.executionPolicy());
 
   Int32 modulo_device = 0;
-  if (device_list){
+  if (device_list) {
     Int32 nb_device = device_list->nbDevice();
     info() << "DeviceInfo: nb_device=" << nb_device;
     modulo_device = nb_device;
   }
 
   // TODO: do this elsewhere
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE", true)) {
     Int32 modulo = v.value();
-    if (modulo==0)
+    if (modulo == 0)
       modulo = 1;
     modulo_device = modulo;
     info() << "Use commRank() to choose accelerator device with modulo=" << modulo;
   }
-  if (modulo_device!=0){
+  if (modulo_device != 0) {
     Int32 device_rank = m_parallel_mng->commRank() % modulo_device;
     info() << "Using device number=" << device_rank;
     config.setDeviceId(Accelerator::DeviceId(device_rank));
@@ -608,12 +624,12 @@ destroy()
   // there are still problems with the use of 'ICaseFunction'.
   // We therefore keep the possibility of changing the behavior if an environment
   // variable is set.
-  if (m_application->hasGarbageCollector()){
+  if (m_application->hasGarbageCollector()) {
     bool do_return = true;
     String x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
-    if (x=="1")
+    if (x == "1")
       do_return = true;
-    if (x=="0")
+    if (x == "0")
       do_return = false;
     if (do_return)
       return;
@@ -655,7 +671,6 @@ dumpInfo(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -671,23 +686,23 @@ allocateMeshes()
   info() << "SubDomain: Allocating meshes";
   MessagePassing::dumpDateAndMemoryUsage(parallelMng(), traceMng());
 
-  Timer::Action ts_action2(this,"AllocateMesh");
-  Trace::Setter mci(traceMng(),_msgClassName());
+  Timer::Action ts_action2(this, "AllocateMesh");
+  Trace::Setter mci(traceMng(), _msgClassName());
 
-  if (m_has_mesh_service){
+  if (m_has_mesh_service) {
     info() << "** Reading mesh from mesh service";
     const CaseNodeNames* cnn = caseMng()->caseDocument()->caseNodeNames();
     String default_service_name = "ArcaneCaseMeshMasterService";
 
     // NOTE: this object will be destroyed by caseMng()
-    ICaseOptions* opt = new CaseOptions(caseMng(),cnn->meshes);
-    ServiceBuilder<ICaseMeshMasterService> sb(application(),opt);
+    ICaseOptions* opt = new CaseOptions(caseMng(), cnn->meshes);
+    ServiceBuilder<ICaseMeshMasterService> sb(application(), opt);
     Ref<ICaseMeshMasterService> mbm = sb.createReference(default_service_name);
     m_case_mesh_master_service = mbm;
-    m_case_mng->_internalImpl()->internalReadOneOption(mbm->_options(),true);
+    m_case_mng->_internalImpl()->internalReadOneOption(mbm->_options(), true);
     mbm->createMeshes();
   }
-  else{
+  else {
     if (m_is_create_default_mesh_v2)
       m_legacy_mesh_builder->createDefaultMesh();
 
@@ -709,7 +724,7 @@ readOrReloadMeshes()
   info() << " nb_mesh_created=" << nb_mesh
          << " is_continue?=" << m_is_continue;
 
-  A_INFO("Test: {1}",A_TR2("nb_mesh_created",nb_mesh),A_TR(m_is_continue));
+  A_INFO("Test: {1}", A_TR2("nb_mesh_created", nb_mesh), A_TR(m_is_continue));
 
   //info() << format4("Test: {1}",{A_PR2("nb_mesh_created",nb_mesh),A_PR(m_is_continue)});
   //info() << format5(A_PR2("nb_mesh_created",nb_mesh),A_PR(m_is_continue));
@@ -717,21 +732,21 @@ readOrReloadMeshes()
   // Checks if profiling is enabled during initialization
   IProfilingService* ps = nullptr;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_CREATE_MESH", true))
-    if (v.value()!=0)
+    if (v.value() != 0)
       ps = platform::getProfilingService();
 
   {
     ProfilingSentryWithInitialize ps_sentry(ps);
     ps_sentry.setPrintAtEnd(true);
 
-    if (m_is_continue){
-      for( Integer z=0; z<nb_mesh; ++z ){
+    if (m_is_continue) {
+      for (Integer z = 0; z < nb_mesh; ++z) {
         IPrimaryMesh* mesh = m_mesh_mng->getPrimaryMesh(z);
         mesh->reloadMesh();
       }
     }
-    else{
-      if (m_has_mesh_service){
+    else {
+      if (m_has_mesh_service) {
         m_case_mesh_master_service->allocateMeshes();
       }
       else
@@ -745,7 +760,7 @@ readOrReloadMeshes()
   //      mesh->readAmrActivator(mbi.m_xml_node);
 
   // Checks mesh consistency
-  for( Integer z=0; z<nb_mesh; ++z ){
+  for (Integer z = 0; z < nb_mesh; ++z) {
     IMesh* mesh = m_mesh_mng->getMesh(z);
     mesh->checkValidMesh();
     mesh->nodesCoordinates().setUpToDate();
@@ -786,26 +801,25 @@ initializeMeshVariablesFromCaseFile()
 void SubDomain::
 doInitMeshPartition()
 {
-  if (!m_is_continue){
+  if (!m_is_continue) {
     IInitialPartitioner* init_part = m_legacy_mesh_builder->m_initial_partitioner.get();
-    if (init_part){
+    if (init_part) {
       info() << "Using custom initial partitioner";
       init_part->partitionAndDistributeMeshes(m_mesh_mng->meshes());
     }
-    else{
-      if (m_case_mesh_master_service.get()){
+    else {
+      if (m_case_mesh_master_service.get()) {
         m_case_mesh_master_service->partitionMeshes();
         m_case_mesh_master_service->applyAdditionalOperationsOnMeshes();
       }
-      else
-        if (m_legacy_mesh_builder->m_use_internal_mesh_partitioner)
-          _doInitialPartition();
+      else if (m_legacy_mesh_builder->m_use_internal_mesh_partitioner)
+        _doInitialPartition();
     }
   }
 
   // Display mesh information
-  for( IMesh* mesh : m_mesh_mng->meshes() ){
-    ScopedPtrT<IMeshStats> mh(IMeshStats::create(traceMng(),mesh,parallelMng()));
+  for (IMesh* mesh : m_mesh_mng->meshes()) {
+    ScopedPtrT<IMeshStats> mh(IMeshStats::create(traceMng(), mesh, parallelMng()));
     mh->dumpStats();
   }
 }
@@ -832,7 +846,7 @@ _doInitialPartition()
 
   String test_service = "MeshPartitionerTester";
 
-  for( IMesh* mesh : m_mesh_mng->meshes() ){
+  for (IMesh* mesh : m_mesh_mng->meshes()) {
     bool is_mesh_allocated = mesh->isAllocated();
     info() << "InitialPartitioning mesh=" << mesh->name() << " is_allocated?=" << is_mesh_allocated;
     if (!is_mesh_allocated)
@@ -843,9 +857,9 @@ _doInitialPartition()
     // among the sub-domains, and then 'parmetis' if it is present
     if (m_legacy_mesh_builder->m_use_partitioner_tester) {
       Int64 nb_cell = mesh->nbCell();
-      Int64 min_nb_cell = parallelMng()->reduce(Parallel::ReduceMin,nb_cell);
+      Int64 min_nb_cell = parallelMng()->reduce(Parallel::ReduceMin, nb_cell);
       info() << "Min nb cell=" << min_nb_cell;
-      if (min_nb_cell==0)
+      if (min_nb_cell == 0)
         _doInitialPartitionForMesh(mesh, test_service);
       else
         info() << "Mesh name=" << mesh->name() << " have cells. Do not use " << test_service;
@@ -870,35 +884,35 @@ _doInitialPartitionForMesh(IMesh* mesh, const String& service_name)
   Ref<IMeshPartitioner> mesh_partitioner_ref;
 
   ServiceBuilder<IMeshPartitionerBase> sbuilder(this);
-  mesh_partitioner_base_ref = sbuilder.createReference(service_name,mesh,SB_AllowNull);
+  mesh_partitioner_base_ref = sbuilder.createReference(service_name, mesh, SB_AllowNull);
   mesh_partitioner_base = mesh_partitioner_base_ref.get();
 
-  if (!mesh_partitioner_base){
+  if (!mesh_partitioner_base) {
     // If not found, search with the old interface 'IMeshPartitioner' for
     // compatibility reasons
     pwarning() << "No implementation for 'IMeshPartitionerBase' interface found. "
                << "Searching implementation for legacy 'IMeshPartitioner' interface";
     ServiceBuilder<IMeshPartitioner> sbuilder_legacy(this);
-    mesh_partitioner_ref = sbuilder_legacy.createReference(service_name,mesh,SB_AllowNull);
+    mesh_partitioner_ref = sbuilder_legacy.createReference(service_name, mesh, SB_AllowNull);
     if (mesh_partitioner_ref.get())
       mesh_partitioner_base = mesh_partitioner_ref.get();
   }
 
-  if (!mesh_partitioner_base){
+  if (!mesh_partitioner_base) {
     // If not found, retrieve the list of possible values and display them.
     StringUniqueArray valid_names;
     sbuilder.getServicesNames(valid_names);
-    String valid_values = String::join(", ",valid_names);
+    String valid_values = String::join(", ", valid_names);
     String msg = String::format("The specified service for the initial mesh partitionment ({0}) "
                                 "is not available (valid_values={1}). This service has to implement "
                                 "interface Arcane::IMeshPartitionerBase",
-                                lib_name,valid_values);
+                                lib_name, valid_values);
     ARCANE_THROW(ParallelFatalErrorException, msg);
   }
 
   bool is_dynamic = mesh->isDynamic();
   mesh->modifier()->setDynamic(true);
-  mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner_base,true);
+  mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner_base, true);
   mesh->modifier()->setDynamic(is_dynamic);
 }
 
@@ -928,18 +942,18 @@ doExitModules()
 /*---------------------------------------------------------------------------*/
 
 void SubDomain::
-checkId(const String& where,const String& id)
+checkId(const String& where, const String& id)
 {
   Int64 len = id.length();
   const char* str = id.localstr();
-  if (len==0 || !str)
-    throw BadIDException(where,id);
+  if (len == 0 || !str)
+    throw BadIDException(where, id);
 
   if (!isalpha(str[0]))
-    throw BadIDException(where,id);
-  for( Int64 i=1; i<len; ++i )
+    throw BadIDException(where, id);
+  for (Int64 i = 1; i < len; ++i)
     if (!isalpha(str[i]) && !isdigit(str[i]) && str[i] != '_' && str[i] != '.' && str[i] != '-')
-      throw BadIDException(where,id);
+      throw BadIDException(where, id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -948,7 +962,7 @@ checkId(const String& where,const String& id)
 void SubDomain::
 readCaseMeshes()
 {
-  Trace::Setter mci(traceMng(),_msgClassName());
+  Trace::Setter mci(traceMng(), _msgClassName());
 
   info() << "Reading the case `" << m_case_full_file_name << "'";
 
@@ -981,17 +995,17 @@ dumpInternalInfos(XmlNode& root)
   {
     ITimeLoopMng* tlm = timeLoopMng();
     ITimeLoop* time_loop = tlm->usedTimeLoop();
-    XmlElement time_loop_elem(root,"timeloopinfo");
-    XmlElement title(time_loop_elem,"title",time_loop->title());
-    XmlElement description(time_loop_elem,"description",time_loop->description());
+    XmlElement time_loop_elem(root, "timeloopinfo");
+    XmlElement title(time_loop_elem, "title", time_loop->title());
+    XmlElement description(time_loop_elem, "description", time_loop->description());
 
     String ustr_userclass("userclass");
-    for( StringCollection::Enumerator j(time_loop->userClasses()); ++j; )
-      XmlElement elem(time_loop_elem,ustr_userclass,*j);
+    for (StringCollection::Enumerator j(time_loop->userClasses()); ++j;)
+      XmlElement elem(time_loop_elem, ustr_userclass, *j);
   }
 
   VariableRefList var_ref_list;
-  XmlElement modules(root,"modules");
+  XmlElement modules(root, "modules");
 
   String ustr_module("module");
   String ustr_name("name");
@@ -1008,43 +1022,43 @@ dumpInternalInfos(XmlNode& root)
   String ustr_tagname("tagname");
 
   // List of modules with the variables they use.
-  for( ModuleCollection::Enumerator i(moduleMng()->modules()); ++i; ){
-    XmlElement module_element(modules,ustr_module);
-    module_element.setAttrValue(ustr_name,(*i)->name());
+  for (ModuleCollection::Enumerator i(moduleMng()->modules()); ++i;) {
+    XmlElement module_element(modules, ustr_module);
+    module_element.setAttrValue(ustr_name, (*i)->name());
     bool is_activated = (*i)->used();
-    module_element.setAttrValue(ustr_activated,is_activated ? ustr_true : ustr_false);
+    module_element.setAttrValue(ustr_activated, is_activated ? ustr_true : ustr_false);
     var_ref_list.clear();
-    variableMng()->variables(var_ref_list,*i);
-    for( VariableRefList::Enumerator j(var_ref_list); ++j; ){
-      XmlElement variable_element(module_element,ustr_variable_ref);
-      variable_element.setAttrValue(ustr_ref,(*j)->name());
+    variableMng()->variables(var_ref_list, *i);
+    for (VariableRefList::Enumerator j(var_ref_list); ++j;) {
+      XmlElement variable_element(module_element, ustr_variable_ref);
+      variable_element.setAttrValue(ustr_ref, (*j)->name());
     }
   }
 
   // List of variables.
-  XmlElement variables(root,"variables");
+  XmlElement variables(root, "variables");
   VariableCollection var_prv_list = variableMng()->variables();
-  for( VariableCollection::Enumerator j(var_prv_list); ++j; ){
-    XmlElement elem(variables,ustr_variable);
+  for (VariableCollection::Enumerator j(var_prv_list); ++j;) {
+    XmlElement elem(variables, ustr_variable);
     IVariable* var = *j;
     String dim = String::fromNumber(var->dimension());
-    elem.setAttrValue(ustr_name,var->name());
-    elem.setAttrValue(ustr_datatype,dataTypeName(var->dataType()));
-    elem.setAttrValue(ustr_dimension,dim);
-    elem.setAttrValue(ustr_kind,itemKindName(var->itemKind()));
+    elem.setAttrValue(ustr_name, var->name());
+    elem.setAttrValue(ustr_datatype, dataTypeName(var->dataType()));
+    elem.setAttrValue(ustr_dimension, dim);
+    elem.setAttrValue(ustr_kind, itemKindName(var->itemKind()));
   }
 
   // List of option blocks
   const ICaseMng* cm = caseMng();
   CaseOptionsCollection blocks = cm->blocks();
-  XmlElement blocks_elem(root,"caseblocks");
-  for( CaseOptionsCollection::Enumerator i(blocks); ++i; ){
+  XmlElement blocks_elem(root, "caseblocks");
+  for (CaseOptionsCollection::Enumerator i(blocks); ++i;) {
     const ICaseOptions* block = *i;
-    XmlElement block_elem(blocks_elem,ustr_caseblock);
-    block_elem.setAttrValue(ustr_tagname,block->rootTagName());
+    XmlElement block_elem(blocks_elem, ustr_caseblock);
+    block_elem.setAttrValue(ustr_tagname, block->rootTagName());
     const IModule* block_module = block->caseModule();
     if (block_module)
-      block_elem.setAttrValue(ustr_module,block_module->name());
+      block_elem.setAttrValue(ustr_module, block_module->name());
   }
 }
 
@@ -1061,9 +1075,9 @@ meshDimension() const
 /*---------------------------------------------------------------------------*/
 
 IMesh* SubDomain::
-findMesh(const String& name,bool throw_exception)
+findMesh(const String& name, bool throw_exception)
 {
-  return m_mesh_mng->findMesh(name,throw_exception);
+  return m_mesh_mng->findMesh(name, throw_exception);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1074,12 +1088,12 @@ _notifyWriteCheckpoint()
 {
   info(4) << "SubDomain::_notifyWriteCheckpoint()";
   {
-    Properties time_stats_properties(propertyMng(),"TimeStats");
+    Properties time_stats_properties(propertyMng(), "TimeStats");
     timeStats()->saveTimeValues(&time_stats_properties);
   }
   {
-    Properties p(propertyMng(),"MessagePassingStats");
-    parallelMng()->stat()->saveValues(traceMng(),&p);
+    Properties p(propertyMng(), "MessagePassingStats");
+    parallelMng()->stat()->saveValues(traceMng(), &p);
   }
 }
 
@@ -1092,12 +1106,12 @@ setIsInitialized()
   m_is_initialized = true;
   info(4) << "SubDomain::setIsInitialized()";
   {
-    Properties time_stats_properties(propertyMng(),"TimeStats");
+    Properties time_stats_properties(propertyMng(), "TimeStats");
     timeStats()->mergeTimeValues(&time_stats_properties);
   }
   {
-    Properties p(propertyMng(),"MessagePassingStats");
-    parallelMng()->stat()->mergeValues(traceMng(),&p);
+    Properties p(propertyMng(), "MessagePassingStats");
+    parallelMng()->stat()->mergeValues(traceMng(), &p);
   }
 }
 
@@ -1114,7 +1128,7 @@ _printCPUAffinity()
 {
   bool do_print_affinity = false;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_CPUAFFINITY", true))
-    do_print_affinity = (v.value()>0);
+    do_print_affinity = (v.value() > 0);
   if (!do_print_affinity)
     return;
   info() << "PrintCPUAffinity";
@@ -1125,12 +1139,12 @@ _printCPUAffinity()
 
   UniqueArray<Byte> cpuset_bytes;
   const Int32 nb_byte = 48;
-  if (pas){
+  if (pas) {
     String cpuset = pas->cpuSetString();
     cpuset_bytes = cpuset.bytes();
   }
-  cpuset_bytes.resize(nb_byte,Byte{0});
-  cpuset_bytes[nb_byte-1] = Byte{0};
+  cpuset_bytes.resize(nb_byte, Byte{ 0 });
+  cpuset_bytes[nb_byte - 1] = Byte{ 0 };
 
   IParallelMng* pm = parallelMng();
   const Int32 nb_rank = pm->commSize();
@@ -1138,10 +1152,10 @@ _printCPUAffinity()
 
   UniqueArray2<Byte> all_cpuset_bytes;
   if (is_master)
-    all_cpuset_bytes.resize(nb_rank,nb_byte);
-  pm->gather(cpuset_bytes,all_cpuset_bytes.viewAsArray(),pm->masterIORank());
+    all_cpuset_bytes.resize(nb_rank, nb_byte);
+  pm->gather(cpuset_bytes, all_cpuset_bytes.viewAsArray(), pm->masterIORank());
   if (is_master)
-    for( Int32 i=0; i<nb_rank; ++i ){
+    for (Int32 i = 0; i < nb_rank; ++i) {
       info() << "CPUAffinity " << Trace::Width(5) << i << " = " << all_cpuset_bytes[i].data();
     }
 }
@@ -1152,21 +1166,21 @@ _printCPUAffinity()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename V> void SubDomain::
+template <typename V> void SubDomain::
 _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
 
   p << b.addBool("LegacyMeshCreation")
-        .addDescription("Using legacy mesh creation")
-        .addGetter([](auto a) { return a.x.isLegacyMeshCreation(); })
-        .addSetter([](auto a) { a.x._setLegacyMeshCreation(a.v); });
+       .addDescription("Using legacy mesh creation")
+       .addGetter([](auto a) { return a.x.isLegacyMeshCreation(); })
+       .addSetter([](auto a) { a.x._setLegacyMeshCreation(a.v); });
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_PROPERTY_CLASS(SubDomain,());
+ARCANE_REGISTER_PROPERTY_CLASS(SubDomain, ());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

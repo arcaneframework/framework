@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,21 +18,21 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/IArcaneMain.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/IModule.h"
-#include "arcane/IModuleMaster.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/IFactoryService.h"
-#include "arcane/IMeshFactory.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IApplication.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/MeshBuildInfo.h"
+#include "arcane/core/IArcaneMain.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/IModuleMaster.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/IFactoryService.h"
+#include "arcane/core/IMeshFactory.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/MeshBuildInfo.h"
 
 #include "arcane/impl/internal/MeshFactoryMng.h"
 
@@ -46,16 +46,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_IMPL_EXPORT IArcaneMain*
-createArcaneMainBatch(const ApplicationInfo& app_info,IMainFactory* main_factory);
+createArcaneMainBatch(const ApplicationInfo& app_info, IMainFactory* main_factory);
 extern "C++" IApplication* arcaneCreateApplication(IArcaneMain*);
 extern "C++" IVariableMng* arcaneCreateVariableMng(ISubDomain*);
 extern "C++" IModuleMng* arcaneCreateModuleMng(ISubDomain*);
 extern "C++" IEntryPointMng* arcaneCreateEntryPointMng(ISubDomain*);
 extern "C++" ARCANE_IMPL_EXPORT ITimeHistoryMng* arcaneCreateTimeHistoryMng2(ISubDomain*);
 extern "C++" ICaseMng* arcaneCreateCaseMng(ISubDomain*);
-extern "C++" ICaseDocument* arcaneCreateCaseDocument(ITraceMng*,const String& lang);
-extern "C++" ICaseDocument* arcaneCreateCaseDocument(ITraceMng*,IXmlDocumentHolder* doc);
-extern "C++" ITimeStats* arcaneCreateTimeStats(ITimerMng* timer_mng,ITraceMng* trm,const String& name);
+extern "C++" ICaseDocument* arcaneCreateCaseDocument(ITraceMng*, const String& lang);
+extern "C++" ICaseDocument* arcaneCreateCaseDocument(ITraceMng*, IXmlDocumentHolder* doc);
+extern "C++" ITimeStats* arcaneCreateTimeStats(ITimerMng* timer_mng, ITraceMng* trm, const String& name);
 extern "C++" ITimeLoopMng* arcaneCreateTimeLoopMng(ISubDomain*);
 extern "C++" IServiceLoader* arcaneCreateServiceLoader();
 extern "C++" IServiceMng* arcaneCreateServiceMng(IBase*);
@@ -72,7 +72,7 @@ extern "C++" ARCANE_CORE_EXPORT IModuleMaster*
 arcaneCreateModuleMaster(ISubDomain*);
 
 extern "C++" ARCANE_CORE_EXPORT ITimeLoop*
-arcaneCreateTimeLoop(IApplication* sm,const String& name);
+arcaneCreateTimeLoop(IApplication* sm, const String& name);
 
 extern "C++" ARCANE_IMPL_EXPORT IIOMng*
 arcaneCreateIOMng(IParallelSuperMng*);
@@ -82,8 +82,8 @@ arcaneCreateIOMng(IParallelMng*);
 
 namespace Accelerator
 {
-extern "C++" ARCANE_IMPORT Ref<IAcceleratorMng>
-arccoreCreateAcceleratorMngRef(ITraceMng* tm);
+  extern "C++" ARCANE_IMPORT Ref<IAcceleratorMng>
+  arccoreCreateAcceleratorMngRef(ITraceMng* tm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -91,14 +91,14 @@ arccoreCreateAcceleratorMngRef(ITraceMng* tm);
 
 namespace
 {
-//! Returns the name of the mesh factory.
-String _getMeshFactoryName(bool is_amr)
-{
-  if (is_amr)
-    return String("ArcaneDynamicAMRMeshFactory");
-  return String("ArcaneDynamicMeshFactory");
-}
-}
+  //! Returns the name of the mesh factory.
+  String _getMeshFactoryName(bool is_amr)
+  {
+    if (is_amr)
+      return String("ArcaneDynamicAMRMeshFactory");
+    return String("ArcaneDynamicMeshFactory");
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -121,8 +121,8 @@ MainFactory::
 
 IArcaneMain* MainFactory::
 createArcaneMain(const ApplicationInfo& app_info)
-{ 
-  return createArcaneMainBatch(app_info,this);
+{
+  return createArcaneMainBatch(app_info, this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,7 +146,7 @@ createVariableMng(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IModuleMng*  MainFactory::
+IModuleMng* MainFactory::
 createModuleMng(ISubDomain* sd)
 {
   return arcaneCreateModuleMng(sd);
@@ -189,16 +189,16 @@ createTimeStats(ISubDomain* sd)
 {
   ITimerMng* tm = sd->timerMng();
   String name = String::format("Rank{0}", sd->subDomainId());
-  return arcaneCreateTimeStats(tm,sd->traceMng(),name);
+  return arcaneCreateTimeStats(tm, sd->traceMng(), name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ITimeStats* MainFactory::
-createTimeStats(ITimerMng* tim,ITraceMng* trm,const String& name)
+createTimeStats(ITimerMng* tim, ITraceMng* trm, const String& name)
 {
-  return arcaneCreateTimeStats(tim,trm,name);
+  return arcaneCreateTimeStats(tim, trm, name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -214,9 +214,9 @@ createTimeLoopMng(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 
 ITimeLoop* MainFactory::
-createTimeLoop(IApplication* sm,const String& name)
+createTimeLoop(IApplication* sm, const String& name)
 {
-  return arcaneCreateTimeLoop(sm,name);
+  return arcaneCreateTimeLoop(sm, name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -288,50 +288,50 @@ createPropertyMngReference(ISubDomain* sd)
 ICaseDocument* MainFactory::
 createCaseDocument(IApplication* sm)
 {
-  return arcaneCreateCaseDocument(sm->traceMng(),String());
+  return arcaneCreateCaseDocument(sm->traceMng(), String());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ICaseDocument* MainFactory::
-createCaseDocument(IApplication* sm,const String& lang)
+createCaseDocument(IApplication* sm, const String& lang)
 {
-  return arcaneCreateCaseDocument(sm->traceMng(),lang);
+  return arcaneCreateCaseDocument(sm->traceMng(), lang);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ICaseDocument* MainFactory::
-createCaseDocument(IApplication* sm,IXmlDocumentHolder* doc)
+createCaseDocument(IApplication* sm, IXmlDocumentHolder* doc)
 {
-  return arcaneCreateCaseDocument(sm->traceMng(),doc);
+  return arcaneCreateCaseDocument(sm->traceMng(), doc);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
-createMesh(ISubDomain* sd,const String& name, eMeshAMRKind amr_type)
+createMesh(ISubDomain* sd, const String& name, eMeshAMRKind amr_type)
 {
-  return createMesh(sd,sd->parallelMng(),name, amr_type);
+  return createMesh(sd, sd->parallelMng(), name, amr_type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
-createMesh(ISubDomain* sd,const String& name, bool is_amr)
+createMesh(ISubDomain* sd, const String& name, bool is_amr)
 {
-  return createMesh(sd,sd->parallelMng(),name, (is_amr ? eMeshAMRKind::Cell : eMeshAMRKind::None));
+  return createMesh(sd, sd->parallelMng(), name, (is_amr ? eMeshAMRKind::Cell : eMeshAMRKind::None));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
-createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, bool is_amr)
+createMesh(ISubDomain* sd, IParallelMng* pm, const String& name, bool is_amr)
 {
   return createMesh(sd, pm, name, (is_amr ? eMeshAMRKind::Cell : eMeshAMRKind::None));
 }
@@ -340,7 +340,7 @@ createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, bool is_amr)
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
-createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, eMeshAMRKind amr_type)
+createMesh(ISubDomain* sd, IParallelMng* pm, const String& name, eMeshAMRKind amr_type)
 {
   String factory_name = _getMeshFactoryName(amr_type != eMeshAMRKind::None);
   IMeshFactoryMng* mfm = sd->meshMng()->meshFactoryMng();
@@ -357,25 +357,25 @@ createMesh(ISubDomain* sd,IParallelMng* pm,const String& name, eMeshAMRKind amr_
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
-createMesh(ISubDomain* sd,const String& name)
+createMesh(ISubDomain* sd, const String& name)
 {
-  return createMesh(sd,sd->parallelMng(),name,eMeshAMRKind::None);
+  return createMesh(sd, sd->parallelMng(), name, eMeshAMRKind::None);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IPrimaryMesh* MainFactory::
-createMesh(ISubDomain* sd,IParallelMng* pm,const String& name)
+createMesh(ISubDomain* sd, IParallelMng* pm, const String& name)
 {
-  return createMesh(sd,pm,name,eMeshAMRKind::None);
+  return createMesh(sd, pm, name, eMeshAMRKind::None);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IMesh* MainFactory::
-createSubMesh(IMesh* mesh,const ItemGroup& group,const String& name)
+createSubMesh(IMesh* mesh, const ItemGroup& group, const String& name)
 {
   // Currently, sub-meshes of AMR meshes are not supported
   bool is_amr = false;

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,16 +18,17 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/IData.h"
-#include "arcane/IVariable.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/VariableCollection.h"
 
 #include "arcane/impl/MemoryDataReaderWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,14 +59,14 @@ beginWrite(const VariableCollection& vars)
   // more frequently used variables remain. Therefore,
   // the corresponding IData is released.
   VarToDataMap vars_to_data = m_vars_to_data;
-  for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
+  for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
     IVariable* var = *ivar;
     VarToDataMap::iterator i = vars_to_data.find(var->fullName());
-    if (i!=vars_to_data.end())
+    if (i != vars_to_data.end())
       vars_to_data.erase(i);
   }
 
-  for( VarToDataMap::iterator i=vars_to_data.begin(); i!=vars_to_data.end(); ++i ){
+  for (VarToDataMap::iterator i = vars_to_data.begin(); i != vars_to_data.end(); ++i) {
     // Removes the reference to the current table and destroys the data
     m_vars_to_data.erase(i->first);
   }
@@ -75,14 +76,14 @@ beginWrite(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void MemoryDataReaderWriter::
-write(IVariable* var,IData* data)
+write(IVariable* var, IData* data)
 {
   Ref<IData> cdata = _findData(var);
-  if (!cdata.get()){
+  if (!cdata.get()) {
     cdata = data->cloneRef();
-    m_vars_to_data.insert(std::make_pair(var->fullName(),cdata));
+    m_vars_to_data.insert(std::make_pair(var->fullName(), cdata));
   }
-  else{
+  else {
     cdata->copy(data);
   }
 }
@@ -91,10 +92,10 @@ write(IVariable* var,IData* data)
 /*---------------------------------------------------------------------------*/
 
 void MemoryDataReaderWriter::
-read(IVariable* var,IData* data)
+read(IVariable* var, IData* data)
 {
   Ref<IData> cdata = _findData(var);
-  if (!cdata.get()){
+  if (!cdata.get()) {
     warning() << A_FUNCNAME << ": "
               << String::format("can not find data for variable '{0}': variable will not be restored",
                                 var->fullName());
@@ -110,7 +111,7 @@ Ref<IData> MemoryDataReaderWriter::
 _findData(IVariable* var)
 {
   auto i = m_vars_to_data.find(var->fullName());
-  if (i==m_vars_to_data.end())
+  if (i == m_vars_to_data.end())
     return {};
   return i->second;
 }
@@ -118,7 +119,7 @@ _findData(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

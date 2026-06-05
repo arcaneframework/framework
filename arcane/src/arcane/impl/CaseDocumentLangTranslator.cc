@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,12 +19,12 @@
 
 #include "arcane/impl/CaseDocumentLangTranslator.h"
 
-#include "arcane/AbstractCaseDocumentVisitor.h"
-#include "arcane/CaseOptions.h"
-#include "arcane/CaseOptionService.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/CaseNodeNames.h"
+#include "arcane/core/AbstractCaseDocumentVisitor.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/CaseOptionService.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/CaseNodeNames.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,12 +40,15 @@ class CaseDocumentLangTranslatorVisitor
 , public TraceAccessor
 {
  public:
-  CaseDocumentLangTranslatorVisitor(ITraceMng* tm,const String& new_lang)
+
+  CaseDocumentLangTranslatorVisitor(ITraceMng* tm, const String& new_lang)
   : TraceAccessor(tm)
   {
     m_new_lang = new_lang;
   }
+
  public:
+
   void beginVisit(const ICaseOptions* opt) override
   {
     info() << "BeginOpt " << _getName(opt) << " {";
@@ -88,11 +91,11 @@ class CaseDocumentLangTranslatorVisitor
   {
     info() << "EndService " << _getName(opt);
   }
-  void beginVisit(const CaseOptionMultiServiceImpl* opt,Integer index) override
+  void beginVisit(const CaseOptionMultiServiceImpl* opt, Integer index) override
   {
     info() << "BeginMultiService " << _getName(opt) << " index=" << index;
   }
-  void endVisit(const CaseOptionMultiServiceImpl* opt,Integer index) override
+  void endVisit(const CaseOptionMultiServiceImpl* opt, Integer index) override
   {
     info() << "EndMultiService " << _getName(opt) << " index=" << index;
   }
@@ -102,7 +105,7 @@ class CaseDocumentLangTranslatorVisitor
     String name = opt->name();
     String new_name = opt->translatedName(m_new_lang);
 
-    if (name!=new_name)
+    if (name != new_name)
       m_stream() << full_xpath << "/" << name << ":" << new_name << '\n';
     return name;
   }
@@ -112,7 +115,7 @@ class CaseDocumentLangTranslatorVisitor
     String name = opt->rootTagName();
     String new_name = opt->translatedName(m_new_lang);
 
-    if (name!=new_name)
+    if (name != new_name)
       m_stream() << full_xpath << ":" << new_name << '\n';
     return name;
   }
@@ -126,17 +129,23 @@ class CaseDocumentLangTranslatorVisitor
       return;
 
     int v = opt->enumValueAsInt();
-    String new_name = opt->enumValues()->nameOfValue(v,m_new_lang);
+    String new_name = opt->enumValues()->nameOfValue(v, m_new_lang);
     m_stream() << opt->xpathFullName() << ":text#" << new_name << '\n';
   }
+
  public:
+
   void printAll()
   {
     info() << "ALL: " << m_stream.str();
   }
+
  public:
+
   String convertString() { return m_stream.str(); }
+
  private:
+
   OStringStream m_stream;
   String m_new_lang;
 };
@@ -170,13 +179,13 @@ build()
 /*---------------------------------------------------------------------------*/
 
 String CaseDocumentLangTranslator::
-translate(ICaseMng* cm,const String& new_lang)
+translate(ICaseMng* cm, const String& new_lang)
 {
   if (new_lang.null())
-    throw ArgumentException(A_FUNCINFO,"Invalid value for langage");
-  CaseDocumentLangTranslatorVisitor my_visitor(traceMng(),new_lang);
+    throw ArgumentException(A_FUNCINFO, "Invalid value for langage");
+  CaseDocumentLangTranslatorVisitor my_visitor(traceMng(), new_lang);
   CaseOptionsCollection opts = cm->blocks();
-  for( CaseOptionsCollection::Enumerator i(opts); ++i; ){
+  for (CaseOptionsCollection::Enumerator i(opts); ++i;) {
     ICaseOptions* o = *i;
     info() << " OptName=" << o->rootTagName();
     o->visit(&my_visitor);
@@ -185,26 +194,26 @@ translate(ICaseMng* cm,const String& new_lang)
 
   ICaseDocument* cd = cm->caseDocument();
   CaseNodeNames* current_cnn = cd->caseNodeNames();
-  ScopedPtrT<CaseNodeNames> cnn { new CaseNodeNames(new_lang) };
+  ScopedPtrT<CaseNodeNames> cnn{ new CaseNodeNames(new_lang) };
 
   // NOTE: These conversions depend on CaseDocument and must be
   // updated if the latter changes (as well as CaseNodeNames)
 
-  _addConvert(cd->fragment()->rootElement(),cnn->root);
-  _addConvert(cd->timeloopElement(),cnn->timeloop);
-  _addConvert(cd->titleElement(),cnn->title);
-  _addConvert(cd->descriptionElement(),cnn->description);
-  _addConvert(cd->modulesElement(),cnn->modules);
+  _addConvert(cd->fragment()->rootElement(), cnn->root);
+  _addConvert(cd->timeloopElement(), cnn->timeloop);
+  _addConvert(cd->titleElement(), cnn->title);
+  _addConvert(cd->descriptionElement(), cnn->description);
+  _addConvert(cd->modulesElement(), cnn->modules);
 
   String slash = "/";
   const XmlNodeList& mesh_elems = cd->meshElements();
-  for( Integer i=0, n=mesh_elems.size(); i<n; ++i ){
+  for (Integer i = 0, n = mesh_elems.size(); i < n; ++i) {
     XmlNode xnode(mesh_elems.node(i));
-    _addConvert(xnode,cnn->mesh);
-    _addConvert(xnode.child(current_cnn->mesh_file),cnn->mesh_file);
+    _addConvert(xnode, cnn->mesh);
+    _addConvert(xnode.child(current_cnn->mesh_file), cnn->mesh_file);
   }
 
-  _addConvert(cd->functionsElement(),cnn->functions);
+  _addConvert(cd->functionsElement(), cnn->functions);
 
   // TODO: Handle TiedInterface + CaseFunctions + following Attributes:
   // TODO: Use JSON format to output conversion information.
@@ -221,7 +230,7 @@ translate(ICaseMng* cm,const String& new_lang)
 /*---------------------------------------------------------------------------*/
 
 void CaseDocumentLangTranslator::
-_addConvert(XmlNode node,const String& new_name)
+_addConvert(XmlNode node, const String& new_name)
 {
   if (!node.null())
     m_global_convert_string = m_global_convert_string + node.xpathFullName() + ":" + new_name + "\n";

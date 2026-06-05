@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,24 +17,24 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/ITimeHistoryMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/Directory.h"
-#include "arcane/AbstractModule.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ITimeHistoryCurveWriter2.h"
-#include "arcane/ITimeHistoryTransformer.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/ServiceBuilder.h"
+#include "arcane/core/ITimeHistoryMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/AbstractModule.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/CaseOptionsMain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ITimeHistoryCurveWriter2.h"
+#include "arcane/core/ITimeHistoryTransformer.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/ServiceBuilder.h"
 #include "arcane/core/IMeshMng.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
@@ -347,7 +347,6 @@ timeHistoryInit()
       m_internal->addCurveWriter(wr_ref);
     }
   }
-
 }
 
 /*---------------------------------------------------------------------------*/

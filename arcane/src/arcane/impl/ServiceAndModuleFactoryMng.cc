@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,23 +21,21 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/ServiceUtils.h"
-#include "arcane/ServiceInfo.h"
-#include "arcane/ServiceRegisterer.h"
-#include "arcane/IServiceFactory.h"
-#include "arcane/IModuleFactory.h"
-#include "arcane/ModuleProperty.h"
-#include "arcane/IServiceAndModuleFactoryMng.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/ServiceInfo.h"
+#include "arcane/core/ServiceRegisterer.h"
+#include "arcane/core/IServiceFactory.h"
+#include "arcane/core/IModuleFactory.h"
+#include "arcane/core/ModuleProperty.h"
+#include "arcane/core/IServiceAndModuleFactoryMng.h"
 
 #include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,7 +57,7 @@ class ARCANE_IMPL_EXPORT ServiceAndModuleFactoryMng
   virtual ~ServiceAndModuleFactoryMng();
 
  public:
-  
+
   virtual void createAllServiceRegistererFactories();
 
   virtual ServiceFactoryInfoCollection serviceFactoryInfos() const;
@@ -97,16 +95,16 @@ class ServiceAndModuleFactoryMng::Impl
     // The instances of IServiceFactory2 must not be destroyed because they
     // are managed by the corresponding IServiceInfo.
 
-    for( List<IServiceInfo*>::Enumerator i(m_service_infos); ++i; )
+    for (List<IServiceInfo*>::Enumerator i(m_service_infos); ++i;)
       delete *i;
 
-    for( IServiceFactoryInfo* sfi : m_deletable_service_factory_list )
+    for (IServiceFactoryInfo* sfi : m_deletable_service_factory_list)
       delete sfi;
   }
 
-  void addServiceFactory(IServiceFactoryInfo* sfi,bool need_delete)
+  void addServiceFactory(IServiceFactoryInfo* sfi, bool need_delete)
   {
-    if (m_service_factory_set.find(sfi)!=m_service_factory_set.end()){
+    if (m_service_factory_set.find(sfi) != m_service_factory_set.end()) {
       std::cout << "Service Factory is already referenced\n";
       return;
     }
@@ -115,7 +113,7 @@ class ServiceAndModuleFactoryMng::Impl
     if (need_delete)
       m_deletable_service_factory_list.add(sfi);
     IServiceInfo* si = sfi->serviceInfo();
-    for( ServiceFactory2Collection::Enumerator j(si->factories()); ++j; ){
+    for (ServiceFactory2Collection::Enumerator j(si->factories()); ++j;) {
       Internal::IServiceFactory2* sf2 = *j;
       m_service_factories2.add(sf2);
     }
@@ -123,7 +121,7 @@ class ServiceAndModuleFactoryMng::Impl
 
   void addModuleFactory(IModuleFactoryInfo* mfi)
   {
-    if (m_module_factory_set.find(mfi)!=m_module_factory_set.end()){
+    if (m_module_factory_set.find(mfi) != m_module_factory_set.end()) {
       std::cout << "Module Factory is already referenced\n";
       return;
     }
@@ -215,7 +213,7 @@ serviceFactories2() const
 ModuleFactoryInfoCollection ServiceAndModuleFactoryMng::
 moduleFactoryInfos() const
 {
- return m_p->moduleFactoryInfos();
+  return m_p->moduleFactoryInfos();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -226,7 +224,7 @@ addGlobalFactory(IServiceFactoryInfo* sfi)
 {
   // Global factories must not be destroyed by us.
   info() << "Add global service factory name=" << sfi->serviceInfo()->localName();
-  m_p->addServiceFactory(sfi,false);
+  m_p->addServiceFactory(sfi, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -255,7 +253,7 @@ createAllServiceRegistererFactories()
 
   // Registers all factories using ServiceRegisterer
 
-  while(sr){
+  while (sr) {
     // Detects infinite loop problems (e.g., if two services have the same name)
     // Controls in ServiceRegisterer should now be sufficient.
     if (registered_services.find(sr) == registered_services.end()) {
@@ -266,7 +264,7 @@ createAllServiceRegistererFactories()
       cout << "=== Registered service factories ===\n"
            << " Registered service count: " << registered_services.size() << " / " << ServiceRegisterer::nbService()
            << "====================================\n"
-           << oss.str() 
+           << oss.str()
            << "====================================" << endl;
       ARCANE_FATAL("Infinite loop in service registration");
     }
@@ -290,29 +288,29 @@ createAllServiceRegistererFactories()
 void ServiceAndModuleFactoryMng::
 _addFactoryFromServiceRegisterer(ServiceRegisterer* sr)
 {
-  ARCANE_CHECK_POINTER2(sr,"ServiceRegisterer");
+  ARCANE_CHECK_POINTER2(sr, "ServiceRegisterer");
 
   bool is_ok = false;
 
   // Checks if \a sr has already been processed.
   // This can happen with dynamic loading if createAllServiceRegistererFactories()
   // is called multiple times.
-  if (m_service_registerer_done_set.find(sr)!=m_service_registerer_done_set.end())
+  if (m_service_registerer_done_set.find(sr) != m_service_registerer_done_set.end())
     return;
   m_service_registerer_done_set.insert(sr);
 
   // Tries to create the IServiceInfo using the different possible methods.
   // If sr->moduleFactoryWithPropertyFunction() is not null, it is a module factory.
   // Otherwise, it must be a service.
-  if (sr->moduleFactoryWithPropertyFunction()){
+  if (sr->moduleFactoryWithPropertyFunction()) {
     IModuleFactoryInfo* mfi = (*sr->moduleFactoryWithPropertyFunction())(sr->moduleProperty());
-    if (mfi){
+    if (mfi) {
       m_p->addModuleFactory(mfi);
       //trace->info() << "Add module factory for '" << si->localName() << "' mfi=" << mfi;
       is_ok = true;
     }
   }
-  else{
+  else {
     auto property_info_func = sr->infoCreatorWithPropertyFunction();
     if (!property_info_func)
       ARCANE_FATAL("Null PropertyFunc for ServiceRegisterer");
@@ -326,14 +324,14 @@ _addFactoryFromServiceRegisterer(ServiceRegisterer* sr)
 
     IServiceFactoryInfo* sfi = si->factoryInfo();
 
-    if (sfi){
-      m_p->addServiceFactory(sfi,true);
+    if (sfi) {
+      m_p->addServiceFactory(sfi, true);
       //trace->info() << "Add service factory for '" << si->localName() << "' sfi=" << sfi;
       is_ok = true;
     }
   }
 
-  if (!is_ok){
+  if (!is_ok) {
     info() << "WARNING: ServiceRegisterer does not have a valid create function name=" << sr->name();
   }
 }
@@ -341,7 +339,7 @@ _addFactoryFromServiceRegisterer(ServiceRegisterer* sr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

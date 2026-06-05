@@ -25,7 +25,7 @@ namespace Arcane
 {
 namespace impl
 {
-class AcceleratorStatInfoList;
+  class AcceleratorStatInfoList;
 }
 
 class ISimpleTableOutput;

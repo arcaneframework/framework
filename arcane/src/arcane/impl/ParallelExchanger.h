@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,8 +19,8 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/IParallelExchanger.h"
-#include "arcane/Timer.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/Timer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
   String name() const override { return m_name; }
 
  private:
-  
+
   Ref<IParallelMng> m_parallel_mng;
 
   //! List of subdomains to send
@@ -93,7 +93,7 @@ class ARCANE_IMPL_EXPORT ParallelExchanger
 
   //! List of subdomains to receive
   Int32UniqueArray m_recv_ranks;
-  
+
   //! List of messages to send and receive
   UniqueArray<ISerializeMessage*> m_comms_buf;
 

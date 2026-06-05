@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,17 +16,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneVersion.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/Exception.h"
+
+#include "arcane/core/ArcaneVersion.h"
+
 #include <map>
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
+namespace Arcane
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,11 +63,11 @@ class ARCANE_IMPL_EXPORT LicenseErrorException
 
 //! FlexLM manager
 /*! Singleton for recording all taken feature licenses
- * 
+ *
  *  The checks are performed by the master node (commRank==0)
  *  To verify the validity of this check, either the ArcaneMasterFlexLM
  *  feature must be available (which does not lock other nodes of the parallel
- *  execution on the license node) or all nodes must have ArcaneCore authorization. 
+ *  execution on the license node) or all nodes must have ArcaneCore authorization.
  *  This is tested in the init() phase.
  */
 class ARCANE_IMPL_EXPORT FlexLMMng
@@ -91,7 +93,7 @@ class ARCANE_IMPL_EXPORT FlexLMMng
   //! Sets a new license check periodicity
   /*! The default value is 120s.
    * if t == -1     : disables periodic checking
-   * if 0 <= t < 30 : the value is ignored 
+   * if 0 <= t < 30 : the value is ignored
    * if t >= 30     : sets a new check periodicity
    */
   void setCheckInterval(const Integer t = 120);
@@ -226,12 +228,9 @@ class ArcaneFeatureModel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /*FLEXLMTOOLS_H_*/
+#endif

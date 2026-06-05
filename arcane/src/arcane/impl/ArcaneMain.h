@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/IFunctor.h"
-#include "arcane/IArcaneMain.h"
+#include "arcane/core/IArcaneMain.h"
 
 #include <atomic>
 
@@ -37,7 +37,6 @@ class ServiceFactoryInfo;
 class ArcaneMainExecInfo;
 class DotNetRuntimeInitialisationInfo;
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,12 +44,18 @@ class ARCANE_IMPL_EXPORT ArcaneMainExecutionOverrideFunctor
 {
   friend class ArcaneMain;
   friend class ArcaneMainExecInfo;
+
  public:
+
   explicit ArcaneMainExecutionOverrideFunctor(IFunctor* functor)
-  : m_functor(functor), m_application(nullptr){}
+  : m_functor(functor)
+  , m_application(nullptr)
+  {}
   IFunctor* functor() { return m_functor; }
   IApplication* application() { return m_application; }
+
  private:
+
   IFunctor* m_functor;
   IApplication* m_application;
 };
@@ -61,9 +66,12 @@ class ARCANE_IMPL_EXPORT ArcaneMainExecutionOverrideFunctor
 class ARCANE_IMPL_EXPORT IApplicationBuildInfoVisitor
 {
  public:
-  virtual ~IApplicationBuildInfoVisitor(){}
+
+  virtual ~IApplicationBuildInfoVisitor() {}
+
  public:
-  virtual void visit(ApplicationBuildInfo& app_build_info) =0;
+
+  virtual void visit(ApplicationBuildInfo& app_build_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -85,10 +93,13 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   class Impl;
 
  public:
+
   // TODO: to be removed.
-  ArcaneMain(const ApplicationInfo& infos,IMainFactory* factory);
+  ArcaneMain(const ApplicationInfo& infos, IMainFactory* factory);
+
  public:
-  ArcaneMain(const ApplicationInfo& app_info,IMainFactory* factory,
+
+  ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
              const ApplicationBuildInfo& app_build_info,
              const DotNetRuntimeInitialisationInfo& dotnet_init_info,
              const AcceleratorRuntimeInitialisationInfo& accelerator_init_info);
@@ -125,7 +136,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
    * \retval 4 in case of fatal error in Arcane.
    *
    */
-  static int arcaneMain(const ApplicationInfo& app_info,IMainFactory* factory=nullptr);
+  static int arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory = nullptr);
 
   /*!
    * \brief Entry point of the executable in Arcane.
@@ -136,7 +147,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
    */
   static int run();
 
-   /*!
+  /*!
    * \brief Initializes Arcane.
    *
    * This method must be called before any use of an Arcane object. It can be called
@@ -147,7 +158,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
    * not necessary to call this method.
    */
   static void arcaneInitialize();
-  
+
   /*!
    * \brief Terminates Arcane usage.
    *
@@ -238,10 +249,10 @@ class ARCANE_IMPL_EXPORT ArcaneMain
    * thread stops without the others knowing, which generally
    * results in MPI_Abort in parallel.
    */
-  
-  static int callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* amain,
+
+  static int callFunctorWithCatchedException(IFunctor* functor, IArcaneMain* amain,
                                              bool* clean_abort,
-                                             bool is_print=true);
+                                             bool is_print = true);
 
   /*!
    * brief Execution functor.
@@ -254,7 +265,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
    * only one IApplication instance is available.
    * There is no subdomain, session, or mesh available.
    *
-   */  
+   */
   static void setExecuteOverrideFunctor(ArcaneMainExecutionOverrideFunctor* functor);
 
   //! Indicates if a '.Net' assembly is being executed from a C++ `main`.
@@ -269,7 +280,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static Real initializationTimeForAccelerator();
 
  public:
-  
+
   /*!
    * \brief Adds a service factory.
    *
@@ -295,7 +306,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static void addApplicationBuildInfoVisitor(IApplicationBuildInfoVisitor* visitor);
 
  public:
-  
+
   static void redirectSignals();
   static bool isMasterIO() { return m_is_master_io; }
   static void setUseTestLogger(bool v);
@@ -346,7 +357,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
 
  private:
 
-  static int _arcaneMain(const ApplicationInfo&,IMainFactory*);
+  static int _arcaneMain(const ApplicationInfo&, IMainFactory*);
   void _dumpHelp();
   void _parseApplicationBuildInfoArgs();
   //! Number of times arcaneInitialize() has been called

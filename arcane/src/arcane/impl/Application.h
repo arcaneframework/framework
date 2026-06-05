@@ -64,14 +64,14 @@ class ARCANE_IMPL_EXPORT Application
   void initialize() override;
 
  public:
-  
+
   IBase* objectParent() const override { return nullptr; }
   String objectNamespaceURI() const override { return m_namespace_uri; }
   String objectLocalName() const override { return m_local_name; }
-  VersionInfo objectVersion() const override { return VersionInfo(1,0,0); }
+  VersionInfo objectVersion() const override { return VersionInfo(1, 0, 0); }
 
  public:
-	
+
   ITraceMng* traceMng() const override { return m_trace.get(); }
   IRessourceMng* ressourceMng() const override { return m_ressource_mng; }
   IServiceMng* serviceMng() const override { return m_service_mng; }
@@ -101,7 +101,7 @@ class ARCANE_IMPL_EXPORT Application
 
   ByteConstSpan configBuffer() const override { return asBytes(m_config_bytes.constSpan()); }
   ByteConstSpan userConfigBuffer() const override { return asBytes(m_user_config_bytes.constSpan()); }
-  
+
   SessionCollection sessions() override { return m_sessions; }
   void addSession(ISession* s) override;
   void removeSession(ISession* s) override;
@@ -122,6 +122,7 @@ class ARCANE_IMPL_EXPORT Application
                                          const String& file_suffix) override;
 
  private:
+
   ApplicationInfo m_exe_info; //!< Executable information
   String m_namespace_uri;
   String m_local_name;
@@ -176,8 +177,8 @@ class ARCANE_IMPL_EXPORT Application
 
   void _openUserConfig();
   void _initDataInitialisationPolicy();
-  template<typename InterfaceType> Ref<InterfaceType>
-  _tryCreateService(const StringList& names,String* found_name);
+  template <typename InterfaceType> Ref<InterfaceType>
+  _tryCreateService(const StringList& names, String* found_name);
   void _readCodeConfigurationFile();
   void _setCoreServices();
 };

@@ -78,7 +78,7 @@ VariableMng(ISubDomain* sd)
 : TraceAccessor(sd->traceMng())
 , m_sub_domain(sd)
 , m_parallel_mng(sd->parallelMng())
-, m_vni_map(2000,true)
+, m_vni_map(2000, true)
 , m_write_observable(IObservable::createDefault())
 , m_read_observable(IObservable::createDefault())
 , m_utilities(new VariableUtilities(this))
@@ -134,15 +134,15 @@ initialize()
   m_time_stats = m_parallel_mng->timeStats();
 
   VariableFactoryRegisterer* vff = VariableFactoryRegisterer::firstVariableFactory();
-  while (vff){
+  while (vff) {
     IVariableFactory* vf = vff->createFactory();
     String full_name = vf->fullTypeName();
     // Checks that no factory with the same name exists.
-    if (m_variable_factory_map.find(full_name)!=m_variable_factory_map.end()){
+    if (m_variable_factory_map.find(full_name) != m_variable_factory_map.end()) {
       ARCANE_FATAL("VariableFactoryMap already contains a factory for the same type '{0}'",
                    full_name);
     }
-    m_variable_factory_map.insert(VariableFactoryPair(full_name,vf));
+    m_variable_factory_map.insert(VariableFactoryPair(full_name, vf));
     m_variable_factories.add(vf);
     info(5) << "Add variable factory kind=" << vff->itemKind()
             << " data_type=" << vff->dataType()
@@ -167,11 +167,11 @@ removeAllVariables()
 
   OStringStream var_str;
   UniqueArray<IVariable*> remaining_vars;
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IVariable* v = i.second;
-    if (v->nbReference()==0)
+    if (v->nbReference() == 0)
       delete v;
-    else{
+    else {
       remaining_vars.add(v);
       var_str() << "  " << v->fullName() << " (" << v->nbReference() << ")";
     }
@@ -184,9 +184,9 @@ removeAllVariables()
                << " (set the environment variable ARCANE_TRACE_VARIABLE_CREATION"
                << " to get the stack trace)";
   bool has_trace = VariableRef::hasTraceCreation();
-  if (has_trace){
-    for( const auto& i : remaining_vars ){
-      for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar ){
+  if (has_trace) {
+    for (const auto& i : remaining_vars) {
+      for (VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar) {
         VariableRef* var = *ivar;
         info() << " variable name=" << var->name()
                << " stack=" << var->assignmentStackTrace();
@@ -198,15 +198,15 @@ removeAllVariables()
   // Without this, if the instance 'this' is destroyed before the variables
   // remain are, it will cause a crash (Read after free). This
   // does not normally happen for C++ but can happen for wrapping.
-  if (has_remaining_vars){
+  if (has_remaining_vars) {
     // Copies the references into a temporary array
     // because calls to unregisterVariable() modify the ivar iterator
     // and also m_full_name_variable_map.
     UniqueArray<VariableRef*> remaining_refs;
-    for( const auto& i : remaining_vars )
-      for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar )
+    for (const auto& i : remaining_vars)
+      for (VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar)
         remaining_refs.add(*ivar);
-    for( VariableRef* r : remaining_refs )
+    for (VariableRef* r : remaining_refs)
       r->unregisterVariable();
     if (is_check)
       info() << "Remaining variables after cleanup n=" << m_full_name_variable_map.size();
@@ -221,12 +221,12 @@ removeAllVariables()
 void VariableMng::
 detachMeshVariables(IMesh* mesh)
 {
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IVariable* v = i.second;
     ItemGroup group = v->itemGroup();
     if (group.null())
       continue;
-    if (group.mesh()==mesh){
+    if (group.mesh() == mesh) {
       v->setUsed(false);
     }
   }
@@ -258,9 +258,9 @@ void VariableMng::
 addVariable(IVariable* var)
 {
   const String& full_name = var->fullName();
-  subDomain()->checkId("VariableMng::checkVariable()",full_name);
-  if (var->itemKind()!=IK_Unknown && var->itemFamilyName().null())
-    ARCANE_FATAL("Bad Variable full-name={0} name={1}",var->fullName(),var->name());
+  subDomain()->checkId("VariableMng::checkVariable()", full_name);
+  if (var->itemKind() != IK_Unknown && var->itemFamilyName().null())
+    ARCANE_FATAL("Bad Variable full-name={0} name={1}", var->fullName(), var->name());
 
   info(5) << "Add variable"
           << " name=" << var->name()
@@ -272,9 +272,9 @@ addVariable(IVariable* var)
   vni.m_local_name = var->name();
   vni.m_family_name = var->itemFamilyName();
   vni.m_mesh_name = var->meshName();
-  m_vni_map.add(vni,var);
+  m_vni_map.add(vni, var);
 
-  m_full_name_variable_map.insert(FullNameVariablePair(full_name,var));
+  m_full_name_variable_map.insert(FullNameVariablePair(full_name, var));
   m_variables_changed = true;
   m_used_variables_changed = true;
   ++m_nb_created_variable;
@@ -282,8 +282,8 @@ addVariable(IVariable* var)
   IModule* module = nullptr;
   if (ep)
     module = ep->module();
-  m_variable_creation_modules.insert(std::make_pair(var,module));
-  VariableStatusChangedEventArgs eargs(var,VariableStatusChangedEventArgs::Status::Added);
+  m_variable_creation_modules.insert(std::make_pair(var, module));
+  VariableStatusChangedEventArgs eargs(var, VariableStatusChangedEventArgs::Status::Added);
   m_on_variable_added.notify(eargs);
 }
 
@@ -294,14 +294,14 @@ void VariableMng::
 removeVariable(IVariable* var)
 {
   int p = var->property();
-  if (p & IVariable::PTemporary){
+  if (p & IVariable::PTemporary) {
     debug() << "** ** REMOVE " << var->name() << " " << var->nbReference()
-           << " property=" << p
-           << " nodump=" << (p & IVariable::PNoDump)
-           << " tmp=" << (p & IVariable::PTemporary)
-           << " norestore=" << (p & IVariable::PNoRestore);
+            << " property=" << p
+            << " nodump=" << (p & IVariable::PNoDump)
+            << " tmp=" << (p & IVariable::PTemporary)
+            << " norestore=" << (p & IVariable::PNoRestore);
   }
-  VariableStatusChangedEventArgs eargs(var,VariableStatusChangedEventArgs::Status::Removed);
+  VariableStatusChangedEventArgs eargs(var, VariableStatusChangedEventArgs::Status::Removed);
   m_on_variable_removed.notify(eargs);
   {
     ItemGroup var_group = var->itemGroup();
@@ -335,23 +335,23 @@ checkVariable(const VariableInfo& infos)
   vni.m_family_name = infos.itemFamilyName();
   vni.m_mesh_name = infos.meshName();
 
-  if (infos.itemKind()!=IK_Unknown && infos.meshName().null())
-    ARCANE_FATAL("Mesh variable without a mesh  full-name={0} name={1}",infos.fullName(),infos.localName());
+  if (infos.itemKind() != IK_Unknown && infos.meshName().null())
+    ARCANE_FATAL("Mesh variable without a mesh  full-name={0} name={1}", infos.fullName(), infos.localName());
 
   // If it is a mesh variable, check that no global variable not linked to a mesh
   // has the same name.
-  if (arcaneIsCheck()){
-    if (!infos.meshName().null()){
+  if (arcaneIsCheck()) {
+    if (!infos.meshName().null()) {
       String check_name = infos.localName();
-      if (findVariableFullyQualified(check_name)){
-        ARCANE_FATAL("Mesh variable has the same name that a global variable (name={0})",check_name);
+      if (findVariableFullyQualified(check_name)) {
+        ARCANE_FATAL("Mesh variable has the same name that a global variable (name={0})", check_name);
       }
     }
-    else{
+    else {
       // If it is a global variable, check that no mesh variable has the same name.
-      String check_name = String("Mesh0_")+infos.localName();
-      if (findVariableFullyQualified(check_name)){
-        ARCANE_FATAL("Global variable has the same name that a mesh variable (name={0})",check_name);
+      String check_name = String("Mesh0_") + infos.localName();
+      if (findVariableFullyQualified(check_name)) {
+        ARCANE_FATAL("Global variable has the same name that a mesh variable (name={0})", check_name);
       }
     }
   }
@@ -361,17 +361,17 @@ checkVariable(const VariableInfo& infos)
 
   //cerr << "** CHECK " << name << ' ' << infos.dataType() << ' ' << infos.kind() << '\n';
   VNIMap::Data* var_data = m_vni_map.lookup(vni);
-  if (var_data){
+  if (var_data) {
     // A variable with the same name as \a var already exists.
     // In this case, it is necessary to check that its kind and type are the same.
     // it has the same kind and the same type.
     var = var_data->value();
     //cerr << "** FIND " << prv->name() << ' ' << prv->dataType() << ' ' << prv->kind() << '\n';
-    if (infos.dataType()!=var->dataType() ||
-        infos.itemKind()!=var->itemKind() ||
-        infos.dimension()!=var->dimension()){
-      throw BadVariableKindTypeException(A_FUNCINFO,var,infos.itemKind(),
-                                         infos.dataType(),infos.dimension());
+    if (infos.dataType() != var->dataType() ||
+        infos.itemKind() != var->itemKind() ||
+        infos.dimension() != var->dimension()) {
+      throw BadVariableKindTypeException(A_FUNCINFO, var, infos.itemKind(),
+                                         infos.dataType(), infos.dimension());
     }
     // For partial variable: if exists already must be defined on the same group, otherwise fatal
     if (infos.isPartial()) {
@@ -391,16 +391,16 @@ findVariable(const String& name)
   IVariable* v = findVariableFullyQualified(name);
   if (v)
     return v;
-  v = findVariableFullyQualified(String("Node_")+name);
+  v = findVariableFullyQualified(String("Node_") + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(String("Edge_")+name);
+  v = findVariableFullyQualified(String("Edge_") + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(String("Face_")+name);
+  v = findVariableFullyQualified(String("Face_") + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(String("Cell_")+name);
+  v = findVariableFullyQualified(String("Cell_") + name);
   if (v)
     return v;
   return nullptr;
@@ -410,23 +410,23 @@ findVariable(const String& name)
 /*---------------------------------------------------------------------------*/
 
 IVariable* VariableMng::
-findMeshVariable(IMesh* mesh,const String& name)
+findMeshVariable(IMesh* mesh, const String& name)
 {
   String mesh_name = mesh->name();
   mesh_name = mesh_name + "_";
-  IVariable* v = findVariableFullyQualified(mesh_name+name);
+  IVariable* v = findVariableFullyQualified(mesh_name + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(mesh_name+"Node_"+name);
+  v = findVariableFullyQualified(mesh_name + "Node_" + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(mesh_name+"Edge_"+name);
+  v = findVariableFullyQualified(mesh_name + "Edge_" + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(mesh_name+"Face_"+name);
+  v = findVariableFullyQualified(mesh_name + "Face_" + name);
   if (v)
     return v;
-  v = findVariableFullyQualified(mesh_name+"Cell_"+name);
+  v = findVariableFullyQualified(mesh_name + "Cell_" + name);
   if (v)
     return v;
   return nullptr;
@@ -439,7 +439,7 @@ IVariable* VariableMng::
 findVariableFullyQualified(const String& name)
 {
   auto i = m_full_name_variable_map.find(name);
-  if (i!=m_full_name_variable_map.end())
+  if (i != m_full_name_variable_map.end())
     return i->second;
   return nullptr;
 }
@@ -452,7 +452,7 @@ generateTemporaryVariableName()
 {
   bool is_bad = true;
   String name;
-  while (is_bad){
+  while (is_bad) {
     name = String("ArcaneTemporary") + m_generate_name_id;
     // Check that the generated name does not correspond to an existing variable
     if (findVariable(name))
@@ -468,14 +468,14 @@ generateTemporaryVariableName()
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-dumpList(std::ostream& o,IModule* c)
+dumpList(std::ostream& o, IModule* c)
 {
   o << "  ** VariableMng::Variable list\n";
-  for( const auto& i : m_full_name_variable_map ){
-    for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
-      if ((*ivar)->module()!=c)
+  for (const auto& i : m_full_name_variable_map) {
+    for (VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar) {
+      if ((*ivar)->module() != c)
         continue;
-      _dumpVariable(*(*ivar),o);
+      _dumpVariable(*(*ivar), o);
     }
   }
 }
@@ -487,14 +487,14 @@ void VariableMng::
 dumpList(std::ostream& o)
 {
   o << "  ** VariableMng::Variable list\n";
-  for( const auto& i : m_full_name_variable_map ){
-    for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
-      _dumpVariable(*(*ivar),o);
+  for (const auto& i : m_full_name_variable_map) {
+    for (VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar) {
+      _dumpVariable(*(*ivar), o);
     }
   }
   {
     Real mem_used = 0;
-    for( const auto& i : m_full_name_variable_map )
+    for (const auto& i : m_full_name_variable_map)
       mem_used += i.second->allocatedMemory();
     o << "  ** VariableMng::Allocated memory : " << mem_used;
     o << '\n';
@@ -505,7 +505,7 @@ dumpList(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-_dumpVariable(const VariableRef& var,std::ostream& o)
+_dumpVariable(const VariableRef& var, std::ostream& o)
 {
   o << "  ** Variable: " << &var << " : ";
   o.width(15);
@@ -523,8 +523,8 @@ initializeVariables(bool is_continue)
   ARCANE_UNUSED(is_continue);
 
   info() << "Initialisation des variables";
-  for( const auto& i : m_full_name_variable_map ){
-    for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
+  for (const auto& i : m_full_name_variable_map) {
+    for (VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar) {
       VariableRef* var_ref = *ivar;
       IModule* module = var_ref->module();
       if (module && !module->used())
@@ -541,11 +541,11 @@ initializeVariables(bool is_continue)
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-variables(VariableRefCollection v,IModule* c)
+variables(VariableRefCollection v, IModule* c)
 {
-  for( const auto& i : m_full_name_variable_map ){
-    for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
-      if ((*ivar)->module()==c)
+  for (const auto& i : m_full_name_variable_map) {
+    for (VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar) {
+      if ((*ivar)->module() == c)
         v.add(*ivar);
     }
   }
@@ -557,10 +557,10 @@ variables(VariableRefCollection v,IModule* c)
 VariableCollection VariableMng::
 variables()
 {
-  if (m_variables_changed){
+  if (m_variables_changed) {
     m_variables_changed = false;
     m_variables.clear();
-    for( const auto& i : m_full_name_variable_map ){
+    for (const auto& i : m_full_name_variable_map) {
       m_variables.add(i.second);
     }
   }
@@ -573,10 +573,10 @@ variables()
 VariableCollection VariableMng::
 usedVariables()
 {
-  if (m_used_variables_changed){
+  if (m_used_variables_changed) {
     m_used_variables_changed = false;
     m_used_variables.clear();
-    for( const auto& i : m_full_name_variable_map ){
+    for (const auto& i : m_full_name_variable_map) {
       IVariable* var = i.second;
       if (var->isUsed())
         m_used_variables.add(var);
@@ -593,7 +593,7 @@ isVariableToSave(IVariable& var)
 {
   if (!var.isUsed())
     return false;
-  bool no_dump = var.property() & (IVariable::PNoDump|IVariable::PTemporary);
+  bool no_dump = var.property() & (IVariable::PNoDump | IVariable::PTemporary);
   if (no_dump)
     return false;
   IMesh* mesh = var.meshHandle()._internalMeshOrNull();
@@ -624,29 +624,29 @@ writePostProcessing(IPostProcessorWriter* post_processor)
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-writeVariables(IDataWriter* writer,const VariableCollection& vars)
+writeVariables(IDataWriter* writer, const VariableCollection& vars)
 {
-  m_variable_io_writer_mng->writeVariables(writer,vars,false);
+  m_variable_io_writer_mng->writeVariables(writer, vars, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-writeVariables(IDataWriter* writer,IVariableFilter* filter)
+writeVariables(IDataWriter* writer, IVariableFilter* filter)
 {
-  m_variable_io_writer_mng->writeVariables(writer,filter,false);
+  m_variable_io_writer_mng->writeVariables(writer, filter, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VariableRef* VariableMng::
-_createVariableFromType(const String& full_type,const VariableBuildInfo& vbi)
+_createVariableFromType(const String& full_type, const VariableBuildInfo& vbi)
 {
   auto i = m_variable_factory_map.find(full_type);
-  if (i==m_variable_factory_map.end())
-    ARCANE_FATAL("No factory to create variable name={0} type={1}",vbi.name(),full_type);
+  if (i == m_variable_factory_map.end())
+    ARCANE_FATAL("No factory to create variable name={0} type={1}", vbi.name(), full_type);
 
   IVariableFactory* vf = i->second;
   info(5) << "Automatic creation of the variable"
@@ -686,9 +686,9 @@ readCheckpoint(const CheckpointReadInfo& infos)
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-readVariables(IDataReader* reader,IVariableFilter* filter)
+readVariables(IDataReader* reader, IVariableFilter* filter)
 {
-  m_variable_io_reader_mng->readVariables(reader,filter);
+  m_variable_io_reader_mng->readVariables(reader, filter);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -701,17 +701,17 @@ Real VariableMng::
 exportSize(const VariableCollection& vars)
 {
   Real total_size = 0;
-  if (vars.empty()){
-    for( const auto& i : m_full_name_variable_map ){
+  if (vars.empty()) {
+    for (const auto& i : m_full_name_variable_map) {
       IVariable* var = i.second;
-      if (var->isUsed()){
+      if (var->isUsed()) {
         Real n = (Real)(var->allocatedMemory());
         total_size += n;
       }
     }
   }
-  else{
-    for( VariableCollection::Enumerator i(vars); ++i; ){
+  else {
+    for (VariableCollection::Enumerator i(vars); ++i;) {
       IVariable* var = *i;
       if (var->isUsed())
         total_size += (Real)(var->allocatedMemory());
@@ -738,14 +738,15 @@ synchronizerMng() const
 class VariableSizeSorter
 {
  public:
-  bool operator()(IVariable* v1,IVariable* v2)
+
+  bool operator()(IVariable* v1, IVariable* v2)
   {
     return v1->allocatedMemory() > v2->allocatedMemory();
   }
 };
 
 void VariableMng::
-dumpStats(std::ostream& ostr,bool is_verbose)
+dumpStats(std::ostream& ostr, bool is_verbose)
 {
   ostr.precision(20);
   ostr << "\nMemory statistics for variables:\n";
@@ -765,7 +766,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
   Integer nb_var_array = 0;
   Integer nb_var_particle = 0;
   Integer nb_var_link = 0;
-  for( Integer i=0; i<NB_ITEM_KIND; ++i ){
+  for (Integer i = 0; i < NB_ITEM_KIND; ++i) {
     mem_used[i] = 0;
     nb_var[i] = 0;
   }
@@ -774,48 +775,48 @@ dumpStats(std::ostream& ostr,bool is_verbose)
   Integer nb_cell = 1;
   if (subDomain()->defaultMesh())
     nb_cell = subDomain()->defaultMesh()->allCells().size();
-  if (nb_cell==0)
+  if (nb_cell == 0)
     nb_cell = 1;
 
-  typedef std::map<IModule*,std::set<IVariable*> > ModuleVariableMap;
+  typedef std::map<IModule*, std::set<IVariable*>> ModuleVariableMap;
   std::set<IVariable*> variables_with_module;
   UniqueArray<IVariable*> memory_sorted_variables;
 
   ModuleVariableMap modules_variables;
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     //for( VariableRefList::Enumerator ivar(m_variables_ref); ++ivar; ){
     IVariable* var = i.second;
     if (!var->isUsed())
       continue;
     // No statistics on scalar variables
-    if (var->dimension()==0)
+    if (var->dimension() == 0)
       continue;
-    for( VarRefEnumerator ivar(var); ivar.hasNext(); ++ivar ){
+    for (VarRefEnumerator ivar(var); ivar.hasNext(); ++ivar) {
       VariableRef* vref = *ivar;
       IModule* var_module = vref->module();
       // If the variable does not have a module, search for the possible module
       // that created it
       if (!var_module)
         var_module = m_variable_creation_modules[var];
-      if (var_module){
+      if (var_module) {
         variables_with_module.insert(var);
         modules_variables[var_module].insert(var);
       }
     }
   }
 
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IVariable* var = i.second;
     // No statistics on unused variables
     if (!var->isUsed())
       continue;
     // No statistics on scalar variables
-    if (var->dimension()==0)
+    if (var->dimension() == 0)
       continue;
     memory_sorted_variables.add(var);
     // If the variable does not have an associated module, it is placed in
     // the list of variables without a module
-    if (variables_with_module.find(var)==variables_with_module.end())
+    if (variables_with_module.find(var) == variables_with_module.end())
       modules_variables[0].insert(var);
     ++total_nb_var;
     eItemKind ik = var->itemKind();
@@ -823,7 +824,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     total_mem_used += mem;
     if (is_verbose)
       ostr << "Var: <" << var->name() << "> Kind=" << itemKindName(ik) << " Mem=" << mem << '\n';
-    switch(ik){
+    switch (ik) {
     case IK_Node:
     case IK_Edge:
     case IK_Face:
@@ -862,16 +863,16 @@ dumpStats(std::ostream& ostr,bool is_verbose)
        << "\n\n";
   String pr_true("X ");
   String pr_false("  ");
-  for( ModuleVariableMap::const_iterator imodvar = modules_variables.begin();
-       imodvar!=modules_variables.end(); ++imodvar ){
+  for (ModuleVariableMap::const_iterator imodvar = modules_variables.begin();
+       imodvar != modules_variables.end(); ++imodvar) {
     IModule* module = imodvar->first;
     Real private_mem_used = 0.0;
     Real shared_mem_used = 0.0;
-    for( std::set<IVariable*>::const_iterator i = imodvar->second.begin();
-         i!=imodvar->second.end(); ++i ){
+    for (std::set<IVariable*>::const_iterator i = imodvar->second.begin();
+         i != imodvar->second.end(); ++i) {
       IVariable* var = *i;
       Real mem_used2 = var->allocatedMemory();
-      bool is_private = var->nbReference()==1;
+      bool is_private = var->nbReference() == 1;
       if (is_private)
         private_mem_used += mem_used2;
       else
@@ -886,11 +887,11 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     Real module_mem_used = private_mem_used + shared_mem_used;
     ostr << Trace::Width(30) << module_name
          << Trace::Width(7) << imodvar->second.size()
-         << Trace::Width(12) << String::fromNumber(private_mem_used / 1e6,3)
-         << Trace::Width(12) << String::fromNumber(shared_mem_used / 1e6,3)
-         << Trace::Width(12) << String::fromNumber(module_mem_used / 1e6,3)
-         << Trace::Width(7) << String::fromNumber(100.0 * module_mem_used / total_mem_used,1) << "%"
-         << Trace::Width(12) << String::fromNumber(module_mem_used / ((Real)nb_cell * 1000.0) ,2)
+         << Trace::Width(12) << String::fromNumber(private_mem_used / 1e6, 3)
+         << Trace::Width(12) << String::fromNumber(shared_mem_used / 1e6, 3)
+         << Trace::Width(12) << String::fromNumber(module_mem_used / 1e6, 3)
+         << Trace::Width(7) << String::fromNumber(100.0 * module_mem_used / total_mem_used, 1) << "%"
+         << Trace::Width(12) << String::fromNumber(module_mem_used / ((Real)nb_cell * 1000.0), 2)
          << '\n';
   }
   ostr << '\n';
@@ -898,13 +899,13 @@ dumpStats(std::ostream& ostr,bool is_verbose)
        << Trace::Width(7) << total_nb_var
        << Trace::Width(12) << ""
        << Trace::Width(12) << ""
-       << Trace::Width(12) << String::fromNumber(total_mem_used/ 1e6,3)
+       << Trace::Width(12) << String::fromNumber(total_mem_used / 1e6, 3)
        << Trace::Width(7) << " "
-       << Trace::Width(13) << String::fromNumber(total_mem_used / ((Real)nb_cell * 1000.0) ,2)
+       << Trace::Width(13) << String::fromNumber(total_mem_used / ((Real)nb_cell * 1000.0), 2)
        << '\n';
 
-  if (is_verbose){
-    for( Integer i=0; i<NB_ITEM_KIND; ++i ){
+  if (is_verbose) {
+    for (Integer i = 0; i < NB_ITEM_KIND; ++i) {
       ostr << "Variable " << itemKindName((eItemKind)i) << " N=" << nb_var[i]
            << " Memory=" << mem_used[i] << '\n';
     }
@@ -918,13 +919,12 @@ dumpStats(std::ostream& ostr,bool is_verbose)
          << " Memory=" << total_mem_used << '\n';
   }
 
-  std::sort(std::begin(memory_sorted_variables),std::end(memory_sorted_variables),
+  std::sort(std::begin(memory_sorted_variables), std::end(memory_sorted_variables),
             VariableSizeSorter());
-
 
   Integer nb_var_to_display = memory_sorted_variables.size();
   if (!is_verbose)
-    nb_var_to_display = math::min(nb_var_to_display,15);
+    nb_var_to_display = math::min(nb_var_to_display, 15);
   ostr << "\nBiggest variables (D=Dump, E=Exchange R=Restore):\n";
   ostr << Trace::Width(45) << "Variable"
        << Trace::Width(10) << "Kind"
@@ -932,16 +932,16 @@ dumpStats(std::ostream& ostr,bool is_verbose)
        << Trace::Width(14) << "per cell (o)"
        << Trace::Width(7) << "D E R"
        << "\n\n";
-  for( Integer i=0; i<nb_var_to_display; ++i ){
+  for (Integer i = 0; i < nb_var_to_display; ++i) {
     IVariable* var = memory_sorted_variables[i];
     Real mem_used2 = var->allocatedMemory();
     //ostr << "Var: <" << var->name() << "> Kind=" << itemKindName(var->itemKind())
     //<< " Mem=" <<var->allocatedMemory() << '\n';
-  
+
     StringBuilder properties;
     int var_property = var->property();
     bool is_no_exchange = (var_property & IVariable::PNoExchange);
-    if (var->itemKind()==IK_Unknown)
+    if (var->itemKind() == IK_Unknown)
       // Only mesh variables can be exchanged
       is_no_exchange = true;
     properties += (var_property & IVariable::PNoDump) ? pr_false : pr_true;
@@ -949,8 +949,8 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     properties += (var_property & IVariable::PNoRestore) ? pr_false : pr_true;
     ostr << Trace::Width(45) << var->name()
          << Trace::Width(10) << itemKindName(var->itemKind())
-         << Trace::Width(14) << String::fromNumber(mem_used2 / 1e3,3)
-         << Trace::Width(12) << String::fromNumber(mem_used2 / ((Real)nb_cell),1)
+         << Trace::Width(14) << String::fromNumber(mem_used2 / 1e3, 3)
+         << Trace::Width(12) << String::fromNumber(mem_used2 / ((Real)nb_cell), 1)
          << Trace::Width(12) << properties.toString()
          << '\n';
   }
@@ -964,23 +964,23 @@ dumpStatsJSON(JSONWriter& writer)
 {
   writer.writeKey("Variables");
   writer.beginArray();
-  for( const auto& i : m_full_name_variable_map ){
+  for (const auto& i : m_full_name_variable_map) {
     IVariable* var = i.second;
-    if (var->dimension()==0)
+    if (var->dimension() == 0)
       continue;
     {
       JSONWriter::Object o(writer);
-      writer.write("Used",var->isUsed());
+      writer.write("Used", var->isUsed());
       Real mem = var->allocatedMemory();
-      writer.write("Name",var->name());
-      writer.write("DataType",dataTypeName(var->dataType()));
-      writer.write("Dimension",(Int64)var->dimension());
-      writer.write("NbElement",(Int64)var->nbElement());
-      writer.write("ItemFamily",var->itemFamilyName());
-      writer.write("Mesh",var->meshName());
-      writer.write("Group",var->itemGroupName());
-      writer.write("Property",(Int64)var->property());
-      writer.write("AllocatedMemory",mem);
+      writer.write("Name", var->name());
+      writer.write("DataType", dataTypeName(var->dataType()));
+      writer.write("Dimension", (Int64)var->dimension());
+      writer.write("NbElement", (Int64)var->nbElement());
+      writer.write("ItemFamily", var->itemFamilyName());
+      writer.write("Mesh", var->meshName());
+      writer.write("Group", var->itemGroupName());
+      writer.write("Property", (Int64)var->property());
+      writer.write("AllocatedMemory", mem);
     }
   }
   writer.endArray();

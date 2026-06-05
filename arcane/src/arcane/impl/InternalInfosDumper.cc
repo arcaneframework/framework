@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,31 +22,31 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/FileContent.h"
 
-#include "arcane/Parallel.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Directory.h"
-#include "arcane/ServiceFinder2.h"
-#include "arcane/IApplication.h"
-#include "arcane/ICodeService.h"
-#include "arcane/SubDomainBuildInfo.h"
-#include "arcane/IServiceLoader.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/ISession.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/IModule.h"
-#include "arcane/VariableRef.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/IIOMng.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/ICaseOptions.h"
-#include "arcane/IRessourceMng.h"
+#include "arcane/core/Parallel.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ServiceFinder2.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/ICodeService.h"
+#include "arcane/core/SubDomainBuildInfo.h"
+#include "arcane/core/IServiceLoader.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/ICaseOptions.h"
+#include "arcane/core/IRessourceMng.h"
 
 #include "arcane/impl/TimeLoopReader.h"
 
@@ -82,18 +82,18 @@ _getDefaultService()
     ARCANE_FATAL("environment variable 'STDENV_CODE_NAME' is not defined");
 
   IApplication* app = m_application;
-  ServiceFinder2T<ICodeService,IApplication> code_services_utils(app,app);
+  ServiceFinder2T<ICodeService, IApplication> code_services_utils(app, app);
   String full_code_name = code_name + "Code";
   Ref<ICodeService> code = code_services_utils.createReference(full_code_name);
-  if (!code){
+  if (!code) {
     // The Arcane named code service is special and is used to generate
     // the internal documentation. If it is not registered, we create
     // the instance directly.
-    if (code_name=="Arcane")
+    if (code_name == "Arcane")
       code = createArcaneCodeService(app);
   }
   if (!code)
-    ARCANE_FATAL("No code service named '{0}' found",full_code_name);
+    ARCANE_FATAL("No code service named '{0}' found", full_code_name);
   return code;
 }
 
@@ -110,7 +110,7 @@ dumpInternalInfos()
   ISession* session(code_service->createSession());
   IParallelSuperMng* psm = m_application->parallelSuperMng();
   Ref<IParallelMng> world_pm = psm->internalCreateWorldParallelMng(0);
-  SubDomainBuildInfo sdbi(world_pm,0);
+  SubDomainBuildInfo sdbi(world_pm, 0);
   sdbi.setCaseFileName(String());
   sdbi.setCaseBytes(ByteConstArrayView());
   ISubDomain* sub_domain(session->createSubDomain(sdbi));
@@ -122,16 +122,16 @@ dumpInternalInfos()
     stl.registerTimeLoops(sub_domain);
   }
   // Load all available modules
-  service_loader->loadModules(sub_domain,true);
+  service_loader->loadModules(sub_domain, true);
 
   // Store all IServiceInfo in the array.
   UniqueArray<IServiceInfo*> service_infos;
   {
     std::set<IServiceInfo*> done_set;
-    for( ServiceFactory2Collection::Enumerator j(m_application->serviceFactories2()); ++j; ){
+    for (ServiceFactory2Collection::Enumerator j(m_application->serviceFactories2()); ++j;) {
       Internal::IServiceFactory2* sf2 = *j;
       IServiceInfo* s = sf2->serviceInfo();
-      if (done_set.find(s)==done_set.end()){
+      if (done_set.find(s) == done_set.end()) {
         service_infos.add(s);
         done_set.insert(s);
       }
@@ -160,28 +160,28 @@ dumpInternalInfos()
 
   XmlNode modules = root_element.createAndAppendElement(us_modules);
   // List of modules with the variables they use.
-  for( ModuleCollection::Enumerator i(module_mng->modules()); ++i; ){
+  for (ModuleCollection::Enumerator i(module_mng->modules()); ++i;) {
     XmlNode module_element = modules.createAndAppendElement(us_module);
-    module_element.setAttrValue(us_name,String((*i)->name()));
+    module_element.setAttrValue(us_name, String((*i)->name()));
     var_ref_list.clear();
-    variable_mng->variables(var_ref_list,*i);
-    for( VariableRefList::Enumerator j(var_ref_list); ++j; ){
+    variable_mng->variables(var_ref_list, *i);
+    for (VariableRefList::Enumerator j(var_ref_list); ++j;) {
       XmlNode variable_element = module_element.createAndAppendElement("variable-ref");
-      variable_element.setAttrValue(us_ref,String((*j)->name()));
+      variable_element.setAttrValue(us_ref, String((*j)->name()));
     }
   }
 
   XmlNode variables = root_element.createAndAppendElement("variables");
   // List of variables.
   VariableCollection var_prv_list(variable_mng->variables());
-  for( VariableCollection::Enumerator j(var_prv_list); ++j; ){
+  for (VariableCollection::Enumerator j(var_prv_list); ++j;) {
     IVariable* var = *j;
     String dim(String::fromNumber(var->dimension()));
     XmlNode variable_element = variables.createAndAppendElement("variable");
-    variable_element.setAttrValue(us_name,var->name());
-    variable_element.setAttrValue(us_datatype,dataTypeName(var->dataType()));
-    variable_element.setAttrValue(us_dimension,dim);
-    variable_element.setAttrValue(us_kind,itemKindName(var->itemKind()));
+    variable_element.setAttrValue(us_name, var->name());
+    variable_element.setAttrValue(us_datatype, dataTypeName(var->dataType()));
+    variable_element.setAttrValue(us_dimension, dim);
+    variable_element.setAttrValue(us_kind, itemKindName(var->itemKind()));
   }
 
   // List of time loops
@@ -190,49 +190,49 @@ dumpInternalInfos()
   tm->timeLoopsName(timeloop_name_list);
 
   XmlNode timeloops = root_element.createAndAppendElement("timeloops");
-  for( StringCollection::Enumerator i(timeloop_name_list); ++i; ){
+  for (StringCollection::Enumerator i(timeloop_name_list); ++i;) {
     XmlNode timeloop_elem = timeloops.createAndAppendElement("timeloop");
-    timeloop_elem.setAttrValue(us_name,*i);
+    timeloop_elem.setAttrValue(us_name, *i);
   }
 
   // List of services
   {
     // List of services that implement a given interface
-    std::map<String,List<IServiceInfo*> > interfaces_to_service;
+    std::map<String, List<IServiceInfo*>> interfaces_to_service;
     XmlNode services_elem = root_element.createAndAppendElement(us_services);
-    
-    for( int i=0, n=service_infos.size(); i<n; ++i ){
+
+    for (int i = 0, n = service_infos.size(); i < n; ++i) {
       IServiceInfo* service_info = service_infos[i];
       XmlNode service_elem = services_elem.createAndAppendElement(us_service);
-      service_elem.setAttrValue(us_name,service_info->localName());
+      service_elem.setAttrValue(us_name, service_info->localName());
       {
         auto xml_file_base_name = service_info->caseOptionsFileName();
-        if (!xml_file_base_name.null()){
-          service_elem.setAttrValue("file-base-name",xml_file_base_name);
+        if (!xml_file_base_name.null()) {
+          service_elem.setAttrValue("file-base-name", xml_file_base_name);
         }
       }
-      for( StringCollection::Enumerator j(service_info->implementedInterfaces()); ++j; ){
+      for (StringCollection::Enumerator j(service_info->implementedInterfaces()); ++j;) {
         XmlNode interface_elem = service_elem.createAndAppendElement("implement-class");
-        interface_elem.setAttrValue(us_name,*j);
+        interface_elem.setAttrValue(us_name, *j);
         interfaces_to_service[*j].add(service_info);
       }
     }
-    
+
     {
       XmlNode classes_elem = services_elem.createAndAppendElement("services-class");
-      std::map<String,List<IServiceInfo*> >::const_iterator begin = interfaces_to_service.begin();
-      std::map<String,List<IServiceInfo*> >::const_iterator end = interfaces_to_service.end();
-      for( ; begin!=end; ++begin ){
+      std::map<String, List<IServiceInfo*>>::const_iterator begin = interfaces_to_service.begin();
+      std::map<String, List<IServiceInfo*>>::const_iterator end = interfaces_to_service.end();
+      for (; begin != end; ++begin) {
         XmlNode class_elem = classes_elem.createAndAppendElement("class");
-        class_elem.setAttrValue(us_name,begin->first);
-        for( List<IServiceInfo*>::Enumerator i(begin->second); ++i; ){
+        class_elem.setAttrValue(us_name, begin->first);
+        for (List<IServiceInfo*>::Enumerator i(begin->second); ++i;) {
           IServiceInfo* service_info = *i;
           XmlNode service_elem = class_elem.createAndAppendElement(us_service);
-          service_elem.setAttrValue(us_name,service_info->localName());
+          service_elem.setAttrValue(us_name, service_info->localName());
           {
             auto xml_file_base_name = service_info->caseOptionsFileName();
-            if (!xml_file_base_name.null()){
-              service_elem.setAttrValue("file-base-name",xml_file_base_name);
+            if (!xml_file_base_name.null()) {
+              service_elem.setAttrValue("file-base-name", xml_file_base_name);
             }
           }
         }
@@ -243,7 +243,7 @@ dumpInternalInfos()
   Directory shared_dir(m_application->applicationInfo().dataDir());
   String filename = shared_dir.file("arcane_internal.xml");
   cerr << "** FILE IS " << filename << '\n';
-  sub_domain->ioMng()->writeXmlFile(doc_holder.get(),filename);
+  sub_domain->ioMng()->writeXmlFile(doc_holder.get(), filename);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -257,7 +257,7 @@ dumpInternalAllInfos()
   Ref<ICodeService> code_service = _getDefaultService();
 
   ByteConstSpan config_bytes = m_application->configBuffer();
-  ScopedPtrT<IXmlDocumentHolder> config_doc(m_application->ioMng()->parseXmlBuffer(config_bytes,String()));
+  ScopedPtrT<IXmlDocumentHolder> config_doc(m_application->ioMng()->parseXmlBuffer(config_bytes, String()));
   if (!config_doc.get())
     ARCANE_FATAL("Can not parse code configuration file");
   XmlNode elem = config_doc->documentNode().documentElement();
@@ -282,24 +282,24 @@ dumpInternalAllInfos()
     const ApplicationInfo& app_info = m_application->applicationInfo();
     //! General information
     XmlNode elem2(root_element.createAndAppendElement("general"));
-    elem2.createAndAppendElement("codename",String(app_info.codeName()));
-    elem2.createAndAppendElement("codefullversion",String(m_application->mainVersionStr()));
-    elem2.createAndAppendElement("codeversion",String(m_application->majorAndMinorVersionStr()));
+    elem2.createAndAppendElement("codename", String(app_info.codeName()));
+    elem2.createAndAppendElement("codefullversion", String(m_application->mainVersionStr()));
+    elem2.createAndAppendElement("codeversion", String(m_application->majorAndMinorVersionStr()));
   }
 
   IParallelSuperMng* psm = m_application->parallelSuperMng();
   Ref<IParallelMng> world_pm = psm->internalCreateWorldParallelMng(0);
 
-  for( TimeLoopCollection::Enumerator i(stl.timeLoops()); ++i; ){
+  for (TimeLoopCollection::Enumerator i(stl.timeLoops()); ++i;) {
     ITimeLoop* timeloop = *i;
     const String& timeloop_name = timeloop->name();
-    
+
     ISession* session = nullptr;
     ISubDomain* sd = nullptr;
-    try{
+    try {
       session = code_service->createSession();
       service_loader->loadSessionServices(session);
-      SubDomainBuildInfo sdbi(world_pm,0);
+      SubDomainBuildInfo sdbi(world_pm, 0);
       sdbi.setCaseFileName(String());
       sdbi.setCaseBytes(ByteConstArrayView());
       sd = session->createSubDomain(sdbi);
@@ -309,39 +309,39 @@ dumpInternalAllInfos()
       loop_mng->registerTimeLoop(timeloop);
       loop_mng->setUsedTimeLoop(timeloop_name);
     }
-    catch(...){
+    catch (...) {
       session = nullptr;
       sd = nullptr;
     }
     if (!sd)
       continue;
     XmlNode mng_element = root_element.createAndAppendElement("timeloop");
-    mng_element.setAttrValue(us_name,timeloop_name);
+    mng_element.setAttrValue(us_name, timeloop_name);
     sd->dumpInternalInfos(mng_element);
   }
 
   Directory shared_dir(m_application->applicationInfo().dataDir());
   String filename = shared_dir.file("arcane-caseinfos.xml");
   cerr << "** FILE IS " << filename << '\n';
-  m_application->ioMng()->writeXmlFile(doc_holder.get(),filename);
+  m_application->ioMng()->writeXmlFile(doc_holder.get(), filename);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void InternalInfosDumper::
-_dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
+_dumpSubDomainInternalInfos(ISubDomain* sd, JSONWriter& json_writer)
 {
   // Information about the time loop used.
   {
     ITimeLoopMng* tlm = sd->timeLoopMng();
     ITimeLoop* time_loop = tlm->usedTimeLoop();
-    JSONWriter::Object jo_timeloopinfo(json_writer,"timeloopinfo");
-    json_writer.write("title",time_loop->title());
-    json_writer.write("description",time_loop->description());
+    JSONWriter::Object jo_timeloopinfo(json_writer, "timeloopinfo");
+    json_writer.write("title", time_loop->title());
+    json_writer.write("description", time_loop->description());
 
-    JSONWriter::Array ja_userclass(json_writer,"userclass");
-    for( StringCollection::Enumerator j(time_loop->userClasses()); ++j; ){
+    JSONWriter::Array ja_userclass(json_writer, "userclass");
+    for (StringCollection::Enumerator j(time_loop->userClasses()); ++j;) {
       json_writer.writeValue(*j);
     }
   }
@@ -362,16 +362,16 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
 
   // List of modules with the variables they use.
   {
-    JSONWriter::Array ja_modules(json_writer,"modules");
-    for( IModule* module : sd->moduleMng()->modules() ){
+    JSONWriter::Array ja_modules(json_writer, "modules");
+    for (IModule* module : sd->moduleMng()->modules()) {
       JSONWriter::Object jo_module(json_writer);
-      json_writer.write(ustr_name,module->name());
-      json_writer.write(ustr_activated,module->used());
+      json_writer.write(ustr_name, module->name());
+      json_writer.write(ustr_activated, module->used());
 
       VariableRefList var_ref_list;
-      var_mng->variables(var_ref_list,module);
-      JSONWriter::Array ja_variables(json_writer,"variables");
-      for( VariableRef* vr : var_ref_list )
+      var_mng->variables(var_ref_list, module);
+      JSONWriter::Array ja_variables(json_writer, "variables");
+      for (VariableRef* vr : var_ref_list)
         json_writer.writeValue(vr->variable()->fullName());
     }
   }
@@ -379,14 +379,14 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
   // List of variables.
   {
     VariableCollection var_prv_list = var_mng->variables();
-    JSONWriter::Array jo_variables(json_writer,"variables");
-    for( VariableCollection::Enumerator j(var_prv_list); ++j; ){
+    JSONWriter::Array jo_variables(json_writer, "variables");
+    for (VariableCollection::Enumerator j(var_prv_list); ++j;) {
       IVariable* var = *j;
       JSONWriter::Object jo_variable(json_writer);
-      json_writer.write(ustr_name,var->fullName());
-      json_writer.write(ustr_datatype,dataTypeName(var->dataType()));
-      json_writer.write(ustr_dimension,(Int64)var->dimension());
-      json_writer.write(ustr_kind,itemKindName(var->itemKind()));
+      json_writer.write(ustr_name, var->fullName());
+      json_writer.write(ustr_datatype, dataTypeName(var->dataType()));
+      json_writer.write(ustr_dimension, (Int64)var->dimension());
+      json_writer.write(ustr_kind, itemKindName(var->itemKind()));
     }
   }
 
@@ -395,14 +395,14 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
     ICaseMng* cm = sd->caseMng();
     CaseOptionsCollection blocks = cm->blocks();
 
-    JSONWriter::Array ja_blocks(json_writer,"caseblocks");
-    for( ICaseOptions* block : blocks ){
+    JSONWriter::Array ja_blocks(json_writer, "caseblocks");
+    for (ICaseOptions* block : blocks) {
       JSONWriter::Object jo_block(json_writer);
-      json_writer.write(ustr_tagname,block->rootTagName());
+      json_writer.write(ustr_tagname, block->rootTagName());
 
       IModule* block_module = block->caseModule();
       if (block_module)
-        json_writer.write(ustr_module,block_module->name());
+        json_writer.write(ustr_module, block_module->name());
     }
   }
 }
@@ -424,14 +424,14 @@ dumpArcaneDatabase()
   ISession* session(code_service->createSession());
   IParallelSuperMng* psm = app->parallelSuperMng();
   Ref<IParallelMng> world_pm = psm->internalCreateWorldParallelMng(0);
-  SubDomainBuildInfo sdbi(world_pm,0);
+  SubDomainBuildInfo sdbi(world_pm, 0);
   sdbi.setCaseFileName(String());
   sdbi.setCaseBytes(ByteConstArrayView());
   ISubDomain* sub_domain(session->createSubDomain(sdbi));
   ScopedPtrT<IServiceLoader> service_loader(main_factory->createServiceLoader());
 
   ByteConstSpan config_bytes = m_application->configBuffer();
-  ScopedPtrT<IXmlDocumentHolder> config_doc(app->ioMng()->parseXmlBuffer(config_bytes,String()));
+  ScopedPtrT<IXmlDocumentHolder> config_doc(app->ioMng()->parseXmlBuffer(config_bytes, String()));
   if (!config_doc.get())
     ARCANE_FATAL("Can not parse code configuration file");
 
@@ -442,16 +442,16 @@ dumpArcaneDatabase()
     stl.registerTimeLoops(sub_domain);
   }
   // Load all available modules
-  service_loader->loadModules(sub_domain,true);
+  service_loader->loadModules(sub_domain, true);
 
   // Store all created IServiceInfo in this array
   UniqueArray<IServiceInfo*> service_infos;
   {
     std::set<IServiceInfo*> done_set;
-    for( ServiceFactory2Collection::Enumerator j(m_application->serviceFactories2()); ++j; ){
+    for (ServiceFactory2Collection::Enumerator j(m_application->serviceFactories2()); ++j;) {
       Internal::IServiceFactory2* sf2 = *j;
       IServiceInfo* s = sf2->serviceInfo();
-      if (done_set.find(s)==done_set.end()){
+      if (done_set.find(s) == done_set.end()) {
         service_infos.add(s);
         done_set.insert(s);
       }
@@ -478,18 +478,18 @@ dumpArcaneDatabase()
 
   JSONWriter json_writer(JSONWriter::FormatFlags::None);
   json_writer.beginObject();
-  json_writer.write("version","1");
+  json_writer.write("version", "1");
 
   // List of modules with the variables they use.
   {
-    JSONWriter::Array ja_modules(json_writer,"modules");
-    for( IModule* module : module_mng->modules() ){
+    JSONWriter::Array ja_modules(json_writer, "modules");
+    for (IModule* module : module_mng->modules()) {
       JSONWriter::Object jo(json_writer);
-      json_writer.write(us_name,module->name());
+      json_writer.write(us_name, module->name());
       VariableRefList var_ref_list;
-      variable_mng->variables(var_ref_list,module);
-      JSONWriter::Array ja_var_ref(json_writer,"variable-references");
-      for( VariableRefList::Enumerator j(var_ref_list); ++j; ){
+      variable_mng->variables(var_ref_list, module);
+      JSONWriter::Array ja_var_ref(json_writer, "variable-references");
+      for (VariableRefList::Enumerator j(var_ref_list); ++j;) {
         json_writer.writeValue((*j)->name());
       }
     }
@@ -498,43 +498,43 @@ dumpArcaneDatabase()
   // List of variables with their characteristics
   {
     VariableCollection var_prv_list(variable_mng->variables());
-    JSONWriter::Array ja(json_writer,"variables");
-    for( VariableCollection::Enumerator j(var_prv_list); ++j; ){
+    JSONWriter::Array ja(json_writer, "variables");
+    for (VariableCollection::Enumerator j(var_prv_list); ++j;) {
       IVariable* var = *j;
 
       JSONWriter::Object jo(json_writer);
-      json_writer.write(us_name,var->name());
-      json_writer.write(us_datatype,dataTypeName(var->dataType()));
-      json_writer.write(us_dimension,(Int64)var->dimension());
-      json_writer.write(us_kind,itemKindName(var->itemKind()));
+      json_writer.write(us_name, var->name());
+      json_writer.write(us_datatype, dataTypeName(var->dataType()));
+      json_writer.write(us_dimension, (Int64)var->dimension());
+      json_writer.write(us_kind, itemKindName(var->itemKind()));
     }
   }
 
   // List of services that implement a given interface
-  std::map<String,List<IServiceInfo*> > interfaces_to_service;
+  std::map<String, List<IServiceInfo*>> interfaces_to_service;
 
   // List of services
   {
-    JSONWriter::Array ja_services(json_writer,us_services);
-    
-    for( IServiceInfo* service_info : service_infos ){
+    JSONWriter::Array ja_services(json_writer, us_services);
+
+    for (IServiceInfo* service_info : service_infos) {
       JSONWriter::Object jo(json_writer);
-      json_writer.write(us_name,service_info->localName());
-      json_writer.writeIfNotNull("file-base-name",service_info->caseOptionsFileName());
+      json_writer.write(us_name, service_info->localName());
+      json_writer.writeIfNotNull("file-base-name", service_info->caseOptionsFileName());
 
       // Save the content by splitting it into several strings
       // which prevents having overly long lines.
       Span<const Byte> content = service_info->axlContent().bytes();
       Int64 content_size = content.size();
-      if (content_size>0){
+      if (content_size > 0) {
         Int64 block_size = 80;
         Int64 nb_block = content_size / block_size;
-        if ((content_size%block_size)!=0)
+        if ((content_size % block_size) != 0)
           ++nb_block;
-        JSONWriter::Array ja_axl_content(json_writer,"axl-content");
+        JSONWriter::Array ja_axl_content(json_writer, "axl-content");
         Int64 index = 0;
-        for( Integer k=0; k<nb_block; ++k ){
-          auto z = content.subSpan(index,block_size);
+        for (Integer k = 0; k < nb_block; ++k) {
+          auto z = content.subSpan(index, block_size);
           json_writer.writeValue(z);
           index += block_size;
         }
@@ -542,8 +542,8 @@ dumpArcaneDatabase()
 
       // Save the list of interfaces implemented by this service
       {
-        JSONWriter::Array ja_implemented_interfaces(json_writer,"implemented-interfaces");
-        for( StringCollection::Enumerator j(service_info->implementedInterfaces()); ++j; ){
+        JSONWriter::Array ja_implemented_interfaces(json_writer, "implemented-interfaces");
+        for (StringCollection::Enumerator j(service_info->implementedInterfaces()); ++j;) {
           interfaces_to_service[*j].add(service_info);
           json_writer.writeValue(*j);
         }
@@ -553,15 +553,15 @@ dumpArcaneDatabase()
 
   // List of service interfaces and the services implementing them.
   {
-    JSONWriter::Array jo_services_interfaces(json_writer,"service-interfaces");
-    for( const auto& x : interfaces_to_service ){
+    JSONWriter::Array jo_services_interfaces(json_writer, "service-interfaces");
+    for (const auto& x : interfaces_to_service) {
       JSONWriter::Object jo_class(json_writer);
-      json_writer.write(us_name,x.first);
-      JSONWriter::Array ja_services(json_writer,"services");
-      for( IServiceInfo* service_info : x.second ){
+      json_writer.write(us_name, x.first);
+      JSONWriter::Array ja_services(json_writer, "services");
+      for (IServiceInfo* service_info : x.second) {
         JSONWriter::Object jo_service(json_writer);
-        json_writer.write(us_name,service_info->localName());
-        json_writer.writeIfNotNull("file-base-name",service_info->caseOptionsFileName());
+        json_writer.write(us_name, service_info->localName());
+        json_writer.writeIfNotNull("file-base-name", service_info->caseOptionsFileName());
       }
     }
   }
@@ -571,27 +571,27 @@ dumpArcaneDatabase()
 
   {
     const ApplicationInfo& app_info = m_application->applicationInfo();
-    JSONWriter::Object jo_general(json_writer,"general");
-    json_writer.write("codename",app_info.codeName());
-    json_writer.write("codefullversion",m_application->mainVersionStr());
-    json_writer.write("codeversion",m_application->majorAndMinorVersionStr());
+    JSONWriter::Object jo_general(json_writer, "general");
+    json_writer.write("codename", app_info.codeName());
+    json_writer.write("codefullversion", m_application->mainVersionStr());
+    json_writer.write("codeversion", m_application->majorAndMinorVersionStr());
   }
 
   {
-    JSONWriter::Array jo_timeloops(json_writer,"timeloops");
-    for( TimeLoopCollection::Enumerator i(stl.timeLoops()); ++i; ){
+    JSONWriter::Array jo_timeloops(json_writer, "timeloops");
+    for (TimeLoopCollection::Enumerator i(stl.timeLoops()); ++i;) {
       ITimeLoop* timeloop = *i;
       const String& timeloop_name = timeloop->name();
-    
+
       JSONWriter::Object jo_timeloop(json_writer);
-      json_writer.write(us_name,timeloop_name);
+      json_writer.write(us_name, timeloop_name);
 
       ISession* session = nullptr;
       ISubDomain* sd = nullptr;
-      try{
+      try {
         session = code_service->createSession();
         service_loader->loadSessionServices(session);
-        SubDomainBuildInfo sdbi(world_pm,0);
+        SubDomainBuildInfo sdbi(world_pm, 0);
         sdbi.setCaseFileName(String());
         sdbi.setCaseBytes(ByteConstArrayView());
         sd = session->createSubDomain(sdbi);
@@ -600,13 +600,13 @@ dumpArcaneDatabase()
         loop_mng->registerTimeLoop(timeloop);
         loop_mng->setUsedTimeLoop(timeloop_name);
       }
-      catch(...){
+      catch (...) {
         session = nullptr;
         sd = nullptr;
       }
       // TODO: Indicate if sd is null.
-      if (sd){
-        _dumpSubDomainInternalInfos(sd,json_writer);
+      if (sd) {
+        _dumpSubDomainInternalInfos(sd, json_writer);
       }
     }
   }

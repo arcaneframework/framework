@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,10 +13,10 @@
 
 #include "arcane/utils/Event.h"
 
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/VariableSynchronizerEventArgs.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/VariableSynchronizerEventArgs.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/VariableCollection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

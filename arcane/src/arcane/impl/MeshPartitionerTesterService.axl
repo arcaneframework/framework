@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="MeshPartitionerTesterService" type="caseoption">
   <userclass>User</userclass>
   <description>

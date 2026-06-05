@@ -1,4 +1,4 @@
-﻿set( ARCANE_SOURCES
+﻿set(ARCANE_SOURCES
   Application.cc
   Application.h
   ArcaneCaseMeshMasterService.cc
@@ -168,7 +168,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   list(APPEND ARCANE_SOURCES
     NumArrayData.cc
   )
-endif()
+endif ()
 
 set(AXL_FILES
   ArcaneCaseMeshMasterService

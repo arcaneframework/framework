@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,42 +21,43 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/Directory.h"
-#include "arcane/ICheckpointMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IParallelReplication.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNode.h"
-#include "arcane/ICheckpointReader.h"
-#include "arcane/ICheckpointWriter.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/IObservable.h"
-#include "arcane/CheckpointInfo.h"
-#include "arcane/SubDomainBuildInfo.h"
-#include "arcane/MeshPartInfo.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/ICheckpointMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/ICheckpointReader.h"
+#include "arcane/core/ICheckpointWriter.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/IObservable.h"
+#include "arcane/core/CheckpointInfo.h"
+#include "arcane/core/SubDomainBuildInfo.h"
+#include "arcane/core/MeshPartInfo.h"
 
-#include "arcane/VariableCollection.h"
-#include "arcane/IVariable.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IPrimaryMesh.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IPrimaryMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ISubDomain*
-arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi);
+arcaneCreateSubDomain(ISession* session, const SubDomainBuildInfo& sdbi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +70,6 @@ class CheckpointMng
 , public ICheckpointMng
 {
  public:
-
  public:
 
   CheckpointMng(ISubDomain*);
@@ -83,16 +83,16 @@ class CheckpointMng
   void readCheckpoint(ICheckpointReader* reader) override;
   void readCheckpoint(ByteConstArrayView infos) override;
   void readCheckpoint(const CheckpointInfo& checkpoint_infos) override;
-  CheckpointInfo readCheckpointInfo(Span<const Byte> infos,const String& buf_name) override;
+  CheckpointInfo readCheckpointInfo(Span<const Byte> infos, const String& buf_name) override;
 
   void writeCheckpoint(ICheckpointWriter* writer) override;
-  void writeCheckpoint(ICheckpointWriter* writer,ByteArray& infos) override;
+  void writeCheckpoint(ICheckpointWriter* writer, ByteArray& infos) override;
   void writeDefaultCheckpoint(ICheckpointWriter* writer) override;
   IObservable* writeObservable() override { return m_write_observable; }
   IObservable* readObservable() override { return m_read_observable; }
 
  public:
-  
+
   void build();
 
  private:
@@ -103,13 +103,13 @@ class CheckpointMng
 
  private:
 
-  void _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos);
-  CheckpointInfo _readCheckpointInfo(Span<const Byte> infos,const String& info_file_name);
+  void _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer, ByteArray& infos);
+  CheckpointInfo _readCheckpointInfo(Span<const Byte> infos, const String& info_file_name);
   void _readCheckpoint(const CheckpointInfo& checkpoint_info);
   void _readCheckpoint(const CheckpointReadInfo& infos);
   bool _checkChangingNbSubDomain(const CheckpointInfo& ci);
-  void _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader);
-  void _changeItemsOwner(IMesh* mesh,Int32ConstArrayView old_ranks_to_new_ranks);
+  void _applyNbSubDomainChange(const CheckpointInfo& ci, ICheckpointReader2* reader);
+  void _changeItemsOwner(IMesh* mesh, Int32ConstArrayView old_ranks_to_new_ranks);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -199,8 +199,8 @@ readDefaultCheckpointInfo()
   String info_file_name(m_sub_domain->exportDirectory().file("checkpoint_info.xml"));
   ByteUniqueArray bytes;
   IIOMng* io_mng = m_sub_domain->ioMng();
-  io_mng->collectiveRead(info_file_name,bytes);
-  CheckpointInfo checkpoint_info = _readCheckpointInfo(bytes,info_file_name);
+  io_mng->collectiveRead(info_file_name, bytes);
+  CheckpointInfo checkpoint_info = _readCheckpointInfo(bytes, info_file_name);
   return checkpoint_info;
 }
 
@@ -220,7 +220,7 @@ readDefaultCheckpoint()
 void CheckpointMng::
 readCheckpoint(ByteConstArrayView bytes_infos)
 {
-  CheckpointInfo checkpoint_info = _readCheckpointInfo(bytes_infos,"unknown");
+  CheckpointInfo checkpoint_info = _readCheckpointInfo(bytes_infos, "unknown");
   _readCheckpoint(checkpoint_info);
 }
 
@@ -228,12 +228,12 @@ readCheckpoint(ByteConstArrayView bytes_infos)
 /*---------------------------------------------------------------------------*/
 
 CheckpointInfo CheckpointMng::
-readCheckpointInfo(Span<const Byte> bytes_infos,const String& buf_name)
+readCheckpointInfo(Span<const Byte> bytes_infos, const String& buf_name)
 {
   String buf_name2 = buf_name;
   if (buf_name2.null())
     buf_name2 = "unknown";
-  CheckpointInfo checkpoint_info = _readCheckpointInfo(bytes_infos,buf_name2);
+  CheckpointInfo checkpoint_info = _readCheckpointInfo(bytes_infos, buf_name2);
   return checkpoint_info;
 }
 
@@ -241,7 +241,7 @@ readCheckpointInfo(Span<const Byte> bytes_infos,const String& buf_name)
 /*---------------------------------------------------------------------------*/
 
 CheckpointInfo CheckpointMng::
-_readCheckpointInfo(Span<const Byte> bytes_infos,const String& info_file_name)
+_readCheckpointInfo(Span<const Byte> bytes_infos, const String& info_file_name)
 {
   CheckpointInfo checkpoint_info;
 
@@ -253,7 +253,7 @@ _readCheckpointInfo(Span<const Byte> bytes_infos,const String& info_file_name)
   checkpoint_info.setReplicationRank(replication_rank);
 
   ITraceMng* tm = m_sub_domain->traceMng();
-  auto xml_doc_ptr = IXmlDocumentHolder::loadFromBuffer(bytes_infos,info_file_name,tm);
+  auto xml_doc_ptr = IXmlDocumentHolder::loadFromBuffer(bytes_infos, info_file_name, tm);
   ScopedPtrT<IXmlDocumentHolder> xml_doc(xml_doc_ptr);
   XmlNode doc_node = xml_doc->documentNode();
   if (doc_node.null())
@@ -270,11 +270,12 @@ _readCheckpointInfo(Span<const Byte> bytes_infos,const String& info_file_name)
 
   XmlNode service_elem = doc_elem.child("service");
   String service_name = service_elem.attrValue("name");
-  if (service_name.null()){
+  if (service_name.null()) {
     ARCANE_THROW(ParallelFatalErrorException,
                  "The file '{0}}' doesn't have "
                  "the name of the protection/restore service used "
-                 "(attribute /checkpoint-info/service/@name)", info_file_name);
+                 "(attribute /checkpoint-info/service/@name)",
+                 info_file_name);
   }
   checkpoint_info.setServiceName(service_name);
   String service_directory = service_elem.attrValue("directory");
@@ -284,12 +285,12 @@ _readCheckpointInfo(Span<const Byte> bytes_infos,const String& info_file_name)
 
   XmlNode last_index_attr = times_node.attr("last-index");
   if (last_index_attr.null())
-    ARCANE_THROW(IOException,"missing attribute 'last-index'");
+    ARCANE_THROW(IOException, "missing attribute 'last-index'");
 
   XmlNode last_time_attr = times_node.attr("last-time");
   if (last_time_attr.null())
-    ARCANE_THROW(IOException,"missing attribute 'last-time'");
-    
+    ARCANE_THROW(IOException, "missing attribute 'last-time'");
+
   Real last_time = last_time_attr.valueAsReal();
   checkpoint_info.setCheckpointTime(last_time);
 
@@ -298,7 +299,7 @@ _readCheckpointInfo(Span<const Byte> bytes_infos,const String& info_file_name)
 
   XmlNode meta_data_node = service_elem.child("meta-data");
   if (meta_data_node.null())
-    ARCANE_THROW(IOException,"missing tag 'meta-data'");
+    ARCANE_THROW(IOException, "missing tag 'meta-data'");
   checkpoint_info.setReaderMetaData(meta_data_node.value());
 
   return checkpoint_info;
@@ -321,7 +322,7 @@ _readCheckpoint(const CheckpointInfo& checkpoint_info)
 {
   String service_name = checkpoint_info.serviceName();
   if (service_name.null())
-    ARCANE_THROW(ParallelFatalErrorException,"Null service");
+    ARCANE_THROW(ParallelFatalErrorException, "Null service");
 
   String service_directory = checkpoint_info.directory();
 
@@ -337,13 +338,13 @@ _readCheckpoint(const CheckpointInfo& checkpoint_info)
   // the number of sub-domains changes.
   {
     ServiceBuilder<ICheckpointReader2> sb(app);
-    Ref<ICheckpointReader2> s(sb.createReference(service_name,SB_AllowNull));
-    if (s.get()){
+    Ref<ICheckpointReader2> s(sb.createReference(service_name, SB_AllowNull));
+    if (s.get()) {
       info() << "Using the checkpoint/restart service"
              << " <" << service_name << "> (implement ICheckpointReader2)";
       if (has_changing_sub_domain)
-        _applyNbSubDomainChange(checkpoint_info,s.get());
-      else{
+        _applyNbSubDomainChange(checkpoint_info, s.get());
+      else {
         CheckpointReadInfo cri(checkpoint_info);
         IParallelMng* pm = m_sub_domain->parallelMng();
         cri.setParallelMng(pm);
@@ -358,12 +359,13 @@ _readCheckpoint(const CheckpointInfo& checkpoint_info)
   if (has_changing_sub_domain)
     ARCANE_FATAL("The number of sub-domains/replica in this run is different "
                  "from the number in checkpoint but the service specified "
-                 "for checkpoint {0} does not handle this case",service_name);
+                 "for checkpoint {0} does not handle this case",
+                 service_name);
 
-  ServiceFinder2T<ICheckpointReader,ISubDomain> sf2(app,m_sub_domain);
+  ServiceFinder2T<ICheckpointReader, ISubDomain> sf2(app, m_sub_domain);
   Ref<ICheckpointReader> checkpoint_reader(sf2.createReference(service_name));
 
-  if (!checkpoint_reader.get()){
+  if (!checkpoint_reader.get()) {
     ARCANE_FATAL("The service specified for checkpoint/restart ({0}) is not available",
                  service_name);
   }
@@ -371,8 +373,8 @@ _readCheckpoint(const CheckpointInfo& checkpoint_info)
   info() << "Using the checkpoint/restart service <" << service_name << ">";
   Real last_time = checkpoint_info.checkpointTime();
   Int32 last_index = checkpoint_info.checkpointIndex();
-    
-  checkpoint_reader->setCurrentTimeAndIndex(last_time,last_index);
+
+  checkpoint_reader->setCurrentTimeAndIndex(last_time, last_index);
 
   String meta_data = checkpoint_info.readerMetaData();
   checkpoint_reader->setReaderMetaData(meta_data);
@@ -397,15 +399,15 @@ void CheckpointMng::
 writeDefaultCheckpoint(ICheckpointWriter* writer)
 {
   ByteUniqueArray bytes_infos;
-  writeCheckpoint(writer,bytes_infos);
+  writeCheckpoint(writer, bytes_infos);
 
-  if (m_sub_domain->allReplicaParallelMng()->isMasterIO()){
+  if (m_sub_domain->allReplicaParallelMng()->isMasterIO()) {
     Directory export_directory(m_sub_domain->exportDirectory());
     String info_file(export_directory.file("checkpoint_info.xml"));
     std::ofstream ofile(info_file.localstr());
-    ofile.write((const char*)bytes_infos.unguardedBasePointer(),bytes_infos.size());
+    ofile.write((const char*)bytes_infos.unguardedBasePointer(), bytes_infos.size());
     if (!ofile.good())
-      ARCANE_THROW(IOException,"Can not write file '{0}'",info_file);
+      ARCANE_THROW(IOException, "Can not write file '{0}'", info_file);
   }
 }
 
@@ -413,18 +415,18 @@ writeDefaultCheckpoint(ICheckpointWriter* writer)
 /*---------------------------------------------------------------------------*/
 
 void CheckpointMng::
-writeCheckpoint(ICheckpointWriter* writer,ByteArray& infos)
+writeCheckpoint(ICheckpointWriter* writer, ByteArray& infos)
 {
   m_write_observable->notifyAllObservers();
   m_sub_domain->variableMng()->writeCheckpoint(writer);
-  _writeCheckpointInfoFile(writer,infos);
+  _writeCheckpointInfoFile(writer, infos);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CheckpointMng::
-_writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos)
+_writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer, ByteArray& infos)
 {
   ISubDomain* sd = m_sub_domain;
   IParallelMng* pm = sd->parallelMng();
@@ -440,37 +442,37 @@ _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos)
   IRessourceMng* rm = sd->ressourceMng();
   info_document = rm->createXmlDocument();
   XmlNode doc = info_document->documentNode();
-  XmlElement root(doc,"checkpoint-info");
+  XmlElement root(doc, "checkpoint-info");
 
   // Saves info about the number of replicas and sub-domains.
   // This will later allow restarts by changing
   // the number of sub-domains or replicas.
-  root.setAttrValue("nb-sub-domain",String::fromNumber(nb_rank));
-  root.setAttrValue("nb-replication",String::fromNumber(nb_replica));
+  root.setAttrValue("nb-sub-domain", String::fromNumber(nb_rank));
+  root.setAttrValue("nb-replication", String::fromNumber(nb_replica));
 
-  XmlElement service_info(root,"service");
+  XmlElement service_info(root, "service");
   String reader_name = checkpoint_writer->readerServiceName();
-  service_info.setAttrValue("name",reader_name);
-  service_info.setAttrValue("directory",checkpoint_writer->baseDirectoryName());
+  service_info.setAttrValue("name", reader_name);
+  service_info.setAttrValue("directory", checkpoint_writer->baseDirectoryName());
 
   String reader_meta_data = checkpoint_writer->readerMetaData();
-  XmlElement meta_data_elem(service_info,"meta-data",reader_meta_data);
-  XmlElement checkpoints_time_elem(root,"times");
+  XmlElement meta_data_elem(service_info, "meta-data", reader_meta_data);
+  XmlElement checkpoints_time_elem(root, "times");
 
   XmlNode info_root = info_document->documentNode().documentElement();
 
   {
     // Saves the information of the last checkpoint
     Integer nb_checkpoint = checkpoints_time.size();
-    if (nb_checkpoint>0){
-      checkpoints_time_elem.setAttrValue("last-time",String::fromNumber(checkpoints_time[nb_checkpoint-1]));
-      checkpoints_time_elem.setAttrValue("last-index",String::fromNumber(nb_checkpoint-1));
+    if (nb_checkpoint > 0) {
+      checkpoints_time_elem.setAttrValue("last-time", String::fromNumber(checkpoints_time[nb_checkpoint - 1]));
+      checkpoints_time_elem.setAttrValue("last-index", String::fromNumber(nb_checkpoint - 1));
     }
   }
   checkpoints_time_elem.clear();
-  for( Integer i=0, is=checkpoints_time.size(); i<is; ++i ){
-    XmlElement elem(checkpoints_time_elem,"time");
-    elem.setAttrValue("value",String::fromNumber(checkpoints_time[i]));
+  for (Integer i = 0, is = checkpoints_time.size(); i < is; ++i) {
+    XmlElement elem(checkpoints_time_elem, "time");
+    elem.setAttrValue("value", String::fromNumber(checkpoints_time[i]));
   }
 
   info_document->save(infos);
@@ -494,7 +496,7 @@ _checkChangingNbSubDomain(const CheckpointInfo& ci)
   // sub-domains or replicas, we consider that the partitioning is not changing.
   // This can happen if the 'checkpoint_info' file is too old
   // or was not written by this CheckpointMng.
-  if (nb_checkpoint_sub_domain<1 || nb_checkpoint_replication<1){
+  if (nb_checkpoint_sub_domain < 1 || nb_checkpoint_replication < 1) {
     info() << "Invalid or missing partitionning info in checkpoint.";
     return false;
   }
@@ -505,14 +507,14 @@ _checkChangingNbSubDomain(const CheckpointInfo& ci)
   Int32 nb_rank = current_part_info.nbPart();
   Int32 nb_replication = current_part_info.nbReplication();
   bool has_different_sub_domain = false;
-  if (nb_rank!=nb_checkpoint_sub_domain){
+  if (nb_rank != nb_checkpoint_sub_domain) {
     has_different_sub_domain = true;
   }
   // For now, we do not support changing the number of replicas.
-  if (nb_replication!=nb_checkpoint_replication){
+  if (nb_replication != nb_checkpoint_replication) {
     ARCANE_THROW(ParallelFatalErrorException,
                  "Bad number of replication ({0} in checkpoint, {1} in this run)",
-                 nb_checkpoint_replication,nb_replication);
+                 nb_checkpoint_replication, nb_replication);
   }
   return has_different_sub_domain;
 }
@@ -521,17 +523,17 @@ _checkChangingNbSubDomain(const CheckpointInfo& ci)
 /*---------------------------------------------------------------------------*/
 
 void CheckpointMng::
-_changeItemsOwner(IMesh* mesh,Int32ConstArrayView old_ranks_to_new_ranks)
+_changeItemsOwner(IMesh* mesh, Int32ConstArrayView old_ranks_to_new_ranks)
 {
   Int32 mesh_rank = mesh->meshPartInfo().partRank();
   // Changes the owners of all families
-  for( IItemFamily* family : mesh->itemFamilies() ){
+  for (IItemFamily* family : mesh->itemFamilies()) {
     const ItemGroup& all_items = family->allItems();
     // Changes the owners to match the new partitioning.
-    ENUMERATE_ITEM(iitem,all_items){
+    ENUMERATE_ITEM (iitem, all_items) {
       Item item = *iitem;
       Int32 owner = item.owner();
-      item.mutableItemBase().setOwner(old_ranks_to_new_ranks[owner],mesh_rank);
+      item.mutableItemBase().setOwner(old_ranks_to_new_ranks[owner], mesh_rank);
     }
     family->notifyItemsOwnerChanged();
   }
@@ -541,7 +543,7 @@ _changeItemsOwner(IMesh* mesh,Int32ConstArrayView old_ranks_to_new_ranks)
 /*---------------------------------------------------------------------------*/
 
 void CheckpointMng::
-_applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
+_applyNbSubDomainChange(const CheckpointInfo& ci, ICheckpointReader2* reader)
 {
   ISubDomain* sd1 = m_sub_domain;
   IApplication* app = sd1->application();
@@ -549,15 +551,15 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
   Int32 nb_old_rank = ci.nbSubDomain();
   Int32 my_rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
-  if (nb_rank>nb_old_rank)
-    ARCANE_THROW(NotImplementedException,"Increasing number of sub-domains (old={0} new={1})",
-                 nb_old_rank,nb_rank);
+  if (nb_rank > nb_old_rank)
+    ARCANE_THROW(NotImplementedException, "Increasing number of sub-domains (old={0} new={1})",
+                 nb_old_rank, nb_rank);
   UniqueArray<Int32> old_ranks_to_new_ranks(nb_old_rank);
   UniqueArray<Int32> ranks_to_read;
-  for( Integer i=0; i<nb_old_rank; ++i ){
+  for (Integer i = 0; i < nb_old_rank; ++i) {
     Int32 new_rank = i % nb_rank;
     old_ranks_to_new_ranks[i] = new_rank;
-    if (new_rank==my_rank)
+    if (new_rank == my_rank)
       ranks_to_read.add(i);
   }
   info() << "OLD_RANKS_TO_NEW_RANKS=" << old_ranks_to_new_ranks;
@@ -573,12 +575,12 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
 
   String message_passing_service = "SequentialParallelMngContainerFactory";
   ServiceBuilder<IParallelMngContainerFactory> sf(app);
-  auto pbf = sf.createReference(message_passing_service,SB_AllowNull);
+  auto pbf = sf.createReference(message_passing_service, SB_AllowNull);
   if (!pbf)
-    ARCANE_FATAL("Can not find service '{0}' implementing IParallelMngContainerFactory",message_passing_service);
+    ARCANE_FATAL("Can not find service '{0}' implementing IParallelMngContainerFactory", message_passing_service);
   Ref<IParallelMngContainer> parallel_builder(pbf->_createParallelMngBuilder(1, pm2->communicator(), pm2->machineCommunicator()));
 
-  for( Int32 i : ranks_to_read ){
+  for (Int32 i : ranks_to_read) {
     info() << "Reading Part sub_domain index=" << i;
     info() << "Using the checkpoint/restart service"
            << " <" << service_name << "> (implement ICheckpointReader2)";
@@ -587,16 +589,16 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
     CheckpointReadInfo cri(checkpoint_info2);
     cri.setReader(reader);
     cri.setParallelMng(pm2);
-    bool is_first = (i==my_rank);
+    bool is_first = (i == my_rank);
     ISubDomain* sd2 = nullptr;
-    if (is_first){
+    if (is_first) {
       sd2 = sd1;
     }
     else {
-      String file_suffix = String::format("s_{0}_{1}",my_rank,i);
-      ITraceMng* tm = app->createAndInitializeTraceMng(sd1->traceMng(),file_suffix);
-      Ref<IParallelMng> sub_pm = parallel_builder->_createParallelMng(0,tm);
-      SubDomainBuildInfo sdbi(sub_pm,i);
+      String file_suffix = String::format("s_{0}_{1}", my_rank, i);
+      ITraceMng* tm = app->createAndInitializeTraceMng(sd1->traceMng(), file_suffix);
+      Ref<IParallelMng> sub_pm = parallel_builder->_createParallelMng(0, tm);
+      SubDomainBuildInfo sdbi(sub_pm, i);
       sdbi.setCaseFileName(sd1->caseFullFileName());
       sdbi.setCaseBytes(case_bytes);
 
@@ -606,7 +608,7 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
       // adding the created sub-domain to the list of sub-domains
       // of the session (this can cause problems because then we won't
       // really know how to destroy it)
-      sd2 = arcaneCreateSubDomain(sd1->session(),sdbi);
+      sd2 = arcaneCreateSubDomain(sd1->session(), sdbi);
       sd2->initialize();
       sd2->readCaseMeshes();
 
@@ -625,11 +627,11 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
     // TODO: it would be preferable to take the variables from the
     // mesh common to all meshes that will be merged.
     VariableCollection vars = sd2->variableMng()->variables();
-    for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
+    for (VariableCollection::Enumerator ivar(vars); ++ivar;) {
       IVariable* var = *ivar;
       if (var->isUsed())
         continue;
-      if ((var->property() & IVariable::PNoDump)!=0)
+      if ((var->property() & IVariable::PNoDump) != 0)
         continue;
       // Do not process variables that are not on families.
       if (var->itemFamilyName().null())
@@ -639,15 +641,15 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
     }
   }
   UniqueArray<IMesh*> meshes_to_merge;
-  for( ISubDomain* sd_to_merge : sd_to_merge_list2 ){
+  for (ISubDomain* sd_to_merge : sd_to_merge_list2) {
     meshes_to_merge.add(sd_to_merge->defaultMesh());
   }
 
   // Changes the owners of the meshes so that they reference the
   // new ranks.
-  _changeItemsOwner(sd1->defaultMesh(),old_ranks_to_new_ranks);
-  for( IMesh* mesh : meshes_to_merge )
-    _changeItemsOwner(mesh,old_ranks_to_new_ranks);
+  _changeItemsOwner(sd1->defaultMesh(), old_ranks_to_new_ranks);
+  for (IMesh* mesh : meshes_to_merge)
+    _changeItemsOwner(mesh, old_ranks_to_new_ranks);
 
   {
     IMesh* mesh = sd1->defaultMesh();
@@ -665,7 +667,7 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

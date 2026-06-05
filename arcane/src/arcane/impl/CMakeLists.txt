@@ -3,31 +3,31 @@
 include(srcs.cmake)
 
 set(PKGS FLEXLM)
-if(FLEXLM_FOUND)
+if (FLEXLM_FOUND)
   set(ARCANE_SOURCES ${ARCANE_SOURCES} FlexLMTools.cc)
-endif()
+endif ()
 
 arcane_add_library(arcane_impl
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/impl
   AXL_FILES ${AXL_FILES}
   FILES ${ARCANE_SOURCES}
-  )
+)
 
 arcane_add_arccon_packages(arcane_impl PRIVATE ${PKGS})
 
 target_compile_definitions(arcane_impl PRIVATE ARCANE_COMPONENT_arcane_impl)
 
-if(FLEXLM_FOUND)
+if (FLEXLM_FOUND)
   # TODO: to be removed during migration to RLM
   #       this definition is intended to use the Arcane feature of the RLM test license
   #       which does not contain the ArcaneCore feature, see:
   #       - arcane/src/arcane/impl/FlexLMTools.h
   #       - arcane/src/arcane/impl/FlexLMTools.cc
-  if("${FLEXLM_PROTECTION_NAME}" STREQUAL "RLM")
+  if ("${FLEXLM_PROTECTION_NAME}" STREQUAL "RLM")
     target_compile_definitions(arcane_impl PRIVATE ARCANE_TEST_RLM)
-  endif()
-endif()
+  endif ()
+endif ()
 
 target_link_libraries(arcane_impl PUBLIC arcane_core)
 
@@ -35,7 +35,7 @@ target_link_libraries(arcane_impl PUBLIC arcane_core)
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   message(STATUS "Add library 'dl' to target 'arcane_impl'")
   target_link_libraries(arcane_impl PUBLIC dl)
-endif()
+endif ()
 
 # FlexLM
 target_link_directories(arcane_utils PUBLIC ${FLEXLM_LIBRARY_DIRS})

@@ -19,20 +19,20 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ApplicationInfo.h"
 
-#include "arcane/Parallel.h"
+#include "arcane/core/Parallel.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/MainFactory.h"
 #include "arcane/impl/internal/ArcaneMainExecInfo.h"
 
-#include "arcane/SubDomainBuildInfo.h"
-#include "arcane/ISession.h"
-#include "arcane/ICodeService.h"
-#include "arcane/IApplication.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ITimeStats.h"
-#include "arcane/IIOMng.h"
+#include "arcane/core/SubDomainBuildInfo.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ICodeService.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ITimeStats.h"
+#include "arcane/core/IIOMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,12 +46,13 @@ class ArcaneSimpleExecutorMainFactory
 : public MainFactory
 {
  public:
+
   // NOTE: This method must be implemented to inherit from MainFactory
   // but it will not be used in the case of direct execution
   // (it is always an instance of ArcaneMain() that will be created)
   IArcaneMain* createArcaneMain(const ApplicationInfo& app_info) override
-  { 
-    return new ArcaneMain(app_info,this);
+  {
+    return new ArcaneMain(app_info, this);
   }
 };
 
@@ -61,24 +62,27 @@ class ArcaneSimpleExecutorMainFactory
 class ArcaneSimpleExecutor::Impl
 {
  public:
+
   Impl()
   {
     ArcaneMain::arcaneInitialize();
   }
   ~Impl() noexcept(false)
   {
-    for (ITimeStats* ts : m_time_stats_list){
+    for (ITimeStats* ts : m_time_stats_list) {
       ts->endGatherStats();
       delete ts;
     }
-    if (m_arcane_main){
+    if (m_arcane_main) {
       m_arcane_main->finalize();
       delete m_arcane_main;
     }
     delete m_main_factory;
     ArcaneMain::arcaneFinalize();
   }
+
  public:
+
   ArcaneMainExecInfo* m_arcane_main = nullptr;
   ArcaneSimpleExecutorMainFactory* m_main_factory = nullptr;
   ApplicationBuildInfo m_application_build_info;
@@ -137,8 +141,8 @@ _setDefaultVerbosityLevel(Integer level)
 {
   auto& build_info = m_p->m_application_build_info;
 
-  m_p->m_has_minimal_verbosity_level = (build_info.minimalVerbosityLevel()!=Trace::UNSPECIFIED_VERBOSITY_LEVEL);
-  m_p->m_has_output_level = (build_info.outputLevel()!=Trace::UNSPECIFIED_VERBOSITY_LEVEL);
+  m_p->m_has_minimal_verbosity_level = (build_info.minimalVerbosityLevel() != Trace::UNSPECIFIED_VERBOSITY_LEVEL);
+  m_p->m_has_output_level = (build_info.outputLevel() != Trace::UNSPECIFIED_VERBOSITY_LEVEL);
 
   if (!m_p->m_has_minimal_verbosity_level)
     build_info.setMinimalVerbosityLevel(level);
@@ -158,7 +162,7 @@ initialize()
   const ApplicationInfo& app_info = ArcaneMain::defaultApplicationInfo();
   auto factory = new ArcaneSimpleExecutorMainFactory();
   m_p->m_main_factory = factory;
-  m_p->m_arcane_main = new ArcaneMainExecInfo(app_info,m_p->m_application_build_info,factory);
+  m_p->m_arcane_main = new ArcaneMainExecInfo(app_info, m_p->m_application_build_info, factory);
 
   int r = m_p->m_arcane_main->initialize();
   return r;
@@ -177,7 +181,7 @@ runCode(IFunctor* f)
   IArcaneMain* am = m_p->m_arcane_main->arcaneMainClass();
   bool clean_abort = false;
   bool is_print = true;
-  return ArcaneMain::callFunctorWithCatchedException(f,am,&clean_abort,is_print);
+  return ArcaneMain::callFunctorWithCatchedException(f, am, &clean_abort, is_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -218,30 +222,30 @@ createSubDomain(const String& case_file_name)
   IParallelSuperMng* psm = app->parallelSuperMng();
   Ref<IParallelMng> world_pm = psm->internalCreateWorldParallelMng(0);
 
-  SubDomainBuildInfo sdbi(world_pm,0);
+  SubDomainBuildInfo sdbi(world_pm, 0);
   UniqueArray<Byte> case_bytes;
   bool has_case_file = !case_file_name.empty();
-  if (has_case_file){
-    bool is_bad = app->ioMng()->collectiveRead(case_file_name,case_bytes);
+  if (has_case_file) {
+    bool is_bad = app->ioMng()->collectiveRead(case_file_name, case_bytes);
     if (is_bad)
-      ARCANE_FATAL("Can not read case file '{0}'",case_file_name);
+      ARCANE_FATAL("Can not read case file '{0}'", case_file_name);
     sdbi.setCaseFileName(case_file_name);
     sdbi.setCaseBytes(case_bytes);
     tr->info() << "Create sub domain with case file '" << case_file_name << "'";
   }
-  else{
+  else {
     sdbi.setCaseFileName(String());
     sdbi.setCaseBytes(ByteConstArrayView());
   }
   // The statistics service must be explicitly destroyed
-  ITimeStats* time_stat = main_factory->createTimeStats(world_pm->timerMng(),tr,"Stats");
+  ITimeStats* time_stat = main_factory->createTimeStats(world_pm->timerMng(), tr, "Stats");
   time_stat->beginGatherStats();
   m_p->m_time_stats_list.add(time_stat);
   world_pm->setTimeStats(time_stat);
 
   ISubDomain* sub_domain(session->createSubDomain(sdbi));
-  if (has_case_file){
-    code_service->initCase(sub_domain,false);
+  if (has_case_file) {
+    code_service->initCase(sub_domain, false);
   }
   return sub_domain;
 }

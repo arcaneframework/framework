@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -103,9 +103,12 @@ class TimeLoopMng
 
   struct ModuleState
   {
-    ModuleState(bool is_optional, const String & alias)
-    : m_is_active(false), m_is_optional(is_optional), m_alias(alias) { }
-    
+    ModuleState(bool is_optional, const String& alias)
+    : m_is_active(false)
+    , m_is_optional(is_optional)
+    , m_alias(alias)
+    {}
+
     bool m_is_active;
     bool m_is_optional;
     String m_alias;
@@ -120,11 +123,11 @@ class TimeLoopMng
   };
 
   //! List of module states
-  typedef std::map<String,ModuleState> ModuleStateMap;
+  typedef std::map<String, ModuleState> ModuleStateMap;
   //! List of time loops
-  typedef std::map<String,ITimeLoop*> TimeLoopMap;
+  typedef std::map<String, ITimeLoop*> TimeLoopMap;
   //! List of module factories indexed by their name.
-  typedef std::map<String,IModuleFactoryInfo*> ModuleFactoryMap;
+  typedef std::map<String, IModuleFactoryInfo*> ModuleFactoryMap;
 
  public:
 
@@ -140,7 +143,7 @@ class TimeLoopMng
   void execExitEntryPoints() override;
   void execBuildEntryPoints() override;
   void execInitEntryPoints(bool is_continue) override;
-  void stopComputeLoop(bool is_final_time,bool has_error) override;
+  void stopComputeLoop(bool is_final_time, bool has_error) override;
   bool finalTimeReached() const override { return m_final_time_reached; }
   Real cpuTimeUsed() const override;
 
@@ -152,7 +155,7 @@ class TimeLoopMng
 
   ITimeLoop* usedTimeLoop() const override { return m_used_time_loop; }
 
-  void doExecNextEntryPoint(bool & is_last) override;
+  void doExecNextEntryPoint(bool& is_last) override;
   IEntryPoint* nextEntryPoint() override;
 
   IEntryPoint* currentEntryPoint() override { return m_current_entry_point_ptr; }
@@ -161,7 +164,7 @@ class TimeLoopMng
 
   void setBackwardMng(IBackwardMng* backward_mng) override;
   // Attention, may return NULL
-  IBackwardMng* getBackwardMng() const override { return m_backward_mng;}
+  IBackwardMng* getBackwardMng() const override { return m_backward_mng; }
 
   void goBackward() override;
   bool isDoingBackward() override;
@@ -177,9 +180,9 @@ class TimeLoopMng
 
   void registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner) override;
 
-  void timeLoopsName(StringCollection & names) const override;
-  void timeLoops(TimeLoopCollection & time_loops) const override;
-  ITimeLoop * createTimeLoop(const String & name) override;
+  void timeLoopsName(StringCollection& names) const override;
+  void timeLoops(TimeLoopCollection& time_loops) const override;
+  ITimeLoop* createTimeLoop(const String& name) override;
 
   int doComputeLoop(Integer max_loop) override;
   Integer nbLoop() const override { return m_nb_loop; }
@@ -205,7 +208,7 @@ class TimeLoopMng
   //! Adds an entry point to execute
   void _addExecuteEntryPoint(IEntryPoint*);
   //! Creates a module from its name
-  bool _createModule(const String & module_name);
+  bool _createModule(const String& module_name);
   //! Adds the entry points proposed in \a entry_points_info to the list \a entry_points
   /*! Ensures they are correctly associated with \a where */
   void _processEntryPoints(EntryPointList& entry_points,
@@ -221,8 +224,8 @@ class TimeLoopMng
    * Returns the module name and the entry point name from the name
    * referenced in the time loop, of type ModuleName.EntryPointName.
    */
-  static void _extractModuleAndEntryPointName(const String & timeloop_call_name,
-                                              String& module_name,String& entry_point_name);
+  static void _extractModuleAndEntryPointName(const String& timeloop_call_name,
+                                              String& module_name, String& entry_point_name);
 
  private:
 
@@ -296,7 +299,7 @@ class TimeLoopMng
   String m_message_class_name;
   Integer m_alarm_timer_value;
   Integer m_nb_loop;
-  
+
   ObservablePool<eTimeLoopEventType> m_observables;
 
   eTimeLoopStopReason m_stop_reason;
@@ -312,7 +315,7 @@ class TimeLoopMng
   void _execOneEntryPoint(IEntryPoint* ic, Integer index_value = 0, bool do_verif = false);
   void _dumpTimeInfos(JSONWriter& json_writer);
   void _resetTimer() const;
-  void _checkVerif(const String& entry_point_name,Integer index,bool do_verif);
+  void _checkVerif(const String& entry_point_name, Integer index, bool do_verif);
   void _checkVerifSameOnAllReplica(const String& entry_point_name);
   void _createOwnDefaultBackwardMng();
   void _doMeshPartition();
@@ -325,7 +328,7 @@ class TimeLoopMng
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ITimeLoopMng*
-arcaneCreateTimeLoopMng(ISubDomain * mng)
+arcaneCreateTimeLoopMng(ISubDomain* mng)
 {
   auto* tm = new TimeLoopMng(mng);
   return tm;
@@ -360,11 +363,11 @@ TimeLoopMng(ISubDomain* sd)
 {
   {
     String s = platform::getEnvironmentVariable("ARCANE_LISTENER_TIMEOUT");
-    if (!s.null()){
+    if (!s.null()) {
       Integer v = 0;
-      if (!builtInGetValue(v,s))
-        if (v>0)
-          m_alarm_timer_value = v;        
+      if (!builtInGetValue(v, s))
+        if (v > 0)
+          m_alarm_timer_value = v;
     }
   }
   {
@@ -385,8 +388,8 @@ TimeLoopMng(ISubDomain* sd)
 TimeLoopMng::
 ~TimeLoopMng()
 {
-  for( ConstIterT<TimeLoopMap> i(m_time_loop_list); i(); ++i){
-    ITimeLoop * tm = i->second;
+  for (ConstIterT<TimeLoopMap> i(m_time_loop_list); i(); ++i) {
+    ITimeLoop* tm = i->second;
     delete tm;
   }
 
@@ -401,40 +404,40 @@ void TimeLoopMng::
 build()
 {
   // Creates and registers a default loop.
-  ITimeLoop * tm = createTimeLoop(String("ArcaneEmptyLoop"));
+  ITimeLoop* tm = createTimeLoop(String("ArcaneEmptyLoop"));
   m_default_time_loop = tm;
   registerTimeLoop(tm);
 
   {
     String verif_env = platform::getEnvironmentVariable("STDENV_VERIF");
-    if (verif_env=="READ"){
+    if (verif_env == "READ") {
       m_verif_type = VerifRead;
       info() << "Checking in read mode";
     }
-    if (verif_env=="WRITE"){
+    if (verif_env == "WRITE") {
       m_verif_type = VerifWrite;
       info() << "Checking in write mode";
     }
-    if (verif_env=="CHECKSYNC"){
+    if (verif_env == "CHECKSYNC") {
       m_verif_type = VerifSync;
       info() << "Checking synchronizations";
     }
-    if (verif_env=="CHECKREPLICA"){
+    if (verif_env == "CHECKREPLICA") {
       m_verif_type = VerifSameReplica;
       info() << "Checking variables values between replica";
     }
-    if (m_verif_type!=VerifNone)
+    if (m_verif_type != VerifNone)
       m_verification_active = true;
   }
 
   {
     String s = platform::getEnvironmentVariable("STDENV_VERIF_DIFF_METHOD");
-    if (!s.null()){
-      if (s=="RELATIVE"){
+    if (!s.null()) {
+      if (s == "RELATIVE") {
         m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
         info() << "Using 'Relative' method to compute difference of variable values";
       }
-      if (s=="LOCALNORMMAX"){
+      if (s == "LOCALNORMMAX") {
         m_compute_diff_method = eVariableComparerComputeDifferenceMethod::LocalNormMax;
         info() << "Using 'LocalNormMax' method to compute difference of variable values";
       }
@@ -442,14 +445,14 @@ build()
   }
   {
     String s = platform::getEnvironmentVariable("STDENV_VERIF_ENTRYPOINT");
-    if (!s.null()){
+    if (!s.null()) {
       m_verification_at_entry_point = true;
       info() << "Do verification at each entry point";
     }
   }
   {
     String s = platform::getEnvironmentVariable("STDENV_VERIF_ONLY_AT_EXIT");
-    if (s=="1" || s=="true" || s=="TRUE"){
+    if (s == "1" || s == "true" || s == "TRUE") {
       m_verification_only_at_exit = true;
       info() << "Do verification only at exit";
     }
@@ -458,25 +461,25 @@ build()
   // This is used only for tests
   {
     String s = platform::getEnvironmentVariable("ARCANE_CALL_SPECIFIC_ENTRY_POINT");
-    if (!s.null()){
+    if (!s.null()) {
       m_specific_entry_point_name = s;
       info() << "Use specific entry point: " << s;
     }
   }
 
   //
-  if (m_verification_active){
+  if (m_verification_active) {
     m_verif_path = platform::getEnvironmentVariable("STDENV_VERIF_PATH");
-    if (m_verif_path.null()){
+    if (m_verif_path.null()) {
       String user_name = subDomain()->application()->userName();
       m_verif_path = "/tmp/" + user_name + "/verif";
       //m_verif_path += user_name;
       //m_verif_path += "/verif";
     }
   }
-  if (m_verif_type==VerifWrite){
-    if (subDomain()->parallelMng()->isMasterIO()){
-      info() << "Creating directory '"<< m_verif_path << "' for checking";
+  if (m_verif_type == VerifWrite) {
+    if (subDomain()->parallelMng()->isMasterIO()) {
+      info() << "Creating directory '" << m_verif_path << "' for checking";
       platform::recursiveCreateDirectory(m_verif_path);
     }
   }
@@ -490,11 +493,12 @@ build()
       // environment variable directly.
       if (msg_pass_prof_str == "JSON") {
         service_name = "JsonMessagePassingProfiling";
-      } else if (msg_pass_prof_str == "OTF2") {
-		    service_name = "Otf2MessagePassingProfiling";
+      }
+      else if (msg_pass_prof_str == "OTF2") {
+        service_name = "Otf2MessagePassingProfiling";
       }
       ServiceBuilder<IMessagePassingProfilingService> srv(this->subDomain());
-      m_msg_pass_prof_srv = srv.createReference(service_name ,SB_AllowNull);
+      m_msg_pass_prof_srv = srv.createReference(service_name, SB_AllowNull);
     }
   }
 }
@@ -505,7 +509,7 @@ build()
 void TimeLoopMng::
 _createOwnDefaultBackwardMng()
 {
-  m_backward_mng = new DefaultBackwardMng(traceMng(),subDomain());
+  m_backward_mng = new DefaultBackwardMng(traceMng(), subDomain());
   m_backward_mng->init();
   m_my_own_backward_mng = true;
 }
@@ -516,9 +520,9 @@ _createOwnDefaultBackwardMng()
 void TimeLoopMng::
 setBackwardMng(IBackwardMng* backward_mng)
 {
-  ARCANE_ASSERT((backward_mng),("IBackwardMng pointer null"));
+  ARCANE_ASSERT((backward_mng), ("IBackwardMng pointer null"));
 
-  if (m_backward_mng){
+  if (m_backward_mng) {
     // Destroys the old manager if we created it.
     if (m_my_own_backward_mng)
       delete m_backward_mng;
@@ -535,13 +539,13 @@ setBackwardMng(IBackwardMng* backward_mng)
 void TimeLoopMng::
 execInitEntryPoints(bool is_continue)
 {
-  Timer::Action ts_action(m_sub_domain,"InitEntryPoints");
+  Timer::Action ts_action(m_sub_domain, "InitEntryPoints");
   info() << "-- Executing init entry points";
 
   String where = (is_continue) ? IEntryPoint::WContinueInit : IEntryPoint::WStartInit;
 
-  for( EntryPointList::Enumerator i(m_init_entry_points); ++i; ){
-    IEntryPoint * ic = * i;
+  for (EntryPointList::Enumerator i(m_init_entry_points); ++i;) {
+    IEntryPoint* ic = *i;
     if (ic->where() == IEntryPoint::WInit || ic->where() == where)
       _execOneEntryPoint(ic);
   }
@@ -553,12 +557,12 @@ execInitEntryPoints(bool is_continue)
 void TimeLoopMng::
 execBuildEntryPoints()
 {
-  Timer::Action ts_action(m_sub_domain,"BuildtEntryPoints");
+  Timer::Action ts_action(m_sub_domain, "BuildtEntryPoints");
   info() << "-- Executing build entry points";
 
-  for( EntryPointList::Enumerator i(m_build_entry_points); ++i; ){
+  for (EntryPointList::Enumerator i(m_build_entry_points); ++i;) {
     IEntryPoint* ic = *i;
-    if (ic->where()==IEntryPoint::WBuild)
+    if (ic->where() == IEntryPoint::WBuild)
       _execOneEntryPoint(ic);
   }
 }
@@ -569,11 +573,11 @@ execBuildEntryPoints()
 void TimeLoopMng::
 execRestoreEntryPoints()
 {
-  Timer::Action ts_action(m_sub_domain,"RestoreEntryPoints");
+  Timer::Action ts_action(m_sub_domain, "RestoreEntryPoints");
   info() << "-- Executing restore entry points";
 
-  for( EntryPointList::Enumerator i(m_restore_entry_points); ++i; ){
-    IEntryPoint * ic = * i;
+  for (EntryPointList::Enumerator i(m_restore_entry_points); ++i;) {
+    IEntryPoint* ic = *i;
     _execOneEntryPoint(ic);
   }
 }
@@ -584,11 +588,11 @@ execRestoreEntryPoints()
 void TimeLoopMng::
 execOnMeshChangedEntryPoints()
 {
-  Timer::Action ts_action(m_sub_domain,"OnMeshChangedEntryPoints");
+  Timer::Action ts_action(m_sub_domain, "OnMeshChangedEntryPoints");
   info() << "-- Executing entry points after mesh change";
 
-  for( EntryPointList::Enumerator i(m_on_mesh_changed_entry_points); ++i; ){
-    IEntryPoint * ic = * i;
+  for (EntryPointList::Enumerator i(m_on_mesh_changed_entry_points); ++i;) {
+    IEntryPoint* ic = *i;
     info() << "Execute: " << ic->name();
     _execOneEntryPoint(ic);
   }
@@ -600,11 +604,11 @@ execOnMeshChangedEntryPoints()
 void TimeLoopMng::
 execOnMeshRefinementEntryPoints()
 {
-  Timer::Action ts_action(m_sub_domain,"OnMeshRefinementEntryPoints");
+  Timer::Action ts_action(m_sub_domain, "OnMeshRefinementEntryPoints");
   info() << "-- Executing entry points after mesh refinement";
 
-  for( EntryPointList::Enumerator i(m_on_mesh_refinement_entry_points); ++i; ){
-    IEntryPoint * ic = * i;
+  for (EntryPointList::Enumerator i(m_on_mesh_refinement_entry_points); ++i;) {
+    IEntryPoint* ic = *i;
     info() << "Execute: " << ic->name();
     _execOneEntryPoint(ic);
   }
@@ -616,11 +620,11 @@ execOnMeshRefinementEntryPoints()
 void TimeLoopMng::
 execExitEntryPoints()
 {
-  Timer::Action ts_action(m_sub_domain,"ExitEntryPoints");
+  Timer::Action ts_action(m_sub_domain, "ExitEntryPoints");
   info() << "-- Executing terminal entry points";
 
-  for (EntryPointList::Enumerator i(m_exit_entry_points); ++i; ){
-    IEntryPoint * ic = * i;
+  for (EntryPointList::Enumerator i(m_exit_entry_points); ++i;) {
+    IEntryPoint* ic = *i;
     _execOneEntryPoint(ic);
   }
 
@@ -636,9 +640,7 @@ execExitEntryPoints()
 
   // Displays message passing profiling in a file for JSON traces
   if (m_msg_pass_prof_srv.get() && m_msg_pass_prof_srv->implName() == "JsonMessagePassingProfiling") {
-    String fullname(subDomain()->listingDirectory().file("message_passing_logs.")
-                    + String(std::to_string(subDomain()->subDomainId()))
-                    + String(".json"));
+    String fullname(subDomain()->listingDirectory().file("message_passing_logs.") + String(std::to_string(subDomain()->subDomainId())) + String(".json"));
     std::ofstream file(fullname.localstr());
     m_msg_pass_prof_srv->printInfos(file);
   }
@@ -648,7 +650,7 @@ execExitEntryPoints()
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-_execOneEntryPoint(IEntryPoint * ic, Integer index, bool do_verif)
+_execOneEntryPoint(IEntryPoint* ic, Integer index, bool do_verif)
 {
   m_current_entry_point_ptr = ic;
   m_observables[eTimeLoopEventType::BeginEntryPoint]->notifyAllObservers();
@@ -656,7 +658,7 @@ _execOneEntryPoint(IEntryPoint * ic, Integer index, bool do_verif)
   m_observables[eTimeLoopEventType::EndEntryPoint]->notifyAllObservers();
   m_current_entry_point_ptr = nullptr;
   if (m_verification_at_entry_point && !m_verification_only_at_exit)
-    _checkVerif(ic->name(),index,do_verif);
+    _checkVerif(ic->name(), index, do_verif);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -665,16 +667,16 @@ _execOneEntryPoint(IEntryPoint * ic, Integer index, bool do_verif)
 void TimeLoopMng::
 doVerification(const String& name)
 {
-  _checkVerif(name,0,true);
+  _checkVerif(name, 0, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-_checkVerif(const String& entry_point_name,Integer index,bool do_verif)
+_checkVerif(const String& entry_point_name, Integer index, bool do_verif)
 {
-  IParallelMng * pm = subDomain()->parallelMng();
+  IParallelMng* pm = subDomain()->parallelMng();
 
   ISubDomain* sd = subDomain();
   IApplication* app = sd->application();
@@ -682,29 +684,29 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
   VariableComparerArgs sync_compare_args = variable_comparer.buildForCheckIfSync();
   sync_compare_args.setMaxPrint(5);
 
-  if ((m_verif_type==VerifRead || m_verif_type==VerifWrite) && !m_verifier_service.get()){
+  if ((m_verif_type == VerifRead || m_verif_type == VerifWrite) && !m_verifier_service.get()) {
     String service_name1 = platform::getEnvironmentVariable("STDENV_VERIF_SERVICE");
     if (service_name1.empty())
       service_name1 = "ArcaneBasicVerifier2";
 
-    ServiceFinder2T<IVerifierService,ISubDomain> sf(app,sd);
+    ServiceFinder2T<IVerifierService, ISubDomain> sf(app, sd);
     m_verifier_service = sf.createReference(service_name1);
-    if (!m_verifier_service.get()){
+    if (!m_verifier_service.get()) {
       warning() << "No verification service is available."
                 << " No verification will be performed";
       m_verif_type = VerifNone;
     }
-    if (m_verifier_service.get()){
+    if (m_verifier_service.get()) {
       info() << "Use the service <" << service_name1
              << "> for verification";
     }
   }
 
-  if (pm->isParallel()){
-    if (m_verif_type == VerifSync){
+  if (pm->isParallel()) {
+    if (m_verif_type == VerifSync) {
       Integer nb_error = 0;
       VariableCollection variables(subDomain()->variableMng()->usedVariables());
-      for( VariableCollection::Enumerator i(variables); ++i; ){
+      for (VariableCollection::Enumerator i(variables); ++i;) {
         IVariable* var = *i;
         if (var->property() & IVariable::PNoNeedSync)
           continue;
@@ -713,22 +715,22 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
         VariableComparerResults r = variable_comparer.apply(var, sync_compare_args);
         nb_error += r.nbDifference();
       }
-      if (nb_error!=0)
+      if (nb_error != 0)
         info() << "Error in synchronization nb_error=" << nb_error
                << " entry_point=" << entry_point_name;
     }
   }
 
-  if (m_verif_type == VerifSameReplica && pm->replication()->hasReplication()){
+  if (m_verif_type == VerifSameReplica && pm->replication()->hasReplication()) {
     _checkVerifSameOnAllReplica(entry_point_name);
   }
 
-  if ((m_verif_type == VerifRead || m_verif_type == VerifWrite) && do_verif){
+  if ((m_verif_type == VerifRead || m_verif_type == VerifWrite) && do_verif) {
     Integer current_iter = subDomain()->commonVariables().globalIteration();
-    if (current_iter>=0){
+    if (current_iter >= 0) {
       {
         StringBuilder path = Directory(m_verif_path).file("verif_file");
-        if (m_verif_same_parallel){
+        if (m_verif_same_parallel) {
           path += "_";
           path += pm->commRank();
         }
@@ -739,7 +741,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
         sub_dir += "/";
         sub_dir += entry_point_name;
         sub_dir += index;
-          
+
         m_verifier_service->setFileName(path.toString());
         m_verifier_service->setSubDir(sub_dir.toString());
         m_verifier_service->setComputeDifferenceMethod(m_compute_diff_method);
@@ -747,7 +749,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
       bool parallel_sequential = pm->isParallel();
       if (m_verif_same_parallel)
         parallel_sequential = false;
-      if (m_verif_type==VerifRead){
+      if (m_verif_type == VerifRead) {
 
         // Activate this part if we want to save the current values
 #if 0
@@ -770,7 +772,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
                                                        platform::getEnvironmentVariable("STDENV_VERIF_SKIP_GHOSTS").null());
         }
       }
-      if (m_verif_type==VerifWrite)
+      if (m_verif_type == VerifWrite)
         m_verifier_service->writeReferenceFile();
     }
   }
@@ -789,7 +791,7 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
   IVariableMng* vm = sd->variableMng();
   VariableCollection variables(vm->usedVariables());
   VariableList vars_to_check;
-  for( VariableCollection::Enumerator i(variables); ++i; ){
+  for (VariableCollection::Enumerator i(variables); ++i;) {
     IVariable* var = *i;
     if (var->property() & IVariable::PNoReplicaSync)
       continue;
@@ -797,11 +799,11 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
       continue;
     // For now, we do not support comparison between replicas
     // of 'String' type variables.
-    if (var->dataType()==DT_String)
+    if (var->dataType() == DT_String)
       continue;
     vars_to_check.add(var);
   }
-  VariableCollection common_vars = vm->utilities()->filterCommonVariables(replica_pm,vars_to_check,true);
+  VariableCollection common_vars = vm->utilities()->filterCommonVariables(replica_pm, vars_to_check, true);
 
   Integer nb_error = 0;
   VariableComparer variable_comparer;
@@ -809,14 +811,14 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
     VariableComparerArgs compare_args = variable_comparer.buildForCheckIfSameOnAllReplica();
     compare_args.setMaxPrint(10);
     FloatingPointExceptionSentry fpes(false);
-    for( VariableCollection::Enumerator ivar(common_vars); ++ivar; ){
+    for (VariableCollection::Enumerator ivar(common_vars); ++ivar;) {
       IVariable* var = *ivar;
       VariableComparerResults r = variable_comparer.apply(var, compare_args);
       nb_error += r.nbDifference();
     }
   }
 
-  if (nb_error!=0)
+  if (nb_error != 0)
     info() << "Errors in comparing values between replica nb_error=" << nb_error
            << " entry_point=" << entry_point_name;
 }
@@ -828,14 +830,14 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
  * Execute the next entry point in the list.
  */
 void TimeLoopMng::
-doExecNextEntryPoint(bool & is_last)
+doExecNextEntryPoint(bool& is_last)
 {
   if (!m_used_time_loop)
     ARCANE_FATAL("No time loop");
 
   is_last = true;
 
-  const EntryPointList & cl = m_loop_entry_points;
+  const EntryPointList& cl = m_loop_entry_points;
 
   if (cl.empty())
     return;
@@ -860,7 +862,7 @@ IEntryPoint* TimeLoopMng::
 nextEntryPoint()
 {
   //return m_loop_entry_points->EntryPointList()[m_current_entry_point];
-  const EntryPointList & cl = m_loop_entry_points;
+  const EntryPointList& cl = m_loop_entry_points;
   if (m_current_entry_point >= cl.count())
     return nullptr;
   return cl[m_current_entry_point];
@@ -872,9 +874,9 @@ nextEntryPoint()
 int TimeLoopMng::
 doOneIteration()
 {
-  ITraceMng * msg = traceMng();
+  ITraceMng* msg = traceMng();
   ISubDomain* sd = subDomain();
-  Trace::Setter mci(msg,m_message_class_name);
+  Trace::Setter mci(msg, m_message_class_name);
 
   if (!m_used_time_loop)
     ARCANE_FATAL("No time loop");
@@ -882,15 +884,15 @@ doOneIteration()
   Integer current_iteration = sd->commonVariables().globalIteration();
   // Iteration number 0 corresponds to initialization. The first
   // iteration of the time loop is number 1.
-  if (current_iteration==0){
+  if (current_iteration == 0) {
     VariableScalarInteger global_iteration(sd->commonVariables().m_global_iteration);
     global_iteration = 1;
     current_iteration = 1;
   }
 
   _resetTimer();
-  
-  if (m_stop_time_loop){
+
+  if (m_stop_time_loop) {
     if (m_stop_has_error)
       return (-1);
     return (+1);
@@ -923,19 +925,19 @@ doOneIteration()
     // Checks modules that are inactive over time
     Real global_time = sd->commonVariables().globalTime();
     CaseOptionsCollection blocks(sd->caseMng()->blocks());
-    for( CaseOptionsCollection::Enumerator i(blocks); ++i; ){
-      ICaseOptions * opt = * i;
-      IModule * mod = opt->caseModule();
-      ICaseFunction * f = opt->activateFunction();
-      if (mod && f){
+    for (CaseOptionsCollection::Enumerator i(blocks); ++i;) {
+      ICaseOptions* opt = *i;
+      IModule* mod = opt->caseModule();
+      ICaseFunction* f = opt->activateFunction();
+      if (mod && f) {
         bool is_active = true;
         f->value(global_time, is_active);
         bool mod_disabled = mod->disabled();
         bool mod_new_disabled = !is_active;
-        if (mod_new_disabled != mod_disabled){
+        if (mod_new_disabled != mod_disabled) {
           if (mod_new_disabled)
             info() << "The module " << mod->name() << " is desactivated";
-          else 
+          else
             info() << "The module " << mod->name() << " is activated";
           mod->setDisabled(mod_new_disabled);
         }
@@ -947,51 +949,53 @@ doOneIteration()
 
   // Executes each iteration entry point
   {
-    Integer index =0;
+    Integer index = 0;
     sd->timeStats()->notifyNewIterationLoop();
-    Timer::Action ts_action(sd,"LoopEntryPoints");
-    for( EntryPointList::Enumerator i(m_loop_entry_points); ++i; ++index ){
+    Timer::Action ts_action(sd, "LoopEntryPoints");
+    for (EntryPointList::Enumerator i(m_loop_entry_points); ++i; ++index) {
       IEntryPoint* ep = *i;
       IModule* mod = ep->module();
-      if (mod && mod->disabled()){
+      if (mod && mod->disabled()) {
         continue;
         //warning() << "MODULE " << mod->name() << " is disabled";
       }
-      try{
+      try {
         _execOneEntryPoint(*i, index, true);
-      } catch(const GoBackwardException&){
+      }
+      catch (const GoBackwardException&) {
         m_backward_mng->goBackward();
-      } catch(...){ // Catch any other exception
+      }
+      catch (...) { // Catch any other exception
         throw;
       }
-      if (m_backward_mng->isBackwardEnabled()){
+      if (m_backward_mng->isBackwardEnabled()) {
         break;
       }
     }
     if (!m_verification_at_entry_point && !m_verification_only_at_exit)
-      _checkVerif("_EndLoop",0,true);
+      _checkVerif("_EndLoop", 0, true);
   }
   m_observables[eTimeLoopEventType::EndIteration]->notifyAllObservers();
 
   {
     bool force_prepare_dump = false;
-    if (m_verification_active && m_verif_type==VerifWrite){
+    if (m_verification_active && m_verif_type == VerifWrite) {
       if (!m_verif_same_parallel)
         force_prepare_dump = true;
     }
-    else{
+    else {
       String force_prepare_dump_str = platform::getEnvironmentVariable("ARCANE_FORCE_PREPARE_DUMP");
-      if (force_prepare_dump_str=="TRUE" || force_prepare_dump_str=="1" || force_prepare_dump_str=="true")
+      if (force_prepare_dump_str == "TRUE" || force_prepare_dump_str == "1" || force_prepare_dump_str == "true")
         force_prepare_dump = true;
     }
-    if (force_prepare_dump){
+    if (force_prepare_dump) {
       info() << "TimeLoopMng::doOneIteration(): Force prepareDump()";
       // TODO: check if necessary and if so, do it for all sub-domains.
       sd->defaultMesh()->prepareForDump();
     }
   }
 
-  if (m_stop_time_loop){
+  if (m_stop_time_loop) {
     if (m_stop_has_error)
       return (-1);
     return (+1);
@@ -1014,7 +1018,7 @@ _doMeshPartition()
   // It will be reconstructed after partitioning.
   m_backward_mng->clear();
 
-  Timer timer(sd,"TimeLoopMng::partitionMesh",Timer::TimerReal);
+  Timer timer(sd, "TimeLoopMng::partitionMesh", Timer::TimerReal);
   Timer::Action ts_action(sd, "MeshesLoadBalance", true);
 
   for (IMeshPartitionerBase* mesh_partitioner : m_mesh_partitioner) {
@@ -1066,7 +1070,7 @@ _callSpecificEntryPoint()
   IEntryPoint* ep = m_entry_point_mng->findEntryPoint(m_specific_entry_point_name);
   info() << "Calling specific entry point: " << m_specific_entry_point_name;
   if (!ep)
-    ARCANE_FATAL("No entry point named '{0}' found",m_specific_entry_point_name);
+    ARCANE_FATAL("No entry point named '{0}' found", m_specific_entry_point_name);
   ep->executeEntryPoint();
 }
 
@@ -1074,10 +1078,10 @@ _callSpecificEntryPoint()
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-registerTimeLoop(ITimeLoop * timeloop)
+registerTimeLoop(ITimeLoop* timeloop)
 {
   ITraceMng* msg = traceMng();
-  Trace::Setter mci(msg,m_message_class_name);
+  Trace::Setter mci(msg, m_message_class_name);
 
   const String& name = timeloop->name();
 
@@ -1085,7 +1089,7 @@ registerTimeLoop(ITimeLoop * timeloop)
 
   auto tl = m_time_loop_list.find(name);
   if (tl != m_time_loop_list.end())
-    ARCANE_FATAL("The time loop '{0}' is defined twice",name);
+    ARCANE_FATAL("The time loop '{0}' is defined twice", name);
 
   m_time_loop_list.insert(TimeLoopMap::value_type(name, timeloop));
 }
@@ -1096,27 +1100,27 @@ registerTimeLoop(ITimeLoop * timeloop)
 void TimeLoopMng::
 setUsedTimeLoop(const String& name)
 {
-  ITraceMng * msg = traceMng();
-  Trace::Setter mci(msg,m_message_class_name);
+  ITraceMng* msg = traceMng();
+  Trace::Setter mci(msg, m_message_class_name);
 
   m_used_time_loop = nullptr;
   if (name.null())
     m_used_time_loop = m_default_time_loop;
-  else{
+  else {
     auto tl = m_time_loop_list.find(name);
     if (tl != m_time_loop_list.end())
       m_used_time_loop = tl->second;
   }
 
-  if (!m_used_time_loop){
+  if (!m_used_time_loop) {
     info() << "Available time loops: ";
-    for( const auto& tl : m_time_loop_list ){
+    for (const auto& tl : m_time_loop_list) {
       info() << "Time loop <" << tl.second->name() << ">";
     }
-    ARCANE_FATAL("Unknown time loop '{0}'",name);
+    ARCANE_FATAL("Unknown time loop '{0}'", name);
   }
 
-  logdate() << "Using time loop " << name; 
+  logdate() << "Using time loop " << name;
 
   ISubDomain* sd = m_sub_domain;
   // Merges the sub-domain configuration with that of the time loop.
@@ -1124,23 +1128,23 @@ setUsedTimeLoop(const String& name)
 
   ScopedPtrT<IServiceLoader> service_loader(sd->mainFactory()->createServiceLoader());
 
-  service_loader->loadModules(sd,false);
+  service_loader->loadModules(sd, false);
 
   _fillModuleFactoryMap();
 
   // Loading modules of the time loop
   _fillModuleStateMap(m_used_time_loop);
 
-  for( const auto& it : m_module_state_list ){
-    const ModuleState & module_state = it.second;
+  for (const auto& it : m_module_state_list) {
+    const ModuleState& module_state = it.second;
 
-    if (!module_state.m_is_optional || module_state.m_is_active){
+    if (!module_state.m_is_optional || module_state.m_is_active) {
       // creation of the module
       if (!_createModule(module_state.m_alias))
-        ARCANE_FATAL("The module \"{0}\" was not created.",module_state.m_alias);
+        ARCANE_FATAL("The module \"{0}\" was not created.", module_state.m_alias);
     }
-    else{
-      info() << "The entry points of the module \"" 
+    else {
+      info() << "The entry points of the module \""
              << module_state.m_alias << "\" won't be executed (inactive module).";
     }
   }
@@ -1149,7 +1153,7 @@ setUsedTimeLoop(const String& name)
 
   m_used_time_loop_entry_points.clear();
 
-  // Iterates over entry points explicitly referenced in the time loop 
+  // Iterates over entry points explicitly referenced in the time loop
   // (m_used_time_loop) to search for those that correspond to entry points
   // registered in the modules
   // Entry points that are not auto-loaded and not referenced are therefore not supported.
@@ -1181,26 +1185,26 @@ setUsedTimeLoop(const String& name)
 
   // Adds autoloads at the beginning.
   EntryPointList entry_points(m_entry_point_mng->entryPoints());
-  for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
-    IEntryPoint* ic = * i;
+  for (EntryPointCollection::Enumerator i(entry_points); ++i;) {
+    IEntryPoint* ic = *i;
     if (ic->property() & IEntryPoint::PAutoLoadBegin)
       _addExecuteEntryPoint(ic);
   }
 
   // Adds compute loop entry points.
-  for (EntryPointCollection::Enumerator i(timeloop_entry_points); ++i; )
+  for (EntryPointCollection::Enumerator i(timeloop_entry_points); ++i;)
     _addExecuteEntryPoint(*i);
 
   { // Adds autoloads at the end in reverse order of declaration
     EntryPointList auto_load_ends;
-    for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
+    for (EntryPointCollection::Enumerator i(entry_points); ++i;) {
       IEntryPoint* ic = *i;
-      if (ic->property() & IEntryPoint::PAutoLoadEnd){
+      if (ic->property() & IEntryPoint::PAutoLoadEnd) {
         auto_load_ends.add(ic);
       }
     }
-    for( Integer i=0, s=auto_load_ends.count(); i<s; ++i){
-      IEntryPoint * ic = auto_load_ends[s - 1 - i];
+    for (Integer i = 0, s = auto_load_ends.count(); i < s; ++i) {
+      IEntryPoint* ic = auto_load_ends[s - 1 - i];
       _addExecuteEntryPoint(ic);
     }
   }
@@ -1213,13 +1217,13 @@ void TimeLoopMng::
 _createSingletonServices(IServiceLoader* service_loader)
 {
   ISubDomain* sd = m_sub_domain;
-  for( TimeLoopSingletonServiceInfoCollection::Enumerator i(m_used_time_loop->singletonServices()); ++i; ){
+  for (TimeLoopSingletonServiceInfoCollection::Enumerator i(m_used_time_loop->singletonServices()); ++i;) {
     const TimeLoopSingletonServiceInfo& ti = *i;
     String name = ti.name();
-    bool is_found = service_loader->loadSingletonService(sd,name);
-    if (!is_found){
+    bool is_found = service_loader->loadSingletonService(sd, name);
+    if (!is_found) {
       if (ti.isRequired())
-        ARCANE_FATAL("Unable to find a singleton service named '{0}'",name);
+        ARCANE_FATAL("Unable to find a singleton service named '{0}'", name);
       info() << "The optional singleton service named '" << name << "' was not found";
     }
     info() << "Loading singleton service '" << name << "'";
@@ -1228,19 +1232,19 @@ _createSingletonServices(IServiceLoader* service_loader)
   // Reading services specified in the data set.
   ICaseMng* cm = m_sub_domain->caseMng();
   ICaseDocument* doc = cm->caseDocument();
-  if (doc){
+  if (doc) {
     XmlNode services_element = doc->servicesElement();
     String ustr_name("name");
     String ustr_active("active");
     XmlNodeList services = services_element.children("service");
-    for( XmlNode x : services ) {
+    for (XmlNode x : services) {
       String name = x.attrValue(ustr_name);
       XmlNode active_node = x.attr(ustr_active);
       bool is_active = true;
       if (!active_node.null())
         is_active = active_node.valueAsBoolean(true);
       if (is_active)
-        service_loader->loadSingletonService(sd,name);
+        service_loader->loadSingletonService(sd, name);
     }
   }
 }
@@ -1255,29 +1259,29 @@ _processEntryPoints(EntryPointList& entry_points,
 {
   //TODO: Verify that the module name specified in the list of modules to
   //activate actually exists.
-  for( TimeLoopEntryPointInfoCollection::Enumerator i(entry_points_info); ++i; ){
+  for (TimeLoopEntryPointInfoCollection::Enumerator i(entry_points_info); ++i;) {
     const TimeLoopEntryPointInfo& entry_point_info = *i;
     const String& timeloop_call_name = entry_point_info.name();
     String entry_point_name;
     String module_name;
-    _extractModuleAndEntryPointName(timeloop_call_name,module_name,entry_point_name);
+    _extractModuleAndEntryPointName(timeloop_call_name, module_name, entry_point_name);
 
     auto it = m_module_state_list.find(module_name);
     if (it == m_module_state_list.end())
-      ARCANE_FATAL("No module named '{0}' is referenced",module_name);
+      ARCANE_FATAL("No module named '{0}' is referenced", module_name);
 
-    const ModuleState & module_state = it->second;
-    if (!module_state.m_is_optional || module_state.m_is_active){
+    const ModuleState& module_state = it->second;
+    if (!module_state.m_is_optional || module_state.m_is_active) {
       if (!module_state.m_alias.null())
         module_name = module_state.m_alias;
       StringBuilder call_alias(module_name);
       call_alias += ".";
       call_alias += entry_point_name;
 
-      IEntryPoint* entry_point = m_entry_point_mng->findEntryPoint(module_name,entry_point_name);
+      IEntryPoint* entry_point = m_entry_point_mng->findEntryPoint(module_name, entry_point_name);
       log() << "Looking for entry point '" << call_alias << "'";
       if (!entry_point)
-        ARCANE_FATAL("No entry point named '{0}' is referenced",call_alias);
+        ARCANE_FATAL("No entry point named '{0}' is referenced", call_alias);
 
       // it is necessary to verify that the "where" property of the entry point is
       // compatible with the "where" attribute given in the time loop
@@ -1287,18 +1291,18 @@ _processEntryPoints(EntryPointList& entry_points,
             << "\" can't be in the entry point list \""
             << where << "\" of the time loop";
 
-      if (ep_where==IEntryPoint::WComputeLoop && where!=ITimeLoop::WComputeLoop)
+      if (ep_where == IEntryPoint::WComputeLoop && where != ITimeLoop::WComputeLoop)
         ARCANE_FATAL(msg.str());
-      if (ep_where==IEntryPoint::WRestore && where!=ITimeLoop::WRestore)
+      if (ep_where == IEntryPoint::WRestore && where != ITimeLoop::WRestore)
         ARCANE_FATAL(msg.str());
-      if (ep_where==IEntryPoint::WExit && where!=ITimeLoop::WExit)
+      if (ep_where == IEntryPoint::WExit && where != ITimeLoop::WExit)
         ARCANE_FATAL(msg.str());
-      if ((ep_where==IEntryPoint::WInit || 
-           ep_where==IEntryPoint::WContinueInit ||
-           ep_where==IEntryPoint::WStartInit)
-          && where != ITimeLoop::WInit)
+      if ((ep_where == IEntryPoint::WInit ||
+           ep_where == IEntryPoint::WContinueInit ||
+           ep_where == IEntryPoint::WStartInit) &&
+          where != ITimeLoop::WInit)
         ARCANE_FATAL(msg.str());
-      
+
       entry_points.add(entry_point);
     }
   }
@@ -1312,17 +1316,17 @@ _fillModuleStateMap(ITimeLoop* time_loop)
 {
   // Analyzes the time loop information
   //   1. list of required modules
-  for( StringCollection::Enumerator i(time_loop->requiredModulesName()); ++i; ){
+  for (StringCollection::Enumerator i(time_loop->requiredModulesName()); ++i;) {
     const String& module_name = *i;
     ModuleState ms(false, module_name);
     m_module_state_list.insert(ModuleStateMap::value_type(module_name, ms));
   }
 
   //   2. list of optional modules
-  for( StringCollection::Enumerator i(time_loop->optionalModulesName()); ++i; ){
+  for (StringCollection::Enumerator i(time_loop->optionalModulesName()); ++i;) {
     const String& module_name = *i;
     ModuleState ms(true, module_name);
-    m_module_state_list.insert(ModuleStateMap::value_type(module_name,ms));
+    m_module_state_list.insert(ModuleStateMap::value_type(module_name, ms));
   }
 
   ICaseMng* cm = m_sub_domain->caseMng();
@@ -1340,7 +1344,7 @@ _fillModuleStateMap(ITimeLoop* time_loop)
   String ustr_name("name");
   String ustr_alias("alias");
   String ustr_active("active");
-  for (XmlNode::const_iter i(modules_node); i(); ++i){
+  for (XmlNode::const_iter i(modules_node); i(); ++i) {
     if (i->name() != ustr_module)
       continue;
     XmlNode module_node = *i;
@@ -1358,7 +1362,7 @@ _fillModuleStateMap(ITimeLoop* time_loop)
     // First checks if 'name' corresponds to a module name
     // in the language of the data file.
     auto ilang = m_lang_module_factory_map.find(name);
-    if (ilang!=m_lang_module_factory_map.end())
+    if (ilang != m_lang_module_factory_map.end())
       name = ilang->second->moduleName();
 
     auto it = m_module_state_list.find(name);
@@ -1393,12 +1397,13 @@ _extractModuleAndEntryPointName(const String& timeloop_call_name,
 {
   std::string std_timeloop_call_name(timeloop_call_name.localstr());
   size_t index = std_timeloop_call_name.find_first_of('.');
-  if (index==std::string::npos){
+  if (index == std::string::npos) {
     ARCANE_FATAL("The string '{0}' is not a valid reference to an entry point (has to be of type "
-                 "'module_name.entry_point_name)",timeloop_call_name);
+                 "'module_name.entry_point_name)",
+                 timeloop_call_name);
   }
   std::string std_module_name = std_timeloop_call_name.substr(0, index);
-  std::string std_entry_point_name = std_timeloop_call_name.substr(index+1);
+  std::string std_entry_point_name = std_timeloop_call_name.substr(index + 1);
   module_name = std_module_name;
   entry_point_name = std_entry_point_name;
 }
@@ -1419,25 +1424,25 @@ _fillModuleFactoryMap()
   ModuleFactoryInfoCollection module_factories(subDomain()->application()->moduleFactoryInfos());
   m_module_factory_map.clear();
   m_lang_module_factory_map.clear();
-  for( ModuleFactoryInfoCollection::Enumerator i(module_factories); ++i; ){
+  for (ModuleFactoryInfoCollection::Enumerator i(module_factories); ++i;) {
     IModuleFactoryInfo* mfi = *i;
 
     const String& module_name = mfi->moduleName();
-    if (m_module_factory_map.find(module_name)!=m_module_factory_map.end())
-      ARCANE_FATAL("Two modules with same name '{0}'",module_name);
-    m_module_factory_map.insert(std::make_pair(module_name,mfi));
+    if (m_module_factory_map.find(module_name) != m_module_factory_map.end())
+      ARCANE_FATAL("Two modules with same name '{0}'", module_name);
+    m_module_factory_map.insert(std::make_pair(module_name, mfi));
     info(5) << "Registering module in factory map name=" << module_name;
 
-    if (!lang.null()){
+    if (!lang.null()) {
       const IServiceInfo* si = mfi->serviceInfo();
       String translated_name = si->tagName(lang);
-      if (m_lang_module_factory_map.find(module_name)!=m_lang_module_factory_map.end()){
+      if (m_lang_module_factory_map.find(module_name) != m_lang_module_factory_map.end()) {
         // Just sends a warning because it will not necessarily cause a problem.
         warning() << "Two modules with same translated name=" << translated_name
                   << " ignoring name=" << module_name;
       }
-      else{
-        m_lang_module_factory_map.insert(std::make_pair(translated_name,mfi));
+      else {
+        m_lang_module_factory_map.insert(std::make_pair(translated_name, mfi));
         info(5) << "Registering module in lang factory map name=" << translated_name;
       }
     }
@@ -1451,10 +1456,10 @@ bool TimeLoopMng::
 _createModule(const String& module_name)
 {
   auto x = m_module_factory_map.find(module_name);
-  if (x!=m_module_factory_map.end()){
+  if (x != m_module_factory_map.end()) {
     IModuleFactoryInfo* mfi = x->second;
-    Ref<IModule> module = mfi->createModule(m_sub_domain,m_sub_domain->defaultMeshHandle());
-    if (module.get()){
+    Ref<IModule> module = mfi->createModule(m_sub_domain, m_sub_domain->defaultMeshHandle());
+    if (module.get()) {
       info() << "Loading module " << module->name()
              << " (Version " << module->versionInfo() << ")";
       return true;
@@ -1475,25 +1480,25 @@ _addExecuteEntryPoint(IEntryPoint* entry_point)
   log() << "Adding the entry point `" << entry_point->module()->name() << "::" << entry_point->name() << "' to the execution";
 
   String where = entry_point->where();
-  if (where==IEntryPoint::WInit || where==IEntryPoint::WContinueInit || where==IEntryPoint::WStartInit){
+  if (where == IEntryPoint::WInit || where == IEntryPoint::WContinueInit || where == IEntryPoint::WStartInit) {
     m_init_entry_points.add(entry_point);
   }
-  else if (where==IEntryPoint::WBuild){
+  else if (where == IEntryPoint::WBuild) {
     m_build_entry_points.add(entry_point);
   }
-  else if (where==IEntryPoint::WExit){
+  else if (where == IEntryPoint::WExit) {
     m_exit_entry_points.add(entry_point);
   }
-  else if (where == IEntryPoint::WRestore){
+  else if (where == IEntryPoint::WRestore) {
     m_restore_entry_points.add(entry_point);
   }
-  else if (where == IEntryPoint::WOnMeshChanged){
+  else if (where == IEntryPoint::WOnMeshChanged) {
     m_on_mesh_changed_entry_points.add(entry_point);
   }
-  else if (where == IEntryPoint::WOnMeshRefinement){
+  else if (where == IEntryPoint::WOnMeshRefinement) {
     m_on_mesh_refinement_entry_points.add(entry_point);
   }
-  else if (IEntryPoint::WComputeLoop){
+  else if (IEntryPoint::WComputeLoop) {
     m_loop_entry_points.add(entry_point);
     m_current_entry_point = m_loop_entry_points.count();
   }
@@ -1503,7 +1508,7 @@ _addExecuteEntryPoint(IEntryPoint* entry_point)
   IModule* c = entry_point->module();
   c->setUsed(true);
   {
-    if (std::find(m_list_execute_module.begin(),m_list_execute_module.end(),c)==m_list_execute_module.end()){
+    if (std::find(m_list_execute_module.begin(), m_list_execute_module.end(), c) == m_list_execute_module.end()) {
       debug() << "Adding the module  `" << c->name() << "' to the execution";
       m_list_execute_module.add(c);
     }
@@ -1516,7 +1521,7 @@ _addExecuteEntryPoint(IEntryPoint* entry_point)
 void TimeLoopMng::
 _dumpTimeInfos(JSONWriter& json_writer)
 {
-  IModuleMng * module_mng = subDomain()->moduleMng();
+  IModuleMng* module_mng = subDomain()->moduleMng();
 
   EntryPointCollection entry_points = m_entry_point_mng->entryPoints();
 
@@ -1527,20 +1532,20 @@ _dumpTimeInfos(JSONWriter& json_writer)
     Real compute_real_time = 0.0;
     json_writer.writeKey("EntryPoints");
     json_writer.beginArray();
-    for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
+    for (EntryPointCollection::Enumerator i(entry_points); ++i;) {
       IEntryPoint* ep = *i;
       Real s2 = ep->totalElapsedTime();
       {
         JSONWriter::Object jo(json_writer);
-        json_writer.write("Name",ep->name());
-        json_writer.write("TotalCpuTime",s2);
-        json_writer.write("TotalElapsedTime",s2);
-        json_writer.write("NbCall",(Int64)ep->nbCall());
-        json_writer.write("Where",ep->where());
+        json_writer.write("Name", ep->name());
+        json_writer.write("TotalCpuTime", s2);
+        json_writer.write("TotalElapsedTime", s2);
+        json_writer.write("NbCall", (Int64)ep->nbCall());
+        json_writer.write("Where", ep->where());
       }
       info(5) << "CPU_TIME where=" << ep->where() << " name=" << ep->name() << " S=" << s2;
       total_real_time += s2;
-      if (ep->where()==IEntryPoint::WComputeLoop){
+      if (ep->where() == IEntryPoint::WComputeLoop) {
         compute_real_time += s2;
       }
     }
@@ -1548,12 +1553,11 @@ _dumpTimeInfos(JSONWriter& json_writer)
     info(4) << "TOTAL_REAL_TIME COMPUTE=" << compute_real_time << " TOTAL=" << total_real_time;
   }
 
-
   const CommonVariables& scv = subDomain()->commonVariables();
   info() << "Information on the execution time";
   {
     Accelerator::IAcceleratorMng* acc_mng = m_sub_domain->acceleratorMng();
-    if (acc_mng->isInitialized()){
+    if (acc_mng->isInitialized()) {
       Accelerator::Runner* runner = acc_mng->defaultRunner();
       info() << " TotalRunner (" << runner->executionPolicy() << ") = "
              << runner->cumulativeCommandTime() << " seconds";
@@ -1572,7 +1576,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
   std::ostringstream o;
   std::ios_base::fmtflags f = o.flags(std::ios::right);
   Integer nb_cell = 0;
-  IMesh * mesh = subDomain()->defaultMesh();
+  IMesh* mesh = subDomain()->defaultMesh();
   if (mesh)
     nb_cell = mesh->nbCell();
   if (nb_cell == 0)
@@ -1580,16 +1584,16 @@ _dumpTimeInfos(JSONWriter& json_writer)
 
   o << "\n              Name                            T        TC       TCC    %         N\n";
 
-  for (ModuleCollection::Enumerator j(module_mng->modules()); ++j; ){
-    IModule * module = * j;
+  for (ModuleCollection::Enumerator j(module_mng->modules()); ++j;) {
+    IModule* module = *j;
     Real total_time_module = 0.;
     Real total_time_module_entry_point = 0.;
-    for (EntryPointCollection::Enumerator i(entry_points); ++i; ){
-      IEntryPoint * ic = * i;
-      if (ic->module()!=module)
+    for (EntryPointCollection::Enumerator i(entry_points); ++i;) {
+      IEntryPoint* ic = *i;
+      if (ic->module() != module)
         continue;
       Integer nb_call = ic->nbCall();
-      if (nb_call==0)
+      if (nb_call == 0)
         continue;
       Real total_time = ic->totalElapsedTime();
       //if (math::isZero(total_time))
@@ -1597,11 +1601,11 @@ _dumpTimeInfos(JSONWriter& json_writer)
       const String& ep_name = ic->name();
       {
         Int64 l = ep_name.length();
-        if (l > 36){
+        if (l > 36) {
           o.write(ep_name.localstr(), 34);
           o << "...";
         }
-        else{
+        else {
           o.width(37);
           o << ep_name;
         }
@@ -1610,7 +1614,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
       Int64 z = Convert::toInt64(total_time);
       o << z;
       Real r = (1e3 * total_time) / nb_call;
-      if (ic->where() == IEntryPoint::WComputeLoop){
+      if (ic->where() == IEntryPoint::WComputeLoop) {
         total_time_module += r;
         total_time_module_entry_point += total_time;
       }
@@ -1622,10 +1626,10 @@ _dumpTimeInfos(JSONWriter& json_writer)
       o.width(10);
       o << z;
       //Problem on certain machines: total_exec_time = 0
-      if (total_exec_time>0)
+      if (total_exec_time > 0)
         z = Convert::toInt64((100.0 * total_time) / total_exec_time);
       else
-        z = Convert::toInt64((100.0 * total_time)) ;
+        z = Convert::toInt64((100.0 * total_time));
       o.width(5);
       o << z;
       o.width(12);
@@ -1654,27 +1658,27 @@ _dumpTimeInfos(JSONWriter& json_writer)
 
   {
     IParallelMng* pm = m_sub_domain->parallelMng();
-    if (pm->isParallel()){
-      JSONWriter::Object jo(json_writer,"MessagePassingStats");
+    if (pm->isParallel()) {
+      JSONWriter::Object jo(json_writer, "MessagePassingStats");
       Parallel::IStat* s = pm->stat();
-      if (s){
+      if (s) {
         s->printCollective(pm);
         s->dumpJSON(json_writer);
       }
     }
   }
   {
-    JSONWriter::Object jo(json_writer,"VariablesStats");
+    JSONWriter::Object jo(json_writer, "VariablesStats");
     m_sub_domain->variableMng()->dumpStatsJSON(json_writer);
   }
   {
-    JSONWriter::Object jo(json_writer,"TimeStats");
+    JSONWriter::Object jo(json_writer, "TimeStats");
     m_sub_domain->timeStats()->dumpStatsJSON(json_writer);
   }
   {
     IProfilingService* ps = platform::getProfilingService();
-    if (ps){
-      JSONWriter::Object jo(json_writer,"Profiling");
+    if (ps) {
+      JSONWriter::Object jo(json_writer, "Profiling");
       ps->dumpJSON(json_writer);
     }
   }
@@ -1690,7 +1694,7 @@ cpuTimeUsed() const
 {
   EntryPointCollection entry_points = m_entry_point_mng->entryPoints();
   Real total_elapsed_time = 0.0;
-  for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
+  for (EntryPointCollection::Enumerator i(entry_points); ++i;) {
     Real s1 = (*i)->totalElapsedTime();
     total_elapsed_time += s1;
   }
@@ -1714,8 +1718,8 @@ isDoingBackward()
 void TimeLoopMng::
 goBackward()
 {
-  ITraceMng * msg = traceMng();
-  Trace::Setter mci(msg,m_message_class_name);
+  ITraceMng* msg = traceMng();
+  Trace::Setter mci(msg, m_message_class_name);
 
   if (!m_backward_mng)
     _createOwnDefaultBackwardMng();
@@ -1729,7 +1733,7 @@ goBackward()
 void TimeLoopMng::
 timeLoopsName(StringCollection& names) const
 {
-  for( ConstIterT<TimeLoopMap> i(m_time_loop_list); i(); ++i)
+  for (ConstIterT<TimeLoopMap> i(m_time_loop_list); i(); ++i)
     names.add(i->first);
 }
 
@@ -1739,17 +1743,17 @@ timeLoopsName(StringCollection& names) const
 void TimeLoopMng::
 timeLoops(TimeLoopCollection& time_loops) const
 {
-  for( ConstIterT<TimeLoopMap> i(m_time_loop_list); i(); ++i)
+  for (ConstIterT<TimeLoopMap> i(m_time_loop_list); i(); ++i)
     time_loops.add(i->second);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ITimeLoop * TimeLoopMng::
+ITimeLoop* TimeLoopMng::
 createTimeLoop(const String& name)
 {
-  IApplication * sm = m_sub_domain->application();
+  IApplication* sm = m_sub_domain->application();
   return sm->mainFactory()->createTimeLoop(sm, name);
 }
 
@@ -1766,7 +1770,7 @@ setStopReason(eTimeLoopStopReason reason)
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-stopComputeLoop(bool is_final_time,bool has_error)
+stopComputeLoop(bool is_final_time, bool has_error)
 {
   m_stop_time_loop = true;
   m_stop_has_error = has_error;
@@ -1778,7 +1782,7 @@ stopComputeLoop(bool is_final_time,bool has_error)
     m_stop_reason = eTimeLoopStopReason::FinalTimeReached;
   // If m_stop_reason has not yet been specified, indicate that there is no
   // special reason
-  if (m_stop_reason==eTimeLoopStopReason::NoStop)
+  if (m_stop_reason == eTimeLoopStopReason::NoStop)
     m_stop_reason = eTimeLoopStopReason::NoReason;
 }
 
@@ -1791,7 +1795,7 @@ registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner)
   if (!m_backward_mng)
     _createOwnDefaultBackwardMng();
 
-  if (m_backward_mng->isLocked() || m_backward_mng->isBackwardEnabled()){
+  if (m_backward_mng->isLocked() || m_backward_mng->isBackwardEnabled()) {
     info() << "Repartioning required but inactive due to a backward process active";
     return;
   }
@@ -1810,7 +1814,7 @@ doComputeLoop(Integer max_loop)
   int ret_val = 0;
   //m_alarm_timer_value = 0;
   //pwarning() << "Force the alarm_timer_value to zero";
-  if (m_alarm_timer_value>0){
+  if (m_alarm_timer_value > 0) {
     info() << "Set the timeout before alarm at " << m_alarm_timer_value << " seconds";
   }
 
@@ -1824,7 +1828,7 @@ doComputeLoop(Integer max_loop)
   // modules and services manage the profiling themselves, and therefore
   // profiling is not automatically started at the beginning of the
   // computation loop
-  if (!platform::getEnvironmentVariable("ARCANE_SPECIFIC_PROFILING").null()){
+  if (!platform::getEnvironmentVariable("ARCANE_SPECIFIC_PROFILING").null()) {
     info() << "Specific profiling activated";
     want_specific_profiling = true;
   }
@@ -1834,10 +1838,10 @@ doComputeLoop(Integer max_loop)
     // so it must be retrieved every time it is needed.
     IMemoryInfo* mem_info = arcaneGlobalMemoryInfo();
     String s = platform::getEnvironmentVariable("ARCANE_CHECK_MEMORY_BLOCK_SIZE_ITERATION");
-    if (!s.null()){
+    if (!s.null()) {
       Int64 block_size = 0;
-      bool is_bad = builtInGetValue(block_size,s);
-      if (!is_bad && block_size>2){
+      bool is_bad = builtInGetValue(block_size, s);
+      if (!is_bad && block_size > 2) {
         info() << "Set Memory StackTraceMinAllocSize to " << block_size;
         mem_info->setStackTraceMinAllocSize(block_size);
       }
@@ -1848,8 +1852,8 @@ doComputeLoop(Integer max_loop)
   if (m_msg_pass_prof_srv.get())
     m_msg_pass_prof_srv->startProfiling();
 
-  try{
-    if (ps){
+  try {
+    if (ps) {
       if (!ps->isInitialized())
         ps->initialize();
       ps->reset();
@@ -1859,59 +1863,59 @@ doComputeLoop(Integer max_loop)
     if (want_specific_profiling)
       ps = nullptr;
     ProfilingSentryWithInitialize ps_sentry(ps);
-    if (!m_specific_entry_point_name.null()){
+    if (!m_specific_entry_point_name.null()) {
       _callSpecificEntryPoint();
       is_end = true;
     }
-    while (!is_end){
-      if (max_loop!=0 && m_nb_loop>=max_loop){
-        info()<<"===================================================";
-        info()<<"====== MAXIMUM NUMBER OF ITERATION REACHED  =======";
-        info()<<"===================================================";
+    while (!is_end) {
+      if (max_loop != 0 && m_nb_loop >= max_loop) {
+        info() << "===================================================";
+        info() << "====== MAXIMUM NUMBER OF ITERATION REACHED  =======";
+        info() << "===================================================";
         is_end_by_max_loop = true;
         m_stop_reason = eTimeLoopStopReason::MaxIterationReached;
-        stopComputeLoop(false,false);
+        stopComputeLoop(false, false);
         break;
       }
       // Indicate that we will stop by maximum number of iterations
-      if (max_loop!=0 && (1+m_nb_loop)>=max_loop){
+      if (max_loop != 0 && (1 + m_nb_loop) >= max_loop) {
         m_stop_reason = eTimeLoopStopReason::MaxIterationReached;
       }
       ret_val = doOneIteration();
       IMemoryInfo* mem_info = arcaneGlobalMemoryInfo();
-      if (mem_info && mem_info->isCollecting()){
+      if (mem_info && mem_info->isCollecting()) {
         mem_info->endCollect();
         Integer iteration = subDomain()->commonVariables().globalIteration();
         mem_info->setIteration(iteration);
 
         std::ostringstream ostr;
-        if (iteration>0)
-          mem_info->printAllocatedMemory(ostr,iteration-1);
-        if (iteration>1)
-          mem_info->printAllocatedMemory(ostr,iteration-2);
-        if (iteration>4)
-          mem_info->printAllocatedMemory(ostr,iteration-5);
+        if (iteration > 0)
+          mem_info->printAllocatedMemory(ostr, iteration - 1);
+        if (iteration > 1)
+          mem_info->printAllocatedMemory(ostr, iteration - 2);
+        if (iteration > 4)
+          mem_info->printAllocatedMemory(ostr, iteration - 5);
         info() << "ITERATION_MemoryInfo: " << ostr.str();
         mem_info->beginCollect();
       }
       subDomain()->variableMng()->synchronizerMng()->flushPendingStats();
-      if (ret_val!=0)
+      if (ret_val != 0)
         is_end = true;
       ++m_nb_loop;
     }
   }
-  catch (const TimeoutException& ex){
+  catch (const TimeoutException& ex) {
     if (m_msg_pass_prof_srv.get())
       m_msg_pass_prof_srv->stopProfiling();
-    IParallelMng * pm = subDomain()->parallelMng();
-    pinfo() << "TIMEOUT " << Trace::Width(8) << pm->commRank() << "_RANK Infos:"<<ex.additionalInfo();
+    IParallelMng* pm = subDomain()->parallelMng();
+    pinfo() << "TIMEOUT " << Trace::Width(8) << pm->commRank() << "_RANK Infos:" << ex.additionalInfo();
     traceMng()->flush();
     // Wait for all processors to send the signal and display the
     // previous message
     platform::sleep(40);
     throw;
   }
-  if (m_verification_only_at_exit){
+  if (m_verification_only_at_exit) {
     info() << "Doing verification at exit";
     doVerification("AtExit");
   }
@@ -1929,7 +1933,7 @@ doComputeLoop(Integer max_loop)
     return 2;
   if (m_final_time_reached)
     return 1;
-  if (ret_val<0){
+  if (ret_val < 0) {
     return ret_val;
   }
   return 0;
@@ -1941,7 +1945,7 @@ doComputeLoop(Integer max_loop)
 void TimeLoopMng::
 _resetTimer() const
 {
-  if (m_alarm_timer_value>0)
+  if (m_alarm_timer_value > 0)
     platform::resetAlarmTimer(m_alarm_timer_value);
 }
 

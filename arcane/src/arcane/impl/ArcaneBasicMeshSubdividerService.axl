@@ -1,16 +1,16 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="ArcaneBasicMeshSubdividerService" parent-name="AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
     Arcane service allowing the subdivision of mesh entities.
   </description>
-    
-  <interface name="Arcane::IMeshSubdivider" />
+
+  <interface name="Arcane::IMeshSubdivider"/>
 
   <options>
     <simple name="nb-subdivision"
             type="int32"
-            >
+    >
       <userclass>User</userclass>
       <description>
         Number of subdivisions to perform.
@@ -20,7 +20,7 @@
     <simple name="different-element-type-output"
             type="int32"
             default="0"
-            >
+    >
       <userclass>User</userclass>
       <description>
         Allows defining another cell type after subdivision. Only works for triangles,

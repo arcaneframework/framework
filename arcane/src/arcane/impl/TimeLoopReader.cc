@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,21 +21,21 @@
 
 #include "arcane/impl/TimeLoopReader.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IIOMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/XmlNodeIterator.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/ITimeLoop.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/SequentialSection.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/TimeLoopSingletonServiceInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/XmlNodeIterator.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/ITimeLoop.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/SequentialSection.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/TimeLoopSingletonServiceInfo.h"
 #include "arcane/impl/ConfigurationReader.h"
 
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ setUsedTimeLoop(ISubDomain* sub_domain)
 
   {
     SequentialSection ss(sub_domain);
-    try{
+    try {
       String value;
       if (!time_loop_elem.null())
         value = time_loop_elem.value();
@@ -87,11 +87,11 @@ setUsedTimeLoop(ISubDomain* sub_domain)
       info() << "Using the time loop <" << m_time_loop_name << ">";
       loop_mng->setUsedTimeLoop(m_time_loop_name);
     }
-    catch(const Exception& ex){
+    catch (const Exception& ex) {
       error() << ex << '\n';
       ss.setError(true);
     }
-    catch(...){
+    catch (...) {
       ss.setError(true);
     }
   }
@@ -106,7 +106,7 @@ readTimeLoops()
   IMainFactory* factory = m_application->mainFactory();
 
   ByteConstSpan config_bytes = m_application->configBuffer();
-  ScopedPtrT<IXmlDocumentHolder> config_doc(m_application->ioMng()->parseXmlBuffer(config_bytes,String()));
+  ScopedPtrT<IXmlDocumentHolder> config_doc(m_application->ioMng()->parseXmlBuffer(config_bytes, String()));
   if (!config_doc.get())
     ARCANE_FATAL("Can not parse code configuration file");
   XmlNode root_elem = config_doc->documentNode().documentElement();
@@ -129,19 +129,19 @@ readTimeLoops()
   // List of global singleton services
   XmlNodeList global_singleton_elems = root_elem.children("singleton-services");
   info() << "CHECK GLOBAL SINGLETON SERVICES";
-  for( const auto& i : global_singleton_elems ){
+  for (const auto& i : global_singleton_elems) {
     info() << "CHECK GLOBAL SINGLETON SERVICES 2 " << i.name();
 
-    for( const auto& j_node : i ){
-      if (j_node.name()=="service"){
-        bool is_required = (j_node.attrValue("need")=="required");
+    for (const auto& j_node : i) {
+      if (j_node.name() == "service") {
+        bool is_required = (j_node.attrValue("need") == "required");
         info() << "GLOBAL SINGLETON SERVICE name=" << j_node.attrValue(ustr_name) << " is_required?=" << is_required;
-        global_singleton_services.add(TimeLoopSingletonServiceInfo(j_node.attrValue(ustr_name),is_required));
+        global_singleton_services.add(TimeLoopSingletonServiceInfo(j_node.attrValue(ustr_name), is_required));
       }
     }
   }
 
-  for( const auto& i : timeloops ){
+  for (const auto& i : timeloops) {
     optional_modules_list.clear();
     required_modules_list.clear();
     user_classes.clear();
@@ -153,47 +153,40 @@ readTimeLoops()
       continue;
     ITimeLoop* time_loop = factory->createTimeLoop(m_application, name);
     XmlNode timeloop_node = i;
-    
-    for( const auto& j_node : timeloop_node ){
+
+    for (const auto& j_node : timeloop_node) {
       String elem_name = j_node.name();
       String elem_value = j_node.value();
 
-      if (elem_name==ustr_modules){
-        for(XmlNode::const_iter k (j_node) ; k() ; ++k)
-          if (k->name()=="module"){
-            if (k->attrValue("need")=="required")
+      if (elem_name == ustr_modules) {
+        for (XmlNode::const_iter k(j_node); k(); ++k)
+          if (k->name() == "module") {
+            if (k->attrValue("need") == "required")
               required_modules_list.add(k->attrValue(ustr_name));
             else
               optional_modules_list.add(k->attrValue(ustr_name));
           }
       }
-      else if (elem_name=="singleton-services"){
-        for(XmlNode::const_iter k (j_node) ; k() ; ++k)
-          if (k->name()=="service"){
-            bool is_required = (k->attrValue("need")=="required");
+      else if (elem_name == "singleton-services") {
+        for (XmlNode::const_iter k(j_node); k(); ++k)
+          if (k->name() == "service") {
+            bool is_required = (k->attrValue("need") == "required");
             //info() << "SINGLETON SERVICE name=" << k->attrValue(ustr_name) << " is_required?=" << is_required;
-            singleton_services.add(TimeLoopSingletonServiceInfo(k->attrValue(ustr_name),is_required));
+            singleton_services.add(TimeLoopSingletonServiceInfo(k->attrValue(ustr_name), is_required));
           }
       }
-      else if (elem_name=="entry-points"){
+      else if (elem_name == "entry-points") {
         entry_points.clear();
-        for( XmlNode::const_iter k (j_node) ; k() ; ++k){
+        for (XmlNode::const_iter k(j_node); k(); ++k) {
           XmlNode k_node = *k;
-          if (k_node.name()!="entry-point")
+          if (k_node.name() != "entry-point")
             continue;
           StringList depends;
-          entry_points.add(TimeLoopEntryPointInfo(k_node.attrValue(ustr_name),depends));
+          entry_points.add(TimeLoopEntryPointInfo(k_node.attrValue(ustr_name), depends));
         }
 
         String cwhere = j_node.attrValue("where");
-        if (cwhere != ITimeLoop::WInit 
-            && cwhere != ITimeLoop::WComputeLoop
-            && cwhere != ITimeLoop::WRestore
-            && cwhere != ITimeLoop::WExit
-            && cwhere != ITimeLoop::WBuild
-            && cwhere != ITimeLoop::WOnMeshChanged
-            && cwhere != ITimeLoop::WOnMeshRefinement)
-        {
+        if (cwhere != ITimeLoop::WInit && cwhere != ITimeLoop::WComputeLoop && cwhere != ITimeLoop::WRestore && cwhere != ITimeLoop::WExit && cwhere != ITimeLoop::WBuild && cwhere != ITimeLoop::WOnMeshChanged && cwhere != ITimeLoop::WOnMeshRefinement) {
           OStringStream s;
           s() << "Incorrect value for the attribute \"where\" (time loop ";
           s() << name << "): \"" << cwhere << "\".\n";
@@ -206,25 +199,22 @@ readTimeLoops()
               << ", " << ITimeLoop::WBuild
               << ", " << ITimeLoop::WExit
               << ".";
-          throw InternalErrorException(A_FUNCINFO,s.str());
+          throw InternalErrorException(A_FUNCINFO, s.str());
         }
-        time_loop->setEntryPoints(cwhere,entry_points);
+        time_loop->setEntryPoints(cwhere, entry_points);
       }
-      else if (elem_name=="title")
-      {
+      else if (elem_name == "title") {
         time_loop->setTitle(elem_value);
       }
-      else if (elem_name=="description")
-      {
+      else if (elem_name == "description") {
         time_loop->setDescription(elem_value);
       }
-      else if (elem_name=="userclass")
-      {
+      else if (elem_name == "userclass") {
         user_classes.add(elem_value);
       }
-      else if (elem_name=="configuration"){
-        ConfigurationReader cr(traceMng(),time_loop->configuration());
-        cr.addValuesFromXmlNode(j_node,ConfigurationReader::P_TimeLoop);
+      else if (elem_name == "configuration") {
+        ConfigurationReader cr(traceMng(), time_loop->configuration());
+        cr.addValuesFromXmlNode(j_node, ConfigurationReader::P_TimeLoop);
       }
     }
 
@@ -244,7 +234,7 @@ void TimeLoopReader::
 registerTimeLoops(ISubDomain* sd)
 {
   ITimeLoopMng* loop_mng = sd->timeLoopMng();
-  for( TimeLoopList::Enumerator i(m_time_loops); ++i; )
+  for (TimeLoopList::Enumerator i(m_time_loops); ++i;)
     loop_mng->registerTimeLoop(*i);
 }
 

@@ -73,7 +73,7 @@ using namespace Arcane::MessagePassing;
 /*---------------------------------------------------------------------------*/
 
 extern "C++" IVariableSynchronizer*
-createNullVariableSynchronizer(IParallelMng* pm,const ItemGroup& group);
+createNullVariableSynchronizer(IParallelMng* pm, const ItemGroup& group);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -82,6 +82,7 @@ class SequentialRequestList
 : public RequestListBase
 {
  public:
+
   void _wait(Parallel::eWaitType wait_mode)
   {
     ARCANE_UNUSED(wait_mode);
@@ -94,86 +95,92 @@ class SequentialRequestList
 /*!
  * \brief Message interface for type \a Type
  */
-template<class Type>
+template <class Type>
 class SequentialParallelDispatchT
 : public TraceAccessor
 , public IParallelDispatchT<Type>
 , public ITypeDispatcher<Type>
 {
  public:
+
   typedef Parallel::Request Request;
   typedef Parallel::eReduceType eReduceType;
+
  public:
+
   SequentialParallelDispatchT(ITraceMng* tm)
-  : TraceAccessor(tm) {}
+  : TraceAccessor(tm)
+  {}
   void finalize() override {}
+
  public:
-  void broadcast(ArrayView<Type> send_buf,Int32 rank) override
+
+  void broadcast(ArrayView<Type> send_buf, Int32 rank) override
   {
     ARCANE_UNUSED(send_buf);
     ARCANE_UNUSED(rank);
   }
-  void broadcast(Span<Type> send_buf,Int32 rank) override
+  void broadcast(Span<Type> send_buf, Int32 rank) override
   {
     ARCANE_UNUSED(send_buf);
     ARCANE_UNUSED(rank);
   }
-  void allGather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf) override
+  void allGather(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf) override
   {
     recv_buf.copy(send_buf);
   }
-  void allGather(Span<const Type> send_buf,Span<Type> recv_buf) override
+  void allGather(Span<const Type> send_buf, Span<Type> recv_buf) override
   {
     recv_buf.copy(send_buf);
   }
-  void gather(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 rank) override
+  void gather(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Int32 rank) override
   {
     ARCANE_UNUSED(rank);
     recv_buf.copy(send_buf);
   }
-  void gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank) override
+  void gather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override
   {
     ARCANE_UNUSED(rank);
     recv_buf.copy(send_buf);
   }
-  void scatterVariable(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Int32 root) override
+  void scatterVariable(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Int32 root) override
   {
     ARCANE_UNUSED(root);
     recv_buf.copy(send_buf);
   }
-  void scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root) override
+  void scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root) override
   {
     ARCANE_UNUSED(root);
     recv_buf.copy(send_buf);
   }
-  void allGatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf) override
+  void allGatherVariable(ConstArrayView<Type> send_buf, Array<Type>& recv_buf) override
   {
-    gatherVariable(send_buf,recv_buf,0);
+    gatherVariable(send_buf, recv_buf, 0);
   }
-  void allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf) override
+  void allGatherVariable(Span<const Type> send_buf, Array<Type>& recv_buf) override
   {
-    gatherVariable(send_buf,recv_buf,0);
+    gatherVariable(send_buf, recv_buf, 0);
   }
-  void gatherVariable(ConstArrayView<Type> send_buf,Array<Type>& recv_buf,Int32 rank) override
+  void gatherVariable(ConstArrayView<Type> send_buf, Array<Type>& recv_buf, Int32 rank) override
   {
     ARCANE_UNUSED(rank);
     recv_buf.resize(send_buf.size());
     ArrayView<Type> av(recv_buf);
     av.copy(send_buf);
   }
-  void gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank) override
+  void gatherVariable(Span<const Type> send_buf, Array<Type>& recv_buf, Int32 rank) override
   {
     ARCANE_UNUSED(rank);
     recv_buf.resize(send_buf.size());
     Span<Type> av(recv_buf.span());
     av.copy(send_buf);
   }
-  void allToAll(ConstArrayView<Type> send_buf,ArrayView<Type> recv_buf,Integer count) override
+  void allToAll(ConstArrayView<Type> send_buf, ArrayView<Type> recv_buf, Integer count) override
   {
     ARCANE_UNUSED(count);
     recv_buf.copy(send_buf);
   }
-  void allToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count) override
+  void allToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override
   {
     ARCANE_UNUSED(count);
     recv_buf.copy(send_buf);
@@ -204,77 +211,77 @@ class SequentialParallelDispatchT
     ARCANE_UNUSED(recv_index);
     recv_buf.copy(send_buf);
   }
-  Request send(ConstArrayView<Type> send_buffer,Int32 rank,bool is_blocked) override
+  Request send(ConstArrayView<Type> send_buffer, Int32 rank, bool is_blocked) override
   {
-    return send(Span<const Type>(send_buffer),rank,is_blocked);
+    return send(Span<const Type>(send_buffer), rank, is_blocked);
   }
-  Request send(Span<const Type> send_buffer,Int32 rank,bool is_blocked) override
+  Request send(Span<const Type> send_buffer, Int32 rank, bool is_blocked) override
   {
     ARCANE_UNUSED(send_buffer);
     ARCANE_UNUSED(rank);
     if (is_blocked)
-      throw NotSupportedException(A_FUNCINFO,"blocking send is not allowed in sequential");
+      throw NotSupportedException(A_FUNCINFO, "blocking send is not allowed in sequential");
     return Request();
   }
-  Request send(Span<const Type> send_buffer,const PointToPointMessageInfo& message) override
+  Request send(Span<const Type> send_buffer, const PointToPointMessageInfo& message) override
   {
     ARCANE_UNUSED(send_buffer);
     if (message.isBlocking())
-      throw NotSupportedException(A_FUNCINFO,"blocking send is not allowed in sequential");
+      throw NotSupportedException(A_FUNCINFO, "blocking send is not allowed in sequential");
     return Request();
   }
-  Request recv(ArrayView<Type> recv_buffer,Int32 rank,bool is_blocked) override
+  Request recv(ArrayView<Type> recv_buffer, Int32 rank, bool is_blocked) override
   {
-    return receive(Span<Type>(recv_buffer),rank,is_blocked);
+    return receive(Span<Type>(recv_buffer), rank, is_blocked);
   }
-  void send(ConstArrayView<Type> send_buffer,Int32 rank) override
+  void send(ConstArrayView<Type> send_buffer, Int32 rank) override
   {
     ARCANE_UNUSED(send_buffer);
     ARCANE_UNUSED(rank);
-    throw NotSupportedException(A_FUNCINFO,"send is not allowed in sequential");
+    throw NotSupportedException(A_FUNCINFO, "send is not allowed in sequential");
   }
-  void recv(ArrayView<Type> recv_buffer,Int32 rank) override
+  void recv(ArrayView<Type> recv_buffer, Int32 rank) override
   {
     ARCANE_UNUSED(recv_buffer);
     ARCANE_UNUSED(rank);
-    throw NotSupportedException(A_FUNCINFO,"recv is not allowed in sequential");
+    throw NotSupportedException(A_FUNCINFO, "recv is not allowed in sequential");
   }
-  Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override
+  Request receive(Span<Type> recv_buffer, Int32 rank, bool is_blocked) override
   {
     ARCANE_UNUSED(recv_buffer);
     ARCANE_UNUSED(rank);
     if (is_blocked)
-      throw NotSupportedException(A_FUNCINFO,"blocking receive is not allowed in sequential");
+      throw NotSupportedException(A_FUNCINFO, "blocking receive is not allowed in sequential");
     return Request();
   }
-  Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) override
+  Request receive(Span<Type> recv_buffer, const PointToPointMessageInfo& message) override
   {
     ARCANE_UNUSED(recv_buffer);
     if (message.isBlocking())
-      throw NotSupportedException(A_FUNCINFO,"blocking receive is not allowed in sequential");
+      throw NotSupportedException(A_FUNCINFO, "blocking receive is not allowed in sequential");
     return Request();
   }
-  void sendRecv(ConstArrayView<Type> send_buffer,ArrayView<Type> recv_buffer,Int32 rank) override
+  void sendRecv(ConstArrayView<Type> send_buffer, ArrayView<Type> recv_buffer, Int32 rank) override
   {
     ARCANE_UNUSED(rank);
     recv_buffer.copy(send_buffer);
   }
-  Type allReduce(eReduceType op,Type v) override
+  Type allReduce(eReduceType op, Type v) override
   {
     ARCANE_UNUSED(op);
     return v;
   }
-  void allReduce(eReduceType op,ArrayView<Type> send_buf) override
+  void allReduce(eReduceType op, ArrayView<Type> send_buf) override
   {
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
   }
-  void allReduce(eReduceType op,Span<Type> send_buf) override
+  void allReduce(eReduceType op, Span<Type> send_buf) override
   {
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
   }
-  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf) override
+  Request nonBlockingAllReduce(eReduceType op, Span<const Type> send_buf, Span<Type> recv_buf) override
   {
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
@@ -315,17 +322,17 @@ class SequentialParallelDispatchT
     recv_buf.copy(send_buf);
     return Request();
   }
-  Type scan(eReduceType op,Type v) override
+  Type scan(eReduceType op, Type v) override
   {
     ARCANE_UNUSED(op);
     return v;
   }
-  void scan(eReduceType op,ArrayView<Type> send_buf) override
+  void scan(eReduceType op, ArrayView<Type> send_buf) override
   {
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
   }
-  void computeMinMaxSum(Type val,Type& min_val,Type& max_val,Type& sum_val,
+  void computeMinMaxSum(Type val, Type& min_val, Type& max_val, Type& sum_val,
                         Int32& min_rank,
                         Int32& max_rank) override
   {
@@ -340,7 +347,7 @@ class SequentialParallelDispatchT
                         ArrayView<Int32> max_ranks) override
   {
     const Integer n = values.size();
-    for(Integer i=0;i<n;++i) {
+    for (Integer i = 0; i < n; ++i) {
       min_values[i] = max_values[i] = sum_values[i] = values[i];
       min_ranks[i] = max_ranks[i] = 0;
     }
@@ -526,17 +533,18 @@ class SequentialParallelMngUtilsFactory
 : public ParallelMngUtilsFactoryBase
 {
  public:
+
   Ref<ITransferValuesParallelOperation> createTransferValuesOperation(IParallelMng*) override
   {
     throw NotImplementedException(A_FUNCINFO);
   }
-  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm, IItemFamily* family) override
   {
-    return makeRef(createNullVariableSynchronizer(pm,family->allItems()));
+    return makeRef(createNullVariableSynchronizer(pm, family->allItems()));
   }
-  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) override
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm, const ItemGroup& group) override
   {
-    return makeRef(createNullVariableSynchronizer(pm,group));
+    return makeRef(createNullVariableSynchronizer(pm, group));
   }
 };
 
@@ -557,9 +565,12 @@ class SequentialParallelMng
   class Impl;
 
  private:
+
   // Constructs a sequential manager.
   SequentialParallelMng(const SequentialParallelMngBuildInfo& bi);
+
  public:
+
   ~SequentialParallelMng();
 
   bool isParallel() const override { return false; }
@@ -577,7 +588,7 @@ class SequentialParallelMng
   IParallelMng* worldParallelMng() const override { return m_world_parallel_mng; }
   IIOMng* ioMng() const override { return m_io_mng; }
 
-  void initialize() override ;
+  void initialize() override;
   bool isMasterIO() const override { return true; }
   Int32 masterIORank() const override { return 0; }
 
@@ -587,12 +598,12 @@ class SequentialParallelMng
   {
     recv_serializer->copy(send_serializer);
   }
-  void sendSerializer(ISerializer* values,Int32 rank) override
+  void sendSerializer(ISerializer* values, Int32 rank) override
   {
     ARCANE_UNUSED(values);
     ARCANE_UNUSED(rank);
   }
-  Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) override
+  Request sendSerializer(ISerializer* values, Int32 rank, ByteArray& bytes) override
   {
     ARCANE_UNUSED(values);
     ARCANE_UNUSED(rank);
@@ -602,9 +613,9 @@ class SequentialParallelMng
   ISerializeMessage* createSendSerializer(Int32 rank) override
   {
     ARCANE_UNUSED(rank);
-    return new SerializeMessage(0,0,ISerializeMessage::MT_Send);
+    return new SerializeMessage(0, 0, ISerializeMessage::MT_Send);
   }
-  void recvSerializer(ISerializer* values,Int32 rank) override
+  void recvSerializer(ISerializer* values, Int32 rank) override
   {
     ARCANE_UNUSED(values);
     ARCANE_UNUSED(rank);
@@ -612,20 +623,20 @@ class SequentialParallelMng
   ISerializeMessage* createReceiveSerializer(Int32 rank) override
   {
     ARCANE_UNUSED(rank);
-    return new SerializeMessage(0,0,ISerializeMessage::MT_Recv);
+    return new SerializeMessage(0, 0, ISerializeMessage::MT_Recv);
   }
 
-  void broadcastString(String& str,Int32 rank) override
+  void broadcastString(String& str, Int32 rank) override
   {
     ARCANE_UNUSED(str);
     ARCANE_UNUSED(rank);
   }
-  void broadcastMemoryBuffer(ByteArray& bytes,Int32 rank) override
+  void broadcastMemoryBuffer(ByteArray& bytes, Int32 rank) override
   {
     ARCANE_UNUSED(bytes);
     ARCANE_UNUSED(rank);
   }
-  void broadcastSerializer(ISerializer* values,Int32 rank) override
+  void broadcastSerializer(ISerializer* values, Int32 rank) override
   {
     ARCANE_UNUSED(values);
     ARCANE_UNUSED(rank);
@@ -640,13 +651,13 @@ class SequentialParallelMng
     ARCANE_UNUSED(message);
     return MessageSourceInfo();
   }
-  Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override
+  Request sendSerializer(const ISerializer* values, const PointToPointMessageInfo& message) override
   {
     ARCANE_UNUSED(values);
     ARCANE_UNUSED(message);
     return Parallel::Request();
   }
-  Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override
+  Request receiveSerializer(ISerializer* values, const PointToPointMessageInfo& message) override
   {
     ARCANE_UNUSED(values);
     ARCANE_UNUSED(message);
@@ -677,20 +688,20 @@ class SequentialParallelMng
   UniqueArray<Integer> waitSomeRequests(ArrayView<Request> requests) override
   {
     ARCANE_UNUSED(requests);
-	  return UniqueArray<Integer>();
+    return UniqueArray<Integer>();
   }
   UniqueArray<Integer> testSomeRequests(ArrayView<Request> requests) override
   {
-	  return waitSomeRequests(requests);
+    return waitSomeRequests(requests);
   }
 
   ISerializeMessageList* _createSerializeMessageList() override
   {
     return new Arccore::MessagePassing::internal::SerializeMessageList(messagePassingMng());
   }
-  Real reduceRank(eReduceType rt,Real v,Int32* rank)
+  Real reduceRank(eReduceType rt, Real v, Int32* rank)
   {
-    Real rv = reduce(rt,v);
+    Real rv = reduce(rt, v);
     if (rank)
       *rank = 0;
     return rv;
@@ -709,11 +720,11 @@ class SequentialParallelMng
   }
   IVariableSynchronizer* createSynchronizer(IItemFamily* family) override
   {
-    return createNullVariableSynchronizer(this,family->allItems());
+    return createNullVariableSynchronizer(this, family->allItems());
   }
   IVariableSynchronizer* createSynchronizer(const ItemGroup& group) override
   {
-    return createNullVariableSynchronizer(this,group);
+    return createNullVariableSynchronizer(this, group);
   }
   IParallelTopology* createTopology() override
   {
@@ -760,9 +771,9 @@ class SequentialParallelMng
   static IParallelMng* create(const SequentialParallelMngBuildInfo& bi)
   {
     if (!bi.traceMng())
-      ARCANE_THROW(ArgumentException,"null traceMng()");
+      ARCANE_THROW(ArgumentException, "null traceMng()");
     if (!bi.threadMng())
-      ARCANE_THROW(ArgumentException,"null threadMng()");
+      ARCANE_THROW(ArgumentException, "null threadMng()");
     auto x = new SequentialParallelMng(bi);
     x->build();
     return x;
@@ -777,7 +788,7 @@ class SequentialParallelMng
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override
   {
     ARCANE_UNUSED(kept_ranks);
-    SequentialParallelMngBuildInfo bi(m_timer_mng,m_world_parallel_mng);
+    SequentialParallelMngBuildInfo bi(m_timer_mng, m_world_parallel_mng);
     bi.setThreadMng(m_thread_mng);
     bi.setTraceMng(m_trace.get());
     bi.setCommunicator(m_communicator);
@@ -876,7 +887,7 @@ class SequentialParallelMng::Impl
 
 SequentialParallelMng::
 SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
-: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(0,1))
+: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(0, 1))
 , m_trace(bi.traceMng())
 , m_thread_mng(bi.threadMng())
 , m_timer_mng(bi.m_timer_mng)
@@ -922,20 +933,25 @@ setBaseObject(IBase* sd)
 
 namespace
 {
-// Class to create the different dispatchers
-class DispatchCreator
-{
- public:
-  DispatchCreator(ITraceMng* tm) : m_tm(tm){}
- public:
-  template<typename DataType> SequentialParallelDispatchT<DataType>*
-  create()
+  // Class to create the different dispatchers
+  class DispatchCreator
   {
-    return new SequentialParallelDispatchT<DataType>(m_tm);
-  }
-  ITraceMng* m_tm;
-};
-}
+   public:
+
+    DispatchCreator(ITraceMng* tm)
+    : m_tm(tm)
+    {}
+
+   public:
+
+    template <typename DataType> SequentialParallelDispatchT<DataType>*
+    create()
+    {
+      return new SequentialParallelDispatchT<DataType>(m_tm);
+    }
+    ITraceMng* m_tm;
+  };
+} // namespace
 
 void SequentialParallelMng::
 build()
@@ -975,7 +991,7 @@ SequentialParallelSuperMng(const ServiceBuildInfo& sbi)
 
 // Constructs a sequential supervisor linked to the \a sm supervisor
 SequentialParallelSuperMng::
-SequentialParallelSuperMng(const ServiceBuildInfo& sbi,Parallel::Communicator comm)
+SequentialParallelSuperMng(const ServiceBuildInfo& sbi, Parallel::Communicator comm)
 : AbstractService(sbi)
 , m_application(sbi.application())
 , m_thread_mng(new NullThreadMng())
@@ -1006,7 +1022,7 @@ initialize()
   SequentialParallelDispatchT<Int32>* i32 = new SequentialParallelDispatchT<Int32>(tm);
   SequentialParallelDispatchT<Int64>* i64 = new SequentialParallelDispatchT<Int64>(tm);
   SequentialParallelDispatchT<Real>* r = new SequentialParallelDispatchT<Real>(tm);
-  _setDispatchers(c,i32,i64,r);
+  _setDispatchers(c, i32, i64, r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1015,7 +1031,7 @@ initialize()
 void SequentialParallelSuperMng::
 build()
 {
-  if (!m_timer_mng){
+  if (!m_timer_mng) {
     m_owned_timer_mng = new TimerMng(traceMng());
     m_timer_mng = m_owned_timer_mng.get();
   }
@@ -1027,10 +1043,10 @@ build()
 Ref<IParallelMng> SequentialParallelSuperMng::
 internalCreateWorldParallelMng(Int32 local_rank)
 {
-  if (local_rank!=0)
-    ARCANE_THROW(ArgumentException,"Bad local_rank '{0}' (should be 0)",local_rank);
+  if (local_rank != 0)
+    ARCANE_THROW(ArgumentException, "Bad local_rank '{0}' (should be 0)", local_rank);
 
-  SequentialParallelMngBuildInfo bi(m_timer_mng,nullptr);
+  SequentialParallelMngBuildInfo bi(m_timer_mng, nullptr);
   bi.setThreadMng(threadMng());
   bi.setTraceMng(traceMng());
   bi.setCommunicator(communicator());
@@ -1048,7 +1064,7 @@ tryAbort()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_APPLICATION_FACTORY(SequentialParallelSuperMng,IParallelSuperMng,
+ARCANE_REGISTER_APPLICATION_FACTORY(SequentialParallelSuperMng, IParallelSuperMng,
                                     SequentialParallelSuperMng);
 
 /*---------------------------------------------------------------------------*/
@@ -1058,9 +1074,13 @@ class SequentialParallelMngBuilder
 : public ParallelMngContainerBase
 {
  public:
-  SequentialParallelMngBuilder(IApplication* app,Parallel::Communicator comm)
-  : m_application(app), m_thread_mng(new NullThreadMng()),
-    m_timer_mng(new TimerMng(app->traceMng())), m_communicator(comm){}
+
+  SequentialParallelMngBuilder(IApplication* app, Parallel::Communicator comm)
+  : m_application(app)
+  , m_thread_mng(new NullThreadMng())
+  , m_timer_mng(new TimerMng(app->traceMng()))
+  , m_communicator(comm)
+  {}
   ~SequentialParallelMngBuilder() override
   {
     delete m_timer_mng;
@@ -1070,9 +1090,10 @@ class SequentialParallelMngBuilder
  public:
 
   void build() {}
-  Ref<IParallelMng> _createParallelMng(Int32 local_rank,ITraceMng* tm) override;
+  Ref<IParallelMng> _createParallelMng(Int32 local_rank, ITraceMng* tm) override;
 
  public:
+
   IApplication* m_application;
   IThreadMng* m_thread_mng;
   ITimerMng* m_timer_mng;
@@ -1083,12 +1104,12 @@ class SequentialParallelMngBuilder
 /*---------------------------------------------------------------------------*/
 
 Ref<IParallelMng> SequentialParallelMngBuilder::
-_createParallelMng(Int32 local_rank,ITraceMng* tm)
+_createParallelMng(Int32 local_rank, ITraceMng* tm)
 {
-  if (local_rank!=0)
-    ARCANE_THROW(ArgumentException,"Bad local_rank '{0}' (should be 0)",local_rank);
+  if (local_rank != 0)
+    ARCANE_THROW(ArgumentException, "Bad local_rank '{0}' (should be 0)", local_rank);
 
-  SequentialParallelMngBuildInfo bi(m_timer_mng,nullptr);
+  SequentialParallelMngBuildInfo bi(m_timer_mng, nullptr);
   bi.setTraceMng(tm);
   bi.setThreadMng(m_thread_mng);
   bi.setCommunicator(m_communicator);
@@ -1103,19 +1124,26 @@ class SequentialParallelMngContainerFactory
 , public IParallelMngContainerFactory
 {
  public:
+
   SequentialParallelMngContainerFactory(const ServiceBuildInfo& sbi)
-  : AbstractService(sbi), m_application(sbi.application()){}
+  : AbstractService(sbi)
+  , m_application(sbi.application())
+  {}
+
  public:
+
   Ref<IParallelMngContainer>
   _createParallelMngBuilder(Int32 nb_rank, Parallel::Communicator comm, Parallel::Communicator machine_comm) override
   {
     ARCANE_UNUSED(nb_rank);
     ARCANE_UNUSED(machine_comm);
-    auto x = new SequentialParallelMngBuilder(m_application,comm);
+    auto x = new SequentialParallelMngBuilder(m_application, comm);
     x->build();
     return makeRef<IParallelMngContainer>(x);
   }
+
  private:
+
   IApplication* m_application;
 };
 
@@ -1123,7 +1151,7 @@ class SequentialParallelMngContainerFactory
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(SequentialParallelMngContainerFactory,
-                        ServiceProperty("SequentialParallelMngContainerFactory",ST_Application),
+                        ServiceProperty("SequentialParallelMngContainerFactory", ST_Application),
                         ARCANE_SERVICE_INTERFACE(IParallelMngContainerFactory));
 
 /*---------------------------------------------------------------------------*/

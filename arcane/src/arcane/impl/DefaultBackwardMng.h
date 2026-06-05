@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,12 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IBackwardMng.h"
+#include "arcane/core/IBackwardMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,20 +42,20 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
   enum eSequence
   {
     //! Save
-    SEQSave ,
+    SEQSave,
     //! Forced save
-    SEQForceSave ,
+    SEQForceSave,
     //! Restore
-    SEQRestore ,
+    SEQRestore,
     //! Lock
-    SEQLock ,
+    SEQLock,
     //! Nothing
     SEQNothing
   };
 
  public:
 
-  DefaultBackwardMng(ITraceMng* trace,ISubDomain* sub_domain);
+  DefaultBackwardMng(ITraceMng* trace, ISubDomain* sub_domain);
   ~DefaultBackwardMng();
 
   void init() override {}
@@ -114,7 +115,7 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

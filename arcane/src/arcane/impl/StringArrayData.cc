@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -55,18 +55,21 @@ class StringArrayData
   class Impl;
   friend class Impl;
 
-public:
+ public:
 
   typedef String DataType;
   typedef StringArrayData ThatClass;
   typedef IArrayDataT<String> DataInterfaceType;
 
  public:
+
   explicit StringArrayData(ITraceMng* trace);
   explicit StringArrayData(const DataStorageBuildInfo& dsbi);
   StringArrayData(const StringArrayData& rhs);
   ~StringArrayData() override;
+
  public:
+
   Integer dimension() const override { return 1; }
   Integer multiTag() const override { return 0; }
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
@@ -83,8 +86,16 @@ public:
   Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
   DataInterfaceType* cloneTrue() override { return _cloneTrue(); }
   DataInterfaceType* cloneTrueEmpty() override { return _cloneTrueEmpty(); }
-  Ref<DataInterfaceType> cloneTrueRef() override { auto* d = _cloneTrue(); return makeRef(d); }
-  Ref<DataInterfaceType> cloneTrueEmptyRef() override { auto* d = _cloneTrueEmpty(); return makeRef(d); }
+  Ref<DataInterfaceType> cloneTrueRef() override
+  {
+    auto* d = _cloneTrue();
+    return makeRef(d);
+  }
+  Ref<DataInterfaceType> cloneTrueEmptyRef() override
+  {
+    auto* d = _cloneTrueEmpty();
+    return makeRef(d);
+  }
   DataStorageTypeInfo storageTypeInfo() const override;
   void fillDefault() override { m_value.fill(String()); }
   void setName(const String& name) override;
@@ -144,7 +155,9 @@ class StringArrayData::Impl
 
   using String = DataType;
 
-  explicit Impl(StringArrayData* p) : m_p(p){}
+  explicit Impl(StringArrayData* p)
+  : m_p(p)
+  {}
 
  public:
 
@@ -152,7 +165,7 @@ class StringArrayData::Impl
   Array<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
   Integer capacity() const override { return m_p->m_value.capacity(); }
   void shrink() const override { m_p->m_value.shrink(); }
-  void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
+  void resize(Integer new_size) override { m_p->m_value.resize(new_size); }
   void dispose() override { m_p->m_value.dispose(); }
   void computeHash(DataHashInfo& hash_info) override
   {
@@ -207,7 +220,7 @@ staticStorageTypeInfo()
   Int32 nb_basic_type = 0;
   Int32 dimension = 2;
   Int32 multi_tag = 1;
-  return DataStorageTypeInfo(bdt,nb_basic_type,dimension,multi_tag);
+  return DataStorageTypeInfo(bdt, nb_basic_type, dimension, multi_tag);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -375,7 +388,7 @@ computeHash(DataHashInfo& hash_info) const
 {
   hash_info.setVersion(2);
   IHashAlgorithmContext* context = hash_info.context();
-  for( const String& x : m_value )
+  for (const String& x : m_value)
     context->updateHash(asBytes(x.bytes()));
 }
 

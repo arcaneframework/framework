@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,10 +16,10 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/IPhysicalUnitSystemService.h"
-#include "arcane/IPhysicalUnitSystem.h"
-#include "arcane/IPhysicalUnitConverter.h"
-#include "arcane/IPhysicalUnit.h"
+#include "arcane/core/IPhysicalUnitSystemService.h"
+#include "arcane/core/IPhysicalUnitSystem.h"
+#include "arcane/core/IPhysicalUnitConverter.h"
+#include "arcane/core/IPhysicalUnit.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,8 +95,8 @@ class NullPhysicalUnitConverter
   }
 
  public:
-
  private:
+
   NullPhysicalUnit* m_from_unit = nullptr;
   NullPhysicalUnit* m_to_unit = nullptr;
 };
@@ -111,7 +111,7 @@ class NullPhysicalUnitSystem
 
   NullPhysicalUnitSystem() = default;
 
-  IPhysicalUnitConverter* createConverter(IPhysicalUnit* from,IPhysicalUnit* to) override
+  IPhysicalUnitConverter* createConverter(IPhysicalUnit* from, IPhysicalUnit* to) override
   {
     ARCANE_UNUSED(from);
     ARCANE_UNUSED(to);
@@ -119,7 +119,7 @@ class NullPhysicalUnitSystem
     return cvt;
   }
 
-  IPhysicalUnitConverter* createConverter(const String& from,const String& to) override
+  IPhysicalUnitConverter* createConverter(const String& from, const String& to) override
   {
     ARCANE_UNUSED(from);
     ARCANE_UNUSED(to);
@@ -128,7 +128,6 @@ class NullPhysicalUnitSystem
   }
 
  public:
-  
  private:
 };
 
@@ -155,7 +154,6 @@ class NullPhysicalUnitSystemService
   }
 
  private:
-
 };
 
 /*---------------------------------------------------------------------------*/

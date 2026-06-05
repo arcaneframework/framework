@@ -84,6 +84,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 class ArcaneMainStaticInfo
@@ -321,14 +322,14 @@ class ArcaneMainAutoDetectRuntimeHelper
       auto end_time = clock.now();
       // Only retrieve the time if an accelerator was used
       if (has_accelerator)
-        x->m_init_time_accelerator = _getTime(end_time,start_time);
+        x->m_init_time_accelerator = _getTime(end_time, start_time);
       ++x->m_nb_autodetect;
     }
     return x->m_autodetect_return_value;
   }
 
-  template<typename TimeType>
-  Real _getTime(TimeType end_time,TimeType start_time)
+  template <typename TimeType>
+  Real _getTime(TimeType end_time, TimeType start_time)
   {
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
     Real x = static_cast<Real>(duration.count());
@@ -707,7 +708,7 @@ arcaneInitialize()
     // Checks if we want to use the old mechanism (before 3.15)
     // to convert character strings to numeric types
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_BUILTINVALUECONVERT", true))
-      Convert::Impl::ConvertPolicy::setUseFromChars(v.value()==0);
+      Convert::Impl::ConvertPolicy::setUseFromChars(v.value() == 0);
 
     // Creates the type manager singleton
     ItemTypeMng::_singleton();

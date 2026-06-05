@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="ArcaneGeometricMeshPartitionerService" type="caseoption" type2="subdomain">
   <userclass>User</userclass>
   <description>

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,15 +48,15 @@ ThreadBindingMng::
 /*---------------------------------------------------------------------------*/
 
 void ThreadBindingMng::
-initialize(ITraceMng* tm,const String& strategy)
+initialize(ITraceMng* tm, const String& strategy)
 {
   m_trace_mng = tm;
   m_bind_strategy = strategy;
   // If the strategy is not null, it attaches to the TaskFactory observable
   // to be notified of thread creation.
-  if (!m_bind_strategy.null()){
-    if (m_bind_strategy!="Simple")
-      ARCANE_FATAL("Invalid strategy '{0}'. Valid values are : 'Simple'",m_bind_strategy);
+  if (!m_bind_strategy.null()) {
+    if (m_bind_strategy != "Simple")
+      ARCANE_FATAL("Invalid strategy '{0}'. Valid values are : 'Simple'", m_bind_strategy);
     m_max_thread = TaskFactory::nbAllowedThread();
     if (tm)
       tm->info() << "Thread binding strategy is '" << m_bind_strategy << "'";
@@ -90,14 +90,14 @@ _createThreadCallback()
   ++m_current_thread_index;
 
   IProcessorAffinityService* pas = platform::getProcessorAffinityService();
-  if (!pas){
+  if (!pas) {
     if (tm)
       tm->info() << "WARNING: Can not bind thread because there is no 'IProcessorAffinityService'";
     return;
   }
 
-  if (tm){
-    if (thread_index<m_max_thread){
+  if (tm) {
+    if (thread_index < m_max_thread) {
       pas->bindThread(thread_index);
       tm->info() << "Binding thread index=" << thread_index << " cpuset=" << pas->cpuSetString();
     }

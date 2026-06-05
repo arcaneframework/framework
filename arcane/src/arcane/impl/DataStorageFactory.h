@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,10 +17,10 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ITraceMng.h"
 
-#include "arcane/IDataStorageFactory.h"
-#include "arcane/IData.h"
-#include "arcane/IDataFactory.h"
-#include "arcane/IDataFactoryMng.h"
+#include "arcane/core/IDataStorageFactory.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IDataFactory.h"
+#include "arcane/core/IDataFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,15 +39,21 @@ class ARCANE_IMPL_EXPORT AbstractDataStorageFactory
 : public IDataStorageFactory
 {
  public:
+
   explicit AbstractDataStorageFactory(const DataStorageTypeInfo& dsti)
-  : m_storage_type_info(dsti){}
+  : m_storage_type_info(dsti)
+  {}
+
  public:
+
   //! Information about the created container type
   DataStorageTypeInfo storageTypeInfo() override
   {
     return m_storage_type_info;
   }
+
  private:
+
   DataStorageTypeInfo m_storage_type_info;
 };
 
@@ -58,13 +64,14 @@ class ARCANE_IMPL_EXPORT AbstractDataStorageFactory
  * \internal
  * \brief Data container factory.
  */
-template<typename DataType> class DataStorageFactory
+template <typename DataType> class DataStorageFactory
 : public AbstractDataStorageFactory
 {
  public:
 
   explicit DataStorageFactory(const DataStorageTypeInfo& dsti)
-  : AbstractDataStorageFactory(dsti){}
+  : AbstractDataStorageFactory(dsti)
+  {}
 
  public:
 

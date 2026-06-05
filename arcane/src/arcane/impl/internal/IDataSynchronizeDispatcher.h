@@ -27,6 +27,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 class IDataSynchronizeDispatcher;
@@ -117,7 +118,7 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeDispatcher
    * You must call this method before beginSynchronize(). The buffer must not be
    * modified before calling endSynchronize()
    */
-  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) =0;
+  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) = 0;
 
   /*!
    * \brief Starts the execution for synchronization for the data \a data.
@@ -161,7 +162,7 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeMultiDispatcher
    *
    * You must call this method before synchronize().
    */
-  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) =0;
+  virtual void setSynchronizeBuffer(Ref<MemoryBuffer> buffer) = 0;
   virtual void synchronize(ConstArrayView<IVariable*> vars) = 0;
 
  public:

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,10 +18,10 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/IData.h"
-#include "arcane/IDataStorageFactory.h"
-#include "arcane/MathUtils.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IDataStorageFactory.h"
+#include "arcane/core/MathUtils.h"
 
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -66,11 +66,11 @@ DataFactoryMng::
 /*---------------------------------------------------------------------------*/
 
 Ref<IData> DataFactoryMng::
-createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info)
+createSimpleDataRef(const String& storage_type, const DataStorageBuildInfo& build_info)
 {
   auto x = m_factories.find(storage_type);
-  if (x==m_factories.end())
-    ARCANE_FATAL("Can not find data factory named={0}",storage_type);
+  if (x == m_factories.end())
+    ARCANE_FATAL("Can not find data factory named={0}", storage_type);
   // Positions the values of \a build_info that are not yet
   // initialized.
   DataStorageBuildInfo b = build_info;
@@ -93,12 +93,12 @@ createDataOperation(Parallel::eReduceType rt)
 /*---------------------------------------------------------------------------*/
 
 Ref<ISerializedData> DataFactoryMng::
-createSerializedDataRef(eDataType data_type,Int64 memory_size,
-                        Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
-                        bool is_multi_size,Int64ConstArrayView dimensions)
+createSerializedDataRef(eDataType data_type, Int64 memory_size,
+                        Integer nb_dim, Int64 nb_element, Int64 nb_base_element,
+                        bool is_multi_size, Int64ConstArrayView dimensions)
 {
-  return arcaneCreateSerializedDataRef(data_type,memory_size,nb_dim,nb_element,
-                                       nb_base_element,is_multi_size,dimensions);
+  return arcaneCreateSerializedDataRef(data_type, memory_size, nb_dim, nb_element,
+                                       nb_base_element, is_multi_size, dimensions);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ void DataFactoryMng::
 registerDataStorageFactory(Ref<IDataStorageFactory> factory)
 {
   DataStorageTypeInfo t = factory->storageTypeInfo();
-  m_factories.insert(std::make_pair(t.fullName(),factory));
+  m_factories.insert(std::make_pair(t.fullName(), factory));
 }
 
 /*---------------------------------------------------------------------------*/

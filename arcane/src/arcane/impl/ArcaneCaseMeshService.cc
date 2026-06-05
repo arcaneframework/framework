@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -120,16 +120,16 @@ createMesh(const String& default_name)
     m_mesh_file_name = options()->filename();
     if (m_mesh_file_name.empty())
       ARCANE_FATAL("Invalid filename '{0}' in option '{1}'",
-                   m_mesh_file_name,options()->filename.xpathFullName());
+                   m_mesh_file_name, options()->filename.xpathFullName());
     CaseMeshReaderReadInfo read_info;
     _fillReadInfo(read_info);
     auto& specific_reader = options()->specificReader;
-    if (specific_reader.isPresent()){
+    if (specific_reader.isPresent()) {
       m_mesh_builder_ref = specific_reader()->createBuilder(read_info);
       if (m_mesh_builder_ref.isNull())
         ARCANE_FATAL("No 'IMeshBuilder' created by specific reader");
     }
-    else{
+    else {
       m_mesh_builder_ref = _createBuilderFromFile(read_info);
     }
     m_mesh_builder = m_mesh_builder_ref.get();
@@ -230,8 +230,8 @@ _fillReadInfo(CaseMeshReaderReadInfo& read_info)
   {
     std::string_view fview = m_mesh_file_name.toStdStringView();
     std::size_t extension_pos = fview.find_last_of('.');
-    if (extension_pos!=std::string_view::npos){
-      fview.remove_prefix(extension_pos+1);
+    if (extension_pos != std::string_view::npos) {
+      fview.remove_prefix(extension_pos + 1);
       file_extension = fview;
     }
     read_info.setFormat(file_extension);
@@ -245,14 +245,14 @@ _fillReadInfo(CaseMeshReaderReadInfo& read_info)
 
   String partitioner_name = options()->partitioner();
   bool use_internal_partitioner = partitioner_name != "External";
-  if (use_internal_partitioner){
+  if (use_internal_partitioner) {
     m_partitioner_name = partitioner_name;
   }
-  else{
+  else {
     info() << "Using external partitioner";
     int mesh_rank = m_sub_domain->parallelMng()->commRank();
     char buf[128];
-    sprintf(buf,"CPU%05d.%s",mesh_rank,file_extension.localstr());
+    sprintf(buf, "CPU%05d.%s", mesh_rank, file_extension.localstr());
     mesh_file_name = String(std::string_view(buf));
   }
 
@@ -278,7 +278,7 @@ _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
   ServiceBuilder<ICaseMeshReader> builder(m_sub_domain);
   UniqueArray<Ref<ICaseMeshReader>> mesh_readers(builder.createAllInstances());
 
-  for( auto& mesh_reader_ref : mesh_readers ){
+  for (auto& mesh_reader_ref : mesh_readers) {
     ICaseMeshReader* mesh_reader = mesh_reader_ref.get();
     Ref<IMeshBuilder> builder = mesh_reader->createBuilder(read_info);
     if (!builder.isNull())
@@ -289,10 +289,10 @@ _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
   // Displays the list of available services and throws a fatal error.
   StringUniqueArray valid_names;
   builder.getServicesNames(valid_names);
-  String available_readers = String::join(", ",valid_names);
+  String available_readers = String::join(", ", valid_names);
   ARCANE_FATAL("The mesh reader required for format '{0}' is not available."
                "The following reader services are available: {1}",
-               read_info.format(),available_readers);
+               read_info.format(), available_readers);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -308,9 +308,9 @@ _doInitialPartition()
   String test_service = "MeshPartitionerTester";
   if (use_partitioner_tester) {
     Int64 nb_cell = m_mesh->nbCell();
-    Int64 min_nb_cell = m_mesh->parallelMng()->reduce(Parallel::ReduceMin,nb_cell);
+    Int64 min_nb_cell = m_mesh->parallelMng()->reduce(Parallel::ReduceMin, nb_cell);
     info() << "Min nb cell=" << min_nb_cell;
-    if (min_nb_cell==0)
+    if (min_nb_cell == 0)
       _doInitialPartition2(test_service);
     else
       info() << "Mesh name=" << m_mesh->name() << " have cells. Do not use " << test_service;
@@ -331,12 +331,12 @@ _doInitialPartition2(const String& partitioner_name)
   // IMeshPartitionerBase and not those (historical) that only implement
   // IMeshPartitioner.
   ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
-  auto mesh_partitioner = sbuilder.createReference(partitioner_name,m_mesh);
+  auto mesh_partitioner = sbuilder.createReference(partitioner_name, m_mesh);
 
   IMesh* mesh = m_mesh;
   bool is_dynamic = mesh->isDynamic();
   mesh->modifier()->setDynamic(true);
-  mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner.get(),true);
+  mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner.get(), true);
   mesh->modifier()->setDynamic(is_dynamic);
 }
 
@@ -349,15 +349,15 @@ _initializeVariables()
   IVariableMng* vm = m_sub_domain->variableMng();
   const auto& vars_opt = options()->initialization().variable;
   UniqueArray<String> errors;
-  for( Integer i=0, n=vars_opt.size(); i<n; ++i ){
+  for (Integer i = 0, n = vars_opt.size(); i < n; ++i) {
     const auto& o = vars_opt[i];
     String var_name = o.name;
     String group_name = o.group;
     String value = o.value;
     info() << "Initialize variable=" << var_name << " group=" << group_name << " value=" << value;
-    IVariable* var = vm->findMeshVariable(m_mesh,var_name);
-    if (!var){
-      errors.add(String::format("No variable named '{0}' exists",var_name));
+    IVariable* var = vm->findMeshVariable(m_mesh, var_name);
+    if (!var) {
+      errors.add(String::format("No variable named '{0}' exists", var_name));
       continue;
     }
 
@@ -365,27 +365,27 @@ _initializeVariables()
     if (!var->isUsed())
       var->setUsed(true);
     IItemFamily* var_family = var->itemFamily();
-    if (!var_family){
-      errors.add(String::format("Variable '{0}' has no family",var->fullName()));
+    if (!var_family) {
+      errors.add(String::format("Variable '{0}' has no family", var->fullName()));
       continue;
     }
 
     ItemGroup group = var_family->findGroup(group_name);
-    if (group.null()){
+    if (group.null()) {
       errors.add(String::format("No group named '{0}' exists in family '{1}'",
-                                group_name,var_family->name()));
+                                group_name, var_family->name()));
       continue;
     }
 
-    bool ret = var->initialize(group,value);
-    if (ret){
+    bool ret = var->initialize(group, value);
+    if (ret) {
       errors.add(String::format("Bad value '{0}' for initializing variable '{1}'",
-                                value,var->fullName()));
+                                value, var->fullName()));
       continue;
     }
   }
-  if (!errors.empty()){
-    for( String s : errors )
+  if (!errors.empty()) {
+    for (String s : errors)
       pinfo() << "ERROR: " << s;
     ARCANE_FATAL("Variable initialization failed for option '{0}'",
                  vars_opt.xpathFullName());

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
 {
   m_sync_info = DataSynchronizeInfo::create();
   m_partial_sync_info = DataSynchronizeInfo::create();
-  
+
   if (!implementation_factory.get())
     implementation_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
   m_implementation_factory = implementation_factory;
@@ -223,8 +223,8 @@ VariableSynchronizer(IParallelMng* pm, const ItemGroup& group,
   }
 
   // Indicates whether the coherence of synchronized variables is checked
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SYNCHRONIZE_COHERENCE",true))
-    m_is_check_coherence = (v.value()!=0);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SYNCHRONIZE_COHERENCE", true))
+    m_is_check_coherence = (v.value() != 0);
 
   m_default_message = _buildMessage();
   m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
@@ -253,7 +253,7 @@ _buildMessage()
   if (runner.isInitialized() && is_accelerator_aware) {
     m_runner = runner;
   }
-  
+
   return _buildMessage(m_sync_info);
 }
 
@@ -356,63 +356,63 @@ _rebuildMessage(Int32ConstArrayView local_ids)
 {
   // If the localIds have not changed since the last call, we keep
   // the synchronization information already calculated
-  
+
   if (local_ids == m_partial_local_ids.constView()) {
     //debug(Trace::High) << "Proc " << m_parallel_mng->commRank() << " infos for partial synchronisations are up to date";
     return;
   }
-  
+
   //debug(Trace::High) << "Proc " << m_parallel_mng->commRank() << " recompute infos for partial synchronisations";
-    
+
   m_partial_local_ids.copy(local_ids);
-  
+
   UniqueArray<bool> flags(m_item_group.itemFamily()->maxLocalId());
   flags.fill(false);
-  
+
   for (Int32 lid : local_ids) {
     flags[lid] = true;
   }
-  
+
   Int32ConstArrayView comm_ranks = m_sync_info->communicatingRanks();
   Int32 nb_comm_ranks = comm_ranks.size();
-  
+
   const DataSynchronizeBufferInfoList& send_info = m_sync_info->sendInfo();
   const DataSynchronizeBufferInfoList& recv_info = m_sync_info->receiveInfo();
-  
+
   m_partial_sync_info = DataSynchronizeInfo::create();
-  
+
   if (!local_ids.empty()) {
-    
+
     UniqueArray<Int32> recv_grp;
     UniqueArray<Int32> send_grp;
-    
+
     for (Int32 index = 0; index < nb_comm_ranks; ++index) {
       Int32 target_rank = comm_ranks[index];
       ConstArrayView<Int32> send_lids = send_info.localIds(index);
       ConstArrayView<Int32> recv_lids = recv_info.localIds(index);
-      
+
       recv_grp.clear();
       send_grp.clear();
-      
+
       for (Int32 lid : recv_lids) {
         if (flags[lid]) {
           recv_grp.add(lid);
         }
       }
-      
+
       for (Int32 lid : send_lids) {
         if (flags[lid]) {
           send_grp.add(lid);
         }
       }
-      
+
       if ((!send_grp.empty()) || (!recv_grp.empty())) {
         // Adds information about exchanges with target_rank
         m_partial_sync_info->add(VariableSyncInfo(send_grp, recv_grp, target_rank));
       }
     }
   }
-  
+
   m_partial_sync_info->recompute();
   m_partial_message = makeRef<SyncMessage>(_buildMessage(m_partial_sync_info));
   m_partial_message->compute();
@@ -428,7 +428,7 @@ _synchronize(IVariable* var, SyncMessage* message)
 
   IParallelMng* pm = m_parallel_mng;
   if (m_is_check_coherence)
-    MessagePassing::namedBarrier(pm,var->name());
+    MessagePassing::namedBarrier(pm, var->name());
   debug(Trace::High) << " Proc " << pm->commRank() << " Sync variable " << var->fullName();
   if (m_trace_sync) {
     info() << " Synchronize variable " << var->fullName()
@@ -452,7 +452,7 @@ synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronize(IVariable* var, Int32ConstArrayView local_ids)
 {
-  _rebuildMessage(local_ids); 
+  _rebuildMessage(local_ids);
   _synchronize(var, m_partial_message.get());
 }
 
@@ -496,7 +496,6 @@ synchronize(VariableCollection vars, Int32ConstArrayView local_ids)
       _synchronize(*ivar, m_partial_message.get());
     }
   }
-  
 }
 
 /*---------------------------------------------------------------------------*/

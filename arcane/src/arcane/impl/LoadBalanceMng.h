@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,10 +43,10 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   /*!
    * Methods used by client modules to define partitioning criteria.
    */
-  void addMass(VariableCellInt32& count, const String& entity="") override;
+  void addMass(VariableCellInt32& count, const String& entity = "") override;
   void addCriterion(VariableCellInt32& count) override;
   void addCriterion(VariableCellReal& count) override;
-  void addCommCost(VariableFaceInt32& count, const String& entity="") override;
+  void addCommCost(VariableFaceInt32& count, const String& entity = "") override;
 
   void reset() override;
 
@@ -59,7 +59,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   bool cellCommContrib() const override;
   void setComputeComm(bool active = true) override;
   Integer nbCriteria() override;
-  void initAccess(IMesh* mesh=nullptr) override;
+  void initAccess(IMesh* mesh = nullptr) override;
   const VariableFaceReal& commCost() const override;
   const VariableCellReal& massWeight() const override;
   const VariableCellReal& massResWeight() const override;

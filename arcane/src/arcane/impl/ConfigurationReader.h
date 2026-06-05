@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -49,8 +49,10 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
 
  public:
 
-  ConfigurationReader(ITraceMng* tm,IConfiguration* config)
-  : TraceAccessor(tm), m_configuration(config) {}
+  ConfigurationReader(ITraceMng* tm, IConfiguration* config)
+  : TraceAccessor(tm)
+  , m_configuration(config)
+  {}
 
   /*!
    * \brief Adds values to the configuration.
@@ -62,7 +64,7 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
    * The IConfiguration::addValue() method is called for each value with
    * the priority \a priority.
    */
-  void addValuesFromXmlNode(const XmlNode& element,Integer priority);
+  void addValuesFromXmlNode(const XmlNode& element, Integer priority);
 
   /*!
    * \brief Adds values to the configuration.
@@ -77,7 +79,7 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
    * The IConfiguration::addValue() method is called for each value with
    * the priority \a priority.
    */
-  void addValuesFromJSON(const JSONValue& jv,Integer priority);
+  void addValuesFromJSON(const JSONValue& jv, Integer priority);
 
  private:
 
@@ -85,7 +87,7 @@ class ARCANE_IMPL_EXPORT ConfigurationReader
 
  private:
 
-  void _addValuesFromJSON(const JSONValue& jv,Integer priority,const String& base_name);
+  void _addValuesFromJSON(const JSONValue& jv, Integer priority, const String& base_name);
 };
 
 /*---------------------------------------------------------------------------*/

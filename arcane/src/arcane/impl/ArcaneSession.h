@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,12 +16,13 @@
 
 #include "arcane/impl/Session.h"
 
-#include "arcane/Directory.h"
+#include "arcane/core/Directory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,14 +51,14 @@ class ARCANE_IMPL_EXPORT ArcaneSession
   virtual void setLogAndErrorFiles(ISubDomain* sd);
 
  private:
-  
+
   IXmlDocumentHolder* m_result_doc; //!< Code results
   Directory m_listing_directory;
   Directory m_output_directory;
   String m_case_name;
 
  private:
-  
+
   void _checkExecInfoFile();
   void _initSubDomain(ISubDomain* sd);
   void _writeExecInfoFileInit();
@@ -71,7 +72,7 @@ class ARCANE_IMPL_EXPORT ArcaneSession
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,20 +14,20 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/CommonVariables.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/Service.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMeshPartitioner.h"
-#include "arcane/BasicService.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/CommonVariables.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/Service.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMeshPartitioner.h"
+#include "arcane/core/BasicService.h"
 
-#include "arcane/IMeshPartitionConstraintMng.h"
+#include "arcane/core/IMeshPartitionConstraintMng.h"
 #include "arcane/impl/MeshPartitionerTesterService_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -56,7 +56,6 @@ class MeshPartitionerTester
 , public IMeshPartitioner
 {
  public:
-
  public:
 
   MeshPartitionerTester(const ServiceBuildInfo& sbi);
@@ -67,7 +66,7 @@ class MeshPartitionerTester
 
   void build() override {}
   void partitionMesh(bool initial_partition) override;
-  void partitionMesh(bool initial_partition,Int32 nb_part) override
+  void partitionMesh(bool initial_partition, Int32 nb_part) override
   {
     ARCANE_UNUSED(initial_partition);
     ARCANE_UNUSED(nb_part);
@@ -77,19 +76,19 @@ class MeshPartitionerTester
   void notifyEndPartition() override {}
 
  public:
-  
+
   void setMaximumComputationTime(Real v) override { m_max_computation_time = v; }
   Real maximumComputationTime() const override { return m_max_computation_time; }
   void setComputationTimes(RealConstArrayView v) override { m_computation_times.copy(v); }
   RealConstArrayView computationTimes() const override { return m_computation_times; }
   void setImbalance(Real v) override { m_imbalance = v; }
   Real imbalance() const override { return m_imbalance; }
-  void setMaxImbalance(Real v) override { m_max_imbalance =v ; }
+  void setMaxImbalance(Real v) override { m_max_imbalance = v; }
   Real maxImbalance() const override { return m_max_imbalance; }
 
   ArrayView<float> cellsWeight() const override { return m_cells_weight; }
 
-  void setCellsWeight(ArrayView<float> weights,Integer nb_weight) override
+  void setCellsWeight(ArrayView<float> weights, Integer nb_weight) override
   {
     m_cells_weight = weights;
     m_nb_weight = nb_weight;
@@ -137,7 +136,7 @@ partitionMesh(bool initial_partition)
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
 
   Int32 sub_rank_divider = 0;
-  if (options()){
+  if (options()) {
     sub_rank_divider = options()->subRankDivider();
   }
   info() << "Using MeshPartitionerTester sub_rank_divider=" << sub_rank_divider;
@@ -147,7 +146,7 @@ partitionMesh(bool initial_partition)
   Int32 nb_rank = pm->commSize();
   Int32 sid = pm->commRank();
 
-  if (nb_rank==1){
+  if (nb_rank == 1) {
     warning() << "Can't test the mesh repartitioning with"
               << "only one subdomain...";
     return;
@@ -155,7 +154,7 @@ partitionMesh(bool initial_partition)
 
   VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
 
-  if (initial_partition){
+  if (initial_partition) {
     // The goal is to have a correct partition but not
     // perfect, especially in the case of cuboids, because after
     // a real partitioner has nothing to do.
@@ -169,7 +168,7 @@ partitionMesh(bool initial_partition)
     Int64 nb_cell = mesh->ownCells().size();
     Int64 nb_bloc = nb_rank * 3;
     Int64 cell_index = 0;
-    ENUMERATE_CELL(icell,mesh->ownCells()){
+    ENUMERATE_CELL (icell, mesh->ownCells()) {
       Cell cell = *icell;
       // Use Int64 instead of Int32 to ensure no overflow.
       Int64 new_owner = ((cell_index * nb_bloc) / nb_cell) % nb_rank;
@@ -177,7 +176,7 @@ partitionMesh(bool initial_partition)
       ++cell_index;
     }
   }
-  else{
+  else {
     Integer current_iteration = sd->commonVariables().globalIteration();
     Integer nb_cell = mesh->ownCells().size();
 
@@ -186,17 +185,17 @@ partitionMesh(bool initial_partition)
 
     {
       Integer cell_index = 0;
-      ENUMERATE_CELL(i_cell,mesh->ownCells()){
+      ENUMERATE_CELL (i_cell, mesh->ownCells()) {
         Cell cell = *i_cell;
         Int32 new_owner = cell.owner();
-        if (cell_index<(max_cell_index+(sid*10))){
+        if (cell_index < (max_cell_index + (sid * 10))) {
           // Force the first cell to remain in this subdomain
           // to ensure there is at least one left.
-          if (cell_index!=0){
-            Int32 xx = (new_owner*2 + current_iteration + cell_index/10 + 17) % nb_rank;
-            if (sub_rank_divider>0){
+          if (cell_index != 0) {
+            Int32 xx = (new_owner * 2 + current_iteration + cell_index / 10 + 17) % nb_rank;
+            if (sub_rank_divider > 0) {
               xx = xx / sub_rank_divider;
-              xx = (xx*sub_rank_divider + new_owner) % nb_rank;
+              xx = (xx * sub_rank_divider + new_owner) % nb_rank;
             }
             new_owner = xx;
           }
@@ -219,10 +218,9 @@ partitionMesh(bool initial_partition)
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(MeshPartitionerTester,
-                        ServiceProperty("MeshPartitionerTester",ST_SubDomain|ST_CaseOption),
+                        ServiceProperty("MeshPartitionerTester", ST_SubDomain | ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
-                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase)
-                        );
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

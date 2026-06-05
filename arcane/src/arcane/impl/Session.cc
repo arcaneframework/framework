@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,30 +22,31 @@
 #include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/CriticalSection.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ICaseDocument.h"
-#include "arcane/XmlNode.h"
-#include "arcane/CaseNodeNames.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/IParallelSuperMng.h"
-#include "arcane/IServiceMng.h"
-#include "arcane/SubDomainBuildInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ICaseDocument.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/CaseNodeNames.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IParallelSuperMng.h"
+#include "arcane/core/IServiceMng.h"
+#include "arcane/core/SubDomainBuildInfo.h"
 
 #include "arcane/impl/Session.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ISubDomain*
-arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi);
+arcaneCreateSubDomain(ISession* session, const SubDomainBuildInfo& sdbi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,8 +69,9 @@ class Session::Impl
  public:
 
   Impl(IApplication* app)
-  : m_application(app), m_namespace_uri(arcaneNamespaceURI())
-    {}
+  : m_application(app)
+  , m_namespace_uri(arcaneNamespaceURI())
+  {}
   ~Impl() {}
 
  public:
@@ -100,7 +102,7 @@ Session(IApplication* app)
 Session::
 ~Session()
 {
-  for( SubDomainList::Enumerator i(m_p->m_sub_domains); ++i; ){
+  for (SubDomainList::Enumerator i(m_p->m_sub_domains); ++i;) {
     (*i)->destroy();
   }
   delete m_p;
@@ -143,7 +145,7 @@ createSubDomain(const SubDomainBuildInfo& sdbi)
   ISubDomain* s = 0;
   {
     CriticalSection cs(sm->threadMng());
-    s = arcaneCreateSubDomain(this,sdbi);
+    s = arcaneCreateSubDomain(this, sdbi);
     //TODO: Use the local rank to sort in order
     m_p->m_sub_domains.add(s);
   }
@@ -173,21 +175,51 @@ objectParent() const
   return m_p->m_application;
 }
 
-String Session::objectNamespaceURI() const { return m_p->m_namespace_uri; }
-String Session::objectLocalName() const { return m_p->m_local_name; }
-VersionInfo Session::objectVersion() const { return VersionInfo(1,0,0); }
-IServiceMng* Session::serviceMng() const { return m_p->m_service_mng.get(); }
-IRessourceMng* Session::ressourceMng() const { return 0; }
-IApplication* Session::application() const { return m_p->m_application; }
-ITraceMng* Session::traceMng() const { return TraceAccessor::traceMng(); }
-const String& Session::fileName() const { return m_p->m_filename; }
-SubDomainCollection Session::subDomains() { return m_p->m_sub_domains; }
-IApplication* Session::_application() const { return m_p->m_application; }
+String Session::objectNamespaceURI() const
+{
+  return m_p->m_namespace_uri;
+}
+String Session::objectLocalName() const
+{
+  return m_p->m_local_name;
+}
+VersionInfo Session::objectVersion() const
+{
+  return VersionInfo(1, 0, 0);
+}
+IServiceMng* Session::serviceMng() const
+{
+  return m_p->m_service_mng.get();
+}
+IRessourceMng* Session::ressourceMng() const
+{
+  return 0;
+}
+IApplication* Session::application() const
+{
+  return m_p->m_application;
+}
+ITraceMng* Session::traceMng() const
+{
+  return TraceAccessor::traceMng();
+}
+const String& Session::fileName() const
+{
+  return m_p->m_filename;
+}
+SubDomainCollection Session::subDomains()
+{
+  return m_p->m_sub_domains;
+}
+IApplication* Session::_application() const
+{
+  return m_p->m_application;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

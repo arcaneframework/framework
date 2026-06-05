@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ class TimeStats
   {
    public:
 
-    TimeValue(Real real_time,Real virtual_time)
+    TimeValue(Real real_time, Real virtual_time)
     {
       m_time[TT_Real][TC_Local] = real_time;
       m_time[TT_Virtual][TC_Local] = virtual_time;
@@ -75,31 +75,38 @@ class TimeStats
 
     void add(const TimeValue& phase)
     {
-      for( Integer i=0; i<NB_TIME_TYPE; ++i )
+      for (Integer i = 0; i < NB_TIME_TYPE; ++i)
         m_time[i][TC_Local] += phase.m_time[i][TC_Local];
     }
 
    public:
 
-    FixedArray<FixedArray<Real,NB_TIME_TYPE>,2> m_time;
+    FixedArray<FixedArray<Real, NB_TIME_TYPE>, 2> m_time;
   };
 
   class PhaseValue
   : public TimeValue
   {
    public:
-    PhaseValue(eTimePhase pt,Real real_time,Real virtual_time)
-    : TimeValue(real_time,virtual_time), m_type(pt) { }
+
+    PhaseValue(eTimePhase pt, Real real_time, Real virtual_time)
+    : TimeValue(real_time, virtual_time)
+    , m_type(pt)
+    {}
     PhaseValue() = default;
+
    public:
+
     eTimePhase phase() const { return m_type; }
+
    public:
+
     eTimePhase m_type = TP_Computation;
   };
 
  public:
 
-  TimeStats(ITimerMng* timer_mng,ITraceMng* trm,const String& name);
+  TimeStats(ITimerMng* timer_mng, ITraceMng* trm, const String& name);
   TimeStats(const TimeStats& rhs) = delete;
   TimeStats& operator=(const TimeStats& rhs) = delete;
   ~TimeStats() override;
@@ -112,19 +119,19 @@ class TimeStats
  public:
 
   void beginAction(const String& action_name) override;
-  void endAction(const String& action_name,bool print_time) override;
+  void endAction(const String& action_name, bool print_time) override;
   void beginPhase(eTimePhase phase_type) override;
   void endPhase(eTimePhase phase_type) override;
 
  public:
-  
+
   Real elapsedTime(eTimePhase phase) override;
-  Real elapsedTime(eTimePhase phase,const String& action) override;
+  Real elapsedTime(eTimePhase phase, const String& action) override;
 
  public:
 
-  void dumpStats(std::ostream& ostr,bool is_verbose,Real nb,
-                 const String& name,bool use_elapsed_time) override;
+  void dumpStats(std::ostream& ostr, bool is_verbose, Real nb,
+                 const String& name, bool use_elapsed_time) override;
   void dumpCurrentStats(const String& action) override;
 
   void dumpTimeAndMemoryUsage(IParallelMng* pm) override;
@@ -167,8 +174,8 @@ class TimeStats
   PhaseValue _currentPhaseValue();
   void _checkGathering();
   void _computeCumulativeTimes();
-  void _dumpCumulativeTime(std::ostream& ostr,Action& action,eTimePhase tp,eTimeType tt);
-  void _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb);
+  void _dumpCumulativeTime(std::ostream& ostr, Action& action, eTimePhase tp, eTimeType tt);
+  void _dumpAllPhases(std::ostream& ostr, Action& action, eTimeType tt, int tc, Real nb);
 };
 
 /*---------------------------------------------------------------------------*/

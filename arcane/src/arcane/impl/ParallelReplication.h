@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,9 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IParallelReplication.h"
-#include "arcane/Parallel.h"
 #include "arcane/utils/Ref.h"
+
+#include "arcane/core/IParallelReplication.h"
+#include "arcane/core/Parallel.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,7 +56,7 @@ class ARCANE_IMPL_EXPORT ParallelReplication
   ParallelReplication();
 
   //! Constructor with replication
-  ParallelReplication(Int32 rank,Int32 nb_rank,Ref<IParallelMng> replica_pm);
+  ParallelReplication(Int32 rank, Int32 nb_rank, Ref<IParallelMng> replica_pm);
   virtual ~ParallelReplication();
 
  public:

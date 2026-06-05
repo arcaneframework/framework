@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,9 +18,9 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/XmlNode.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/IInitialPartitioner.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IInitialPartitioner.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,8 +46,14 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
   struct MeshBuildInfo
   {
    public:
-    MeshBuildInfo() : m_dir_name("."), m_mesh(nullptr) {}
+
+    MeshBuildInfo()
+    : m_dir_name(".")
+    , m_mesh(nullptr)
+    {}
+
    public:
+
     XmlNode m_xml_node;
     String m_orig_file_name;
     String m_file_name;
@@ -58,7 +64,7 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
 
  public:
 
-  LegacyMeshBuilder(ISubDomain* sd,MeshHandle default_mesh_handle);
+  LegacyMeshBuilder(ISubDomain* sd, MeshHandle default_mesh_handle);
 
  public:
 
@@ -69,10 +75,12 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
   void initializeMeshVariablesFromCaseFile();
 
  private:
+
   ISubDomain* m_sub_domain;
   MeshHandle m_default_mesh_handle;
   //TODO make private
  public:
+
   UniqueArray<MeshBuildInfo> m_meshes_build_info; //!< Info to build a mesh
   ScopedPtrT<IInitialPartitioner> m_initial_partitioner; //!< Initial partitioner
   String m_internal_partitioner_name;
@@ -81,7 +89,7 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
 
  private:
 
-  void _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi);
+  void _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers, const MeshBuildInfo& mbi);
   void _createMeshesHandle();
 };
 

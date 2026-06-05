@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -714,7 +714,7 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
   // of each partition for each test.
   // global_nb_parts[i*2+p] is the value of the left partition (p==0)
   // or right (p==1) for the i-th test.
-  SmallArray<Int64> global_nb_parts(total_nb_to_test*2);
+  SmallArray<Int64> global_nb_parts(total_nb_to_test * 2);
 
   // Tests all partitions and calculates the one whose ratio is the
   // closest to the desired ratio. This is the one we will take for
@@ -733,8 +733,8 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
       else
         ++nb_new_part1;
     }
-    global_nb_parts[0+(z*2)] = nb_new_part0;
-    global_nb_parts[1+(z*2)] = nb_new_part1;
+    global_nb_parts[0 + (z * 2)] = nb_new_part0;
+    global_nb_parts[1 + (z * 2)] = nb_new_part1;
   }
 
   // Sums the parts across all sub-domains.
@@ -742,8 +742,8 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
 
   for (Int32 z = 0; z < total_nb_to_test; ++z) {
     Real ratio_0 = 1.0;
-    Int64 nb_part0 = global_nb_parts[0+(z*2)];
-    Int64 nb_part1 = global_nb_parts[1+(z*2)];
+    Int64 nb_part0 = global_nb_parts[0 + (z * 2)];
+    Int64 nb_part1 = global_nb_parts[1 + (z * 2)];
     if (nb_part0 != 0) {
       Real r_nb_part0 = static_cast<Real>(nb_part0);
       Real r_nb_part1 = static_cast<Real>(nb_part1);

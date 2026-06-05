@@ -51,6 +51,7 @@ class CommandLineArguments;
 class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 {
   class Impl;
+
  public:
 
   ArcaneSimpleExecutor();

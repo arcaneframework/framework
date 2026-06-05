@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,8 +17,8 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/AbstractService.h"
-#include "arcane/ParallelSuperMngDispatcher.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/ParallelSuperMngDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ class ARCANE_IMPL_EXPORT SequentialParallelSuperMng
 
   // Constructs a sequential supervisor linked to the supervisor
   explicit SequentialParallelSuperMng(const ServiceBuildInfo& sbi);
-  SequentialParallelSuperMng(const ServiceBuildInfo& sbi,Parallel::Communicator comm);
+  SequentialParallelSuperMng(const ServiceBuildInfo& sbi, Parallel::Communicator comm);
   ~SequentialParallelSuperMng() override;
 
   void build() override;
@@ -58,13 +58,13 @@ class ARCANE_IMPL_EXPORT SequentialParallelSuperMng
   bool isMasterIO() const override { return true; }
   Integer masterIORank() const override { return 0; }
   Integer nbLocalSubDomain() override { return 1; }
-  void barrier() override { }
+  void barrier() override {}
 
   Ref<IParallelMng> internalCreateWorldParallelMng(Int32 local_rank) override;
   void tryAbort() override;
 
  private:
-  
+
   IApplication* m_application; //!< Associated supervisor
   IThreadMng* m_thread_mng;
   ITimerMng* m_timer_mng;

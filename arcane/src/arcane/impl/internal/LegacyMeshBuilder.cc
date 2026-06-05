@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 LegacyMeshBuilder::
-LegacyMeshBuilder(ISubDomain* sd,MeshHandle default_mesh_handle)
+LegacyMeshBuilder(ISubDomain* sd, MeshHandle default_mesh_handle)
 : TraceAccessor(sd->traceMng())
 , m_sub_domain(sd)
 , m_default_mesh_handle(default_mesh_handle)
@@ -61,33 +61,33 @@ readCaseMeshes()
   CaseNodeNames* cnn = case_doc->caseNodeNames();
   XmlNodeList mesh_elems(case_doc->meshElements());
   bool has_mesh_file = true;
-  if (mesh_elems.empty()){
+  if (mesh_elems.empty()) {
     info() << "No mesh in the input data";
     has_mesh_file = false;
   }
   Integer nb_mesh = mesh_elems.size();
   m_meshes_build_info.resize(nb_mesh);
-  for( Integer i=0; i<nb_mesh; ++i ){
+  for (Integer i = 0; i < nb_mesh; ++i) {
     MeshBuildInfo& mbi = m_meshes_build_info[i];
     mbi.m_dir_name = ".";
     mbi.m_xml_node = mesh_elems[i];
-    XmlNodeList partitioner_elems = mesh_elems[i].children(cnn->mesh_partitioner) ;
+    XmlNodeList partitioner_elems = mesh_elems[i].children(cnn->mesh_partitioner);
     m_use_partitioner_tester = false;
-    if(partitioner_elems.empty()) {
+    if (partitioner_elems.empty()) {
       m_use_partitioner_tester = true;
       m_internal_partitioner_name = ARCANE_DEFAULT_PARTITIONER_STR;
     }
-    else{
-      m_internal_partitioner_name = partitioner_elems[0].value() ;
+    else {
+      m_internal_partitioner_name = partitioner_elems[0].value();
       //check if the partitioner is parallel
       m_use_partitioner_tester = partitioner_elems[0].attr("need-basic-partition-first").valueAsBoolean();
     }
-      
+
     XmlNode meshfile_elem = mesh_elems[i].child(cnn->mesh_file);
     String smesh_file = meshfile_elem.value();
     StringBuilder mesh_file = smesh_file;
     mbi.m_orig_file_name = smesh_file;
-    if (smesh_file.null()){
+    if (smesh_file.null()) {
       info() << "No mesh in the input data";
       has_mesh_file = false;
     }
@@ -99,39 +99,39 @@ readCaseMeshes()
     // If the environment variable is defined, force repartitioning
     // initially with the service whose name is specified in this variable.
     String internal_partitioner_env = platform::getEnvironmentVariable("ARCANE_INTERNAL_PARTITIONER");
-    if (!internal_partitioner_env.null()){
+    if (!internal_partitioner_env.null()) {
       info() << "Forcing internal partitioner from environment variable";
       internal_cut = true;
       internal_partitioner = internal_partitioner_env;
     }
     IParallelMng* pm = sd->parallelMng();
     // In the case where Arcane is trimmed to a core, we will not look for CPU*.mli2
-    if (pm->isParallel() && (pm->commSize()>1)){
+    if (pm->isParallel() && (pm->commSize() > 1)) {
       m_use_internal_mesh_partitioner = internal_cut;
-        
+
       if (!internal_partitioner.empty())
         m_internal_partitioner_name = internal_partitioner;
       Integer nb_sub_domain = pm->commSize();
       info() << "Subdomain number is " << sub_domain_id << '/' << nb_sub_domain;
-        
+
       //check if the file mesh reader need a unique or multi file
       bool use_unique_file = meshfile_elem.attr("unique").valueAsBoolean();
-      if (!use_unique_file){
+      if (!use_unique_file) {
         //Integer nb_sub_domain = m_parallel_mng->commSize();
         StringBuilder cut_dir_str("cut_");
         cut_dir_str += nb_sub_domain;
         String mesh_cut_dir = meshfile_elem.attrValue(cut_dir_str);
         debug() << "MESH CUT DIR " << mesh_cut_dir << ' ' << cut_dir_str;
-        if (has_mesh_file && !internal_cut){
+        if (has_mesh_file && !internal_cut) {
           char buf[128];
           String file_format_str = "mli2";
           if (!file_format.null())
             file_format_str = file_format;
-          sprintf(buf,"CPU%05d.%s",(int)sub_domain_id,file_format_str.localstr());
+          sprintf(buf, "CPU%05d.%s", (int)sub_domain_id, file_format_str.localstr());
           log() << "The original mesh file is " << mesh_file;
           if (mesh_cut_dir.empty())
             mesh_file = String(std::string_view(buf));
-          else{
+          else {
             mbi.m_dir_name = mesh_cut_dir;
             mesh_file = mesh_cut_dir;
             mesh_file += "/";
@@ -164,8 +164,8 @@ readMeshes()
   ServiceBuilder<IMeshReader> builder(m_sub_domain);
   UniqueArray<Ref<IMeshReader>> mesh_readers(builder.createAllInstances());
 
-  for( const MeshBuildInfo& mbi : m_meshes_build_info ){
-    _readMesh(mesh_readers,mbi);
+  for (const MeshBuildInfo& mbi : m_meshes_build_info) {
+    _readMesh(mesh_readers, mbi);
   }
 }
 
@@ -178,22 +178,22 @@ createDefaultMesh()
   ISubDomain* sd = m_sub_domain;
   String mesh_name = m_default_mesh_handle.meshName();
   ICaseDocument* case_doc = sd->caseDocument();
-  if (!case_doc){
+  if (!case_doc) {
     // If no dataset is specified, create a mesh
-    m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name));
+    m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd, mesh_name));
     return;
   }
 
   CaseNodeNames* cnn = case_doc->caseNodeNames();
   XmlNodeList mesh_elems(case_doc->meshElements());
-  if (mesh_elems.empty()){
+  if (mesh_elems.empty()) {
     info() << "No mesh in the input data";
   }
   Integer nb_mesh = mesh_elems.size();
-  for( Integer i=0; i<nb_mesh; ++i ){
+  for (Integer i = 0; i < nb_mesh; ++i) {
     XmlNode meshfile_elem = mesh_elems[i].child(cnn->mesh_file);
     String mesh_file = meshfile_elem.value();
-    if (mesh_file.null()){
+    if (mesh_file.null()) {
       info() << "No mesh in the input data";
     }
   }
@@ -201,11 +201,11 @@ createDefaultMesh()
   // Now that amr flag has to be known at mesh creation, check-it for default mesh
   bool is_amr = mesh_elems[0].attr("amr").valueAsBoolean();
   eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(mesh_elems[0].attr("amr-type").valueAsInteger());
-  if(is_amr && amr_type == eMeshAMRKind::None) {
+  if (is_amr && amr_type == eMeshAMRKind::None) {
     amr_type = eMeshAMRKind::Cell;
   }
 
-  m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name, amr_type));
+  m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd, mesh_name, amr_type));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -218,14 +218,14 @@ _createMeshesHandle()
 
   // The first mesh is always the default one
   Integer nb_build_mesh = m_meshes_build_info.size();
-  if (nb_build_mesh>0){
+  if (nb_build_mesh > 0) {
     m_meshes_build_info[0].m_mesh_handle = m_default_mesh_handle;
   }
 
   // Create the other meshes specified in the dataset
-  for( Integer z=1; z<nb_build_mesh; ++z ){
+  for (Integer z = 1; z < nb_build_mesh; ++z) {
     String name;
-    if(m_meshes_build_info[z].m_xml_node.attr("dual").valueAsBoolean())
+    if (m_meshes_build_info[z].m_xml_node.attr("dual").valueAsBoolean())
       name = "DualMesh";
     else
       name = "Mesh";
@@ -245,24 +245,24 @@ allocateMeshes()
 
   // The first mesh is always the default one
   Integer nb_build_mesh = m_meshes_build_info.size();
-  if (nb_build_mesh>0){
+  if (nb_build_mesh > 0) {
     m_meshes_build_info[0].m_mesh = m_default_mesh_handle.mesh()->toPrimaryMesh();
   }
 
   // Create the other meshes specified in the dataset
-  for( Integer z=1; z<nb_build_mesh; ++z ){
+  for (Integer z = 1; z < nb_build_mesh; ++z) {
     MeshHandle handle = m_meshes_build_info[z].m_mesh_handle;
     if (handle.isNull())
-      ARCANE_FATAL("Invalid null MeshHandle for mesh index={0}",z);
+      ARCANE_FATAL("Invalid null MeshHandle for mesh index={0}", z);
     // Since 1.8.0 (IFP modification), this method
     // calls this->addMesh()
     bool is_amr = m_meshes_build_info[z].m_xml_node.attr("amr").valueAsBoolean();
     eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(m_meshes_build_info[z].m_xml_node.attr("amr-type").valueAsInteger());
-    if(is_amr && amr_type == eMeshAMRKind::None) {
+    if (is_amr && amr_type == eMeshAMRKind::None) {
       amr_type = eMeshAMRKind::Cell;
     }
 
-    IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,handle.meshName(),amr_type);
+    IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd, handle.meshName(), amr_type);
     m_meshes_build_info[z].m_mesh = mesh;
   }
 }
@@ -275,7 +275,7 @@ initializeMeshVariablesFromCaseFile()
 {
   info() << "Initialization of the variable from the configuration file";
   CaseNodeNames* cnn = m_sub_domain->caseDocument()->caseNodeNames();
-  for( const LegacyMeshBuilder::MeshBuildInfo& mbi : m_meshes_build_info ){
+  for (const LegacyMeshBuilder::MeshBuildInfo& mbi : m_meshes_build_info) {
     IMesh* mesh = mbi.m_mesh;
     XmlNode node = mbi.m_xml_node;
     XmlNode init_node = node.child(cnn->mesh_initialisation);
@@ -288,7 +288,7 @@ initializeMeshVariablesFromCaseFile()
 /*---------------------------------------------------------------------------*/
 
 void LegacyMeshBuilder::
-_readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi)
+_readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers, const MeshBuildInfo& mbi)
 {
   IPrimaryMesh* mesh = mbi.m_mesh;
   ARCANE_CHECK_POINTER(mesh);
@@ -297,13 +297,13 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
   // If a partitioning service is specified, the file specified
   // in the case document (JDD) must be used and not the file name possibly transformed in readCaseMeshes()
   bool use_internal_partitioner = m_use_internal_mesh_partitioner;
-  if (m_initial_partitioner.get()){
+  if (m_initial_partitioner.get()) {
     mesh_file_name = mbi.m_orig_file_name;
     use_internal_partitioner = true;
   }
   // Allows forcing the dimension in case the format cannot recognize it.
   Integer wanted_dimension = mbi.m_xml_node.attr("dimension").valueAsInteger();
-  if (wanted_dimension!=0){
+  if (wanted_dimension != 0) {
     info() << "Force mesh dimension to " << wanted_dimension;
     mesh->setDimension(wanted_dimension);
   }
@@ -311,16 +311,16 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
 
   Integer nb_ghost_layer = -1;
   XmlNode nbGhostLayerNode = mbi.m_xml_node.attr("nb-ghostlayer");
-  if (!nbGhostLayerNode.null()){
+  if (!nbGhostLayerNode.null()) {
     nb_ghost_layer = nbGhostLayerNode.valueAsInteger();
-    if (nb_ghost_layer>=0){
+    if (nb_ghost_layer >= 0) {
       info() << "Set number of ghost layers to '" << nb_ghost_layer << "' from caseoption";
       mesh->ghostLayerMng()->setNbGhostLayer(nb_ghost_layer);
     }
   }
 
   Integer builder_version = mbi.m_xml_node.attr("ghostlayer-builder-version").valueAsInteger();
-  if (nb_ghost_layer>=0 && builder_version>=0){
+  if (nb_ghost_layer >= 0 && builder_version >= 0) {
     info() << "Set ghostlayer builder version to '" << builder_version << "' from caseoption";
     mesh->ghostLayerMng()->setBuilderVersion(builder_version);
   }
@@ -340,13 +340,13 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
     std::string_view fview = mesh_file_name.toStdStringView();
     debug() << " MF=" << fview;
     std::size_t extension_pos = fview.find_last_of('.');
-    if (extension_pos!=std::string_view::npos){
-      fview.remove_prefix(extension_pos+1);
+    if (extension_pos != std::string_view::npos) {
+      fview.remove_prefix(extension_pos + 1);
       extension = fview;
     }
   }
 
-  for( auto& mesh_reader_ref : mesh_readers ){
+  for (auto& mesh_reader_ref : mesh_readers) {
     IMeshReader* mesh_reader = mesh_reader_ref.get();
     if (!mesh_reader->allowExtension(extension))
       continue;
@@ -356,16 +356,16 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
                                                                  mesh_file_name,
                                                                  mbi.m_dir_name,
                                                                  use_internal_partitioner);
-    if (ret==IMeshReader::RTOk){
+    if (ret == IMeshReader::RTOk) {
       is_bad = false;
       break;
     }
-    if (ret==IMeshReader::RTError){
+    if (ret == IMeshReader::RTError) {
       ARCANE_FATAL("Error while generating the mesh");
     }
   }
 
-  if (is_bad){
+  if (is_bad) {
     ARCANE_FATAL("Internal error: no mesh loaded or generated. \n",
                  "The mesh reader or generator required isn't available ",
                  "Recompile with the relevant options");

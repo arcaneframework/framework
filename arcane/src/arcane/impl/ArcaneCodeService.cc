@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -12,13 +12,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/CodeService.h"
+#include "arcane/core/CodeService.h"
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/ISession.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Service.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Service.h"
 
 #include "arcane/impl/TimeLoopReader.h"
 #include "arcane/impl/ArcaneSession.h"
@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,7 +44,7 @@ class ArcaneCodeService
 
   virtual bool parseArgs(StringList& args);
   virtual ISession* createSession();
-  virtual void initCase(ISubDomain* sub_domain,bool is_continue);
+  virtual void initCase(ISubDomain* sub_domain, bool is_continue);
 
  public:
 
@@ -62,8 +63,8 @@ class ArcaneCodeService
 /*---------------------------------------------------------------------------*/
 
 Internal::ServiceInfo
-ArcaneCodeService::service_info("ArcaneCodeService",VersionInfo(1,0,1),
-                                IServiceInfo::Dim1|IServiceInfo::Dim2|IServiceInfo::Dim3);
+ArcaneCodeService::service_info("ArcaneCodeService", VersionInfo(1, 0, 1),
+                                IServiceInfo::Dim1 | IServiceInfo::Dim2 | IServiceInfo::Dim3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,7 +73,7 @@ extern "C++" ARCANE_IMPL_EXPORT Ref<ICodeService>
 createArcaneCodeService(IApplication* app)
 {
   ServiceBuildInfoBase s(app);
-  auto x = new ArcaneCodeService(ServiceBuildInfo(&ArcaneCodeService::service_info,s));
+  auto x = new ArcaneCodeService(ServiceBuildInfo(&ArcaneCodeService::service_info, s));
   x->build();
   return makeRef<ICodeService>(x);
 }
@@ -107,7 +108,7 @@ _preInitializeSubDomain(ISubDomain*)
 /*---------------------------------------------------------------------------*/
 
 void ArcaneCodeService::
-initCase(ISubDomain* sub_domain,bool is_continue)
+initCase(ISubDomain* sub_domain, bool is_continue)
 {
   {
     TimeLoopReader stl(_application());
@@ -115,7 +116,7 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     stl.registerTimeLoops(sub_domain);
     stl.setUsedTimeLoop(sub_domain);
   }
-  CodeService::initCase(sub_domain,is_continue);
+  CodeService::initCase(sub_domain, is_continue);
   if (sub_domain->parallelMng()->isMasterIO())
     sub_domain->session()->writeExecInfoFile();
 }
@@ -145,7 +146,7 @@ parseArgs(StringList& args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

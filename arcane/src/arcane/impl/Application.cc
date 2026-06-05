@@ -107,7 +107,7 @@ arcaneCreateConfigurationMng(ITraceMng* tm);
 extern "C++" ARCANE_IMPL_EXPORT IServiceAndModuleFactoryMng*
 arcaneCreateServiceAndModuleFactoryMng(ITraceMng* tm);
 extern "C++" ARCANE_IMPL_EXPORT Ref<IItemEnumeratorTracer>
-arcaneCreateItemEnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_counter);
+arcaneCreateItemEnumeratorTracer(ITraceMng* tm, Ref<IPerformanceCounterService> perf_counter);
 extern "C++" ARCANE_IMPL_EXPORT Ref<ICodeService>
 createArcaneCodeService(IApplication* app);
 extern "C++" ARCANE_CORE_EXPORT void
@@ -214,7 +214,7 @@ Application::
   m_core_application->m_task_implementation.reset();
 
   // Remove the services that the instance placed
-  if (platform::getProcessorAffinityService()==m_processor_affinity_service.get())
+  if (platform::getProcessorAffinityService() == m_processor_affinity_service.get())
     platform::setProcessorAffinityService(nullptr);
 
   if (platform::getStackTraceService() == m_core_application->m_stack_trace_service.get())
@@ -223,14 +223,14 @@ Application::
   if (platform::getSymbolizerService() == m_core_application->m_symbolizer_service.get())
     platform::setSymbolizerService(nullptr);
 
-  if (platform::getProfilingService()==m_profiling_service.get())
+  if (platform::getProfilingService() == m_profiling_service.get())
     platform::setProfilingService(nullptr);
 
-  if (platform::getPerformanceCounterService()==m_performance_counter_service.get())
+  if (platform::getPerformanceCounterService() == m_performance_counter_service.get())
     platform::setPerformanceCounterService(nullptr);
 
   delete m_service_and_module_factory_mng;
-  
+
   m_sessions.each(Deleter());
 
   delete m_configuration_mng;
@@ -267,15 +267,15 @@ Application::
  * \note This method is no longer used (January 2025) and we use
  * _tryCreateServiceUsingInjector() instead.
  */
-template<typename InterfaceType> Ref<InterfaceType> Application::
-_tryCreateService(const StringList& names,String* found_name)
+template <typename InterfaceType> Ref<InterfaceType> Application::
+_tryCreateService(const StringList& names, String* found_name)
 {
   if (found_name)
     (*found_name) = String();
   ServiceBuilder<InterfaceType> sf(this);
-  for( String s : names ){
-    auto t = sf.createReference(s,SB_AllowNull);
-    if (t.get()){
+  for (String s : names) {
+    auto t = sf.createReference(s, SB_AllowNull);
+    if (t.get()) {
       if (found_name)
         (*found_name) = s;
       return t;
@@ -290,35 +290,35 @@ _tryCreateService(const StringList& names,String* found_name)
 namespace
 {
 
-/*!
+  /*!
  * Tries to instantiate a service implementing \a InterfaceType with
  * the list of service names \a names. Returns the found instance
  * if it exists and fills \a found_name (if not null) with the name of
  * the instance. As soon as an instance is found, it is returned.
  * Returns \a nullptr if no instance is available.
  */
-template <typename InterfaceType> Ref<InterfaceType>
-_tryCreateServiceUsingInjector(const StringList& names, String* found_name, ITraceMng* tm)
-{
-  DependencyInjection::Injector injector;
-  injector.fillWithGlobalFactories();
-  // Adds the ITraceMng* instance
-  injector.bind(tm);
+  template <typename InterfaceType> Ref<InterfaceType>
+  _tryCreateServiceUsingInjector(const StringList& names, String* found_name, ITraceMng* tm)
+  {
+    DependencyInjection::Injector injector;
+    injector.fillWithGlobalFactories();
+    // Adds the ITraceMng* instance
+    injector.bind(tm);
 
-  if (found_name)
-    (*found_name) = String();
-  for( String s : names ){
-    auto t = injector.createInstance<InterfaceType>(s,true);
-    if (t.get()){
-      if (found_name)
-        (*found_name) = s;
-      return t;
+    if (found_name)
+      (*found_name) = String();
+    for (String s : names) {
+      auto t = injector.createInstance<InterfaceType>(s, true);
+      if (t.get()) {
+        if (found_name)
+          (*found_name) = s;
+        return t;
+      }
     }
+    return {};
   }
-  return {};
-}
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -339,12 +339,12 @@ build()
   {
     // TODO: position these information in ApplicationBuildInfo.
     Int32 output_level = build_info.outputLevel();
-    if (output_level!=Trace::UNSPECIFIED_VERBOSITY_LEVEL){
+    if (output_level != Trace::UNSPECIFIED_VERBOSITY_LEVEL) {
       m_trace_policy->setVerbosityLevel(output_level);
       m_trace_policy->setStandardOutputVerbosityLevel(output_level);
     }
     Int32 verbosity_level = build_info.verbosityLevel();
-    if (verbosity_level!=Trace::UNSPECIFIED_VERBOSITY_LEVEL){
+    if (verbosity_level != Trace::UNSPECIFIED_VERBOSITY_LEVEL) {
       m_trace_policy->setVerbosityLevel(verbosity_level);
     }
 
@@ -355,9 +355,9 @@ build()
     // default. Without this, some initialization messages may not
     // display, which can be problematic in case of issues or crashes.
     Int32 minimal_verbosity_level = build_info.minimalVerbosityLevel();
-    if (minimal_verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
+    if (minimal_verbosity_level == Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       minimal_verbosity_level = Trace::DEFAULT_VERBOSITY_LEVEL;
-    m_trace_policy->setDefaultVerboseLevel(m_trace.get(),minimal_verbosity_level);
+    m_trace_policy->setDefaultVerboseLevel(m_trace.get(), minimal_verbosity_level);
   }
 
   arcaneGlobalMemoryInfo()->setTraceMng(traceMng());
@@ -369,7 +369,7 @@ build()
     m_trace->info(4) << "*** Host: " << platform::getHostName();
 
     IDynamicLibraryLoader* dynamic_library_loader = IDynamicLibraryLoader::getDefault();
-    if (dynamic_library_loader){
+    if (dynamic_library_loader) {
       String os_dir(m_exe_info.dataOsDir());
 #ifdef ARCANE_OS_WIN32
       {
@@ -394,25 +394,29 @@ build()
         AddDllDirectory(wide_os_dir.c_str());
       }
 #endif
-      for( StringCollection::Enumerator i(m_exe_info.dynamicLibrariesName()); ++i; ){
+      for (StringCollection::Enumerator i(m_exe_info.dynamicLibrariesName()); ++i;) {
         String name = *i;
         m_trace->info(4) << "*** Trying to load dynamic library: " << name;
-        IDynamicLibrary* dl = dynamic_library_loader->open(os_dir,name);
+        IDynamicLibrary* dl = dynamic_library_loader->open(os_dir, name);
         if (!dl)
           m_trace->info(4) << "WARNING: Can not load library '" << name << "'";
       }
     }
 
 #ifdef ARCANE_OS_WIN32
-    if (dynamic_library_loader){
+    if (dynamic_library_loader) {
       String os_dir(m_exe_info.dataOsDir());
       // TODO: Add the directory containing 'arcane_impl' which is known
       // in ArcaneMain to m_arcane_lib_path.
-      String dyn_lib_names[5] = { "arcane_mpi", "arcane_std", "arcane_mesh",
-                                  "arcane_thread", "arcane_mpithread",
-                                };
-      for( Integer i=0; i<5; ++i )
-        dynamic_library_loader->open(os_dir,dyn_lib_names[i]);
+      String dyn_lib_names[5] = {
+        "arcane_mpi",
+        "arcane_std",
+        "arcane_mesh",
+        "arcane_thread",
+        "arcane_mpithread",
+      };
+      for (Integer i = 0; i < 5; ++i)
+        dynamic_library_loader->open(os_dir, dyn_lib_names[i]);
     }
 #endif
 
@@ -420,9 +424,9 @@ build()
 
     {
       m_service_and_module_factory_mng = arcaneCreateServiceAndModuleFactoryMng(traceMng());
-      for( ServiceFactoryInfoCollection::Enumerator i(m_main_service_factory_infos); ++i; )
+      for (ServiceFactoryInfoCollection::Enumerator i(m_main_service_factory_infos); ++i;)
         m_service_and_module_factory_mng->addGlobalFactory(*i);
-      for( ModuleFactoryInfoCollection::Enumerator i(m_main_module_factory_infos); ++i; )
+      for (ModuleFactoryInfoCollection::Enumerator i(m_main_module_factory_infos); ++i;)
         m_service_and_module_factory_mng->addGlobalFactory(*i);
 
       m_service_and_module_factory_mng->createAllServiceRegistererFactories();
@@ -440,38 +444,38 @@ build()
       auto task_names = _stringListToCoreArray(b.taskImplementationServices());
       auto thread_names = _stringListToCoreArray(b.threadImplementationServices());
       Int32 nb_task_thread = b.nbTaskThread();
-      ConcurrencyApplicationBuildInfo c(task_names.constView(),thread_names.constView(),nb_task_thread);
+      ConcurrencyApplicationBuildInfo c(task_names.constView(), thread_names.constView(), nb_task_thread);
       m_core_application->setCoreServices(c);
     }
 
-    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL",true))
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL", true))
       ProfilingRegistry::setProfilingLevel(v.value());
 
     // Search for the service used for profiling
     {
       String profile_str = platform::getEnvironmentVariable("ARCANE_PROFILING");
-      if (!profile_str.null()){
+      if (!profile_str.null()) {
         ServiceBuilder<IProfilingService> sf(this);
-        auto sv = sf.createReference(profile_str+"ProfilingService",SB_AllowNull);
-        if (sv.get()){
+        auto sv = sf.createReference(profile_str + "ProfilingService", SB_AllowNull);
+        if (sv.get()) {
           m_profiling_service = sv;
           platform::setProfilingService(sv.get());
         }
         else
-          ARCANE_FATAL("Can not find profiling service (name='{0}')",profile_str);
+          ARCANE_FATAL("Can not find profiling service (name='{0}')", profile_str);
       }
     }
 
     // By default, we hook the Hyoda service
     {
       ServiceBuilder<IOnlineDebuggerService> sf(this);
-      auto sv = sf.createReference("Hyoda",SB_AllowNull);
-      if (sv.get()){
+      auto sv = sf.createReference("Hyoda", SB_AllowNull);
+      if (sv.get()) {
         m_online_debugger = sv;
         platform::setOnlineDebuggerService(sv.get());
       }
     }
-    
+
     // Search for the service used for processor affinity management
     {
       StringList names;
@@ -493,16 +497,16 @@ build()
     if (message_passing_service.null())
       message_passing_service = build_info.internalDefaultMessagePassingService();
     ServiceBuilder<IParallelSuperMng> sf(this);
-    auto sm = sf.createReference(message_passing_service,SB_AllowNull);
+    auto sm = sf.createReference(message_passing_service, SB_AllowNull);
     if (!sm)
-      ARCANE_FATAL("Can not find message passing service '{0}'",message_passing_service);
+      ARCANE_FATAL("Can not find message passing service '{0}'", message_passing_service);
 
     m_parallel_super_mng = sm;
     m_parallel_super_mng->initialize();
 
     IParallelSuperMng* seq_sm = nullptr;
-    if (sm->isParallel()){
-      m_owned_sequential_parallel_super_mng = sf.createReference("SequentialParallelSuperMng",SB_AllowNull);
+    if (sm->isParallel()) {
+      m_owned_sequential_parallel_super_mng = sf.createReference("SequentialParallelSuperMng", SB_AllowNull);
       seq_sm = m_owned_sequential_parallel_super_mng.get();
       if (!seq_sm)
         ARCANE_FATAL("Can not find service 'SequentialParallelSuperMng'");
@@ -523,10 +527,10 @@ build()
     int vmajor = version_info.versionMajor();
     int vminor = version_info.versionMinor();
     int vpatch = version_info.versionPatch();
-    m_main_version_str = String::format("{0}.{1}.{2}",vmajor,vminor,vpatch);
-    m_major_and_minor_version_str = String::format("{0}.{1}",vmajor,vminor);
+    m_main_version_str = String::format("{0}.{1}.{2}", vmajor, vminor, vpatch);
+    m_major_and_minor_version_str = String::format("{0}.{1}", vmajor, vminor);
     m_version_str = m_major_and_minor_version_str;
-    if (vpatch!=0)
+    if (vpatch != 0)
       m_version_str = m_major_and_minor_version_str + "." + vpatch;
   }
 
@@ -558,14 +562,14 @@ build()
       String s = platform::getEnvironmentVariable("ARCANE_PARALLEL_OUTPUT");
       if (!s.null())
         is_parallel_output = true;
-      if (s=="0")
+      if (s == "0")
         is_parallel_output = false;
     }
     m_trace_policy->setIsParallelOutput(is_parallel_output);
   }
 
   m_is_master = m_parallel_super_mng->commRank() == 0;
- 
+
   m_trace->info(4) << "*** UserName: " << m_user_name;
   m_trace->info(4) << "*** HomeDirectory: " << platform::getHomeDirectory();
 
@@ -580,7 +584,7 @@ build()
 void Application::
 initialize()
 {
-  if (m_is_init){
+  if (m_is_init) {
     m_trace->warning() << "Application is already initialised";
     return;
   }
@@ -592,7 +596,7 @@ initialize()
 
   //m_trace->info() << "Application init trace mng rank=" << m_parallel_super_mng->traceRank();
   m_trace_policy->setDefaultClassConfigXmlBuffer(userConfigBuffer());
-  m_trace_policy->initializeTraceMng(m_trace.get(),m_parallel_super_mng->traceRank());
+  m_trace_policy->initializeTraceMng(m_trace.get(), m_parallel_super_mng->traceRank());
 
   m_trace->logdate() << "Begin execution.";
 
@@ -606,12 +610,12 @@ initialize()
   // Active or deactivate a partial check mode if the corresponding environment variable
   // is set.
   String check_str = platform::getEnvironmentVariable("ARCANE_CHECK");
-  if (!check_str.null()){
+  if (!check_str.null()) {
     bool is_check = check_str != "0";
     m_trace->info() << "WARNING: Setting CHECK mode to " << is_check;
     arcaneSetCheck(is_check);
   }
-  if (arcaneIsCheck()){
+  if (arcaneIsCheck()) {
     m_trace->info() << "WARNING: Execution in CHECK mode!";
   }
 
@@ -646,33 +650,33 @@ initialize()
                   << " machine=" << platform::getHostName();
   m_trace->info() << "MessagePassing service=" << applicationBuildInfo().messagePassingService();
 
-  if (platform::getStackTraceService()){
+  if (platform::getStackTraceService()) {
     m_trace->info() << "Stack trace service is available";
   }
-  if (platform::getSymbolizerService()){
+  if (platform::getSymbolizerService()) {
     m_trace->info() << "Symbolizer service is available";
   }
 
 #ifdef ARCANE_USE_LIBXML2
-    m_trace->info() << "Using 'libxml2' for XML parsing";
+  m_trace->info() << "Using 'libxml2' for XML parsing";
 #endif
 
-    // Display info about processors
+  // Display info about processors
   {
     IProcessorAffinityService* pas = platform::getProcessorAffinityService();
-    if (pas){
+    if (pas) {
       pas->printInfos();
     }
   }
 
   // Display if we have a debug service
-  if (platform::getOnlineDebuggerService()){
+  if (platform::getOnlineDebuggerService()) {
     m_trace->info() << "Hyoda service is now hooked";
   }
-  else{
+  else {
     m_trace->info() << "Unknown online debugger service";
   }
-  
+
   m_is_init = true;
 
   // Analyze the code configuration file.
@@ -680,33 +684,33 @@ initialize()
 
   {
     // Construction of internal types
-    ItemTypeMng::_singleton()->build(m_parallel_super_mng.get(),traceMng());
+    ItemTypeMng::_singleton()->build(m_parallel_super_mng.get(), traceMng());
   }
 
   {
     ByteConstSpan runtime_config = m_exe_info.runtimeConfigFileContent();
-    if (!runtime_config.empty()){
+    if (!runtime_config.empty()) {
       m_trace->info() << "Reading configuration parameters from runtime config file";
       JSONDocument jdoc;
       jdoc.parse(runtime_config);
       JSONValue config = jdoc.root().child("configuration");
-      ConfigurationReader cr(m_trace.get(),m_configuration_mng->defaultConfiguration());
-      cr.addValuesFromJSON(config,ConfigurationReader::P_GlobalRuntime);
+      ConfigurationReader cr(m_trace.get(), m_configuration_mng->defaultConfiguration());
+      cr.addValuesFromJSON(config, ConfigurationReader::P_GlobalRuntime);
     }
   }
   {
-    if (!m_config_root_element.null()){
+    if (!m_config_root_element.null()) {
       XmlNode configuration_elem = m_config_root_element.child("configuration");
-      if (!configuration_elem.null()){
+      if (!configuration_elem.null()) {
         m_trace->info() << "Reading configuration parameters from code config file";
-        ConfigurationReader cr(m_trace.get(),m_configuration_mng->defaultConfiguration());
-        cr.addValuesFromXmlNode(configuration_elem,ConfigurationReader::P_Global);
+        ConfigurationReader cr(m_trace.get(), m_configuration_mng->defaultConfiguration());
+        cr.addValuesFromXmlNode(configuration_elem, ConfigurationReader::P_Global);
       }
     }
   }
 
   _initDataInitialisationPolicy();
-  
+
   {
     if (!m_core_application->m_used_thread_service_name.null())
       m_trace->info() << "Service used for thread management : '" << m_core_application->m_used_thread_service_name << "'";
@@ -728,11 +732,11 @@ initialize()
   {
     ServiceBuilder<IPhysicalUnitSystemService> sf(this);
     String service_name = "Udunits";
-    auto sv = sf.createReference(service_name,SB_AllowNull);
-    if (sv.get()){
+    auto sv = sf.createReference(service_name, SB_AllowNull);
+    if (sv.get()) {
       m_trace->info() << "UnitSystem service found name=" << service_name;
     }
-    else{
+    else {
       m_trace->info() << "No unit system service found";
       sv = makeRef(createNullPhysicalUnitSystemService());
     }
@@ -746,12 +750,12 @@ initialize()
     if (!env_service_name.null())
       service_name = env_service_name + "PerformanceCounterService";
     ServiceBuilder<IPerformanceCounterService> sbuilder(this);
-    auto p = sbuilder.createReference(service_name,SB_AllowNull);
+    auto p = sbuilder.createReference(service_name, SB_AllowNull);
     m_performance_counter_service = p;
-    if (p.get()){
+    if (p.get()) {
       m_trace->info() << "PerformanceCounterService found name=" << service_name;
     }
-    else{
+    else {
       m_trace->info() << "No performance counter service found";
     }
   }
@@ -760,13 +764,13 @@ initialize()
   {
     bool force_tracer = false;
     String trace_str = platform::getEnvironmentVariable("ARCANE_TRACE_ENUMERATOR");
-    if (!trace_str.null() || ProfilingRegistry::profilingLevel()>=1 || force_tracer){
-      if (!TaskFactory::isActive()){
+    if (!trace_str.null() || ProfilingRegistry::profilingLevel() >= 1 || force_tracer) {
+      if (!TaskFactory::isActive()) {
         ServiceBuilder<IPerformanceCounterService> sbuilder(this);
         auto p = m_performance_counter_service;
-        if (p.get()){
+        if (p.get()) {
           m_trace->info() << "Enumerator tracing is enabled";
-          Ref<IItemEnumeratorTracer> tracer(arcaneCreateItemEnumeratorTracer(traceMng(),p));
+          Ref<IItemEnumeratorTracer> tracer(arcaneCreateItemEnumeratorTracer(traceMng(), p));
           arcaneSetSingletonItemEnumeratorTracer(tracer);
           p->initialize();
           p->start();
@@ -795,7 +799,7 @@ initialize()
 
   {
     Real init_time_accelerator = ArcaneMain::initializationTimeForAccelerator() * 1000.0;
-    if (init_time_accelerator!=0.0)
+    if (init_time_accelerator != 0.0)
       m_trace->info() << "Time (in ms) to initialize Accelerators = " << init_time_accelerator;
   }
 }
@@ -819,25 +823,25 @@ _readCodeConfigurationFile()
   String config_file_name = build_info.configFileName();
 
   bool use_config_file = true;
-  if (config_file_name.null()){
+  if (config_file_name.null()) {
     use_config_file = false;
   }
-  else if (config_file_name.empty()){
+  else if (config_file_name.empty()) {
     // First checks the current directory, otherwise checks the shared
     // data directory (share).
     // For parallel performance reasons, only the master processor
     // performs the test.
     StringBuilder buf;
-    if (m_is_master){
+    if (m_is_master) {
       buf = m_exe_info.codeName();
       buf += ".config";
-      if (!platform::isFileReadable(buf.toString())){
+      if (!platform::isFileReadable(buf.toString())) {
         buf = m_exe_info.dataDir();
         buf += "/";
         buf += m_exe_info.codeName();
         buf += ".config";
       }
-      else{
+      else {
         m_trace->info() << "Using configuration file in current directory.";
       }
     }
@@ -845,13 +849,13 @@ _readCodeConfigurationFile()
   }
   m_trace->info() << "Using configuration file: '" << config_file_name << "'";
 
-  if (use_config_file){
-    bool bad_file = m_io_mng->collectiveRead(config_file_name,m_config_bytes);
+  if (use_config_file) {
+    bool bad_file = m_io_mng->collectiveRead(config_file_name, m_config_bytes);
     if (bad_file)
-      ARCANE_FATAL("Can not read configuration file '{0}'",config_file_name);
-    m_config_document = m_io_mng->parseXmlBuffer(m_config_bytes,config_file_name);
+      ARCANE_FATAL("Can not read configuration file '{0}'", config_file_name);
+    m_config_document = m_io_mng->parseXmlBuffer(m_config_bytes, config_file_name);
     if (!m_config_document.get())
-      ARCANE_FATAL("Can not parse configuration file '{0}'",config_file_name);
+      ARCANE_FATAL("Can not parse configuration file '{0}'", config_file_name);
     m_config_root_element = m_config_document->documentNode().documentElement();
   }
 }
@@ -869,15 +873,15 @@ _openUserConfig()
   String buf = user_config_dir.file("config.xml");
 
   //ByteUniqueArray bytes;
-  bool bad_file = m_io_mng->collectiveRead(buf,m_user_config_bytes);
-  if (bad_file){
+  bool bad_file = m_io_mng->collectiveRead(buf, m_user_config_bytes);
+  if (bad_file) {
     if (m_is_master)
       m_trace->log() << "No user configuration file '" << buf << "'";
     return;
   }
 
-  IXmlDocumentHolder* doc = m_io_mng->parseXmlBuffer(m_user_config_bytes,buf);
-  if (!doc){
+  IXmlDocumentHolder* doc = m_io_mng->parseXmlBuffer(m_user_config_bytes, buf);
+  if (!doc) {
     if (m_is_master)
       m_trace->log() << "Can not parse user configuration file '" << buf << "'";
     return;
@@ -892,16 +896,16 @@ _openUserConfig()
 
 namespace
 {
-bool _hasExtension(ICodeService* service,const String& extension)
-{
-  StringCollection extensions = service->validExtensions();
-  for( StringCollection::Enumerator j(extensions); ++j; ){
-    if ((*j)==extension)
-      return true;
+  bool _hasExtension(ICodeService* service, const String& extension)
+  {
+    StringCollection extensions = service->validExtensions();
+    for (StringCollection::Enumerator j(extensions); ++j;) {
+      if ((*j) == extension)
+        return true;
+    }
+    return false;
   }
-  return false;
-}
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -917,14 +921,14 @@ getCodeService(const String& u_file_name)
   // this extension.
   {
     bool has_arc_extension = false;
-    for( Integer i=0, n=services.size(); i<n; ++i ){
+    for (Integer i = 0, n = services.size(); i < n; ++i) {
       ICodeService* code_service = services[i].get();
-      if (_hasExtension(code_service,"arc")){
+      if (_hasExtension(code_service, "arc")) {
         has_arc_extension = true;
         break;
       }
     }
-    if (!has_arc_extension){
+    if (!has_arc_extension) {
       services.add(createArcaneCodeService(this));
     }
   }
@@ -932,16 +936,16 @@ getCodeService(const String& u_file_name)
   // Finds the file extension and stores it in \a case_ext
   std::string_view fview = u_file_name.toStdStringView();
   std::size_t extension_pos = fview.find_last_of('.');
-  if (extension_pos==std::string_view::npos)
+  if (extension_pos == std::string_view::npos)
     return {};
-  fview.remove_prefix(extension_pos+1);
+  fview.remove_prefix(extension_pos + 1);
   String case_ext(fview);
 
   Ref<ICodeService> found_service;
-  for( const auto& code_service : services ){
+  for (const auto& code_service : services) {
     StringCollection extensions = code_service->validExtensions();
-    for( StringCollection::Enumerator j(extensions); ++j; ){
-      if (case_ext==(*j)){
+    for (StringCollection::Enumerator j(extensions); ++j;) {
+      if (case_ext == (*j)) {
         found_service = code_service;
         break;
       }
@@ -998,27 +1002,27 @@ _initDataInitialisationPolicy()
   String data_init_policy = platform::getEnvironmentVariable("ARCANE_DATA_INIT_POLICY");
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
   bool is_changed = false;
-  if (data_init_policy=="DEFAULT"){
+  if (data_init_policy == "DEFAULT") {
     init_policy = DIP_InitWithDefault;
     is_changed = true;
   }
-  else if (data_init_policy=="NAN"){
+  else if (data_init_policy == "NAN") {
     init_policy = DIP_InitWithNan;
     is_changed = true;
   }
-  else if (data_init_policy=="NONE"){
+  else if (data_init_policy == "NONE") {
     init_policy = DIP_None;
     is_changed = true;
   }
-  else if (data_init_policy=="LEGACY"){
+  else if (data_init_policy == "LEGACY") {
     init_policy = DIP_Legacy;
     is_changed = true;
   }
-  else if (data_init_policy=="NAN_AND_DEFAULT"){
+  else if (data_init_policy == "NAN_AND_DEFAULT") {
     init_policy = DIP_InitInitialWithNanResizeWithDefault;
     is_changed = true;
   }
-  if (is_changed){
+  if (is_changed) {
     setGlobalDataInitialisationPolicy(init_policy);
     init_policy = getGlobalDataInitialisationPolicy();
     m_trace->info() << "Change data initialisation policy: " << data_init_policy
@@ -1058,11 +1062,11 @@ acceleratorRuntimeInitialisationInfo() const
 /*---------------------------------------------------------------------------*/
 
 ITraceMng* Application::
-createAndInitializeTraceMng(ITraceMng* parent_trace,const String& file_suffix)
+createAndInitializeTraceMng(ITraceMng* parent_trace, const String& file_suffix)
 {
   ITraceMng* tm = mainFactory()->createTraceMng();
   ITraceMngPolicy* tmp = getTraceMngPolicy();
-  tmp->initializeTraceMng(tm,parent_trace,file_suffix);
+  tmp->initializeTraceMng(tm, parent_trace, file_suffix);
   return tm;
 }
 

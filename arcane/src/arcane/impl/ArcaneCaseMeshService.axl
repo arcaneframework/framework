@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <service name="ArcaneCaseMeshService" version="1.0" parent-name="Arcane::AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
@@ -15,16 +15,16 @@
     has already been done. In this case, the mesh files will be in the
     format 'CPU...%n' where N is the mesh part number.
   </description>
-    
-  <interface name="Arcane::ICaseMeshService" />
+
+  <interface name="Arcane::ICaseMeshService"/>
 
   <options>
     <!-- Mesh creation service -->
     <service-instance
-        name = "generator"
-        type = "Arcane::IMeshBuilder"
-        optional = "true"
-        >
+      name="generator"
+      type="Arcane::IMeshBuilder"
+      optional="true"
+    >
       <userclass>User</userclass>
       <description>
         Mesh creation/reading service
@@ -35,18 +35,18 @@
 
     <simple name="filename"
             type="string"
-            optional = "true"
-            >
+            optional="true"
+    >
       <userclass>User</userclass>
       <description>
         Mesh file name. If it is not defined, a mesh generator must be specified.
       </description>
     </simple>
 
-    <simple name = "partitioner"
-            type = "string"
-            default = "DefaultPartitioner"
-            >
+    <simple name="partitioner"
+            type="string"
+            default="DefaultPartitioner"
+    >
       <userclass>User</userclass>
       <description>
         Name of the partitioning service to use for the initial decomposition.
@@ -59,8 +59,8 @@
 
     <simple name="nb-ghost-layer"
             type="int32"
-            default = "1"
-            >
+            default="1"
+    >
       <userclass>User</userclass>
       <description>
         Number of ghost mesh layers to add to the mesh in case of partitioning.
@@ -69,8 +69,8 @@
 
     <simple name="ghost-layer-builder-version"
             type="int32"
-            default = "3"
-            >
+            default="3"
+    >
       <description>
         Version of the ghost mesh manager to use.
 
@@ -80,8 +80,8 @@
 
     <simple name="face-numbering-version"
             type="int32"
-            optional = "true"
-            >
+            optional="true"
+    >
       <description>
         Version of the calculation of unique face identifiers.
 
@@ -91,8 +91,8 @@
 
     <simple name="edge-numbering-version"
             type="int32"
-            optional = "true"
-            >
+            optional="true"
+    >
       <description>
         Version of the calculation of unique edge identifiers.
 
@@ -105,7 +105,7 @@
     <enumeration name="cell-dimension-kind"
                  type="Arcane::eMeshCellDimensionKind"
                  default="mono-dimension"
-            >
+    >
       <description>
         Indicates whether the mesh is 'non-manifold' or multi-dimensional. A mesh
         of this type contains meshes of different dimensions.
@@ -119,10 +119,10 @@
 
     <!-- Specific mesh reading service -->
     <service-instance
-        name = "specific-reader"
-        type = "Arcane::ICaseMeshReader"
-        optional = "true"
-        >
+      name="specific-reader"
+      type="Arcane::ICaseMeshReader"
+      optional="true"
+    >
       <userclass>User</userclass>
       <description>
         Specific mesh reading service.
@@ -135,11 +135,11 @@
 
     <!-- Specific mesh reading service -->
     <service-instance
-      name = "subdivider"
-      type = "Arcane::IMeshSubdivider"
-      default = "ArcaneBasicMeshSubdivider"
-      optional = "true"
-      >
+      name="subdivider"
+      type="Arcane::IMeshSubdivider"
+      default="ArcaneBasicMeshSubdivider"
+      optional="true"
+    >
       <userclass>User</userclass>
       <description>
         Service allowing the subdivision of mesh elements.
@@ -150,7 +150,7 @@
     <complex type="Init" name="initialization">
       <userclass>User</userclass>
       <description>
-	Initialization information.
+        Initialization information.
 
         These options allow, among other things, initializing variables on groups with predefined values.
       </description>
@@ -158,7 +158,7 @@
       <complex type="InitVariable" name="variable" minOccurs="0" maxOccurs="unbounded">
         <userclass>User</userclass>
         <description>
-	  List of variables to initialize
+          List of variables to initialize
         </description>
         <simple name="name" type="string">
           <userclass>User</userclass>
