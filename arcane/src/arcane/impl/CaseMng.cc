@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseMng.cc                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant les options du jeu de données.                              */
+/* Class managing dataset options.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -69,8 +69,9 @@ arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire d'un cas.
+ * \brief Case manager.
  */
 class CaseMng
 : private ReferenceCounterImpl
@@ -110,8 +111,7 @@ class CaseMng
   };
 
   /*!
-   * Classe pour filtrer les options et ne garder que celles
-   * dont les modules sont utilisés.
+   * Class to filter options and keep only those whose modules are used.
    */
   class CaseOptionsFilterUsed
   {
@@ -196,7 +196,7 @@ class CaseMng
 
   ICaseMngInternal* _internalImpl() override { return this; }
 
-  //! Implémentation via ICaseMngInternal
+  //! Implementation via ICaseMngInternal
   //@{
   void internalReadOneOption(ICaseOptions* opt, bool is_phase1) override;
   ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) override
@@ -212,15 +212,15 @@ class CaseMng
 
  private:
 
-  ISubDomain* m_sub_domain; //!< Gestionnaire de sous-domain
+  ISubDomain* m_sub_domain; //!< Sub-domain manager
   ScopedPtrT<ICaseDocument> m_case_document;
-  CaseFunctionList m_functions; //!< Liste des fonctions
-  CaseOptionsList m_case_options_list; //!< Liste des options du cas
+  CaseFunctionList m_functions; //!< List of functions
+  CaseOptionsList m_case_options_list; //!< List of case options
   List<CaseOptionBase*> m_options_with_function;
   bool m_treat_warning_as_error = false;
   bool m_allow_unknown_root_element = true;
   ObservablePool<eCaseMngEventType> m_observables;
-  //! Indique si les fonctions ont déjà été lues
+  //! Indicates if functions have already been read
   bool m_is_function_read = false;
   Ref<ICaseFunctionDotNetProvider> m_dotnet_provider;
   ParameterListWithCaseOption m_parameters;
@@ -274,8 +274,7 @@ _read(bool is_phase1)
 void CaseMng::OptionsReader::
 _searchInvalidOptions()
 {
-  // Cherche les éléments du jeu de données qui ne correspondent pas
-  // à une option connue.
+  // Searches for dataset elements that do not correspond to a known option.
   XmlNodeList invalid_elems;
   for( ICaseOptions* co : m_options)
     co->addInvalidChildren(invalid_elems);
@@ -296,8 +295,8 @@ CaseMng(ISubDomain* sub_domain)
   m_observables.add(eCaseMngEventType::BeginReadOptionsPhase1);
   m_observables.add(eCaseMngEventType::BeginReadOptionsPhase2);
 
-  // Recopie dans \a m_parameters les arguments de la ligne de commande
-  // qui pourraient surcharger les valeurs du jeu de données
+  // Recopies the command line arguments in \a m_parameters that
+  // might override the dataset values
   m_parameters.addParameters(sub_domain->application()->applicationInfo().commandLineArguments().parameters());
 }
 
@@ -344,7 +343,7 @@ readOptions(bool is_phase1)
   if (is_phase1)
     readFunctions();
 
-  // Notifie du début de lecture des options.
+  // Notifies the start of reading options.
   if (is_phase1)
     m_observables[eCaseMngEventType::BeginReadOptionsPhase1]->notifyAllObservers();
   else
@@ -362,8 +361,8 @@ readOptions(bool is_phase1)
 void CaseMng::
 _checkTranslateDocument()
 {
-  // Si demandé, écrit un fichier contenant la traduction dans le langage spécifié
-  // de chaque élément du jeu de données.
+  // If requested, writes a file containing the translation in the specified language
+  // of each data set element.
   String tr_lang = platform::getEnvironmentVariable("ARCANE_TRANSLATE_CASEDOCUMENT");
   if (!tr_lang.null()){
     info() << "Generating translation for case file to lang=" << tr_lang;
@@ -384,8 +383,8 @@ _printErrors(ICaseDocumentFragment* doc,bool is_phase1)
 {
   //ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
 
-  // Affiche les avertissements mais uniquement lors de la phase2 pour les avoir
-  // tous en une fois (certains avertissements ne sont générés que lors de la phase2)
+  // Displays warnings but only during phase 2 to have
+  // them all at once (some warnings are only generated during phase 2)
   if (!m_treat_warning_as_error){
     if (!is_phase1){
       if (doc->hasWarnings()){
@@ -419,7 +418,7 @@ readFunctions()
 
   Trace::Setter mci(traceMng(),msgClassName());
 
-  // Enregistre les services fournissant les fonctions
+  // Registers the services providing the functions
   {
     typedef ServiceFinder2T<ICaseFunctionProvider,ISubDomain> FinderType;
     ISubDomain* sd = subDomain();
@@ -469,14 +468,14 @@ _readFunctions()
 {
   bool has_error = false;
 
-  // Lecture des fonctions
+  // Reading functions
 
   ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
   XmlNode case_root_elem = doc->rootElement();
 
   CaseNodeNames* cnn = doc->caseNodeNames();
 
-  // Récupère la liste des tables de marche.
+  // Retrieves the list of walk tables.
   XmlNode funcs_elem = case_root_elem.child(cnn->functions);
   XmlNodeList functions_elem = funcs_elem.children();
 
@@ -516,8 +515,8 @@ _readFunctions()
   if (has_error)
     ARCANE_FATAL("Error while reading the functions");
 
-  // Affiche des informations sur le nombre de tables et leur nombre
-  // d'éléments
+  // Displays information about the number of tables and their number
+  // of elements
   log() << "Number of functions: " << m_functions.count();
   for( auto& icf_ref : m_functions ){
     auto table = dynamic_cast<CaseTable*>(icf_ref.get());
@@ -568,7 +567,7 @@ _checkValidFunction(const XmlNode& func_elem,CaseFunctionBuildInfo& cfbi)
 
   UniqueArray<String> valid_param_strs = { ustr_time, ustr_real, ustr_iteration, ustr_integer };
 
-  // Vérifie que le type de paramètre spécifié est correct (réel ou entier)
+  // Checks that the specified parameter type is correct (real or integer)
   ICaseFunction::eParamType param_type = ICaseFunction::ParamUnknown;
   if (param_name==ustr_time || param_name==ustr_real)
     param_type = ICaseFunction::ParamReal;
@@ -582,7 +581,7 @@ _checkValidFunction(const XmlNode& func_elem,CaseFunctionBuildInfo& cfbi)
 
   UniqueArray<String> valid_value_strs = { ustr_real, ustr_real3, ustr_integer, ustr_bool, ustr_string };
 
-  // Vérifie que le type de valeur spécifié est correct (réel ou entier)
+  // Checks that the specified value type is correct (real or integer)
   ICaseFunction::eValueType value_type = ICaseFunction::ValueUnknown;
   if (value_name==ustr_real)
     value_type = ICaseFunction::ValueReal;
@@ -599,7 +598,7 @@ _checkValidFunction(const XmlNode& func_elem,CaseFunctionBuildInfo& cfbi)
                                     value_name,cnn->function_value,String::join(", ",valid_value_strs)));
   cfbi.m_value_type = value_type;
 
-  // Regarde s'il y a un élément 'deltat-coef' et si oui récupère sa valeur.
+  // Checks if there is a 'deltat-coef' element and if so, retrieves its value.
   String deltat_coef_str = func_elem.attrValue(cnn->function_deltat_coef);
   Real deltat_coef = 0.0;
   if (!deltat_coef_str.null()){
@@ -635,7 +634,7 @@ _readOneTable(const XmlNode& func_elem)
   if (interpolation_name.null())
     return ErrorInfo(String::format("missing attribute '{0}'",cnn->function_interpolation));
 
-  // Vérifie que le type de la courbe spécifié est correct
+  // Checks that the specified curve type is correct
   CaseTable::eCurveType interpolation_type = CaseTable::CurveUnknown;
   if (interpolation_name==ustr_constant)
     interpolation_type = CaseTable::CurveConstant;
@@ -646,7 +645,7 @@ _readOneTable(const XmlNode& func_elem)
                                     cnn->function_interpolation,ustr_constant,ustr_linear));
   }
 
-  // Récupère la liste des valeurs de la fonction
+  // Retrieves the list of function values
   XmlNodeList func_value_list = func_elem.children(ustr_value);
   Integer nb_func_value = func_value_list.size();
   if (nb_func_value==0)
@@ -670,7 +669,7 @@ _readOneTable(const XmlNode& func_elem)
       return ErrorInfo(String::format("index={0} element <y> is missing",value_index));
 
     CaseTable::eError error_number = func->appendElement(param_str,value_str);
-		// TODO: AJOUTER DOC DANS LE JDD sur ces informations.
+		// TODO: ADD DOC IN THE DATA DOCUMENT about this information.
     if (error_number!=CaseTable::ErrNo){
       String message = "No info";
       switch(error_number){
@@ -690,7 +689,7 @@ _readOneTable(const XmlNode& func_elem)
         message = "bad interval";
         break;
       case CaseTable::ErrNo:
-        // Ne devrait jamais arriver
+        // Should never happen
         ARCANE_FATAL("Internal Error");
       }
       return ErrorInfo(String::format("index={0} : {1}",value_index,message));
@@ -706,8 +705,8 @@ _readOneTable(const XmlNode& func_elem)
 void CaseMng::
 _readOneDotNetFunction(const String& assembly_name,const String& class_name)
 {
-  // Si ce n'est pas encore fait, charge le service '.Net' qui enregistrera
-  // les fonctions
+  // If it hasn't been done yet, load the '.Net' service which will register
+  // the functions
   if (!m_dotnet_provider.get()){
     ServiceBuilder<ICaseFunctionDotNetProvider> sb(subDomain());
     m_dotnet_provider = sb.createReference("ArcaneDefaultDotNetCaseFunctionProvider",SB_AllowNull);
@@ -720,24 +719,23 @@ _readOneDotNetFunction(const String& assembly_name,const String& class_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Recherche les options invalides du jeu de données.
+ * \brief Searches for invalid data set options.
  */
 void CaseMng::
 _searchInvalidOptions()
 {
   ICaseDocument* doc = _noNullCaseDocument();
   ICaseDocumentFragment* doc_fragment = doc->fragment();
-  // Cherche les éléments du jeu de données qui ne correspondent pas
-  // à une option connue.
+  // Searches for data set elements that do not correspond to a known option.
   XmlNodeList invalid_elems;
   for( ICaseOptions* co : CaseOptionsFilterUsed(m_case_options_list))
     co->addInvalidChildren(invalid_elems);
 
-  // Cherche les éléments racines qui ne correspondent pas à une option
+  // Searches for root elements that do not correspond to an option
 
-  // Temporairement pour des raisons de compatibilité, autorise les
-  // éléments à la racine qui ne sont pas utilisés.
+  // Temporarily, for compatibility reasons, allows unused root elements.
   if (!platform::getEnvironmentVariable("ARCANE_ALLOW_UNKNOWN_ROOT_ELEMENT").null())
     m_allow_unknown_root_element = true;
 
@@ -799,7 +797,7 @@ _readOptions(bool is_phase1)
   }
 
   if (!is_phase1){
-    // Recherche les options utilisant des fonctions.
+    // Searches for options using functions.
     m_options_with_function.clear();
     UniqueArray<CaseOptionBase*> col;
     for( ICaseOptions* co : CaseOptionsFilterUsed(m_case_options_list)){
@@ -825,11 +823,9 @@ printOptions()
   info() << "-----------------------------------------------------";
   info();
   info() << "Input data values:";
-  // Par défaut, utilise le mécanisme historique d'affichage pour que les
-  // utilisateurs n'aient pas trop de différences d'affichage avec les
-  // nouvelles versions de Arcane.
-  // TODO: vérifier que le nouvel affichage est identique à l'ancien pour
-  // la plupart des options.
+  // By default, uses the historical display mechanism so that users do not
+  // have too many display differences with new versions of Arcane.
+  // TODO: verify that the new display is identical to the old for most options.
   const bool use_old = true;
   for( ICaseOptions* co : CaseOptionsFilterUsed(m_case_options_list)){
     if (use_old)
@@ -939,8 +935,8 @@ readCaseDocument(const String& filename,ByteConstArrayView case_bytes)
 {
   IParallelSuperMng* sm = application()->parallelSuperMng();
   {
-    // Pour l'instant lit dans la section critique car cela provoque
-    // certains plantages sinon de temps en temps (à étudier)
+    // For now, reads in the critical section because it causes
+    // certain crashes sometimes (to be studied)
     CriticalSection cs(sm->threadMng());
     _readCaseDocument(filename,case_bytes);
   }
@@ -954,7 +950,7 @@ void CaseMng::
 _readCaseDocument(const String& filename,ByteConstArrayView case_bytes)
 {
   if (m_case_document.get())
-    // Déjà lu...
+    // Already read...
     return;
 
   IApplication* app = m_sub_domain->application();

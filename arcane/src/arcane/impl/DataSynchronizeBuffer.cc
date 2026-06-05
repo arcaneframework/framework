@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataSynchronizeBuffer.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un buffer générique pour la synchronisation de données.  */
+/* Implementation of a generic buffer for data synchronization.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +36,7 @@ namespace Arcane
 
 namespace
 {
-  //! Alignement pour les buffers et les sous-parties des buffers
+  //! Alignment for buffers and buffer sub-parts
   constexpr Int64 ALIGNEMENT_SIZE = 64;
   Int64 _applyPadding(Int64 original_size)
   {
@@ -97,7 +97,7 @@ barrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Positionne le buffer global.
+//! Positions the global buffer.
 void DataSynchronizeBufferBase::BufferInfo::
 setGlobalBuffer(MutableMemoryView v)
 {
@@ -159,13 +159,14 @@ localIds(Int32 index) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialise les informations du buffer.
+ * \brief Initializes the buffer information.
  *
- * Calcul l'offset de chaque donnée de chaque rang dans le buffer global.
+ * Calculates the offset of each data item from each rank in the global buffer.
  *
- * \note \a datatype_sizes est conservé sous forme de vue et ne doit donc pas
- * être modifié et rester valide durant la synchronisation.
+ * \note \a datatype_sizes is kept as a view and should therefore not
+ * be modified and must remain valid during synchronization.
  */
 void DataSynchronizeBufferBase::BufferInfo::
 initialize(ConstArrayView<Int32> datatype_sizes, const DataSynchronizeBufferInfoList* buffer_info)
@@ -178,17 +179,17 @@ initialize(ConstArrayView<Int32> datatype_sizes, const DataSynchronizeBufferInfo
   m_displacements.resize(nb_rank, nb_data);
   m_local_buffer_size.resize(nb_rank);
 
-  // Calcul l'offset pour chaque donnée de chaque rang
-  // en garantissant que l'offset est un multiple de ALIGNMENT_SIZE
+  // Calculates the offset for each data item from each rank
+  // ensuring that the offset is a multiple of ALIGNMENT_SIZE
   Int64 data_offset = 0;
   m_total_size = 0;
   for (Int32 i = 0; i < nb_rank; ++i) {
     const Int32 nb_item = buffer_info->nbItem(i);
     Int64 local_buf_nb_byte = 0;
     for (Int32 d = 0; d < nb_data; ++d) {
-      // Taille nécessaire pour la donnée \a d pour le rang \a i
-      // On fait un padding sur cette taille pour avoir
-      // un alignment spécifique.
+      // Size needed for data \a d for rank \a i
+      // Padding is applied to this size to achieve
+      // a specific alignment.
       const Int64 nb_byte = _applyPadding(nb_item * datatype_sizes[d]);
       m_displacements[i][d] = data_offset;
       local_buf_nb_byte += nb_byte;
@@ -232,9 +233,10 @@ barrier()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
- * pour les synchronisations des variables 1D.
+ * \brief Calculates and allocates the buffers necessary for sends and receives
+ * for 1D variable synchronizations.
  */
 void DataSynchronizeBufferBase::
 _compute(ConstArrayView<Int32> datatype_sizes)
@@ -250,15 +252,16 @@ _compute(ConstArrayView<Int32> datatype_sizes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
- * pour les synchronisations des variables 1D.
+ * \brief Calculates and allocates the buffers necessary for sends and receives
+ * for 1D variable synchronizations.
  *
- * Il faut avoir appelé _compute() avant pour calculer les tailles et offset
- * pour chaque buffer.
+ * _compute() must be called beforehand to calculate the sizes and offsets
+ * for each buffer.
  *
- * \todo: ne pas converver les tampons pour chaque type de donnée des variables
- * car leur conservation est couteuse en terme de memoire.
+ * \todo: do not conserve buffers for each data type of the variables
+ * because their retention is costly in terms of memory.
  */
 void DataSynchronizeBufferBase::
 _allocateBuffers()
@@ -329,8 +332,7 @@ prepareSynchronize(bool is_compare_sync)
   _compute(m_datatype_sizes.view());
 
   if (is_compare_sync) {
-    // Recopie dans le buffer de vérification les valeurs actuelles des mailles
-    // fantômes.
+    // Recopy the current values of the ghost cells into the verification buffer.
     MutableMemoryView var_values = dataView();
     Int32 nb_rank = nbRank();
     for (Int32 i = 0; i < nb_rank; ++i) {
@@ -338,20 +340,21 @@ prepareSynchronize(bool is_compare_sync)
       MutableMemoryView local_buffer = m_compare_sync_buffer_info.dataLocalBuffer(i, 0);
       m_buffer_copier->copyToBufferAsync(indexes, local_buffer, var_values);
     }
-    // Normalement pas besoin de faire une barrière, car ensuite il y aura les
-    // envois sur la même \a queue et ensuite une barrière.
+    // Normally no need to perform a barrier, because there will be the
+    // sends on the same queue and then a barrier.
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Compare les valeurs avant/après synchronisation.
+ * \brief Compares the values before/after synchronization.
  *
- * Il suffit de comparer bit à bit le buffer de réception avec celui
- * contenant les valeurs avant la synchronisation (m_check_sync_buffer).
+ * It is enough to compare bit by bit the receive buffer with the one
+ * containing the values before synchronization (m_check_sync_buffer).
  *
- * \retval \a vrai s'il y a des différences.
+ * \retval \a true if there are differences.
  */
 DataSynchronizeResult SingleDataSynchronizeBuffer::
 finalizeSynchronize()
@@ -366,7 +369,7 @@ finalizeSynchronize()
   Int64 receive_size = receive_bytes.size();
   if (reference_size != receive_size)
     ARCANE_FATAL("Incoherent buffer size ref={0} receive={1}", reference_size, receive_size);
-  // TODO: gérer le cas où la mémoire est sur le device
+  // TODO: handle the case where memory is on the device
 
   DataSynchronizeResult result;
   bool is_same = std::memcmp(reference_bytes.data(), receive_bytes.data(), reference_size) == 0;
@@ -379,9 +382,9 @@ finalizeSynchronize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Les comparaisons ne sont pas supportées si on utilise les synchronisations
- * multiples.
+ * Comparisons are not supported if multiple synchronizations are used.
  */
 void MultiDataSynchronizeBuffer::
 prepareSynchronize([[maybe_unused]] bool is_compare_sync)

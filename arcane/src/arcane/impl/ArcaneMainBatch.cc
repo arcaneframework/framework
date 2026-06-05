@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneMainBatch.cc                                          (C) 2000-2026 */
 /*                                                                           */
-/* Gestion de l'exécution en mode Batch.                                     */
+/* Batch execution management.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -83,30 +83,31 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Propriétés associées à ArcaneMain
+//! Properties associated with ArcaneMain
 class ArcaneMainBatchProperties
 {
   ARCANE_DECLARE_PROPERTY_CLASS(ArcaneMainBatchProperties);
  public:
   Int32 m_max_iteration = 0;
   bool m_is_continue = false;
-  String m_idle_service_name; //!< Nom du service pour les CPU non utilisés
+  String m_idle_service_name; //!< Service name for unused CPUs
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exécution en mode batch d'un code.
+ * \brief Batch execution of a code.
  */
 class ArcaneMainBatch
 : public ArcaneMain
 {
  public:
 
-  //! Informations d'exécution pour une session.
+  //! Execution information for a session.
   class SessionExec
   {
-    //! Infos par sous-domaine qui doivent être détruites à la fin de l'exécution
+    //! Info per subdomain that must be destroyed at the end of execution
     class SubInfo
     {
      public:
@@ -114,12 +115,12 @@ class ArcaneMainBatch
       : m_sub_domain(nullptr), m_time_stats(nullptr), m_want_print_stats(false) {}
       ~SubInfo()
       {
-        // Il faut d'abord détruire la ITimeStats car il utilise
-        // les TimerMng des IParallelMng.
+        // ITimeStats must be destroyed first because it uses
+        // the TimerMng of IParallelMng.
         delete m_time_stats;
         //delete m_rank_parallel_mng;
         //m_world_parallel_mng.reset();
-        // Le sous-domaine est détruit lorsque la session se termine
+        // The subdomain is destroyed when the session ends
       }
       SubInfo(const SubInfo&) = delete;
       void operator=(const SubInfo&) = delete;
@@ -145,7 +146,7 @@ class ArcaneMainBatch
       const CaseDatasetSource& dataset_source = m_arcane_main->applicationBuildInfo().caseDatasetSource();
       m_case_file = dataset_source.fileName();
       m_case_bytes = dataset_source.content();
-      // Les sub_infos de chaque thread sont créés executeRank()
+      // The sub_infos for each thread are created in executeRank()
       m_sub_infos.fill(nullptr);
     }
     ~SessionExec()
@@ -154,19 +155,19 @@ class ArcaneMainBatch
         delete m_sub_infos[i];
     }
    public:
-    // Collective sur les threads du processus
+    // Collective over the process threads
     void executeRank(Int32 local_rank);
    private:
     IApplication* _application() { return m_arcane_main->application(); }
    private:
     ArcaneMainBatch* m_arcane_main;
     ISession* m_session;
-    bool m_has_sub_domain_threads; //!< indique si on utilise des threads pour gérer des sous-domaines
+    bool m_has_sub_domain_threads; //!< indicates if threads are used to manage subdomains
     String m_direct_test_name;
-    String m_case_file; //!< Nom du fichier contenant le cas.
-    UniqueArray<std::byte> m_case_bytes; //!< Contenu du jeu de données du cas sous forme d'un document XML.
-    const ArcaneMainBatchProperties m_properties; //!< Propriétés d'exécution.
-    Ref<ICodeService> m_code_service; //!< Service du code.
+    String m_case_file; //!< Name of the file containing the case.
+    UniqueArray<std::byte> m_case_bytes; //!< Content of the case dataset as an XML document.
+    const ArcaneMainBatchProperties m_properties; //!< Execution properties.
+    Ref<ICodeService> m_code_service; //!< Code service.
     UniqueArray<SubInfo*> m_sub_infos;
     IDirectSubDomainExecuteFunctor* m_direct_sub_domain_execute_functor;
    private:
@@ -209,13 +210,13 @@ class ArcaneMainBatch
 
   ISession* m_session = nullptr; //! Session
   ArcaneMainBatchProperties m_properties;
-  bool m_init_only; //!< \a true si on ne fait que l'initialisation.
-  bool m_check_case_only; //!< \a true si on ne fait que vérifier le jeu de données.
-  bool m_has_sub_domain_threads; //!< indique si on utilise des threads pour gérer des sous-domaines
-  String m_case_name; //!< Nom du cas
+  bool m_init_only; //!< \a true if only initialization is performed.
+  bool m_check_case_only; //!< \a true if only dataset verification is performed.
+  bool m_has_sub_domain_threads; //!< indicates if threads are used to manage subdomains
+  String m_case_name; //!< Case name
   String m_direct_exec_name;
   String m_direct_test_name;
-  Ref<ICodeService> m_code_service; //!< Service du code.
+  Ref<ICodeService> m_code_service; //!< Code service.
   SessionExec* m_session_exec = nullptr;
 
  private:
@@ -268,11 +269,11 @@ initialize()
 ArcaneMainBatch::
 ~ArcaneMainBatch()
 {
-  // Normalement finalize() doit avoir été appelé pour libérer les
-  // différents objets (m_session, m_code_service, ...).
-  // Si ce n'est pas le cas, c'est probablement du à une exception et dans
-  // ce cas on ne fait rien pour éviter de détruire des objets dont on ne
-  // connait pas trop l'état interne.
+  // Normally finalize() should have been called to release the
+  // various objects (m_session, m_code_service, ...).
+  // If this is not the case, it is probably due to an exception and in
+  // this case we do nothing to avoid destroying objects whose internal
+  // state we do not know well.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -290,8 +291,8 @@ parseArgs(StringList args)
 
 
 /*****************************************************************************
- * Les variables ARCANE_NB_SUB_DOMAIN & ARCANE_IDLE_SERVICE sont moins prioritaires
- * que les arguments passés à l'exécutable.
+ * The variables ARCANE_NB_SUB_DOMAIN & ARCANE_IDLE_SERVICE are less prioritized
+ * than the arguments passed to the executable.
  *****************************************************************************/
 bool ArcaneMainBatch::
 _sequentialParseArgs(StringList args)
@@ -313,18 +314,17 @@ _sequentialParseArgs(StringList args)
   String us_nb_replication("nb_replication");
   String us_idle_service("idle_service");
 
-  // Remplit 'm_properties' en fonction des paramètres de la ligne de commande
-  // TODO: Ce mécanisme est disponible depuis janvier 2021. A terme, il faudra
-  // rendre obsolète et supprimer la possibilité de spécifier les options
-  // via '-arcane_opt'.
+  // Fills 'm_properties' based on command line parameters
+  // TODO: This mechanism has been available since January 2021. Eventually, it will be
+  // obsolete and the possibility of specifying options via '-arcane_opt' will be removed.
   properties::readFromParameterList(applicationInfo().commandLineArguments().parameters(),m_properties);
 
   CaseDatasetSource& dataset_source = _applicationBuildInfo().caseDatasetSource();
-  // Indique si on a un jeu de données.
+  // Indicates if we have a dataset.
   bool has_case_dataset_content = !(dataset_source.fileName().empty() && dataset_source.content().empty());
   Integer nb_arg = args.count();
   if (nb_arg<2 && !has_case_dataset_content){
-    trace->info() << "Usage: programm input_data ; for more information: program -arcane_opt help";
+    trace->info() << "Usage: program input_data ; for more information: program -arcane_opt help";
     trace->pfatal() << "No input data specified.";
   }
   
@@ -372,7 +372,7 @@ _sequentialParseArgs(StringList args)
       else
         trace->pfatal() << "Option 'max_iteration' must specify the number of iterations";
     }
-    // Nom du cas.
+    // Case name.
     else if (str==us_casename){
       ++i;
       if (i<s){
@@ -449,15 +449,15 @@ _sequentialParseArgs(StringList args)
   if (use_direct_test){
   }
   else if (use_direct_exec){
-    // Dans ce cas, le dernier argument de la ligne de commande est
-    // le nom du maillage.
+    // In this case, the last argument of the command line is
+    // the mesh name.
     tool_mesh = args[nb_arg-1];
     dataset_source.setFileName("Dummy.arc");
   }
   else{
-    // Le nom du cas est contenu dans le dernier argument de la ligne
-    // de commande. On prend cet argument sauf si un nom de fichier
-    // a déjà été positionné avant d'initialiser Arcane.
+    // The case name is contained in the last argument of the command line.
+    // We take this argument unless a filename has already been set before
+    // initializing Arcane.
     if (dataset_source.fileName().empty() && dataset_source.content().empty())
       dataset_source.setFileName(args[nb_arg-1]);
   }
@@ -503,8 +503,8 @@ _sequentialParseArgs(StringList args)
 
   if (use_direct_exec){
     //trace->info()<<"[ArcaneMainBatch] use_direct_test!";
-    // Analyse les arguments qui correspondent aux options d'exécution directes
-    // et construit un fichier xml à partir de la.
+    // Analyzes the arguments corresponding to direct execution options
+    // and builds an XML file from them.
     StringBuilder s;
     s += "<?xml version=\"1.0\"?>\n";
     s += "<case codename=\"ArcaneDriver\" xml:lang=\"en\" codeversion=\"1.0\">";
@@ -560,8 +560,9 @@ struct LaunchThreadInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Cette fonction est celle appelée lors de la création d'un thread.
+ * This function is called when a thread is created.
  */
 void
 _ThreadWrapper(LaunchThreadInfo* lti)
@@ -573,10 +574,10 @@ _ThreadWrapper(LaunchThreadInfo* lti)
   bool is_master = lti->thread_index == 0;
   int r = ArcaneMain::callFunctorWithCatchedException(&functor,amb,&clean_abort,is_master);
   if (r!=0 && !clean_abort){
-    // Le thread est terminé mais comme il est le seul à avoir planté,
-    // il est possible que les autres soient bloqués.
-    // Dans ce cas, on fait un abort pour éviter un blocage
-    // TODO: essayer de tuer les autres threads correctement.
+    // The thread has finished but since it is the only one that crashed,
+    // it is possible that the others are blocked.
+    // In this case, we perform an abort to prevent blocking
+    // TODO: try to kill the other threads correctly.
     if (main_app){
       IParallelSuperMng* psm = main_app->parallelSuperMng();
       psm->tryAbort();
@@ -609,7 +610,7 @@ execute()
     m_has_sub_domain_threads = true;
   int return_value = 0;
 
-  // Lecture des données du jeu de données.
+  // Reading dataset data.
   if (dataset_source.content().empty() && m_direct_test_name.null()){
     String case_file = dataset_source.fileName();
     trace->info() << "Reading input data '" << case_file << "'";
@@ -646,32 +647,32 @@ execute()
     m_session_exec->executeRank(0);
   }
 
-  // TODO: supprimer car inutile car vaut toujours 0.
+  // TODO: remove because it is useless as it always equals 0.
   return return_value;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * En mode avec un sous-domaine par thread,cette fonction est appelée
- * par chaque thread (de manière potentiellement concurrente) pour son sous-domaine.
- * \a local_rank indique le rang local du thread, qui est compris
- * entre 0 et \a nb_local_sub_domain (tèl que définit dans execute()).
+ * In mode with one subdomain per thread, this function is called
+ * by each thread (potentially concurrently) for its subdomain.
+ * \a local_rank indicates the local rank of the thread, which is between 0 and \a nb_local_sub_domain (as defined in execute()).
  */
 void ArcaneMainBatch::SessionExec::
 executeRank(Int32 local_rank)
 {
   // ATTENTION:
-  // Cette fonction doit etre reentrente...
+  // This function must be reentrant...
 
   auto sub_info = new SubInfo();
   m_sub_infos[local_rank] = sub_info;
 
   IProcessorAffinityService* pas = platform::getProcessorAffinityService();
   if (pas && m_has_sub_domain_threads){
-    // Il ne faut binder les CPU que si demandé et uniquement si
-    // le nombre de threads au total (sur l'ensemble des processus)
-    // ne dépasse pas le nombre de coeur de la machine.
+    // CPU binding should only occur if requested and only if
+    // the total number of threads (across all processes)
+    // does not exceed the number of cores on the machine.
     if (!platform::getEnvironmentVariable("ARCANE_BIND_THREADS").null()){
       ITraceMng* tm = _application()->traceMng();
       tm->info() << "Binding threads";
@@ -679,7 +680,7 @@ executeRank(Int32 local_rank)
     }
   }
 
-  // Création du gestionnaire de parallélisme pour l'ensemble des rangs alloués.
+  // Creation of the parallelism manager for all allocated ranks.
   IParallelSuperMng* psm = _application()->parallelSuperMng();
   Ref<IParallelMng> world_pm = psm->internalCreateWorldParallelMng(local_rank);
   sub_info->m_world_parallel_mng = world_pm;
@@ -689,14 +690,14 @@ executeRank(Int32 local_rank)
     return;
   }
 
-  // Regarde si on souhaite exécuter le calcul sur un sous-ensemble
-  // des ressources allouées. Pour l'instant, il est uniquement possible
-  // de choisir un nombre de sous-domaine. Si c'est le cas, seuls
-  // les rangs de 0 au nombre de sous-domaine souhaité moins 1 sont
-  // utilisés. Les rangs supérieurs n'ont pas de sous-domaines
-  // et à la place utilisent un service qui implémente IDirectExecution
+  // Checks if we want to run the calculation on a subset
+  // of the allocated resources. For now, it is only possible
+  // to choose a number of subdomains. If so, only
+  // ranks from 0 up to the desired number of subdomains minus 1 are
+  // used. Higher ranks do not have subdomains
+  // and instead use a service that implements IDirectExecution
 
-  // Création du gestionnaire des statistiques d'exécution.
+  // Creation of the execution statistics manager.
   ITraceMng* trace = world_pm->traceMng();
   String stat_name = "Rank";
   stat_name = stat_name + world_pm->commRank();
@@ -710,12 +711,12 @@ executeRank(Int32 local_rank)
 
   const Integer nb_wanted_sub_domain = _application()->applicationBuildInfo().nbProcessusSubDomain();
   const Integer nb_wanted_replication = _application()->applicationBuildInfo().nbReplicationSubDomain();
-  // On est en parallèle et on souhaite moins de sous-domaines que de processus alloués
+  // We are in parallel and we want fewer subdomains than allocated processes
   if (world_pm->isParallel()){
-    // Pour l'instant, on ne peut pas mélanger la réplication de sous-domaines avec
-    // un nombre de sous-domaines différent du nombre de processeurs alloués.
-    // TODO: lorsque ce ne sera plus le cas, il faudra faire un all_replica_pm qui
-    // contiendra l'ensemble des sous-domaines et des réplica.
+    // For now, we cannot mix subdomain replication with
+    // a number of subdomains different from the number of allocated processors.
+    // TODO: when this is no longer the case, we will need to create an all_replica_pm that
+    // contains all subdomains and replicas.
 
     if (nb_wanted_replication>1){
       Int32 comm_size = world_pm->commSize();
@@ -724,8 +725,8 @@ executeRank(Int32 local_rank)
       if ((comm_size % nb_wanted_replication)!=0)
         ARCANE_FATAL("The number of replication '{0}' must be a common factor of the number of allocated cores '{1}",
                      nb_wanted_replication,comm_size);
-      // D'abord, on créé un communicateur contenant les réplicats de chaque sous-domaine
-      // Ce communicateur contiendra donc \a m_nb_wanted_replication objets
+      // First, we create a communicator containing the replicas of each subdomain
+      // This communicator will therefore contain \a m_nb_wanted_replication objects
       Ref<IParallelMng> replicate_pm;
       trace->info() << "Building replicated parallel mng";
       {
@@ -750,9 +751,9 @@ executeRank(Int32 local_rank)
       if (!replicate_pm)
         ARCANE_FATAL("Null replicated parallel mng");
 
-      // Maintenant, on créé un IParallelMng qui correspond à l'ensemble
-      // des rangs d'un même réplica. Ce IParallelMng sera assigné au
-      // sous-domaine qui sera créé par la suite.
+      // Now, we create an IParallelMng that corresponds to the set
+      // of ranks of a single replica. This IParallelMng will be assigned to
+      // the subdomain that will be created later.
       trace->info() << "Building sub-domain parallel mng";
       {
         Int32UniqueArray kept_ranks(nb_sub_part);
@@ -765,9 +766,9 @@ executeRank(Int32 local_rank)
           if (new_pm.get()){
             pm = new_pm;
             if (nb_sub_part==1){
-              // Il faut prendre la version séquentielle pour faire comme si le calcul
-              // était séquentiel. Ce gestionnaire sera détruit en même temps
-              // que \a new_pm
+              // We must take the sequential version to make the calculation
+              // appear sequential. This manager will be destroyed at the same time
+              // as \a new_pm
               pm = new_pm->sequentialParallelMngRef();
             }
             trace->info()<<"pm: setting time_stat & m_rank_parallel_mng for replica rank=" << i_repl;
@@ -808,9 +809,9 @@ executeRank(Int32 local_rank)
   ISubDomain* sub_domain = nullptr;
 
   if (!pm){
-    // Si ici, il s'agit d'un rang qui ne possède pas de sous-domaine.
-    // Dans ce cas, exécute le service donnée par 'm_idle_service_name'
-    // (si spécifié, sinon ne fait rien)
+    // If this is a rank that does not own a subdomain.
+    // In this case, execute the service given by 'm_idle_service_name'
+    // (if specified, otherwise do nothing)
     trace->info()<<"The rank doesn't own any subdomain!";
     if (m_properties.m_idle_service_name.empty()){
       trace->info() << "No idle service specified"; trace->flush();
@@ -819,7 +820,7 @@ executeRank(Int32 local_rank)
       trace->info()<<"execDirectTest: "<< m_properties.m_idle_service_name;
       trace->flush();
       _execDirectTest(world_pm.get(),m_properties.m_idle_service_name,false);
-      // On sort de l'execute() du directTest grâce au broadcast(This is the end), il faut s'en retourner
+      // We exit the directTest() via the broadcast(This is the end), so we must return
       return;
     }
     print_stats = true;
@@ -833,9 +834,9 @@ executeRank(Int32 local_rank)
   time_stat->endGatherStats();
 
   if (print_stats && sub_domain){
-    // S'assure que tout le monde est ici avant d'arêter le profiling
-    // TODO: Comme le profiling est local au processus, il suffirait
-    // a priori de faire la barrière sur les IParallelMng locaux.
+    // Ensures everyone is here before stopping the profiling
+    // TODO: Since profiling is local to the process, it would be sufficient
+    // a priori to perform the barrier on the local IParallelMngs.
     IParallelMng* pm = sub_domain->parallelMng();
     pm->barrier();
     if (local_rank==0)
@@ -843,17 +844,17 @@ executeRank(Int32 local_rank)
     pm->barrier();
     _printStats(sub_domain,trace,time_stat);
 
-    // On doit détruire les variables en mémoire partagée ici parce que leur
-    // destruction est effectuée collectivement.
-    // On ne peut pas détruire toutes les variables car certaines sont
-    // utilisées après (GlobalIteration par exemple).
-    // Si, un jour, on met certaines variables "Global" en mémoire partagée,
-    // cette partie va poser problème.
+    // We must destroy the shared memory variables here because their
+    // destruction is performed collectively.
+    // We cannot destroy all variables because some are
+    // used afterward (GlobalIteration, for example).
+    // If, one day, we put certain "Global" variables in shared memory,
+    // this part will cause problems.
     sub_domain->variableMng()->_internalApi()->removeAllShMemVariables();
   }
 
   //BaseForm[Hash["This is the end", "CRC32"], 16]
-  // On informes les 'autres' capacités qu'il faut s'en aller, maintenant!
+  // We inform the 'other' capabilities that they must leave now!
   world_pm->broadcast(UniqueArray<unsigned long>(1,0xdfeb699fl).view(),0);
 }
 
@@ -863,8 +864,8 @@ executeRank(Int32 local_rank)
 void ArcaneMainBatch::SessionExec::
 _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> all_replica_pm,Int32 local_rank)
 {
-  // Il s'agit d'un rang qui a un sous-domaine.
-  // Celui-ci est créé et l'exécution commence.
+  // This is a rank that has a subdomain.
+  // It is created and execution begins.
   SubDomainBuildInfo sdbi(pm,local_rank,all_replica_pm);
   sdbi.setCaseFileName(m_case_file);
   sdbi.setCaseContent(m_case_bytes);
@@ -875,8 +876,8 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
   ITraceMng* sd_trace = sub_domain->traceMng();
   ITraceMngPolicy* trace_policy = _application()->getTraceMngPolicy();
 
-  // En cas de réplication, désactive les sorties courbes
-  // des réplicats.
+  // In case of replication, disable the output curves
+  // of the replicas.
   trace->info() << "REPLICATION: rank=" << pm->replication()->replicationRank();
 
   if (!pm->replication()->isMasterRank()){
@@ -885,9 +886,9 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
   }
 
   // TODO:
-  // Détruire le sous-domaine à la fin de la fonction mais il
-  // faut pour cela modifier ISession pour supporter la suppression
-  // d'un sous-domaine (et ensuite détruire ISession).
+  // Destroy the subdomain at the end of the function, but this requires
+  // modifying ISession to support the deletion
+  // of a subdomain (and then destroying ISession).
 
   IProcessorAffinityService* pas = platform::getProcessorAffinityService();
   if (pas){
@@ -897,7 +898,7 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
 
   if (m_arcane_main->m_check_case_only){
     trace->info() << "Checking the input data";
-    // Initialise les modules de la boucle en temps
+    // Initializes the time loop modules
     {
       TimeLoopReader stl(_application());
       stl.readTimeLoops();
@@ -921,10 +922,10 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
     if (m_properties.m_max_iteration>0)
       trace->info() << "Option 'max_iteration' activated with " << m_properties.m_max_iteration;
 
-    // Redirige les signaux.
-    // Cela se fait aussi a l'initialisation mais ici on peut être dans un autre
-    // thread et de plus certaines bibliothèques ont pu rediriger les signaux
-    // lors de l'init
+    // Redirects signals.
+    // This is also done at initialization but here we might be in another
+    // thread and some libraries might have redirected signals
+    // during the init
     {
       CriticalSection cs(pm->threadMng());
       ArcaneMain::redirectSignals();
@@ -944,8 +945,8 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
       sub_info->m_want_print_stats = true;
       Timer::Action ts_action(sub_domain,"Loop");
       Timer::Sentry ts(&loop_timer);
-      // Lors de la boucle de calcul, ne force pas l'affichage des traces à un niveau
-      // donné (ce qui est fait lors de l'initialisation de l'application.
+      // During the calculation loop, do not force the display of traces at a given level
+      // (which is done during application initialization.
       trace_policy->setDefaultVerboseLevel(sd_trace,Trace::UNSPECIFIED_VERBOSITY_LEVEL);
       if (m_direct_sub_domain_execute_functor){
         m_direct_sub_domain_execute_functor->setSubDomain(sub_domain);
@@ -955,8 +956,8 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
       else{
         ret_compute_loop = sub_domain->timeLoopMng()->doComputeLoop(m_properties.m_max_iteration);
         if (ret_compute_loop<0)
-          //TODO: NE PAS REMPLIR DIRECTEMENT CETTE FONCTION CAR CELA NE MARCHE
-          // PAS EN MULTI-THREAD
+          //TODO: DO NOT FILL THIS FUNCTION DIRECTLY BECAUSE IT DOES NOT WORK
+          // IN MULTI-THREAD
           m_arcane_main->setErrorCode(8);
       }
     }
@@ -964,7 +965,7 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
       Real init_time = init_timer.totalTime();
       Real loop_time = loop_timer.totalTime();
       trace->info(0) << "TotalReel = " << (init_time+loop_time)
-                     << " secondes (init: "
+                     << " seconds (init: "
                      << init_time << "  loop: " << loop_time << " )";
     }
     {
@@ -1040,8 +1041,8 @@ doAbort()
   if (m_session)
     m_session->doAbort();
   else{
-    // Pour finir proprement même si arrêt avant la création de la session
-    // ou après la destruction de la session.
+    // To finish cleanly even if stopped before session creation
+    // or after session destruction.
     IParallelSuperMng* psm = application()->parallelSuperMng();
     if (psm)
       psm->tryAbort();

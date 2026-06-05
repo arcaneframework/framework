@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleMng.cc                                                (C) 2000-2019 */
 /*                                                                           */
-/* Classe gérant l'ensemble des modules.                                     */
+/* Class managing all modules.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,8 +34,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des modules.
+ * \brief Module manager.
  */
 class ModuleMng
 : public IModuleMng
@@ -55,7 +56,7 @@ class ModuleMng
 
  private:
 
-  ModuleList m_modules; //!< Liste des modules
+  ModuleList m_modules; //!< List of modules
   std::map<String,Ref<IModule>> m_modules_map;
   IModule* _findModule(const String& name);
 };
@@ -79,8 +80,9 @@ ModuleMng([[maybe_unused]] ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo regarder plantage MPI lorsqu'on fait le delete.
+ * \todo check MPI crash when doing the delete.
  */
 ModuleMng::
 ~ModuleMng()

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExecutionStatsDumper.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Ecriture des statistiques d'exécution.                                    */
+/* Writing execution statistics.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_EXECUTIONSTATSDUMPER_H
 #define ARCANE_IMPL_EXECUTIONSTATSDUMPER_H
@@ -32,10 +32,11 @@ class ISimpleTableOutput;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecriture des statistiques d'exécution.
+ * \brief Writing execution statistics.
  *
- * Les statistiques sont sorties à la fois dans le listing et dans les
+ * The statistics are outputted both in the listing and in the
  * logs.
  */
 class ARCANE_IMPL_EXPORT ExecutionStatsDumper
@@ -67,4 +68,4 @@ class ARCANE_IMPL_EXPORT ExecutionStatsDumper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

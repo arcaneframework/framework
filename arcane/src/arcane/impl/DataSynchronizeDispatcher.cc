@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataSynchronizeDispatcher.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Gestion de la synchronisation d'une instance de 'IData'.                  */
+/* Management of synchronization for an 'IData' instance.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -95,9 +95,10 @@ DataSynchronizeDispatcherBase::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notifie l'implémentation que les informations de synchronisation
- * ont changé.
+ * \brief Notifies the implementation that the synchronization information
+ * has changed.
  */
 void DataSynchronizeDispatcherBase::
 _compute()
@@ -110,8 +111,9 @@ _compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion de la synchronisation pour une donnée.
+ * \brief Manages synchronization for a data item.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 : private ReferenceCounterImpl
@@ -137,7 +139,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeDispatcher
 
  private:
 
-  //! Gère les buffers d'envoi et réception pour la synchronisation
+  //! Manages send and receive buffers for synchronization
   SingleDataSynchronizeBuffer m_sync_buffer;
   bool m_is_in_sync = false;
   bool m_is_empty_sync = false;
@@ -202,8 +204,9 @@ create(const DataSynchronizeDispatcherBuildInfo& build_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Synchronisation d'une liste de variables.
+ * \brief Synchronization of a list of variables.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcher
 : public IDataSynchronizeMultiDispatcher
@@ -272,11 +275,11 @@ synchronize(ConstArrayView<IVariable*> vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Synchronisation d'une liste de variables.
+ * \brief Synchronization of a list of variables.
  *
- * \brief Version 2 qui utilise directement des buffers au lieu
- * d'un ISerializer.
+ * \brief Version 2 which uses buffers directly instead of an ISerializer.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeMultiDispatcherV2
 : public DataSynchronizeDispatcherBase
@@ -308,7 +311,7 @@ synchronize(ConstArrayView<IVariable*> vars)
   const Int32 nb_var = vars.size();
   m_sync_buffer.setNbData(nb_var);
 
-  // Récupère les emplacements mémoire des données des variables et leur taille
+  // Retrieves the memory locations and size of the variable data
   {
     Int32 index = 0;
     for (IVariable* var : vars) {
@@ -321,7 +324,7 @@ synchronize(ConstArrayView<IVariable*> vars)
     }
   }
 
-  // TODO: à passer en paramètre de la fonction
+  // TODO: should be passed as a function parameter
   bool is_compare_sync = false;
   m_sync_buffer.prepareSynchronize(is_compare_sync);
 
@@ -334,10 +337,11 @@ synchronize(ConstArrayView<IVariable*> vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation basique de la sérialisation.
+ * \brief Basic serialization implementation.
  *
- * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
+ * This implementation is done using send/receive followed by 'wait'.
  */
 class SimpleDataSynchronizeImplementation
 : public AbstractDataSynchronizeImplementation
@@ -417,7 +421,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
                          << " this=" << (IVariableSynchronizeDispatcher*)this
                          << " m_sync_info=" << &this->m_sync_info;*/
 
-  // Envoie les messages de réception non bloquant
+  // Sends non-blocking receive messages
   for (Integer i = 0; i < nb_message; ++i) {
     Int32 target_rank = vs_buf->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->receiveBuffer(i));
@@ -429,7 +433,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   vs_buf->copyAllSend();
 
-  // Envoie les messages d'envoi en mode non bloquant.
+  // Sends send messages in non-blocking mode.
   for (Integer i = 0; i < nb_message; ++i) {
     Int32 target_rank = vs_buf->targetRank(i);
     auto buf = _toLegacySmallView(vs_buf->sendBuffer(i));
@@ -458,11 +462,11 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
                          << " this=" << (IVariableSynchronizeDispatcher*)this
                          << " m_sync_info=" << &this->m_sync_info;*/
 
-  // Attend que les réceptions se terminent
+  // Waits for receptions to finish
   pm->waitAllRequests(m_all_requests);
   m_all_requests.clear();
 
-  // Recopie dans la variable le message de retour.
+  // Copies the return message back into the variable.
   vs_buf->copyAllReceive();
 }
 
@@ -475,9 +479,8 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 IDataSynchronizeMultiDispatcher* IDataSynchronizeMultiDispatcher::
 create(const DataSynchronizeDispatcherBuildInfo& bi)
 {
-  // TODO: Une fois qu'on aura supprimer l'ancien mécanisme, il faudra
-  // modifier l'API ne pas utiliser 'VariableCollection' mais une liste
-  // de \a INumericDataInternal
+  // TODO: Once the old mechanism is removed, the API must be modified not
+  // to use 'VariableCollection' but a list of \a INumericDataInternal
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_MULTISYNCHRONIZE", true))
     if (v.value() >= 1)
       return new DataSynchronizeMultiDispatcher(bi);

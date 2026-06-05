@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceAndModuleFactoryMng.cc                               (C) 2000-2019 */
 /*                                                                           */
-/* Gestionnaire des fabriques de services et modules.                        */
+/* Manager of service and module factories.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,8 +41,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des fabriques de services et modules.
+ * \brief Manager of service and module factories.
  */
 class ARCANE_IMPL_EXPORT ServiceAndModuleFactoryMng
 : public TraceAccessor
@@ -93,8 +94,8 @@ class ServiceAndModuleFactoryMng::Impl
 
   ~Impl()
   {
-    // Il ne faut pas détruire les instances de IServiceFactory2 car elle
-    // sont gérées par le IServiceInfo correspondant.
+    // The instances of IServiceFactory2 must not be destroyed because they
+    // are managed by the corresponding IServiceInfo.
 
     for( List<IServiceInfo*>::Enumerator i(m_service_infos); ++i; )
       delete *i;
@@ -138,18 +139,18 @@ class ServiceAndModuleFactoryMng::Impl
 
  private:
 
-  //! Liste des informations sur les des services
+  //! List of service information.
   List<IServiceInfo*> m_service_infos;
-  //! Liste des informations sur les fabriques des services
+  //! List of service factory information.
   List<IServiceFactoryInfo*> m_service_factory_infos;
-  //! Liste des informations sur les fabriques des modules
+  //! List of module factory information.
   List<IModuleFactoryInfo*> m_module_factory_infos;
-  //! Liste des informations sur les fabriques des services (V2)
+  //! List of service factory information (V2).
   List<Internal::IServiceFactory2*> m_service_factories2;
 
-  //! Liste des IServiceFactoryInfo à détruire.
+  //! List of IServiceFactoryInfo to be destroyed.
   UniqueArray<IServiceFactoryInfo*> m_deletable_service_factory_list;
-  //! Liste des IModuleFactoryInfo à détruire.
+  //! List of IModuleFactoryInfo to be destroyed.
   UniqueArray<ModuleFactoryReference> m_deletable_module_factory_list;
 
   std::set<IServiceFactoryInfo*> m_service_factory_set;
@@ -178,10 +179,11 @@ ServiceAndModuleFactoryMng(ITraceMng* tm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détruit le gestionnaire.
+ * \brief Destroys the manager.
  *
- * Détruit le gestionnaire de message et les gestionnaires de configuration.
+ * Destroys the message manager and configuration managers.
  */
 ServiceAndModuleFactoryMng::
 ~ServiceAndModuleFactoryMng()
@@ -222,7 +224,7 @@ moduleFactoryInfos() const
 void ServiceAndModuleFactoryMng::
 addGlobalFactory(IServiceFactoryInfo* sfi)
 {
-  // Les fabriques globales ne doivent pas être détruites par nous.
+  // Global factories must not be destroyed by us.
   info() << "Add global service factory name=" << sfi->serviceInfo()->localName();
   m_p->addServiceFactory(sfi,false);
 }
@@ -233,7 +235,7 @@ addGlobalFactory(IServiceFactoryInfo* sfi)
 void ServiceAndModuleFactoryMng::
 addGlobalFactory(IModuleFactoryInfo* mfi)
 {
-  // Les fabriques globales ne doivent pas être détruites par nous.
+  // Global factories must not be destroyed by us.
   info() << "Add global module factory name=" << mfi->moduleName();
   m_p->addModuleFactory(mfi);
 }
@@ -251,11 +253,11 @@ createAllServiceRegistererFactories()
   OStringStream oss;
   std::set<ServiceRegisterer*> registered_services;
 
-  // Enregistre toutes les fabriques utilisant ServiceRegisterer
+  // Registers all factories using ServiceRegisterer
 
   while(sr){
-    // Detecte les problèmes de boucle infinie (eg: si deux services ont le même nom)
-    // Désormais les contrôles dans ServiceRegisterer devrait toutefois suffire
+    // Detects infinite loop problems (e.g., if two services have the same name)
+    // Controls in ServiceRegisterer should now be sufficient.
     if (registered_services.find(sr) == registered_services.end()) {
       oss() << "\t" << sr->name() << '\n';
       registered_services.insert(sr);
@@ -277,12 +279,13 @@ createAllServiceRegistererFactories()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute la fabrique spécifiée par \a sr.
+ * \brief Adds the factory specified by \a sr.
  *
- * La fabrique peut être celle d'un service ou d'un module. Dans le
- * premier cas, elle est ajoutée à \a m_service_factory_info. Dans le
- * second cas, elle est ajoutée à \a m_module_factory_info.
+ * The factory can be for a service or a module. In the
+ * first case, it is added to \a m_service_factory_info. In the
+ * second case, it is added to \a m_module_factory_info.
  */
 void ServiceAndModuleFactoryMng::
 _addFactoryFromServiceRegisterer(ServiceRegisterer* sr)
@@ -291,16 +294,16 @@ _addFactoryFromServiceRegisterer(ServiceRegisterer* sr)
 
   bool is_ok = false;
 
-  // Regarde si \a sr n'a pas déjà été traité.
-  // Cela peut arriver avec le chargement dynamique si createAllServiceRegistererFactories()
-  // est appelé plusieurs fois.
+  // Checks if \a sr has already been processed.
+  // This can happen with dynamic loading if createAllServiceRegistererFactories()
+  // is called multiple times.
   if (m_service_registerer_done_set.find(sr)!=m_service_registerer_done_set.end())
     return;
   m_service_registerer_done_set.insert(sr);
 
-  // Tente de créer le IServiceInfo suivant les différentes méthodes possibles.
-  // Si sr->moduleFactoryWithPropertyFunction() est non nul, il s'agit d'une fabrique de module.
-  // Sinon, il s'agit obligatoirement d'un service.
+  // Tries to create the IServiceInfo using the different possible methods.
+  // If sr->moduleFactoryWithPropertyFunction() is not null, it is a module factory.
+  // Otherwise, it must be a service.
   if (sr->moduleFactoryWithPropertyFunction()){
     IModuleFactoryInfo* mfi = (*sr->moduleFactoryWithPropertyFunction())(sr->moduleProperty());
     if (mfi){
@@ -318,7 +321,7 @@ _addFactoryFromServiceRegisterer(ServiceRegisterer* sr)
     if (!si)
       ARCANE_FATAL("Null ServiceInfo created by ServiceRegisterer");
 
-    // Indique qu'il faudra détruire l'instance \a si
+    // Indicates that the instance \a si must be destroyed.
     m_p->registerServiceInfoForDelete(si);
 
     IServiceFactoryInfo* sfi = si->factoryInfo();

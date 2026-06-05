@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableSynchronizerMng.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire des synchroniseurs de variables.                             */
+/* Variable synchronizer manager.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERMNG_H
@@ -32,8 +32,9 @@ class VariableSynchronizerStats;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des synchroniseurs de variables.
+ * \brief Variable synchronizer manager.
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizerMng
 : public TraceAccessor
@@ -113,4 +114,4 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

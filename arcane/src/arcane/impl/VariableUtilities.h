@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableUtilities.h                                         (C) 2000-2015 */
 /*                                                                           */
-/* Fonctions utilitaires sur les variables.                                  */
+/* Utility functions for variables.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_VARIABLEUTILITIES_H
 #define ARCANE_IMPL_VARIABLEUTILITIES_H
@@ -32,8 +32,9 @@ class VariableDependInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions utilitaires sur les variables.
+ * \brief Utility functions for variables.
  */
 class VariableUtilities
 : public TraceAccessor
@@ -70,5 +71,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array2Data.inst.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Donnée du type 'Array2'.                                                  */
+/* Data of type 'Array2'.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -199,7 +199,7 @@ template<typename DataType> void Array2DataT<DataType>::
 assignSerializedData(const ISerializedData* sdata)
 {
   ARCANE_UNUSED(sdata);
-  // Rien à faire car \a sdata pointe directement vers m_value
+  // Nothing to do because \a sdata points directly to m_value
 }
 
 /*---------------------------------------------------------------------------*/
@@ -214,13 +214,13 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
 
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
-    // Réserve la mémoire pour
-    // - le nombre d'éléments de la première dimension
-    // - le nombre d'éléments de la deuxième dimension
-    // - le nombre d'éléments de ids.
-    // - le nombre magique pour verification
+    // Reserves memory for
+    // - the number of elements in the first dimension
+    // - the number of elements in the second dimension
+    // - the number of elements of ids.
+    // - the magic number for verification
     sbuf->reserveSpan(eBasicDataType::Int64,4);
-    // Réserve la mémoire pour les valeurs
+    // Reserves memory for the values
     Int64 total_nb_element = m_value.totalNbElement();
     sbuf->reserveSpan(data_type,total_nb_element*nb_count);
   }
@@ -290,13 +290,13 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
-    // Réserve la mémoire pour
-    // - le nombre d'éléments de la première dimension
-    // - le nombre d'éléments de la deuxième dimension
-    // - le nombre d'éléments de ids.
-    // - le nombre magique pour verification
+    // Reserves memory for
+    // - the number of elements in the first dimension
+    // - the number of elements in the second dimension
+    // - the number of elements in ids.
+    // - the magic number for verification
     sbuf->reserveSpan(eBasicDataType::Int64,4);
-    // Réserve la mémoire pour les valeurs
+    // Reserves memory for the values
     Int64 total_nb_value = ((Int64)ids.size()) * ((Int64)m_value.dim2Size());
     sbuf->reserveSpan(data_type,total_nb_value*nb_count);
     
@@ -370,8 +370,8 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
         UniqueArray<DataType> current_value;
         Span<DataType> transformed_value;
 
-        // Si on applique une transformantion, effectue la transformation dans un
-        // tableau temporaire 'current_value'.
+        // If a transformation is applied, perform the transformation in a
+        // temporary array 'current_value'.
         if (operation && nb_value!=0) {
           current_value.resize(data_value.size());
 
@@ -434,17 +434,17 @@ setName(const String& name)
 template<typename DataType> void Array2DataT<DataType>::
 computeHash(IHashAlgorithm* algo,ByteArray& output) const
 {
-  //TODO: passer en 64 bits
+  //TODO: switch to 64 bits
   Span<const DataType> values = m_value.to1DSpan();
 
-  // Calcule la fonction de hashage pour les valeurs
+  // Calculates the hashing function for the values
   Int64 type_size = sizeof(DataType);
   Int64 nb_element = values.size();
   const Byte* ptr = reinterpret_cast<const Byte*>(values.data());
   Span<const Byte> input(ptr,type_size*nb_element);
   algo->computeHash64(input,output);
 
-  // Calcule la fonction de hashage pour les tailles
+  // Calculates the hashing function for the sizes
   UniqueArray<Int64> dimensions(2);
   dimensions[0] = m_value.dim1Size();
   dimensions[1] = m_value.dim2Size();
@@ -463,14 +463,14 @@ computeHash(DataHashInfo& hash_info) const
   hash_info.setVersion(2);
   IHashAlgorithmContext* context = hash_info.context();
 
-  // Calcule la fonction de hashage pour les tailles
+  // Calculates the hashing function for the sizes
   Int64 dimensions[2];
   dimensions[0] = m_value.dim1Size();
   dimensions[1] = m_value.dim2Size();
   Span<const Int64> dimension_span(dimensions,2);
   context->updateHash(asBytes(dimension_span));
 
-  // Calcule la fonction de hashage pour les valeurs
+  // Calculates the hashing function for the values
   context->updateHash(asBytes(m_value.to1DSpan()));
 }
 

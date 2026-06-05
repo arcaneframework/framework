@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseDocumentLangTranslator.h                                (C) 2000-2017 */
 /*                                                                           */
-/* Classe gérant la traduction d'un jeu de données dans une autre langue.    */
+/* Class managing the translation of a dataset into another language.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_CASEDOCUMENTLANGTRANSLATOR_H
 #define ARCANE_IMPL_CASEDOCUMENTLANGTRANSLATOR_H
@@ -29,8 +29,9 @@ class XmlNode;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant la traduction d'un jeu de données dans une autre langue.
+ * \brief Class managing the translation of a dataset into another language.
  */
 class ARCANE_IMPL_EXPORT CaseDocumentLangTranslator
 : public TraceAccessor

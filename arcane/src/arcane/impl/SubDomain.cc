@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SubDomain.cc                                                (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire du sous-domaine.                                             */
+/* Subdomain manager.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -135,10 +135,11 @@ class MeshBuilderMaster
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'un gestionnaire de sous-domaine.
+ * \brief Implementation of a subdomain manager.
  *
- * Cette classe implémente l'interface ISubDomain.
+ * This class implements the ISubDomain interface.
  */
 class SubDomain
 : public ISubDomain
@@ -148,7 +149,7 @@ class SubDomain
 
  public:
 
-  //! Classe pour gérer la lecture/écriture des propriétés dans les protections/reprises
+  //! Class to manage the reading/writing of properties in checkpoints/rollbacks
   class PropertyMngCheckpoint
   : public TraceAccessor
   {
@@ -188,15 +189,15 @@ class SubDomain
   };
 
  public:
-  
+
   SubDomain(ISession*,Ref<IParallelMng>,Ref<IParallelMng>,const String& filename,ByteConstArrayView bytes);
 
  public:
-	
+
   void build() override;
   void initialize() override;
   void destroy() override;
-	
+
  public:
 
   IBase* objectParent() const override { return m_application; }
@@ -296,45 +297,45 @@ class SubDomain
  private:
 
   ISession* m_session; //!< Session
-  IApplication* m_application; //!< Gestionnaire principal
-  Ref<IParallelMng> m_parallel_mng; //!< Gestionnaire du parallélisme
-  Ref<IParallelMng> m_all_replica_parallel_mng; //!< Gestionnaire du parallélisme pour tous les réplicats
-  ScopedPtrT<IIOMng> m_io_mng; //!< Gestionnaire des entrées/sorties
-  ScopedPtrT<IMemoryInfo> m_memory_info; //!< Informations sur l'utilisation mémoire
-  ScopedPtrT<IVariableMng> m_variable_mng; //!< Gestionnaire des variables
-  ScopedPtrT<IModuleMng> m_module_mng; //!< Gestionnaire des modules
-  ScopedPtrT<IEntryPointMng> m_entry_point_mng; //!< Gestionnaire des points d'entrée
-  Ref<ICaseMng> m_case_mng; //!< Gestionnaire du jeu de données
-  ITimerMng* m_timer_mng; //!< Gestionnaire des timers
-  ScopedPtrT<ICheckpointMng> m_checkpoint_mng; //!< Gestionnaire de protections
-  Ref<IPropertyMng> m_property_mng; //!< Gestionnaire de propriétés
-  ITimeStats* m_time_stats; //!< Statistiques sur les temps d'exécution
-  ScopedPtrT<ITimeLoopMng> m_time_loop_mng; //!< Gestionnaire de la boucle en temps
-  ScopedPtrT<IServiceMng> m_service_mng; //!< Gestionnaire des services
-  ScopedPtrT<IPhysicalUnitSystem> m_physical_unit_system; //!< Système d'unité physique.
+  IApplication* m_application; //!< Main manager
+  Ref<IParallelMng> m_parallel_mng; //!< Parallelism manager
+  Ref<IParallelMng> m_all_replica_parallel_mng; //!< Parallelism manager for all replicas
+  ScopedPtrT<IIOMng> m_io_mng; //!< Input/output manager
+  ScopedPtrT<IMemoryInfo> m_memory_info; //!< Memory usage information
+  ScopedPtrT<IVariableMng> m_variable_mng; //!< Variable manager
+  ScopedPtrT<IModuleMng> m_module_mng; //!< Module manager
+  ScopedPtrT<IEntryPointMng> m_entry_point_mng; //!< Entry point manager
+  Ref<ICaseMng> m_case_mng; //!< Case data manager
+  ITimerMng* m_timer_mng; //!< Timer manager
+  ScopedPtrT<ICheckpointMng> m_checkpoint_mng; //!< Checkpoint manager
+  Ref<IPropertyMng> m_property_mng; //!< Property manager
+  ITimeStats* m_time_stats; //!< Execution time statistics
+  ScopedPtrT<ITimeLoopMng> m_time_loop_mng; //!< Time loop manager
+  ScopedPtrT<IServiceMng> m_service_mng; //!< Service manager
+  ScopedPtrT<IPhysicalUnitSystem> m_physical_unit_system; //!< Physical unit system.
   String m_namespace_uri;
   String m_local_name;
-  IModuleMaster* m_module_master; //!< Module maitre
-  ScopedPtrT<ITimeHistoryMng> m_time_history_mng; //!< Gestionnaire d'historique
+  IModuleMaster* m_module_master; //!< Master module
+  ScopedPtrT<ITimeHistoryMng> m_time_history_mng; //!< History manager
   ScopedPtrT<MeshMng> m_mesh_mng;
   MeshHandle m_default_mesh_handle;
-  bool m_is_initialized; //!< \a true si initialisé
-  String m_case_full_file_name; //!< Chemin d'accès du cas
-  String m_case_name; //!< Nom du cas
-  ByteUniqueArray m_case_bytes; //!< Données du cas.
-  CaseOptionsMain* m_case_config; //!< Config du cas
-  Directory m_export_directory; //!< Répertoire d'exportation
-  Directory m_storage_directory; //!< Répertoire d'archivage
-  Directory m_listing_directory; //!< Répertoire des listings
-  Observable m_on_destroy_observable; //!< Observable lors d'une destruction
+  bool m_is_initialized; //!< \a true if initialized
+  String m_case_full_file_name; //!< Case path
+  String m_case_name; //!< Case name
+  ByteUniqueArray m_case_bytes; //!< Case data.
+  CaseOptionsMain* m_case_config; //!< Case config
+  Directory m_export_directory; //!< Export directory
+  Directory m_storage_directory; //!< Archive directory
+  Directory m_listing_directory; //!< Listing directory
+  Observable m_on_destroy_observable; //!< Observable upon destruction
   bool m_is_continue;
   IDirectExecution* m_direct_execution;
-  ScopedPtrT<ILoadBalanceMng> m_lb_mng; //!< Gestionnaire de caracteristiques pour l'equilibrage
+  ScopedPtrT<ILoadBalanceMng> m_lb_mng; //!< Load balancing characteristics manager
   ScopedPtrT<IConfiguration> m_configuration; //!< Configuration
   bool m_is_create_default_mesh_v2;
   ScopedPtrT<PropertyMngCheckpoint> m_property_mng_checkpoint;
   ScopedPtrT<LegacyMeshBuilder> m_legacy_mesh_builder;
-  //! Indique si on utilise le mécanisme de service pour lire le maillage
+  //! Indicates whether the service mechanism is used to read the mesh
   bool m_has_mesh_service = false;
   Ref<ICaseMeshMasterService> m_case_mesh_master_service;
   ObserverPool m_observers;
@@ -354,8 +355,8 @@ class SubDomain
 
 static ISubDomain* global_sub_domain = nullptr;
 
-/* HP: ARCANE_IMPL_EXPORT en attendant de trouver une solution 
- * pour accéder aux traces hors d'un service ou module */
+/* HP: ARCANE_IMPL_EXPORT pending finding a solution
+ * to access traces outside of a service or module */
 extern "C" ARCANE_IMPL_EXPORT ISubDomain* _arcaneGetDefaultSubDomain()
 {
   return global_sub_domain;
@@ -385,7 +386,7 @@ arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi)
 
   auto* sd = new SubDomain(session,pm,all_replica_pm,case_file_name,bytes);
   sd->build();
-  //GG: l'init se fait par l'appelant
+  //GG: init is done by the caller
   //mng->initialize();
   global_sub_domain = sd;
   return sd;
@@ -423,7 +424,8 @@ SubDomain(ISession* session,Ref<IParallelMng> pm,Ref<IParallelMng> all_replica_p
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Cet appel doit être fait depuis une section critique.
+
+// This call must be made from a critical section.
 void SubDomain::
 build()
 {
@@ -455,13 +457,13 @@ void SubDomain::
 initialize()
 {
   namespace ax = Arcane::Accelerator;
-  // Initialisation du module parallèle
-  // TODO: a supprimer car plus utile
+  // Initialization of the parallel module
+  // TODO: to be removed as it is no longer useful
   m_parallel_mng->initialize();
 
   {
-    // Initialise le runner par défaut en fonction des paramètres
-    // donnés par l'utilisateur.
+    // Initializes the default runner based on the parameters
+    // provided by the user.
     IApplication* app = application();
     ax::AcceleratorRuntimeInitialisationInfo config = app->acceleratorRuntimeInitialisationInfo();
     _setDefaultAcceleratorDevice(config);
@@ -487,17 +489,17 @@ initialize()
 
   m_has_mesh_service = false;
 
-  // Lit le jeu de données.
-  // Il s'agit uniquement de s'assurer de la validité syntaxique
-  // du jeu de données. Les options ne sont pas lues.
-  // Cela doit être fait avant la création du maillage
-  // car l'instance du maillage dépend du jeu de données
+  // Reads the dataset.
+  // This is only to ensure the syntactic validity
+  // of the dataset. Options are not read.
+  // This must be done before mesh creation
+  // because the mesh instance depends on the dataset.
   ICaseDocument* case_document = nullptr;
   if (!m_case_bytes.empty()){
     case_document = m_case_mng->readCaseDocument(m_case_full_file_name,m_case_bytes);
     if (!case_document)
       ARCANE_FATAL("Can not read case options");
-    // Ajoute à la configuration celle présente dans le jeu de données.
+    // Adds to the configuration those present in the dataset.
     {
       ConfigurationReader cr(traceMng(),m_configuration.get());
       cr.addValuesFromXmlNode(case_document->configurationElement(),ConfigurationReader::P_CaseDocument);
@@ -507,17 +509,17 @@ initialize()
   properties::readFromConfiguration(m_configuration.get(),*this);
 
   if (case_document){
-    // Regarde s'il y a un tag <meshes> indiquant que la création et
-    // la lecture du maillage sera gérée par un service
+    // Checks if there is a <meshes> tag indicating that the creation and
+    // reading of the mesh will be managed by a service
     XmlNode meshes_elem = case_document->meshesElement();
     if (!meshes_elem.null()){
       info() << "Using mesh service to create and allocate meshes";
       m_has_mesh_service = true;
     }
-    // TODO: dans ce cas vérifier qu'on n'a pas l'élément 'maillage' historique.
+    // TODO: in this case, check that we do not have the historical 'mesh' element.
   }
-  // Créé le maillage par défaut. Il faut le faire avant la création
-  // des services, car ces derniers peuvent en avoir besoin.
+  // Creates the default mesh. It must be done before the creation
+  // of services, as the latter may need it.
   if (!m_has_mesh_service)
     if (!m_is_create_default_mesh_v2)
       m_legacy_mesh_builder->createDefaultMesh();
@@ -525,8 +527,8 @@ initialize()
   ScopedPtrT<IServiceLoader> service_loader(mf->createServiceLoader());
   service_loader->loadSubDomainServices(this);
 
-  // Le module maître doit toujours être créé avant les autres pour que
-  // ses points d'entrées soient appelés en premier et dernier
+  // The master module must always be created before the others so that
+  // its entry points are called first and last
   m_module_master = mf->createModuleMaster(this);
   m_time_history_mng  = mf->createTimeHistoryMng(this);
 
@@ -546,17 +548,17 @@ initialize()
 void SubDomain::
 _setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& config)
 {
-  // Choix de l'accélérateur à utiliser
-  // Si plusieurs accélérateurs sont disponibles, il faut en choisir un par défaut.
-  // On considère que tous les noeuds ont le même nombre d'accélérateur.
-  // Dans ce cas, on prend comme accélérateur par défaut le i-ème accélérateur disponible,
-  // avec \a i choisi comme étant notre rang modulo le nombre d'accélérateur disponible sur
-  // le noeud.
-  // NOTE: cela fonctionne bien si on utilise un seul processus par accélérateur.
-  // Si on en utilise plus, il faudrait plutôt prendre les rangs consécutifs pour
-  // le même accélérateur.
-  // TODO: Regarder aussi pour voir comment utiliser plutôt l'accélérateur le plus proche
-  // de notre rang. Pour cela il faudrait utiliser des bibliothèque comme HWLOC
+  // Choice of accelerator to use
+  // If multiple accelerators are available, one must be chosen by default.
+  // We assume that all nodes have the same number of accelerators.
+  // In this case, we take the i-th available accelerator as the default,
+  // with \a i chosen as our rank modulo the number of available accelerators on
+  // the node.
+  // NOTE: this works well if we use a single process per accelerator.
+  // If we use more, we should rather take consecutive ranks for
+  // the same accelerator.
+  // TODO: Also look into how to rather use the accelerator closest
+  // to our rank. For this, we would need to use libraries like HWLOC
   //
   auto* device_list = Runner::deviceInfoList(config.executionPolicy());
 
@@ -567,7 +569,7 @@ _setDefaultAcceleratorDevice(Accelerator::AcceleratorRuntimeInitialisationInfo& 
     modulo_device = nb_device;
   }
 
-  // TODO: faire cela ailleurs
+  // TODO: do this elsewhere
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
     Int32 modulo = v.value();
     if (modulo==0)
@@ -597,15 +599,15 @@ destroy()
 
   platform::callDotNETGarbageCollector();
 
-  // Normalement on devrait pouvoir supprimer ce test car il ne devrait plus
-  // rester de références sur des services ou module. Cela est le cas
-  // avec l'implémentation 'coreclr' mais pas avec 'mono'. Du coup on
-  // laisse pour l'instant ce test.
-  // A partir de la version 3.7.8, la plupart des problèmes potentiels dus au GC sont
-  // réglés donc il n'est pas nécessaire de retourner directement. Néanmmoins
-  // il reste encore des problèmes avec l'utilisation des 'ICaseFunction'.
-  // On garde donc la possibilité de changer le comportement si une variable
-  // d'environnement est positionnée.
+  // Normally we should be able to remove this test because there should no longer
+  // be any references to services or modules. This is the case
+  // with the 'coreclr' implementation but not with 'mono'. So we
+  // leave this test for now.
+  // Starting from version 3.7.8, most potential GC issues are
+  // fixed, so it is not necessary to return directly. Nevertheless
+  // there are still problems with the use of 'ICaseFunction'.
+  // We therefore keep the possibility of changing the behavior if an environment
+  // variable is set.
   if (m_application->hasGarbageCollector()){
     bool do_return = true;
     String x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
@@ -618,7 +620,7 @@ destroy()
   }
 
   m_module_master = nullptr;
-  
+
   m_module_mng->removeAllModules();
   m_service_mng = nullptr;
   m_time_history_mng = nullptr;
@@ -633,8 +635,8 @@ destroy()
   m_lb_mng = nullptr;
   m_property_mng.reset();
 
-  // Comme tous les objets peuvent contenir des variables, il faut être
-  // certain de détruire le gestionnaire de variables en dernier.
+  // Since all objects may contain variables, we must be
+  // certain to destroy the variable manager last.
   m_variable_mng->_internalApi()->removeAllVariables();
   m_variable_mng = nullptr;
 
@@ -656,11 +658,12 @@ dumpInfo(std::ostream& o)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocation des maillages.
+ * \brief Mesh allocation.
  *
- * Cette méthode gère uniquement la construction des instance IMesh.
- * La lecture de ces derniers se fait dans readOrReloadMeshes().
+ * This method only handles the construction of IMesh instances.
+ * Reading these is done in readOrReloadMeshes().
  */
 void SubDomain::
 allocateMeshes()
@@ -676,7 +679,7 @@ allocateMeshes()
     const CaseNodeNames* cnn = caseMng()->caseDocument()->caseNodeNames();
     String default_service_name = "ArcaneCaseMeshMasterService";
 
-    // NOTE: cet objet sera détruit par caseMng()
+    // NOTE: this object will be destroyed by caseMng()
     ICaseOptions* opt = new CaseOptions(caseMng(),cnn->meshes);
     ServiceBuilder<ICaseMeshMasterService> sb(application(),opt);
     Ref<ICaseMeshMasterService> mbm = sb.createReference(default_service_name);
@@ -711,7 +714,7 @@ readOrReloadMeshes()
   //info() << format4("Test: {1}",{A_PR2("nb_mesh_created",nb_mesh),A_PR(m_is_continue)});
   //info() << format5(A_PR2("nb_mesh_created",nb_mesh),A_PR(m_is_continue));
 
-  // Regarde si on active le profiling lors de l'initialisation
+  // Checks if profiling is enabled during initialization
   IProfilingService* ps = nullptr;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_CREATE_MESH", true))
     if (v.value()!=0)
@@ -741,7 +744,7 @@ readOrReloadMeshes()
   //! AMR : done in factory. This method is removed from IMesh.
   //      mesh->readAmrActivator(mbi.m_xml_node);
 
-  // Vérifie la cohérence du maillage
+  // Checks mesh consistency
   for( Integer z=0; z<nb_mesh; ++z ){
     IMesh* mesh = m_mesh_mng->getMesh(z);
     mesh->checkValidMesh();
@@ -800,7 +803,7 @@ doInitMeshPartition()
     }
   }
 
-  // Affichage des informations du maillage
+  // Display mesh information
   for( IMesh* mesh : m_mesh_mng->meshes() ){
     ScopedPtrT<IMeshStats> mh(IMeshStats::create(traceMng(),mesh,parallelMng()));
     mh->dumpStats();
@@ -809,8 +812,9 @@ doInitMeshPartition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Appelle les points d'entrée d'initialisation du module.
+ * \brief Calls the module initialization entry points.
  */
 void SubDomain::
 doInitModules()
@@ -823,9 +827,8 @@ doInitModules()
 void SubDomain::
 _doInitialPartition()
 {
-  // NOTE: Ce code n'est utilisé que par le mécanisme historique de création
-  // de maillage. Lorsqu'on utilise les maillages pour les services, le code
-  // correspondant est dans ArcaneCaseMeshService.
+  // NOTE: This code is only used by the historical mesh creation mechanism.
+  // When meshes are used for services, the corresponding code is in ArcaneCaseMeshService.
 
   String test_service = "MeshPartitionerTester";
 
@@ -834,10 +837,10 @@ _doInitialPartition()
     info() << "InitialPartitioning mesh=" << mesh->name() << " is_allocated?=" << is_mesh_allocated;
     if (!is_mesh_allocated)
       continue;
-    // Comme 'parmetis' n'aime pas repartitionner un maillage si un des sous-domaines
-    // est vide (ce qui est le cas si un seul processeur créé les mailles), il
-    // faut d'abord utiliser le partitionneur basique qui répartit les mailles
-    // entre les sous-domaines, puis 'parmetis' s'il est présent
+    // Since 'parmetis' does not like repartitioning a mesh if one of the sub-domains
+    // is empty (which is the case if only one processor created the meshes),
+    // we must first use the basic partitioner which distributes the meshes
+    // among the sub-domains, and then 'parmetis' if it is present
     if (m_legacy_mesh_builder->m_use_partitioner_tester) {
       Int64 nb_cell = mesh->nbCell();
       Int64 min_nb_cell = parallelMng()->reduce(Parallel::ReduceMin,nb_cell);
@@ -871,8 +874,8 @@ _doInitialPartitionForMesh(IMesh* mesh, const String& service_name)
   mesh_partitioner_base = mesh_partitioner_base_ref.get();
 
   if (!mesh_partitioner_base){
-    // Si pas trouvé, recherche avec l'ancienne interface 'IMeshPartitioner' pour des
-    // raisons de compatibilité
+    // If not found, search with the old interface 'IMeshPartitioner' for
+    // compatibility reasons
     pwarning() << "No implementation for 'IMeshPartitionerBase' interface found. "
                << "Searching implementation for legacy 'IMeshPartitioner' interface";
     ServiceBuilder<IMeshPartitioner> sbuilder_legacy(this);
@@ -882,7 +885,7 @@ _doInitialPartitionForMesh(IMesh* mesh, const String& service_name)
   }
 
   if (!mesh_partitioner_base){
-    // Si pas trouvé, récupère la liste des valeurs possibles et les affiche.
+    // If not found, retrieve the list of possible values and display them.
     StringUniqueArray valid_names;
     sbuilder.getServicesNames(valid_names);
     String valid_values = String::join(", ",valid_names);
@@ -910,7 +913,7 @@ doExitModules()
 
   logdate() << "Execution of the end of compute entry points";
 
-  // Sauve les données du gestionnaire d'historique si demandé
+  // Save history manager data if requested
   if (caseOptionsMain()->doTimeHistory())
     m_time_history_mng->dumpHistory(true);
 
@@ -974,7 +977,7 @@ commonVariables() const
 void SubDomain::
 dumpInternalInfos(XmlNode& root)
 {
-  // Info sur la boucle en temps utilisée.
+  // Info about the time loop used.
   {
     ITimeLoopMng* tlm = timeLoopMng();
     ITimeLoop* time_loop = tlm->usedTimeLoop();
@@ -989,7 +992,7 @@ dumpInternalInfos(XmlNode& root)
 
   VariableRefList var_ref_list;
   XmlElement modules(root,"modules");
-  
+
   String ustr_module("module");
   String ustr_name("name");
   String ustr_activated("activated");
@@ -1004,7 +1007,7 @@ dumpInternalInfos(XmlNode& root)
   String ustr_caseblock("caseblock");
   String ustr_tagname("tagname");
 
-  // Liste des modules avec les variables qu'ils utilisent.
+  // List of modules with the variables they use.
   for( ModuleCollection::Enumerator i(moduleMng()->modules()); ++i; ){
     XmlElement module_element(modules,ustr_module);
     module_element.setAttrValue(ustr_name,(*i)->name());
@@ -1018,7 +1021,7 @@ dumpInternalInfos(XmlNode& root)
     }
   }
 
-  // Liste des variables.
+  // List of variables.
   XmlElement variables(root,"variables");
   VariableCollection var_prv_list = variableMng()->variables();
   for( VariableCollection::Enumerator j(var_prv_list); ++j; ){
@@ -1031,7 +1034,7 @@ dumpInternalInfos(XmlNode& root)
     elem.setAttrValue(ustr_kind,itemKindName(var->itemKind()));
   }
 
-  // Liste des blocs d'options
+  // List of option blocks
   const ICaseMng* cm = caseMng();
   CaseOptionsCollection blocks = cm->blocks();
   XmlElement blocks_elem(root,"caseblocks");
@@ -1100,10 +1103,11 @@ setIsInitialized()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Affiche l'affinité CPU de tous les rangs.
+ * \brief Displays the CPU affinity of all ranks.
  *
- * Cela n'est pas actif par défaut et n'est utilisé que pour le debug.
+ * This is not active by default and is only used for debugging.
  */
 void SubDomain::
 _printCPUAffinity()
@@ -1116,8 +1120,8 @@ _printCPUAffinity()
   info() << "PrintCPUAffinity";
   IProcessorAffinityService* pas = platform::getProcessorAffinityService();
 
-  // Il est possible que certains sous-domaines n'aient pas d'instance
-  // de 'IProcessorAffinityService'. Dans ce cas on n'affichera que des '0'.
+  // It is possible that some sub-domains do not have an instance
+  // of 'IProcessorAffinityService'. In this case, only '0' will be displayed.
 
   UniqueArray<Byte> cpuset_bytes;
   const Int32 nb_byte = 48;

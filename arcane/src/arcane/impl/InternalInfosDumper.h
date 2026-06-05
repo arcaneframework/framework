@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* InternalInfosDumper.h                                       (C) 2000-2019 */
 /*                                                                           */
-/* Sorties des informations internes de Arcane.                              */
+/* Internal information dumping for Arcane.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNALINFOSDUMPER_H
 #define ARCANE_IMPL_INTERNALINFOSDUMPER_H
@@ -33,8 +33,9 @@ class JSONWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sorties des informations internes de Arcane.
+ * \brief Internal information dumping for Arcane.
  */
 class ARCANE_IMPL_EXPORT InternalInfosDumper
 {
@@ -66,4 +67,4 @@ class ARCANE_IMPL_EXPORT InternalInfosDumper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

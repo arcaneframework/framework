@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringArrayData.cc                                          (C) 2000-2023 */
 /*                                                                           */
-/* Donnée de type 'UniqueArray<String>'.                                     */
+/* Data of type 'UniqueArray<String>'.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,8 +43,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée tableau d'une chaîne de caractères unicode (spécialisation)
+ * \brief Array data of a unicode character string (specialization)
  */
 class StringArrayData
 : public ReferenceCounterImpl
@@ -121,7 +122,7 @@ public:
 
  private:
 
-  UniqueArray<DataType> m_value; //!< Donnée
+  UniqueArray<DataType> m_value; //!< Data
   ITraceMng* m_trace;
   IArrayDataInternalT<String>* m_internal;
   DataAllocationInfo m_allocation_info;
@@ -134,7 +135,8 @@ public:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: à fusionner avec l'implémentation commune dans ArrayData.
+
+// TODO: To be merged with the common implementation in ArrayData.
 class StringArrayData::Impl
 : public IArrayDataInternalT<String>
 {
@@ -225,8 +227,8 @@ createSerializedDataRef(bool use_basic_type) const
 {
   ARCANE_UNUSED(use_basic_type);
 
-  // Positionne les dimensions et calcule la taille nécessaire pour sérialiser
-  // les valeurs
+  // Positions the dimensions and calculates the necessary size to serialize
+  // the values
   Int64 needed_memory = 0;
   Int64 nb_element = m_value.largeSize();
   Int64UniqueArray dimensions(nb_element);
@@ -241,14 +243,14 @@ createSerializedDataRef(bool use_basic_type) const
                                           nb_base_element, true, dimensions);
   sd->allocateMemory(needed_memory);
 
-  // Recopie les valeurs dans le tableau alloué
+  // Copies the values into the allocated array
   Span<Byte> svalues = sd->writableBytes();
   {
     Int64 index = 0;
     for (Integer i = 0; i < nb_element; ++i) {
       Span<const Byte> str(m_value[i].bytes());
       Int64 len = str.size();
-      // TODO: utiliser directement une méthode de copie.
+      // TODO: use a copy method directly.
       for (Int64 z = 0; z < len; ++z)
         svalues[index + z] = str[z];
       index += len;
@@ -300,7 +302,7 @@ assignSerializedData(const ISerializedData* sdata)
 void StringArrayData::
 serialize(ISerializer* sbuf, IDataOperation* operation)
 {
-  // TODO: tester cette méthode.
+  // TODO: test this method.
   ARCANE_UNUSED(operation);
 
   ISerializer::eMode mode = sbuf->mode();
@@ -359,8 +361,8 @@ setName(const String& name)
 void StringArrayData::
 computeHash(IHashAlgorithm* algo, ByteArray& output) const
 {
-  // Pour l'instant, il faut passer par une sérialisation.
-  // TODO supprimer la sérialisation inutile.
+  // For now, serialization must be used.
+  // TODO remove unnecessary serialization.
   Ref<ISerializedData> s = createSerializedDataRef(true);
   s->computeHash(algo, output);
 }

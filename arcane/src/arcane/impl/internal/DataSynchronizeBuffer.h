@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataSynchronizeBuffer.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un buffer générique pour la synchronisation de données.  */
+/* Implementation of a generic buffer for data synchronization.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_DATASYNCHRONIZEBUFFER_H
@@ -36,50 +36,51 @@ class MemoryBuffer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base de l'implémentation de IDataSynchronizeBuffer.
+ * \brief Base class for the IDataSynchronizeBuffer implementation.
  *
- * Cette implémentation utilise un seul buffer mémoire pour gérer les trois
- * parties de la synchronisation : le buffer d'envoi, le buffer de réception
- * et le buffer pour les comparer si la synchronisation a modifié des valeurs
- * (ce dernier est optionnel).
- * Chaque buffer est ensuite séparé en N parties, appelées sous-buffer,
- * avec N le nombre de rangs qui communiquent. Enfin, chaque sous-buffer est
- * lui-même séparé en P parties, avec P le nombre de données à communiquer.
+ * This implementation uses a single memory buffer to manage the three
+ * parts of the synchronization: the send buffer, the receive buffer,
+ * and the buffer for comparing if the synchronization modified values
+ * (the latter is optional).
+ * Each buffer is then divided into N parts, called sub-buffers,
+ * where N is the number of ranks communicating. Finally, each sub-buffer is
+ * itself divided into P parts, where P is the number of data items to communicate.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 : public IDataSynchronizeBuffer
 {
   /*!
-   * \brief Buffer pour un élément de la synchronisation (envoi, réception ou comparaison)
+   * \brief Buffer for one synchronization element (send, receive, or comparison)
    */
   class BufferInfo
   {
    public:
 
-    //! Buffer global
+    //! Global buffer
     MutableMemoryView globalBuffer() const { return m_memory_view; }
 
-    //! Positionne le buffer global.
+    //! Positions the global buffer.
     void setGlobalBuffer(MutableMemoryView v);
 
-    //! Buffer pour le \a index-ème rang
+    //! Buffer for the \a index-th rank
     MutableMemoryView localBuffer(Int32 rank_index) const;
 
-    //! Buffer pour le \a index-ème rang et la \a data_index-ème donnée
+    //! Buffer for the \a index-th rank and the \a data_index-th data item
     MutableMemoryView dataLocalBuffer(Int32 rank_index, Int32 data_index) const;
 
-    //! Déplacement dans \a globalBuffer() pour le \a index-ème rang
+    //! Displacement in \a globalBuffer() for the \a index-th rank
     Int64 displacement(Int32 rank_index) const;
 
-    //! Taille (en octet) du buffer local pour le rang \a rank_index.
+    //! Size (in bytes) of the local buffer for rank \a rank_index.
     Int64 localBufferSize(Int32 rank_index) const;
 
-    //! Taille totale en octet du buffer global
+    //! Total size in bytes of the global buffer
     Int64 totalSize() const { return m_total_size; }
 
-    //! Numéros locaux des entités pour le rang \a index
+    //! Local IDs of entities for rank \a index
     ConstArrayView<Int32> localIds(Int32 index) const;
 
     void checkValid() const
@@ -92,18 +93,18 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
    private:
 
     /*!
-     * \brief Vue sur la zone mémoire du buffer.
+     * \brief View onto the memory area of the buffer.
      *
-     * Cette variable n'est valide qu'après allocation de tous les buffers.
+     * This variable is only valid after all buffers have been allocated.
      */
     MutableMemoryView m_memory_view;
-    //! Offset (en octet) dans globalBuffer() de chaque donnée
+    //! Offset (in bytes) in globalBuffer() for each data item
     UniqueArray2<Int64> m_displacements;
-    //! Taille (en octet) de chaque buffer local.
+    //! Size (in bytes) of each local buffer.
     SmallArray<Int64> m_local_buffer_size;
-    //! Taille (en octet) du type de chaque donnée.
+    //! Size (in bytes) of the type of each data item.
     ConstArrayView<Int32> m_datatype_sizes;
-    //! Taille total (en octet) du buffer
+    //! Total size (in bytes) of the buffer
     Int64 m_total_size = 0;
     const DataSynchronizeBufferInfoList* m_buffer_info = nullptr;
   };
@@ -134,7 +135,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
  public:
 
-  //! Indique si on compare les valeurs avant/après la synchronisation
+  //! Indicates whether values are compared before/after synchronization
   bool isCompareSynchronizedValues() const { return m_is_compare_sync_values; }
 
   void setSynchronizeBuffer(Ref<MemoryBuffer> v)
@@ -143,32 +144,32 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   }
 
   /*!
-   * \brief Prépare la synchronisation.
+   * \brief Prepares the synchronization.
    *
-   * Prépare la synchronisation et alloue les buffers si nécessaire.
+   * Prepares the synchronization and allocates buffers if necessary.
    *
-   * Si \a is_compare_sync est vrai, on compare après la synchronisation les
-   * valeurs des entités fantômes avec leur valeur d'avant la synchronisation.
+   * If \a is_compare_sync is true, the values of ghost entities are compared after synchronization
+   * with their value before synchronization.
    *
-   * Il faut avoir appelé setSynchronizeBuffer() au moins une fois avant d'appeler
-   * cette méthode pour positionner la zone mémoire allouée.
+   * setSynchronizeBuffer() must be called at least once before calling
+   * this method to position the allocated memory area.
    */
   virtual void prepareSynchronize(bool is_compare_sync) = 0;
 
  protected:
 
   void _allocateBuffers();
-  //! Calcule les informations pour la synchronisation
+  //! Computes the information for the synchronization
   void _compute(ConstArrayView<Int32> datatype_sizes);
 
  protected:
 
   DataSynchronizeInfo* m_sync_info = nullptr;
-  //! Buffer pour toutes les données des entités fantômes qui serviront en réception
+  //! Buffer for all data of ghost entities used for reception
   BufferInfo m_ghost_buffer_info;
-  //! Buffer pour toutes les données des entités partagées qui serviront en envoi
+  //! Buffer for all data of shared entities used for sending
   BufferInfo m_share_buffer_info;
-  //! Buffer pour tester si la synchronisation a modifié les valeurs des mailles fantômes
+  //! Buffer for testing if synchronization modified the values of ghost meshes
   BufferInfo m_compare_sync_buffer_info;
 
  protected:
@@ -176,7 +177,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   Int32 m_nb_rank = 0;
   bool m_is_compare_sync_values = false;
 
-  //! Buffer contenant les données concaténées en envoi et réception
+  //! Buffer containing the concatenated data for sending and receiving
   Ref<MemoryBuffer> m_memory;
 
   Ref<IBufferCopier> m_buffer_copier;
@@ -184,8 +185,9 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de IDataSynchronizeBuffer pour une donnée
+ * \brief IDataSynchronizeBuffer implementation for a single data item
  */
 class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
 : public TraceAccessor
@@ -210,27 +212,28 @@ class ARCANE_IMPL_EXPORT SingleDataSynchronizeBuffer
     m_data_view = v;
     m_datatype_sizes[0] = v.datatypeSize();
   }
-  //! Zone mémoire contenant les valeurs de la donnée à synchroniser
+  //! Memory area containing the values of the data to be synchronized
   MutableMemoryView dataView() { return m_data_view; }
   void prepareSynchronize(bool is_compare_sync) override;
 
   /*!
-   * \brief Termine la synchronisation.
+   * \brief Finalizes the synchronization.
    */
   DataSynchronizeResult finalizeSynchronize();
 
  private:
 
-  //! Vue sur les données de la variable
+  //! View onto the data variable
   MutableMemoryView m_data_view;
-  //! Tableau contenant les tailles des types de donnée
+  //! Array containing the sizes of the data types
   FixedArray<Int32, 1> m_datatype_sizes;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de IDataSynchronizeBuffer pour plusieurs données.
+ * \brief IDataSynchronizeBuffer implementation for multiple data items.
  */
 class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 : public TraceAccessor
@@ -267,9 +270,9 @@ class ARCANE_IMPL_EXPORT MultiDataSynchronizeBuffer
 
  private:
 
-  //! Vue sur les données de la variable
+  //! View onto the data variables
   SmallArray<MutableMemoryView> m_data_views;
-  //! Tableau contenant les tailles des types de donnée
+  //! Array containing the sizes of the data types
   SmallArray<Int32> m_datatype_sizes;
 };
 

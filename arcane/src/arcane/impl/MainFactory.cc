@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MainFactory.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* AbstractFactory des gestionnaires d'Arcane.                               */
+/* AbstractFactory for Arcane managers.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -91,7 +91,7 @@ arccoreCreateAcceleratorMngRef(ITraceMng* tm);
 
 namespace
 {
-//! Renvoie le nom de la fabrique du maillage.
+//! Returns the name of the mesh factory.
 String _getMeshFactoryName(bool is_amr)
 {
   if (is_amr)
@@ -377,7 +377,7 @@ createMesh(ISubDomain* sd,IParallelMng* pm,const String& name)
 IMesh* MainFactory::
 createSubMesh(IMesh* mesh,const ItemGroup& group,const String& name)
 {
-  // Actuellement, les sous-maillages des maillages AMR ne sont pas supportés
+  // Currently, sub-meshes of AMR meshes are not supported
   bool is_amr = false;
   String factory_name = _getMeshFactoryName(is_amr);
   IMeshFactoryMng* mfm = mesh->meshMng()->meshFactoryMng();

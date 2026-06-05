@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Application.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation IApplication.                                              */
+/* IApplication Implementation.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_APPLICATION_H
 #define ARCANE_IMPL_APPLICATION_H
@@ -44,8 +44,9 @@ class ConcurrencyApplication;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur.
+ * \brief Supervisor.
  */
 class ARCANE_IMPL_EXPORT Application
 : public IApplication
@@ -121,43 +122,43 @@ class ARCANE_IMPL_EXPORT Application
                                          const String& file_suffix) override;
 
  private:
-  ApplicationInfo m_exe_info; //!< Informations sur l'exécutable
+  ApplicationInfo m_exe_info; //!< Executable information
   String m_namespace_uri;
   String m_local_name;
   NullThreadImplementation m_null_thread_implementation;
   IArcaneMain* m_arcane_main = nullptr;
-  IMainFactory* m_main_factory = nullptr; //!< Manufacture principale
-  IServiceMng* m_service_mng = nullptr; //!< Gestionnaire des services
-  Ref<IParallelSuperMng> m_parallel_super_mng; //!< Gestionnaire du parallélisme
-  IParallelSuperMng* m_sequential_parallel_super_mng = nullptr; //!< Gestionnaire du parallélisme séquentiel.
-  ReferenceCounter<ITraceMng> m_trace; //!< Gestionnaire de traces
-  IRessourceMng* m_ressource_mng = nullptr; //!< Gestionnaire de ressources
-  IIOMng* m_io_mng = nullptr; //!< Gestionnaire des entrées/sorties
+  IMainFactory* m_main_factory = nullptr; //!< Main factory
+  IServiceMng* m_service_mng = nullptr; //!< Service manager
+  Ref<IParallelSuperMng> m_parallel_super_mng; //!< Parallelism manager
+  IParallelSuperMng* m_sequential_parallel_super_mng = nullptr; //!< Sequential parallelism manager.
+  ReferenceCounter<ITraceMng> m_trace; //!< Trace manager
+  IRessourceMng* m_ressource_mng = nullptr; //!< Resource manager
+  IIOMng* m_io_mng = nullptr; //!< Input/output manager
   IConfigurationMng* m_configuration_mng = nullptr;
-  Ref<IDataFactoryMng> m_data_factory_mng; //!< Fabrique des données
-  String m_version_str; //!< Infos sur la configuration
-  String m_main_version_str; //!< Version sous la forme Majeur.mineur.beta
+  Ref<IDataFactoryMng> m_data_factory_mng; //!< Data factory
+  String m_version_str; //!< Configuration info
+  String m_main_version_str; //!< Version in Major.minor.beta format
   String m_major_and_minor_version_str; //!< Version M.m
-  String m_targetinfo_str; //!< Infos sur la configuration
+  String m_targetinfo_str; //!< Configuration info
   String m_code_name;
-  String m_application_name; //!< Nom de l'application
-  String m_user_name; //!< Nom de l'utilisateur
-  String m_user_config_path; //!< Répertoire de configuration utilisateur
-  SessionList m_sessions; //!< Liste des sessions
-  ServiceFactoryInfoCollection m_main_service_factory_infos; //!< Tableau des fabriques de service
-  ModuleFactoryInfoCollection m_main_module_factory_infos; //!< Tableau des fabriques de module
+  String m_application_name; //!< Application name
+  String m_user_name; //!< User name
+  String m_user_config_path; //!< User configuration directory
+  SessionList m_sessions; //!< List of sessions
+  ServiceFactoryInfoCollection m_main_service_factory_infos; //!< Array of service factories
+  ModuleFactoryInfoCollection m_main_module_factory_infos; //!< Array of module factories
   bool m_has_garbage_collector = false;
   ITraceMngPolicy* m_trace_policy = nullptr;
 
  private:
 
-  bool m_is_init = false; //!< \e true si déjà initialisé
-  UniqueArray<Byte> m_config_bytes; //!< Fichier contenant la configuration
-  UniqueArray<Byte> m_user_config_bytes; //!< Fichier contenant la configuration utilisateur
-  ScopedPtrT<IXmlDocumentHolder> m_config_document; //!< Arbre DOM de la configuration
-  ScopedPtrT<IXmlDocumentHolder> m_user_config_document; //!< Arbre DOM de la configuration utilisateur
-  XmlNode m_config_root_element; //!< Elément racine de la configuration
-  XmlNode m_user_config_root_element; //!< Elément racine de la configuration utilisateur
+  bool m_is_init = false; //!< \e true if already initialized
+  UniqueArray<Byte> m_config_bytes; //!< File containing the configuration
+  UniqueArray<Byte> m_user_config_bytes; //!< File containing the user configuration
+  ScopedPtrT<IXmlDocumentHolder> m_config_document; //!< Configuration DOM tree
+  ScopedPtrT<IXmlDocumentHolder> m_user_config_document; //!< User configuration DOM tree
+  XmlNode m_config_root_element; //!< Configuration root element
+  XmlNode m_user_config_root_element; //!< User configuration root element
   //bool m_is_info_disabled;
   bool m_is_master = false;
   Ref<IPhysicalUnitSystemService> m_physical_unit_system_service;
@@ -189,5 +190,4 @@ class ARCANE_IMPL_EXPORT Application
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

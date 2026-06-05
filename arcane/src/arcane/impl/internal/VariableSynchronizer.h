@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableSynchronizer.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Service de synchronisation des variables.                                 */
+/* Variable synchronization service.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZER_H
@@ -41,13 +41,14 @@ class DataSynchronizeResult;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service de synchronisation de variable.
+ * \brief Interface of a variable synchronization service.
  *
- * Une instance de cette classe est créée via
- * IParallelMng::createVariableSynchronizer(). Une instance est associée
- * à un groupe d'entité. Il faut appeller la fonction compute()
- * pour calculer les infos de synchronisation.
+ * An instance of this class is created via
+ * IParallelMng::createVariableSynchronizer(). An instance is associated
+ * with an item group. The compute() function must be called
+ * to calculate the synchronization information.
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizer
 : public TraceAccessor
@@ -114,7 +115,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
   IVariableSynchronizerMng* m_variable_synchronizer_mng = nullptr;
   SyncMessage* m_default_message = nullptr;
   Runner m_runner;
-  // Pour les synchronisations sur un sous-ensemble des entités
+  // For synchronizations on a subset of entities
   Ref<DataSynchronizeInfo> m_partial_sync_info;
   Ref<SyncMessage> m_partial_message;
   UniqueArray<Int32> m_partial_local_ids;
@@ -145,4 +146,4 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

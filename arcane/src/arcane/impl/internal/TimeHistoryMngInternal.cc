@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeHistoryMngInternal.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Classe interne gérant un historique de valeurs.                           */
+/* Internal class managing a history of values.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -165,13 +165,13 @@ dumpCurves(ITimeHistoryCurveWriter2* writer)
     if (m_is_master_io) {
       TimeHistoryCurveWriterInfo infos(m_output_path, m_global_times.constView());
       writer->beginWrite(infos);
-      // Nos courbes
+      // No curves
       for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
         const TimeHistoryValue& th = *(i->second);
         th.dumpValues(m_trace_mng, writer, infos);
       }
 
-      // Les courbes reçues.
+      // Received curves.
       if (m_need_comm && m_enable_non_io_master_curves) {
         Integer master_io_rank = m_parallel_mng->masterIORank();
         UniqueArray<Int32> length(5);
@@ -263,7 +263,7 @@ dumpHistory()
   _dumpSummaryOfCurvesLegacy();
   _dumpSummaryOfCurves();
 
-  m_trace_mng->info() << "Fin sortie historique: " << platform::getCurrentDateTime();
+  m_trace_mng->info() << "History output finished: " << platform::getCurrentDateTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -391,8 +391,8 @@ readVariables(IMeshMng* mesh_mng, IMesh* default_mesh)
       default:
         ARCANE_FATAL("Unsupported type");
       }
-      // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
-      // ou le même nom qu'un historique "globale".
+      // Important in the case where we have two histories of the same name for two different meshes,
+      // or the same name as a "global" history.
       name = name + "_" + mh.meshName();
     }
     if (sub_domain != NULL_SUB_DOMAIN_ID) {
@@ -410,11 +410,11 @@ resizeArrayAfterRestore()
 {
   Integer current_iteration = m_common_variables.globalIteration();
   {
-    // Vérifie qu'on n'a pas plus d'éléments que d'itérations
-    // dans 'm_th_global_time'. Normalement cela ne peut arriver
-    // que lors d'un retour-arrière si les variables ont été sauvegardées
-    // au cours du pas de temps.
-    // TODO: ce test ne fonctionne pas si isShrinkActive() est vrai.
+    // Check that we do not have more elements than iterations
+    // in 'm_th_global_time'. Normally this can only happen
+    // during a time rollback if the variables were saved
+    // during the time step.
+    // TODO: this test does not work if isShrinkActive() is true.
     Integer n = m_th_global_time.size();
     if (n > current_iteration) {
       n = current_iteration;
@@ -465,8 +465,8 @@ iterationsAndValues(const TimeHistoryAddValueArgInternal& thpi, UniqueArray<Int3
 
   String name_to_find = thpi.timeHistoryAddValueArg().name().clone();
   if (!thpi.meshHandle().isNull()) {
-    // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
-    // ou le même nom qu'un historique "globale".
+    // Important in the case where we have two histories with the same name for two different meshes,
+    // or the same name as a "global" history.
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
   if (thpi.timeHistoryAddValueArg().isLocal()) {
@@ -496,7 +496,7 @@ _dumpCurvesAllWriters()
   if (m_is_master_io || (m_enable_non_io_master_curves && m_is_master_io_of_sd)) {
     m_trace_mng->info() << "Begin output history: " << platform::getCurrentDateTime();
 
-    // Ecriture via version 2 des curve writers
+    // Writing via version 2 of the curve writers
     for (auto& cw_ref : m_curve_writers2) {
       ITimeHistoryCurveWriter2* writer = cw_ref.get();
       m_trace_mng->debug() << "Writing curves with '" << writer->name()
@@ -512,14 +512,14 @@ _dumpCurvesAllWriters()
 void TimeHistoryMngInternal::
 _dumpSummaryOfCurvesLegacy()
 {
-  // Seul le processus master écrit.
+  // Only the master process writes.
   Integer master_io_rank = m_parallel_mng->masterIORank();
   if (m_is_master_io) {
     std::ofstream ofile(m_directory.file("time_history.xml").localstr());
     ofile << "<?xml version='1.0' ?>\n";
     ofile << "<curves>\n";
 
-    // On écrit d'abord le nom de nos courbes.
+    // We first write the names of our curves.
     for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
       const TimeHistoryValue& th = *(i->second);
       ofile << "<curve name='";
@@ -531,10 +531,10 @@ _dumpSummaryOfCurvesLegacy()
       }
       ofile << th.name() << "'/>\n";
     }
-    // Puis, si les autres processus peuvent aussi avoir des courbes, on
-    // écrit aussi leurs noms.
-    // Même si "m_io_master_write_only" est égal à false, ce fichier est
-    // forcement écrit par un seul processus.
+    // Then, if other processes can also have curves, we
+    // also write their names.
+    // Even if "m_io_master_write_only" is equal to false, this file is
+    // necessarily written by a single process.
     if (m_enable_non_io_master_curves && (!m_io_master_write_only || m_need_comm)) {
       for (Integer i = 0; i < m_parallel_mng->commSize(); ++i)
         if (i != master_io_rank) {
@@ -561,7 +561,7 @@ _dumpSummaryOfCurvesLegacy()
     ofile << "</curves>\n";
   }
 
-  // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
+  // If we are not a writing process but it is possible that we possess curves.
   else if (m_enable_non_io_master_curves && m_is_master_io_of_sd && (!m_io_master_write_only || m_need_comm)) {
     Integer nb_curve = arcaneCheckArraySize(m_history_list.size());
     m_parallel_mng->send(ArrayView<Integer>(1, &nb_curve), master_io_rank);
@@ -592,7 +592,7 @@ _dumpSummaryOfCurvesLegacy()
 void TimeHistoryMngInternal::
 _dumpSummaryOfCurves()
 {
-  // Seul le processus master écrit.
+  // Only the master process writes.
   if (m_is_master_io) {
 
     JSONWriter json_writer(JSONWriter::FormatFlags::None);
@@ -606,7 +606,7 @@ _dumpSummaryOfCurves()
           json_writer.writeKey("curves");
           json_writer.beginArray();
 
-          // On écrit d'abord le nom de nos courbes.
+          // We first write the names of our curves.
           for (ConstIterT<HistoryList> i(m_history_list); i(); ++i) {
             JSONWriter::Object o4(json_writer);
             const TimeHistoryValue& th = *(i->second);
@@ -627,10 +627,10 @@ _dumpSummaryOfCurves()
             json_writer.write("unique-name", name + th.name());
           }
 
-          // Puis, si les autres processus peuvent aussi avoir des courbes, on
-          // écrit aussi leurs noms.
-          // Même si "m_io_master_write_only" est égal à false, ce fichier est
-          // forcement écrit par un seul processus.
+          // Then, if other processes can also have curves, we
+          // also write their names.
+          // Even if "m_io_master_write_only" is equal to false, this file is
+          // necessarily written by a single process.
           if (m_enable_non_io_master_curves && (!m_io_master_write_only || m_need_comm)) {
             for (Integer i = 0; i < m_parallel_mng->commSize(); ++i) {
               if (i != master_io_rank) {
@@ -673,7 +673,7 @@ _dumpSummaryOfCurves()
     ofile.close();
   }
 
-  // Si l'on n'est pas un processus écrivain mais qu'il est possible que l'on possède des courbes.
+  // If we are not a writing process but it is possible that we possess curves.
   else if (m_enable_non_io_master_curves && m_is_master_io_of_sd && (!m_io_master_write_only || m_need_comm)) {
 
     Integer master_io_rank = m_parallel_mng->masterIORank();
@@ -726,8 +726,8 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
 
   String name_to_find = thpi.timeHistoryAddValueArg().name().clone();
   if (!thpi.meshHandle().isNull()) {
-    // Important dans le cas où on a deux historiques de même nom pour deux maillages différents,
-    // ou le même nom qu'un historique "globale".
+    // Important in the case where we have two histories with the same name for two different meshes,
+    // or the same name as a "global" history.
     name_to_find = name_to_find + "_" + thpi.meshHandle().meshName();
   }
   if (thpi.timeHistoryAddValueArg().isLocal()) {
@@ -741,7 +741,7 @@ _addHistoryValue(const TimeHistoryAddValueArgInternal& thpi, ConstArrayView<Data
 
   auto hl = m_history_list.find(name_to_find);
   TimeHistoryValueT<DataType>* th = nullptr;
-  // Trouvé, on le retourne.
+  // Found, we return it.
   if (hl != m_history_list.end())
     th = dynamic_cast<TimeHistoryValueT<DataType>*>(hl->second);
   else {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ThreadBindingMng.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire pour punaiser les threads.                                   */
+/* Thread manager for threads.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,8 +52,8 @@ initialize(ITraceMng* tm,const String& strategy)
 {
   m_trace_mng = tm;
   m_bind_strategy = strategy;
-  // Si la strategie n'est pas nulle, s'attache à l'observable du TaskFactory
-  // pour être notifié de la création du thread.
+  // If the strategy is not null, it attaches to the TaskFactory observable
+  // to be notified of thread creation.
   if (!m_bind_strategy.null()){
     if (m_bind_strategy!="Simple")
       ARCANE_FATAL("Invalid strategy '{0}'. Valid values are : 'Simple'",m_bind_strategy);
@@ -83,8 +83,8 @@ finalize()
 void ThreadBindingMng::
 _createThreadCallback()
 {
-  // TODO: ne pas dépasser le nombre max de threads alloués, sinon afficher un
-  // message d'avertissement
+  // TODO: do not exceed the maximum number of allocated threads, otherwise display a
+  // warning message
   ITraceMng* tm = m_trace_mng;
   Int32 thread_index = m_current_thread_index;
   ++m_current_thread_index;

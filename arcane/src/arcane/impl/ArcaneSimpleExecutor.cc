@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneSimpleExecutor.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant d'exécuter du code directement via Arcane.              */
+/* Class allowing code to be executed directly via Arcane.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,9 +46,9 @@ class ArcaneSimpleExecutorMainFactory
 : public MainFactory
 {
  public:
-  // NOTE: Il faut implémenter cette méthode pour hériter de MainFactory
-  // mais elle ne sera pas utilisée dans le cas d'une exécution directe
-  // (c'est toujours une instance de ArcaneMain() qui sera créée)
+  // NOTE: This method must be implemented to inherit from MainFactory
+  // but it will not be used in the case of direct execution
+  // (it is always an instance of ArcaneMain() that will be created)
   IArcaneMain* createArcaneMain(const ApplicationInfo& app_info) override
   { 
     return new ArcaneMain(app_info,this);
@@ -98,12 +98,12 @@ ArcaneSimpleExecutor()
   const CommandLineArguments& cmd_line_args = app_info.commandLineArguments();
   auto& build_info = m_p->m_application_build_info;
   build_info.parseArguments(cmd_line_args);
-  // Par défaut il n'y a pas de fichiers de configuration dans le cas
-  // d'une exécution directe.
+  // By default, there are no configuration files in the case
+  // of direct execution.
   build_info.setConfigFileName(String());
 
-  // Par défaut, limite le niveau de verbosité de l'initialisation
-  // Cela permet d'éviter d'afficher les infos sur les versions
+  // By default, limit the verbosity level of the initialization
+  // This prevents displaying version information.
   _setDefaultVerbosityLevel(1);
 }
 
@@ -128,9 +128,9 @@ _checkInit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne le niveau des traces à \a level si elles ne sont
- * pas positionnées.
+ * \brief Sets the trace level to \a level if it is not set.
  */
 void ArcaneSimpleExecutor::
 _setDefaultVerbosityLevel(Integer level)
@@ -212,7 +212,7 @@ createSubDomain(const String& case_file_name)
   if (!m_p->m_has_output_level)
     tr->setStandardOutputVerbosityLevel(Trace::DEFAULT_VERBOSITY_LEVEL);
   IMainFactory* main_factory = app->mainFactory();
-  // TODO: utiliser le service de code spécifié dans ApplicationInfo.
+  // TODO: use the code service specified in ApplicationInfo.
   Ref<ICodeService> code_service = createArcaneCodeService(app);
   ISession* session(code_service->createSession());
   IParallelSuperMng* psm = app->parallelSuperMng();
@@ -233,7 +233,7 @@ createSubDomain(const String& case_file_name)
     sdbi.setCaseFileName(String());
     sdbi.setCaseBytes(ByteConstArrayView());
   }
-  // Le service de statistiques doit être détruit explicitement
+  // The statistics service must be explicitly destroyed
   ITimeStats* time_stat = main_factory->createTimeStats(world_pm->timerMng(),tr,"Stats");
   time_stat->beginGatherStats();
   m_p->m_time_stats_list.add(time_stat);

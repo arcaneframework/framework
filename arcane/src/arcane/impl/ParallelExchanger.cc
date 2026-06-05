@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelExchanger.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Echange d'informations entre processeurs.                                 */
+/* Information exchange between processors.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -150,8 +150,8 @@ _initializeCommunicationsMessages()
 
   for( Int32 msg_rank : m_send_ranks ){
     auto* comm = new SerializeMessage(my_rank,msg_rank,ISerializeMessage::MT_Send);
-    // Il ne sert à rien de s'envoyer des messages.
-    // (En plus ca fait planter certaines versions de MPI...)
+    // It is useless to send messages to ourselves.
+    // (Plus, it crashes certain versions of MPI...)
     if (my_rank==msg_rank)
       m_own_send_message = comm;
     else
@@ -212,15 +212,15 @@ _processExchange(const ParallelExchangerOptions& options)
   bool use_all_to_all = false;
   if (options.exchangeMode())
     use_all_to_all = true;
-  // TODO: traiter le cas EM_Auto
+  // TODO: handle EM_Auto case
 
-  // Génère les infos pour chaque processeur de qui on va recevoir
-  // des entités
+  // Generates the infos for each processor from which we will receive
+  // entities
   Int32 my_rank = m_parallel_mng->commRank();
   for( Int32 msg_rank : m_recv_ranks ){
     auto* comm = new SerializeMessage(my_rank,msg_rank,ISerializeMessage::MT_Recv);
-    // Il ne sert à rien de s'envoyer des messages.
-    // (En plus ca fait planter certaines versions de MPI...)
+    // It is useless to send messages to ourselves.
+    // (Plus, it crashes certain versions of MPI...)
     if (my_rank==msg_rank)
       m_own_recv_message = comm;
     else
@@ -242,7 +242,7 @@ _processExchange(const ParallelExchangerOptions& options)
     }
   }
 
-  // Récupère les infos de chaque receveur
+  // Retrieves the infos of each receiver
   for( SerializeMessage* comm : m_recv_serialize_infos )
     comm->serializer()->setMode(ISerializer::ModeGet);
 }
@@ -263,7 +263,7 @@ _processExchangeCollective()
   Int32UniqueArray recv_counts(nb_rank,0);
   Int32UniqueArray recv_indexes(nb_rank,0);
  
-  // D'abord, détermine pour chaque proc le nombre d'octets à envoyer
+  // First, determine for each proc the number of bytes to send
   for( SerializeMessage* comm : m_send_serialize_infos ){
     auto* sbuf = comm->trueSerializer();
     Span<Byte> val_buf = sbuf->globalBuffer();
@@ -271,16 +271,16 @@ _processExchangeCollective()
     send_counts[rank] = arcaneCheckArraySize(val_buf.size());
   }
 
-  // Fait un AllToAll pour connaitre combien de valeurs je dois recevoir des autres.
+  // Performs an AllToAll to know how many values I must receive from others.
   {
     Timer::SimplePrinter sp(traceMng(),"ParallelExchanger: sending sizes with AllToAll");
     pm->allToAll(send_counts,recv_counts,1);
   }
 
-  // Détermine le nombre total d'infos à envoyer et recevoir
+  // Determines the total number of infos to send and receive
 
-  // TODO: En cas débordement, il faudrait le faire en plusieurs morceaux
-  // ou alors revenir aux échanges point à point.
+  // TODO: In case of overflow, it should be done in several pieces
+  // or revert to point-to-point exchanges.
   Int32 total_send = 0;
   Int32 total_recv = 0;
   Int64 int64_total_send = 0;
@@ -294,7 +294,7 @@ _processExchangeCollective()
     int64_total_recv += recv_counts[i];
   }
 
-  // Vérifie qu'on ne déborde pas.
+  // Checks that we do not overflow.
   if (int64_total_send!=total_send)
     ARCANE_FATAL("Message to send is too big size={0} max=2^31",int64_total_send);
   if (int64_total_recv!=total_recv)
@@ -313,7 +313,7 @@ _processExchangeCollective()
     }
   }
 
-  // Copie dans send_buf les infos des sérialisers.
+  // Copies the serializer infos into send_buf.
   for( SerializeMessage* comm : m_send_serialize_infos ){
     auto* sbuf = comm->trueSerializer();
     Span<Byte> val_buf = sbuf->globalBuffer();
@@ -334,7 +334,7 @@ _processExchangeCollective()
     Timer::SimplePrinter sp(traceMng(),"ParallelExchanger: sending values with AllToAll");
     pm->allToAllVariable(send_buf,send_counts,send_indexes,recv_buf,recv_counts,recv_indexes);
   }
-  // Recopie les données reçues dans le message correspondant.
+  // Copies the received data back into the corresponding message.
   for( SerializeMessage* comm : m_recv_serialize_infos ){
     auto* sbuf = comm->trueSerializer();
     Int32 rank = comm->destRank();
@@ -395,15 +395,16 @@ namespace
 class SortFunctor
 {
  public:
+
   /*!
-   * \brief Operateur de tri des messages.
+   * \brief Message sorting operator.
    *
-   * Le tri se fait comme suit:
-   * - d'abord prend 1 rang sur nb_phase pour éviter que tous les messages
-   *   aillent sur les mêmes noeuds (car on suppose que les rangs consécutifs sont
-   *   sur les mêmes noeuds)
-   * - ensuite tri sur le rang de destination
-   * - enfin poste les réceptions avant les envois.
+   * Sorting is done as follows:
+   * - first, take 1 rank out of nb_phase to prevent all messages
+   *   from going to the same nodes (since we assume consecutive ranks are
+   *   on the same nodes)
+   * - then sort by destination rank
+   * - finally, post receives before sends.
    */
   bool operator()(const ISerializeMessage* a,const ISerializeMessage* b)
   {
@@ -423,14 +424,15 @@ class SortFunctor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Echange avec contrôle du nombre maximum de messages en vol.
+ * \brief Exchange with control over the maximum number of messages in flight.
  */
 void ParallelExchanger::
 _processExchangeWithControl(Int32 max_pending_message)
 {
-  // L'ensemble des messages sont dans 'm_comms_buf'.
-  // On les recopie dans 'sorted_messages' pour qu'ils soient triés.
+  // All messages are in 'm_comms_buf'.
+  // We copy them into 'sorted_messages' so that they are sorted.
 
   auto message_list {m_parallel_mng->createSerializeMessageListRef()};
 
@@ -438,9 +440,9 @@ _processExchangeWithControl(Int32 max_pending_message)
   std::sort(sorted_messages.begin(),sorted_messages.end(),SortFunctor{});
 
   Integer position = 0;
-  // Il faut au moins ajouter un minimum de messages pour ne pas avoir de blocage.
-  // A priori le minimum est 2 pour qu'il y est au moins un receive et un send
-  // mais il est préférable de mettre plus pour ne pas trop dégrader les performances.
+  // We must add at least a minimum number of messages to avoid blocking.
+  // The minimum is 2 to ensure there is at least one receive and one send
+  // but it is better to put more to avoid degrading performance too much.
   max_pending_message = math::max(4,max_pending_message);
 
   Integer nb_message = sorted_messages.size();
@@ -463,14 +465,14 @@ _processExchangeWithControl(Int32 max_pending_message)
       message_list->addMessage(message);
       ++position;
     }
-    // S'il ne reste plus de messages, alors on fait un WaitAll pour attendre*
-    // que les messages restants soient tous terminés.
+    // If there are no more messages left, we perform a WaitAll to wait*
+    // that all remaining messages are finished.
     if (position>=nb_message){
       message_list->waitMessages(Parallel::WaitAll);
       break;
     }
-    // Le nombre de messages terminés indique combien de message il faudra
-    // ajouter à la liste pour la prochaine itération.
+    // The number of finished messages indicates how many messages will need to be
+    // added to the list for the next iteration.
     Integer nb_done = message_list->waitMessages(Parallel::WaitSome);
     if (verbosity_level>=2)
       info() << "Wait nb_done=" << nb_done;
@@ -496,4 +498,3 @@ createParallelExchangerImpl(Ref<IParallelMng> pm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

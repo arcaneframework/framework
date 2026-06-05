@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableMng.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant l'ensemble des variables.                                   */
+/* Class managing all variables.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,7 +46,7 @@
 #include <set>
 #include <vector>
 
-// TODO: gérer le hash en version 64 bits.
+// TODO: handle the hash in 64-bit version.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,10 +68,10 @@ arcaneCreateVariableMng(ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construit un gestionnaire de variable pour le cas \a pn
- * \warning Pour un cas donné, il faut créer un et un seul gestionnaire de
- * variable.
+ * \brief Constructs a variable manager for the case \a pn
+ * \warning For a given case, only one variable manager must be created.
  */
 VariableMng::
 VariableMng(ISubDomain* sd)
@@ -90,10 +90,11 @@ VariableMng(ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détruit le gestionnaire
+ * \brief Destroys the manager
  *
- * Le gestionnaire effectue la libération mémoire des variables qu'il gère.
+ * The manager performs memory release of the variables it manages.
  */
 VariableMng::
 ~VariableMng()
@@ -136,7 +137,7 @@ initialize()
   while (vff){
     IVariableFactory* vf = vff->createFactory();
     String full_name = vf->fullTypeName();
-    // Vérifie qu'aucune fabrique avec le même nom n'existe.
+    // Checks that no factory with the same name exists.
     if (m_variable_factory_map.find(full_name)!=m_variable_factory_map.end()){
       ARCANE_FATAL("VariableFactoryMap already contains a factory for the same type '{0}'",
                    full_name);
@@ -161,7 +162,7 @@ initialize()
 void VariableMng::
 removeAllVariables()
 {
-  //ATTENTION: ceci entraine des appels à removeVariable()
+  //WARNING: this leads to calls to removeVariable()
   m_auto_create_variables.each(Deleter());
 
   OStringStream var_str;
@@ -193,14 +194,14 @@ removeAllVariables()
     }
   }
 
-  // Appelle explicitement 'unregisterVariable()' sur les variables restantes.
-  // Sans cela, si ensuite l'instance 'this' est détruite avant que les variables
-  // restantent ne le soit cela va provoquer un plantage (Read after free). Cela
-  // n'arrive normalement pas pour le C++ mais peut arriver pour le wrapping.
+  // Explicitly calls 'unregisterVariable()' on the remaining variables.
+  // Without this, if the instance 'this' is destroyed before the variables
+  // remain are, it will cause a crash (Read after free). This
+  // does not normally happen for C++ but can happen for wrapping.
   if (has_remaining_vars){
-    // Recopie les références dans un tableau temporaire
-    // car les appels à unregisterVariable() modifient l'itérateur ivar
-    // et aussi m_full_name_variable_map.
+    // Copies the references into a temporary array
+    // because calls to unregisterVariable() modify the ivar iterator
+    // and also m_full_name_variable_map.
     UniqueArray<VariableRef*> remaining_refs;
     for( const auto& i : remaining_vars )
       for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar )
@@ -304,10 +305,10 @@ removeVariable(IVariable* var)
   m_on_variable_removed.notify(eargs);
   {
     ItemGroup var_group = var->itemGroup();
-    // Retire cette variable de tous les groupes [bien défini mais sur ItemGroupImplNull]
+    // Retire this variable from all groups [well defined but on ItemGroupImplNull]
     if (!var_group.null())
       var_group.internal()->detachObserver(var);
-    // Retire cette variable des variables existantes, puis la détruit
+    // Remove this variable from existing variables, then destroy it
     m_full_name_variable_map.erase(var->fullName());
     {
       VariableNameInfo vni;
@@ -337,8 +338,8 @@ checkVariable(const VariableInfo& infos)
   if (infos.itemKind()!=IK_Unknown && infos.meshName().null())
     ARCANE_FATAL("Mesh variable without a mesh  full-name={0} name={1}",infos.fullName(),infos.localName());
 
-  // Si variable du maillage, vérifie qu'aucune variable globale non lié à un maillage
-  // ne porte le même nom.
+  // If it is a mesh variable, check that no global variable not linked to a mesh
+  // has the same name.
   if (arcaneIsCheck()){
     if (!infos.meshName().null()){
       String check_name = infos.localName();
@@ -347,7 +348,7 @@ checkVariable(const VariableInfo& infos)
       }
     }
     else{
-      // Si variable globale, vérifie qu'aucune variable du maillage ne porte le même nom.
+      // If it is a global variable, check that no mesh variable has the same name.
       String check_name = String("Mesh0_")+infos.localName();
       if (findVariableFullyQualified(check_name)){
         ARCANE_FATAL("Global variable has the same name that a mesh variable (name={0})",check_name);
@@ -361,9 +362,9 @@ checkVariable(const VariableInfo& infos)
   //cerr << "** CHECK " << name << ' ' << infos.dataType() << ' ' << infos.kind() << '\n';
   VNIMap::Data* var_data = m_vni_map.lookup(vni);
   if (var_data){
-    // Une variable de même nom que \a var existe déjà.
-    // Il faut dans ce cas vérifier que son genre et son type sont les même.
-    // elle a le même genre et le même type.
+    // A variable with the same name as \a var already exists.
+    // In this case, it is necessary to check that its kind and type are the same.
+    // it has the same kind and the same type.
     var = var_data->value();
     //cerr << "** FIND " << prv->name() << ' ' << prv->dataType() << ' ' << prv->kind() << '\n';
     if (infos.dataType()!=var->dataType() ||
@@ -453,7 +454,7 @@ generateTemporaryVariableName()
   String name;
   while (is_bad){
     name = String("ArcaneTemporary") + m_generate_name_id;
-    // Vérifie que le nom généré ne correspond pas à une variable existante
+    // Check that the generated name does not correspond to an existing variable
     if (findVariable(name))
       ++m_generate_name_id;
     else
@@ -654,8 +655,8 @@ _createVariableFromType(const String& full_type,const VariableBuildInfo& vbi)
           << " type=" << full_type
           << " vf=" << vf;
   VariableRef* var_ref = vf->createVariable(vbi);
-  // Ajoute la variable à une liste pour être sur qu'elle sera bien
-  // détruite.
+  // Add the variable to a list to ensure it will be properly
+  // destroyed.
   m_auto_create_variables.add(var_ref);
   return var_ref;
 }
@@ -692,8 +693,9 @@ readVariables(IDataReader* reader,IVariableFilter* filter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo prendre en compte le NoDump
+ * \todo take NoDump into account
  */
 Real VariableMng::
 exportSize(const VariableCollection& vars)
@@ -731,7 +733,8 @@ synchronizerMng() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Trieur de variable suivant leur taille mémoire utilisée
+
+//! Variable sorter based on used memory size
 class VariableSizeSorter
 {
  public:
@@ -751,7 +754,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
   ostr << " Number of currently allocated variables:  " << m_full_name_variable_map.size() << '\n';
   ostr << " Number of currently reference:            " << m_variables_ref.count() << '\n';
 
-  // Statistiques sur la mémoire utilisée
+  // Statistics on used memory
   Integer total_nb_var = 0;
   Integer nb_var[NB_ITEM_KIND];
   Real mem_used[NB_ITEM_KIND];
@@ -767,8 +770,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     nb_var[i] = 0;
   }
 
-  // Récupère le nombre de mailles pour faire des stats d'utilisation
-  // mémoire moyenne par maille.
+  // Get the number of meshes to calculate statistics on average memory per mesh.
   Integer nb_cell = 1;
   if (subDomain()->defaultMesh())
     nb_cell = subDomain()->defaultMesh()->allCells().size();
@@ -785,14 +787,14 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     IVariable* var = i.second;
     if (!var->isUsed())
       continue;
-    // Pas de statistiques sur les variables scalaires
+    // No statistics on scalar variables
     if (var->dimension()==0)
       continue;
     for( VarRefEnumerator ivar(var); ivar.hasNext(); ++ivar ){
       VariableRef* vref = *ivar;
       IModule* var_module = vref->module();
-      // Si la variable n'a pas de module, recherche le module éventuel
-      // qui l'a créée
+      // If the variable does not have a module, search for the possible module
+      // that created it
       if (!var_module)
         var_module = m_variable_creation_modules[var];
       if (var_module){
@@ -804,15 +806,15 @@ dumpStats(std::ostream& ostr,bool is_verbose)
 
   for( const auto& i : m_full_name_variable_map ){
     IVariable* var = i.second;
-    // Pas de statistiques sur les variables non utilisées
+    // No statistics on unused variables
     if (!var->isUsed())
       continue;
-    // Pas de statistiques sur les variables scalaires
+    // No statistics on scalar variables
     if (var->dimension()==0)
       continue;
     memory_sorted_variables.add(var);
-    // Si la variable n'a pas de module associé, la place dans
-    // la liste des variables sans module
+    // If the variable does not have an associated module, it is placed in
+    // the list of variables without a module
     if (variables_with_module.find(var)==variables_with_module.end())
       modules_variables[0].insert(var);
     ++total_nb_var;
@@ -904,16 +906,16 @@ dumpStats(std::ostream& ostr,bool is_verbose)
   if (is_verbose){
     for( Integer i=0; i<NB_ITEM_KIND; ++i ){
       ostr << "Variable " << itemKindName((eItemKind)i) << " N=" << nb_var[i]
-           << " Mémoire=" << mem_used[i] << '\n';
+           << " Memory=" << mem_used[i] << '\n';
     }
     ostr << "Variable Particle N=" << nb_var_particle
-         << " Mémoire=" << mem_used_particle << '\n';
+         << " Memory=" << mem_used_particle << '\n';
     ostr << "Variable Link N=" << nb_var_link
-         << " Mémoire=" << mem_used_link << '\n';
+         << " Memory=" << mem_used_link << '\n';
     ostr << "Variable Array N=" << nb_var_array
-         << " Mémoire=" << mem_used_array << '\n';
+         << " Memory=" << mem_used_array << '\n';
     ostr << "Variable Total N=" << total_nb_var
-         << " Mémoire=" << total_mem_used << '\n';
+         << " Memory=" << total_mem_used << '\n';
   }
 
   std::sort(std::begin(memory_sorted_variables),std::end(memory_sorted_variables),
@@ -940,7 +942,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     int var_property = var->property();
     bool is_no_exchange = (var_property & IVariable::PNoExchange);
     if (var->itemKind()==IK_Unknown)
-      // Seules les variables du maillage peuvent s'échanger
+      // Only mesh variables can be exchanged
       is_no_exchange = true;
     properties += (var_property & IVariable::PNoDump) ? pr_false : pr_true;
     properties += (is_no_exchange) ? pr_false : pr_true;
@@ -998,7 +1000,7 @@ _removeAllShMemVariables()
   for (Integer i = 0; i < m_auto_create_variables.count(); ++i) {
     VariableRef* var = m_auto_create_variables[i];
     if (var->property() & IVariable::PInShMem) {
-      //La variable sera détruite juste après avec le removeVariable(var).
+      //The variable will be destroyed right after with removeVariable(var).
       m_auto_create_variables.removeAt(i--);
     }
   }

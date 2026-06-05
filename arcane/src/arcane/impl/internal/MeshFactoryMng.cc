@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshFactoryMng.cc                                           (C) 2000-2023 */
 /*                                                                           */
-/* Gestionnaire de fabriques de maillages.                                   */
+/* Mesh factory manager.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -118,11 +118,11 @@ _createMesh(const MeshBuildInfo& build_info)
 
   Ref<IMeshFactory> mesh_factory(_getMeshFactory(m_application,build_info));
 
-  // Enregistre d'abord le handle car createMesh() l'utilise.
-  // Il est possible qu'un handle sur ce maillage soit déjà créé
-  // (C'est notamment le cas pour le maillage par défaut).
-  // Dans ce cas, vérifie que le maillage à créer n'a pas de handle
-  // et si findMeshHandle() retourne null, le handle sera créé.
+  // Register the handle first because createMesh() uses it.
+  // It is possible that a handle for this mesh has already been created
+  // (This is especially true for the default mesh).
+  // In this case, check that the mesh to be created does not have a handle
+  // and if findMeshHandle() returns null, the handle will be created.
   MeshHandle* mh = mesh_mng->findMeshHandle(name,false);
   if (!mh)
     mesh_mng->createMeshHandle(name);
@@ -149,15 +149,15 @@ _createSubMesh(const MeshBuildInfo& orig_build_info)
 
   MeshBuildInfo build_info(orig_build_info);
   String name = build_info.name();
-  // Pour un sous-maillage, le IParallelMng est obligatoirement celui
-  // du maillage parent
+  // For a sub-mesh, the IParallelMng must necessarily be that of
+  // the parent mesh
   build_info.addParallelMng(makeRef(mesh->parallelMng()));
 
   Ref<IMeshFactory> mesh_factory(_getMeshFactory(m_application,build_info));
 
-  // Enregistre d'abord le handle car createMesh() l'utilise.
-  // TODO: faire cela dans le constructeur de 'DynamicMesh' et positionner
-  // le handle aussi dans le constructeur.
+  // Register the handle first because createMesh() uses it.
+  // TODO: do this in the 'DynamicMesh' constructor and position
+  // the handle also in the constructor.
   m_mesh_mng->createMeshHandle(name);
   IPrimaryMesh* sub_mesh = mesh_factory->createMesh(m_mesh_mng,build_info);
   m_mesh_mng->addMesh(sub_mesh);

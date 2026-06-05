@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayData.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Donnée du type 'Array'.                                                   */
+/* Data of type 'Array'.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_ARRAYDATA_H
 #define ARCANE_IMPL_INTERNAL_ARRAYDATA_H
@@ -39,8 +39,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée tableau d'un type \a T
+ * \brief Array data of type \a T
  */
 template<class DataType>
 class ArrayDataT
@@ -137,7 +138,7 @@ class ArrayDataT
 
  private:
 
-  UniqueArray<DataType> m_value; //!< Donnée
+  UniqueArray<DataType> m_value; //!< Data
   ITraceMng* m_trace;
   IArrayDataInternalT<DataType>* m_internal;
   ArrayShape m_shape;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NullVariableSynchronizer.cc                                 (C) 2000-2024 */
 /*                                                                           */
-/* Synchronisation des variables en séquentiel.                              */
+/* Synchronization of variables in sequential mode.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,12 +26,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Synchronisation des variables en séquentiel.
+ * \brief Synchronization of variables in sequential mode.
  *
- * Implémente IVariableSynchronizer en séquentiel.
+ * Implements IVariableSynchronizer in sequential mode.
  *
- * Cette classe ne fait aucune opération.
+ * This class performs no operations.
  */
 class NullVariableSynchronizer
 : public IVariableSynchronizer

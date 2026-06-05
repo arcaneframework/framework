@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SequentialParallelMng.h                                     (C) 2000-2020 */
 /*                                                                           */
-/* Gestion du parallélisme dans le cas sequentiel.                           */
+/* Parallelism management in the sequential case.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_SEQUENTIALPARALLELMNG_H
 #define ARCANE_IMPL_SEQUENTIALPARALLELMNG_H
@@ -32,11 +32,12 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos pour construire un SequentialParallelMng.
+ * \brief Information to construct a SequentialParallelMng.
  *
- * Il est indispensable d'appeler setTraceMng() et setThreadMng(). Les
- * autres méthodes sont obsolètes.
+ * It is essential to call setTraceMng() and setThreadMng(). The
+ * other methods are obsolete.
  */
 struct SequentialParallelMngBuildInfo
 {
@@ -92,5 +93,4 @@ arcaneCreateSequentialParallelMngRef(const SequentialParallelMngBuildInfo& bi);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

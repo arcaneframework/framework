@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LegacyMeshBuilder.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Construction du maillage via la méthode "historique".                     */
+/* Mesh construction via the "historical" method.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_LEGACYMESHBUILDER_H
 #define ARCANE_IMPL_INTERNAL_LEGACYMESHBUILDER_H
@@ -33,11 +33,12 @@ class IMeshReader;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construction du maillage via la méthode "historique".
+ * \brief Mesh construction via the "historical" method.
  *
- * Ce mécanisme utilise l'élément '<mesh>' ou '<maillage>' du jeu de
- * donnée pour lire les informations et créer le maillage initial.
+ * This mechanism uses the '<mesh>' or '<maillage>' element of the data set
+ * to read the information and create the initial mesh.
  */
 class ARCANE_IMPL_EXPORT LegacyMeshBuilder
 : public TraceAccessor
@@ -70,12 +71,12 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
  private:
   ISubDomain* m_sub_domain;
   MeshHandle m_default_mesh_handle;
-  //TODO rendre privé
+  //TODO make private
  public:
-  UniqueArray<MeshBuildInfo> m_meshes_build_info; //!< Infos pour construire un maillage
-  ScopedPtrT<IInitialPartitioner> m_initial_partitioner; //!< Partitionneur initial
+  UniqueArray<MeshBuildInfo> m_meshes_build_info; //!< Info to build a mesh
+  ScopedPtrT<IInitialPartitioner> m_initial_partitioner; //!< Initial partitioner
   String m_internal_partitioner_name;
-  bool m_use_internal_mesh_partitioner = false; //!< \a true si partitionne le maillage en interne
+  bool m_use_internal_mesh_partitioner = false; //!< \a true if it partitions the mesh internally
   bool m_use_partitioner_tester = false; //!< basic partitioner for metis
 
  private:
@@ -92,4 +93,4 @@ class ARCANE_IMPL_EXPORT LegacyMeshBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

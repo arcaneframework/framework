@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMng.h                                                   (C) 2000-2022 */
 /*                                                                           */
-/* Classe gérant la liste des maillages.                                     */
+/* Class managing the list of meshes.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_MESHMNG_H
 #define ARCANE_IMPL_INTERNAL_MESHMNG_H
@@ -98,4 +98,4 @@ class ARCANE_IMPL_EXPORT MeshMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

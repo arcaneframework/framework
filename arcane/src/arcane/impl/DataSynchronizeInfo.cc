@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataSynchronizeInfo.cc                                      (C) 2000-2024 */
 /*                                                                           */
-/* Informations pour synchroniser les données.                               */
+/* Information for synchronizing data.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,10 +45,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: plutôt que d'utiliser la mémoire managée, il est préférable d'avoir
-// une copie sur le device des IDs. Cela permettra d'éviter des transferts
-// potentiels si on mélange synchronisation de variables sur accélérateurs et
-// sur CPU.
+// TODO: instead of using managed memory, it is preferable to have
+// a copy of the IDs on the device. This will prevent transfers
+// potentially if variable synchronization is mixed across accelerators and
+// on CPU.
 
 VariableSyncInfo::
 VariableSyncInfo()
@@ -77,8 +77,8 @@ VariableSyncInfo::
 VariableSyncInfo(const VariableSyncInfo& rhs)
 : VariableSyncInfo()
 {
-  // NOTE: pour l'instant (avril 2023) il faut un constructeur de recopie
-  // explicite pour spécifier l'allocateur
+  // NOTE: for the time being (April 2023) an explicit copy constructor
+  // is needed to specify the allocator
   m_target_rank = rhs.m_target_rank;
   m_share_ids.copy(rhs.m_share_ids);
   m_ghost_ids.copy(rhs.m_ghost_ids);

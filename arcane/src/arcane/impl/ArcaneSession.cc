@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneSession.cc                                            (C) 2000-2020 */
 /*                                                                           */
-/* Implémentation par défaut d'une Session.                                  */
+/* Default implementation of a Session.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,12 +66,11 @@ build()
 {
   Session::build();
 
-  // Si une valeur est spécifiée dans applicationBuildInfo(), l'utilise.
-  // Sinon, le répertoire de sortie est le nom du cas dans le répertoire
-  // courant.
+  // If a value is specified in applicationBuildInfo(), use it.
+  // Otherwise, the output directory is the case name in the current directory.
   String output_dir_name = application()->applicationBuildInfo().outputDirectory();
   if (output_dir_name.empty()){
-    // Détermine et créé le répertoire pour les exportations et le listing
+    // Determines and creates the directory for exports and listing
     Directory output_base_dir(platform::getCurrentDirectory());
     output_dir_name = output_base_dir.file(m_case_name);
   }
@@ -86,7 +85,7 @@ build()
     m_output_directory.createDirectory();
     m_listing_directory.createDirectory();
   }
-  // Pour être sur que tout le répertoire de sortie est visible par tout le monde
+  // To ensure that the entire output directory is visible to everyone
   sm->barrier();
 }
 
@@ -107,10 +106,11 @@ _initSubDomain(ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne les noms des fichiers pour les logs et les erreurs.
+ * \brief Positions the file names for logs and errors.
  *
- * Cette méthode est collective sur tous les sous-domaines et les réplicas.
+ * This method is collective across all subdomains and replicas.
  */
 void ArcaneSession::
 setLogAndErrorFiles(ISubDomain* sd)
@@ -147,7 +147,7 @@ setLogAndErrorFiles(ISubDomain* sd)
     }
   }
   
-  // Attend que le proc maitre ait crée tous les repertoires.
+  // Waits for the master process to create all directories.
   Directory my_directory = m_listing_directory;
   if (nb_sub_dir!=1){
     all_replica_pm->barrier();
@@ -155,8 +155,8 @@ setLogAndErrorFiles(ISubDomain* sd)
     my_directory = Directory(m_listing_directory,String::fromNumber(global_sid/NB_FILE_PER_SUBDIR));
   }
 
-  // En cas de réplication, ajoute le numéro du replica à la fin des fichiers
-  // (sauf pour le replica 0 pour rester compatible avec le nom sans réplication)
+  // In case of replication, adds the replica number to the end of the files
+  // (except for replica 0 to remain compatible with the name without replication)
   String file_suffix = String::fromNumber(sid);
   if (replication->hasReplication()){
     Int32 replication_rank = replication->replicationRank();
@@ -203,7 +203,7 @@ _writeExecInfoFile(int ret_val)
   execution.clear();
 
   String datetime(platform::getCurrentDateTime());
-  // Sauve les informations du cas
+  // Saves the case information
   {
     execution.createAndAppendElement("return-value",String::fromNumber(ret_val));
     execution.createAndAppendElement("finish-date",datetime);
@@ -211,9 +211,9 @@ _writeExecInfoFile(int ret_val)
     SubDomainCollection sub_domains(subDomains());
     if (!sub_domains.empty()){
       ISubDomain* sd = sub_domains.front();
-      // Il faut que le sous-domaine soit correct.
-      // Ce n'est des fois pas le cas si cette méthode est appelée suite
-      // à une exception lancée lors de l'initialisation du sous-domaine
+      // The subdomain must be correct.
+      // This is sometimes not the case if this method is called after an exception
+      // thrown during subdomain initialization
       if (sd->isInitialized()){
         ITimeLoopMng* tm = sd->timeLoopMng();
         const CommonVariables& v = sd->commonVariables();
@@ -255,7 +255,7 @@ _checkExecInfoFile()
   XmlNode doc = m_result_doc->documentNode();
   XmlElement root(doc,"arcane-result");
 
-  // Sauve les informations de configuration du cas.
+  // Saves the case configuration information.
   XmlElement config(root,"config");
   XmlElement execution(root,"execution");
     

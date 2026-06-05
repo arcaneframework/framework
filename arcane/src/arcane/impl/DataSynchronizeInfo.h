@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataSynchronizeInfo.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour synchroniser les données.                               */
+/* Information for synchronizing data.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_DATASYNCHRONIZERINFO_H
@@ -30,21 +30,22 @@ namespace Arcane
 {
 class DataSynchronizeInfo;
 
-//! Comparaison des valeurs des entités fantômes avant/après une synchronisation
+//! Comparison of ghost entity values before/after synchronization
 enum class eDataSynchronizeCompareStatus
 {
-  //! Pas de comparaison ou résultat inconnue
+  //! No comparison or unknown result
   Unknown,
-  //! Même valeurs avant et après la synchronisation
+  //! Same values before and after synchronization
   Same,
-  //! Valeurs différentes avant et après la synchronisation
+  //! Different values before and after synchronization
   Different
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur le résultat d'une synchronisation.
+ * \brief Information about the result of a synchronization.
  */
 class DataSynchronizeResult
 {
@@ -60,13 +61,14 @@ class DataSynchronizeResult
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur la liste des entités partagées/fantômes pour
- * un rang donné pour une synchronisation.
+ * \brief Information about the list of shared/ghost entities for
+ * a given rank for a synchronization.
  *
- * TODO: Utiliser pour toutes les VariableSyncInfo un seul tableau pour les
- *       entités partagées et un seul tableau pour les entités fantômes qui
- *       sera géré par ItemGroupSynchronizeInfo.
+ * TODO: Use a single array for all VariableSyncInfo for shared entities and
+ * a single array for ghost entities,
+ *       which will be managed by ItemGroupSynchronizeInfo.
  */
 class ARCANE_IMPL_EXPORT VariableSyncInfo
 {
@@ -78,29 +80,29 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 
  public:
 
-  //! Rang du processeur cible
+  //! Target processor rank
   Int32 targetRank() const { return m_target_rank; }
 
-  //! localIds() des entités à envoyer au rang targetRank()
+  //! localIds() of entities to send to rank targetRank()
   ConstArrayView<Int32> shareIds() const { return m_share_ids; }
-  //! localIds() des entités à réceptionner du rang targetRank()
+  //! localIds() of entities to receive from rank targetRank()
   ConstArrayView<Int32> ghostIds() const { return m_ghost_ids; }
 
-  //! Nombre d'entités partagées
+  //! Number of shared entities
   Int32 nbShare() const { return m_share_ids.size(); }
-  //! Nombre d'entités fantômes
+  //! Number of ghost entities
   Int32 nbGhost() const { return m_ghost_ids.size(); }
 
-  //! Met à jour les informations lorsque les localId() des entités changent
+  //! Updates the information when the localId() of entities changes
   void changeLocalIds(Int32ConstArrayView old_to_new_ids);
 
  private:
 
-  //! localIds() des entités à envoyer au processeur #m_rank
+  //! localIds() of entities to send to processor #m_rank
   UniqueArray<Int32> m_share_ids;
-  //! localIds() des entités à réceptionner du processeur #m_rank
+  //! localIds() of entities to receive from processor #m_rank
   UniqueArray<Int32> m_ghost_ids;
-  //! Rang du processeur cible
+  //! Target processor rank
   Int32 m_target_rank = A_NULL_RANK;
 
  private:
@@ -110,8 +112,9 @@ class ARCANE_IMPL_EXPORT VariableSyncInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour les messages d'envoi (share) ou de réception (ghost)
+ * \brief Information for sending (share) or receiving (ghost) messages
  */
 class DataSynchronizeBufferInfoList
 {
@@ -128,41 +131,42 @@ class DataSynchronizeBufferInfoList
  public:
 
   Int32 nbRank() const { return m_displacements_base.size(); }
-  //! Nombre total d'éléments
+  //! Total number of items
   Int64 totalNbItem() const { return m_total_nb_item; }
-  //! Déplacement dans le buffer du rang \a index
+  //! Displacement in the buffer for rank \a index
   Int64 bufferDisplacement(Int32 index) const { return m_displacements_base[index]; }
-  //! Numéros locaux des entités pour le rang \a index
+  //! Local IDs of entities for rank \a index
   ConstArrayView<Int32> localIds(Int32 index) const;
-  //! Nombre d'entités pour le rang \a index
+  //! Number of entities for rank \a index
   Int32 nbItem(Int32 index) const;
 
  private:
 
   /*!
-   * \brief Offsets dans le buffer global pour chaque rang.
+   * \brief Offsets in the global buffer for each rank.
    *
-   * Ce tableau est rempli par DataSynchronizeInfo::recompute().
+   * This array is filled by DataSynchronizeInfo::recompute().
    */
   UniqueArray<Int64> m_displacements_base;
   Int64 m_total_nb_item = 0;
   const DataSynchronizeInfo* m_sync_info = nullptr;
-  //! Si vrai, il s'agit du buffer d'envoi, sinon de réception.
+  //! If true, it is the send buffer, otherwise it is the receive buffer.
   bool m_is_share = false;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations nécessaires pour synchroniser les entités sur un groupe.
+ * \brief Information necessary to synchronize entities across a group.
  *
- * Il faut appeler recompute() après avoir ajouté ou modifier les instances
- * de VariableSyncInfo.
+ * recompute() must be called after adding or modifying the instances
+ * of VariableSyncInfo.
  *
- * Les instances de cette classe sont partagées avec tous les dispatchers
- * (IVariableSynchronizeDispatcher) créés à partir d'une instance de
- * IVariableSynchronizer. Seule cette dernière peut donc modifier une instance
- * cette classe.
+ * Instances of this class are shared with all dispatchers
+ * (IVariableSynchronizeDispatcher) created from an instance of
+ * IVariableSynchronizer. Only the latter can therefore modify an instance
+ * of this class.
  */
 class ARCANE_IMPL_EXPORT DataSynchronizeInfo
 : private ReferenceCounterImpl
@@ -198,21 +202,21 @@ class ARCANE_IMPL_EXPORT DataSynchronizeInfo
   Int32 size() const { return m_ranks_info.size(); }
   void add(const VariableSyncInfo& s);
 
-  //! Informations d'envoi (partagées)
+  //! Send (shared) information
   const DataSynchronizeBufferInfoList& sendInfo() const { return m_buffer_infos[SEND]; }
-  //! Informations de réception (fantômes)
+  //! Receive (ghost) information
   const DataSynchronizeBufferInfoList& receiveInfo() const { return m_buffer_infos[RECEIVE]; }
 
-  //! Rang de la \a index-ème cible
+  //! Rank of the \a index-th target
   Int32 targetRank(Int32 index) const { return m_ranks_info[index].targetRank(); }
 
-  //! Rangs de toutes les cibles
+  //! Ranks of all targets
   ConstArrayView<Int32> communicatingRanks() const { return m_communicating_ranks; }
 
-  //! Notifie l'instance que les indices locaux ont changé
+  //! Notifies the instance that the local IDs have changed
   void changeLocalIds(ConstArrayView<Int32> old_to_new_ids);
 
-  //! Notifie l'instance que les valeurs ont changé
+  //! Notifies the instance that the values have changed
   void recompute();
 
  public:

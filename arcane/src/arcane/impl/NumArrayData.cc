@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumArrayData.cc                                             (C) 2000-2024 */
 /*                                                                           */
-/* Donnée de type 'NumArray'.                                                */
+/* Data of type 'NumArray'.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,8 +55,9 @@ namespace
 {
   const Int64 SERIALIZE2_MAGIC_NUMBER = 0x923abd20;
 }
+
 /*!
- * \brief Interface d'un 'IData' dont le conteneur repose sur un 'NumArray'.
+ * \brief Interface of an 'IData' whose container is based on a 'NumArray'.
  */
 template <class DataType,int RankValue>
 class INumArrayDataT
@@ -69,23 +70,24 @@ class INumArrayDataT
 
  public:
 
-  //! Vue constante sur la donnée
+  //! Constant view of the data
   virtual MDSpan<const DataType,ExtentType> view() const = 0;
 
-  //! Vue sur la donnée
+  //! View of the data
   virtual MDSpan<DataType,ExtentType> view() = 0;
 
-  //! Clone la donnée
+  //! Clone the data
   virtual Ref<ThatClass> cloneTrueRef() = 0;
 
-  //! Clone la donnée mais sans éléments.
+  //! Clone the data but without elements.
   virtual Ref<ThatClass> cloneTrueEmptyRef() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'un 'IData' dont le conteneur repose sur un 'NumArray'.
+ * \brief Implementation of an 'IData' whose container is based on a 'NumArray'.
  */
 template <class DataType,int RankValue>
 class NumArrayDataT
@@ -184,7 +186,7 @@ class NumArrayDataT
 
  private:
 
-  NumArray<DataType,ExtentType> m_value; //!< Donnée
+  NumArray<DataType,ExtentType> m_value; //!< Data
   ITraceMng* m_trace;
   ArrayShape m_shape;
   Internal m_internal;
@@ -270,7 +272,7 @@ storageTypeInfo() const
 template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 _resizeDim1(Int32 dim1_size)
 {
-  // Récupère les dimensions du 'NumArray' et ne modifie que la première
+  // Retrieves the dimensions of the 'NumArray' and only modifies the first one
   auto extents = m_value.extents();
   extents.setExtent0(dim1_size);
   m_value.resize(extents.dynamicExtents());
@@ -283,8 +285,8 @@ template<typename DataType,int RankValue> Int64
 NumArrayDataT<DataType,RankValue>::
 _getDim2Size() const
 {
-  // Récupère les dimensions du 'NumArray' et considère que 'dim2_size' est
-  // le produits du nombre d'éléments des dimensions après la première.
+  // Retrieves the dimensions of the 'NumArray' and considers 'dim2_size' to be
+  // the product of the number of elements of the dimensions after the first.
   auto extents = m_value.extents();
   auto std_extents = extents.asStdArray();
   Int64 dim2_size = 1;
@@ -296,7 +298,7 @@ _getDim2Size() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// ATTENTION: Ne fonctionnera pas s'il y a des 'strides'
+// WARNING: Will not work if there are 'strides'
 template<typename DataType,int RankValue> Span2<DataType>
 NumArrayDataT<DataType,RankValue>::
 _valueAsSpan2()
@@ -310,9 +312,9 @@ _valueAsSpan2()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// ATTENTION: Ne fonctionnera pas s'il y a des 'strides'
-// TODO: a supprimer mais pour cela il faut pouvoir convertir un Span<T> en
-// un Span<const T> et cela n'est pas encore possible avec arccore.
+// WARNING: Will not work if there are 'strides'
+// TODO: to be removed, but for this it is necessary to be able to convert a Span<T> into
+// a Span<const T> and this is not yet possible with arccore.
 template<typename DataType,int RankValue> Span2<const DataType>
 NumArrayDataT<DataType,RankValue>::
 _valueAsConstSpan2()
@@ -386,7 +388,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
   if (is_multi_size)
     ARCANE_FATAL("Can not allocate multi-size array");
 
-  // Converti en Int32
+  // Converted to Int32
   Int64ConstArrayView sdata_extents = sdata->extents();
   std::array<Int32,RankValue> numarray_extents;
   for( Int32 i=0; i<RankValue; ++i )
@@ -406,7 +408,7 @@ template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>
 assignSerializedData(const ISerializedData* sdata)
 {
   ARCANE_UNUSED(sdata);
-  // Rien à faire car \a sdata pointe directement vers m_value
+  // Nothing to do because \a sdata points directly to m_value
 }
 
 /*---------------------------------------------------------------------------*/
@@ -415,7 +417,7 @@ assignSerializedData(const ISerializedData* sdata)
 template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 serialize(ISerializer* sbuf,IDataOperation* operation)
 {
-  // NOTE: Cette méthode n'est pas encore opérationnelle
+  // NOTE: This method is not yet operational
 
   Integer nb_count = 1; //DataTypeTraitsT<DataType>::nbBasicType();
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
@@ -423,13 +425,13 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
 
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
-    // Réserve la mémoire pour
-    // - le nombre magique pour verification
-    // - le nombre d'éléments de ids.
+    // Reserves memory for
+    // - the magic number for verification
+    // - the number of elements in ids.
     sbuf->reserveSpan(eBasicDataType::Int64,2);
-    // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
+    // Reserves memory for the number of elements in each dimension (i.e., RankValue)
     sbuf->reserveSpan(eBasicDataType::Int32,RankValue);
-    // Réserve la mémoire pour les valeurs
+    // Reserves memory for the values
     sbuf->reserveSpan(m_value.to1DSpan());
   }
   else if (mode==ISerializer::ModePut){
@@ -469,7 +471,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     case ISerializer::ReadAdd:
       {
         Int32 current_size = m_value.dim1Size();
-        // TODO: vérifier que dim2_size a la même valeur qu'en entrée.
+        // TODO: check that dim2_size has the same value as the input.
         // Int64 dim2_size = _getDim2Size();
         Int64 current_total = m_value.totalNbElement();
         //m_trace->info() << "READ ADD NEW_SIZE=" << current_size << " COUNT=" << count
@@ -495,21 +497,21 @@ template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>
 serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
 {
   ARCANE_UNUSED(operation);
-  // TODO: mutualiser avec serialize(sbuf,ids);
+  // TODO: consolidate with serialize(sbuf,ids);
 
   [[maybe_unused]] Integer nb_count = 1;
   typedef typename DataTypeTraitsT<DataType>::BasicType BasicType;
   eBasicDataType data_type = DataTypeTraitsT<BasicType>::basicDataType();
   ISerializer::eMode mode = sbuf->mode();
   if (mode==ISerializer::ModeReserve){
-    // Réserve la mémoire pour
-    // - le nombre magique pour verification
-    // - le nombre d'éléments de ids.
+    // Reserves memory for
+    // - the magic number for verification
+    // - the number of elements in ids.
     // - 
     sbuf->reserveSpan(eBasicDataType::Int64,3);
-    // Réserve la mémoire pour le nombre d'éléments de chaque dimension (soit RankValue)
+    // Reserves memory for the number of elements in each dimension (i.e., RankValue)
     sbuf->reserveSpan(eBasicDataType::Int32,RankValue);
-    // Réserve la mémoire pour les valeurs
+    // Reserves memory for the values
     auto sub_extent = m_value.extents().removeFirstExtent();
     sbuf->reserveSpan(data_type,sub_extent.totalNbElement() * ids.size());
   }
@@ -576,8 +578,8 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
         Span<Int32> extents_span(extents_buf,RankValue);
         sbuf->getSpan(extents_span);
 
-        // TODO: utiliser extent pour vérifier que le tableau recu à le
-        // même nombre d'éléments dans les dimensions 2+.
+        // TODO: use extent to verify that the received array has the
+        // same number of elements in dimensions 2+.
         Int64 current_dim2_size = _getDim2Size();
 
         if (dim2_size!=current_dim2_size){
@@ -598,8 +600,8 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
         Span<DataType> transformed_value;
 
         Span2<DataType> value_as_span2(_valueAsSpan2());
-        // Si on applique une transformantion, effectue la transformation dans un
-        // tableau temporaire 'current_value'.
+        // If a transformation is applied, perform the transformation in a
+        // temporary array 'current_value'.
         if (operation && nb_value!=0) {
           current_value.resize(data_value.size());
 
@@ -662,7 +664,7 @@ setName(const String& name)
 template<typename DataType,int RankValue> void NumArrayDataT<DataType,RankValue>::
 computeHash(IHashAlgorithm* algo,ByteArray& output) const
 {
-  // Calcule la fonction de hashage pour les valeurs
+  // Calculates the hash function for the values
   {
     Span<const DataType> values = m_value.to1DSpan();
     Int64 type_size = sizeof(DataType);
@@ -673,7 +675,7 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
   }
 
   {
-    // Calcule la fonction de hashage pour les nombres d'éléments
+    // Calculates the hash function for the number of elements
     auto ext = m_value.extents().asStdArray();
     auto input = asBytes(Span<const Int32>(ext));
     algo->computeHash64(input,output);

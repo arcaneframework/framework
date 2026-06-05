@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PropertyMng.cc                                              (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des protections.                                             */
+/* Property Manager.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des protections.
+ * \brief Property Manager.
  */
 class PropertyMng
 : public TraceAccessor
@@ -143,7 +144,7 @@ getPropertiesImpl(const String& full_name)
 void PropertyMng::
 registerProperties(const Properties& p)
 {
-  //TODO: vérifier pas encore présent.
+  //TODO: check if not yet present.
   m_properties_map.insert(std::make_pair(p.fullName(), p));
 }
 
@@ -191,10 +192,10 @@ serialize(ISerializer* serializer)
 
     Int64 version = serializer->getInt32();
     if (version != SERIALIZE_VERSION) {
-      // La relecture se fait avec une protection issue d'une ancienne version de Arcane
-      // et qui n'est pas compatible. Affiche un avertissement et ne fait rien.
-      // (NOTE: cela risque quand même de poser problême pour ceux qui utilisent les
-      // propriétés donc il faudrait peut-être faire un fatal ?)
+      // Reading is done with a protection from an old version of Arcane
+      // which is not compatible. Displays a warning and does nothing.
+      // (NOTE: this still risks causing problems for those who use the
+      // properties, so perhaps a fatal error should be raised?)
       pwarning() << "Can not reading properties from imcompatible checkpoint";
       return;
     }
@@ -252,7 +253,7 @@ readFrom(Span<const Byte> bytes)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Affiche les propriétés et leurs valeurs sur le flot \a o.
+ * \brief Displays the properties and their values on the stream \a o.
  */
 void PropertyMng::
 print(std::ostream& o) const

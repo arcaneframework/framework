@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringScalarData.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Donnée scalaire de type 'String'.                                         */
+/* Scalar data of type 'String'.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,8 +43,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée scalaire d'une chaîne de caractères unicode.
+ * \brief Scalar data of a unicode string.
  */
 class StringScalarData
 : public ReferenceCounterImpl
@@ -146,7 +147,7 @@ class StringScalarData
 
  private:
 
-  DataType m_value; //!< Donnée
+  DataType m_value; //!< Data
   ITraceMng* m_trace;
   Internal m_internal;
   DataAllocationInfo m_allocation_info;
@@ -275,7 +276,7 @@ serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation)
   ARCANE_UNUSED(sbuf);
   ARCANE_UNUSED(ids);
   ARCANE_UNUSED(operation);
-  // Rien à faire sur ce type de sérialisation.
+  // Nothing to do for this serialization type.
 }
 
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConfigurationReader.cc                                      (C) 2000-2023 */
 /*                                                                           */
-/* Lecteurs de fichiers de configuration.                                    */
+/* Configuration file readers.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,8 +68,8 @@ _addValuesFromJSON(const JSONValue& jv,Integer priority,const String& base_name)
       _addValuesFromJSON(value,priority,base_name+name+".");
     }
     else if (value.isArray()){
-      // Ne traite pas les tableaux pour l'instant car ils ne sont
-      // pas supportés dans la configuration.
+      // Does not process arrays for now because they are
+      // not supported in the configuration.
     }
     else{
       String v_value = value.value();

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PrintCaseDocumentVisitor.h                                  (C) 2000-2019 */
 /*                                                                           */
-/* Visiteur pour afficher les valeurs du jeu de données.                     */
+/* Visitor to display the values of the dataset.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur pour afficher les valeurs du jeu de données.
+ * \brief Visitor to display the values of the dataset.
  */
 class PrintCaseDocumentVisitor
 : public AbstractCaseDocumentVisitor
@@ -73,8 +74,8 @@ class PrintCaseDocumentVisitor
   void beginVisit(const CaseOptionServiceImpl* opt) override
   {
     //std::cout << "BEGIN_VISIT SERVICE name=" << opt->name() << "\n";
-    // Le visiteur appelle d'abord le service puis le ICaseOptions associé
-    // à ce service
+    // The visitor first calls the service and then the ICaseOptions associated
+    // with this service
     m_current_service_name = opt->serviceName();
   }
   void endVisit(const CaseOptionServiceImpl* opt) override

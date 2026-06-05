@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayData.inst.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Donnée du type 'Array'.                                                   */
+/* Array type data.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -180,7 +180,7 @@ template <typename DataType> void ArrayDataT<DataType>::
 assignSerializedData(const ISerializedData* sdata)
 {
   ARCANE_UNUSED(sdata);
-  // Rien à faire car \a sdata pointe directement vers m_value
+  // Nothing to do because \a sdata points directly to m_value
 }
 
 /*---------------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ serialize(ISerializer* sbuf, IDataOperation* operation)
     Int64 total_size = nb_value * nb_count;
     m_trace->debug(Trace::High) << " ArrayDataT::serialize (full) reserve datatype="
                                 << data_type << " ids=" << nb_value << " totalsize=" << total_size;
-    sbuf->reserveInt64(2); // 1 pour magic number et 1 pour la taille
+    sbuf->reserveInt64(2); // 1 for magic number and 1 for the size
     sbuf->reserveSpan(data_type, total_size);
   } break;
   case ISerializer::ModePut: {
@@ -303,7 +303,7 @@ _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation)
     m_trace->debug(Trace::High) << " ArrayDataT::serialize (partial) put datatype="
                                 << data_type << " ids=" << nb_value << " totalsize=" << total_size;
     if (is_debug) {
-      // Vérifie les valeurs
+      // Checks values
       for (Integer i = 0, max_value = m_value.size(); i < nb_value; ++i)
         if (ids[i] > max_value)
           throw IndexOutOfRangeException(A_FUNCINFO,
@@ -330,7 +330,7 @@ _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation)
                                 << " datatype=" << data_type
                                 << " ids=" << nb_value << " totalsize=" << total_size;
     if (is_debug) {
-      // Vérifie les valeurs
+      // Checks values
       for (Integer i = 0, max_value = m_value.size(); i < nb_value; ++i)
         if (ids[i] > max_value)
           throw IndexOutOfRangeException(A_FUNCINFO,

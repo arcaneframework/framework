@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Session.h                                                   (C) 2000-2014 */
 /*                                                                           */
-/* Classe implémentant une session.                                          */
+/* Class implementing a session.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_SESSION_H
 #define ARCANE_IMPL_SESSION_H
@@ -85,7 +85,7 @@ class ARCANE_IMPL_EXPORT Session
 
  private:
 
-  Impl* m_p; //!< Implémentation
+  Impl* m_p; //!< Implementation
 
  private:
 
@@ -100,5 +100,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

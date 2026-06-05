@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeStats.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Statistiques sur les temps d'exécution.                                   */
+/* Statistics on execution times.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_TIMESTATS_H
 #define ARCANE_IMPL_TIMESTATS_H
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques sur les temps d'exécution.
+ * \brief Statistics on execution times.
  */
 class TimeStats
 : public TraceAccessor
@@ -51,7 +52,7 @@ class TimeStats
     TT_Virtual
   };
 
-  //! Nombre de valeurs de eTimeType
+  //! Number of eTimeType values
   static const Integer NB_TIME_TYPE = 2;
 
   static const Integer TC_Local = 0;
@@ -147,9 +148,9 @@ class TimeStats
   Timer* m_real_timer = nullptr;
   bool m_is_gathering = false;
   PhaseValue m_current_phase;
-  //! Statistiques sur l'exécution en cours
+  //! Statistics on current execution
   ActionSeries* m_current_action_series = nullptr;
-  //! Statistiques sur les exécutions précédentes
+  //! Statistics on previous executions
   ActionSeries* m_previous_action_series = nullptr;
   Action* m_main_action = nullptr;
   Action* m_current_action = nullptr;
@@ -178,5 +179,4 @@ class TimeStats
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

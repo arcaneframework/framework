@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DefaultBackwardMng.h                                        (C) 2000-2016 */
 /*                                                                           */
-/* Implémentation par défaut d'une stratégie de retour-arrière.              */
+/* Default implementation of a backward strategy.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MAIN_DEFAULTBACKWARDMNG_H
 #define ARCANE_MAIN_DEFAULTBACKWARDMNG_H
@@ -29,8 +29,9 @@ class IDataReaderWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \Implémentation par défaut d'une stratégie de retour-arrière.
+ * Default implementation of a backward strategy.
  */
 class ARCANE_IMPL_EXPORT DefaultBackwardMng
 : public IBackwardMng
@@ -39,11 +40,11 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
 
   enum eSequence
   {
-    //! Sauvegarde
+    //! Save
     SEQSave ,
-    //! Sauvegarde en force
+    //! Forced save
     SEQForceSave ,
-    //! Restauration
+    //! Restore
     SEQRestore ,
     //! Lock
     SEQLock ,
@@ -89,19 +90,19 @@ class ARCANE_IMPL_EXPORT DefaultBackwardMng
   IVariableFilter* m_filter;
   IDataReaderWriter* m_data_io;
 
-  //! Temps du dernier retour demandé
+  //! Time of the last requested backward action
   Real m_backward_time;
 
-  //! Période entre deux sauvegardes pour le retour-arrière
+  //! Period between two saves for backward tracking
   Integer m_period;
 
   //! First save
   bool m_first_save;
 
-  //! Actions authorisées ?
+  //! Actions allowed?
   bool m_action_refused;
 
-  //! Séquence
+  //! Sequence
   eSequence m_sequence;
 
  private:
@@ -118,4 +119,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

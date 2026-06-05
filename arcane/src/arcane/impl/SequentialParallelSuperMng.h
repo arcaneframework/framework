@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SequentialParallelSuperMng.h                                (C) 2000-2020 */
 /*                                                                           */
-/* Superviseur du parallélisme en séquentiel.                                */
+/* Sequential parallelism supervisor.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_SEQUENTIALPARALLELSUPERMNGR_H
 #define ARCANE_IMPL_SEQUENTIALPARALLELSUPERMNGR_H
@@ -28,11 +28,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Superviseur du parallélisme en mode séquentiel.
+ * \brief Sequential parallelism supervisor.
  *
- Dans ce mode, le parallélisme n'est pas supporté. Ce gestionnaire ne
- fait donc rien.
+ In this mode, parallelism is not supported. This manager therefore does nothing.
 */
 class ARCANE_IMPL_EXPORT SequentialParallelSuperMng
 : public AbstractService
@@ -40,7 +40,7 @@ class ARCANE_IMPL_EXPORT SequentialParallelSuperMng
 {
  public:
 
-  // Construit un superviseur séquentiel lié au superviseur \a sm
+  // Constructs a sequential supervisor linked to the supervisor
   explicit SequentialParallelSuperMng(const ServiceBuildInfo& sbi);
   SequentialParallelSuperMng(const ServiceBuildInfo& sbi,Parallel::Communicator comm);
   ~SequentialParallelSuperMng() override;
@@ -65,7 +65,7 @@ class ARCANE_IMPL_EXPORT SequentialParallelSuperMng
 
  private:
   
-  IApplication* m_application; //!< Superviseur associé
+  IApplication* m_application; //!< Associated supervisor
   IThreadMng* m_thread_mng;
   ITimerMng* m_timer_mng;
   ScopedPtrT<ITimerMng> m_owned_timer_mng;
@@ -80,5 +80,4 @@ class ARCANE_IMPL_EXPORT SequentialParallelSuperMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

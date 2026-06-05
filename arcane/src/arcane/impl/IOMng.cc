@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IOMng.cc                                                    (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des entrées-sorties.                                         */
+/* Input/Output Manager.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,8 +34,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des entrées sorties.
+ * \brief Input/Output Manager.
  */
 class IOMng
 : public IIOMng
@@ -157,7 +158,7 @@ parseXmlFile(const String& filename,
              ByteConstArrayView schema_data)
 {
   dom::DOMImplementation domimp;
-  // Lecture du fichier contenant les informations internes.
+  // Reading the file containing internal information.
   return domimp._load(filename, m_trace_mng, schemaname, schema_data);
 }
 
@@ -188,7 +189,7 @@ parseXmlString(const String& str, const String& name)
   dom::DOMImplementation domimp;
   ByteConstArrayView utf8_buf(str.utf8());
   ByteConstSpan buffer(reinterpret_cast<const std::byte*>(utf8_buf.data()), utf8_buf.size());
-  // Lecture du fichier contenant les informations internes.
+  // Reading the file containing internal information.
   return domimp._load(buffer, name, m_trace_mng);
 }
 
@@ -199,13 +200,13 @@ template <typename ParallelMngType>
 bool IOMng::
 _collectiveRead(ParallelMngType* pm, const String& filename, ByteArray& bytes, bool is_binary)
 {
-  // La lecture necessite deux broadcast: un pour la taille du fichier et
-  // un pour les valeurs du fichier.
+  // The read requires two broadcasts: one for the file size and
+  // one for the file values.
   //IParallelSuperMng* pm = m_application->parallelSuperMng();
   Integer size = 0;
   if (pm->commRank() == 0) {
     if (!localRead(filename, bytes, is_binary)) {
-      // Prévient d'un bug si bytes n'était pas vidé et qu'il y a un problème de lecture
+      // Prevents a bug if bytes was not cleared and there is a read problem
       size = bytes.size();
     }
   }

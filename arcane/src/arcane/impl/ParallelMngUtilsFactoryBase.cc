@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngUtilsFactoryBase.cc                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une fabrique pour les fonctions utilitaires de           */
-/* IParallelMng.                                                             */
+/* Base class of a factory for utility functions of IParallelMng.            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

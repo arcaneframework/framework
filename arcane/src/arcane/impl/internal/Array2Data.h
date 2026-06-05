@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array2Data.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Donnée du type 'Array2'.                                                  */
+/* Data of type 'Array2'.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_ARRAY2DATA_H
 #define ARCANE_IMPL_INTERNAL_ARRAY2DATA_H
@@ -39,8 +39,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée tableau bi-dimensionnel d'un type \a DataType
+ * \brief Two-dimensional array data of type \a DataType
  */
 template <class DataType>
 class Array2DataT
@@ -143,7 +144,7 @@ class Array2DataT
 
  private:
 
-  UniqueArray2<DataType> m_value; //!< Donnée
+  UniqueArray2<DataType> m_value; //!< Data
   ITraceMng* m_trace;
   IArray2DataInternalT<DataType>* m_internal;
   ArrayShape m_shape;
@@ -182,8 +183,8 @@ class Array2DataT<DataType>::Impl
       ARCANE_FATAL("Bad value '{0}' for dim1_size", new_dim1_size);
     if (new_dim2_size < 0)
       ARCANE_FATAL("Bad value '{0}' for dim2_size", new_dim2_size);
-    // Cette méthode est appelée si on modifie la deuxième dimension.
-    // Dans ce cas cela invalide l'ancienne valeur de shape.
+    // This method is called if the second dimension is modified.
+    // In this case, it invalidates the old shape value.
     bool need_reshape = false;
     if (new_dim2_size != m_p->m_value.dim2Size())
       need_reshape = true;
@@ -256,6 +257,3 @@ class Array2DataT<DataType>::Impl
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

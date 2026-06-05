@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMng.h                                            (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire pour le partitionnement et l'équilibrage de charge.          */
+/* Manager for partitioning and load balancing.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_LOADBALANCEMNG_H
 #define ARCANE_IMPL_LOADBALANCEMNG_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implantation standard d'une interface d'enregistrement des variables
- * pour l'équilibrage de charge.
+ * \brief Standard implementation of a variable registration interface
+ * for load balancing.
  *
  */
 class ARCANE_IMPL_EXPORT LoadBalanceMng
@@ -40,8 +41,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
  public:
 
   /*!
-   * Méthodes utilisées par les modules clients pour définir les critères
-   * de partitionnement.
+   * Methods used by client modules to define partitioning criteria.
    */
   void addMass(VariableCellInt32& count, const String& entity="") override;
   void addCriterion(VariableCellInt32& count) override;
@@ -51,8 +51,7 @@ class ARCANE_IMPL_EXPORT LoadBalanceMng
   void reset() override;
 
   /*!
-   * Méthodes utilisées par le MeshPartitioner pour accéder à la description
-   * du problème.
+   * Methods used by the MeshPartitioner to access the problem description.
    */
   void setMassAsCriterion(bool active = true) override;
   void setNbCellsAsCriterion(bool active = true) override;

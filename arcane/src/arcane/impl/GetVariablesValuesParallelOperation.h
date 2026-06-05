@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GetVariablesValuesParallelOperation.h                       (C) 2000-2025 */
 /*                                                                           */
-/* Opérations pour accéder aux valeurs de variables d'un autre sous-domaine. */
+/* Operations to access variable values from another subdomain.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_GETVARIABLESVALUESPARALLELOPERATION_H
 #define ARCANE_IMPL_GETVARIABLESVALUESPARALLELOPERATION_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérations pour accéder aux valeurs de variables d'un autre sous-domaine.
+ * \brief Operations to access variable values from another subdomain.
  */
 class ARCANE_IMPL_EXPORT GetVariablesValuesParallelOperation
 : public IGetVariablesValuesParallelOperation
@@ -85,4 +86,4 @@ class ARCANE_IMPL_EXPORT GetVariablesValuesParallelOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Application.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Superviseur.                                                              */
+/* Supervisor.                                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,8 +72,8 @@
 #include "arcane/impl/ConfigurationReader.h"
 #include "arcane/impl/ArcaneMain.h"
 
-// Ces fichiers ne sont utilisés que pour afficher des tailles
-// des classes définies dans ces fichiers
+// These files are only used to display sizes
+// of classes defined in these files
 #include "arcane/core/ItemEnumerator.h"
 #include "arcane/core/Item.h"
 #include "arcane/core/IndexedItemConnectivityView.h"
@@ -163,24 +163,25 @@ class Application::CoreApplication
 
  public:
 
-  ReferenceCounter<ITraceMng> m_trace; //!< Gestionnaire de traces
+  ReferenceCounter<ITraceMng> m_trace; //!< Trace manager
   Ref<IStackTraceService> m_stack_trace_service;
   Ref<ISymbolizerService> m_symbolizer_service;
   Ref<IThreadImplementationService> m_thread_implementation_service;
   Ref<IThreadImplementation> m_thread_implementation;
   Ref<ITaskImplementation> m_task_implementation;
-  //! Nom du service utilisé pour gérer les threads
+  //! Name of the service used to manage threads
   String m_used_thread_service_name;
-  //! Nom du service utilisé pour gérer les tâches
+  //! Name of the service used to manage tasks
   String m_used_task_service_name;
 };
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construit un superviseur avec les informations d'exécution \a ex.
- * \warning Il n'existe qu'une instance de Application par exécution du code.
+ * \brief Constructs a supervisor with execution information, e.g.
+ * \warning There is only one instance of Application per code execution.
  */
 Application::
 Application(IArcaneMain* am)
@@ -194,16 +195,17 @@ Application(IArcaneMain* am)
 , m_has_garbage_collector(am->hasGarbageCollector())
 {
   m_core_application = std::make_unique<ConcurrencyApplication>();
-  // Initialise les threads avec un service qui ne fait rien.
+  // Initializes threads with a service that does nothing.
   platform::setThreadImplementationService(&m_null_thread_implementation);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détruit le gestionnaire.
+ * \brief Destroys the manager.
  *
- * Détruit le gestionnaire de message et les gestionnaires de configuration.
+ * Destroys the message manager and the configuration managers.
  */
 Application::
 ~Application()
@@ -211,7 +213,7 @@ Application::
   TaskFactory::terminate();
   m_core_application->m_task_implementation.reset();
 
-  // Supprime les services que l'instance a positionnée
+  // Remove the services that the instance placed
   if (platform::getProcessorAffinityService()==m_processor_affinity_service.get())
     platform::setProcessorAffinityService(nullptr);
 
@@ -242,27 +244,28 @@ Application::
   delete m_service_mng;
 
   m_trace = nullptr;
-  // Il faut détruire le m_trace_policy après m_trace car ce dernier peut
-  // l'utiliser.
+  // The m_trace_policy must be destroyed after m_trace because the latter
+  // may use it.
   delete m_trace_policy;
 
-  // Supprime la référence au gestionnaire de thread. Il faut le faire en dernier car
-  // les autres gestionnaires peuvent l'utiliser.
+  // Remove the reference to the thread manager. This must be done last because
+  // other managers may use it.
   if (platform::getThreadImplementationService() == m_core_application->m_thread_implementation.get())
     platform::setThreadImplementationService(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Essaie d'instancier un service implémentant \a InterfaceType avec
- * la liste de nom de services \a names.  Retourne l'instance trouvée
- * si elle existe et remplit \a found_name (si non nul) avec le nom de
- * l'instance. Dès qu'une instance est trouvée, on la retourne.
- * Retourne nulle si aucune instance n'est disponible.
+ * Tries to instantiate a service implementing \a InterfaceType with
+ * the list of service names \a names. Returns the found instance
+ * if it exists and fills \a found_name (if not null) with the name of
+ * the instance. As soon as an instance is found, it is returned.
+ * Returns null if no instance is available.
  *
- * \note Cette méthode n'est plus utilisée (janvier 2025) et on utilise
- * _tryCreateServiceUsingInjector() à la place.
+ * \note This method is no longer used (January 2025) and we use
+ * _tryCreateServiceUsingInjector() instead.
  */
 template<typename InterfaceType> Ref<InterfaceType> Application::
 _tryCreateService(const StringList& names,String* found_name)
@@ -288,18 +291,18 @@ namespace
 {
 
 /*!
- * Essaie d'instancier un service implémentant \a InterfaceType avec
- * la liste de nom de services \a names.  Retourne l'instance trouvée
- * si elle existe et remplit \a found_name (si non nul) avec le nom de
- * l'instance. Dès qu'une instance est trouvée, on la retourne.
- * Retourne \a nullptr si aucune instance n'est disponible.
+ * Tries to instantiate a service implementing \a InterfaceType with
+ * the list of service names \a names. Returns the found instance
+ * if it exists and fills \a found_name (if not null) with the name of
+ * the instance. As soon as an instance is found, it is returned.
+ * Returns \a nullptr if no instance is available.
  */
 template <typename InterfaceType> Ref<InterfaceType>
 _tryCreateServiceUsingInjector(const StringList& names, String* found_name, ITraceMng* tm)
 {
   DependencyInjection::Injector injector;
   injector.fillWithGlobalFactories();
-  // Ajoute l'instance de ITraceMng*
+  // Adds the ITraceMng* instance
   injector.bind(tm);
 
   if (found_name)
@@ -325,16 +328,16 @@ build()
 {
   const ApplicationBuildInfo& build_info = applicationBuildInfo();
 
-  // Création du TraceMngPolicy. L'initialisation complète se fera plus tard
-  // car on a besoin d'informations supplémentaires comme le rang MPI et
-  // d'avoir lu des fichiers de configuration.
+  // Creation of TraceMngPolicy. Complete initialization will be done later
+  // because we need additional information like the MPI rank and
+  // having read configuration files.
   m_trace_policy = m_main_factory->createTraceMngPolicy(this);
 
-  // Toujours le premier après TraceMngPolicy
+  // Always the first after TraceMngPolicy
   m_trace = m_main_factory->createTraceMng();
 
   {
-    // TODO: positionner ces informations dans ApplicationBuildInfo.
+    // TODO: position these information in ApplicationBuildInfo.
     Int32 output_level = build_info.outputLevel();
     if (output_level!=Trace::UNSPECIFIED_VERBOSITY_LEVEL){
       m_trace_policy->setVerbosityLevel(output_level);
@@ -348,9 +351,9 @@ build()
     bool has_output_file = build_info.isMasterHasOutputFile();
     m_trace_policy->setIsMasterHasOutputFile(has_output_file);
 
-    // Positionne le niveau de verbosité en laissant au minimum le niveau
-    // par défaut. Sans cela, certains messages d'initialisation peuvent ne
-    // pas s'afficher ce qui peut être génant en cas de problèmes ou de plantage.
+    // Positions the verbosity level leaving at least the level
+    // default. Without this, some initialization messages may not
+    // display, which can be problematic in case of issues or crashes.
     Int32 minimal_verbosity_level = build_info.minimalVerbosityLevel();
     if (minimal_verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       minimal_verbosity_level = Trace::DEFAULT_VERBOSITY_LEVEL;
@@ -360,7 +363,7 @@ build()
   arcaneGlobalMemoryInfo()->setTraceMng(traceMng());
 
   {
-    // Affiche quelques informations à l'initialisation dès le niveau 4
+    // Displays some information during initialization starting at level 4
     m_trace->info(4) << "*** Initialization informations:";
     m_trace->info(4) << "*** PID: " << platform::getProcessId();
     m_trace->info(4) << "*** Host: " << platform::getHostName();
@@ -370,21 +373,21 @@ build()
       String os_dir(m_exe_info.dataOsDir());
 #ifdef ARCANE_OS_WIN32
       {
-        // Sous windows, si le processus est lancé via 'dotnet' par exemple,
-        // les chemins de recherche pour LoadLibrary() ont pu être modifiés
-        // et on ne vas plus chercher par défaut dans le répertoire courant
-        // pour charger les bibliothèques natives. Pour corrige ce problème
-        // on repositionne le comportement qui autorise à ajouter des chemins
-        // utilisateurs et on ajoute 'os_dir' à ce chemin.
-        // Sans cela, les dépendances aux bibliothèques chargées par LoadLibrary()
-        // ne seront pas trouvées. Par exemple 'arcane_thread.dll' dépend de 'tbb.dll' et
-        // tous les deux sont le même répertoire mais si répertoire n'est pas
-        // dans la liste autorisé, alors 'tbb.dll' ne sera pas trouvé.
+        // On Windows, if the process is launched via 'dotnet', for example,
+        // the search paths for LoadLibrary() may have been modified
+        // and it no longer searches by default in the current directory
+        // to load native libraries. To correct this problem
+        // we reposition the behavior that allows adding paths
+        // users and we add 'os_dir' to this path.
+        // Without this, dependencies on libraries loaded by LoadLibrary()
+        // will not be found. For example, 'arcane_thread.dll' depends on 'tbb.dll' and
+        // both are in the same directory but if the directory is not
+        // in the allowed list, then 'tbb.dll' will not be found.
         //
-        // NOTE: On pourrait peut-être éviter cela en utilisant LoadLibraryEx() et en
-        // spécifiant LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR comme flag de recherche.
-        // A vérifier si cela fonctionne lorsqu'on n'utilisera plus le chargeur
-        // dynamique de la glib.
+        // NOTE: We might be able to avoid this by using LoadLibraryEx() and
+        // specifying LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR as the search flag.
+        // To check if this works when we no longer use the glib
+        // dynamic loader.
         m_trace->info(4) << "Adding '" << os_dir << "' to search library path";
         std::wstring wide_os_dir = StringUtils::convertToStdWString(os_dir);
         SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
@@ -403,7 +406,8 @@ build()
 #ifdef ARCANE_OS_WIN32
     if (dynamic_library_loader){
       String os_dir(m_exe_info.dataOsDir());
-      // TODO: Ajouter le répertoire contenant 'arcane_impl' qui est connu dans ArcaneMain dans m_arcane_lib_path.
+      // TODO: Add the directory containing 'arcane_impl' which is known
+      // in ArcaneMain to m_arcane_lib_path.
       String dyn_lib_names[5] = { "arcane_mpi", "arcane_std", "arcane_mesh",
                                   "arcane_thread", "arcane_mpithread",
                                 };
@@ -443,7 +447,7 @@ build()
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL",true))
       ProfilingRegistry::setProfilingLevel(v.value());
 
-    // Recherche le service utilisé pour le profiling
+    // Search for the service used for profiling
     {
       String profile_str = platform::getEnvironmentVariable("ARCANE_PROFILING");
       if (!profile_str.null()){
@@ -458,7 +462,7 @@ build()
       }
     }
 
-    // Par défaut, on accroche le service Hyoda
+    // By default, we hook the Hyoda service
     {
       ServiceBuilder<IOnlineDebuggerService> sf(this);
       auto sv = sf.createReference("Hyoda",SB_AllowNull);
@@ -468,7 +472,7 @@ build()
       }
     }
     
-    // Recherche le service utilisé pour la gestion de l'affinité processeur
+    // Search for the service used for processor affinity management
     {
       StringList names;
       names.add("HWLoc");
@@ -484,7 +488,7 @@ build()
       }
     }
 
-    // Recherche le service utilisé pour le parallélisme
+    // Search for the service used for parallelism
     String message_passing_service = build_info.messagePassingService();
     if (message_passing_service.null())
       message_passing_service = build_info.internalDefaultMessagePassingService();
@@ -530,12 +534,12 @@ build()
   m_application_name = m_exe_info.applicationName();
   m_code_name = m_exe_info.codeName();
 
-  // Récupère le nom de l'utilisateur
+  // Get the user name
   m_user_name = platform::getUserName();
 
-  // Récupère le chemin du répertoire de la configuration utilisateur
-  // TODO: il faut changer car dans les nouvelles recommandations POSIX,
-  // le répertoire de configuration est '.config/arcane'.
+  // Get the path to the user configuration directory
+  // TODO: it must be changed because in the new POSIX recommendations,
+  // the configuration directory is '.config/arcane'.
   m_user_config_path = platform::getEnvironmentVariable("ARCANE_CONFIG_PATH");
   if (m_user_config_path.null()) {
     Directory user_home_env(platform::getHomeDirectory());
@@ -545,11 +549,11 @@ build()
   {
     bool is_parallel = parallelSuperMng()->isParallel();
     bool is_debug = applicationInfo().isDebug();
-    // Création et initialisation du TraceMngPolicy.
+    // Creation and initialization of TraceMngPolicy.
     m_trace_policy->setIsParallel(is_parallel);
     m_trace_policy->setIsDebug(is_debug);
     bool is_parallel_output = is_parallel && is_debug;
-    // Permet de forcer les sorties meme en mode optimisé
+    // Allows forcing outputs even in optimized mode
     {
       String s = platform::getEnvironmentVariable("ARCANE_PARALLEL_OUTPUT");
       if (!s.null())
@@ -583,7 +587,7 @@ initialize()
 
   bool is_debug = m_exe_info.isDebug();
 
-  // Analyse le fichier de configuration de l'utilisateur
+  // Analyze the user configuration file
   _openUserConfig();
 
   //m_trace->info() << "Application init trace mng rank=" << m_parallel_super_mng->traceRank();
@@ -599,8 +603,8 @@ initialize()
   m_trace->info() << "WARNING: Compilation in CHECK mode !";
 #endif
 
-  // Active ou désactive un mode vérification partiel si la variable d'environnement
-  // correspondante est positionnée.
+  // Active or deactivate a partial check mode if the corresponding environment variable
+  // is set.
   String check_str = platform::getEnvironmentVariable("ARCANE_CHECK");
   if (!check_str.null()){
     bool is_check = check_str != "0";
@@ -653,7 +657,7 @@ initialize()
     m_trace->info() << "Using 'libxml2' for XML parsing";
 #endif
 
-    // Affiche les infos sur les processeurs
+    // Display info about processors
   {
     IProcessorAffinityService* pas = platform::getProcessorAffinityService();
     if (pas){
@@ -661,7 +665,7 @@ initialize()
     }
   }
 
-  // Affiche si l'on a un service de debug
+  // Display if we have a debug service
   if (platform::getOnlineDebuggerService()){
     m_trace->info() << "Hyoda service is now hooked";
   }
@@ -671,11 +675,11 @@ initialize()
   
   m_is_init = true;
 
-  // Analyse le fichier de configuration du code.
+  // Analyze the code configuration file.
   _readCodeConfigurationFile();
 
   {
-    // Construction des types internes
+    // Construction of internal types
     ItemTypeMng::_singleton()->build(m_parallel_super_mng.get(),traceMng());
   }
 
@@ -720,7 +724,7 @@ initialize()
       m_trace->info() << "No task management active";
   }
 
-  // Recherche le service utilisé pour gérer le système d'unité.
+  // Search for the service used to manage the unit system.
   {
     ServiceBuilder<IPhysicalUnitSystemService> sf(this);
     String service_name = "Udunits";
@@ -735,7 +739,7 @@ initialize()
     m_physical_unit_system_service = sv;
   }
 
-  // Recherche le service utilisé pour gérer les compteurs de performance.
+  // Searches for the service used to manage performance counters.
   {
     String service_name = "LinuxPerfPerformanceCounterService";
     String env_service_name = platform::getEnvironmentVariable("ARCANE_PERFORMANCE_COUNTER_SERVICE");
@@ -752,7 +756,7 @@ initialize()
     }
   }
 
-  // Initialise le traceur des énumérateurs.
+  // Initializes the enumerator tracer.
   {
     bool force_tracer = false;
     String trace_str = platform::getEnvironmentVariable("ARCANE_TRACE_ENUMERATOR");
@@ -802,16 +806,16 @@ initialize()
 void Application::
 _readCodeConfigurationFile()
 {
-  // Analyse le fichier de configuration du code.
+  // Analyzes the code configuration file.
   const ApplicationBuildInfo& build_info = applicationBuildInfo();
 
-  // Récupère le nom du fichier de configuration.
-  // Si nul, cela indique qu'il n'y a pas de fichier de configure.
-  // Si vide (le défaut), on récupère le nom à partir du nom du code.
-  // Sinon, on utilise le nom spécifié dans la configuration.
+  // Retrieves the configuration file name.
+  // If null, it indicates that there is no configuration file.
+  // If empty (default), it retrieves the name from the code name.
+  // Otherwise, it uses the name specified in the configuration.
 
-  // A noter que cette valeur doit être la même pour tous les PE sinon cela
-  // va bloquer (TODO: faire une éventuellem réduction)
+  // Note that this value must be the same for all PE otherwise it
+  // will block (TODO: potentially reduce)
   String config_file_name = build_info.configFileName();
 
   bool use_config_file = true;
@@ -819,10 +823,10 @@ _readCodeConfigurationFile()
     use_config_file = false;
   }
   else if (config_file_name.empty()){
-    // Regarde d'abord dans le répertoire courant, sinon dans le répertoire
-    // des données partagées (share).
-    // Pour des raisons de performances en parallèle, seul le processeur maitre
-    // fait le test.
+    // First checks the current directory, otherwise checks the shared
+    // data directory (share).
+    // For parallel performance reasons, only the master processor
+    // performs the test.
     StringBuilder buf;
     if (m_is_master){
       buf = m_exe_info.codeName();
@@ -854,8 +858,9 @@ _readCodeConfigurationFile()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Analyse le fichier de configuration de l'utilisateur.
+ * \brief Analyzes the user configuration file.
  */
 void Application::
 _openUserConfig()
@@ -907,9 +912,9 @@ getCodeService(const String& u_file_name)
   ServiceBuilder<ICodeService> builder(this);
   auto services = builder.createAllInstances();
 
-  // Regarde si un service gere l'extension '.arc'.
-  // S'il n'y en a pas, utilise ArcaneCodeService pour
-  // cette extension.
+  // Checks if a service manages the '.arc' extension.
+  // If none exists, ArcaneCodeService is used for
+  // this extension.
   {
     bool has_arc_extension = false;
     for( Integer i=0, n=services.size(); i<n; ++i ){
@@ -924,7 +929,7 @@ getCodeService(const String& u_file_name)
     }
   }
 
-  // Cherche l'extension du fichier et la conserve dans \a case_ext
+  // Finds the file extension and stores it in \a case_ext
   std::string_view fview = u_file_name.toStdStringView();
   std::size_t extension_pos = fview.find_last_of('.');
   if (extension_pos==std::string_view::npos)
@@ -944,7 +949,7 @@ getCodeService(const String& u_file_name)
     if (found_service.get())
       break;
   }
-  // TODO: retourner une référence.
+  // TODO: return a reference.
   return found_service;
 }
 

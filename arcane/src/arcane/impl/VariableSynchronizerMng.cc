@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableSynchronizerMng.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire des synchroniseurs de variables.                             */
+/* Variable Synchronizer Manager.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,20 +36,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques de synchronisation.
+ * \brief Synchronization statistics.
  *
- * Lorsque la comparaison avant/après synchronisation est active, chaque rang
- * sait pour sa partie si les valeurs comparées sont les mêmes ou pas.
+ * When the before/after synchronization comparison is active, each rank
+ * knows for its part whether the compared values are the same or not.
  *
- * Cependant, il faut faire une réduction sur l'ensemble des rangs pour avoir
- * une vision globale de la comparaison (car il suffit d'un rang pour lequel
- * la comparaison est différente pour qu'on considère que la comparaison est
- * différente).
+ * However, a reduction must be performed over all ranks to have
+ * a global view of the comparison (because only one rank for which
+ * the comparison is different is sufficient to consider the comparison to be
+ * different).
  *
- * Comme il est trop coûteux de faire la réduction pour chaque synchronisation,
- * on maintient une liste des comparaisons et on traite cette liste lorsqu'elle
- * atteint une certaine taille ou si c'est demandé explicitement.
+ * Since it is too costly to perform the reduction for every synchronization,
+ * we maintain a list of comparisons and process this list when it
+ * reaches a certain size or if it is explicitly requested.
  *
  */
 class VariableSynchronizerStats
@@ -57,11 +58,10 @@ class VariableSynchronizerStats
 {
  public:
 
-  // On utilise un ReduceMin pour la valeur de comparaison.
-  // Pour qu'on considère comme identique, il faut que tout les rangs
-  // soient identiques. Il suffit d'un rang 'Unknown' pour considérer
-  // que c'est 'Unknown'. Il faut donc que 'Unknown' soit la valeur la
-  // plus faible et 'Same' la plus élevée.
+  // We use a ReduceMin for the comparison value.
+  // For them to be considered identical, all ranks
+  // must be identical. One 'Unknown' rank is enough to consider
+  // it 'Unknown'. Therefore, 'Unknown' must be the lowest value and 'Same' the highest.
   static constexpr unsigned char LOCAL_UNKNOWN = 0;
   static constexpr unsigned char LOCAL_DIFF = 1;
   static constexpr unsigned char LOCAL_SAME = 2;
@@ -164,7 +164,7 @@ class VariableSynchronizerStats
 void VariableSynchronizerStats::
 _handleEvent(const VariableSynchronizerEventArgs& args)
 {
-  // On ne traite que les évènements de fin de synchronisation
+  // We only process end-of-synchronization events
   if (args.state() != VariableSynchronizerEventArgs::State::EndSynchronize)
     return;
   if (!m_variable_synchronizer_mng->isDoingStats())
@@ -185,8 +185,8 @@ _handleEvent(const VariableSynchronizerEventArgs& args)
       m_pending_compare_status_list.add(rs);
       ++index;
       if (level >= 2) {
-        // On fait la réduction ici car on veut savoir immédiatement s'il y a une
-        // différence.
+        // We perform the reduction here because we want to know immediately if there is a
+        // difference.
         unsigned char global_rs = pm->reduce(Parallel::ReduceMax, rs);
         if (global_rs == LOCAL_SAME) {
           info() << "Synchronize: same values for variable name=" << var->fullName();
@@ -239,7 +239,7 @@ VariableSynchronizerMng(IVariableMng* vm)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_AUTO_COMPARE_SYNCHRONIZE", true)) {
     m_synchronize_compare_level = v.value();
-    // Si on active la comparaison, on active aussi les statistiques
+    // If comparison is active, statistics are also active
     m_is_doing_stats = m_synchronize_compare_level > 0;
   }
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_SYNCHRONIZE_STATS", true))
@@ -293,10 +293,11 @@ flushPendingStats()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère un pool de buffer associé à un allocateur.
+ * \brief Manages a pool of buffers associated with an allocator.
  *
- * Les méthodes de cette classe sont thread-safe.
+ * The methods of this class are thread-safe.
  */
 class VariableSynchronizerMng::InternalApi::BufferList
 {
@@ -315,25 +316,26 @@ class VariableSynchronizerMng::InternalApi::BufferList
 
  private:
 
-  //! Liste par allocateur des buffers en cours d'utilisation
+  //! List of buffers currently in use by allocator
   MapList m_used_map;
 
-  //! Liste par allocateur des buffers libres
+  //! List of free buffers by allocator
   FreeList m_free_map;
 
-  //! Mutex pour protéger la création/récupération des buffers
+  //! Mutex to protect buffer creation/retrieval
   mutable std::mutex m_mutex;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Créé ou récupère un buffer.
+ * \brief Creates or retrieves a buffer.
  *
- * Il est possible de créer des buffers avec un allocateur nul. Dans ce
- * cas, ce sera l'allocateur par défaut qui sera utilisé et donc pour
- * un MemoryBuffer donné, on n'aura pas forcément new_buffer.allocator()==allocator.
- * Il faut donc toujours utiliser \a allocator.
+ * It is possible to create buffers with a null allocator. In this
+ * case, the default allocator will be used and therefore for
+ * a given MemoryBuffer, new_buffer.allocator() will not necessarily equal allocator.
+ * You must always use \a allocator.
  */
 Ref<MemoryBuffer> VariableSynchronizerMng::InternalApi::BufferList::
 createSynchronizeBuffer(IMemoryAllocator* allocator)
@@ -343,15 +345,15 @@ createSynchronizeBuffer(IMemoryAllocator* allocator)
   auto& free_map = m_free_map;
   auto x = free_map.find(allocator);
   Ref<MemoryBuffer> new_buffer;
-  // Regarde si un buffer est disponible dans \a free_map.
+  // Checks if a buffer is available in \a free_map.
   if (x == free_map.end()) {
-    // Aucun buffer associé à cet allocator, on en crée un
+    // No buffer associated with this allocator, so we create one
     new_buffer = MemoryBuffer::create(allocator);
   }
   else {
     auto& buffer_stack = x->second;
-    // Si la pile est vide, on crée un buffer. Sinon, on prend le premier
-    // de la pile.
+    // If the stack is empty, we create a buffer. Otherwise, we take the first
+    // from the stack.
     if (buffer_stack.empty()) {
       new_buffer = MemoryBuffer::create(allocator);
     }
@@ -361,7 +363,7 @@ createSynchronizeBuffer(IMemoryAllocator* allocator)
     }
   }
 
-  // Enregistre l'instance dans la liste utilisée
+  // Registers the instance in the used list
   m_used_map[allocator].insert(std::make_pair(new_buffer.get(), new_buffer));
   return new_buffer;
 }
@@ -399,11 +401,11 @@ dumpStats(std::ostream& ostr) const
 {
   std::scoped_lock lock(m_mutex);
 
-  //! Liste par allocateur des buffers en cours d'utilisation
+  //! List of buffers currently in use by allocator
   for (const auto& x : m_used_map)
     ostr << "SynchronizeBuffer: nb_used_map = " << x.second.size() << "\n";
 
-  //! Liste par allocateur des buffers libres
+  //! List of free buffers by allocator
   for (const auto& x : m_free_map)
     ostr << "SynchronizeBuffer: nb_free_map = " << x.second.size() << "\n";
 }
@@ -428,8 +430,8 @@ InternalApi(VariableSynchronizerMng* vms)
 VariableSynchronizerMng::InternalApi::
 ~InternalApi()
 {
-  // Le destructeur ne peut pas être supprimé car 'm_buffer_list' n'est pas
-  // connu lors de la définition de la classe.
+  // The destructor cannot be deleted because 'm_buffer_list' is not
+  // known when the class is defined.
 }
 
 /*---------------------------------------------------------------------------*/

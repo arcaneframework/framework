@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ThreadBindingMng.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire pour punaiser les threads.                                   */
+/* Manager for binding threads.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_THREADBINDERMNG_H
 #define ARCANE_IMPL_INTERNAL_THREADBINDERMNG_H
@@ -61,4 +61,4 @@ class ARCANE_IMPL_EXPORT ThreadBindingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

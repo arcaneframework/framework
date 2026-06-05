@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimerMng.h                                                  (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un gestionnaire de timer.                                */
+/* Implementation of a timer manager.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_TIMERMNG_H
 #define ARCANE_IMPL_TIMERMNG_H
@@ -27,11 +27,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestionnaire de timer.
+ * \brief Timer manager.
  *
- * \warning Cette classe est interne à Arcane.
+ * \warning This class is internal to Arcane.
  */
 class ARCANE_IMPL_EXPORT TimerMng
 : public TraceAccessor
@@ -39,7 +40,7 @@ class ARCANE_IMPL_EXPORT TimerMng
 {
  public:
 
-  //! Construit un timer lié au gestionnaire \a mng
+  //! Constructs a timer linked to the manager \a mng
   explicit TimerMng(ITraceMng* msg);
 
  public:
@@ -51,10 +52,10 @@ class ARCANE_IMPL_EXPORT TimerMng
 
  protected:
 
-  //! Retourne le temps réel
+  //! Returns the real time
   virtual Real _getRealTime();
 
-  //! Positionne un timer réel
+  //! Sets the real time
   virtual void _setRealTime() {}
   
  private:
@@ -70,5 +71,4 @@ class ARCANE_IMPL_EXPORT TimerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneMainExecInfo.h                                        (C) 2000-2019 */
 /*                                                                           */
-/* Classe gérant l'exécution.                                                */
+/* Class managing execution.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_ARCANEMAINEXECINFO_H
 #define ARCANE_IMPL_INTERNAL_ARCANEMAINEXECINFO_H
@@ -27,12 +27,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Infos d'exécution.
+ * \brief Execution information.
  *
- * Cette classe n'est pas exportée car elle ne doit pas être utilisée
- * en dehors de cette composante.
+ * This class is not exported because it should not be used
+ * outside of this component.
  */
 class ARCANE_IMPL_EXPORT ArcaneMainExecInfo
 {
@@ -51,7 +52,7 @@ class ARCANE_IMPL_EXPORT ArcaneMainExecInfo
   IArcaneMain* arcaneMainClass() const { return m_exec_main; }
   void setDirectExecFunctor(IDirectSubDomainExecuteFunctor* func) { m_direct_exec_functor = func; }
  private:
-  const ApplicationInfo& m_app_info; //!< ATTENTION: référence
+  const ApplicationInfo& m_app_info; //!< WARNING: reference
   IMainFactory* m_main_factory;
   ApplicationBuildInfo m_application_build_info;
   bool m_has_build_info = false;
@@ -69,4 +70,4 @@ class ARCANE_IMPL_EXPORT ArcaneMainExecInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

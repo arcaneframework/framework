@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeLoopMng.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de la boucle en temps.                                       */
+/* Time loop manager.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -91,8 +91,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de la boucle en temps.
+ * \brief Time loop manager.
  */
 class TimeLoopMng
 : public TraceAccessor
@@ -111,18 +112,18 @@ class TimeLoopMng
   };
   enum eVerifType
   {
-    VerifNone, //!< Indique qu'on ne fait pas de vérifications
-    VerifWrite, //!< Indique qu'on génère des valeurs pour vérifier
-    VerifRead, //!< Indique qu'on relit et vérifie des valeurs
-    VerifSync, //! Vérifie que les variables sont synchronisées
-    VerifSameReplica //! Vérifie que les variables ont les mêmes valeurs sur tous les réplica.
+    VerifNone, //!< Indicates that no checks are performed
+    VerifWrite, //!< Indicates that values are generated for checking
+    VerifRead, //!< Indicates that values are reread and checked
+    VerifSync, //! Checks that variables are synchronized
+    VerifSameReplica //! Checks that variables have the same values on all replicas.
   };
 
-  //! Liste des états des modules
+  //! List of module states
   typedef std::map<String,ModuleState> ModuleStateMap;
-  //! Liste de boucles en temps
+  //! List of time loops
   typedef std::map<String,ITimeLoop*> TimeLoopMap;
-  //! Liste des fabriques des modules indéxés par leur nom.
+  //! List of module factories indexed by their name.
   typedef std::map<String,IModuleFactoryInfo*> ModuleFactoryMap;
 
  public:
@@ -159,7 +160,7 @@ class TimeLoopMng
   int doOneIteration() override;
 
   void setBackwardMng(IBackwardMng* backward_mng) override;
-  // Attention, peut renvoyer NULL
+  // Attention, may return NULL
   IBackwardMng* getBackwardMng() const override { return m_backward_mng;}
 
   void goBackward() override;
@@ -201,94 +202,94 @@ class TimeLoopMng
 
  protected:
 
-  //! Ajoute un point d'entrée à exécuter
+  //! Adds an entry point to execute
   void _addExecuteEntryPoint(IEntryPoint*);
-  //! Crée un module à partir de son nom
+  //! Creates a module from its name
   bool _createModule(const String & module_name);
-  //! Ajoute à la liste \a entry_points les points d'entrée proposés dans \a entry_points_info
-  /*! Controle que ceux ci sont bien associé à \a where */
+  //! Adds the entry points proposed in \a entry_points_info to the list \a entry_points
+  /*! Ensures they are correctly associated with \a where */
   void _processEntryPoints(EntryPointList& entry_points,
                            const TimeLoopEntryPointInfoCollection& entry_points_info,
                            const char* where);
   /**
-   * Renseigne la liste d'état des modules en fonction des informations
-   * contenues dans les éléments <modules> de la boucle en temps et du fichier de données.
+   * Populates the module state map based on the information
+   * contained in the <modules> elements of the time loop and the data file.
    */
   void _fillModuleStateMap(ITimeLoop* time_loop);
 
   /*!
-   * Retourne le nom du module et le nom du point d'entrée à partir du nom
-   * référencé dans la boucle en temps, de type ModuleName.EntryPointName.
+   * Returns the module name and the entry point name from the name
+   * referenced in the time loop, of type ModuleName.EntryPointName.
    */
   static void _extractModuleAndEntryPointName(const String & timeloop_call_name,
                                               String& module_name,String& entry_point_name);
 
  private:
 
-  //! Gestionnaire du sous-domaine.
+  //! Sub-domain manager.
   ISubDomain* m_sub_domain;
 
-  //! Gestionnaire de points d'entrée
+  //! Entry point manager
   IEntryPointMng* m_entry_point_mng;
 
-  //! Liste des modules à éxécuter
+  //! List of modules to execute
   ModuleList m_list_execute_module;
 
-  //! Liste des points d'entrée à exécuter lors de la construction
+  //! List of entry points to execute during build
   EntryPointList m_build_entry_points;
 
-  //! Liste des points d'entrée à exécuter
+  //! List of entry points to execute
   EntryPointList m_loop_entry_points;
 
-  //! Liste des points d'entrée à exécuter à l'initialisation
+  //! List of entry points to execute during initialization
   EntryPointList m_init_entry_points;
 
-  //! Liste des points d'entrée à exécuter à la terminaison
+  //! List of entry points to execute upon termination
   EntryPointList m_exit_entry_points;
 
-  //! Liste des points d'entrée à exécuter lors d'un retour arrière
+  //! List of entry points to execute during a backward step
   EntryPointList m_restore_entry_points;
 
-  //! Liste des points d'entrée à exécuter après un changement de maillage
+  //! List of entry points to execute after a mesh change
   EntryPointList m_on_mesh_changed_entry_points;
 
-  //! Liste des points d'entrée à exécuter après un raffinement
+  //! List of entry points to execute after a refinement
   EntryPointList m_on_mesh_refinement_entry_points;
 
-  //! Liste de tous les points d'entrée de la boucle en temps utilisée.
+  //! List of all entry points of the used time loop.
   EntryPointList m_used_time_loop_entry_points;
 
-  //! Liste des boucles en temps
+  //! List of time loops
   TimeLoopMap m_time_loop_list;
 
-  ITimeLoop* m_default_time_loop; //!< Boucle en temps par défaut
+  ITimeLoop* m_default_time_loop; //!< Default time loop
 
-  ITimeLoop* m_used_time_loop; //!< Boucle en temps utilisée
+  ITimeLoop* m_used_time_loop; //!< Used time loop
 
-  IEntryPoint* m_current_entry_point_ptr; //!< Point d'entrée en cours d'exécution
+  IEntryPoint* m_current_entry_point_ptr; //!< Currently executing entry point
 
   bool m_stop_time_loop;
   bool m_stop_has_error;
   bool m_final_time_reached;
 
-  Integer m_current_entry_point; //!< Prochain point d'entrée à exécuter
+  Integer m_current_entry_point; //!< Next entry point to execute
 
-  eVerifType m_verif_type; //!< Type de vérifications
+  eVerifType m_verif_type; //!< Verification type
   bool m_verif_same_parallel;
-  String m_verif_path; //!< Répertoire de sauvegarde/lecture des verifs
+  String m_verif_path; //!< Save/read directory for verifications
   bool m_verification_active;
-  //! Si vrai, effectue vérifications à chaque point d'entrée, sinon uniquement en fin d'itération.
+  //! If true, performs checks at every entry point, otherwise only at the end of the iteration.
   bool m_verification_at_entry_point;
   bool m_verification_only_at_exit = false;
   eVariableComparerComputeDifferenceMethod m_compute_diff_method = eVariableComparerComputeDifferenceMethod::Relative;
 
-  IBackwardMng* m_backward_mng; //!< Gestionnaire du retour-arrière;
+  IBackwardMng* m_backward_mng; //!< Backward manager;
   bool m_my_own_backward_mng;
 
-  ModuleStateMap m_module_state_list; //! Etat de tous les modules référencés
+  ModuleStateMap m_module_state_list; //! State of all referenced modules
 
-  ModuleFactoryMap m_module_factory_map; //! Liste des fabriques des modules.
-  ModuleFactoryMap m_lang_module_factory_map; //! Liste des fabriques des modules dans la langue du JDD.
+  ModuleFactoryMap m_module_factory_map; //! List of module factories.
+  ModuleFactoryMap m_lang_module_factory_map; //! List of module factories in the data file language.
 
   Ref<IVerifierService> m_verifier_service;
   UniqueArray<IMeshPartitionerBase*> m_mesh_partitioner;
@@ -300,10 +301,10 @@ class TimeLoopMng
 
   eTimeLoopStopReason m_stop_reason;
 
-  // Service de message passing profiling
+  // Message passing profiling service
   Ref<IMessagePassingProfilingService> m_msg_pass_prof_srv;
 
-  //! Pour test, point d'entrée spécifique à appeler
+  //! For testing, specific entry point to call
   String m_specific_entry_point_name;
 
  private:
@@ -399,7 +400,7 @@ TimeLoopMng::
 void TimeLoopMng::
 build()
 {
-  // Créé en enregistre une boucle par défaut.
+  // Creates and registers a default loop.
   ITimeLoop * tm = createTimeLoop(String("ArcaneEmptyLoop"));
   m_default_time_loop = tm;
   registerTimeLoop(tm);
@@ -453,8 +454,8 @@ build()
       info() << "Do verification only at exit";
     }
   }
-  // Regarde si on n'exécute qu'un seul point d'entrée au lieu de la boucle
-  // en temps. Cela est utilisé uniquement pour des tests
+  // Checks if only a single entry point is executed instead of the time loop.
+  // This is used only for tests
   {
     String s = platform::getEnvironmentVariable("ARCANE_CALL_SPECIFIC_ENTRY_POINT");
     if (!s.null()){
@@ -480,13 +481,13 @@ build()
     }
   }
 
-  // Creation du service de "message passing profiling" le cas echeant
+  // Creation of the "message passing profiling" service if necessary
   {
     String msg_pass_prof_str = platform::getEnvironmentVariable("ARCANE_MESSAGE_PASSING_PROFILING");
     if (!msg_pass_prof_str.null()) {
       String service_name;
-      // TODO: ne pas faire de if mais utiliser directement le nom spécifié par la
-      // variable d'environnement.
+      // TODO: do not use if statements but use the name specified by the
+      // environment variable directly.
       if (msg_pass_prof_str == "JSON") {
         service_name = "JsonMessagePassingProfiling";
       } else if (msg_pass_prof_str == "OTF2") {
@@ -518,7 +519,7 @@ setBackwardMng(IBackwardMng* backward_mng)
   ARCANE_ASSERT((backward_mng),("IBackwardMng pointer null"));
 
   if (m_backward_mng){
-    // Détruit l'ancien gestionnaire si c'est nous qui l'avons créé.
+    // Destroys the old manager if we created it.
     if (m_my_own_backward_mng)
       delete m_backward_mng;
     ARCANE_FATAL("Backward manager already set");
@@ -623,7 +624,7 @@ execExitEntryPoints()
     _execOneEntryPoint(ic);
   }
 
-  // Affiche les statistiques d'exécution
+  // Display execution statistics
   {
     JSONWriter json_writer(JSONWriter::FormatFlags::None);
     json_writer.beginObject();
@@ -633,7 +634,7 @@ execExitEntryPoints()
     traceMng()->flush();
   }
 
-  // Affiche le profiling de message passing dans un fichier pour les traces JSON
+  // Displays message passing profiling in a file for JSON traces
   if (m_msg_pass_prof_srv.get() && m_msg_pass_prof_srv->implName() == "JsonMessagePassingProfiling") {
     String fullname(subDomain()->listingDirectory().file("message_passing_logs.")
                     + String(std::to_string(subDomain()->subDomainId()))
@@ -748,7 +749,7 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
         parallel_sequential = false;
       if (m_verif_type==VerifRead){
 
-        // Activer cette partie si on souhaite sauver les valeurs actuelles
+        // Activate this part if we want to save the current values
 #if 0
         {
           ServiceFinder2T<IVerifierService,ISubDomain> sf(app,sd);
@@ -761,8 +762,8 @@ _checkVerif(const String& entry_point_name,Integer index,bool do_verif)
         }
 #endif
 
-        // En lecture, désactive les exceptions flottantes pour éviter
-        // des erreurs lorsqu'on compare des variables non initialisées
+        // In read mode, disable floating point exceptions to avoid
+        // errors when comparing uninitialized variables
         {
           FloatingPointExceptionSentry fpes(false);
           m_verifier_service->doVerifFromReferenceFile(parallel_sequential,
@@ -794,8 +795,8 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
       continue;
     if (var->isPartial())
       continue;
-    // Pour l'instant on ne supporte pas la comparaison entre réplica
-    // des variables de type 'String'.
+    // For now, we do not support comparison between replicas
+    // of 'String' type variables.
     if (var->dataType()==DT_String)
       continue;
     vars_to_check.add(var);
@@ -822,8 +823,9 @@ _checkVerifSameOnAllReplica(const String& entry_point_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Execute le point d'entrée suivant dans la liste.
+ * Execute the next entry point in the list.
  */
 void TimeLoopMng::
 doExecNextEntryPoint(bool & is_last)
@@ -850,8 +852,9 @@ doExecNextEntryPoint(bool & is_last)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne la fonction suivante à appeler.
+ * \brief Returns the next function to call.
  */
 IEntryPoint* TimeLoopMng::
 nextEntryPoint()
@@ -877,8 +880,8 @@ doOneIteration()
     ARCANE_FATAL("No time loop");
 
   Integer current_iteration = sd->commonVariables().globalIteration();
-  // Le numéro d'itération 0 correspond à l'initialisation. La première
-  // itération de la boucle en temps porte le numéro 1.
+  // Iteration number 0 corresponds to initialization. The first
+  // iteration of the time loop is number 1.
   if (current_iteration==0){
     VariableScalarInteger global_iteration(sd->commonVariables().m_global_iteration);
     global_iteration = 1;
@@ -895,29 +898,29 @@ doOneIteration()
 
   m_backward_mng->beginAction();
 
-  // Action de restauration
+  // Restoration action
   if (m_backward_mng->checkAndApplyRestore()) {
 
     execRestoreEntryPoints();
 
-    // Repartitionnement inutile si retour-arrière
+    // Unnecessary partitioning if going backward
     m_mesh_partitioner.clear();
   }
 
-  // Repartionnement demandé
+  // Requested partitioning
   bool mesh_partition_done = false;
   if (!m_mesh_partitioner.empty()) {
     _doMeshPartition();
     mesh_partition_done = true;
   }
 
-  // Action de sauvegarde
+  // Saving action
   m_backward_mng->checkAndApplySave(mesh_partition_done);
 
   m_backward_mng->endAction();
 
   {
-    // Regarde les modules inactifs au cours du temps
+    // Checks modules that are inactive over time
     Real global_time = sd->commonVariables().globalTime();
     CaseOptionsCollection blocks(sd->caseMng()->blocks());
     for( CaseOptionsCollection::Enumerator i(blocks); ++i; ){
@@ -942,7 +945,7 @@ doOneIteration()
 
   m_observables[eTimeLoopEventType::BeginIteration]->notifyAllObservers();
 
-  // Exécute chaque point d'entrée de l'itération
+  // Executes each iteration entry point
   {
     Integer index =0;
     sd->timeStats()->notifyNewIterationLoop();
@@ -958,7 +961,7 @@ doOneIteration()
         _execOneEntryPoint(*i, index, true);
       } catch(const GoBackwardException&){
         m_backward_mng->goBackward();
-      } catch(...){ // On remonte toute autre exception
+      } catch(...){ // Catch any other exception
         throw;
       }
       if (m_backward_mng->isBackwardEnabled()){
@@ -983,7 +986,7 @@ doOneIteration()
     }
     if (force_prepare_dump){
       info() << "TimeLoopMng::doOneIteration(): Force prepareDump()";
-      // TODO: vérifier si nécessaire et si oui le faire pour tous les sous-domaines.
+      // TODO: check if necessary and if so, do it for all sub-domains.
       sd->defaultMesh()->prepareForDump();
     }
   }
@@ -998,16 +1001,17 @@ doOneIteration()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Effectue un repartitionnement des maillages.
+ * \brief Performs a mesh partitioning.
  */
 void TimeLoopMng::
 _doMeshPartition()
 {
   ISubDomain* sd = subDomain();
 
-  // Détruit le gestionnaire de retour-arrière pour économiser de la mémoire.
-  // Il sera reconstruit après le partitionnement.
+  // Destroys the backward manager to save memory.
+  // It will be reconstructed after partitioning.
   m_backward_mng->clear();
 
   Timer timer(sd,"TimeLoopMng::partitionMesh",Timer::TimerReal);
@@ -1023,8 +1027,8 @@ _doMeshPartition()
     info() << "Time spent to repartition the mesh (unit: second): "
            << timer.lastActivationTime();
 
-    // Écrit dans les logs dans les infos sur la distribution du voisinage
-    // TODO: pouvoir configurer cela et éventuellement ajouter des informations
+    // Writes to logs in the infos about neighborhood distribution
+    // TODO: ability to configure this and possibly add more information
     {
       IItemFamily* cell_family = mesh->cellFamily();
       IVariableSynchronizer* sync_info = cell_family->allItemsSynchronizer();
@@ -1049,7 +1053,7 @@ _doMeshPartition()
 
   m_mesh_partitioner.clear();
 
-  // Affiche les statistiques d'exécution
+  // Displays execution statistics
   sd->timeStats()->dumpCurrentStats("MeshesLoadBalance");
 }
 
@@ -1115,7 +1119,7 @@ setUsedTimeLoop(const String& name)
   logdate() << "Using time loop " << name; 
 
   ISubDomain* sd = m_sub_domain;
-  // Fusionne la configuration du sous-domaine avec celle de la boucle en temps.
+  // Merges the sub-domain configuration with that of the time loop.
   sd->configuration()->merge(m_used_time_loop->configuration());
 
   ScopedPtrT<IServiceLoader> service_loader(sd->mainFactory()->createServiceLoader());
@@ -1124,14 +1128,14 @@ setUsedTimeLoop(const String& name)
 
   _fillModuleFactoryMap();
 
-  // Chargement des modules de la boucle en temps
+  // Loading modules of the time loop
   _fillModuleStateMap(m_used_time_loop);
 
   for( const auto& it : m_module_state_list ){
     const ModuleState & module_state = it.second;
 
     if (!module_state.m_is_optional || module_state.m_is_active){
-      // creation du module
+      // creation of the module
       if (!_createModule(module_state.m_alias))
         ARCANE_FATAL("The module \"{0}\" was not created.",module_state.m_alias);
     }
@@ -1145,13 +1149,13 @@ setUsedTimeLoop(const String& name)
 
   m_used_time_loop_entry_points.clear();
 
-  // Parcours des points d'entrée explicitement référencés dans la boucle en temps 
-  // (m_used_time_loop) pour rechercher ceux qui correspondent aux points d'entrée
-  // enregistrés dans les modules
-  // Les points d'entrée non auto-load non référencés ne sont donc pas pris en charge.
-  // Attention: dans la boucle en temps les points d'entrée sont référencés
-  // par nom_module.nom_point_entrée alors que dans le fichier de données
-  // ils sont référencés par alias_module.nom_point_entrée
+  // Iterates over entry points explicitly referenced in the time loop 
+  // (m_used_time_loop) to search for those that correspond to entry points
+  // registered in the modules
+  // Entry points that are not auto-loaded and not referenced are therefore not supported.
+  // Note: in the time loop entry points are referenced
+  // by module_name.entry_point_name while in the data file
+  // they are referenced by alias_module.entry_point_name
   EntryPointList timeloop_entry_points;
   _processEntryPoints(timeloop_entry_points,
                       m_used_time_loop->entryPoints(ITimeLoop::WBuild),
@@ -1175,7 +1179,7 @@ setUsedTimeLoop(const String& name)
                       m_used_time_loop->entryPoints(ITimeLoop::WExit),
                       ITimeLoop::WExit);
 
-  // Ajoute les autoload au début.
+  // Adds autoloads at the beginning.
   EntryPointList entry_points(m_entry_point_mng->entryPoints());
   for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
     IEntryPoint* ic = * i;
@@ -1183,11 +1187,11 @@ setUsedTimeLoop(const String& name)
       _addExecuteEntryPoint(ic);
   }
 
-  // Ajoute les points d'entrées de la boucle de calcul.
+  // Adds compute loop entry points.
   for (EntryPointCollection::Enumerator i(timeloop_entry_points); ++i; )
     _addExecuteEntryPoint(*i);
 
-  { // Ajoute les autoload à la fin dans le sens inverse de leur déclaration
+  { // Adds autoloads at the end in reverse order of declaration
     EntryPointList auto_load_ends;
     for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
       IEntryPoint* ic = *i;
@@ -1221,7 +1225,7 @@ _createSingletonServices(IServiceLoader* service_loader)
     info() << "Loading singleton service '" << name << "'";
   }
 
-  // Lecture des services spécifiés dans le jeu de données.
+  // Reading services specified in the data set.
   ICaseMng* cm = m_sub_domain->caseMng();
   ICaseDocument* doc = cm->caseDocument();
   if (doc){
@@ -1249,7 +1253,8 @@ _processEntryPoints(EntryPointList& entry_points,
                     const TimeLoopEntryPointInfoCollection& entry_points_info,
                     const char* where)
 {
-  //TODO: Verifier que le nom du module spécifié dans la liste des modules à activer existe bien.
+  //TODO: Verify that the module name specified in the list of modules to
+  //activate actually exists.
   for( TimeLoopEntryPointInfoCollection::Enumerator i(entry_points_info); ++i; ){
     const TimeLoopEntryPointInfo& entry_point_info = *i;
     const String& timeloop_call_name = entry_point_info.name();
@@ -1274,8 +1279,8 @@ _processEntryPoints(EntryPointList& entry_points,
       if (!entry_point)
         ARCANE_FATAL("No entry point named '{0}' is referenced",call_alias);
 
-      // il faut verifier que la propriete "where" du point d'entree est
-      // compatible avec l'attribut "where" donne dans la boucle en temps
+      // it is necessary to verify that the "where" property of the entry point is
+      // compatible with the "where" attribute given in the time loop
       String ep_where = entry_point->where();
       OStringStream msg;
       msg() << "The entry point '" << call_alias << "' declared \"" << ep_where
@@ -1305,15 +1310,15 @@ _processEntryPoints(EntryPointList& entry_points,
 void TimeLoopMng::
 _fillModuleStateMap(ITimeLoop* time_loop)
 {
-  // Analyse des infos de la boucle en temps
-  //   1. liste des modules obligatoires
+  // Analyzes the time loop information
+  //   1. list of required modules
   for( StringCollection::Enumerator i(time_loop->requiredModulesName()); ++i; ){
     const String& module_name = *i;
     ModuleState ms(false, module_name);
     m_module_state_list.insert(ModuleStateMap::value_type(module_name, ms));
   }
 
-  //   2. liste des modules optionnels
+  //   2. list of optional modules
   for( StringCollection::Enumerator i(time_loop->optionalModulesName()); ++i; ){
     const String& module_name = *i;
     ModuleState ms(true, module_name);
@@ -1321,10 +1326,10 @@ _fillModuleStateMap(ITimeLoop* time_loop)
   }
 
   ICaseMng* cm = m_sub_domain->caseMng();
-  // Remplissage de la liste d'état des modules à partir
-  // des infos du fichier de données s'il existe
-  // (Il n'y a pas de jeu de données par exemple lorsqu'on génére les infos
-  // internes du code via l'option 'arcane_all_internal').
+  // Filling the module state list from
+  // the data file information if it exists
+  // (There is no data set for example when generating internal infos
+  // of the code via the option 'arcane_all_internal').
   ICaseDocument* doc = cm->caseDocument();
   if (!doc)
     return;
@@ -1342,24 +1347,24 @@ _fillModuleStateMap(ITimeLoop* time_loop)
     String name = module_node.attrValue(ustr_name);
     String alias = module_node.attrValue(ustr_alias);
 
-    // Regarde si le module est actif.
+    // Checks if the module is active.
     XmlNode active_node = module_node.attr(ustr_active);
     bool active = true;
     if (!active_node.null())
       active = active_node.valueAsBoolean(true);
 
-    // Complète les infos de la liste d'état
+    // Completes the module state list information
 
-    // Regarde d'abord si 'name' correspond à un nom de module
-    // dans la langue du JDD.
+    // First checks if 'name' corresponds to a module name
+    // in the language of the data file.
     auto ilang = m_lang_module_factory_map.find(name);
     if (ilang!=m_lang_module_factory_map.end())
       name = ilang->second->moduleName();
 
     auto it = m_module_state_list.find(name);
     if (it == m_module_state_list.end())
-      // Lève une exception si le nom du module spécifié dans le JDD
-      // ne correspond à aucun module enregistré.
+      // Raises an exception if the module name specified in the data file
+      // does not correspond to any registered module.
       ARCANE_FATAL("Error in configuring active modules: no module named '{0}' is registered.",
                    name);
 
@@ -1372,7 +1377,7 @@ _fillModuleStateMap(ITimeLoop* time_loop)
       pwarning() << "The module \"" << ms.m_alias
                  << "\" can't be declared mandatory in the time loop"
                  << " while being inactive in the input data."
-                 << " It's activity is therefore forced. ";
+                 << " Its activity is therefore forced. ";
       ms.m_is_active = true;
     }
   }
@@ -1400,8 +1405,9 @@ _extractModuleAndEntryPointName(const String& timeloop_call_name,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit \a m_module_factory_map avec la liste des fabriques disponibles.
+ * \brief Fills \a m_module_factory_map with the list of available factories.
  */
 void TimeLoopMng::
 _fillModuleFactoryMap()
@@ -1426,7 +1432,7 @@ _fillModuleFactoryMap()
       const IServiceInfo* si = mfi->serviceInfo();
       String translated_name = si->tagName(lang);
       if (m_lang_module_factory_map.find(module_name)!=m_lang_module_factory_map.end()){
-        // Envoie juste un avertissement car cela ne posera pas forcément problème.
+        // Just sends a warning because it will not necessarily cause a problem.
         warning() << "Two modules with same translated name=" << translated_name
                   << " ignoring name=" << module_name;
       }
@@ -1459,8 +1465,9 @@ _createModule(const String& module_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Ajoute le point d'entrée \a s à la liste des points d'entrée.
+ * Adds the entry point \a s to the list of entry points.
  */
 void TimeLoopMng::
 _addExecuteEntryPoint(IEntryPoint* entry_point)
@@ -1492,7 +1499,7 @@ _addExecuteEntryPoint(IEntryPoint* entry_point)
   }
   m_used_time_loop_entry_points.add(entry_point);
 
-  // Puisque le module a un point d'entrée utilisé, il est activé.
+  // Since the module has a used entry point, it is activated.
   IModule* c = entry_point->module();
   c->setUsed(true);
   {
@@ -1614,7 +1621,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
       z = Convert::toInt64(r);
       o.width(10);
       o << z;
-      //Probleme sur certaine machine : total_exec_time = 0
+      //Problem on certain machines: total_exec_time = 0
       if (total_exec_time>0)
         z = Convert::toInt64((100.0 * total_time) / total_exec_time);
       else
@@ -1769,8 +1776,8 @@ stopComputeLoop(bool is_final_time,bool has_error)
     m_stop_reason = eTimeLoopStopReason::Error;
   else if (is_final_time)
     m_stop_reason = eTimeLoopStopReason::FinalTimeReached;
-  // Si \a m_stop_reason n'est pas encore spécifié, indique qu'il n'y a pas
-  // de raison spéciale
+  // If m_stop_reason has not yet been specified, indicate that there is no
+  // special reason
   if (m_stop_reason==eTimeLoopStopReason::NoStop)
     m_stop_reason = eTimeLoopStopReason::NoReason;
 }
@@ -1802,29 +1809,29 @@ doComputeLoop(Integer max_loop)
   bool is_end_by_max_loop = false;
   int ret_val = 0;
   //m_alarm_timer_value = 0;
-  //pwarning() << "Force le alarm_timer_value a zéro";
+  //pwarning() << "Force the alarm_timer_value to zero";
   if (m_alarm_timer_value>0){
     info() << "Set the timeout before alarm at " << m_alarm_timer_value << " seconds";
   }
 
-  // Allocation d'un gestionnaire de retour-arrière par défaut
+  // Allocation of a default backward manager
   if (!m_backward_mng)
     _createOwnDefaultBackwardMng();
 
   IProfilingService* ps = platform::getProfilingService();
   bool want_specific_profiling = false;
-  // Regarde si on demande un profiling spécifique. Dans ce cas,
-  // les modules et services gèrent eux même le profiling et donc
-  // on ne démarre pas automatiquement le profiling au début de la
-  // boucle de calcul
+  // Checks if specific profiling is requested. In this case,
+  // modules and services manage the profiling themselves, and therefore
+  // profiling is not automatically started at the beginning of the
+  // computation loop
   if (!platform::getEnvironmentVariable("ARCANE_SPECIFIC_PROFILING").null()){
     info() << "Specific profiling activated";
     want_specific_profiling = true;
   }
 
   {
-    // NOTE: arcaneGlobalMemoryInfo() peut changer au cours du calcul
-    // donc il faut le récupérer à chaque fois qu'on en a besoin.
+    // NOTE: arcaneGlobalMemoryInfo() can change during computation,
+    // so it must be retrieved every time it is needed.
     IMemoryInfo* mem_info = arcaneGlobalMemoryInfo();
     String s = platform::getEnvironmentVariable("ARCANE_CHECK_MEMORY_BLOCK_SIZE_ITERATION");
     if (!s.null()){
@@ -1837,7 +1844,7 @@ doComputeLoop(Integer max_loop)
     }
   }
 
-  // Demarrage du profiling de message passing le cas echeant
+  // Start message passing profiling if applicable
   if (m_msg_pass_prof_srv.get())
     m_msg_pass_prof_srv->startProfiling();
 
@@ -1848,7 +1855,7 @@ doComputeLoop(Integer max_loop)
       ps->reset();
     }
     Item::resetStats();
-    // Désactive le profiling si demande spécifique
+    // Deactivate profiling if specific request
     if (want_specific_profiling)
       ps = nullptr;
     ProfilingSentryWithInitialize ps_sentry(ps);
@@ -1866,7 +1873,7 @@ doComputeLoop(Integer max_loop)
         stopComputeLoop(false,false);
         break;
       }
-      // Indique qu'on va s'arrêter par nombre max d'itération
+      // Indicate that we will stop by maximum number of iterations
       if (max_loop!=0 && (1+m_nb_loop)>=max_loop){
         m_stop_reason = eTimeLoopStopReason::MaxIterationReached;
       }
@@ -1899,8 +1906,8 @@ doComputeLoop(Integer max_loop)
     IParallelMng * pm = subDomain()->parallelMng();
     pinfo() << "TIMEOUT " << Trace::Width(8) << pm->commRank() << "_RANK Infos:"<<ex.additionalInfo();
     traceMng()->flush();
-    // Attend que tous les processeurs envoient le signal et affichent le
-    // message précédent
+    // Wait for all processors to send the signal and display the
+    // previous message
     platform::sleep(40);
     throw;
   }

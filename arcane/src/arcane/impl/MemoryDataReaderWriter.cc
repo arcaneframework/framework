@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryDataReaderWriter.cc                                   (C) 2000-2009 */
 /*                                                                           */
-/* Lecture/ecriture des données en mémoire.                                  */
+/* Reading/writing data in memory.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,10 +53,10 @@ free()
 void MemoryDataReaderWriter::
 beginWrite(const VariableCollection& vars)
 {
-  // Copie la table courante et enlève toutes les références aux variables
-  // que l'on va sauver. Une fois ceci terminé, il ne reste que des
-  // références à des variables plus utilisées. On libère donc
-  // le IData correspondant.
+  // Copies the current table and removes all references to the variables
+  // that will be saved. Once this is done, only references to
+  // more frequently used variables remain. Therefore,
+  // the corresponding IData is released.
   VarToDataMap vars_to_data = m_vars_to_data;
   for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
     IVariable* var = *ivar;
@@ -66,7 +66,7 @@ beginWrite(const VariableCollection& vars)
   }
 
   for( VarToDataMap::iterator i=vars_to_data.begin(); i!=vars_to_data.end(); ++i ){
-    // Supprime la référence à la table courante et détruit la donnée
+    // Removes the reference to the current table and destroys the data
     m_vars_to_data.erase(i->first);
   }
 }
@@ -122,4 +122,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

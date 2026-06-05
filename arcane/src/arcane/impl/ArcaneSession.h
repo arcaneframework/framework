@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneSession.h                                             (C) 2000-2017 */
 /*                                                                           */
-/* Implémentation par défaut d'une Session.                                  */
+/* Default implementation of a Session.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_ARCANESESSION_H
 #define ARCANE_IMPL_ARCANESESSION_H
@@ -51,7 +51,7 @@ class ARCANE_IMPL_EXPORT ArcaneSession
 
  private:
   
-  IXmlDocumentHolder* m_result_doc; //!< Résultats du code
+  IXmlDocumentHolder* m_result_doc; //!< Code results
   Directory m_listing_directory;
   Directory m_output_directory;
   String m_case_name;
@@ -76,4 +76,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

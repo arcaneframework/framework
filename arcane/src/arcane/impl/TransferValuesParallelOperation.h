@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TransferValuesParallelOperation.h                           (C) 2000-2020 */
 /*                                                                           */
-/* Transfert de valeurs sur différents processeurs.                          */
+/* Value transfer across different processors.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_TRANSFERVALUESPARALLELOPERATION_H
 #define ARCANE_IMPL_TRANSFERVALUESPARALLELOPERATION_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérations pour transférer des valeurs vers d'autres sous-domaine.
+ * \brief Operations to transfer values to other subdomains.
  */
 class ARCANE_IMPL_EXPORT TransferValuesParallelOperation
 : public ITransferValuesParallelOperation
@@ -33,7 +34,7 @@ class ARCANE_IMPL_EXPORT TransferValuesParallelOperation
  public:
   TransferValuesParallelOperation(IParallelMng* pm);
  public:
-  //! Destructeur
+  //! Destructor
   virtual ~TransferValuesParallelOperation();
  public:
   virtual IParallelMng* parallelMng();
@@ -72,4 +73,4 @@ class ARCANE_IMPL_EXPORT TransferValuesParallelOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

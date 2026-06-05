@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataOperation.h                                             (C) 2000-2024 */
 /*                                                                           */
-/* Opération sur une donnée.                                                 */
+/* Data operation.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_DATAOPERATION_H
 #define ARCANE_IMPL_DATAOPERATION_H

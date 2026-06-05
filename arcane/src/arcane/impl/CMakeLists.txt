@@ -1,4 +1,4 @@
-add_include_directories_if_found(FLEXLM)
+﻿add_include_directories_if_found(FLEXLM)
 
 include(srcs.cmake)
 
@@ -19,9 +19,9 @@ arcane_add_arccon_packages(arcane_impl PRIVATE ${PKGS})
 target_compile_definitions(arcane_impl PRIVATE ARCANE_COMPONENT_arcane_impl)
 
 if(FLEXLM_FOUND)
-  # TODO: à retirer lors de la migration vers RLM
-  #       cette définition a pour but d'utiliser la feature Arcane de la license de test RLM
-  #       qui ne contient pas de feature ArcaneCore, voir :
+  # TODO: to be removed during migration to RLM
+  #       this definition is intended to use the Arcane feature of the RLM test license
+  #       which does not contain the ArcaneCore feature, see:
   #       - arcane/src/arcane/impl/FlexLMTools.h
   #       - arcane/src/arcane/impl/FlexLMTools.cc
   if("${FLEXLM_PROTECTION_NAME}" STREQUAL "RLM")
@@ -31,7 +31,7 @@ endif()
 
 target_link_libraries(arcane_impl PUBLIC arcane_core)
 
-# Avec les versions statiques de la glib, cela est nécessaire
+# With static versions of glib, this is necessary
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   message(STATUS "Add library 'dl' to target 'arcane_impl'")
   target_link_libraries(arcane_impl PUBLIC dl)

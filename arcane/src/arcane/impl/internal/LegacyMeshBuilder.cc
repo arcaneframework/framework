@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LegacyMeshBuilder.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Construction du maillage via la méthode "historique".                     */
+/* Mesh construction via the "historical" method.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -96,8 +96,8 @@ readCaseMeshes()
     bool internal_cut = meshfile_elem.attr("internal-partition").valueAsBoolean();
     String internal_partitioner = meshfile_elem.attr("partitioner").value();
 
-    // Si la variable d'environnement est définie, force le repartitionnement
-    // initial avec le service dont le nom est spécifié dans cette variable.
+    // If the environment variable is defined, force repartitioning
+    // initially with the service whose name is specified in this variable.
     String internal_partitioner_env = platform::getEnvironmentVariable("ARCANE_INTERNAL_PARTITIONER");
     if (!internal_partitioner_env.null()){
       info() << "Forcing internal partitioner from environment variable";
@@ -105,7 +105,7 @@ readCaseMeshes()
       internal_partitioner = internal_partitioner_env;
     }
     IParallelMng* pm = sd->parallelMng();
-    // Dans le cas où Arcane est retranché à un coeur, on ne va pas chercher les CPU*.mli2
+    // In the case where Arcane is trimmed to a core, we will not look for CPU*.mli2
     if (pm->isParallel() && (pm->commSize()>1)){
       m_use_internal_mesh_partitioner = internal_cut;
         
@@ -142,14 +142,14 @@ readCaseMeshes()
     }
     log() << "The mesh file is " << mesh_file;
     mbi.m_file_name = mesh_file;
-    // Cette partie de la configuration doit être lue avant
-    // la création du maillage car elle peut contenir des options
-    // dont le générateur de maillage a besoin.
+    // This configuration part must be read before
+    // mesh creation because it may contain options
+    // that the mesh generator needs.
     //m_case_config->read();
   }
 
-  // Créé les MeshHandle pour les maillages.
-  // Cela permettra de les récupérer dans les points d'entrée 'Build'
+  // Create MeshHandles for the meshes.
+  // This will allow them to be retrieved in the 'Build' entry points
   _createMeshesHandle();
 }
 
@@ -159,8 +159,8 @@ readCaseMeshes()
 void LegacyMeshBuilder::
 readMeshes()
 {
-  // Construit les services de lecture de maillage. Ce sont
-  // ceux qui implémentent IMeshReader.
+  // Builds the mesh reading services. These are
+  // those that implement IMeshReader.
   ServiceBuilder<IMeshReader> builder(m_sub_domain);
   UniqueArray<Ref<IMeshReader>> mesh_readers(builder.createAllInstances());
 
@@ -179,7 +179,7 @@ createDefaultMesh()
   String mesh_name = m_default_mesh_handle.meshName();
   ICaseDocument* case_doc = sd->caseDocument();
   if (!case_doc){
-    // Si aucun jeu de données n'est spécifié, créé un maillage
+    // If no dataset is specified, create a mesh
     m_default_mesh_handle._setMesh(sd->mainFactory()->createMesh(sd,mesh_name));
     return;
   }
@@ -216,13 +216,13 @@ _createMeshesHandle()
 {
   IMeshMng* mesh_mng = m_sub_domain->meshMng();
 
-  // Le premier maillage est toujours celui par défaut
+  // The first mesh is always the default one
   Integer nb_build_mesh = m_meshes_build_info.size();
   if (nb_build_mesh>0){
     m_meshes_build_info[0].m_mesh_handle = m_default_mesh_handle;
   }
 
-  // Créé les autres maillages spécifiés dans le jeu de données
+  // Create the other meshes specified in the dataset
   for( Integer z=1; z<nb_build_mesh; ++z ){
     String name;
     if(m_meshes_build_info[z].m_xml_node.attr("dual").valueAsBoolean())
@@ -243,19 +243,19 @@ allocateMeshes()
 {
   ISubDomain* sd = m_sub_domain;
 
-  // Le premier maillage est toujours celui par défaut
+  // The first mesh is always the default one
   Integer nb_build_mesh = m_meshes_build_info.size();
   if (nb_build_mesh>0){
     m_meshes_build_info[0].m_mesh = m_default_mesh_handle.mesh()->toPrimaryMesh();
   }
 
-  // Créé les autres maillages spécifiés dans le jeu de données
+  // Create the other meshes specified in the dataset
   for( Integer z=1; z<nb_build_mesh; ++z ){
     MeshHandle handle = m_meshes_build_info[z].m_mesh_handle;
     if (handle.isNull())
       ARCANE_FATAL("Invalid null MeshHandle for mesh index={0}",z);
-    // Depuis la 1.8.0 (modif IFP), cette methode
-    // appelle this->addMesh()
+    // Since 1.8.0 (IFP modification), this method
+    // calls this->addMesh()
     bool is_amr = m_meshes_build_info[z].m_xml_node.attr("amr").valueAsBoolean();
     eMeshAMRKind amr_type = static_cast<eMeshAMRKind>(m_meshes_build_info[z].m_xml_node.attr("amr-type").valueAsInteger());
     if(is_amr && amr_type == eMeshAMRKind::None) {
@@ -294,14 +294,14 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
   ARCANE_CHECK_POINTER(mesh);
 
   String mesh_file_name = mbi.m_file_name;
-  // Si un service de partitionnement est spécifié, il faut utiliser le fichier specifié
-  // dans le JDD et pas le nom du fichier éventuellement transformé dans readCaseMeshes()
+  // If a partitioning service is specified, the file specified
+  // in the case document (JDD) must be used and not the file name possibly transformed in readCaseMeshes()
   bool use_internal_partitioner = m_use_internal_mesh_partitioner;
   if (m_initial_partitioner.get()){
     mesh_file_name = mbi.m_orig_file_name;
     use_internal_partitioner = true;
   }
-  // Permet de forcer la dimension au cas ou le format ne peut pas la reconnaitre.
+  // Allows forcing the dimension in case the format cannot recognize it.
   Integer wanted_dimension = mbi.m_xml_node.attr("dimension").valueAsInteger();
   if (wanted_dimension!=0){
     info() << "Force mesh dimension to " << wanted_dimension;
@@ -336,7 +336,7 @@ _readMesh(ConstArrayView<Ref<IMeshReader>> mesh_readers,const MeshBuildInfo& mbi
   bool is_bad = true;
   String extension;
   {
-    // Cherche l'extension du fichier et la conserve dans \a case_ext
+    // Searches for the file extension and keeps it in \a case_ext
     std::string_view fview = mesh_file_name.toStdStringView();
     debug() << " MF=" << fview;
     std::size_t extension_pos = fview.find_last_of('.');

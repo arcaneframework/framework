@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableIOMng.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant les entrées/sorties pour les variables.                     */
+/* Class managing input/output for variables.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,7 +53,7 @@
 #include "arcane/core/internal/IParallelMngInternal.h"
 #include "arcane/core/internal/IVariableInternal.h"
 
-// TODO: gérer le hash en version 64 bits.
+// TODO: handle 64-bit hash.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,9 +64,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Extraction des infos de type à partir d'une chaîne de caractères
-// NOTE L'extraction doit être cohérente avec la construction qui est
-// dans Variable.cc
+// Extraction of type info from a character string
+// NOTE: The extraction must be consistent with the construction
+// in Variable.cc
 class VariableIOReaderMng::VariableDataTypeInfo
 {
  public:
@@ -110,8 +110,9 @@ class VariableIOReaderMng::VariableDataTypeInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour utiliser IDataReader ou IDataReader2.
+ * \brief Interface to use IDataReader or IDataReader2.
  */
 class VariableIOReaderMng::IDataReaderWrapper
 {
@@ -128,8 +129,9 @@ class VariableIOReaderMng::IDataReaderWrapper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Wrapper pour IDataReader.
+ * \brief Wrapper for IDataReader.
  */
 class VariableIOReaderMng::OldDataReaderWrapper
 : public IDataReaderWrapper
@@ -160,8 +162,9 @@ class VariableIOReaderMng::OldDataReaderWrapper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Wrapper pour IDataReader2.
+ * \brief Wrapper for IDataReader2.
  */
 class VariableIOReaderMng::DataReaderWrapper
 : public IDataReaderWrapper
@@ -251,8 +254,9 @@ class VariableMetaDataList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion de la lecture des variables.
+ * \brief Management of variable reading.
  */
 class VariableReaderMng
 : public TraceAccessor
@@ -324,7 +328,7 @@ readVariablesData(IVariableMng* vm, VariableIOReaderMng::IDataReaderWrapper* rea
   _buildVariablesToRead(vm);
   reader->beginRead(m_vars_to_read);
   for (const auto& ivar : m_var_read_info_list) {
-    // NOTE: var peut-être nul
+    // NOTE: var may be null
     IVariable* var = ivar.m_variable;
     IData* data = ivar.m_data;
     VariableMetaData* vmd = ivar.m_meta_data;
@@ -354,7 +358,7 @@ readVariablesData(IVariableMng* vm, VariableIOReaderMng::IDataReaderWrapper* rea
           VariableRef* ref = *ivar;
           String s = ref->assignmentStackTrace();
           if (!s.null())
-            ostr() << "Stack assignement: " << s;
+            ostr() << "Stack assignment: " << s;
         }
       }
 
@@ -476,16 +480,17 @@ readVariables(IDataReader* reader, IVariableFilter* filter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture des méta-données.
+ * \brief Reading metadata.
  *
- * En considérant que \a meta_data est un fichier XML valide, parcours
- * l'ensemble des variables le contenant et crée une référence sur
- * chacune si elles n'existent pas encore.
+ * Assuming that \a meta_data is a valid XML file, it iterates through
+ * all the variables it contains and creates a reference to each one if
+ * they do not already exist.
  *
- * Si nécessaire, pour chaque variable présente dans les méta-données,
- * la créée si elle n'existe pas encore. De plus, sauve le nom pour être
- * certain que la valeur de cette variable sera bien lue.
+ * If necessary, for each variable present in the metadata,
+ * it creates it if it does not already exist. Furthermore, it saves the name
+ * to ensure that the value of this variable will be read correctly.
  */
 void VariableIOReaderMng::
 _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
@@ -499,9 +504,9 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
   XmlNode root_node = doc->documentNode().documentElement();
   XmlNode json_node = root_node.child("json");
 
-  // A partir de la version 3.11 de Arcane (juillet 2023), les
-  // méta-données sont aussi disponibles au format JSON. On les utilise
-  // si 'm_is_use_json_metadata' est vrai.
+  // Starting from Arcane version 3.11 (July 2023),
+  // metadata is also available in JSON format. We use it
+  // if 'm_is_use_json_metadata' is true.
   JSONValue json_variables;
   JSONValue json_meshes;
   if (!json_node.null()) {
@@ -511,8 +516,8 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
 
     JSONValue json_meta_data_object = json_reader.root().expectedChild("arcane-checkpoint-metadata");
 
-    // Lit toujours le nom de l'algorithme même si on n'utilise pas les meta-données
-    // car on s'en sert pour les comparaisons de la valeur du hash.
+    // Always reads the algorithm name even if metadata is not used
+    // because it is used for hash value comparisons.
     String hash_algo_name = json_meta_data_object.child("hash-algorithm-name").value();
     vmd_list.setHashAlgorithmName(hash_algo_name);
 
@@ -533,14 +538,15 @@ _readMetaData(VariableMetaDataList& vmd_list, Span<const Byte> bytes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie les valeurs des fonctions de hashage.
+ * \brief Checks hash function values.
  *
- * Vérifie pour chaque variable que sa valeur est correcte en calculant
- * sa fonction de hashage et en la comparant à la valeur dans la
+ * Checks for each variable that its value is correct by calculating
+ * its hash function and comparing it to the value in the
  * protection.
- * Si une variable à une valeur différente, elle est écrite dans
- * le répertoire de listing au même niveau que les logs.
+ * If a variable has a different value, it is written to
+ * the listing directory at the same level as the logs.
  */
 void VariableIOReaderMng::
 _checkHashFunction(const VariableMetaDataList& vmd_list)
@@ -548,9 +554,9 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   ByteUniqueArray hash_values;
   MD5HashAlgorithm md5_hash_algorithm;
   SHA1HashAlgorithm sha1_hash_algorithm;
-  // Par défaut si rien n'est spécifié, il s'agit d'une protection issue
-  // d'une version antérieure à la 3.12 de Arcane. Dans ce cas l'algorithme
-  // utilisé est 'MD5'.
+  // By default, if nothing is specified, it is a protection from
+  // a version prior to 3.12 of Arcane. In this case, the algorithm
+  // used is 'MD5'.
   IHashAlgorithm* hash_algo = &md5_hash_algorithm;
   Ref<IHashAlgorithmContext> hash_context;
   String hash_service_name = vmd_list.hashAlgorithmName();
@@ -572,16 +578,16 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
     const VariableMetaData* vmd = i.second.get();
     Int32 hash_version = vmd->hashVersion();
     String reference_hash = (hash_version > 0) ? vmd->hash2() : vmd->hash();
-    // Teste si la valeur de hashage est présente. C'est normalement
-    // toujours le cas, sauf si la protection vient d'une ancienne
-    // version de Arcane qui ne sauvait pas cette information.
-    // Ce test pourra être supprimé plus tard.
+    // Tests if the hash value is present. This is normally
+    // always the case, unless the protection comes from an old
+    // version of Arcane that did not save this information.
+    // This test can be removed later.
     if (reference_hash.null())
       continue;
     const String& full_name = i.first;
     IVariable* var = m_variable_mng->findVariableFullyQualified(full_name);
     if (!var)
-      // Ne devrait pas arriver
+      // Should not happen
       continue;
     hash_values.clear();
     IData* data = var->data();
@@ -595,7 +601,7 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
       HashAlgorithmValue hash_value;
       hash_context->computeHashValue(hash_value);
       hash_str = Convert::toHexaString(asBytes(hash_value.bytes()));
-      // Ne compare si les versions de hash associées à la variable différent
+      // Do not compare if the hash versions associated with the variable differ
       if (hash_version != hash_info.version())
         do_compare = false;
     }
@@ -631,7 +637,7 @@ void VariableIOReaderMng::
 _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
 {
   ISubDomain* sd = m_variable_mng->subDomain();
-  // Récupère ou construit les variables qui n'existent pas encore.
+  // Retrieves or builds variables that do not yet exist.
   for (const auto& xvmd : vmd_list) {
     auto& vmd = *(xvmd.second.get());
     const String& full_name = vmd.fullName();
@@ -655,7 +661,7 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
 
     if (vbi.property() & IVariable::PInShMem) {
       IParallelMng* pm{};
-      // Si la variable utilise un maillage, il sera créé par _readMeshesMetaData().
+      // If the variable uses a mesh, it will be created by _readMeshesMetaData().
       if (!mesh_name.null()) {
         MeshHandle* mesh_handle = sd->meshMng()->findMeshHandle(mesh_name, true);
         pm = mesh_handle->mesh()->parallelMng();
@@ -704,11 +710,11 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
   };
   UniqueArray<VariableReadInfo> variables_info;
 
-  // Lit les informations des variables à partir des données JSON
-  // si ces dernières existent.
+  // Reads variable information from JSON data
+  // if it exists.
   if (!variables_json.null()) {
-    // Lecture via JSON
-    // Déclare la liste ici pour éviter de retourner un temporaire dans 'for-range'
+    // Reading via JSON
+    // Declares the list here to avoid returning a temporary in 'for-range'
     JSONValueList vars = variables_json.valueAsArray();
     for (const JSONValue& var : vars) {
       VariableReadInfo r;
@@ -727,7 +733,7 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     }
   }
   else {
-    // Lecture via les données XML
+    // Reading via XML data
     XmlNodeList vars = variables_node.children("variable");
     for (const auto& var : vars) {
       VariableReadInfo r;
@@ -748,19 +754,19 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list, JSONValue variables_json,
     String full_type = r.full_type;
     VariableDataTypeInfo vdti(full_type);
 
-    // Vérifie que 'data-type' est cohérent avec la valeur dans 'full_type'
+    // Checks that 'data-type' is consistent with the value in 'full_type'
     if (vdti.dataTypeName() != r.data_type)
       ARCANE_FATAL("Incoherent value for 'data-type' name v='{0}' expected='{1}'", r.data_type, vdti.dataTypeName());
 
     String family_name = r.family_name;
-    // Actuellement, si la variable n'est pas partielle alors son groupe
-    // n'est pas sauvé dans les meta-données. Il faut donc le générer.
+    // Currently, if the variable is not partial, its group
+    // is not saved in the metadata. It must therefore be generated.
     String group_name = r.group_name;
     bool is_partial = vdti.isPartial();
     if (!is_partial) {
-      // NOTE: Cette construction doit être cohérente avec celle de
-      // DynamicMeshKindInfos. A terme il faudra toujours sauver le nom du groupe
-      // dans les meta-données.
+      // NOTE: This construction must be consistent with that of
+      // DynamicMeshKindInfos. Eventually, the group name must always be saved
+      // in the metadata.
       group_name = "All" + family_name + "s";
     }
     auto vmd = vmd_list.add(r.base_name, r.mesh_name, r.family_name, group_name, is_partial);
@@ -802,10 +808,10 @@ _readMeshesMetaData(JSONValue meshes_json, const XmlNode& meshes_node)
   };
   UniqueArray<MeshInfo> meshes_info;
 
-  // Lit les informations des maillages à partir des données JSON
-  // si ces dernières existent.
+  // Reads mesh information from JSON data
+  // if it exists.
   if (!meshes_json.null()) {
-    // Déclare la liste ici pour éviter de retourner un temporaire dans 'for-range'
+    // Declares the list here to avoid returning a temporary in 'for-range'
     JSONValueList vars = meshes_json.valueAsArray();
     for (const JSONValue& var : vars) {
       String mesh_name = var.expectedChild("name").value();
@@ -838,8 +844,8 @@ _readMeshesMetaData(JSONValue meshes_json, const XmlNode& meshes_node)
     info() << "Creating from checkpoint mesh='" << mesh_name
            << "' sequential?=" << is_sequential
            << " factory=" << mesh_factory_name;
-    // Depuis avril 2020, l'attribut 'factory-name' doit être présent
-    // et sa valeur non nulle.
+    // Since April 2020, the 'factory-name' attribute must be present
+    // and its value non-null.
     if (mesh_factory_name.null())
       ARCANE_FATAL("No attribute 'factory-name' for mesh");
 
@@ -895,17 +901,17 @@ _finalizeReadVariables(const VariableList& vars_to_read)
 
   info(4) << "VariableMng: _finalizeReadVariables()";
 
-  // Resynchronise en lecture les valeurs de toutes les variables pour
-  // être sur que les références sont toujours correctes (en cas de
-  // réallocation mémoire).
-  // NOTE: en théorie cela ne doit pas être utile car IVariable::notifyEndRead()
-  // se charge de faire cela.
-  // NOTE: de plus, il n'est nécessaire de le faire que sur les variables
-  // de \a vars_to_read.
+  // Resynchronize by reading the values of all variables to
+  // ensure that the references are still correct (in case of
+  // memory reallocation).
+  // NOTE: theoretically this should not be necessary because IVariable::notifyEndRead()
+  // handles this.
+  // NOTE: moreover, it is only necessary to do this for the variables
+  // in \a vars_to_read.
   for (const auto& i : m_variable_mng->m_full_name_variable_map)
     i.second->syncReferences();
 
-  // Notifie les observateurs qu'une lecture vient d'être faite.
+  // Notifies observers that a read has just been performed.
   m_variable_mng->m_read_observable->notifyAllObservers();
 }
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MainFactory.h                                               (C) 2000-2023 */
 /*                                                                           */
-/* AbstractFactory de l'implémentation par défaut d'Arcane.                  */
+/* Abstract Factory for the default Arcane implementation.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_MAINFACTORY_H
 #define ARCANE_IMPL_MAINFACTORY_H
@@ -24,26 +24,27 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Manufacture des classes d'Arcane.
- *
- Arcane fournit des fabriques par défaut pour la plupart des gestionnaires
- (ISuperMng, IParallelSuperMng, ...). La classe gérant le code doit par contre
- être spécifiée en implémentant la méthode createArcaneMain() dans une
- classe dérivée.
 
- Le point d'entrée général du code se fait par l'appel à la fonction
+/*!
+ * \brief Creation of Arcane classes.
+ *
+ Arcane provides default factories for most managers
+ (ISuperMng, IParallelSuperMng, ...). However, the class managing the code must
+ be specified by implementing the createArcaneMain() method in a derived
+ class.
+
+ The general entry point of the code is achieved by calling the function
  arcaneMain().
 
- Par exemple, si on définit une classe <tt>ConcreteMainFactory</tt> qui
- dérive de MainFactory, on lance le code comme suit:
+ For example, if we define a class <tt>ConcreteMainFactory</tt> that
+ derives from MainFactory, we run the code as follows:
  
  * \code
  * int
  * main(int argc,char** argv)
  * {
- *   ExeInfo exe_info = ... // Création des infos de l'exécutable.
- *   ConcreteMainFactory cmf; // Création de la manufacture
+ *   ExeInfo exe_info = ... // Creation of executable info.
+ *   ConcreteMainFactory cmf; // Creation of the factory
  *   return Arcane::ArcaneMain::arcaneMain(exe_info,&cmf);
  * }
  * \endcode
@@ -60,7 +61,7 @@ class ARCANE_IMPL_EXPORT MainFactory
 
  public:
 
-  //! Crée une instance de IArcaneMain
+  //! Creates an instance of IArcaneMain
   IArcaneMain* createArcaneMain(const ApplicationInfo& app_info) override;
 
  public:
@@ -110,4 +111,3 @@ class ARCANE_IMPL_EXPORT MainFactory
 /*---------------------------------------------------------------------------*/
 
 #endif
-

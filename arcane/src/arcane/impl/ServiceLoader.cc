@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceLoader.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Chargeur des services disponibles dans le code.                           */
+/* Service loader for available services in the code.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Chargeur des services dans l'architecture.
+ * \brief Service loader in the architecture.
  */
 class ServiceLoader
 : public IServiceLoader
@@ -52,13 +53,13 @@ class ServiceLoader
 
   ~ServiceLoader() override;
 
-  //! Charge les services applicatifs disponibles
+  //! Loads available application services
   void loadApplicationServices(IApplication*) override;
-  //! Charge les services de session disponibles
+  //! Loads available session services
   void loadSessionServices(ISession*) override;
-  //! Charge les services de sous-domaine disponibles dans le sous-domaine \a sd
+  //! Loads available subdomain services in the subdomain \a sd
   void loadSubDomainServices(ISubDomain*parent) override;
-  //! Charge les modules disponibles
+  //! Loads available modules
   void loadModules(ISubDomain* sd,bool all_modules) override;
 
   void initializeModuleFactories(ISubDomain* sd) override;
@@ -143,9 +144,9 @@ _createSingletonInstance(IServiceMng* sm,IServiceInfo* si,const ServiceBuildInfo
   IServiceFactoryInfo* sfi = si->factoryInfo();
   SingletonServiceInstanceRef instance;
 
-  // Si la fabrique singleton existe, on l'utilise. Sinon, on utilise
-  // l'ancien mécanisme. Normalement, la fabrique singleton existe toujours
-  // sauf si on utilise une version de Arcane avec une vieille version de Axlstar.
+  // If the singleton factory exists, we use it. Otherwise, we use
+  // the old mechanism. Normally, the singleton factory always exists
+  // unless we are using an Arcane version with an old version of Axlstar.
   Internal::ISingletonServiceFactory* ssf = si->singletonFactory();
   if (ssf){
     instance = ssf->createSingletonServiceInstance(sbi);
@@ -179,18 +180,18 @@ _createSingletonInstance(IServiceMng* sm,IServiceInfo* si,const ServiceBuildInfo
 bool ServiceLoader::
 loadSingletonService(ISubDomain* sd,const String& name)
 {
-  // Normalement, le service doit être singleton pour pouvoir être chargé
-  // de cette maniére. Néanmoins, pour des raisons de compatibilité, on
-  // autorise le chargement en mode singleton de tous les services et on
-  // affiche un avertissement. A terme, do_all sera faux et il faudra spécifier
-  // que le service est singleton
+  // Normally, the service must be a singleton to be loaded
+  // in this manner. Nevertheless, for compatibility reasons, we
+  // allow loading all services in singleton mode and we
+  // display a warning. Eventually, do_all will be false and it will be necessary to specify
+  // that the service is a singleton
   const bool do_all = true;
   ITraceMng* trace = sd->traceMng();
   IServiceMng* service_mng = sd->serviceMng();
 
-  // Vérifie qu'aucune instance de même nom n'existe.
-  // Si c'est le cas, on ne fait rien et on affiche un avertissement.
-  // Peut-être un fatal serait plus approprié.
+  // Checks that no instance of the same name exists.
+  // If so, we do nothing and display a warning.
+  // Maybe a fatal would be more appropriate.
   SingletonServiceInstanceRef old_instance = service_mng->singletonServiceReference(name);
   if (old_instance.get()){
     trace->warning() << "An instance of singleton service; name: '" << name << "' already exists."
@@ -219,14 +220,15 @@ loadSingletonService(ISubDomain* sd,const String& name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Charge les services dans le gestionnaire \a base.
+ * \brief Loads services in the base manager.
  */
 void ServiceLoader::
 _loadServices(IApplication* application,const ServiceBuildInfoBase& sbib)
 {
-  // Instantie les services singletons qui se chargent automatiquement
-  // (ils ont la propriété isAutoload() à vrai).
+  // Instantiates singleton services that load automatically
+  // (they have the isAutoload() property set to true).
   IServiceMng* service_mng = sbib.serviceParent()->serviceMng();
  
   ServiceFactory2Collection service_factory_infos(application->serviceFactories2());
@@ -288,4 +290,3 @@ initializeModuleFactories(ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GetVariablesValuesParallelOperation.cc                      (C) 2000-2025 */
 /*                                                                           */
-/* Opérations pour accéder aux valeurs de variables d'un autre sous-domaine. */
+/* Operations to access variable values from another subdomain.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -92,7 +92,7 @@ getVariableValues(VariableItemReal& variable,
     Int32 sd = sub_domain_ids[i];
     if (sd == NULL_SUB_DOMAIN_ID)
       ARCANE_FATAL("Null SubDomainId for index {0}", i);
-    //TODO ne pas ajouter les éléments de son propre sous-domaine à la liste
+    //TODO: Do not add elements from its own subdomain to the list
     Helper& h = sub_domain_list[sd];
     h.m_unique_ids.add(unique_ids[i]);
     h.m_indexes.add(i);
@@ -135,8 +135,8 @@ getVariableValues(VariableItemReal& variable,
         ARCANE_FATAL("Can not find rank '{0}'", rank_recv);
       Span<const Int64> z_unique_ids = xiter->second.m_unique_ids;
       Int64 nb = z_unique_ids.size();
-      s->reserveInt64(1); // Pour la taille
-      s->reserveSpan(eBasicDataType::Int64, nb); // Pour le tableau
+      s->reserveInt64(1); // For size
+      s->reserveSpan(eBasicDataType::Int64, nb); // For the array
       s->allocateBuffer();
       s->setMode(ISerializer::ModePut);
       s->putInt64(nb);
@@ -157,7 +157,7 @@ getVariableValues(VariableItemReal& variable,
   for (Ref<ISerializeMessage> sm : messages) {
     Ref<ISerializeMessage> new_sm;
     if (sm->isSend()) {
-      // Pour recevoir les valeurs
+      // To receive the values
       //trace->info() << " ADD RECV2 MESSAGE recv=" << my_rank << " send=" << sm->destSubDomain();
       new_sm = message_list->createAndAddMessage(MessageRank(sm->destination().value()), ePointToPointMessageType::MsgReceive);
     }
@@ -189,7 +189,7 @@ getVariableValues(VariableItemReal& variable,
     values_messages.add(new_sm);
   }
 
-  // Supprime les messages qui ne sont plus utilisés
+  // Delete messages that are no longer used
   messages.clear();
 
   message_list->waitMessages(eWaitType::WaitAll);
@@ -211,8 +211,8 @@ getVariableValues(VariableItemReal& variable,
     }
   }
 
-  // Enfin, traite ses propres éléments
-  // TODO: FAIRE CE TRAITEMENT EN ATTENDANT LES MESSAGES
+  // Finally, process its own elements
+  // TODO: PERFORM THIS PROCESSING WHILE WAITING FOR MESSAGES
   {
     Helper h(sub_domain_list[my_rank]);
     Span<const Int32> indexes(h.m_indexes.constSpan());
@@ -225,13 +225,13 @@ getVariableValues(VariableItemReal& variable,
     }
   }
 
-  // Supprime les messages qui ne sont plus utilisés
+  // Delete messages that are no longer used
   values_messages.clear();
   //_deleteMessages(values_messages);
 
 #if 0
   {
-    // Pour faire une petite vérification
+    // To perform a small check
     Integer nb_values = values.size();
     RealUniqueArray ref_values(nb_values);
     ref_values.fill(0.0);
@@ -323,8 +323,8 @@ _getVariableValues(ItemVariableScalarRefT<Type>& variable,
   ITraceMng* msg = pm->traceMng();
   IItemFamily* item_family = group.itemFamily();
 
-  // Pour éviter un bug MPI sur certaines machines,
-  // si la liste est vide, on crée une liste temporaire
+  // To avoid an MPI bug on certain machines,
+  // if the list is empty, a temporary list is created
   UniqueArray<Int64> dummy_unique_ids;
   UniqueArray<Real> dummy_values;
   if (unique_ids.empty()) {
@@ -335,18 +335,18 @@ _getVariableValues(ItemVariableScalarRefT<Type>& variable,
     values = dummy_values.view();
   }
 
-  // Principe de fonctionnement.
-  // Chaque sous-domaine récupère la totalité des unique_ids dont on veut
-  // les valeurs (allGatherVariable).
-  // On alloue ensuite un tableau dimensionné à ce nombre de uniqueId() qui
-  // contiendra les valeurs des entités (tableau all_value).
-  // Chaque sous-domaine remplit ce tableau comme suit :
-  // * si l'entité lui appartient, remplit avec la valeur de la variable
-  // * sinon, remplit avec la valeur minimale possible suivant \a Type.
-  // Le processeur 0 effectue ensuite une réduction Max de ce tableau,
-  // qui contiendra alors la bonne valeur pour chacun de ses éléments.
-  // Il ne reste plus alors qu'à faire un 'scatter' symétrique du
-  // premier 'gather'.
+  // Operating principle.
+  // Each subdomain retrieves all unique_ids for which values are desired
+  // (allGatherVariable).
+  // Then an array is allocated, sized to this number of uniqueIds, which
+  // will hold the entity values (all_value array).
+  // Each subdomain fills this array as follows:
+  // * if the entity belongs to it, fill with the variable value
+  // * otherwise, fill with the minimum possible value according to \a Type.
+  // Processor 0 then performs a Max reduction on this array,
+  // which will then contain the correct value for each of its elements.
+  // All that remains is to perform a symmetric 'scatter' of the
+  // first 'gather'.
 
   Int64UniqueArray all_unique_ids;
   pm->allGatherVariable(unique_ids, all_unique_ids);
@@ -360,8 +360,8 @@ _getVariableValues(ItemVariableScalarRefT<Type>& variable,
   msg->debug() << "MpiParallelMng::_getVariableValues(): size=" << all_size
                << " values_size=" << sizeof(Type) * all_size;
 
-  // Remplit le tableau des valeurs avec la valeur maximale possible
-  // pour le type. Il suffit ensuite de faire un ReduceMin
+  // Fill the values array with the maximum possible value
+  // for the type. Then a ReduceMin is performed.
   Type max_value = std::numeric_limits<Type>::max();
   ItemInfoListView internal_items(item_family);
 
@@ -376,7 +376,7 @@ _getVariableValues(ItemVariableScalarRefT<Type>& variable,
 
   pm->reduce(Parallel::ReduceMin, all_values);
 
-  // Scinde le tableau sur les autres processeurs
+  // Split the array across the other processors
   pm->scatterVariable(all_values, values, 0);
 }
 
@@ -399,7 +399,7 @@ _getVariableValuesSequential(ItemVariableScalarRefT<Type>& variable,
                  "number of elements (respectively {0} and {1}).",
                  size, values.size());
 
-  //TODO: faire par morceaux.
+  //TODO: do in chunks.
   UniqueArray<Int32> local_ids(size);
   family->itemsUniqueIdToLocalId(local_ids, unique_ids);
   ConstArrayView<Type> variable_a(variable.asArray());

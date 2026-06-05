@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseDocument.cc                                             (C) 2000-2023 */
 /*                                                                           */
-/* Classe gérant un document XML du jeu de données.                          */
+/* Class managing an XML document of the dataset.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -92,8 +92,9 @@ class CaseDocumentFragment
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant un document XML du jeu de données.
+ * \brief Class managing an XML document of the dataset.
  */
 class CaseDocument
 : public TraceAccessor
@@ -160,7 +161,7 @@ class CaseDocument
 
  public:
 
-  // Positionne la langue. Doit être fait avant l'appel à build.
+  // Sets the language. Must be done before calling build.
   void setLanguage(const String& language)
   {
     if (!m_fragment.m_language.null())
@@ -269,7 +270,7 @@ init()
 
   m_root_elem = m_document_node.documentElement();
   if (m_root_elem.null()){
-    // Nouveau cas, pour l'instant langue francaise par défaut.
+    // New case, French language by default for now.
     if (m_language.null())
       m_language = String("fr");
     _assignLanguage(m_language);
@@ -296,15 +297,15 @@ build()
 {
   m_fragment.init();
 
-  // Ces noeuds ont un nom indépendant du langage.
+  // These nodes have a name independent of the language.
   m_arcane_elem = _forceCreateChild(m_fragment.m_root_elem,"arcane");
   m_configuration_elem = _forceCreateChild(m_arcane_elem,"configuration");
 
-  // Ne pas faire avant 'm_fragment.init()'
+  // Do not do before 'm_fragment.init()'
   CaseNodeNames* cnn = caseNodeNames();
 
-  // NOTE: Si on ajoute ou change des éléments, il faut mettre
-  // à jour la conversion correspondante dans CaseDocumentLangTranslator
+  // NOTE: If elements are added or changed, the corresponding conversion must
+  // be updated in CaseDocumentLangTranslator
   m_timeloop_elem = _forceCreateChild(m_arcane_elem,cnn->timeloop);
   m_title_elem = _forceCreateChild(m_arcane_elem,cnn->title);
   m_description_elem = _forceCreateChild(m_arcane_elem,cnn->description);

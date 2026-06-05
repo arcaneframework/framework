@@ -74,10 +74,10 @@ class Session::Impl
 
  public:
 
-  IApplication* m_application; //!< Superviseur
-  String m_filename; //!< Fichier de configuration
+  IApplication* m_application; //!< Supervisor
+  String m_filename; //!< Configuration file
   SubDomainList m_sub_domains;
-  ScopedPtrT<IServiceMng> m_service_mng; //!< Gestionnaire des services
+  ScopedPtrT<IServiceMng> m_service_mng; //!< Service manager
   String m_namespace_uri;
   String m_local_name;
 };
@@ -118,13 +118,13 @@ build()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * La classe dérivée peut réimplémenter cette méthode pour spécifier
- * son propre mécanisme de versionnage des jeux de données. Sans
- * implémentation particulière, cette méthode retourne toujours \a false
+ * The derived class can re-implement this method to specify
+ * its own dataset versioning mechanism. Without specific implementation, this method always returns \a false
  *
- * \retval true si la version est correcte
- * \retval false sinon
+ * \retval true if the version is correct
+ * \retval false otherwise
  */
 bool Session::
 checkIsValidCaseVersion(const String& version)
@@ -144,11 +144,11 @@ createSubDomain(const SubDomainBuildInfo& sdbi)
   {
     CriticalSection cs(sm->threadMng());
     s = arcaneCreateSubDomain(this,sdbi);
-    //TODO: Utiliser le rang local pour ranger dans l'ordre
+    //TODO: Use the local rank to sort in order
     m_p->m_sub_domains.add(s);
   }
   s->initialize();
-  // Initialisation spécifique à la classe dérivée si besoin
+  // Specific initialization for the derived class if needed
   _initSubDomain(s);
   return s;
 }

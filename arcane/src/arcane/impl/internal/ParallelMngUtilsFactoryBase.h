@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngUtilsFactoryBase.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une fabrique pour les fonctions utilitaires de           */
-/* IParallelMng.                                                             */
+/* Base class of a factory for IParallelMng utility functions.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_PARALLELMNGUTILSFACTORY_H
 #define ARCANE_IMPL_INTERNAL_PARALLELMNGUTILSFACTORY_H
@@ -25,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une fabrique pour les fonctions utilitaires de IParallelMng.
+ * \brief Base class of a factory for IParallelMng utility functions.
  */
 class ARCANE_IMPL_EXPORT ParallelMngUtilsFactoryBase
 : public IParallelMngUtilsFactory

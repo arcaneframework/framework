@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TraceMngPolicy.cc                                           (C) 2000-2019 */
 /*                                                                           */
-/* Politique de configuration des gestionnaires de trace.                    */
+/* Policy for configuring trace managers.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,12 +42,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion du comportement des traces.
+ * \brief Management of trace behavior.
  *
- * \warning Les instances de cette classe sont créées avant les ITraceMng.
- * Il ne faut donc pas utiliser m_application->traceMng() sauf lors de
- * l'appel à setDefaultClassConfigXmlBuffer().
+ * \warning Instances of this class are created before the ITraceMngs.
+ * Therefore, m_application->traceMng() should not be used except when
+ * calling setDefaultClassConfigXmlBuffer().
  */
 class TraceMngPolicy
 : public ITraceMngPolicy
@@ -146,7 +147,7 @@ _initializeTraceMng(ITraceMng* trace,bool is_master,const String& rank_str)
     trace_id += platform::getHostName();
     trace->setTraceId(trace_id.toString());
   }
-  // Par défaut si rien n'est spécifié, seul le proc maitre sort les infos.
+  // By default, if nothing is specified, only the master process outputs the info.
   bool is_info_disabled = !is_master;
   if (m_is_parallel_output){
     is_info_disabled = false;
@@ -266,8 +267,8 @@ _setAllTraceClassConfig(ITraceMng* trace,ByteConstArrayView bytes,bool do_log)
 {
   ScopedPtrT<IXmlDocumentHolder> config_doc;
   if (!bytes.empty()){
-    // Trace pour afficher les informations lors de la lecture.
-    // Ne pas confondre avec \a trace passé en argument
+    // Trace to display information during reading.
+    // Do not confuse with \a trace passed as argument
     ITraceMng* print_tm = m_application->traceMng();
     config_doc = IXmlDocumentHolder::loadFromBuffer(bytes,String(),print_tm);
   }
@@ -280,8 +281,8 @@ _setAllTraceClassConfig(ITraceMng* trace,ByteConstArrayView bytes,bool do_log)
 void TraceMngPolicy::
 _setAllTraceClassConfig(ITraceMng* trace,IXmlDocumentHolder* doc,bool do_log)
 {
-  // Il faut toujours appeler _setAllTraceClassConfig même si on n'a pas
-  // d'élément racine sinon l'initialisation par défaut est incorrecte.
+  // We must always call _setAllTraceClassConfig even if we don't have
+  // a root element, otherwise the default initialization is incorrect.
   XmlNode root_element;
   if (doc){
     XmlNode document_node = m_default_config_doc->documentNode();
@@ -303,9 +304,9 @@ _setAllTraceClassConfig(ITraceMng* trace,XmlNode root_element,bool do_log)
   trace->removeAllClassConfig();
   bool is_info_activated = trace->isInfoActivated();
   Trace::eDebugLevel debug_level = Trace::Medium;
-  // Désactive les infos de debug si on ne sort pas sur un fichier
-  // et que les infos sont désactivées. Cela évite que tous les PE écrivent
-  // les infos de débug dans la sortie standard.
+  // Deactivates debug info if we are not outputting to a file
+  // and if the info is deactivated. This prevents all PEs from writing
+  // debug info to standard output.
   if (!is_info_activated && !m_is_parallel_output)
     debug_level = Trace::None;
   TraceClassConfig medium_cc(is_info_activated,true,debug_level);
@@ -345,8 +346,8 @@ _setAllTraceClassConfig(ITraceMng* trace,XmlNode root_element,bool do_log)
     bool is_activate = def_config.isActivated();
     builtInGetValue(is_activate,activate_str);
     bool is_parallel_activate = is_activate;
-    // Si \a disable_info vaut true, désactive les messages d'info sauf si
-    // \e parallel-info vaut \a true
+    // If \a disable_info is true, deactivate info messages unless
+    // \e parallel-info is \a true
     if (!is_info_activated){
       is_activate = false;
       if (parallel_activate_str==ustr_true)

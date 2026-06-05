@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeLoopReader.cc                                           (C) 2000-2020 */
 /*                                                                           */
-/* Chargement d'une boucle en temps.                                         */
+/* Loading a time loop.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -82,7 +82,7 @@ setUsedTimeLoop(ISubDomain* sub_domain)
         ARCANE_FATAL("No time loop specified");
       if (value.empty())
         value = "ArcaneEmptyLoop";
-      // La boucle en temps est spécifiée dans le fichier de config.
+      // The time loop is specified in the config file.
       m_time_loop_name = value;
       info() << "Using the time loop <" << m_time_loop_name << ">";
       loop_mng->setUsedTimeLoop(m_time_loop_name);
@@ -126,7 +126,7 @@ readTimeLoops()
   String ustr_name("name");
   String ustr_modules("modules");
 
-  // Liste des services singletons globaux
+  // List of global singleton services
   XmlNodeList global_singleton_elems = root_elem.children("singleton-services");
   info() << "CHECK GLOBAL SINGLETON SERVICES";
   for( const auto& i : global_singleton_elems ){
@@ -255,4 +255,3 @@ registerTimeLoops(ISubDomain* sd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

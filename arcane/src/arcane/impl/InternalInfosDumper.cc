@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* InternalInfosDumper.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Sorties des informations internes de Arcane.                              */
+/* Dumping Arcane's internal information.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,9 +86,9 @@ _getDefaultService()
   String full_code_name = code_name + "Code";
   Ref<ICodeService> code = code_services_utils.createReference(full_code_name);
   if (!code){
-    // Le service de code de nom Arcane est spécial et sert pour générer
-    // la documentation interne. S'il n'est pas enregistré, on créé directement
-    // l'instance.
+    // The Arcane named code service is special and is used to generate
+    // the internal documentation. If it is not registered, we create
+    // the instance directly.
     if (code_name=="Arcane")
       code = createArcaneCodeService(app);
   }
@@ -105,7 +105,7 @@ dumpInternalInfos()
 {
   ITraceMng* tr = m_application->traceMng();
   IMainFactory* main_factory = m_application->mainFactory();
-  tr->info() << "Sortie des infos internes à Arcane";
+  tr->info() << "Dumping internal infos to Arcane";
   Ref<ICodeService> code_service = _getDefaultService();
   ISession* session(code_service->createSession());
   IParallelSuperMng* psm = m_application->parallelSuperMng();
@@ -115,16 +115,16 @@ dumpInternalInfos()
   sdbi.setCaseBytes(ByteConstArrayView());
   ISubDomain* sub_domain(session->createSubDomain(sdbi));
   ScopedPtrT<IServiceLoader> service_loader(main_factory->createServiceLoader());
-  // Les services sont déjà enregistrées lors de la création du sous-domaine
+  // The services are already registered when the subdomain is created
   {
     TimeLoopReader stl(m_application);
     stl.readTimeLoops();
     stl.registerTimeLoops(sub_domain);
   }
-  // Charge tous les modules disponibles
+  // Load all available modules
   service_loader->loadModules(sub_domain,true);
 
-  // Conserve dans le tableau tous les IServiceInfo.
+  // Store all IServiceInfo in the array.
   UniqueArray<IServiceInfo*> service_infos;
   {
     std::set<IServiceInfo*> done_set;
@@ -159,7 +159,7 @@ dumpInternalInfos()
   XmlNode root_element = doc_element.createAndAppendElement(us_root);
 
   XmlNode modules = root_element.createAndAppendElement(us_modules);
-  // Liste des modules avec les variables qu'ils utilisent.
+  // List of modules with the variables they use.
   for( ModuleCollection::Enumerator i(module_mng->modules()); ++i; ){
     XmlNode module_element = modules.createAndAppendElement(us_module);
     module_element.setAttrValue(us_name,String((*i)->name()));
@@ -172,7 +172,7 @@ dumpInternalInfos()
   }
 
   XmlNode variables = root_element.createAndAppendElement("variables");
-  // Liste des variables.
+  // List of variables.
   VariableCollection var_prv_list(variable_mng->variables());
   for( VariableCollection::Enumerator j(var_prv_list); ++j; ){
     IVariable* var = *j;
@@ -184,7 +184,7 @@ dumpInternalInfos()
     variable_element.setAttrValue(us_kind,itemKindName(var->itemKind()));
   }
 
-  // Liste des boucles en temps
+  // List of time loops
   ITimeLoopMng* tm = sub_domain->timeLoopMng();
   StringList timeloop_name_list;
   tm->timeLoopsName(timeloop_name_list);
@@ -195,9 +195,9 @@ dumpInternalInfos()
     timeloop_elem.setAttrValue(us_name,*i);
   }
 
-  // Liste des services
+  // List of services
   {
-    // Liste des services qui implementent une interface donnée
+    // List of services that implement a given interface
     std::map<String,List<IServiceInfo*> > interfaces_to_service;
     XmlNode services_elem = root_element.createAndAppendElement(us_services);
     
@@ -252,7 +252,7 @@ dumpInternalInfos()
 void InternalInfosDumper::
 dumpInternalAllInfos()
 {
-  m_application->traceMng()->info() << "Sortie des infos sur les boucles en temps";
+  m_application->traceMng()->info() << "Dumping time loop information";
   IMainFactory* main_factory = m_application->mainFactory();
   Ref<ICodeService> code_service = _getDefaultService();
 
@@ -262,7 +262,7 @@ dumpInternalAllInfos()
     ARCANE_FATAL("Can not parse code configuration file");
   XmlNode elem = config_doc->documentNode().documentElement();
 
-  // La boucle en temps est spécifiée dans le fichier de config.
+  // The time loop is specified in the config file.
   // XmlNode elem = m_application->configRootElement();
   elem = elem.child("Execution");
   elem = elem.child("BouclesTemps");
@@ -280,7 +280,7 @@ dumpInternalAllInfos()
 
   {
     const ApplicationInfo& app_info = m_application->applicationInfo();
-    //! Informations générales
+    //! General information
     XmlNode elem2(root_element.createAndAppendElement("general"));
     elem2.createAndAppendElement("codename",String(app_info.codeName()));
     elem2.createAndAppendElement("codefullversion",String(m_application->mainVersionStr()));
@@ -332,7 +332,7 @@ dumpInternalAllInfos()
 void InternalInfosDumper::
 _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
 {
-  // Info sur la boucle en temps utilisée.
+  // Information about the time loop used.
   {
     ITimeLoopMng* tlm = sd->timeLoopMng();
     ITimeLoop* time_loop = tlm->usedTimeLoop();
@@ -360,7 +360,7 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
 
   IVariableMng* var_mng = sd->variableMng();
 
-  // Liste des modules avec les variables qu'ils utilisent.
+  // List of modules with the variables they use.
   {
     JSONWriter::Array ja_modules(json_writer,"modules");
     for( IModule* module : sd->moduleMng()->modules() ){
@@ -376,7 +376,7 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
     }
   }
 
-  // Liste des variables.
+  // List of variables.
   {
     VariableCollection var_prv_list = var_mng->variables();
     JSONWriter::Array jo_variables(json_writer,"variables");
@@ -390,7 +390,7 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
     }
   }
 
-  // Liste des blocs d'options
+  // List of option blocks
   {
     ICaseMng* cm = sd->caseMng();
     CaseOptionsCollection blocks = cm->blocks();
@@ -409,8 +409,9 @@ _dumpSubDomainInternalInfos(ISubDomain* sd,JSONWriter& json_writer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sauve les informations internes de %Arcane dans un fichier json.
+ * \brief Saves the internal information of %Arcane in a json file.
  */
 void InternalInfosDumper::
 dumpArcaneDatabase()
@@ -434,16 +435,16 @@ dumpArcaneDatabase()
   if (!config_doc.get())
     ARCANE_FATAL("Can not parse code configuration file");
 
-  // Les services sont déjà enregistrées lors de la création du sous-domaine
+  // Services are already registered during the creation of the sub-domain
   {
     TimeLoopReader stl(m_application);
     stl.readTimeLoops();
     stl.registerTimeLoops(sub_domain);
   }
-  // Charge tous les modules disponibles
+  // Load all available modules
   service_loader->loadModules(sub_domain,true);
 
-  // Conserve dans ce tableau tous les IServiceInfo créés
+  // Store all created IServiceInfo in this array
   UniqueArray<IServiceInfo*> service_infos;
   {
     std::set<IServiceInfo*> done_set;
@@ -479,7 +480,7 @@ dumpArcaneDatabase()
   json_writer.beginObject();
   json_writer.write("version","1");
 
-  // Liste des modules avec les variables qu'ils utilisent.
+  // List of modules with the variables they use.
   {
     JSONWriter::Array ja_modules(json_writer,"modules");
     for( IModule* module : module_mng->modules() ){
@@ -494,7 +495,7 @@ dumpArcaneDatabase()
     }
   }
 
-  // Liste des variables avec leurs caractéristiques
+  // List of variables with their characteristics
   {
     VariableCollection var_prv_list(variable_mng->variables());
     JSONWriter::Array ja(json_writer,"variables");
@@ -509,10 +510,10 @@ dumpArcaneDatabase()
     }
   }
 
-  // Liste des services qui implémentent une interface donnée
+  // List of services that implement a given interface
   std::map<String,List<IServiceInfo*> > interfaces_to_service;
 
-  // Liste des services
+  // List of services
   {
     JSONWriter::Array ja_services(json_writer,us_services);
     
@@ -521,8 +522,8 @@ dumpArcaneDatabase()
       json_writer.write(us_name,service_info->localName());
       json_writer.writeIfNotNull("file-base-name",service_info->caseOptionsFileName());
 
-      // Sauver le contenu en splittant en plusieurs chaînes de
-      // caractères ce qui permet de ne pas avoir de lignes trop longues.
+      // Save the content by splitting it into several strings
+      // which prevents having overly long lines.
       Span<const Byte> content = service_info->axlContent().bytes();
       Int64 content_size = content.size();
       if (content_size>0){
@@ -539,7 +540,7 @@ dumpArcaneDatabase()
         }
       }
 
-      // Sauve la listes des interfaces implémentées par ce service
+      // Save the list of interfaces implemented by this service
       {
         JSONWriter::Array ja_implemented_interfaces(json_writer,"implemented-interfaces");
         for( StringCollection::Enumerator j(service_info->implementedInterfaces()); ++j; ){
@@ -550,7 +551,7 @@ dumpArcaneDatabase()
     }
   }
 
-  // Liste des interfaces de services et des services les implémentant.
+  // List of service interfaces and the services implementing them.
   {
     JSONWriter::Array jo_services_interfaces(json_writer,"service-interfaces");
     for( const auto& x : interfaces_to_service ){
@@ -603,7 +604,7 @@ dumpArcaneDatabase()
         session = nullptr;
         sd = nullptr;
       }
-      // TODO: Indique si sd est nul.
+      // TODO: Indicate if sd is null.
       if (sd){
         _dumpSubDomainInternalInfos(sd,json_writer);
       }
@@ -613,13 +614,13 @@ dumpArcaneDatabase()
   json_writer.endObject();
 
   {
-    // Écrit le fichier JSON.
+    // Writes the JSON file.
     Directory shared_dir(m_application->applicationInfo().dataDir());
     String json_filename = shared_dir.file("arcane_database.json");
     cerr << "** FILE2 IS " << json_filename << '\n';
     String buf(json_writer.getBuffer());
-    // TODO: regarder s'il ne serait pas préférable de sauver le fichier
-    // dans le répertoire courant.
+    // TODO: check if it would not be preferable to save the file
+    // in the current directory.
     std::ofstream ofile(json_filename.localstr());
     buf.writeBytes(ofile);
   }

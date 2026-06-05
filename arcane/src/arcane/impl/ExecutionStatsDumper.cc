@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExecutionStatsDumper.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Ecriture des statistiques d'exécution.                                    */
+/* Writing execution statistics.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -137,25 +137,25 @@ dumpStats(ISubDomain* sd, ITimeStats* time_stat)
 {
   FloatingPointExceptionSentry fp_sentry(false);
   {
-    // Statistiques sur la mémoire
+    // Memory statistics
     double mem = platform::getMemoryUsed();
     info() << "Memory consumption (Mo): " << mem / 1.e6;
   }
   if (sd) {
     {
-      // Affiche les valeurs des propriétés
+      // Displays property values
       OStringStream postr;
       postr() << "Properties:\n";
       sd->propertyMng()->print(postr());
       plog() << postr.str();
     }
     IVariableMng* vm = sd->variableMng();
-    // Affiche les statistiques sur les synchronisations
+    // Displays synchronization statistics
     IVariableSynchronizerMng* vsm = vm->synchronizerMng();
     OStringStream ostr_vsm;
     vsm->dumpStats(ostr_vsm());
     info() << ostr_vsm.str();
-    // Affiche les statistiques sur les variables
+    // Displays variable statistics
     OStringStream ostr_full;
     vm->dumpStats(ostr_full(), true);
     OStringStream ostr;
@@ -164,13 +164,13 @@ dumpStats(ISubDomain* sd, ITimeStats* time_stat)
     info() << ostr.str();
   }
   {
-    // Affiche les statistiques sur les variables
+    // Displays memory statistics
     IMemoryInfo* mem_info = arcaneGlobalMemoryInfo();
     OStringStream ostr;
     mem_info->printInfos(ostr());
     info() << ostr.str();
   }
-  // Affiche les statistiques sur les temps d'exécution
+  // Displays execution time statistics
   Integer nb_loop = 1;
   Integer nb_cell = 1;
   if (sd) {
@@ -181,7 +181,7 @@ dumpStats(ISubDomain* sd, ITimeStats* time_stat)
   Real n = ((Real)nb_cell);
   info() << "NB_CELL=" << nb_cell << " nb_loop=" << nb_loop;
 
-  // Informations de profiling des boucles
+  // Loop profiling information
   {
     OStringStream ostr;
     _dumpProfiling(ostr());

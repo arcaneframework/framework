@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceMng.cc                                               (C) 2000-2013 */
 /*                                                                           */
-/* Classe gérant l'ensemble des services.                                    */
+/* Class managing all services.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des services.
+ * \brief Service manager.
  */
 class ServiceMng
 : public IServiceMng
@@ -61,8 +62,8 @@ class ServiceMng
 
  private:
 
-  IBase* m_base; //!< Gestionnaire principal
-  List<SingletonServiceInstanceRef> m_singleton_instances; //!< Liste des instances singletons
+  IBase* m_base; //!< Main manager
+  List<SingletonServiceInstanceRef> m_singleton_instances; //!< List of singleton instances
 
  private:
 
@@ -128,4 +129,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

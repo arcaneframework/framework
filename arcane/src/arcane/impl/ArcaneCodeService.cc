@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneCodeService.cc                                        (C) 2000-2019 */
 /*                                                                           */
-/* Service de code générique Arcane.                                         */
-/* Ce service est une recopie locale de celui de tests pour le driver        */
+/* Arcane generic code service.                                              */
+/* This service is a local copy of the test service for the driver           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

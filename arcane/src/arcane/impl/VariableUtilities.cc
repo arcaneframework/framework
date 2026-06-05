@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableUtilities.cc                                        (C) 2000-2015 */
 /*                                                                           */
-/* Fonctions utilitaires sur les variables.                                  */
+/* Utility functions for variables.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,7 +71,7 @@ dumpAllVariableDependencies(std::ostream& ostr,bool is_recursive)
 void VariableUtilities::
 dumpDependencies(IVariable* var,std::ostream& ostr,bool is_recursive)
 {
-  // Ensemble des variables déjà traitées pour éviter les récursions infinies
+  // Set of variables already processed to prevent infinite recursion
   _dumpDependencies(var,ostr,is_recursive);
 }
 
@@ -146,15 +146,16 @@ _dumpDependencies(VariableDependInfo& vdi,std::ostream& ostr,bool is_recursive,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * L'algorithme utilisé est le suivant:
- * - chaque rang met dans un SerializeBuffer la liste de ses variables.
- * - on fait un allGather de ce SerializerBuffer.
- * - chaque rang lit le contenu du allGather et compte le nombre
- * d'occurence de chaque variable.
- * - les variables dont le nombre d'occurence est différent de \a pm->commSize()
- * sont retirée.
- * - les variables restantes sont triéés par ordre alphabétique.
+ * The algorithm used is as follows:
+ * - each rank puts the list of its variables into a SerializeBuffer.
+ * - an allGather of this SerializerBuffer is performed.
+ * - each rank reads the content of the allGather and counts the number
+ * of occurrences of each variable.
+ * - variables whose occurrence count is different from \a pm->commSize()
+ * are removed.
+ * - the remaining variables are sorted alphabetically.
  */
 VariableCollection VariableUtilities::
 filterCommonVariables(IParallelMng* pm,const VariableCollection input_variables,
@@ -167,7 +168,7 @@ filterCommonVariables(IParallelMng* pm,const VariableCollection input_variables,
   Integer nb_var = vars_to_check.size();
   info(4) << "CHECK: nb_variable_to_compare=" << nb_var;
 
-  // Créé un buffer pour sérialiser les noms des variables dont on dispose
+  // Create a buffer to serialize the names of the variables we have
   SerializeBuffer send_buf;
   send_buf.setMode(ISerializer::ModeReserve);
   send_buf.reserveInteger(1);
@@ -182,7 +183,7 @@ filterCommonVariables(IParallelMng* pm,const VariableCollection input_variables,
     send_buf.put(vars_to_check[i]->fullName());
   }
 
-  // Récupère les infos des autres PE.
+  // Retrieve info from other PEs.
   SerializeBuffer recv_buf;
   pm->allGather(&send_buf,&recv_buf);
 
@@ -205,8 +206,8 @@ filterCommonVariables(IParallelMng* pm,const VariableCollection input_variables,
     }
   }
 
-  // Parcours la liste des variables et range dans \a common_vars
-  // celles qui sont disponibles sur tous les rangs de \a pm
+  // Iterate through the list of variables and store in \a common_vars
+  // those that are available on all ranks of \a pm
   std::map<String,IVariable*> common_vars;
   {
     std::map<String,Int32>::const_iterator end_var = var_occurences.end();
@@ -214,7 +215,7 @@ filterCommonVariables(IParallelMng* pm,const VariableCollection input_variables,
       IVariable* var = vars_to_check[i];
       std::map<String,Int32>::const_iterator i_var = var_occurences.find(var->fullName());
       if (i_var==end_var)
-        // Ne devrait pas arriver
+        // Should not happen
         continue;
       if (i_var->second!=nb_rank){
         if (dump_not_common)
@@ -226,10 +227,9 @@ filterCommonVariables(IParallelMng* pm,const VariableCollection input_variables,
     }
   }
 
-  // Créé la liste finale en itérant sur la map \a common_vars
-  // et range les valeurs dans \a sorted_common_vars. Comme la map
-  // est triée par ordre alphabétique, ce sera aussi le cas de
-  // \a sorted_common_vars;
+  // Create the final list by iterating over the map \a common_vars
+  // and storing the values in \a sorted_common_vars. Since the map
+  // is sorted alphabetically, \a sorted_common_vars will also be;
   VariableList sorted_common_vars;
   {
     std::map<String,IVariable*>::const_iterator end_var = common_vars.end();

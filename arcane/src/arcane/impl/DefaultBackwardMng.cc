@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DefaultBackwardMng.cc                                       (C) 2000-2016 */
 /*                                                                           */
-/* Implémentation par défaut d'une stratégie de retour-arrière.              */
+/* Default implementation of a backward strategy.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -102,7 +102,7 @@ goBackward()
     m_trace->pfatal() << "Trying to go backward during an action phase";
   }
 
-  // Si déjà en train de faire un retour arrière, on ne peut pas continuer
+  // If already rolling back, we cannot continue
   if (m_sequence == SEQRestore) {
     m_trace->pfatal() << "Impossible to go backward while it is already going backward";
   }
@@ -232,7 +232,7 @@ _checkSave(bool is_forced)
     return;
   }
 
-  // Ne sauve pas les infos tant que le retour-arrière est actif
+  // Do not save data while rollback is active
   if (m_backward_time >= 0.) {
     m_sequence = SEQLock;
     return;
@@ -273,4 +273,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

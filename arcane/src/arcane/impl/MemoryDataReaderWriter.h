@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryDataReaderWriter.h                                    (C) 2000-2009 */
 /*                                                                           */
-/* Lecture/ecriture des données en mémoire.                                  */
+/* Reading/writing data in memory.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_MEMORYDATAREADERWRITER_H
 #define ARCANE_IMPL_MEMORYDATAREADERWRITER_H
@@ -32,12 +32,13 @@ class IData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Lecture/ecriture des données en mémoire.
+ * \brief Reading/writing data in memory.
  *
- * Cette classe sert par exemple pour sauvegarder et restaurer les données
- * pour le retour-arrière.
+ * This class is used, for example, to save and restore data
+ * for time travel.
  */
 class  ARCANE_IMPL_EXPORT MemoryDataReaderWriter
 : public TraceAccessor
@@ -87,4 +88,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

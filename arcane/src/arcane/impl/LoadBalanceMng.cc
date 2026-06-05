@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LoadBalanceMng.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire pour le partitionnement et l'équilibrage de charge.          */
+/* Manager for partitioning and load balancing.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,11 +31,11 @@ namespace Arcane
 bool LoadBalanceMng::
 _isLegacyInit()
 {
-  // Si la variable d'environnement est définie, utilise l'initialisation historique
-  // (avant la version 3.14 d'octobre 2024). Cette initialisation utilisait par
-  // défaut la quantité de mémoire allouée par les variables pour le partitionnement ce
-  // qui faisait que le partitionnement n'était pas répétable entre mode check/release
-  // ou en fonction des modules chargés (car le nombre de variables est différent).
+  // If the environment variable is defined, use the historical initialization
+  // (before version 3.14 of October 2024). This initialization by default used the
+  // amount of memory allocated by the variables for partitioning, which meant that
+  // the partitioning was not repeatable between check/release mode
+  // or depending on the loaded modules (because the number of variables is different).
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_INIT_LOADBALANCEMNG", true))
     return (v.value() != 0);
   return false;
@@ -49,8 +49,8 @@ LoadBalanceMng(ISubDomain* sd)
 : m_mesh_handle(sd->defaultMeshHandle())
 {
   bool is_legacy_init = _isLegacyInit();
-  // Avec l'initialisation historique, la valeur par défaut est d'utiliser la
-  // mémoire comme critère.
+  // With the historical initialization, the default value is to use memory
+  // as the criterion.
   bool use_mass_as_criterion = is_legacy_init;
   _init(use_mass_as_criterion, is_legacy_init);
 }

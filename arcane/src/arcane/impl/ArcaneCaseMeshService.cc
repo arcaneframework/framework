@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneCaseMeshService.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Service Arcane gérant un maillage du jeu de données.                      */
+/* Arcane Service managing a dataset mesh.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,8 +45,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service Arcane un maillage du jeu de données.
+ * \brief Arcane Service for meshing the dataset.
  */
 class ArcaneCaseMeshService
 : public ArcaneArcaneCaseMeshServiceObject
@@ -109,7 +110,7 @@ createMesh(const String& default_name)
   bool has_filename = options()->filename.isPresent();
   bool has_generator = options()->generator.isPresent();
 
-  // Il faut spécifier soit le nom du fichier, soit le générateur mais pas les deux
+  // Either the file name or the generator must be specified, but not both
   if ((has_filename && has_generator) || (!has_filename && !has_generator))
     ARCANE_FATAL("In '{0}': one and one only of <{1}> or <{2}> has to be specified",
                  options()->configList()->xpathFullName(),
@@ -140,7 +141,7 @@ createMesh(const String& default_name)
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
-  // Indique la gestion des dimensions des mailles
+  // Indicates the management of mesh dimensions
   eMeshCellDimensionKind mesh_dim_kind = options()->cellDimensionKind();
   if (mesh_dim_kind != build_info.meshKind().meshDimensionKind()) {
     MeshKind mesh_kind = build_info.meshKind();
@@ -149,11 +150,11 @@ createMesh(const String& default_name)
   }
 
   m_mesh_builder->fillMeshBuildInfo(build_info);
-  // Le générateur peut forcer l'utilisation du partitionnement
+  // The generator can force the use of partitioning
   if (build_info.isNeedPartitioning())
     m_partitioner_name = options()->partitioner();
 
-  // Positionne avec des valeurs par défaut les champs non remplit.
+  // Positions fields not filled with default values.
   if (build_info.factoryName().empty())
     build_info.addFactoryName("ArcaneDynamicMeshFactory");
   if (build_info.parallelMngRef().isNull())
@@ -224,7 +225,7 @@ _checkMeshCreationAndAllocation(bool is_check_allocated)
 void ArcaneCaseMeshService::
 _fillReadInfo(CaseMeshReaderReadInfo& read_info)
 {
-  // Cherche l'extension du fichier.
+  // Searches for the file extension.
   String file_extension;
   {
     std::string_view fview = m_mesh_file_name.toStdStringView();
@@ -236,10 +237,10 @@ _fillReadInfo(CaseMeshReaderReadInfo& read_info)
     read_info.setFormat(file_extension);
   }
 
-  // Nom du maillage à utiliser pour la lecture
-  // Normalement c'est le nom du maillage dans le jeu de données
-  // sauf en cas d'utilisation du partitionneur externe auquel cas
-  // c'est 'CPU%05d.$file_extension'.
+  // Mesh file name to use for reading
+  // Normally it is the mesh name in the dataset
+  // unless an external partitioner is used, in which case
+  // it is 'CPU%05d.$file_extension'.
   String mesh_file_name = m_mesh_file_name;
 
   String partitioner_name = options()->partitioner();
@@ -269,11 +270,11 @@ _fillReadInfo(CaseMeshReaderReadInfo& read_info)
 Ref<IMeshBuilder> ArcaneCaseMeshService::
 _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
 {
-  // Construit les services potentiels de lecture de maillage. Ce sont
-  // ceux qui implémentent ICaseMeshReader. Construit une instance
-  // de chaque service et appelle la méthode createBuilder(). Dès que l'une
-  // de ces méthodes renvoie une référence non nulle, on l'utilise
-  // pour générer le maillage.
+  // Constructs potential mesh reading services. These are
+  // those that implement ICaseMeshReader. An instance
+  // of each service is constructed and the createBuilder() method is called.
+  // As soon as one of these methods returns a non-null reference, it is used
+  // to generate the mesh.
   ServiceBuilder<ICaseMeshReader> builder(m_sub_domain);
   UniqueArray<Ref<ICaseMeshReader>> mesh_readers(builder.createAllInstances());
 
@@ -284,8 +285,8 @@ _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
       return builder;
   }
 
-  // Pas de service trouvé pour ce format de fichier.
-  // Affiche la liste des services disponibles et fait un fatal.
+  // No service found for this file format.
+  // Displays the list of available services and throws a fatal error.
   StringUniqueArray valid_names;
   builder.getServicesNames(valid_names);
   String available_readers = String::join(", ",valid_names);
@@ -300,9 +301,9 @@ _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
 void ArcaneCaseMeshService::
 _doInitialPartition()
 {
-  // N'utilise plus le service de partitionnement de test pour garantir
-  // avec ParMetis qu'on n'a pas de partitions vides car cela est maintenant
-  // normalement supporté.
+  // No longer uses the test partitioning service to ensure
+  // that with ParMetis there are no empty partitions, as this is now
+  // normally supported.
   const bool use_partitioner_tester = false;
   String test_service = "MeshPartitionerTester";
   if (use_partitioner_tester) {
@@ -326,8 +327,8 @@ void ArcaneCaseMeshService::
 _doInitialPartition2(const String& partitioner_name)
 {
   info() << "Doing initial partitioning service=" << partitioner_name;
-  // NOTE: Ce service n'utilise que les partionneurs qui implémentent
-  // IMeshPartitionerBase et pas ceux (historiques) qui n'implémentent que
+  // NOTE: This service only uses partitioners that implement
+  // IMeshPartitionerBase and not those (historical) that only implement
   // IMeshPartitioner.
   ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
   auto mesh_partitioner = sbuilder.createReference(partitioner_name,m_mesh);
@@ -360,7 +361,7 @@ _initializeVariables()
       continue;
     }
 
-    // Alloue la variable si besoin.
+    // Allocate the variable if necessary.
     if (!var->isUsed())
       var->setUsed(true);
     IItemFamily* var_family = var->itemFamily();
@@ -401,9 +402,9 @@ _setGhostLayerInfos()
   if (!gm)
     return;
 
-  // Positionne les infos sur les mailles fantômes.
-  // TODO Cela est fait pour rester compatible avec le mode historique mais
-  // il faudrait pouvoir gérer cela autrement (via un service par exemple)
+  // Positions the info on the ghost meshes.
+  // TODO This is done to remain compatible with the historical mode but
+  // it should be possible to manage this differently (via a service for example)
   Integer nb_ghost_layer = options()->nbGhostLayer();
   if (nb_ghost_layer >= 0) {
     info() << "Set number of ghost layers to '" << nb_ghost_layer << "' from caseoption";
@@ -423,9 +424,9 @@ _setGhostLayerInfos()
 void ArcaneCaseMeshService::
 _setUniqueIdNumberingVersion()
 {
-  // NOTE: actuellement (12/2024) l'implémentation 'PolyedralMesh' lève une
-  // exception si on appelle meshUniqueIdMng(). On ne le fait que si
-  // l'option est présente.
+  // NOTE: currently (12/2024) the 'PolyedralMesh' implementation raises a
+  // exception if meshUniqueIdMng() is called. We only do this if
+  // the option is present.
   if (options()->faceNumberingVersion.isPresent()) {
     Int32 v = options()->faceNumberingVersion.value();
     info() << "Set face uniqueId numbering version to '" << v << "' from caseoption";

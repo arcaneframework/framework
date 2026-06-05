@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMng.cc                                                  (C) 2000-2023 */
 /*                                                                           */
-/* Classe gérant la liste des maillages.                                     */
+/* Class managing the list of meshes.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,14 +59,14 @@ addMesh(IMesh* mesh)
   String name = mesh->name();
   info() << "Add mesh name=" << mesh->name() << " count="  << meshes().size();
   //std::cout << " ** ** ADD_MESH name=" << name << " this=" << mesh << '\n';
-  // Regarde si un handle sur le maillage est déjà présent.
-  // Si c'est le cas, l'utilise.
+  // Checks if a handle for the mesh is already present.
+  // If so, it uses it.
   MeshHandle* handle_ptr = findMeshHandle(name,false);
   if (handle_ptr){
-    // Vérifie que le handle n'a pas déjà de maillage associé ou si c'est le
-    // cas que c'est le même maillage que celui qu'on a déjà
-    // TODO: cela ne devrait pas être autorisé quand même car le maillage
-    // va être ajouté plusieurs fois dans la liste des maillages via
+    // Checks that the handle does not already have an associated mesh or if it is
+    // the same mesh that we already have
+    // TODO: this should not be allowed anyway because the mesh
+    // will be added multiple times to the list of meshes via
     // m_meshes.add().
     if (handle_ptr->hasMesh()){
       IMesh* current_mesh = handle_ptr->mesh();
@@ -208,7 +208,7 @@ _destroyMesh(IPrimaryMesh* primary_mesh)
   m_variable_mng->_internalApi()->detachMeshVariables(m);
   handle._destroyMesh();
 
-  // Supprime le maillage de la liste.
+  // Removes the mesh from the list.
   for( Integer i=0, n=m_meshes.size(); i<n; ++i ){
     if (m_meshes[i]==m){
       m_meshes.remove(i);
@@ -216,7 +216,7 @@ _destroyMesh(IPrimaryMesh* primary_mesh)
     }
   }
 
-  // Supprime le MeshHandle de la liste
+  // Removes the MeshHandle from the list
   for( Integer i=0, n=m_meshes_handle.size(); i<n; ++i ){
     if (m_meshes_handle[i].meshName()==name){
       m_meshes_handle.remove(i);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeStats.cc                                                (C) 2000-2025 */
 /*                                                                           */
-/* Statistiques sur les temps d'exécution.                                   */
+/* Statistics on execution times.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -101,8 +101,9 @@ class TimeStats::MetricCollector
 class TimeStats::Action
 {
  public:
+
   /*!
-   * \brief Informations pour sauver/reconstruire une arborescence d'action
+   * \brief Information to save/reconstruct an action tree
    */
   class AllActionsInfo
   {
@@ -137,7 +138,7 @@ class TimeStats::Action
   : m_parent(parent), m_name(name), m_nb_called(0) {}
   ~Action();
  public:
-  //! Action fille de nom \a name. nullptr si aucune avec ce nom
+  //! Child action with name \a name. nullptr if none with this name
   Action* subAction(const String& name);
   const String& name() const { return m_name; }
   Action* parent() const { return m_parent; }
@@ -153,25 +154,26 @@ class TimeStats::Action
   void dumpCurrentStats(std::ostream& ostr,int level,Real unit);
   void reset();
  private:
-  Action* m_parent; //!< Action parente
-  String m_name; //!< Nom de l'action
-  Int64 m_nb_called; //!< Nombre de fois que l'action a été appelée
+  Action* m_parent; //!< Parent action
+  String m_name; //!< Action name
+  Int64 m_nb_called; //!< Number of times the action has been called
  private:
   void _addSubAction(Action* sub) { m_sub_actions.add(sub); }
  public:
-  ActionList m_sub_actions; //!< Actions filles
+  ActionList m_sub_actions; //!< Child actions
   PhaseValue m_phases[NB_TIME_PHASE];
   /*
-   * Cette valeur est calculée par computeCumulativeTimes() et ne doit
-   * pas être conservée.
+   * This value is calculated by computeCumulativeTimes() and should
+   * not be preserved.
    */
   TimeValue m_total_time;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Série d'actions.
+ * \brief Action series.
  */
 class TimeStats::ActionSeries
 {
@@ -181,7 +183,7 @@ class TimeStats::ActionSeries
   : m_main_action(nullptr,"Main")
   {
   }
-  //! Créé une série qui cumule les temps des deux séries passées en argument
+  //! Creates a series that accumulates the times of the two previous series passed as arguments
   ActionSeries(const ActionSeries& s1,const ActionSeries& s2)
   : m_main_action(nullptr,"Main")
   {
@@ -473,8 +475,7 @@ dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
     _dumpStats(ostr,m_main_action,tt,1,0,nb);
   }
   else{
-    // Affiche seulement les statistiques concernant les temps
-    // pour chaque module.
+    // Only displays statistics concerning the times for each module.
     Action* action = m_main_action.findSubActionRecursive("Loop");
     if (!action)
       _dumpStats(ostr,m_main_action,tt,1,3,nb);
@@ -494,7 +495,7 @@ dumpStats(std::ostream& ostr,bool is_verbose,Real nb,const String& name,
   _computeCumulativeTimes();
   ostr << "Execution statistics (current execution)\n";
   m_current_action_series->dumpStats(ostr,is_verbose,nb,name,use_elapsed_time,"(current execution)");
-  // N'affiche les statistiques cumulatives que s'il y a déjà eu une éxecution.
+  // Only displays cumulative statistics if there has already been an execution.
   if (m_previous_action_series->nbIterationLoop()!=0){
     ostr << "\nExecution statistics (cumulative)\n";
     ActionSeries cumul_series(*m_previous_action_series,*m_current_action_series);
@@ -576,12 +577,12 @@ void
 _printPercentage(std::ostream& ostr,Real value,Real cumulative_value)
 {
   Real percent = 1.0;
-  // Normalement il faut juste vérifier que cumulative_value n'est pas nul
-  // pour faire la division. Cependant, plusieurs compilateurs (icc sur ia64,
-  // clang 3.7.0) semblent un peu agressif au niveau de spéculations
-  // (avec -O2) et font la division même si le test est faux ce qui
-  // provoque un SIGFPE. Pour contourner cela, il semble que faire
-  // deux comparaisons fonctionne.
+  // Normally, you just need to check that cumulative_value is not zero
+  // to perform the division. However, several compilers (icc on ia64,
+  // clang 3.7.0) seem a bit aggressive regarding speculation
+  // (with -O2) and perform the division even if the test is false, which
+  // causes a SIGFPE. To circumvent this, it seems that making
+  // two comparisons works.
   Real z_cumulative_value = cumulative_value;
   if (z_cumulative_value!=0.0 && !math::isNearlyZero(z_cumulative_value)){
     percent = value / z_cumulative_value;
@@ -676,11 +677,11 @@ _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
 {
   Real all_phase_time = action.m_total_time.m_time[tt][tc];
 
-  // Temps passé dans l'action
+  // Time spent in the action
   ostr << Trace::Width(11) << String::fromNumber(all_phase_time,3);
 
-  // Temps passé dans l'action par \a nb
-  // Si nb vaut 0, prend le nombre d'appel
+  // Time spent in the action per \a nb
+  // If nb is 0, use the number of calls
   {
     Real ct_by_call = 0;
     Real nb_called = nb;
@@ -689,13 +690,13 @@ _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb)
     if (!math::isZero(nb_called)){
       Real r = all_phase_time * 1.0e6;
       Real r_nb_called = static_cast<Real>(nb_called);
-      // Ajoute un epsilon pour éviter une exécution spéculative si \a nb_called vaut 0.
+      // Add an epsilon to avoid speculative execution if \a nb_called is 0.
       ct_by_call = r / (r_nb_called + 1.0e-10);
     }
     ostr << Trace::Width(11) << String::fromNumber(ct_by_call,3);
   }
 
-  // Nombre d'appel
+  // Number of calls
   ostr.width(9);
   ostr << action.nbCalled() << ' ';
 
@@ -830,7 +831,7 @@ dumpStatsJSON(JSONWriter& writer)
   m_main_action->dumpJSON(writer,TT_Real);
   writer.endObject();
 
-  // Affiche les statistiques cumulatives que s'il y a déjà eu une éxecution.
+  // Displays the cumulative statistics if there has already been an execution.
   if (m_previous_action_series->nbIterationLoop()!=0){
     ActionSeries cumul_series(*m_previous_action_series,*m_current_action_series);
     writer.writeKey("Cumulative");
@@ -950,8 +951,9 @@ merge(AllActionsInfo& save_info,Integer* index_ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remet à zéro les statistiques de l'action et de ces filles.
+ * \brief Resets the statistics of the action and its children.
  */
 void TimeStats::Action::
 reset()
@@ -1011,7 +1013,7 @@ mergeTimeValues(Properties* p)
   Action::AllActionsInfo action_save_info;
 
   Int32 v = p->getInt32WithDefault("Version",0);
-  // Ne fait rien si aucune info dans la protection
+  // Does nothing if there is no info in the checkpoint
   if (v==0)
     return;
   if (v!=1){

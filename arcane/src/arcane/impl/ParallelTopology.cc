@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelTopology.cc                                         (C) 2000-2011 */
 /*                                                                           */
-/* Informations sur la topologie d'allocation des coeurs de calcul.          */
+/* Information on the core allocation topology.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,7 +48,7 @@ ParallelTopology(IParallelMng* pm)
 void ParallelTopology::
 initialize()
 {
-  // Test pour être sur que tout le monde appèle cette méthode d'initialisation.
+  // Test to ensure everyone calls this initialization method.
   m_parallel_mng->barrier();
   _init();
 }
@@ -58,7 +58,7 @@ initialize()
 
 namespace
 {
-// Contient nom du noeud + pid pour connaitre les rangs maitres par processus.
+// Contains node name + pid to know the master ranks per process.
 class NamePid
 {
  public:
@@ -77,7 +77,7 @@ class NamePid
   }
 
 };
-// Comparateur pour le nom du noeud.
+// Comparator for the node name.
 class _Comparer
 {
  public:
@@ -98,7 +98,7 @@ _init()
 
   String host_name = platform::getHostName();
   Int64 pid = platform::getProcessId();
-  // Tous les rangs qui ont le même nom \a host_name sont sur la même machine
+  // All ranks with the same host_name are on the same machine
   Integer len = host_name.utf8().size()+1;
   Integer max_len = pm->reduce(Parallel::ReduceMax,len);
   ByteUniqueArray all_names(max_len*nb_rank);
@@ -139,8 +139,8 @@ _init()
     {
       MasterRankMap::iterator i_master = machine_ranks_map.find(rank_name);
       if (i_master==machine_ranks_map.end()){
-        // Comme le parcours des rangs est dans l'ordre des rangs,
-        // le rang maitre est le premier rencontré.
+        // Since the rank traversal is in rank order,
+        // the master rank is the first encountered.
         machine_ranks_map.insert(std::make_pair(rank_name,irank));
       }
     }
@@ -158,9 +158,9 @@ _init()
                 << " same_process=" << is_same_process;
   }
 
-  // Les rangs dans m_machine_ranks et m_process_ranks sont rangés
-  // par ordre croissant. On considère que le maître est le premier
-  // de la liste.
+  // The ranks in m_machine_ranks and m_process_ranks are sorted
+  // in ascending order. We consider the master to be the first
+  // in the list.
   if (m_machine_ranks[0]==my_rank)
     m_is_machine_master = true;
   if (m_process_ranks[0]==my_rank)

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableSynchronizerComputeList.h                           (C) 2000-2024 */
 /*                                                                           */
-/* Calcule de la liste des entités à synchroniser.                           */
+/* Calculation of the list of entities to synchronize.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_VARIABLESYNCHRONIZERCOMPUTELIST_H
@@ -30,8 +30,9 @@ class VariableSynchronizer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule de la liste des entités à synchroniser.
+ * \brief Calculation of the list of entities to synchronize.
  */
 class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
 : public TraceAccessor
@@ -49,10 +50,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
 
     Int32 rank() const { return m_rank; }
     void setRank(Int32 arank) { m_rank = arank; }
+
     /*!
-     * \brief Opérateur de comparaison.
-     * Une instance est considérée comme inférieure à une autre si
-     * son sous-domaine associé est plus petit que celui de l'autre.
+     * \brief Comparison operator.
+     * An instance is considered less than another if
+     * its associated subdomain is smaller than that of the other.
      */
     bool operator<(const RankInfo& ar) const
     {
@@ -166,4 +168,4 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerComputeList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

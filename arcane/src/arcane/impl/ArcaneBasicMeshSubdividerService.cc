@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneBasicMeshSubdividerService.cc                         (C) 2000-2026 */
 /*                                                                           */
-/* Service Arcane gérant un maillage du jeu de données.                      */
+/* Arcane Service managing a dataset mesh.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/IMeshModifier.h"
 
-#include "arcane/core/SimpleSVGMeshExporter.h" // Write au format svg pour le 2D
+#include "arcane/core/SimpleSVGMeshExporter.h" // Write in SVG format for 2D
 // Write variables
 
 #include "arcane/core/ServiceBuilder.h"
@@ -39,7 +39,7 @@
 #include "arcane/core/Item.h"
 // Post processor
 #include "arcane/core/PostProcessorWriterBase.h"
-// Ajouter des variables
+// Add variables
 #include "arcane/core/VariableBuildInfo.h"
 #include "arcane/core/IMeshUtilities.h"
 #include "arcane/core/ISubDomain.h"
@@ -79,32 +79,33 @@ namespace MeshSubdivider
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
+
   /*!
- * \brief Classe Pattern qui permet de manipuler un motif (pattern en anglais) de raffinement.
- */
+   * \brief Class Pattern which allows manipulation of a refinement pattern (pattern in English).
+   */
   class Pattern
   {
    public:
 
-    //! Type de l'élément à raffiner
+    //! Type of the element to refine
     Int16 type;
-    //! Type de la face de l'élément à raffiner
+    //! Type of the face of the element to refine
     Int16 face_type;
-    //! Type des cellules enfants
+    //! Type of the child cells
     Int16 cell_type;
-    //! Matrice pour la génération des nouveaux noeuds
+    //! Matrix for the generation of new nodes
     StorageRefine nodes;
-    //! Matrice pour la génération des nouvelles faces
+    //! Matrix for the generation of new faces
     StorageRefine faces;
-    //! Matrice pour la génération des nouvelles cellules
+    //! Matrix for the generation of new cells
     StorageRefine cells;
-    StorageRefine child_faces; // Lien entre faces de la cellule mère et les faces de la cellule fille.
-    // ^-- Pour la gestion des groups ou des propriétés. Par exemple pour le sod, une face mère dans le groupe "membrane" doit engendrer des faces avec le même groupe.
-    // Les faces internes n'ont pas de face mère mais pourrait avoir besoin de propager ou déposer des propriétés sur ces faces.
-    // Pour l'instant elles ne sont juste pas dans les groupes.
+    StorageRefine child_faces; // Link between parent cell faces and child cell faces.
+    // ^-- For managing groups or properties. For example, for the sod, a parent face in the "membrane" group must generate faces with the same group.
+    // Internal faces do not have a parent face but might need to propagate or deposit properties on these faces.
+    // For now, they are simply not in the groups.
 
-    // En fait les seules informations importantes sont dans 'cells' et 'nodes'. Arcane peut déduire les faces pour nous et on garde le même ordre pour le parallel.
-    // Pour les childs faces
+    // In fact, the only important information is in 'cells' and 'nodes'. Arcane can deduce the faces for us, and we keep the same order for the parallel execution.
+    // For child faces
 
    public:
 
@@ -152,9 +153,9 @@ namespace MeshSubdivider
         type = other.type;
         face_type = other.face_type;
         cell_type = other.cell_type;
-        nodes = other.nodes; // Référence partagée
-        faces = other.faces; // Référence partagée
-        cells = other.cells; // Référence partagée
+        nodes = other.nodes; // Shared reference
+        faces = other.faces; // Shared reference
+        cells = other.cells; // Shared reference
         child_faces = other.child_faces;
       }
       return *this;
@@ -190,7 +191,7 @@ namespace MeshSubdivider
 
 } // namespace MeshSubdivider
 /*!
- * \brief Classe qui permet de construire des patterns
+ * \brief Class which allows building patterns
  */
 class PatternBuilder
 {
@@ -206,12 +207,12 @@ class PatternBuilder
   // TODO test + f + cf
   static MeshSubdivider::Pattern tritoquad();
   // 3D
-  // N'utilise pas la numérotation des faces de arcane pour l'instant
+  // Does not use Arcane's face numbering for now
   static MeshSubdivider::Pattern hextohex();
 
   static MeshSubdivider::Pattern tettotet();
 
-  static MeshSubdivider::Pattern hextotet(); // Ne fonctionne pas car on ne prend pas en compte la rotation.
+  static MeshSubdivider::Pattern hextotet(); // Does not work because rotation is not taken into account.
 
   static MeshSubdivider::Pattern tettohex();
 
@@ -220,24 +221,24 @@ class PatternBuilder
 
 /*
 
-Noeuds
+Nodes
 (3) --- (2)
  |       |
  |       |
 (0) --- (1)
-Ordre des arêtes
+Edge order
 (3) -2- (2)
  |       |
  3       1 
  |       |
 (0) -0- (1)
-Nouveaux noeuds
+New nodes
 (3) -6- (2)
  |       |
  7   8   5 
  |       |
 (0) -4- (1)
-Nouveaux noeuds avec ordre nouvelles arêtes
+New nodes with new edge order
 (3) -5- (6) -7- (2)
 |        |       |
 4        6       8
@@ -285,7 +286,7 @@ MeshSubdivider::Pattern PatternBuilder::quadtoquad()
   { 5, 1, 4, 8 },
   });
   StorageRefine child_faces({
-  // pas testé
+  // not tested
   { 3, 11 },
   { 10, 8 },
   { 5, 7 },
@@ -295,7 +296,7 @@ MeshSubdivider::Pattern PatternBuilder::quadtoquad()
 }
 
 /*
- * Pour un quad:
+ * For a quad:
  * 3 --- 2
  * |     |
  * |     |
@@ -310,11 +311,11 @@ MeshSubdivider::Pattern PatternBuilder::quadtoquad()
  * |     |     |
  * |     |     |
  * 0 --- 1 --- 2 
- * Ici on ajoute une seule face arcane (0,2). 
+ * Here we add a single arcane face (0,2). 
 */
 MeshSubdivider::Pattern PatternBuilder::quadtotri()
 {
-  StorageRefine nodes({}); // Pas de noeud à ajouter
+  StorageRefine nodes({}); // No node to add
   StorageRefine faces({
   /*{0,1},
       {1,3},
@@ -328,7 +329,7 @@ MeshSubdivider::Pattern PatternBuilder::quadtotri()
 }
 
 /*
-  Numérotation nouveaux noeuds
+  New node numbering
          2
         / \
        /   \
@@ -337,7 +338,7 @@ MeshSubdivider::Pattern PatternBuilder::quadtotri()
     /   \ /   \
    0 --- 3 --- 1
 
-  Numérotation arêtes
+  Edge numbering
            2 
           / \
          6   7 
@@ -398,11 +399,11 @@ MeshSubdivider::Pattern PatternBuilder::tritoquad()
   return { IT_Triangle3, IT_Line2, IT_Quad4, nodes, faces, cells, child_faces };
 }
 
-// N'utilise pas la numérotation des faces de arcane pour l'instant
+// Does not use Arcane's face numbering for now
 MeshSubdivider::Pattern PatternBuilder::hextohex()
 {
   StorageRefine nodes = {
-    { 0, 1 }, // 8  // Sur arêtes
+    { 0, 1 }, // 8  // On edges
     { 0, 3 }, // 9
     { 0, 4 }, // 10
     { 1, 2 }, // 11
@@ -414,7 +415,7 @@ MeshSubdivider::Pattern PatternBuilder::hextohex()
     { 4, 7 }, // 17
     { 5, 6 }, // 18
     { 6, 7 }, // 19
-    { 0, 1, 2, 3 }, // 20 // Sur faces
+    { 0, 1, 2, 3 }, // 20 // On faces
     { 0, 1, 5, 4 }, // 21
     { 0, 4, 7, 3 }, // 22
     { 1, 5, 6, 2 }, // 23
@@ -423,32 +424,32 @@ MeshSubdivider::Pattern PatternBuilder::hextohex()
     { 0, 1, 5, 4, 3, 2, 7, 6 } // 26 // Centroid
   };
   StorageRefine faces = {
-    // Externes
-    { 0, 8, 20, 9 }, // Derrière // 0 1 2 3  // 0
+    // External
+    { 0, 8, 20, 9 }, // Back // 0 1 2 3  // 0
     { 9, 20, 13, 3 },
     { 8, 1, 11, 20 },
     { 20, 11, 2, 13 },
-    { 0, 10, 22, 9 }, // Gauche // 0 3 7 4 // 1
+    { 0, 10, 22, 9 }, // Left // 0 3 7 4 // 1
     { 9, 22, 15, 3 },
     { 10, 4, 17, 22 },
     { 22, 17, 7, 15 },
-    { 4, 16, 21, 10 }, // Bas // 4 5 0 1 // 2
+    { 4, 16, 21, 10 }, // Bottom // 4 5 0 1 // 2
     { 10, 21, 8, 0 },
     { 16, 5, 12, 21 },
     { 21, 12, 1, 8 },
-    { 4, 16, 25, 17 }, // Devant // 4 5 6 7 // 3
+    { 4, 16, 25, 17 }, // Front // 4 5 6 7 // 3
     { 17, 25, 19, 7 },
     { 16, 5, 18, 25 },
     { 25, 18, 6, 19 },
-    { 1, 12, 23, 11 }, // Droite // 1 2 5 6 // 4
+    { 1, 12, 23, 11 }, // Right // 1 2 5 6 // 4
     { 11, 23, 14, 2 },
     { 12, 5, 18, 23 },
     { 23, 18, 6, 14 },
-    { 7, 19, 24, 15 }, // Haut // 7 6 2 3 // 5
+    { 7, 19, 24, 15 }, // Top // 7 6 2 3 // 5
     { 19, 6, 14, 24 },
     { 15, 24, 13, 3 },
     { 24, 14, 2, 13 },
-    // Internes
+    // Internal
     { 8, 20, 26, 21 },
     { 20, 13, 24, 26 },
     { 9, 22, 26, 20 },
@@ -543,9 +544,9 @@ MeshSubdivider::Pattern PatternBuilder::tettotet()
 // Attention lors de la génération des faces, il ne faut pas utiliser le cartesian (l'ordre du cartesian builder est différent)
 MeshSubdivider::Pattern PatternBuilder::hextotet()
 {
-  StorageRefine nodes = {}; // Pas de nouveaux noeuds
+  StorageRefine nodes = {}; // No new nodes
   StorageRefine faces = {
-    // Ne fonctionne pas avec les mêmes faces que arcane pourtant
+    // Doesn't work with the same faces as arcane though
     { 0, 1, 3 }, // 0
     { 0, 3, 4 }, // 1
     { 0, 1, 4 }, // 2
@@ -755,7 +756,7 @@ MeshSubdivider::Pattern PatternBuilder::hextotet24()
   });
 
   StorageRefine child_faces({
-  // a refaire ancienne numérotation
+  // need to redo the old numbering
   { 0, 4, 7, 10 },
   { 12, 16, 19, 22 },
   { 23, 26, 28, 31 },
@@ -769,8 +770,9 @@ MeshSubdivider::Pattern PatternBuilder::hextotet24()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service Arcane un maillage du jeu de données.
+ * \brief Arcane Service for meshing the dataset.
  */
 class ArcaneBasicMeshSubdividerService
 : public ArcaneArcaneBasicMeshSubdividerServiceObject
@@ -778,13 +780,13 @@ class ArcaneBasicMeshSubdividerService
  public:
 
   explicit ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi);
-  //! Raffine le maillage un nombre nb-subdivision
+  //! Refines the mesh by nb-subdivision
   void subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh) override;
 
  private:
 
   void _init();
-  //! Calcule le unique id en fonction des noeuds de node_uid
+  //! Calculates the unique ID based on node_uid
   static UniqueArray<Int64> _computeNodeUid(UniqueArray<Int64> nodes_uid, const StorageRefine& node_pattern);
   /*
   void _computeNodeCoord();
@@ -807,56 +809,56 @@ class ArcaneBasicMeshSubdividerService
     Arcane::VariableBuildInfo(mesh, "arcane_node_local_id", mesh->nodeFamily()->name()))); ;
 
   if( test_recompact ) {
-    // * Si local id d'un noeud avant == local id nouveau alors on a pas changé l'emplacement mémoire
+    // * If a node's previous local id == new local id, then its memory location has not changed
     mesh->properties()->setBool("compact",true);
     mesh->properties()->setBool("sort",true);
     mesh->modifier()->endUpdate();
   }
-  // On écris les localID
+  // We write the local IDs
   ENUMERATE_NODE(inode, mesh->allNodes() ){
     (*var.get())[*inode] = inode.localId();
   }
-  // Write les local id des noeuds et on voit si ça change
+  // Write the node local IDs and see if it changes
 
   VariableList vl;
   vl.add(*var.get());
   _writeEnsight(mesh,"SubdividerWithCompact",vl);
    */
 
-  //! Génère l'ordre des faces arcane pour tout les motifs.
+  //! Generates the arcane face order for all patterns.
   void _faceOrderArcane(IPrimaryMesh* mesh);
-  //! Raffine en utilisant les faces d'arcane et le motif (Pattern) p
-  /* Méthode qui permet de récuperer les faces générés par arcanes.
-  * Ces faces doivent donner les indices locaux des noeuds de la cellule initiale.
-  * Pour ça on construit une map global to my_local_index. <Int64,Int64>
+  //! Refines using arcane faces and the pattern (Pattern) p
+  /* Method that allows retrieving faces generated by arcane.
+  * These faces must provide the local indices of the nodes of the initial cell.
+  * For this, we build a map from global to my_local_index. <Int64,Int64>
   */
   void _refineWithArcaneFaces(IPrimaryMesh* mesh, MeshSubdivider::Pattern p);
-  //! Génère un triangle
+  //! Generates a triangle
   void _generateOneTri(IPrimaryMesh* mesh);
-  //! Génère un quadrilatère
+  //! Generates a quadrilateral
   void _generateOneQuad(IPrimaryMesh* mesh);
-  //! Génère un tetraèdre
+  //! Generates a tetrahedron
   void _generateOneTetra(IPrimaryMesh* mesh);
-  //! Génère un hexaèdre
+  //! Generates a hexahedron
   void _generateOneHexa(IPrimaryMesh* mesh);
-  //! Raffine une fois le maillage avec les motifs présent dans le pattern_manager
+  //! Refines the mesh once with the patterns present in the pattern_manager
   void _refineOnce([[maybe_unused]] IPrimaryMesh* mesh, std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern>& pattern_manager);
-  //! Methode pour avoir la manière dont sont crée les nouvelles faces pour un élément. Utile pour remplir les tableau child faces dans le PatternBuilder
+  //! Method to get how new faces are created for an element. Useful for filling the child faces array in the PatternBuilder
   void _getArcaneOrder(IPrimaryMesh* mesh);
-  //! Methode pour obtenir les fichier vtk pour les différent pattern disponibles en 2D
+  //! Method to obtain the vtk files for the different patterns available in 2D
   void _generatePattern2D(IPrimaryMesh* mesh);
-  //! Methode pour obtenir les fichier vtk pour les différent pattern disponibles en 3D
+  //! Method to obtain the vtk files for the different patterns available in 3D
   void _generatePattern3D(IPrimaryMesh* mesh);
-  //! Méthode pour générer les motifs sur un seul élément de base
+  //! Method to generate patterns on a single base element
   void _generatePattern(IPrimaryMesh* mesh);
-  //! Vérification que tout les uids sont >= 0
+  //! Verification that all uids are >= 0
   void _checkMeshUid(IPrimaryMesh* mesh);
-  //! Renumérote les Noeuds et les Faces en fonction des cellules
-  //! Attention pas de garantie de ne pas avoir de trou dans la nouvelle numérotation
+  //! Renumbers Nodes and Faces based on cells
+  //! Warning: no guarantee of no holes in the new numbering
   void _renumberNodesFaces(IPrimaryMesh* mesh);
-  //! Renumérote la famille TODO mettre en commun avec AMR
+  //! Renumbers the family TODO share with AMR
   void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
-  //! Calcul du hash des N F C
+  //! Calculates the hash of N F C
   void _checkHashNodesFacesCells(IPrimaryMesh* mesh);
 };
 
@@ -911,7 +913,7 @@ void ArcaneBasicMeshSubdividerService::_checkMeshUid(IPrimaryMesh* mesh)
       continue;
     if ((var->property() & IVariable::PNoDump) != 0)
       continue;
-    // Ne traite pas les variables qui ne sont pas sur des familles.
+    // Does not process variables that are not on families.
     if (var->itemFamilyName().null())
       continue;
     //var->setUsed(true);
@@ -1046,9 +1048,9 @@ static void _writeEnsight(IMesh* mesh, const String& dirname,
   Directory d = mesh->subDomain()->exportDirectory();
   ServiceBuilder<IPostProcessorWriter> spp(mesh->handle());
   auto post_processor = spp.createReference(
-    "Ensight7PostProcessor"); // autres mais moins bien VtkHdfV2PostProcessor ou Ensight7PostProcessor
+    "Ensight7PostProcessor"); // others but less good VtkHdfV2PostProcessor or Ensight7PostProcessor
   post_processor->setTimes(
-    UniqueArray<Real>{ 0.0 }); // Juste pour fixer le pas de temps
+    UniqueArray<Real>{ 0.0 }); // Just to fix the time step
 
   ItemGroupList groups;
   groups.add(mesh->allCells());
@@ -1097,10 +1099,10 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   global_max_cell_uid++; // on prend le suivant
 
   info() << "#subdivide mesh";
-  // On vérifie qu'on sait raffiner les cellules (peut-être pas en même temps)
+  // We check that we know how to refine the cells (maybe not at the same time)
   ENUMERATE_CELL (icell, mesh->ownCells()) {
     const Cell& cell = *icell;
-    // Liste des éléments où les patterns sont implémentés pour l'instant
+    // List of items where patterns are implemented for now
     if (cell.itemTypeId() != IT_Hexaedron8 && cell.itemTypeId() != IT_Tetraedron4 && cell.itemTypeId() != IT_Quad4 && cell.itemTypeId() != IT_Triangle3) {
       ARCANE_FATAL("Not implemented item type '{0}'", cell.itemTypeId());
       return;
@@ -1114,7 +1116,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   IGhostLayerMng* gm = mesh->ghostLayerMng();
   debug() << "PART 3D nb ghostlayer" << gm->nbGhostLayer();
   // mesh->utilities()->writeToFile(String::format("3D_last_input{0}.vtk",my_rank), "VtkLegacyMeshWriter");
-  Integer nb_ghost_layer_init = gm->nbGhostLayer(); // On garde le nombre de ghost layer initial pour le remettre à la fin
+  Integer nb_ghost_layer_init = gm->nbGhostLayer(); // We keep the initial number of ghost layers to restore it at the end
   Int32 version = gm->builderVersion();
   if (version < 3)
     gm->setBuilderVersion(3);
@@ -1123,19 +1125,19 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 
-  // Uniquement pour les vérifications asserts à la fin
+  // Only for final assert checks
   Integer nb_cell_init = mesh->nbCell();
   Integer nb_face_init = mesh->nbFace();
   //Integer nb_edge_init = mesh->nbEdge();
   //Integer nb_node_init = mesh->nbNode();
 
-  // Compter les arêtes
-  // On cherche un moyen de compter les arêtes pour faire un test facile sur le nombre de noeud inséré.
-  // ARCANE_ASSERT((nb_edge_init+ nb_cell_init + nb_face_init)== nb_node_added,("Mauvais nombre de noeuds insérés"));
-  //debug() << "#NOMBRE INITS " << nb_node_init << " " << mesh->allEdges().size() << " " << edg.size() << " " << nb_face_init << " " << nb_cell_init ;
+  // Count edges
+  // We are looking for a way to count edges to perform an easy test on the number of inserted nodes.
+  // ARCANE_ASSERT((nb_edge_init+ nb_cell_init + nb_face_init)== nb_node_added,("Wrong number of inserted nodes"));
+  //debug() << "#INITIAL COUNT " << nb_node_init << " " << mesh->allEdges().size() << " " << edg.size() << " " << nb_face_init << " " << nb_cell_init ;
 
   // VARIABLES
-  // Items à ajouter avec connectivités pour E F et C
+  // Items to add with connectivities for E F and C
   UniqueArray<Int64> nodes_to_add;
   UniqueArray<Int64> edges_to_add;
   UniqueArray<Int64> faces_to_add;
@@ -1147,22 +1149,22 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   VariableNodeReal3& nodes_coords = mesh->nodesCoordinates();
   std::unordered_map<Int64, Real3> nodes_to_add_coords;
   debug() << "ARRAY SIZE " << nodes_coords.arraySize();
-  // Noeuds sur les entités
-  std::set<Int64> new_nodes; // Utiliser une map permet s'assurer qu'on ajoute une seule fois un noeud avec un uniqueId()
-  std::set<Int64> new_faces; // ^--- Pareil pour les faces
-  // Maps pour la gestions des propriétaires
+  // Nodes on entities
+  std::set<Int64> new_nodes; // Using a map ensures that a node is added only once with a uniqueId()
+  std::set<Int64> new_faces; // ^--- Same for faces
+  // Maps for owner management
   std::unordered_map<Int64, Int32> node_uid_to_owner;
-  std::unordered_map<Int64, Int32> edge_uid_to_owner; // pas utilisé
+  std::unordered_map<Int64, Int32> edge_uid_to_owner; // not used
   std::unordered_map<Int64, Int32> face_uid_to_owner;
-  std::unordered_map<Int64, Int32> child_cell_owner; // pas utilisé
-  std::unordered_map<Int32, Int32> old_face_lid_to_owner; // pas utilisé
+  std::unordered_map<Int64, Int32> child_cell_owner; // not used
+  std::unordered_map<Int32, Int32> old_face_lid_to_owner; // not used
 
-  UniqueArray<Int32> cells_to_detach; // Cellules à détacher
-  UniqueArray<Int64> faces_uids; // Contient uniquement les uids pas les connectivités
-  UniqueArray<Int64> edges_uids; // Idem
+  UniqueArray<Int32> cells_to_detach; // Cells to detach
+  UniqueArray<Int64> faces_uids; // Contains only the uids, not the connectivities
+  UniqueArray<Int64> edges_uids; // Same
 
-  // Calcul nombre de noeuds à insérer
-  // const Integer nb_node_to_add_total = mesh->nbCell()+mesh->nbFace()+mesh->nbEdge(); // Attention pattern dépendant
+  // Calculate number of nodes to insert
+  // const Integer nb_node_to_add_total = mesh->nbCell()+mesh->nbFace()+mesh->nbEdge(); // Note pattern dependent
   //nodes_to_add.reserve(nb_node_to_add_total);
   //nodes_to_add_coords.reserve(nb_node_to_add_total);
 
@@ -1172,18 +1174,18 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
 
   UniqueArray<Int64> parent_faces(mesh->ownFaces().size());
   UniqueArray<Int64> parent_cells(mesh->ownCells().size());
-  UniqueArray<Int64> child_cells; // Toutes les nouvelles cells
-  UniqueArray<Int64> child_faces; // Au bord de l'élément uniquement (pas de faces interne à l'élément)
+  UniqueArray<Int64> child_cells; // All new cells
+  UniqueArray<Int64> child_faces; // Only at the element boundary (no internal faces)
 
-  // Permet de récupere les entités enfants à partir d'une cellule parent
-  std::unordered_map<Int64, std::pair<Int64, Int64>> parents_to_childs_cell; // A partir d'un uid on récupère le premier enfant (pair<index,number of child>)
-  std::unordered_map<Int64, std::pair<Int64, Int64>> parents_to_childs_faces; // A partir d'un uid on récupère le premier enfant (pair<index,number of child>)
-  // ^--- uniquement pour les faces "externes"
-  Int64 childs_count = 0; // A chaque nouvelle cellule on se décale du nombre d'enfant (  +4 si quad, +3 ou +4 pour les tri selon le pattern )
+  // Allows retrieving child entities from a parent cell
+  std::unordered_map<Int64, std::pair<Int64, Int64>> parents_to_childs_cell; // From a uid, we retrieve the first child (pair<index,number of child>)
+  std::unordered_map<Int64, std::pair<Int64, Int64>> parents_to_childs_faces; // From a uid, we retrieve the first child (pair<index,number of child>)
+  // ^--- only for "external" faces
+  Int64 childs_count = 0; // For each new cell, we shift by the number of children (+4 if quad, +3 or +4 for tri depending on the pattern)
 
   // Groups
-  std::unordered_map<Int64, std::pair<Int64, Int64>> parents_to_childs_faces_groups; // Map face parente -> face enfant externe dans array face_external_uid
-  UniqueArray<Int64> face_external_uid; // Toutes les faces externes du proc uid
+  std::unordered_map<Int64, std::pair<Int64, Int64>> parents_to_childs_faces_groups; // Map parent face -> external child face in face_external_uid array
+  UniqueArray<Int64> face_external_uid; // All external faces of the proc uid
 
   // Debug node
   /*
@@ -1193,55 +1195,55 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     nodes_to_add_coords[node.uniqueId().asInt64()] = nodes_coords[node];
   }
   */
-  // Traitement pour une cellule
+  // Processing for a cell
   ENUMERATE_CELL (icell, mesh->ownCells()) {
     debug() << "Refining element";
-    // POUR UN ELEMNT:
-    // Détacher cellules parente
-    // Génération des nouveaux noeuds (uid et coordonnées)
-    // Sur Arêtes
-    // Sur Faces
-    // Sur Cellule
-    // Nouveaux noeuds,coordonnées
+    // FOR AN ELEMENT:
+    // Detach parent cells
+    // Generation of new nodes (uid and coordinates)
+    // On Edges
+    // On Faces
+    // On Cell
+    // New nodes, coordinates
 
-    // Génération des Faces (uid et composants (Noeuds)) utilises nouveaux noeuds
-    // Internes
-    // Externes
+    // Generation of Faces (uid and components (Nodes)) using new nodes
+    // Internal
+    // External
 
-    // Génération des Cellules (uid et composants (Noeuds))
-    // Gestion des groupes
-    // FIN UN ELEMENT
+    // Generation of Cells (uid and components (Nodes))
+    // Group management
+    // END OF ONE ELEMENT
 
-    // Détachement des cellules
-    // Ajout des noeuds enfants
-    // Ajout des faces enfants
-    // Ajout des cellules enfants (et assignation propriétaire)
+    // Detachment of cells
+    // Addition of child nodes
+    // Addition of child faces
+    // Addition of child cells (and owner assignment)
 
-    // Ajout d'une couche fantome
-    // Calcul des propriétaires des noeuds
-    // Calcul des propriétaires des faces
-    // Supression de la couche fantome
-    // ?? Calcul des groupes F C
+    // Addition of a ghost layer
+    // Calculation of node owners
+    // Calculation of face owners
+    // Removal of the ghost layer
+    // ?? Calculation of F C groups
 
-    // Assignation des noeuds au propriétaire
-    // Assignation des faces au propriétaire
-    // Ajout nombre de couche de maille initial
+    // Assignment of nodes to owner
+    // Assignment of faces to owner
+    // Addition of initial mesh layer count
 
     const Cell& cell = *icell;
 
     MeshSubdivider::Pattern& p = pattern_manager[cell.type()]; // Pattern Manager
     StorageRefine& node_pattern = p.nodes;
 
-    UniqueArray<Int64> face_in_cell; // Toutes les faces de la cellule uid
+    UniqueArray<Int64> face_in_cell; // All faces of the cell uid
     StorageRefine& child_faces = p.child_faces;
 
     cells_to_detach.add(cell.localId());
-    // Génération des noeud
+    // Generation of nodes
     UniqueArray<Int64> node_in_cell;
-    node_in_cell.resize(node_pattern.size() + cell.nbNode()); // pattern dépendant
+    node_in_cell.resize(node_pattern.size() + cell.nbNode()); // pattern dependent
     UniqueArray<Real3> coords_in_cell;
-    debug() << "Noeuds initiaux";
-    // Noeuds initiaux
+    debug() << "Initial nodes";
+    // Initial nodes
     for (Int32 i = 0; i < cell.nbNode(); i++) {
       node_in_cell[i] = cell.node(static_cast<Int32>(i)).uniqueId().asInt64();
       //debug() << i << " " << node_in_cell[i] << " size " << node_in_cell.size() ;
@@ -1249,8 +1251,8 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
 
     Integer index_27 = cell.nbNode();
 
-    // - Génération des uid noeuds
-    debug() << "Génération des uid noeuds";
+    // - Generation of node uids
+    debug() << "Generation of node uids";
 
     for (Integer i = 0; i < node_pattern.size(); i++) {
       // uid
@@ -1277,15 +1279,15 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
           ARCANE_FATAL("Bad coordinate for new node, the node '{0}' probably has a default coordinate (0.0,0.0,0.0).", uid);
         }
         new_nodes.insert(node_in_cell[i + index_27]);
-        // Insertion dans map uid -> coord
+        // Insertion into map uid -> coord
         nodes_to_add_coords[node_in_cell[i + index_27]] = middle_coord;
-        // Insertion dans Uarray uid
+        // Insertion into Uarray uid
         nodes_to_add.add(uid);
         //info() << node_pattern[i];
         //debug() << i << " " << uid << " sizenic " << tmp << middle_coord;
       }
     }
-    // Est-ce qu'on doit ajouter les anciens noeuds ? Normalement non
+    // Should we add the old nodes? Normally no
     // #TAG
     /*
       for(Integer i = 0 ; i < cell.nbNode() ; i++ ) {
@@ -1299,13 +1301,13 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     //ARCANE_ASSERT((nodes_to_add_coords.size() == static_cast<size_t>(nodes_to_add.size())),("Has to be same"));
     //ARCANE_ASSERT((nodes_to_add_coords.size() == new_nodes.size()),("Has to be same"));
 
-    // Génération des Faces
+    // Generation of Faces
     StorageRefine& face_refine = p.faces;
     debug() << "face_refine.size() " << face_refine.size();
     //ARCANE_ASSERT((face_refine.size() == 36), ("WRONG NUMBER OF CELL ADDED")); // One cube assert
     debug() << "Refine face";
     for (Integer i = 0; i < face_refine.size(); i++) {
-      // Generation du hash de la face
+      // Generation of the face hash
       UniqueArray<Int64> tmp;
       //tmp.resize(face_refine[i].size());
       for (Integer j = 0; j < face_refine[i].size(); j++) {
@@ -1314,10 +1316,10 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
       std::sort(tmp.begin(), tmp.end());
       //ARCANE_ASSERT(( tmp.size() == 4 ),("Wrong size of UniqueArray")); // one cube assert
       Int64 uid = Arcane::MeshUtils::generateHashUniqueId(tmp.constView());
-      face_in_cell.add(uid); // Pour groups
-      // Vérifier si on l'a déja crée
+      face_in_cell.add(uid); // For groups
+      // Check if it has already been created
       if (new_faces.find(uid) == new_faces.end()) {
-        // Ajout
+        // Addition
         faces_to_add.add(p.face_type);
         faces_to_add.add(uid);
         //debug() << "Face " << uid << " " << tmp ;
@@ -1325,33 +1327,33 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
           //debug() << node_in_cell[face_refine[i][j]] ;
           faces_to_add.add(node_in_cell[face_refine[i][j]]);
         }
-        // Ajouter dans tableau uids faces
+        // Add to uids faces array
         faces_uids.add(uid);
         nb_face_to_add++;
         new_faces.insert(uid);
       }
     }
 
-    // Nouvelle Gestion des groupes
-    // Pour chaque faces
-    // Générer hash
-    // associer hash uid face
-    // Parcours des faces parentes
-    debug() << "Gestion face groupe";
+    // New Group Management
+    // For each face
+    // Generate hash
+    // associate hash uid face
+    // Iteration over parent faces
+    debug() << "Group face management";
     for (Integer i = 0; i < child_faces.size(); i++) {
       parents_to_childs_faces_groups[cell.face(i).uniqueId()] = std::pair<Int64, Int64>(face_external_uid.size(), child_faces[i].size());
       for (Integer j = 0; j < child_faces[i].size(); j++) {
-        face_external_uid.add(face_in_cell[child_faces[i][j]]); // start c'est l'index des face_in_cell // en fait on fait un array pour chaque élément aussi // face_in_cell (sinon les index seront faux donc on ajoute plusieurs fois les faces)
+        face_external_uid.add(face_in_cell[child_faces[i][j]]); // start this is the index of face_in_cell // in fact we make an array for each element too // face_in_cell (otherwise the indices will be wrong, so we add the faces multiple times)
       }
     }
 
-    // Génération des cells
+    // Generation of cells
     StorageRefine& cells_refine = p.cells;
-    // Génération des cellules enfants
-    debug() << "Génération des cellules enfants";
-    // L'uid est généré à partir du hash de chaque noeuds triés par ordre croissant
+    // Generation of child cells
+    debug() << "Generation of child cells";
+    // The uid is generated from the hash of each node sorted in ascending order
     for (Integer i = 0; i < cells_refine.size(); i++) {
-      // Le nouvel uid est généré avec le hash des nouveaux noeuds qui composent la nouvelle cellule
+      // The new uid is generated with the hash of the new nodes that compose the new cell
       UniqueArray<Int64> tmp;
       for (Integer j = 0; j < cells_refine[i].size(); j++) {
         tmp.add(node_in_cell[cells_refine[i][j]]);
@@ -1369,28 +1371,28 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
       }
       child_cell_owner[cell_uid] = cell.owner();
       parent_cells.add(cell.uniqueId());
-      child_cells.add(cell_uid); // groups doublons d'informations avec cells_to_add
+      child_cells.add(cell_uid); // groups duplicate information with cells_to_add
       nb_cell_to_add++;
       ind_new_cell++;
     }
     // groups
     parents_to_childs_cell[cell.uniqueId()] = std::pair<Int64, Int64>(childs_count, cells_refine.size());
-    childs_count += cells_refine.size(); // à modifier selon le nombre d'enfant associé au motif de rafinement !
+    childs_count += cells_refine.size(); // to be modified according to the number of children associated with the refinement pattern!
   }
-  // Ajout des nouveaux Noeuds
+  // Adding new Nodes
   Integer nb_node_added = nodes_to_add.size();
   UniqueArray<Int32> nodes_lid(nb_node_added);
 
   // info() << "JustBeforeAdd " << nodes_to_add;
   mesh->modifier()->addNodes(nodes_to_add, nodes_lid.view());
 
-  // Edges: Pas de génération d'arrête
+  // Edges: No edge generation
 
   debug() << "Faces_uids " << faces_uids << " faces_to_add " << faces_to_add.size() << " faces_to_add/6 " << faces_to_add.size() / 6;
 
   //ARCANE_ASSERT((nodes_to_add.size() != 0),("End"));
   //ARCANE_ASSERT((nb_face_to_add == 68),("WRONG NUMBER OF FACES")); // two hex
-  // Ajout des Faces enfants
+  // Adding child Faces
   UniqueArray<Int32> face_lid(faces_uids.size());
   debug() << "Before addOneFace " << nb_face_to_add;
 
@@ -1401,50 +1403,50 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   mesh->faceFamily()->itemsUniqueIdToLocalId(face_lid, faces_uids, true);
   debug() << "NB_FACE_ADDED AFTER " << face_lid.size() << " " << new_faces.size();
 
-  //ARCANE_ASSERT((nb_face_to_add == (faces_to_add.size()/6)),("non consistant number of faces")); // Pour hex
+  //ARCANE_ASSERT((nb_face_to_add == (faces_to_add.size()/6)),("non consistant number of faces")); // For hex
 
-  // Ajout des cellules enfants
+  // Adding child cells
   mesh->modifier()->detachCells(cells_to_detach);
 
   UniqueArray<Int32> cells_lid(nb_cell_to_add);
   mesh->modifier()->addCells(nb_cell_to_add, cells_to_add.constView(), cells_lid);
   info() << "After addCells";
   // mesh->modifier()->addCells()
-  // Pour tout les itemgroups
+  // For all item groups
   UniqueArray<Int32> child_cells_lid(child_cells.size());
   mesh->cellFamily()->itemsUniqueIdToLocalId(child_cells_lid, child_cells, true);
 
-  // Gestion des itemgroups ici (différents matériaux par exemple)
-  // - On cherche à ajouter les enfants dans les mêmes groupes que les parents pour :
+  // Item group management here (different materials for example)
+  // - We seek to add the children in the same groups as the parents for:
   //   - Faces
   //   - Cells
-  // - Pas de déduction automatique pour :
-  //   - Noeuds
-  //   - Arêtes
+  // - No automatic deduction for:
+  //   - Nodes
+  //   - Edges
   // Algo
-  // Pour chaque group
-  //   Pour chaque cellules de ce group
-  //     ajouter cellules filles de ce group
+  // For each group
+  //   For each cell in this group
+  //     add child cells of this group
 
-  // Traiter les groupes pour les faces
+  // Process groups for faces
   //
-  // En fait on ne peut traiter que les faces externes. Est-ce qu'on doit/peut déduire les groupes des faces internes ?
-  // Dans le cas du test microhydro on peut car on a que les faces externes aux éléments: XYZ min max
-  // A ce moment nous n'avons pas fait de lien face_parent_externe -> face_enfant_externe
-  // Pour le faire nous allons parcourir les faces internes parentes, trier les ids  et trier les éléménts
+  // In fact, we can only process external faces. Should/can we deduce the groups of internal faces?
+  // In the case of the microhydro test, we can because we only have external faces to the elements: XYZ min max
+  // At this moment, we have not made a link face_parent_external -> face_child_external
+  // To do this, we will iterate through the parent internal faces, sort the IDs, and sort the elements
 
-  // Problème des groupes.
-  // Tableau faces_externals
-  // Pour chaque face parent
-  //   - Ajouter dans une nouvelle variable faces_externals l'uid de chaque nouvelle face
-  //   - dans map sauvegarder uid, et index
+  // Group problem.
+  // faces_externals array
+  // For each parent face
+  //   - Add the uid of each new face to a new variable faces_externals
+  //   - save uid and index in map
 
   IItemFamily* face_family = mesh->faceFamily();
   IItemFamily* cell_family = mesh->cellFamily();
 
   UniqueArray<Int32> face_external_lid(face_external_uid.size());
   mesh->faceFamily()->itemsUniqueIdToLocalId(face_external_lid, face_external_uid);
-  // Traiter les groups pour les faces
+  // Process groups for faces
   info() << "#mygroupname face " << face_family->groups().count();
   for (ItemGroupCollection::Enumerator igroup(face_family->groups()); ++igroup;) {
     ItemGroup group = *igroup;
@@ -1454,14 +1456,14 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
       info() << "#groups: OWN";
       continue;
     }
-    if (group.isAllItems()) { // besoin de ça pour seq et //
+    if (group.isAllItems()) { // need this for seq and //
       info() << "#groups: ALLITEMS";
       continue;
     }
     info() << "#groups: Added ";
     UniqueArray<Int32> to_add_to_group;
 
-    ENUMERATE_ (Item, iitem, group) { // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
+    ENUMERATE_ (Item, iitem, group) { // For each cell in the group, we add its 8 children (or n)
       Int64 step = parents_to_childs_faces_groups[iitem->uniqueId().asInt64()].first;
       Int64 n_childs = parents_to_childs_faces_groups[iitem->uniqueId().asInt64()].second;
       auto subview = face_external_lid.subView(step, static_cast<Integer>(n_childs));
@@ -1471,7 +1473,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     group.addItems(to_add_to_group, true);
   }
 
-  // Traiter les groupes pour les cellules
+  // Process groups for cells
   for (ItemGroupCollection::Enumerator igroup(cell_family->groups()); ++igroup;) {
     CellGroup group = *igroup;
     info() << "#mygroupname" << group.fullName() << "nb item" << cell_family->nbItem();
@@ -1479,7 +1481,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
       info() << "#groups: OWN";
       continue;
     }
-    if (group.isAllItems()) { // besoin de ça pour seq et //
+    if (group.isAllItems()) { // need this for seq and //
       info() << "#groups: ALLITEMS";
       continue;
     }
@@ -1487,7 +1489,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     info() << "#groups: Added ";
     UniqueArray<Int32> to_add_to_group;
 
-    ENUMERATE_ (Item, iitem, group) { // Pour chaque cellule du groupe on ajoute ses 8 enfants ( ou n )
+    ENUMERATE_ (Item, iitem, group) { // For each cell in the group, we add its 8 children (or n)
       Int64 step = parents_to_childs_cell[iitem->uniqueId().asInt64()].first;
       Int64 n_childs = parents_to_childs_cell[iitem->uniqueId().asInt64()].second;
       auto subview = child_cells_lid.subView(step, static_cast<Integer>(n_childs));
@@ -1496,7 +1498,7 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     info() << "#Added " << to_add_to_group.size() << " to group " << group.fullName();
     group.addItems(to_add_to_group, true);
   }
-  // fin gestion itemgroups
+  // end item group management
   mesh->modifier()->removeDetachedCells(cells_to_detach.constView());
   //mesh->modifier()->removeCells(cells_to_detach.constView());
   mesh->modifier()->endUpdate();
@@ -1506,10 +1508,10 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
   /*for(Integer i = 0 ; i < faces_to_add.size() ; i++){
         debug() << new_faces[i] ;
     }*/
-  // ENDEBUG
+  // END DEBUG
 
-  // Gestion et assignation du propriétaire pour chaque cellule
-  // Le propriétaire est simplement le sous domaine qui a générer les nouvelles cellules
+  // Management and assignment of owner for each cell
+  // The owner is simply the subdomain that generated the new cells
   ENUMERATE_ (Cell, icell, mesh->allCells()) {
     Cell cell = *icell;
     cell.mutableItemBase().setOwner(my_rank, my_rank);
@@ -1518,30 +1520,30 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
 
   // ARCANE_ASSERT((nodes_lid.size() != 0),("End"));
   ARCANE_ASSERT((nodes_lid.size() == nodes_to_add.size()), ("End"));
-  // Assignation des coords aux noeuds
+  // Assigning coordinates to nodes
 
   UniqueArray<Int32> to_add_to_nodes(nodes_to_add.size()); // Bis
   mesh->nodeFamily()->itemsUniqueIdToLocalId(to_add_to_nodes, nodes_to_add, true);
 
-  ENUMERATE_ (Node, inode, mesh->nodeFamily()->view(to_add_to_nodes)) { // recalculer nodes_lid
+  ENUMERATE_ (Node, inode, mesh->nodeFamily()->view(to_add_to_nodes)) { // recalculate nodes_lid
     Node node = *inode;
     debug() << node.uniqueId().asInt64();
     //ARCANE_ASSERT((new_nodes.find(node.uniqueId().asInt64()) != new_nodes.end()),("Not found in set !"))
     //ARCANE_ASSERT((nodes_to_add_coords.find(node.uniqueId().asInt64()) != nodes_to_add_coords.end()),("Not found in map coord!"))
-    // si il est pas dans la map c'est qu'il existe déja !
+    // if it is not in the map, it already exists!
 
     nodes_coords[node] = nodes_to_add_coords[node.uniqueId().asInt64()];
     debug() << "InSBD" << node.uniqueId().asInt64() << " " << nodes_to_add_coords[node.uniqueId().asInt64()];
   }
 
   //info() << "#NODECOORDS" << nodes_coords.asArray() ;
-  // Ajout d'une couche fantôme
+  // Adding a ghost layer
   Arcane::IGhostLayerMng* gm2 = mesh->ghostLayerMng();
   gm2->setNbGhostLayer(1);
   mesh->updateGhostLayers(true);
 
-  // Gestion des propriétaires de noeuds
-  // Le propriétaire est la cellule incidente au noeud avec le plus petit uniqueID()
+  // Management of node owners
+  // The owner is the cell incident to the node with the smallest uniqueID()
   ENUMERATE_ (Node, inode, mesh->allNodes()) {
     Node node = *inode;
     auto it = std::min_element(node.cells().begin(), node.cells().end());
@@ -1549,8 +1551,8 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     node_uid_to_owner[node.uniqueId().asInt64()] = cell.owner();
   }
 
-  // Gestion des propriétaires des faces
-  // Le propriétaire est la cellule incidente à la face avec le plus petit uniqueID()
+  // Management of face owners
+  // The owner is the cell incident to the face with the smallest uniqueID()
   ENUMERATE_ (Face, iface, mesh->allFaces()) {
     Face face = *iface;
     auto it = std::min_element(face.cells().begin(), face.cells().end());
@@ -1558,11 +1560,11 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     face_uid_to_owner[face.uniqueId().asInt64()] = cell.owner();
   }
 
-  // Utiliser les couches fantôme est couteux (construction destruction)
-  // - Optim: pour les noeuds partager avoir une variable all to all (gather) qui permet de récuper le rank de l'owner pour chaque item shared
-  // - Déduction possible des owners des faces enfants avec la face parent directement
-  // - Les cellules enfants ont le même owner que la cellule parent
-  // Supression de la couche fantôme
+  // Using ghost layers is costly (construction destruction)
+  // - Optim: for shared nodes, have an all-to-all (gather) variable that allows retrieving the owner rank for each shared item
+  // - Possible deduction of child face owners from the parent face directly
+  // - Child cells have the same owner as the parent cell
+  // Deleting the ghost layer
   gm2->setNbGhostLayer(0);
   mesh->updateGhostLayers(true);
 
@@ -1573,32 +1575,32 @@ void ArcaneBasicMeshSubdividerService::_refineOnce(IPrimaryMesh* mesh, std::unor
     debug() << face.uniqueId().asInt64();
   }*/
 
-  // Quelques sur le nombres d'entités insérés
+  // Some checks on the number of inserted entities
   // ARCANE_ASSERT((mesh->nbCell() == nb_cell_init*8 ),("Wrong number of cell added"));
   debug() << "nbface " << mesh->nbFace() << " " << nb_face_to_add << " expected " << nb_face_init * 4 + 12 * nb_cell_init;
   // ARCANE_ASSERT((mesh->nbFace() <= nb_face_init*4 + 12 * nb_cell_init ),("Wrong number of face added"));
-  // A ajouter pour vérifier le nombre de noeud si les arêtes sont crées
+  // To add to check the number of nodes if edges are created
   // ARCANE_ASSERT((mesh->nbNode() == nb_edge_init + nb_face_init + nb_cell_init ),("Wrong number of node added"))
 
-  // Assignation du nouveau propriétaire pour chaque noeud
+  // Assignment of the new owner for each node
   ENUMERATE_ (Node, inode, mesh->allNodes()) {
     Node node = *inode;
     node.mutableItemBase().setOwner(node_uid_to_owner[node.uniqueId().asInt64()], my_rank);
   }
   mesh->nodeFamily()->notifyItemsOwnerChanged();
 
-  // Assignation du nouveaux propriétaires pour chaque face
+  // Assignment of the new owners for each face
   ENUMERATE_ (Face, iface, mesh->allFaces()) {
     Face face = *iface;
     face.mutableItemBase().setOwner(face_uid_to_owner[face.uniqueId().asInt64()], my_rank);
   }
   mesh->faceFamily()->notifyItemsOwnerChanged();
 
-  // On met de nouveau le ghost layer pour une future simulation
+  // We set the ghost layer again for a future simulation
   gm2->setNbGhostLayer(nb_ghost_layer_init);
   mesh->updateGhostLayers(true);
 
-  // Ecriture au format VTK
+  // Writing in VTK format
   /*
   mesh->utilities()->writeToFile("3Drefined" + std::to_string(my_rank) + ".vtk", "VtkLegacyMeshWriter");
   info() << "Writing VTK 3Drefine";
@@ -1646,11 +1648,11 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
   //mesh->utilities()->writeToFile("subdivider_one_tetra_output.vtk", "VtkLegacyMeshWriter");
   ARCANE_ASSERT((!p.cells.empty()), ("Pattern not init"));
   Integer cellcount = 0;
-  UniqueArray<Int32> cells_to_detach; // Cellules à détacher
+  UniqueArray<Int32> cells_to_detach; // Cells to detach
 
   Int64 face_count = 0;
 
-  std::map<Int64, Int32> node_uid_to_cell_local_id; // Donne le local id par rapport à une cell
+  std::map<Int64, Int32> node_uid_to_cell_local_id; // Gives the local id relative to a cell
 
   ENUMERATE_CELL (icell, mesh->allCells()) {
     UniqueArray<Int64> node_in_cell;
@@ -1691,11 +1693,11 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
     }
 
     info() << "#node in cell " << node_in_cell;
-    // Génération nouvelles faces et cells
+    // Generating new faces and cells
     // New faces
     /*for( Integer i = 0 ; i < faces.size() ; i++ ){
       // Header
-      faces_infos.add(p.face_pattern);            // type  // Dépendant pattern //#HERE
+      faces_infos.add(p.face_pattern);            // type  // Dependent pattern //#HERE
       faces_infos.add(i);                    // face uid
       for( Integer j = 0 ; j < faces[i].size() ; j++ ) {
         faces_infos.add(node_in_cell[faces[i][j]]);  // node 0
@@ -1708,7 +1710,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
     for (Integer i = 0; i < cells.size(); i++) {
       // Header
       max_offset++;
-      cells_infos.add(p.cell_type); // type  // Dépendant pattern
+      cells_infos.add(p.cell_type); // type  // Dependent pattern
       cells_infos.add(max_offset); // cell uid
       // Cell_info
       info() << "Cell " << i;
@@ -1725,7 +1727,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
     info() << "test3 ";
   }
   UniqueArray<Int32> nodes_lid(nodes_uid.size());
-  // Debug ici
+  // Debug here
   info() << "test3 " << nodes_uid.size() << " " << nodes_lid.size();
   nodes_lid.clear();
   nodes_lid.reserve(nodes_uid.size());
@@ -1741,7 +1743,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
   info() << "cellsize " << cells_infos.size() << " " << cellcount;
   modifier->removeCells(cells_to_detach.constView());
   modifier->endUpdate();
-  // Assignation coords aux nouveaux noeuds
+  // Assigning coordinates to new nodes
   VariableNodeReal3 coords_bis = mesh->nodesCoordinates();
 
   info() << nodes_lid.size();
@@ -1761,7 +1763,7 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
   info() << "#coords" << coords_bis.asArray();
   info() << "#My mesh ";
   UniqueArray<Int64> stuff;
-  // Affichage maillage
+  // Mesh display
   ENUMERATE_CELL (icell, mesh->allCells()) {
     const Cell& cell = *icell;
     info() << "Cell " << cell.uniqueId() << " " << cell.nodeIds();
@@ -1819,18 +1821,18 @@ void ArcaneBasicMeshSubdividerService::_refineWithArcaneFaces(IPrimaryMesh* mesh
   }
   */
   //
-  // On va chercher le service directement sans utiliser dans le .arc
+  // We will look for the service directly without using the .arc
   /*Directory d = mesh->subDomain()->exportDirectory();
   info() << "Writing at " << d.path() ;
   ServiceBuilder<IPostProcessorWriter> spp(mesh->handle());
 
   Ref<IPostProcessorWriter> post_processor = spp.createReference("Ensight7PostProcessor"); // vtkHdf5PostProcessor
   //Ref<IPostProcessorWriter> post_processor = spp.createReference("VtkLegacyMeshWriter"); // (valid values = UCDPostProcessor, UCDPostProcessor, Ensight7PostProcessor, Ensight7PostProcessor)
-  // Path de base
+  // Base path
   // <fichier-binaire>false</fichier-binaire>
   post_processor->setBaseDirectoryName(d.path());
 
-  post_processor->setTimes(UniqueArray<Real>{0.1}); // Juste pour fixer le pas de temps
+  post_processor->setTimes(UniqueArray<Real>{0.1}); // Just to fix the time step
 
   VariableList variables;
   variables.add(mesh->nodesCoordinates().variable());
@@ -1857,7 +1859,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneQuad(IPrimaryMesh* mesh)
 {
   mesh->utilities()->writeToFile("subdivider_one_quad_input.vtk", "VtkLegacyMeshWriter");
 
-  // On supprime l'ancien maillage
+  // We delete the old mesh
   Int32UniqueArray lids(mesh->allCells().size());
   ENUMERATE_CELL (icell, mesh->allCells()) {
     info() << "cell[" << icell->localId() << "," << icell->uniqueId() << "] type="
@@ -1868,7 +1870,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneQuad(IPrimaryMesh* mesh)
   modifier->removeCells(lids);
   modifier->endUpdate();
 
-  // On creer notre Quad
+  // We create our Quad
   Int64UniqueArray nodes_uid(4);
   for (Integer i = 0; i < 4; i++)
     nodes_uid[i] = i;
@@ -1901,7 +1903,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneQuad(IPrimaryMesh* mesh)
 void ArcaneBasicMeshSubdividerService::_generateOneTri(IPrimaryMesh* mesh)
 {
   mesh->utilities()->writeToFile("subdivider_one_hexa_input.vtk", "VtkLegacyMeshWriter");
-  // On supprime l'ancien maillage
+  // We delete the old mesh
   Int32UniqueArray lids(mesh->allCells().size());
   ENUMERATE_CELL (icell, mesh->allCells()) {
     info() << "cell[" << icell->localId() << "," << icell->uniqueId() << "] type="
@@ -1911,7 +1913,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneTri(IPrimaryMesh* mesh)
   IMeshModifier* modifier = mesh->modifier();
   modifier->removeCells(lids);
   modifier->endUpdate();
-  // On creer notre Hexa
+  // We create our Hexa
   Int64UniqueArray nodes_uid(3);
   for (Integer i = 0; i < 3; i++)
     nodes_uid[i] = i;
@@ -1967,7 +1969,7 @@ ArcaneBasicMeshSubdividerService(const ServiceBuildInfo& sbi)
 void ArcaneBasicMeshSubdividerService::_generateOneHexa(IPrimaryMesh* mesh)
 {
   mesh->utilities()->writeToFile("subdivider_one_hexa_input.vtk", "VtkLegacyMeshWriter");
-  // On supprime l'ancien maillage
+  // We delete the old mesh
   Int32UniqueArray lids(mesh->allCells().size());
   ENUMERATE_CELL (icell, mesh->allCells()) {
     info() << "cell[" << icell->localId() << "," << icell->uniqueId() << "] type="
@@ -1977,7 +1979,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneHexa(IPrimaryMesh* mesh)
   IMeshModifier* modifier = mesh->modifier();
   modifier->removeCells(lids);
   modifier->endUpdate();
-  // On creer notre Hexa
+  // We create our Hexa
   Int64UniqueArray nodes_uid(8);
   for (Integer i = 0; i < 8; i++)
     nodes_uid[i] = i;
@@ -2012,7 +2014,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneHexa(IPrimaryMesh* mesh)
   IntegerUniqueArray cells_lid;
   modifier->addCells(1, cells_infos, cells_lid);
   modifier->endUpdate();
-  // On crée un groupe test
+  // We create a test group
   UniqueArray<Int64> face_uid;
   ENUMERATE_FACE (iface, mesh->allFaces()) {
     Face face = *iface;
@@ -2029,7 +2031,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneTetra(IPrimaryMesh* mesh)
 
   mesh->utilities()->writeToFile("subdivider_one_tetra_input.vtk", "VtkLegacyMeshWriter");
 
-  // On supprime l'ancien maillage si besoin
+  // We delete the old mesh if necessary
   Int32UniqueArray lids(mesh->allCells().size());
   VariableNodeReal3& nodes_coords = mesh->nodesCoordinates();
   ENUMERATE_CELL (icell, mesh->allCells()) {
@@ -2041,11 +2043,11 @@ void ArcaneBasicMeshSubdividerService::_generateOneTetra(IPrimaryMesh* mesh)
   modifier->removeCells(lids);
   modifier->endUpdate();
 
-  // Maillage vide, on créer notre tetra
+  // Empty mesh, we create our tetra
 
   info() << "===================== THE MESH IS EMPTY";
 
-  // On ajoute des noeuds
+  // We add nodes
   Int64UniqueArray nodes_uid(4);
   for (Integer i = 0; i < 4; i++)
     nodes_uid[i] = i;
@@ -2076,7 +2078,7 @@ void ArcaneBasicMeshSubdividerService::_generateOneTetra(IPrimaryMesh* mesh)
   modifier->addCells(1, cells_infos, cells_lid);
   modifier->endUpdate();
 
-  // On crée un groupe test
+  // We create a test group
   UniqueArray<Int64> face_uid;
   ENUMERATE_FACE (iface, mesh->allFaces()) {
     Face face = *iface;
@@ -2089,11 +2091,11 @@ void ArcaneBasicMeshSubdividerService::_generateOneTetra(IPrimaryMesh* mesh)
   info() << "===================== THE CELLS ARE ADDED";
 }
 
-/* Le but est simplement d'avoir l'ordre des faces dans un élément*/
+/* The goal is simply to have the order of faces in an element*/
 void ArcaneBasicMeshSubdividerService::_faceOrderArcane(IPrimaryMesh* mesh)
 {
   mesh->utilities()->writeToFile("3D_last_input_seq.vtk", "VtkLegacyMeshWriter");
-  info() << "#ORDRE FACES";
+  info() << "#FACE ORDER";
   ENUMERATE_CELL (icell, mesh->ownCells()) {
 
     const Cell& cell = *icell;
@@ -2122,16 +2124,16 @@ void ArcaneBasicMeshSubdividerService::_applyFamilyRenumbering(IItemFamily* fami
   family->notifyItemsUniqueIdChanged();
 }
 
-/** \brief Renumérote les noeuds et les faces en fonction des cellules
-* Cette méthode ne compacte pas, c.à.d
-* Pour l'instant les variables ne se suivent pas forcéments
-Comment on recompacte ? 
-=> Sort et on renumérote en incrémentant. 
-Pas sûr que ça soit reproductible.
+/** \brief Renumbers nodes and faces based on cells
+* This method does not compact, meaning
+* For now, the variables are not necessarily sequential
+How do we recompact?
+=> Sort and renumber by incrementing.
+Not sure if this is reproducible.
 */
 void ArcaneBasicMeshSubdividerService::_renumberNodesFaces(IPrimaryMesh* mesh)
 {
-  // Pour chaque noeud, on met la cell incidente avec l'uid le plus petit
+  // For each node, we set the incident cell with the smallest uid
   VariableNodeInt64 nodes_min_cell_uid(VariableBuildInfo(mesh, "ArcaneNodeMinCellUid"));
   nodes_min_cell_uid.fill(NULL_ITEM_UNIQUE_ID);
   ENUMERATE_NODE (inode, mesh->ownNodes()) {
@@ -2145,7 +2147,7 @@ void ArcaneBasicMeshSubdividerService::_renumberNodesFaces(IPrimaryMesh* mesh)
     }
     nodes_min_cell_uid[node] = min;
   }
-  // idem pour face
+  // same for face
   VariableFaceInt64 faces_min_cell_uid(VariableBuildInfo(mesh, "ArcaneFaceMinCellUid"));
   faces_min_cell_uid.fill(NULL_ITEM_UNIQUE_ID);
   ENUMERATE_FACE (iface, mesh->ownFaces()) {
@@ -2165,8 +2167,8 @@ void ArcaneBasicMeshSubdividerService::_renumberNodesFaces(IPrimaryMesh* mesh)
 
   VariableNodeInt64 nodes_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberNodesNewUid"));
   VariableFaceInt64 faces_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberFacesNewUid"));
-  // Renumérotation selon C des F et N dans vars
-  // ?? Attention au ghost layer ??
+  // Renumbering according to C of F and N in vars
+  // ?? Attention to ghost layer ??
   nodes_new_uid.fill(NULL_ITEM_UNIQUE_ID);
   faces_new_uid.fill(NULL_ITEM_UNIQUE_ID);
 

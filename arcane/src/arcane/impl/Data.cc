@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Data.cc                                                     (C) 2000-2023 */
 /*                                                                           */
-/* Classes de base d'une donnée.                                             */
+/* Base data classes.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ registerNumArrayDataFactory(IDataFactoryMng* dfm);
 extern "C++" void
 arcaneRegisterSimpleData(IDataFactoryMng* dfm)
 {
-  // Enregistre les types de donnée standard.
+  // Registers the standard data types.
   registerStringScalarDataFactory(dfm);
   registerStringArrayDataFactory(dfm);
   registerScalarDataFactory(dfm);

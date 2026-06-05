@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeHistoryMng2.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Module gérant un historique de valeurs (Version 2).                       */
+/* Module managing a history of values (Version 2).                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,7 +54,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Ecrivain au format GNUPLOT.
+ * \brief GNUPLOT format writer.
  */
 class GnuplotTimeHistoryCurveWriter2
 : public TraceAccessor
@@ -74,12 +74,12 @@ class GnuplotTimeHistoryCurveWriter2
   {
     m_times = infos.times();
     String path = infos.path();
-    // m_output_path surcharge les infos en argument si non vide.
+    // m_output_path overrides the infos argument if not empty.
     if (m_output_path.empty())
       m_output_path = path;
 
     m_gnuplot_path = Directory(Directory(m_output_path), "gnuplot");
-    // Créé le répertoire de sortie.
+    // Create the output directory.
     if (m_gnuplot_path.createDirectory()) {
       warning() << "Can not create gnuplot curve directory '"
                 << m_gnuplot_path.path() << "'";
@@ -139,12 +139,11 @@ class GnuplotTimeHistoryCurveWriter2
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Gestionnaire d'un historique de valeurs.
+ * \brief Manager of a history of values.
  *
- * IMPORTANT: ce module fournit une interface aux autres modules
- * par l'intermédiare de ITimeHistoryMng. Par conséquent, il faut être
- * sur de ne pas toucher aux variables de ce module pendant un appel à une
- * des méthodes de ITimeHistoryMng.
+ * IMPORTANT: this module provides an interface to other modules
+ * via ITimeHistoryMng. Therefore, you must ensure that you do not modify the variables of this module during a call to any
+ * of the ITimeHistoryMng methods.
  */
 class TimeHistoryMng2
 : public AbstractModule
@@ -284,17 +283,17 @@ timeHistoryStartInitEnd()
 void TimeHistoryMng2::
 timeHistoryBegin()
 {
-  // Si on n'est pas actif, on ne grossit pas inutilement le m_global_times
-  // qui sera copié dans la variable backupée 'm_th_global_time'
+  // If not active, do not unnecessarily enlarge m_global_times
+  // which will be copied into the backed-up variable 'm_th_global_time'
   if (isShrinkActive() && !active()) {
-    // On ne fait rien
+    // Do nothing
   }
   else {
     //warning() << "timeHistoryBegin " << m_global_time() << " " << m_global_times.size();
     m_internal->addNowInGlobalTime();
   }
 
-  // Regarde s'il faut imprimer les sorties temporelles
+  // Check if temporal outputs should be printed
   {
     bool force_print_thm = false;
     int th_step = subDomain()->caseOptionsMain()->writeHistoryPeriod();

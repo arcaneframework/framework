@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CheckpointMng.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire des protections.                                             */
+/* Protection Manager.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -60,8 +60,9 @@ arcaneCreateSubDomain(ISession* session,const SubDomainBuildInfo& sdbi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des protections.
+ * \brief Protection Manager.
  */
 class CheckpointMng
 : public TraceAccessor
@@ -97,8 +98,8 @@ class CheckpointMng
  private:
 
   ISubDomain* m_sub_domain;
-  IObservable* m_write_observable; //!< Observable en écriture
-  IObservable* m_read_observable; //!< Observable en lecture
+  IObservable* m_write_observable; //!< Observable for writing
+  IObservable* m_read_observable; //!< Observable for reading
 
  private:
 
@@ -193,8 +194,8 @@ _readCheckpoint(const CheckpointReadInfo& infos)
 CheckpointInfo CheckpointMng::
 readDefaultCheckpointInfo()
 {
-  // Lit le fichier contenant les infos de la précédente exécution pour
-  // connaître le service de protection/reprise utilisé
+  // Reads the file containing the info from the previous execution to
+  // know the protection/recovery service used
   String info_file_name(m_sub_domain->exportDirectory().file("checkpoint_info.xml"));
   ByteUniqueArray bytes;
   IIOMng* io_mng = m_sub_domain->ioMng();
@@ -244,7 +245,7 @@ _readCheckpointInfo(Span<const Byte> bytes_infos,const String& info_file_name)
 {
   CheckpointInfo checkpoint_info;
 
-  // Par défaut, relit les infos en fonction du IParallelMng associé au sous-domaine
+  // By default, reads the info based on the IParallelMng associated with the subdomain
   IParallelMng* pm = m_sub_domain->parallelMng();
   Int32 rank = pm->commRank();
   checkpoint_info.setSubDomainRank(rank);
@@ -327,13 +328,13 @@ _readCheckpoint(const CheckpointInfo& checkpoint_info)
   bool has_changing_sub_domain = _checkChangingNbSubDomain(checkpoint_info);
 
   IApplication* app = m_sub_domain->application();
-  // Tente d'utiliser l'interface ICheckpointReader2 si disponible.
-  // A noter que le service qui implémente ICheckpointReader2 est un service
-  // de l'application alors que pour ICheckpointReader il s'agit d'un service
-  // de sous-domaine
+  // Tries to use the ICheckpointReader2 interface if available.
+  // Note that the service implementing ICheckpointReader2 is an application
+  // service, whereas for ICheckpointReader it is a subdomain service.
+  // If it is not available, it uses the ICheckpointReader implementation.
   // S'il n'est pas disponible, utilise l'implémentation ICheckpointReader.
-  // Avec la nouvelle implémentation, il est possible de traiter le cas où
-  // le nombre de sous-domaines change.
+  // With the new implementation, it is possible to handle the case where
+  // the number of sub-domains changes.
   {
     ServiceBuilder<ICheckpointReader2> sb(app);
     Ref<ICheckpointReader2> s(sb.createReference(service_name,SB_AllowNull));
@@ -352,8 +353,8 @@ _readCheckpoint(const CheckpointInfo& checkpoint_info)
       return;
     }
   }
-  // Avec l'ancienne implémentation, il n'est pas possible de changer
-  // le nombre de sous-domaines
+  // With the old implementation, it is not possible to change
+  // the number of sub-domains
   if (has_changing_sub_domain)
     ARCANE_FATAL("The number of sub-domains/replica in this run is different "
                  "from the number in checkpoint but the service specified "
@@ -432,7 +433,7 @@ _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos)
   Int32 nb_rank = pm->commSize();
   Int32 nb_replica = pr->nbReplication();
 
-  ScopedPtrT<IXmlDocumentHolder> info_document; //!< Infos sur les protections
+  ScopedPtrT<IXmlDocumentHolder> info_document; //!< Info about protections
 
   RealConstArrayView checkpoints_time = checkpoint_writer->checkpointTimes();
 
@@ -441,9 +442,9 @@ _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos)
   XmlNode doc = info_document->documentNode();
   XmlElement root(doc,"checkpoint-info");
 
-  // Sauvegarde les infos sur le nombre de réplication et de sous-domaines.
-  // Cela permettra plus tard de mettre en place les reprises en faisant
-  // varier le nombre de sous-domaines ou de réplication.
+  // Saves info about the number of replicas and sub-domains.
+  // This will later allow restarts by changing
+  // the number of sub-domains or replicas.
   root.setAttrValue("nb-sub-domain",String::fromNumber(nb_rank));
   root.setAttrValue("nb-replication",String::fromNumber(nb_replica));
 
@@ -459,7 +460,7 @@ _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos)
   XmlNode info_root = info_document->documentNode().documentElement();
 
   {
-    // Sauve les informations de la dernière protection
+    // Saves the information of the last checkpoint
     Integer nb_checkpoint = checkpoints_time.size();
     if (nb_checkpoint>0){
       checkpoints_time_elem.setAttrValue("last-time",String::fromNumber(checkpoints_time[nb_checkpoint-1]));
@@ -477,21 +478,22 @@ _writeCheckpointInfoFile(ICheckpointWriter* checkpoint_writer,ByteArray& infos)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Regarde si le nombre de sous-domaines a changé entre la
- * protection et l'allocation actuelle.
+ * \brief Checks if the number of sub-domains has changed between the
+ * checkpoint and the current allocation.
  */
 bool CheckpointMng::
 _checkChangingNbSubDomain(const CheckpointInfo& ci)
 {
-  // Vérifie que le nombre de sous-domaine et de replica est le même entre
-  // la protection et l'exécution courante.
+  // Checks that the number of sub-domains and replicas is the same between
+  // the checkpoint and the current run.
   Int32 nb_checkpoint_sub_domain = ci.nbSubDomain();
   Int32 nb_checkpoint_replication = ci.nbReplication();
-  // Si on n'a pas les infos (ou qu'elles sont invalides) sur le nombre de
-  // sous-domaines ou de replica, on considère qu'on ne change pas le partitionnement.
-  // Cela peut arriver si le fichier 'checkpoint_info' est trop ancien
-  // ou n'a pas été écrit par ce CheckpointMng.
+  // If we do not have the info (or if it is invalid) about the number of
+  // sub-domains or replicas, we consider that the partitioning is not changing.
+  // This can happen if the 'checkpoint_info' file is too old
+  // or was not written by this CheckpointMng.
   if (nb_checkpoint_sub_domain<1 || nb_checkpoint_replication<1){
     info() << "Invalid or missing partitionning info in checkpoint.";
     return false;
@@ -506,7 +508,7 @@ _checkChangingNbSubDomain(const CheckpointInfo& ci)
   if (nb_rank!=nb_checkpoint_sub_domain){
     has_different_sub_domain = true;
   }
-  // Pour l'instant, one ne supporte pas le changement du nombre de réplica.
+  // For now, we do not support changing the number of replicas.
   if (nb_replication!=nb_checkpoint_replication){
     ARCANE_THROW(ParallelFatalErrorException,
                  "Bad number of replication ({0} in checkpoint, {1} in this run)",
@@ -522,10 +524,10 @@ void CheckpointMng::
 _changeItemsOwner(IMesh* mesh,Int32ConstArrayView old_ranks_to_new_ranks)
 {
   Int32 mesh_rank = mesh->meshPartInfo().partRank();
-  // Change les propriétaires de toutes les familles
+  // Changes the owners of all families
   for( IItemFamily* family : mesh->itemFamilies() ){
     const ItemGroup& all_items = family->allItems();
-    // Change les propriétaires pour correspondre au nouveau découpage.
+    // Changes the owners to match the new partitioning.
     ENUMERATE_ITEM(iitem,all_items){
       Item item = *iitem;
       Int32 owner = item.owner();
@@ -562,8 +564,8 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
   info() << "RANKS_TO_READ=" << ranks_to_read;
   info() << "Apply Changing nb sub domain my_rank=" << my_rank;
   String service_name = ci.serviceName();
-  // TODO: faire un nouveau parallelMng() par sous-domaine créé
-  // (pour avoir un ITraceMng par sous-domaine)
+  // TODO: create a new parallelMng() for each created sub-domain
+  // (to have an ITraceMng per sub-domain)
   IParallelMng* pm2 = pm->sequentialParallelMng();
   UniqueArray<ISubDomain*> sd_to_merge_list2;
   UniqueArray<Byte> case_bytes;
@@ -598,12 +600,12 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
       sdbi.setCaseFileName(sd1->caseFullFileName());
       sdbi.setCaseBytes(case_bytes);
 
-      // TODO: protéger arcaneCreateSubDomain()
-      // dans une section critique.
-      // On utilise directement arcaneCreateSubDomain() pour éviter
-      // d'ajouter le sous-domaine créé à la liste des sous-domaines
-      // de la session (cela peut poser problème car ensuite on ne
-      // saura pas vraiment le détruire)
+      // TODO: protect arcaneCreateSubDomain()
+      // in a critical section.
+      // We use arcaneCreateSubDomain() directly to avoid
+      // adding the created sub-domain to the list of sub-domains
+      // of the session (this can cause problems because then we won't
+      // really know how to destroy it)
       sd2 = arcaneCreateSubDomain(sd1->session(),sdbi);
       sd2->initialize();
       sd2->readCaseMeshes();
@@ -614,14 +616,14 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
     }
     sd2->variableMng()->readCheckpoint(cri);
     sd2->checkpointMng()->readObservable()->notifyAllObservers();
-    // Il faut indiquer que les variables sont utilisées sinon
-    // elles ne seront pas transférées. Les sous-domaines additionnels
-    // ne créent pas les modules donc il est possible que le sous-domaine
-    // sd1 ait plus de variables que les autres. C'est le cas avec les
-    // variable NoDump qui n'existent pas chez les autres sous-domaines.
-    // Il ne faut donc pas les initialiser.
-    // TODO: il serait préférable de prendre les variables du
-    // maillage communes à tout les maillages qu'on va fusionner.
+    // We must indicate that the variables are used otherwise
+    // they will not be transferred. The additional sub-domains
+    // do not create the modules, so it is possible that the sub-domain
+    // sd1 has more variables than the others. This is the case with the
+    // NoDump variables which do not exist in the other sub-domains.
+    // Therefore, they should not be initialized.
+    // TODO: it would be preferable to take the variables from the
+    // mesh common to all meshes that will be merged.
     VariableCollection vars = sd2->variableMng()->variables();
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       IVariable* var = *ivar;
@@ -629,7 +631,7 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
         continue;
       if ((var->property() & IVariable::PNoDump)!=0)
         continue;
-      // Ne traite pas les variables qui ne sont pas sur des familles.
+      // Do not process variables that are not on families.
       if (var->itemFamilyName().null())
         continue;
       var->setUsed(true);
@@ -641,23 +643,23 @@ _applyNbSubDomainChange(const CheckpointInfo& ci,ICheckpointReader2* reader)
     meshes_to_merge.add(sd_to_merge->defaultMesh());
   }
 
-  // Change les propriétaires des maillages pour qu'ils référencent les
-  // nouveaux rangs.
+  // Changes the owners of the meshes so that they reference the
+  // new ranks.
   _changeItemsOwner(sd1->defaultMesh(),old_ranks_to_new_ranks);
   for( IMesh* mesh : meshes_to_merge )
     _changeItemsOwner(mesh,old_ranks_to_new_ranks);
 
   {
     IMesh* mesh = sd1->defaultMesh();
-    // Procède à la fusion des maillages
+    // Proceeds with the merging of meshes
     mesh->modifier()->mergeMeshes(meshes_to_merge);
-    // Met à jour IMesh::meshPartInfo() car
-    // le nombre de parties des maillage a changé.
+    // Updates IMesh::meshPartInfo() because
+    // the number of mesh parts has changed.
     MeshPartInfo p(makeMeshPartInfoFromParallelMng(mesh->parallelMng()));
     mesh->toPrimaryMesh()->setMeshPartInfo(p);
   }
 
-  // TODO: détruire les sous-domaines créés
+  // TODO: destroy the created sub-domains
 }
 
 /*---------------------------------------------------------------------------*/

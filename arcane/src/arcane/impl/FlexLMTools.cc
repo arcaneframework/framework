@@ -7,14 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /* FlexLMTools.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une interface pour les outils FlexLM.                    */
+/* Implementation of an interface for FlexLM tools.                          */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/impl/FlexLMTools.h"
 
-/* L'interface à FlexNet ici employée est une surcouche à FlexNet de TAD 
- * prenant en charge par exemple le rappel périodique du contrôle de licence.
- * Le recheck par défaut est tous les 120s (cf setCheckInterval)
+/* The FlexNet interface used here is a TAD overlay on FlexNet
+ * supporting, for example, periodic license check reminders.
+ * The default recheck is every 120s (see setCheckInterval)
  */
 
 #define FLEXLMAPI_IS_STATIC_LIBRARY

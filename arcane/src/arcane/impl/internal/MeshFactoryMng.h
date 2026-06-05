@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshFactoryMng.h                                            (C) 2000-2020 */
 /*                                                                           */
-/* Gestionnaire de fabriques de maillages.                                   */
+/* Mesh factory manager.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_INTERNAL_MESHFACTORYMNG_H
 #define ARCANE_IMPL_INTERNAL_MESHFACTORYMNG_H
@@ -58,4 +58,4 @@ class ARCANE_IMPL_EXPORT MeshFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

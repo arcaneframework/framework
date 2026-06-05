@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ScalarData.cc                                               (C) 2000-2024 */
 /*                                                                           */
-/* Donnée de type scalaire.                                                  */
+/* Scalar type data.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,8 +51,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Donnée scalaire d'un type \a T
+ * \brief Scalar data of type \a T
  */
 template <class DataType>
 class ScalarDataT
@@ -154,7 +155,7 @@ class ScalarDataT
 
  private:
 
-  DataType m_value; //!< Donnée
+  DataType m_value; //!< Data
   ITraceMng* m_trace;
   Internal m_internal;
   DataAllocationInfo m_allocation_info;
@@ -258,7 +259,7 @@ template <typename DataType>
 void ScalarDataT<DataType>::
 assignSerializedData(const ISerializedData*)
 {
-  // Rien à faire car \a sdata pointe directement vers m_value
+  // Nothing to do because \a sdata points directly to m_value
 }
 
 /*---------------------------------------------------------------------------*/
@@ -291,7 +292,7 @@ template <typename DataType>
 void ScalarDataT<DataType>::
 serialize(ISerializer*, Int32ConstArrayView, IDataOperation*)
 {
-  // Rien à faire.
+  // Nothing to do.
 }
 
 /*---------------------------------------------------------------------------*/

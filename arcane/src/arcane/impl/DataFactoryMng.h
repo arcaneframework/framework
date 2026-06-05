@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataFactoryMng.h                                            (C) 2000-2021 */
 /*                                                                           */
-/* Gestionnaire de fabriques de données.                                     */
+/* Data factory manager.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMPL_DATAFACTORYMNG_H
 #define ARCANE_IMPL_DATAFACTORYMNG_H
@@ -30,14 +30,15 @@ class DataFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestionnaire de fabrique d'une donnée.
+ * \brief Data factory manager.
  *
- * Les fabriques s'enregistrent via la méthode registerDataStorageFactory().
+ * Factories are registered via the registerDataStorageFactory() method.
  *
- * TODO: supprimer l'utilisation de 'IApplication' lorqu'on n'aura plus
- * besoin de 'm_old_factory'.
+ * TODO: remove the use of 'IApplication' when we no longer
+ * need 'm_old_factory'.
  */
 class DataFactoryMng
 : public TraceAccessor
@@ -80,5 +81,4 @@ class DataFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

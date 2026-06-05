@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartitionerTesterService.cc                             (C) 2000-2022 */
 /*                                                                           */
-/* Testeur de partitionneur de maillage.                                     */
+/* Mesh partitioner tester.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,19 +35,21 @@
 
 namespace Arcane
 {
-// TODO: a terme (mi 2022), supprimer l'implémentation de 'IMeshPartitioner' et ne
-// garder que celle de 'IMeshPartitionerBase'.
-// Cela permettra de supprimer toutes les méthodes avec des NotImplementedException.
+
+// TODO: eventually (mid 2022), remove the implementation of 'IMeshPartitioner' and only
+// keep that of 'IMeshPartitionerBase'.
+// This will allow removing all methods with NotImplementedException.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de test du repartionnement de maillage.
+ * \brief Mesh repartitioning test class.
  *
- * Cette classe sert uniquement à tester le repartitionnement de maillage.
- * Elle change simplement le propriétaire des mailles en se basant
- * sur le numérotation et sans tenir compte des éventuels déséquilibre
- * en temps de calcul. 
+ * This class is used only to test mesh repartitioning.
+ * It simply changes the owner of the meshes based
+ * on the numbering and without taking into account potential imbalances
+ * during computation time. 
  */
 class MeshPartitionerTester
 : public ArcaneMeshPartitionerTesterServiceObject
@@ -146,7 +148,7 @@ partitionMesh(bool initial_partition)
   Int32 sid = pm->commRank();
 
   if (nb_rank==1){
-    warning() << "Can't test the mesh repartionning with"
+    warning() << "Can't test the mesh repartitioning with"
               << "only one subdomain...";
     return;
   }
@@ -154,22 +156,22 @@ partitionMesh(bool initial_partition)
   VariableItemInt32& cells_new_owner = mesh->itemsNewOwner(IK_Cell);
 
   if (initial_partition){
-    // Le but est d'avoir un partitionnement correct mais pas
-    // parfait, notamment dans le cas des pavés, car après
-    // un vrai partitionneur n'a rien à faire.
-    // Pour le partitionnement initial, considère que le maillage
-    // initial génère les mailles de localId() similaires topologiquement
-    // proches les unes des autres.
-    // Si on prend une suite consécutive de mailles, on a donc un
-    // bloc de maille pas trop mal foutu. Pour tester le partionneur,
-    // on génère 3x plus de blocs que de sous-domaines et on les
-    // réparti entre les sous-domaines.
+    // The goal is to have a correct partition but not
+    // perfect, especially in the case of cuboids, because after
+    // a real partitioner has nothing to do.
+    // For the initial partitioning, assume that the mesh
+    // initially generates cells with localId() that are topologically similar
+    // to each other.
+    // If we take a consecutive sequence of cells, we thus have a
+    // not too badly formed cell block. To test the partitioner,
+    // we generate 3x more blocks than subdomains and distribute them
+    // among the subdomains.
     Int64 nb_cell = mesh->ownCells().size();
     Int64 nb_bloc = nb_rank * 3;
     Int64 cell_index = 0;
     ENUMERATE_CELL(icell,mesh->ownCells()){
       Cell cell = *icell;
-      // Utilise des Int64 plutôt que des Int32 pour être sur de ne pas déborder.
+      // Use Int64 instead of Int32 to ensure no overflow.
       Int64 new_owner = ((cell_index * nb_bloc) / nb_cell) % nb_rank;
       cells_new_owner[cell] = CheckedConvert::toInt32(new_owner);
       ++cell_index;
@@ -188,8 +190,8 @@ partitionMesh(bool initial_partition)
         Cell cell = *i_cell;
         Int32 new_owner = cell.owner();
         if (cell_index<(max_cell_index+(sid*10))){
-          // Force la premiere maille à rester dans ce sous-domaine
-          // pour être sur qu'il en reste au moins une.
+          // Force the first cell to remain in this subdomain
+          // to ensure there is at least one left.
           if (cell_index!=0){
             Int32 xx = (new_owner*2 + current_iteration + cell_index/10 + 17) % nb_rank;
             if (sub_rank_divider>0){

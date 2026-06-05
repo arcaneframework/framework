@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SequentialParallelMng.cc                                    (C) 2000-2026 */
 /*                                                                           */
-/* Gestion du parallélisme dans le cas séquentiel.                           */
+/* Management of parallelism in the sequential case.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -90,8 +90,9 @@ class SequentialRequestList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des messages pour le type \a Type
+ * \brief Message interface for type \a Type
  */
 template<class Type>
 class SequentialParallelDispatchT
@@ -541,11 +542,12 @@ class SequentialParallelMngUtilsFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire du parallélisme en mode séquentiel.
+ * \brief Sequential mode parallelism manager.
  *
- * En mode séquentiel, le parallélisme n'existe pas. Ce gestionnaire ne
- * fait donc rien.
+ * In sequential mode, parallelism does not exist. This manager therefore
+ * does nothing.
 */
 class SequentialParallelMng
 : public ParallelMngDispatcher
@@ -555,7 +557,7 @@ class SequentialParallelMng
   class Impl;
 
  private:
-  // Construit un gestionnaire séquentiel.
+  // Constructs a sequential manager.
   SequentialParallelMng(const SequentialParallelMngBuildInfo& bi);
  public:
   ~SequentialParallelMng();
@@ -671,7 +673,7 @@ class SequentialParallelMng
     ARCANE_UNUSED(requests);
   }
 
-  // Les requetes sont forcement deja satisfaites.
+  // The requests are necessarily already satisfied.
   UniqueArray<Integer> waitSomeRequests(ArrayView<Request> requests) override
   {
     ARCANE_UNUSED(requests);
@@ -920,7 +922,7 @@ setBaseObject(IBase* sd)
 
 namespace
 {
-// Classe pour créer les différents dispatchers
+// Class to create the different dispatchers
 class DispatchCreator
 {
  public:
@@ -958,7 +960,7 @@ initialize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Construit un superviseur séquentiel lié au superviseur \a sm
+// Constructs a sequential supervisor linked to the \a sm supervisor
 SequentialParallelSuperMng::
 SequentialParallelSuperMng(const ServiceBuildInfo& sbi)
 : AbstractService(sbi)
@@ -971,7 +973,7 @@ SequentialParallelSuperMng(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Construit un superviseur séquentiel lié au superviseur \a sm
+// Constructs a sequential supervisor linked to the \a sm supervisor
 SequentialParallelSuperMng::
 SequentialParallelSuperMng(const ServiceBuildInfo& sbi,Parallel::Communicator comm)
 : AbstractService(sbi)
@@ -985,7 +987,7 @@ SequentialParallelSuperMng(const ServiceBuildInfo& sbi,Parallel::Communicator co
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Construit un superviseur séquentiel lié au superviseur \a sm
+// Constructs a sequential supervisor linked to the \a sm supervisor
 SequentialParallelSuperMng::
 ~SequentialParallelSuperMng()
 {
@@ -1131,4 +1133,3 @@ ARCANE_REGISTER_SERVICE(SequentialParallelMngContainerFactory,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneGeometricMeshPartitionerService.cc                    (C) 2000-2025 */
 /*                                                                           */
-/* Service de partitionnement géométrique de maillage.                       */
+/* Mesh geometric partitioning service.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,24 +39,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour calculer les valeurs et vecteurs propres d'une matrice.
+ * \brief Class to calculate the eigenvalues and eigenvectors of a matrix.
  *
- * Le calcul se fait par la méthode des puissances.
- * Ce n'est pas la méthode la plus rapide ni la plus robuste au niveau
- * numérique, mais on n'a pas besoin d'une précision importante dans
- * le calcul des valeurs et vecteurs propres. Si besoin, on pourrait utiliser
- * l'algorithme de Jacboi ou une méthode QR.
+ * The calculation is done using the power method.
+ * This is not the fastest or most robust method numerically, but we do not need high precision in
+ * the calculation of eigenvalues and eigenvectors. If needed, we could use
+ * the Jacobi algorithm or a QR method.
  *
- * Les valeurs propres sont triées par ordre croissant.
- * \note Comme l'algorithme est itératif, il peut arriver que l'ordre ne soit
- * pas strictement croissant si deux valeurs propres sont proches.
+ * The eigenvalues are sorted in ascending order.
+ * \note Since the algorithm is iterative, it may happen that the order is not
+ * strictly increasing if two eigenvalues are close.
  */
 class EigenValueAndVectorComputer
 {
  private:
 
-  //! Résultat de l'application de la méthode de la puissance
+  //! Result of applying the power method
   struct PowerResult
   {
     Real eigen_value;
@@ -66,39 +66,38 @@ class EigenValueAndVectorComputer
  public:
 
   /*!
-   * \brief Calcule les valeurs et vecteurs propres de \a orig_matrix.
+   * \brief Calculates the eigenvalues and eigenvectors of \a orig_matrix.
    */
   void computeForMatrix(const Real3x3& orig_matrix)
   {
     Real3x3 matrix = orig_matrix;
 
     constexpr int nb_value = 3;
-    // Itère pour calculer les valeurs et vecteurs propres
-    // La méthode de la puissance calcule la valeur propre
-    // la plus élevée. Comme on veut trier les valeurs propres
-    // par ordre croissant, on les range dans l'ordre inverse.
+    // Iterates to calculate the eigenvalues and eigenvectors
+    // The power method calculates the highest eigenvalue. Since we want to sort the eigenvalues
+    // in ascending order, we range them in reverse order.
 
     for (int i = (nb_value - 1); i >= 0; --i) {
-      // Calculer le premier vecteur propre (le plus grand)
+      // Calculate the first eigenvector (the largest)
       PowerResult result = _applyPowerIteration(matrix);
       m_eigen_values[i] = result.eigen_value;
       m_eigen_vectors[i] = result.eigen_vector;
 
-      // Appliquer la déflation pour éliminer le vecteur propre
-      // qu'on vient de calculer.
-      // On n'a pas besoin de le faire pour la dernière itération
+      // Apply deflation to eliminate the eigenvector
+      // that was just calculated.
+      // We do not need to do this for the last iteration
       if (i != 0)
         _deflateMatrix(matrix, result.eigen_value, result.eigen_vector);
     }
   }
-  //! Retourne les valeurs propres de la matrice par ordre croissant
+  //! Returns the eigenvalues of the matrix in ascending order
   Real3 eigenValues() const { return m_eigen_values; }
-  //! Retourne les vecteurs propres de la matrice par ordre croissant
+  //! Returns the eigenvectors of the matrix in ascending order
   Real3x3 eigenVectors() const { return m_eigen_vectors; }
 
  private:
 
-  // Soustrais un vecteur propre de la matrice pour la déflation
+  // Subtracts an eigenvector from the matrix for deflation
   static void _deflateMatrix(Real3x3& matrix, double eigenvalue, Real3 eigenvector)
   {
     for (int i = 0; i < 3; ++i) {
@@ -108,18 +107,18 @@ class EigenValueAndVectorComputer
     }
   }
 
-  // Applique la méthode des puissances
+  // Applies the power method
   static PowerResult _applyPowerIteration(const Real3x3& matrix)
   {
     constexpr Int32 max_iteration = 1000;
     constexpr Real tolerance = 1e-16;
     Real eigenvalue = 0.0;
 
-    // Initialisation avec un vecteur initial (il pourrait être aléatoire)
+    // Initialization with an initial vector (it could be random)
     Real3 b{ 1.0, 1.0, 1.0 };
     Real3 b_next;
 
-    // Itérations de la méthode des puissances
+    // Power method iterations
     for (Int32 iter = 0; iter < max_iteration; ++iter) {
       b_next = math::multiply(matrix, b);
 
@@ -128,10 +127,10 @@ class EigenValueAndVectorComputer
         break;
       b_next = b_next / eigenvalue;
 
-      // Vérifie la convergence
+      // Check convergence
       Real diff = math::squareNormL2(b_next - b);
       if (diff < tolerance) {
-        break; // Si la différence est suffisamment petite, on a convergé
+        break; // If the difference is sufficiently small, we have converged
       }
 
       b = b_next;
@@ -142,17 +141,18 @@ class EigenValueAndVectorComputer
 
  private:
 
-  //! Valeurs propres
+  //! Eigenvalues
   Real3 m_eigen_values;
 
-  //! Vecteurs propres
+  //! Eigenvectors
   Real3x3 m_eigen_vectors;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour créer un arbre binaire.
+ * \brief Class to create a binary tree.
  */
 class BinaryTree
 : public TraceAccessor
@@ -160,38 +160,38 @@ class BinaryTree
  public:
 
   /*!
-   * \brief Information sur un nœud de l'arbre.
+   * \brief Information about a tree node.
    *
-   * Un nœud a 0, 1 ou 2 enfants et 0 ou 1 parent.
-   * Si un nœud n'a pas d'enfant d'un côté, alors il
-   * est associé à une partition. Cela signifie que soit
-   * \a left_child_index est valide, soit \a left_partition_id
-   * (et de même pour le côté droit).
+   * A node has 0, 1, or 2 children and 0 or 1 parent.
+   * If a node does not have a child on one side, then it
+   * is associated with a partition. This means that either
+   * \a left_child_index is valid, or \a left_partition_id
+   * (and the same for the right side).
    *
-   * Le calcul de la partition se fait par l'appel à doPartition().
-   * Après le calcul, il est possible de récupérer le tableau des
-   * noeuds via la méthode tree(). Les noeuds sont rangés dans un
-   * tableau et peuvent donc être indéxés directement.
+   * The partition calculation is done by calling doPartition().
+   * After calculation, it is possible to retrieve the array of
+   * nodes via the tree() method. The nodes are stored in an
+   * array and can therefore be indexed directly.
    */
   struct TreeNode
   {
-    //! Index linéaire dans l'arbre
+    //! Linear index in the tree
     Int32 index = -1;
-    //! Index linéaire du fils de gauche (-1 si aucune)
+    //! Linear index of the left child (-1 if none)
     Int32 left_child_index = -1;
-    //! Index linéaire du fils de droite (-1 si aucune)
+    //! Linear index of the right child (-1 if none)
     Int32 right_child_index = -1;
-    //! Index dans l'arbre du parent (-1 si aucun)
+    //! Index in the tree of the parent (-1 if none)
     Int32 parent_index = -1;
-    //! Nombre d'enfants à gauche (si non terminal)
+    //! Number of children on the left (if not terminal)
     Int32 nb_left_child = -1;
-    //! Nombre d'enfants à droite (si non terminal)
+    //! Number of children on the right (if not terminal)
     Int32 nb_right_child = -1;
-    //! Niveau dans l'arbre
+    //! Level in the tree
     Int32 level = -1;
-    //! Indice de la partition de gauche (uniquement pour les noeuds terminaux)
+    //! Index of the left partition (only for terminal nodes)
     Int32 left_partition_id = -1;
-    //! Indice de la partition de droite (uniquement pour les noeuds terminaux)
+    //! Index of the right partition (only for terminal nodes)
     Int32 right_partition_id = -1;
 
    public:
@@ -230,7 +230,7 @@ class BinaryTree
     }
   }
 
-  //! Liste des noeuds de l'arbre
+  //! List of tree nodes
   ConstArrayView<TreeNode> tree() const { return m_tree_info; }
 
  private:
@@ -290,46 +290,44 @@ class BinaryTree
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Service de partitionnement géométrique de maillage.
+ * \brief Mesh geometric partitioning service.
  *
- * Ce service permet d'effectuer un partitionnement géométrique.
- * Son but premier est de permettre de réaliser des tests parallèles même si
- * aucun service de partitionnement spécifique (comme ParMetis) n'est
- * disponible.
+ * This service allows performing a geometric partitioning.
+ * Its primary goal is to allow parallel tests even if
+ * no specific partitioning service (like ParMetis) is
+ * available.
  *
- * L'algorithme est le suivant :
+ * The algorithm is as follows:
  *
- * 1. Le partitionnement est récursif et à chaque itération, on coupe
- *    une partition deux.
- * 2. Pour couper une partition, on calcule le centre de gravité de
- *    la partition ainsi que la matrice de son moment d'inertie.
- * 3. À partir de cette matrice prend le vecteur propre du plus petit
- *    axe (celui qui correspond à la plus petite valeur propre).
- * 4. Le centre de gravité et le vecteur propre définissent un plan (ou une
- *    droite en 2D) qui sert de partition : les éléments d'un côté du plan
- *    sont dans une partition et ceux de l'autre côté sont dans une autre.
- * 5. On applique ce mécanisme pour découper en le nombre de partitions souhaité.
+ * 1. The partitioning is recursive, and at each iteration, a partition is split into two.
+ * 2. To split a partition, the center of gravity of
+ * the partition, as well as the inertia tensor matrix, is calculated.
+ * 3. From this matrix, the eigenvector corresponding to the smallest
+ * axis (the one corresponding to the smallest eigenvalue) is taken.
+ * 4. The center of gravity and the eigenvector define a plane (or a
+ * line in 2D) which serves as a partition: elements on one side of the plane
+ * are in one partition and those on the other side are in another.
+ * 5. This mechanism is applied to cut into the desired number of partitions.
  *
- * L'algorithme et l'implémentation actuels sont très simples et ont les limitions
- * suivantes :
+ * The current algorithm and implementation are very simple and have the following limitations:
  *
- * - On ne tient pas compte des poids aux éléments pour calculer le partitionnement
- * - On suppose que le nombre de partitions est une puissance de 2. Si ce n'est
- *   pas le cas, certaines partitions seront plus grosses que d'autres. Par exemple
- *   si on veut découper en 3, on va d'abord créer deux partitions 1 et 2 identiques
- *   puis découper la partition 2 en deux parties. La partition 1 sera
- *   donc en théorie deux fois plus grosses que les partitions 2 et 3.
- * - La partition se fait selon un plan ce qui n'est probablement pas optimal
- *   pour limiter la frontière. Utiliser un cercle serait plus judicieux.
- * - L'implémentation est linéaire en nombre de partitions et tous les rangs
- *   participent. Normalement, si on veut P partition, alors le nombre de récursions
- *   est N=log2(P) et il serait possible de réaliser simultanément toutes les partitions
- *   de rang 1 à N.
+ * - Element weights are not taken into account when calculating the partitioning
+ * - It is assumed that the number of partitions is a power of 2. If not,
+ * some partitions will be larger than others. For example,
+ * if we want to split into 3, we first create two identical partitions 1 and 2,
+ * then split partition 2 into two parts. Partition 1 will
+ * therefore theoretically be twice as large as partitions 2 and 3.
+ * - The partition is done according to a plane, which is probably not optimal
+ * for limiting the boundary. Using a circle would be more sensible.
+ * - The implementation is linear in the number of partitions and all ranks
+ * participate. Normally, if we want P partitions, then the number of recursions
+ * is N=log2(P) and it would be possible to perform all partitions
+ * of rank 1 to N simultaneously.
  *
- * Actuellement l'algorithme utilisé s'applique aux mailles, mais seules
- * les coordonnées sont utilisées ce qui permettrait de l'appliquer sans
- * élément de maillage. Cela pourrait être utile pour un premier partitionnement
- * tel que celui utilisé dans le lecteur parallèle MSH.
+ * Currently, the algorithm used applies to meshes, but only
+ * coordinates are used, which would allow it to be applied without
+ * mesh elements. This could be useful for an initial partitioning
+ * such as the one used in the parallel MSH reader.
  */
 class ArcaneGeometricMeshPartitionerService
 : public ArcaneArcaneGeometricMeshPartitionerServiceObject
@@ -418,7 +416,7 @@ ArcaneGeometricMeshPartitionerService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Fonction pour calculer le moment d'inertie du maillage
+// Function to calculate the inertia tensor of the mesh
 Real3 ArcaneGeometricMeshPartitionerService::
 _computeBarycenter(const VariableCellReal3& cells_center, CellVectorView cells)
 {
@@ -438,8 +436,9 @@ _computeBarycenter(const VariableCellReal3& cells_center, CellVectorView cells)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Calcule le moment d'inertie du maillage.
+ * \brief Calculates the inertia tensor of the mesh.
  */
 Real3x3 ArcaneGeometricMeshPartitionerService::
 _computeInertiaTensor(Real3 center, const VariableCellReal3& cells_center, CellVectorView cells)
@@ -473,8 +472,9 @@ _computeInertiaTensor(Real3 center, const VariableCellReal3& cells_center, CellV
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Trouve l'axe d'inertie principal du maillage.
+ * \brief Finds the principal inertia axis of the mesh.
  */
 Real3 ArcaneGeometricMeshPartitionerService::
 _findPrincipalAxis(Real3x3 tensor)
@@ -487,9 +487,9 @@ _findPrincipalAxis(Real3x3 tensor)
   info() << "EigenVectors = " << eigen_computer.eigenVectors();
   Real3x3 eigen_vectors = eigen_computer.eigenVectors();
   Real3 v = eigen_vectors[0];
-  // Si le plus petit vecteur propre est nul, prend le suivant
-  // (en général cela n'arrive pas sauf si l'algorithme dans
-  // 'computeForMatrix' n'a pas convergé).
+  // If the smallest eigenvector is zero, take the next one
+  // (generally this does not happen unless the algorithm in
+  // 'computeForMatrix' did not converge).
   if (math::isNearlyZero(v.normL2())) {
     v = eigen_vectors[1];
     if (math::isNearlyZero(v.normL2()))
@@ -502,11 +502,11 @@ _findPrincipalAxis(Real3x3 tensor)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Fonction pour partitionner le maillage en deux sous-domaines
+// Function to partition the mesh into two sub-domains
 void ArcaneGeometricMeshPartitionerService::
 _partitionMesh2()
 {
-  // Calcule le centre des mailles
+  // Calculates the center of the cells
   VariableCellReal3 cells_center(VariableBuildInfo(mesh(), "ArcaneCellCenter"));
   IItemFamily* cell_family = mesh()->cellFamily();
   CellVector cells_vector(cell_family, cell_family->allItems().own().view().localIds());
@@ -514,7 +514,7 @@ _partitionMesh2()
 
   info() << "** ** DO_PARTITION_MESH2 nb_cell=" << cells.size();
 
-  // Calcule le centre de chaque maille
+  // Calculates the center of each cell
   {
     const VariableNodeReal3& nodes_coordinates = mesh()->nodesCoordinates();
     ENUMERATE_ (Cell, icell, cells) {
@@ -551,7 +551,7 @@ _partitionMeshRecursive(const VariableCellReal3& cells_center,
 {
   Int32 part0_partition_index = partition_index;
   Int32 part1_partition_index = partition_index + 1;
-  // Pour test. A supprimer.
+  // For testing. To be removed.
   Int32 total_nb_cell = mesh()->parallelMng()->reduce(Parallel::ReduceSum, cells.size());
   info() << "Doing partition partition_index=" << partition_index << " total_nb_cell=" << total_nb_cell;
   if (part1_partition_index >= m_nb_part)
@@ -561,14 +561,14 @@ _partitionMeshRecursive(const VariableCellReal3& cells_center,
   IItemFamily* cell_family = mesh()->cellFamily();
   VariableItemInt32& cells_new_owner = cell_family->itemsNewOwner();
 
-  // Calculer le centre de masse
+  // Calculate the center of mass
   Real3 center = _computeBarycenter(cells_center, cells);
   info() << "GlobalCenter=" << center;
 
-  // Calculer le tenseur d'inertie
+  // Calculate the inertia tensor
   Real3x3 tensor = _computeInertiaTensor(center, cells_center, cells);
 
-  // Trouver l'axe principal d'inertie
+  // Find the principal inertia axis
   Real3 eigenvector = _findPrincipalAxis(tensor);
   info() << "EigenVector=" << eigenvector;
 
@@ -578,10 +578,10 @@ _partitionMeshRecursive(const VariableCellReal3& cells_center,
   UniqueArray<Int32> part1_cells;
   part1_cells.reserve(nb_cell);
 
-  // Regarde dans quelle partie va se trouver la maille
-  // en calculant le produit scalaire entre le vecteur propre
-  // et le vecteur du centre de gravité à la maille.
-  // La valeur du signe indique dans quelle partie on se trouve.
+  // Checks which part the cell will belong to
+  // by calculating the dot product between the eigenvector
+  // and the vector from the center of gravity to the cell.
+  // The sign value indicates which part it is in.
   info() << "Doing partition setting nb_cell=" << nb_cell << " partition=" << part0_partition_index << " " << part1_partition_index;
   ENUMERATE_ (Cell, icell, cells) {
     const Real3 cell_coord = cells_center[icell];
@@ -601,9 +601,9 @@ _partitionMeshRecursive(const VariableCellReal3& cells_center,
   CellVectorView part0(cell_family, part0_cells);
   CellVectorView part1(cell_family, part1_cells);
 
-  // Si _partitionMeshRecursive() retourne \a true, alors il n'y a plus de sous-partition
-  // à réaliser. Dans ce cas, on remplit les propriétaires des mailles
-  // pour la partition.
+  // If _partitionMeshRecursive() returns true, then there are no more sub-partitions
+  // to perform. In this case, we fill the owners of the cells
+  // for the partition.
   if (_partitionMeshRecursive(cells_center, part0, (2 * partition_index) + 1, part_id)) {
     info() << "Filling left part part_index=" << part_id << " nb_cell=" << part0.size();
     ENUMERATE_ (Cell, icell, part0) {
@@ -632,7 +632,7 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
   Int32 part0_partition_index = partition_index;
   Int32 part1_partition_index = partition_index + 1;
   IParallelMng* pm = mesh()->parallelMng();
-  // Pour test. À supprimer par la suite
+  // For testing. To be removed later
   Int32 total_nb_cell = pm->reduce(Parallel::ReduceSum, cells.size());
   info() << "Doing partition (V2) partition_index=" << partition_index << " total_nb_cell=" << total_nb_cell;
 
@@ -640,22 +640,22 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
   IItemFamily* cell_family = mesh()->cellFamily();
   VariableItemInt32& cells_new_owner = cell_family->itemsNewOwner();
 
-  // Calculer le centre de masse
+  // Calculate the center of mass
   Real3 center = _computeBarycenter(cells_center, cells);
   info() << "GlobalCenter=" << center;
 
-  // Calculer le tenseur d'inertie
+  // Calculate the inertia tensor
   Real3x3 tensor = _computeInertiaTensor(center, cells_center, cells);
 
-  // Trouver l'axe principal d'inertie
+  // Find the principal inertia axis
   Real3 eigenvector = _findPrincipalAxis(tensor);
   info() << "EigenVector=" << eigenvector;
 
   const Int32 nb_cell = cells.size();
 
-  // Calcule pour chaque élément le produit scalaire entre
-  // le vecteur propre et le vecteur reliant le centre de gravité
-  // à cet élément et le range dans \a projections
+  // Calculates for each element the dot product between
+  // the eigenvector and the vector connecting the center of gravity
+  // to this element and stores it in projections
   info() << "Doing partition (V2) nb_cell=" << nb_cell << " setting partition=" << part0_partition_index << " " << part1_partition_index;
   UniqueArray<Real> projections(nb_cell);
   Real min_projection = std::numeric_limits<Real>::max();
@@ -668,22 +668,22 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
     max_projection = math::max(max_projection, projection);
   }
 
-  // Calcule globalement le min et le max de la projection.
+  // Globally calculates the min and max of the projection.
   min_projection = pm->reduce(Parallel::ReduceMin, min_projection);
   max_projection = pm->reduce(Parallel::ReduceMax, max_projection);
 
   info() << "min_projection=" << min_projection << " max_projection=" << max_projection;
 
-  // Pour tenir compte du ratio entre les deux partitions qui ne vaut pas forcément 0.5,
-  // on détermine plusieurs valeurs de projection qui vont servir à partitionner
-  // Ces valeurs testées sont dans l'intervalle [-min_projection,max_projection].
-  // On \a nb_to_test valeurs entre '-min_projection' et 0, la valeur 0.0 et \a nb_to_test
-  // entre 0 et \a max_projection. On va donc tester `(2*nb_to_test)+1` valeurs.
+  // To account for the ratio between the two partitions which is not necessarily 0.5,
+  // we determine several projection values that will be used to partition
+  // These tested values are in the interval [-min_projection, max_projection].
+  // We test nb_to_test values between '-min_projection' and 0, the value 0.0 and nb_to_test
+  // between 0 and max_projection. We will therefore test (2*nb_to_test)+1 values.
 
   UniqueArray<Real> projections_to_test;
-  // TODO: rendre nb_to_test paramètrable.
-  // On pourrait aussi faire une dichomie sur les valeurs de projection
-  // pour mieux approximer l'équilibre et ne pas forcément tester trop de valeurs
+  // TODO: make nb_to_test parameterizable.
+  // We could also perform a dichotomy on the projection values
+  // to better approximate the balance and not necessarily test too many values
   int nb_to_test = 10;
   const int total_nb_to_test = (2 * nb_to_test) + 1;
   projections_to_test.resize(total_nb_to_test);
@@ -693,16 +693,16 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
     Real v2 = max_projection / (nb_to_test - i);
     projections_to_test[i + 1 + nb_to_test] = v2;
   }
-  projections_to_test[nb_to_test] = 0.0; //< Projection centrale
+  projections_to_test[nb_to_test] = 0.0; //< Central projection
   info() << "projections_to_test=" << projections_to_test;
 
-  // L'arbre binaire permet de savoir combien il faut faire de partition
-  // du côté gauche et droit. On s'en sert pour calculer un ratio
-  // idéal qu'on range dans \a expected_ratio.
+  // The binary tree allows knowing how many partitions need to be made
+  // on the left and right side. We use it to calculate a ratio
+  // ideal which is stored in expected_ratio.
   BinaryTree::TreeNode current_tree_node = tree_nodes[partition_index];
   Int32 nb_left_child = current_tree_node.nb_left_child;
   Int32 nb_right_child = current_tree_node.nb_right_child;
-  // Ratio d'éléments entre les deux partie qu'on souhaite attendre
+  // Desired ratio of elements between the two parts
   Real expected_ratio = 1.0;
   if (nb_left_child != 0) {
     Real r_nb_left_child = static_cast<Real>(nb_left_child);
@@ -710,22 +710,22 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
     expected_ratio = r_nb_left_child / (r_nb_left_child + r_nb_right_child);
   }
 
-  // Ce tableau contiendra, sous forme ce de couple, le nombre d'éléments
-  // de chaque partition pour chaque test.
-  // global_nb_parts[i*2+p] est la valeur de la partition gauche (p==0)
-  // ou droite (p==1) pour le i-ème test.
+  // This array will contain, in the form of a pair, the number of elements
+  // of each partition for each test.
+  // global_nb_parts[i*2+p] is the value of the left partition (p==0)
+  // or right (p==1) for the i-th test.
   SmallArray<Int64> global_nb_parts(total_nb_to_test*2);
 
-  // Teste toute les partitions et calcule celle dont le ratio est le
-  // plus proche du ratio souhaite. C'est celle qu'on prendra pour
-  // le partitionnement
+  // Tests all partitions and calculates the one whose ratio is the
+  // closest to the desired ratio. This is the one we will take for
+  // partitioning
   Int32 wanted_projection_index = 0;
   Real best_partition_ratio = std::numeric_limits<Real>::max();
   for (Int32 z = 0; z < total_nb_to_test; ++z) {
     Int32 nb_new_part0 = 0;
     Int32 nb_new_part1 = 0;
     const Real projection_to_test = projections_to_test[z];
-    // TODO: Mettre cette boucle en externe
+    // TODO: Move this loop outside
     ENUMERATE_ (Cell, icell, cells) {
       Real projection = projections[icell.index()];
       if (projection < projection_to_test)
@@ -737,7 +737,7 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
     global_nb_parts[1+(z*2)] = nb_new_part1;
   }
 
-  // Fais la somme des parties sur tous les sous-domaines.
+  // Sums the parts across all sub-domains.
   pm->reduce(Parallel::ReduceSum, global_nb_parts.view());
 
   for (Int32 z = 0; z < total_nb_to_test; ++z) {
@@ -771,10 +771,10 @@ _partitionMeshRecursive2(ConstArrayView<BinaryTree::TreeNode> tree_nodes,
   UniqueArray<Int32> part1_cells;
   part1_cells.reserve(nb_cell);
 
-  // Regarde dans quelle partie va se trouver la maille
-  // en calculant le produit scalaire entre le vecteur propre
-  // et le vecteur du centre de gravité à la maille.
-  // La valeur du signe indique dans quelle partie on se trouve.
+  // Checks which part the cell will belong to
+  // by calculating the dot product between the eigenvector
+  // and the vector from the center of gravity to the cell.
+  // The sign value indicates which part it is in.
 
   ENUMERATE_ (Cell, icell, cells) {
     Real projection = projections[icell.index()];

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseDocumentLangTranslator.cc                               (C) 2000-2022 */
 /*                                                                           */
-/* Classe gérant la traduction d'un jeu de données dans une autre langue.    */
+/* Class managing the translation of a dataset into another language.        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -118,8 +118,8 @@ class CaseDocumentLangTranslatorVisitor
   }
   void _manageEnum(const CaseOptionEnum* opt)
   {
-    // Rien à convertir si aucune élément associé à l'option
-    // ou si valeur invalide.
+    // Nothing to convert if no element is associated with the option
+    // or if the value is invalid.
     if (!opt->isPresent())
       return;
     if (!opt->hasValidValue())
@@ -187,8 +187,8 @@ translate(ICaseMng* cm,const String& new_lang)
   CaseNodeNames* current_cnn = cd->caseNodeNames();
   ScopedPtrT<CaseNodeNames> cnn { new CaseNodeNames(new_lang) };
 
-  // NOTE: Ces conversions dépendent de CaseDocument et doivent être
-  // mise à jour si ce dernier change (ainsi que CaseNodeNames)
+  // NOTE: These conversions depend on CaseDocument and must be
+  // updated if the latter changes (as well as CaseNodeNames)
 
   _addConvert(cd->fragment()->rootElement(),cnn->root);
   _addConvert(cd->timeloopElement(),cnn->timeloop);
@@ -206,9 +206,8 @@ translate(ICaseMng* cm,const String& new_lang)
 
   _addConvert(cd->functionsElement(),cnn->functions);
 
-  // TODO: Gerer TiedInterface + CaseFunctions + Attributs suivants:
-  // TODO: Utiliser le format JSON pour sortir les informations
-  // de conversion.
+  // TODO: Handle TiedInterface + CaseFunctions + following Attributes:
+  // TODO: Use JSON format to output conversion information.
 
   /*m_user_class = m_root_elem.attrValue(cnn->user_class);
   m_code_name = m_root_elem.attrValue(cnn->code_name);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataFactoryMng.cc                                           (C) 2000-2021 */
 /*                                                                           */
-/* Gestionnaire de fabriques de données.                                     */
+/* Data Factory Manager.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,8 +71,8 @@ createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build
   auto x = m_factories.find(storage_type);
   if (x==m_factories.end())
     ARCANE_FATAL("Can not find data factory named={0}",storage_type);
-  // Positionne les valeurs de \a build_info qui ne sont pas encore
-  // initialisées.
+  // Positions the values of \a build_info that are not yet
+  // initialized.
   DataStorageBuildInfo b = build_info;
   if (!b.memoryAllocator())
     b.setMemoryAllocator(platform::getDefaultDataAllocator());
@@ -156,4 +156,3 @@ arcaneCreateDataFactoryMngRef(IApplication* app)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
