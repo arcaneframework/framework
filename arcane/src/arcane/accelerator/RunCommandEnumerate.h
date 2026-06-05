@@ -51,7 +51,9 @@ class ItemLocalIdsLoopRanges
 
  public:
 
-  explicit ItemLocalIdsLoopRanges(SmallSpan<const Int32> ids) : m_ids(ids){}
+  explicit ItemLocalIdsLoopRanges(SmallSpan<const Int32> ids)
+  : m_ids(ids)
+  {}
   constexpr SmallSpan<const Int32> ids() const { return m_ids; }
   constexpr Int64 nbElement() const { return m_ids.size(); }
 
@@ -257,9 +259,7 @@ namespace Arcane::Accelerator::impl
  * local ID type (CellLocalId, NodeLocalId, ...)
  */
 template <typename T>
-concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item>
- || std::derived_from<T, ItemLocalId>
- || std::derived_from<T, IteratorWithIndexBase>;
+concept RunCommandEnumerateIteratorConcept = std::derived_from<T, Item> || std::derived_from<T, ItemLocalId> || std::derived_from<T, IteratorWithIndexBase>;
 
 //! Template to know the entity type associated with T
 template <typename T>
@@ -392,7 +392,8 @@ void _doItemsLambda(Int32 base_index, ContainerType sub_items, const Lambda& fun
   auto& body = privatizer.privateCopy();
 
   ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
-  ENUMERATE_NO_TRACE_ (ItemType, iitem, sub_items) {
+  ENUMERATE_NO_TRACE_(ItemType, iitem, sub_items)
+  {
     body(BuilderType::create(iitem.index() + base_index, LocalIdType(iitem.itemLocalId())), remaining_args...);
   }
   ::Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);

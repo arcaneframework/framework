@@ -14,7 +14,7 @@ set(DO_TEST_VIRTUAL FALSE)
 # These tests are only valid for CUDA and HIP
 if ((ARCANE_ACCELERATOR_MODE STREQUAL "CUDA") OR (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM"))
   set(DO_TEST_VIRTUAL TRUE)
-endif()
+endif ()
 # We do not test virtual methods with CUDA/Clang because
 # this does not seem to work during linking.
 # It seems that CMake does not correctly call Clang to
@@ -22,14 +22,14 @@ endif()
 # of the linking), of Clang or of CMake.
 if (CMAKE_CUDA_COMPILER_ID STREQUAL Clang)
   set(DO_TEST_VIRTUAL FALSE)
-endif()
+endif ()
 message(STATUS "Check adding accelerator virtual method tests = ${DO_TEST_VIRTUAL}")
-if(DO_TEST_VIRTUAL)
+if (DO_TEST_VIRTUAL)
   list(APPEND ACCELERATOR_FILES
     TestVirtualMethod.cc
     TestVirtualMethod_Kernel.cc
   )
-endif()
+endif ()
 
 arcane_add_component_test_executable(accelerator
   FILES ${SOURCE_FILES} ${ACCELERATOR_FILES}
@@ -42,7 +42,7 @@ target_link_libraries(arcane_accelerator.tests PUBLIC arcane_accelerator GTest::
 # compilation unit
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDA")
   set_property(TARGET arcane_accelerator.tests PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-endif()
+endif ()
 
 target_link_libraries(arcane_accelerator.tests PRIVATE
   Arccore::arccore_accelerator
@@ -53,7 +53,7 @@ target_link_libraries(arcane_accelerator.tests PRIVATE
 
 if (ARCANE_EXECUTE_ACCELERATOR_GOOGLETEST)
   gtest_discover_tests(arcane_accelerator.tests DISCOVERY_TIMEOUT 30)
-endif()
+endif ()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

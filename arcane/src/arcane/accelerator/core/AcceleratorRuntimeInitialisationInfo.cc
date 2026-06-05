@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -30,10 +30,10 @@ _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
   p << b.addString("AcceleratorRuntime")
-        .addDescription("Name of the accelerator runtime (currently only 'cuda', 'hip' or 'sycl') to use")
-        .addCommandLineArgument("AcceleratorRuntime")
-        .addGetter([](auto a) { return a.x.acceleratorRuntime(); })
-        .addSetter([](auto a) { a.x.setAcceleratorRuntime(a.v); });
+       .addDescription("Name of the accelerator runtime (currently only 'cuda', 'hip' or 'sycl') to use")
+       .addCommandLineArgument("AcceleratorRuntime")
+       .addGetter([](auto a) { return a.x.acceleratorRuntime(); })
+       .addSetter([](auto a) { a.x.setAcceleratorRuntime(a.v); });
   p << b.addBool("UseAccelerator")
        .addDescription("activate/deactivate accelerator runtime")
        .addCommandLineArgument("UseAccelerator")
@@ -45,10 +45,10 @@ _applyPropertyVisitor(V& p)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
+arcaneInitializeRunner(Accelerator::Runner& runner, ITraceMng* tm,
                        const AcceleratorRuntimeInitialisationInfo& acc_info)
 {
-  Impl::arccoreInitializeRunner(runner,tm,acc_info);
+  Impl::arccoreInitializeRunner(runner, tm, acc_info);
 }
 
 /*---------------------------------------------------------------------------*/

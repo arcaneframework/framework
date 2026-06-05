@@ -92,7 +92,7 @@ extern "C" int arcaneTestSycl3()
   std::cout << "TEST 3\n";
 
   Runner runner_sycl(eExecutionPolicy::SYCL);
-  RunQueue queue{makeQueue(runner_sycl)};
+  RunQueue queue{ makeQueue(runner_sycl) };
   sycl::queue q;
 
   NumArray<Int32, MDDim1> data(N);
@@ -179,7 +179,7 @@ extern "C" int arcaneTestSycl4()
        bool is_last = false;
        id.barrier(sycl::access::fence_space::local_space);
        //Int32 v2_bis =  id.get_sub_group().shuffle_down(v,1);
-       Int32 vx = sycl::reduce_over_group(id.get_group(),v,sycl::plus<Int32>{});
+       Int32 vx = sycl::reduce_over_group(id.get_group(), v, sycl::plus<Int32>{});
        inout_data1(i, 0) = vx;
        if (local_id == 0) {
          //Int32 base = global_id;

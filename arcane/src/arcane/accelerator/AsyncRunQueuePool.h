@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,11 +43,13 @@ namespace Arcane::Accelerator
 class AsyncRunQueuePool
 {
  public:
+
   //! Up to 32 queues (32 = max number of kernels executable simultaneously)
   // TODO: Constant taken from David Dureau's code in Pattern4GPU, is this limitation necessary?
   static constexpr Int32 POOL_MAX_SIZE = 32;
 
  public:
+
   AsyncRunQueuePool() = delete;
   AsyncRunQueuePool(const AsyncRunQueuePool&) = delete;
   AsyncRunQueuePool(AsyncRunQueuePool&&) = delete;
@@ -89,18 +91,21 @@ class AsyncRunQueuePool
   }
 
   //! Forces waiting for all RunQueues
-  void waitAll() const {
+  void waitAll() const
+  {
     for (auto q : m_pool)
       q->barrier();
   }
 
   //! Size of the collection
-  inline Int32 poolSize() const {
+  inline Int32 poolSize() const
+  {
     return m_pool_size;
   }
 
- // TODO: Should it be changed to protected for potential inheritance?
+  // TODO: Should it be changed to protected for potential inheritance?
  private:
+
   UniqueArray<Ref<RunQueue>> m_pool;
   Int32 m_pool_size;
 };
