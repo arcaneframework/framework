@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Arcane;
 using System.Reflection;
 using System.IO;
@@ -13,8 +13,8 @@ public class Launcher
     var cmd_line_args = CommandLineArguments.Create(args);
     ApplicationInfo app_info = ArcaneLauncher.ApplicationInfo;
 
-    // Positionne le chemin contenant les infos de configuration
-    // Il s'agit du répertoire contenant cette assembly.
+    // Positions the path containing the configuration information
+    // This is the directory containing this assembly.
     Assembly this_assembly = Assembly.GetAssembly(typeof(Launcher));
     string this_assembly_path = Path.GetDirectoryName(this_assembly.Location);
     app_info.SetDataDir(this_assembly_path);

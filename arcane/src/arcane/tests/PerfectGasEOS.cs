@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Arcane;
 using Real = System.Double;
 #if ARCANE_64BIT
@@ -19,7 +19,7 @@ public class PerfectGasEOSService
 
   public virtual void initEOS(CellGroup group)
   {
-    // Initialise l'énergie et la vitesse du son
+    // Initializes the energy and the speed of sound
     foreach(Cell icell in group){
       Real pressure = m_pressure[icell];
       Real adiabatic_cst = m_adiabatic_cst[icell];
@@ -32,7 +32,7 @@ public class PerfectGasEOSService
   public virtual void applyEOS(CellGroup group)
   {
     //Console.WriteLine("GLOBAL TIME={0}",m_global_time.Value);
-    // Calcul de la pression et de la vitesse du son
+    // Calculation of pressure and speed of sound
     foreach(Cell icell in group){
       Real internal_energy = m_internal_energy[icell];
       Real density = m_density[icell];

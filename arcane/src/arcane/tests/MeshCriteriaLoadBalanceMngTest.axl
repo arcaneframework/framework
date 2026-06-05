@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+﻿<?xml version="1.0" ?>
 <module name="MeshCriteriaLoadBalanceMngTest" version="1.0" namespace-name="ArcaneTest">
   <description>
   </description>
@@ -7,22 +7,22 @@
   </variables>
 
   <entry-points>
-    <entry-point method-name="init" name="Init" where="init" property="none" />
-    <entry-point method-name="loop" name="Loop" where="compute-loop" property="none" />
-    <entry-point method-name="exit" name="Exit" where="exit" property="none" />
+    <entry-point method-name="init" name="Init" where="init" property="none"/>
+    <entry-point method-name="loop" name="Loop" where="compute-loop" property="none"/>
+    <entry-point method-name="exit" name="Exit" where="exit" property="none"/>
   </entry-points>
 
   <options>
     <complex name="mesh-params" type="MeshParams" minOccurs="1" maxOccurs="unbounded">
       <simple name="partitioner" type="string" default="DefaultPartitioner">
         <description>
-          Nom du service de partitionnement. Nécessite un nom par maillage.
-          L'ordre est pris en compte pour l'attribution d'une instance par maillage.
+          Name of the partitioning service. Requires a name per mesh. The order
+          is taken into account for assigning an instance per mesh.
         </description>
       </simple>
       <simple name="iteration" type="int32" default="1">
         <description>
-          Permet de ne partitionner qu'une fois toutes les n itérations.
+          Allows partitioning only once every n iterations.
         </description>
       </simple>
 

@@ -1,7 +1,7 @@
-<?xml version="1.0" ?>
+﻿<?xml version="1.0" ?>
 <module name="VariableInShMemUnitTest" version="1.0" namespace-name="ArcaneTest">
   <description>
-    Module de test
+    Test module
   </description>
 
   <variables>

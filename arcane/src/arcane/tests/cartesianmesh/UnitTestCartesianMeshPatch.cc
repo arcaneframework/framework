@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnitTestCartesianMeshPatch.cc                               (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des vues cartésiennes sur les patchs.                     */
+/* Test service for Cartesian mesh views on patches.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,7 +44,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Classe de tests unitaires pour les vues cartésiennes sur les patchs
+ * Unit test class for Cartesian mesh views on patches
  */
 /*---------------------------------------------------------------------------*/
 
@@ -52,71 +52,72 @@ class UnitTestCartesianMeshPatchService
 : public ArcaneUnitTestCartesianMeshPatchObject
 {
  public:
-  explicit UnitTestCartesianMeshPatchService(const ServiceBuildInfo &sbi);
+
+  explicit UnitTestCartesianMeshPatchService(const ServiceBuildInfo& sbi);
   virtual ~UnitTestCartesianMeshPatchService() {}
 
   const Arcane::String getImplName() const { return serviceInfo()->localName(); }
 
   /*
-   * Operations a faire avant l'ensemble des tests du service
+   * Operations to perform before all service tests
    */
 
   void setUpForClass();
 
   /*
-   * Operations a faire apres l'ensemble des tests du service
+   * Operations to perform after all service tests
    */
 
   void tearDownForClass();
 
   /*
-   * Operations a faire avant chaque test du service
+   * Operations to perform before each service test
    */
 
   void setUp();
 
   /*
-   * Operations a faire apres chaque test du service
+   * Operations to perform after each service test
    */
 
   void tearDown();
 
   /*
-   * Test sur les mailles par niveau de raffinement et leurs parents
+   * Test on meshes by refinement level and their parents
    */
   void testCartesianMeshPatchCellsAndParents();
 
   /*
-   * Test vue cartésienne sur les mailles
+   * Cartesian mesh view test on cells
    */
   void testCartesianMeshPatchCellDirectionMng();
 
   /*
-   * Test vue cartésienne sur les faces
+   * Cartesian mesh view test on faces
    */
   void testCartesianMeshPatchFaceDirectionMng();
 
   /*
-   * Test vue cartésienne sur les noeuds
+   * Cartesian mesh view test on nodes
    */
   void testCartesianMeshPatchNodeDirectionMng();
 
   /*
-   * Test connectivité cartésienne maille -> noeud et noeud -> maille
+   * Test Cartesian connectivity cell -> node and node -> cell
    */
   void testCartesianMeshPatchCartesianConnectivity();
 
  private:
 
-  // Pointeur sur le maillage cartésien contenant les vues
+  // Pointer to the Cartesian mesh containing the views
   Arcane::ICartesianMesh* m_cartesian_mesh = nullptr;
 
-  // Tableaux de mailles et parents par niveau
+  // Arrays of meshes and parents by level
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_uid;
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_p_uid;
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_tp_uid;
 
-  // Tableaux des vues cartésiennes sur les mailles par patch
+  // Arrays of Cartesian views on cells by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_cell_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_celldir_next_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_celldir_prev_uid;
@@ -127,17 +128,17 @@ class UnitTestCartesianMeshPatchService
   std::vector<std::vector<Arcane::Int64>> m_patch_cellnode_lower_right_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_cellnode_lower_left_uid;
 
-  // Tableaux des vues cartésiennes sur les faces par patch
+  // Arrays of Cartesian views on faces by patch
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_facedir_uid{};
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_facedir_next_cell_uid{};
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_facedir_prev_cell_uid{};
 
-  // Tableaux des vues cartésiennes sur les noeuds par patch
+  // Arrays of Cartesian views on nodes by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_node_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_nodedir_next_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_nodedir_prev_uid;
 
-	// Tableaux des connectivités noeuds -> mailles par patch
+  // Arrays of connectivity nodes -> cells by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_upper_right_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_upper_left_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_lower_right_uid;
@@ -147,22 +148,23 @@ class UnitTestCartesianMeshPatchService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction permettant de récupérer la maille en bas à gauche d'un noeud.
+ * \brief Function to retrieve the bottom-left cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en bas à gauche.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en bas à gauche.
- * \param[in] t_lvl : Niveau de raffinement de la maille en bas à gauche recherchée.
- * \return Maille en bas à gauche du noeud.
+ * \param[in] t_node : Node for which the bottom-left cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the bottom-left cell.
+ * \param[in] t_lvl : Refinement level of the sought bottom-left cell.
+ * \return Bottom-left cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell lowerLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_upper_right{dir_cell_nodey.nextRight()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_upper_right{ dir_cell_nodey.nextRight() };
       if (node_upper_right == t_node) {
         return cell;
       }
@@ -173,21 +175,21 @@ inline Cell lowerLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille en bas à droite d'un noeud.
+ * \brief Function to retrieve the bottom-right cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en bas à droite.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en bas à droite.
- * \param[in] t_lvl : Niveau de raffinement de la maille en bas à droite recherchée.
- * \return Maille en bas à droite du noeud.
+ * \param[in] t_node : Node for which the bottom-right cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the bottom-right cell.
+ * \param[in] t_lvl : Refinement level of the sought bottom-right cell.
+ * \return Bottom-right cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell lowerRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_upper_left{dir_cell_nodey.nextLeft()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_upper_left{ dir_cell_nodey.nextLeft() };
       if (node_upper_left == t_node) {
         return cell;
       }
@@ -198,21 +200,21 @@ inline Cell lowerRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, cons
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille en haut à gauche d'un noeud.
+ * \brief Function to retrieve the top-left cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en haut à gauche.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en haut à gauche.
- * \param[in] t_lvl : Niveau de raffinement de la maille en haut à gauche recherchée.
- * \return Maille en haut à gauche du noeud.
+ * \param[in] t_node : Node for which the top-left cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the top-left cell.
+ * \param[in] t_lvl : Refinement level of the sought top-left cell.
+ * \return Top-left cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell upperLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_lower_right{dir_cell_nodey.previousRight()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_lower_right{ dir_cell_nodey.previousRight() };
       if (node_lower_right == t_node) {
         return cell;
       }
@@ -223,21 +225,21 @@ inline Cell upperLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille en haut à droite d'un noeud.
+ * \brief Function to retrieve the top-right cell of a node.
  *
- * \param[in] t_node : Noeud pour lequel on cherche la maille en haut à droite.
- * \param[in] t_cm_patch : Vue cartésienne du patch dans lequel sont le noeud et la maille en haut à droite.
- * \param[in] t_lvl : Niveau de raffinement de la maille en haut à droite recherchée.
- * \return Maille en haut à droite du noeud.
+ * \param[in] t_node : Node for which the top-right cell is sought.
+ * \param[in] t_cm_patch : Cartesian patch view containing the node and the top-right cell.
+ * \param[in] t_lvl : Refinement level of the sought top-right cell.
+ * \return Top-right cell of the node.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell upperRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_lower_left{dir_cell_nodey.previousLeft()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_lower_left{ dir_cell_nodey.previousLeft() };
       if (node_lower_left == t_node) {
         return cell;
       }
@@ -248,76 +250,80 @@ inline Cell upperRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, cons
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille devant une face.
+ * \brief Function to retrieve the cell in front of a face.
  *
- * \param[in] t_dir_face : Info sur les mailles avant et après la face.
- * \param[in] t_lvl : Niveau de raffinement de la maille devant la face recherchée.
- * \return Maille devant la face.
+ * \param[in] t_dir_face : Information on the cells before and after the face.
+ * \param[in] t_lvl : Refinement level of the sought cell in front of the face.
+ * \return Cell in front of the face.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell prevCell(const DirFace& t_dir_face, const Int32 t_lvl)
 {
-  const Cell& cell_prev{t_dir_face.previousCell()};
+  const Cell& cell_prev{ t_dir_face.previousCell() };
   if (cell_prev.level() == t_lvl) {
     return cell_prev;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille derrière une face.
+ * \brief Function to retrieve the cell behind a face.
  *
- * \param[in] t_dir_face : Info sur les mailles avant et après la face.
- * \param[in] t_lvl : Niveau de raffinement de la maille derrière la face recherchée.
- * \return Maille derrière la face.
+ * \param[in] t_dir_face : Information on the cells before and after the face.
+ * \param[in] t_lvl : Refinement level of the sought cell behind the face.
+ * \return Cell behind the face.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell nextCell(const DirFace& t_dir_face, const Int32 t_lvl)
 {
-  const Cell& cell_next{t_dir_face.nextCell()};
+  const Cell& cell_next{ t_dir_face.nextCell() };
   if (cell_next.level() == t_lvl) {
     return cell_next;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille précédente.
+ * \brief Function to retrieve the previous cell.
  *
- * \param[in] t_dir_cell : Info sur les mailles précédente et suivante.
- * \param[in] t_lvl : Niveau de raffinement de la maille précédente recherchée.
- * \return Maille précédente.
+ * \param[in] t_dir_cell : Information on the previous and next cells.
+ * \param[in] t_lvl : Refinement level of the sought previous cell.
+ * \return Previous cell.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell prev(const DirCell& t_dir_cell, const Int32 t_lvl)
 {
-  const Cell& cell_prev{t_dir_cell.previous()};
+  const Cell& cell_prev{ t_dir_cell.previous() };
   if (cell_prev.level() == t_lvl) {
     return cell_prev;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonction permettant de récupérer la maille suivante.
+ * \brief Function to retrieve the next cell.
  *
- * \param[in] t_dir_cell : Info sur les mailles précédente et suivante.
- * \param[in] t_lvl : Niveau de raffinement de la maille suivante recherchée.
- * \return Maille suivante.
+ * \param[in] t_dir_cell : Information on the previous and next cells.
+ * \param[in] t_lvl : Refinement level of the sought next cell.
+ * \return Next cell.
  */
 /*---------------------------------------------------------------------------*/
 inline Cell next(const DirCell& t_dir_cell, const Int32 t_lvl)
 {
-  const Cell& cell_next{t_dir_cell.next()};
+  const Cell& cell_next{ t_dir_cell.next() };
   if (cell_next.level() == t_lvl) {
     return cell_next;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
@@ -337,13 +343,13 @@ UnitTestCartesianMeshPatchService(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer pour tous les tests
+ * Actions to perform for all tests
  */
 /*---------------------------------------------------------------------------*/
 void UnitTestCartesianMeshPatchService::
 setUpForClass()
 {
-  // Récupération du pointeur sur le maillage cartésien, raffinement par patch et création des vues
+  // Retrieval of the pointer to the Cartesian mesh, refinement by patch and creation of views
   m_cartesian_mesh = ICartesianMesh::getReference(this->mesh());
   m_cartesian_mesh->refinePatch2D(Real2(0.2, 0.2), Real2(0.4, 0.4));
   m_cartesian_mesh->refinePatch2D(Real2(0.6, 0.6), Real2(0.2, 0.4));
@@ -351,20 +357,20 @@ setUpForClass()
   m_cartesian_mesh->refinePatch2D(Real2(0.3, 0.6), Real2(0.05, 0.1));
   m_cartesian_mesh->computeDirections();
 
-  // Sauvegarde chaque patch au format SVG pour les visualer
+  // Save each patch in SVG format for visualization
   {
     Integer nb_patch = m_cartesian_mesh->nbPatch();
     Directory export_dir(subDomain()->exportDirectory());
-    for( Integer i=0; i<nb_patch; ++i ){
+    for (Integer i = 0; i < nb_patch; ++i) {
       ICartesianMeshPatch* patch = m_cartesian_mesh->patch(i);
-      String filename = export_dir.file(String::format("Patch{0}.svg",i));
+      String filename = export_dir.file(String::format("Patch{0}.svg", i));
       std::ofstream ofile(filename.localstr());
       SimpleSVGMeshExporter writer(ofile);
       writer.write(patch->cells());
     }
   }
 
-  // Maillage :
+  // Mesh:
   //
   // Patch 1 : +
   // Patch 2 : o
@@ -415,7 +421,7 @@ setUpForClass()
 
   // clang-format off
 
-  // Tableaux de mailles et parents par niveau :
+  // Arrays of meshes and parents by level:
   {
     // Level 0
 		{
@@ -481,9 +487,9 @@ setUpForClass()
 		}
   }
 
-  // Tableaux des vues cartésiennes sur les mailles par patch
+  // Tables of Cartesian views on the meshes per patch
 	{
-		// Patch 0 :
+		// Patch 0:
 		{
 			//  55<--86->-56<--90->-57<--93->-58<--96->-59<--99->-60<-102->-61<-105->-62<-108->-63<-111->-64<-114->-65
 			//  |         |         |         |         |         |         |         |         |         |         |
@@ -599,7 +605,7 @@ setUpForClass()
 					44,  45,  46,  47,  48,  49,  50,  51,  52,  53});
 		}
 
-		// Patch 1 :
+		// Patch 1:
 		{
 			//  35<-211->106<-217->-36<-229->112<-233->-37<-245->118<-249->-38<-261->124<-265->-39
 			//  |         |         |         |         |         |         |         |         |
@@ -672,7 +678,7 @@ setUpForClass()
 					24,  74, 102, 100,    25,  82, 104, 108,    26,  90, 110, 114,    27,  98, 116, 120});
 		}
 
-		// Patch 2 :
+		// Patch 2:
 		{
 			//  61<-322->149<-328->-62<-340->155<-344->-63
 			//  |         |         |         |         |
@@ -745,7 +751,7 @@ setUpForClass()
           50, 133, 145, 143,    51, 141, 147, 151});
 		}
 
-		// Patch 3 :
+		// Patch 3:
 		{
 			//  58<------377------>170<------383------>-59
 			//  |                   |                   |
@@ -881,7 +887,7 @@ setUpForClass()
          104, 180, 192, 190,   108, 188, 194, 198});
 		}
 
-		// Patch 4 :
+		// Patch 4:
 		{
 			// 158<------492------>215<------498------>156
 			//  |                   |                   |
@@ -942,7 +948,7 @@ setUpForClass()
 		}
 	}
 
-  // Tableaux des vues cartésiennes sur les faces par patch
+  // Tables of Cartesian views on the faces per patch
 	{
 		// Patch 0
 		{
@@ -1331,7 +1337,7 @@ setUpForClass()
 		}
   }
 
-	// Tableaux des vues cartésiennes sur les noeuds par patch
+	// Tables of Cartesian views on nodes by patch
 	{
 		// Patch 0
 		{
@@ -1455,7 +1461,7 @@ setUpForClass()
 					  74,  24,  25, 100,  82,  26, 108,  90,  27, 114,  98,  28, 120}});
 		}
 
-		// Patch 2 :
+		// Patch 2:
 		{
 			//  61-------149--------62-------155--------63
 			//  |         |         |         |         |
@@ -1511,7 +1517,7 @@ setUpForClass()
 				   133,  50,  51, 143, 141,  52, 151}});
 		}
 
-		// Patch 3 :
+		// Patch 3:
 		{
 			//  58-----------------170------------------59
 			//  |                   |                   |
@@ -1595,7 +1601,7 @@ setUpForClass()
 					  -1, 172,  25,  82, 174,  -1, 182,  26, 184, 180, 104, 108, 190, 188, 110, 198}});
 		}
 
-		// Patch 4 :
+		// Patch 4:
 		{
 			// 158-----------------215-----------------156
 			//  |                   |                   |
@@ -1632,7 +1638,7 @@ setUpForClass()
 		}
 	}
 
-	// Tableaux des connectivités noeuds -> mailles par patch
+	// Tables of node-to-cell connectivities per patch
 	{
 		// Patch -1
 		{
@@ -1768,7 +1774,7 @@ setUpForClass()
 					-1,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49});
 		}
 
-		// Patch 1
+		// Patch 1:
 		{
 			//  35-------106--------36-------112--------37-------118--------38-------124--------39
 			//  |         |         |         |         |         |         |         |         |
@@ -1833,7 +1839,7 @@ setUpForClass()
 				  66,  -1,  67,  68,  70,  71,  72,  74,  75,  76,  78,  79,  80});
 		}
 
-		// Patch 2 :
+		// Patch 2:
 		{
 			//  61-------149--------62-------155--------63
 			//  |         |         |         |         |
@@ -1886,7 +1892,7 @@ setUpForClass()
 				  90,  -1,  91,  92,  94,  95,  96});
 		}
 
-		// Patch 3 :
+		// Patch 3:
 		{
 			//  58-----------------170------------------59
 			//  |                   |                   |
@@ -2042,55 +2048,51 @@ setUpForClass()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer avant chaque test
+ * Actions to perform before each test
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::setUp()
+void UnitTestCartesianMeshPatchService::setUp()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer apres chaque test
+ * Actions to perform after each test
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::tearDown()
+void UnitTestCartesianMeshPatchService::tearDown()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Actions a effectuer apres tous les tests
+ * Actions to perform after all tests
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::tearDownForClass()
+void UnitTestCartesianMeshPatchService::tearDownForClass()
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test sur les mailles par niveau de raffinement et leurs parents
+ * Test on cells by refinement level and their parents
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
 {
-  for (Int32 lvl{0}; lvl < 3; ++lvl) {
-    const std::vector<Int64>& cell_uid{m_lvl_cell_uid[lvl]};
-    const std::vector<Int64>& cell_p_uid{m_lvl_cell_p_uid[lvl]};
-    const std::vector<Int64>& cell_tp_uid{m_lvl_cell_tp_uid[lvl]};
+  for (Int32 lvl{ 0 }; lvl < 3; ++lvl) {
+    const std::vector<Int64>& cell_uid{ m_lvl_cell_uid[lvl] };
+    const std::vector<Int64>& cell_p_uid{ m_lvl_cell_p_uid[lvl] };
+    const std::vector<Int64>& cell_tp_uid{ m_lvl_cell_tp_uid[lvl] };
 
-    const CellGroup& allLevelCells{this->mesh()->allLevelCells(lvl)};
+    const CellGroup& allLevelCells{ this->mesh()->allLevelCells(lvl) };
     ASSERT_EQUAL(static_cast<Integer>(cell_uid.size()), allLevelCells.size());
 
     ENUMERATE_CELL (cell_i, allLevelCells) {
-      const Int64 i{cell_i.index()};
+      const Int64 i{ cell_i.index() };
 
       ASSERT_EQUAL(cell_uid[i], cell_i->uniqueId().asInt64());
       if (lvl > 0) {
@@ -2104,75 +2106,74 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test vue cartésienne sur les mailles
+ * Cartesian view test on cells
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
 {
   ASSERT_EQUAL(m_cartesian_mesh->nbPatch(), 5);
 
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
-    const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
-    const std::vector<Int64>& cell_uid{m_patch_cell_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& celldir_next_uid{m_patch_celldir_next_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& celldir_prev_uid{m_patch_celldir_prev_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& cellfacedir_next_uid{m_patch_cellfacedir_next_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& cellfacedir_prev_uid{m_patch_cellfacedir_prev_uid[ipatch]};
-    const std::vector<Int64>& cellnode_upper_right_uid{m_patch_cellnode_upper_right_uid[ipatch]};
-    const std::vector<Int64>& cellnode_upper_left_uid{m_patch_cellnode_upper_left_uid[ipatch]};
-    const std::vector<Int64>& cellnode_lower_right_uid{m_patch_cellnode_lower_right_uid[ipatch]};
-    const std::vector<Int64>& cellnode_lower_left_uid{m_patch_cellnode_lower_left_uid[ipatch]};
+    const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
+    const std::vector<Int64>& cell_uid{ m_patch_cell_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& celldir_next_uid{ m_patch_celldir_next_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& celldir_prev_uid{ m_patch_celldir_prev_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& cellfacedir_next_uid{ m_patch_cellfacedir_next_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& cellfacedir_prev_uid{ m_patch_cellfacedir_prev_uid[ipatch] };
+    const std::vector<Int64>& cellnode_upper_right_uid{ m_patch_cellnode_upper_right_uid[ipatch] };
+    const std::vector<Int64>& cellnode_upper_left_uid{ m_patch_cellnode_upper_left_uid[ipatch] };
+    const std::vector<Int64>& cellnode_lower_right_uid{ m_patch_cellnode_lower_right_uid[ipatch] };
+    const std::vector<Int64>& cellnode_lower_left_uid{ m_patch_cellnode_lower_left_uid[ipatch] };
 
-    for (Int32 dir{0}; dir < 2; ++dir) {
-      CellDirectionMng cell_dm{(patch_i == -1) ? m_cartesian_mesh->cellDirection(dir) : cm_patch->cellDirection(dir)};
+    for (Int32 dir{ 0 }; dir < 2; ++dir) {
+      CellDirectionMng cell_dm{ (patch_i == -1) ? m_cartesian_mesh->cellDirection(dir) : cm_patch->cellDirection(dir) };
 
       info() << "Patch = " << patch_i << " dir=" << dir;
-      const std::vector<Int64>& cell_next_uid{celldir_next_uid[dir]};
-      const std::vector<Int64>& cell_prev_uid{celldir_prev_uid[dir]};
-      const std::vector<Int64>& cellface_next_uid{cellfacedir_next_uid[dir]};
-      const std::vector<Int64>& cellface_prev_uid{cellfacedir_prev_uid[dir]};
+      const std::vector<Int64>& cell_next_uid{ celldir_next_uid[dir] };
+      const std::vector<Int64>& cell_prev_uid{ celldir_prev_uid[dir] };
+      const std::vector<Int64>& cellface_next_uid{ cellfacedir_next_uid[dir] };
+      const std::vector<Int64>& cellface_prev_uid{ cellfacedir_prev_uid[dir] };
 
-      const CellGroup& allCellDMCells{cell_dm.allCells()};
+      const CellGroup& allCellDMCells{ cell_dm.allCells() };
       ASSERT_EQUAL(static_cast<Integer>(cell_uid.size()), allCellDMCells.size());
 
       ENUMERATE_CELL (cell_i, allCellDMCells) {
-        const Int64 i{cell_i.index()};
-        const Cell& cell{*cell_i};
+        const Int64 i{ cell_i.index() };
+        const Cell& cell{ *cell_i };
 
         ASSERT_EQUAL(cell_uid[i], cell_i->uniqueId().asInt64());
 
         {
-          DirCell dir_cell{cell_dm[cell_i]};
+          DirCell dir_cell{ cell_dm[cell_i] };
           info() << "Cell = " << cell_i->uniqueId() << " expected_next=" << cell_next_uid[i] << " expected_prev=" << cell_prev_uid[i];
           ASSERT_EQUAL(cell_next_uid[i], dir_cell.next().uniqueId().asInt64());
           ASSERT_EQUAL(cell_prev_uid[i], dir_cell.previous().uniqueId().asInt64());
         }
 
         {
-          const DirCellFace& dir_cellface{cell_dm.cellFace(cell)};
+          const DirCellFace& dir_cellface{ cell_dm.cellFace(cell) };
           ASSERT_EQUAL(cellface_next_uid[i], dir_cellface.next().uniqueId().asInt64());
           ASSERT_EQUAL(cellface_prev_uid[i], dir_cellface.previous().uniqueId().asInt64());
         }
 
         {
-          const DirCellNode& dir_cellnode{cell_dm.cellNode(cell)};
+          const DirCellNode& dir_cellnode{ cell_dm.cellNode(cell) };
           {
-            const Node& node_upper_right{(dir == 1) ? dir_cellnode.nextRight() : dir_cellnode.nextLeft()};
+            const Node& node_upper_right{ (dir == 1) ? dir_cellnode.nextRight() : dir_cellnode.nextLeft() };
             ASSERT_EQUAL(cellnode_upper_right_uid[i], node_upper_right.uniqueId().asInt64());
           }
           {
-            const Node& node_upper_left{(dir == 1) ? dir_cellnode.nextLeft() : dir_cellnode.previousLeft()};
+            const Node& node_upper_left{ (dir == 1) ? dir_cellnode.nextLeft() : dir_cellnode.previousLeft() };
             ASSERT_EQUAL(cellnode_upper_left_uid[i], node_upper_left.uniqueId().asInt64());
           }
           {
-            const Node& node_lower_right{(dir == 1) ? dir_cellnode.previousRight() : dir_cellnode.nextRight()};
+            const Node& node_lower_right{ (dir == 1) ? dir_cellnode.previousRight() : dir_cellnode.nextRight() };
             ASSERT_EQUAL(cellnode_lower_right_uid[i], node_lower_right.uniqueId().asInt64());
           }
           {
-            const Node& node_lower_left{(dir == 1) ? dir_cellnode.previousLeft() : dir_cellnode.previousRight()};
+            const Node& node_lower_left{ (dir == 1) ? dir_cellnode.previousLeft() : dir_cellnode.previousRight() };
             ASSERT_EQUAL(cellnode_lower_left_uid[i], node_lower_left.uniqueId().asInt64());
           }
         }
@@ -2184,36 +2185,35 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test vue cartésienne sur les faces
+ * Cartesian view test on faces
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
 {
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
-    const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
-    const std::vector<std::vector<Int64>>& facedir_uid{m_patch_facedir_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& facedir_next_cell_uid{m_patch_facedir_next_cell_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& facedir_prev_cell_uid{m_patch_facedir_prev_cell_uid[ipatch]};
+    const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
+    const std::vector<std::vector<Int64>>& facedir_uid{ m_patch_facedir_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& facedir_next_cell_uid{ m_patch_facedir_next_cell_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& facedir_prev_cell_uid{ m_patch_facedir_prev_cell_uid[ipatch] };
 
-    for (Int32 dir{0}; dir < 2; ++dir) {
-      FaceDirectionMng face_dm{(patch_i == -1) ? m_cartesian_mesh->faceDirection(dir) : cm_patch->faceDirection(dir)};
+    for (Int32 dir{ 0 }; dir < 2; ++dir) {
+      FaceDirectionMng face_dm{ (patch_i == -1) ? m_cartesian_mesh->faceDirection(dir) : cm_patch->faceDirection(dir) };
 
       info() << "Patch = " << patch_i << " dir=" << dir;
 
-      const std::vector<Int64>& face_uid{facedir_uid[dir]};
-      const std::vector<Int64>& face_next_cell_uid{facedir_next_cell_uid[dir]};
-      const std::vector<Int64>& face_prev_cell_uid{facedir_prev_cell_uid[dir]};
+      const std::vector<Int64>& face_uid{ facedir_uid[dir] };
+      const std::vector<Int64>& face_next_cell_uid{ facedir_next_cell_uid[dir] };
+      const std::vector<Int64>& face_prev_cell_uid{ facedir_prev_cell_uid[dir] };
 
-      const FaceGroup& allFaceDMFaces{face_dm.allFaces()};
+      const FaceGroup& allFaceDMFaces{ face_dm.allFaces() };
       ASSERT_EQUAL(static_cast<Integer>(face_uid.size()), allFaceDMFaces.size());
 
       ENUMERATE_FACE (face_i, allFaceDMFaces) {
-        const Int64 i{face_i.index()};
+        const Int64 i{ face_i.index() };
 
-        DirFace dir_face{face_dm[face_i]};
+        DirFace dir_face{ face_dm[face_i] };
         Cell next_cell = dir_face.nextCell();
         Cell prev_cell = dir_face.previousCell();
         ASSERT_EQUAL(face_prev_cell_uid[i], dir_face.previousCell().uniqueId().asInt64());
@@ -2233,35 +2233,34 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test vue cartésienne sur les noeuds
+ * Cartesian view test on nodes
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
 {
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
-    const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
-    const std::vector<Int64>& node_uid{m_patch_node_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& nodedir_next_uid{m_patch_nodedir_next_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& nodedir_prev_uid{m_patch_nodedir_prev_uid[ipatch]};
+    const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
+    const std::vector<Int64>& node_uid{ m_patch_node_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& nodedir_next_uid{ m_patch_nodedir_next_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& nodedir_prev_uid{ m_patch_nodedir_prev_uid[ipatch] };
 
-    for (Int32 dir{0}; dir < 2; ++dir) {
-      NodeDirectionMng node_dm{(patch_i == -1) ? m_cartesian_mesh->nodeDirection(dir) : cm_patch->nodeDirection(dir)};
+    for (Int32 dir{ 0 }; dir < 2; ++dir) {
+      NodeDirectionMng node_dm{ (patch_i == -1) ? m_cartesian_mesh->nodeDirection(dir) : cm_patch->nodeDirection(dir) };
 
-      const std::vector<Int64>& node_next_uid{nodedir_next_uid[dir]};
-      const std::vector<Int64>& node_prev_uid{nodedir_prev_uid[dir]};
+      const std::vector<Int64>& node_next_uid{ nodedir_next_uid[dir] };
+      const std::vector<Int64>& node_prev_uid{ nodedir_prev_uid[dir] };
 
-      const NodeGroup& allNodeDMNodes{node_dm.allNodes()};
+      const NodeGroup& allNodeDMNodes{ node_dm.allNodes() };
       ASSERT_EQUAL(static_cast<Integer>(node_uid.size()), allNodeDMNodes.size());
 
       ENUMERATE_NODE (node_i, allNodeDMNodes) {
-        const Int64 i{node_i.index()};
+        const Int64 i{ node_i.index() };
 
         ASSERT_EQUAL(node_uid[i], node_i->uniqueId().asInt64());
 
-        const DirNode& dir_node{node_dm[node_i]};
+        const DirNode& dir_node{ node_dm[node_i] };
         ASSERT_EQUAL(node_next_uid[i], dir_node.next().uniqueId().asInt64());
         ASSERT_EQUAL(node_prev_uid[i], dir_node.previous().uniqueId().asInt64());
       }
@@ -2272,86 +2271,86 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief
- * Test connectivité cartésienne maille -> noeud et noeud -> maille
+ * Test Cartesian connectivity cell -> node and node -> cell
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchCartesianConnectivity()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchCartesianConnectivity()
 {
-  // Ne fait pas pour l'instant car il ne fonctionne pas.
+  // Not done for now because it does not work.
   warning() << A_FUNCINFO << " This test is not activated because it does not (yet) work.";
   return;
 
-  const CartesianConnectivity& cc{m_cartesian_mesh->connectivity()};
+  const CartesianConnectivity& cc{ m_cartesian_mesh->connectivity() };
 
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
     {
-      const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
+      const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
 
-      const std::vector<Int64>& cellnode_upper_right_uid{m_patch_cellnode_upper_right_uid[ipatch]};
-      const std::vector<Int64>& cellnode_upper_left_uid{m_patch_cellnode_upper_left_uid[ipatch]};
-      const std::vector<Int64>& cellnode_lower_right_uid{m_patch_cellnode_lower_right_uid[ipatch]};
-      const std::vector<Int64>& cellnode_lower_left_uid{m_patch_cellnode_lower_left_uid[ipatch]};
+      const std::vector<Int64>& cellnode_upper_right_uid{ m_patch_cellnode_upper_right_uid[ipatch] };
+      const std::vector<Int64>& cellnode_upper_left_uid{ m_patch_cellnode_upper_left_uid[ipatch] };
+      const std::vector<Int64>& cellnode_lower_right_uid{ m_patch_cellnode_lower_right_uid[ipatch] };
+      const std::vector<Int64>& cellnode_lower_left_uid{ m_patch_cellnode_lower_left_uid[ipatch] };
 
-      CellDirectionMng cell_dm{(patch_i == -1) ? m_cartesian_mesh->cellDirection(MD_DirX)
-                                               : cm_patch->cellDirection(MD_DirX)};
-      const CellGroup& allCellDMCells{cell_dm.allCells()};
+      CellDirectionMng cell_dm{ (patch_i == -1) ? m_cartesian_mesh->cellDirection(MD_DirX)
+                                                : cm_patch->cellDirection(MD_DirX) };
+      const CellGroup& allCellDMCells{ cell_dm.allCells() };
       ENUMERATE_CELL (cell_i, allCellDMCells) {
-        const Int64 i{cell_i.index()};
-        const Cell& cell{*cell_i};
+        const Int64 i{ cell_i.index() };
+        const Cell& cell{ *cell_i };
 
         {
-          const Node& node_upper_right{cc.upperRight(cell)};
+          const Node& node_upper_right{ cc.upperRight(cell) };
           ASSERT_EQUAL(cellnode_upper_right_uid[i], node_upper_right.uniqueId().asInt64());
         }
         {
-          const Node& node_upper_left{cc.upperLeft(cell)};
+          const Node& node_upper_left{ cc.upperLeft(cell) };
           ASSERT_EQUAL(cellnode_upper_left_uid[i], node_upper_left.uniqueId().asInt64());
         }
         {
-          const Node& node_lower_right{cc.lowerRight(cell)};
+          const Node& node_lower_right{ cc.lowerRight(cell) };
           ASSERT_EQUAL(cellnode_lower_right_uid[i], node_lower_right.uniqueId().asInt64());
         }
         {
-          const Node& node_lower_left{cc.lowerLeft(cell)};
+          const Node& node_lower_left{ cc.lowerLeft(cell) };
           ASSERT_EQUAL(cellnode_lower_left_uid[i], node_lower_left.uniqueId().asInt64());
         }
       }
     }
 
     {
-      const Int32 ipatch{patch_i + 1};
-      const Int32 lvl{(patch_i < 1) ? 0 : (patch_i < 3) ? 1 : 2};
+      const Int32 ipatch{ patch_i + 1 };
+      const Int32 lvl{ (patch_i < 1) ? 0 : (patch_i < 3) ? 1
+                                                         : 2 };
 
-      const std::vector<Int64>& nodecell_upper_right_uid{m_patch_nodecell_upper_right_uid[ipatch]};
-      const std::vector<Int64>& nodecell_upper_left_uid{m_patch_nodecell_upper_left_uid[ipatch]};
-      const std::vector<Int64>& nodecell_lower_right_uid{m_patch_nodecell_lower_right_uid[ipatch]};
-      const std::vector<Int64>& nodecell_lower_left_uid{m_patch_nodecell_lower_left_uid[ipatch]};
+      const std::vector<Int64>& nodecell_upper_right_uid{ m_patch_nodecell_upper_right_uid[ipatch] };
+      const std::vector<Int64>& nodecell_upper_left_uid{ m_patch_nodecell_upper_left_uid[ipatch] };
+      const std::vector<Int64>& nodecell_lower_right_uid{ m_patch_nodecell_lower_right_uid[ipatch] };
+      const std::vector<Int64>& nodecell_lower_left_uid{ m_patch_nodecell_lower_left_uid[ipatch] };
 
-      NodeDirectionMng node_dm{(patch_i == -1) ? m_cartesian_mesh->nodeDirection(MD_DirX)
-                                               : cm_patch->nodeDirection(MD_DirX)};
-      const NodeGroup& allNodeDMNodes{node_dm.allNodes()};
+      NodeDirectionMng node_dm{ (patch_i == -1) ? m_cartesian_mesh->nodeDirection(MD_DirX)
+                                                : cm_patch->nodeDirection(MD_DirX) };
+      const NodeGroup& allNodeDMNodes{ node_dm.allNodes() };
       ENUMERATE_NODE (node_i, allNodeDMNodes) {
-        const Int64 i{node_i.index()};
-        const Node node{*node_i};
+        const Int64 i{ node_i.index() };
+        const Node node{ *node_i };
         info() << " Node: " << ItemPrinter(node) << " patch=" << patch_i;
         {
-          Cell cell_upper_right{(patch_i == -1) ? cc.upperRight(node) : upperRight(node, cm_patch, lvl)};
+          Cell cell_upper_right{ (patch_i == -1) ? cc.upperRight(node) : upperRight(node, cm_patch, lvl) };
           info() << " CellUpperRight: " << ItemPrinter(cell_upper_right) << " expected=" << nodecell_upper_right_uid[i];
           ASSERT_EQUAL(nodecell_upper_right_uid[i], cell_upper_right.uniqueId().asInt64());
         }
         {
-          const Cell& cell_upper_left{(patch_i == -1) ? cc.upperLeft(node) : upperLeft(node, cm_patch, lvl)};
+          const Cell& cell_upper_left{ (patch_i == -1) ? cc.upperLeft(node) : upperLeft(node, cm_patch, lvl) };
           ASSERT_EQUAL(nodecell_upper_left_uid[i], cell_upper_left.uniqueId().asInt64());
         }
         {
-          const Cell& cell_lower_right{(patch_i == -1) ? cc.lowerRight(node) : lowerRight(node, cm_patch, lvl)};
+          const Cell& cell_lower_right{ (patch_i == -1) ? cc.lowerRight(node) : lowerRight(node, cm_patch, lvl) };
           ASSERT_EQUAL(nodecell_lower_right_uid[i], cell_lower_right.uniqueId().asInt64());
         }
         {
-          const Cell& cell_lower_left{(patch_i == -1) ? cc.lowerLeft(node) : lowerLeft(node, cm_patch, lvl)};
+          const Cell& cell_lower_left{ (patch_i == -1) ? cc.lowerLeft(node) : lowerLeft(node, cm_patch, lvl) };
           ASSERT_EQUAL(nodecell_lower_left_uid[i], cell_lower_left.uniqueId().asInt64());
         }
       }
@@ -2366,4 +2365,8 @@ ARCANE_REGISTER_SERVICE_UNITTESTCARTESIANMESHPATCH(UnitTestCartesianMeshPatch, U
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 } // namespace ArcaneTest
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

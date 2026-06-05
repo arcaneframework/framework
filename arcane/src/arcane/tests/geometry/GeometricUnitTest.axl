@@ -1,9 +1,6 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
-<!-- Options du jeu de données pour le service de test de la géométrie -->
+<!-- Dataset options for the geometry test service -->
 
 <service name="GeometricUnitTest" version="1.0" type="caseoption"
          parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">

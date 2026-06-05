@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StdScalarMeshVariables.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Définition de variables scalaires du maillage pour des tests.             */
+/* Definition of scalar mesh variables for tests.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_STDSCALARMESHVARIABLES_H
 #define ARCANE_TEST_STDSCALARMESHVARIABLES_H
@@ -19,29 +19,31 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
-  \brief Définition de variables scalaires du maillage pour des tests.
+  \brief Definition of scalar mesh variables for tests.
 */
-template<typename ItemType>
+template <typename ItemType>
 class StdScalarMeshVariables
-: public StdMeshVariables< StdMeshVariableTraits2<ItemType,0> >
+: public StdMeshVariables<StdMeshVariableTraits2<ItemType, 0>>
 {
  public:
 
-   typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
+  typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
 
  public:
 
-  StdScalarMeshVariables(const MeshHandle& mesh_handle,const String& basestr);
-  StdScalarMeshVariables(const MeshHandle& mesh_handle,const String& basestr,const String& family_name);
+  StdScalarMeshVariables(const MeshHandle& mesh_handle, const String& basestr);
+  StdScalarMeshVariables(const MeshHandle& mesh_handle, const String& basestr, const String& family_name);
 
  public:
 
-  void initialize(){}
+  void initialize() {}
   void setValues(Integer iteration, const GroupType& group);
   void setValuesWithViews(Integer iteration, const GroupType& group);
   Integer checkValues(Integer iteration, const GroupType& group);
@@ -51,27 +53,26 @@ class StdScalarMeshVariables
   void setEvenValues(Integer iteration, const GroupType& group);
   void setOddValues(Integer iteration, const GroupType& group);
   Integer checkGhostValuesOddOrEven(Integer iteration, const GroupType& group);
-  
+
  private:
 
   void setItemValues(Int64 n, ItemType item);
-  
+
   Integer m_nb_display_error;
   Integer m_nb_displayed_error;
 
   Integer _checkItemValues(Integer iteration, ItemType item,
                            const MultiScalarValue& item_value);
-  Integer _checkValue(ItemType item,const MultiScalarValue& ref_value,
+  Integer _checkValue(ItemType item, const MultiScalarValue& ref_value,
                       const MultiScalarValue& item_value);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

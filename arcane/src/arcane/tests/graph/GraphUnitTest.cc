@@ -1,29 +1,30 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GraphUnitTest.cc                                            (C) 2000-2006 */
 /*                                                                           */
-/* Service du test unitaire du graphe.                                       */
+/* Graph unit testing service.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #include <cassert>
-#include "arcane/BasicUnitTest.h"
+#include "arcane/core/BasicUnitTest.h"
 
 #include "arcane/tests/graph/GraphUnitTest_axl.h"
 
-#include "arcane/IItemOperationByBasicType.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshStats.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParticleFamily.h"
+#include "arcane/core/IItemOperationByBasicType.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshStats.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParticleFamily.h"
+
 #include "arcane/anyitem/AnyItem.h"
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/ParticleFamily.h"
@@ -39,16 +40,17 @@
 #include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/GraphBuilder.h"
 
-#include "arcane/IItemConnectivitySynchronizer.h"
+#include "arcane/core/IItemConnectivitySynchronizer.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
-#include "arcane/MathUtils.h"
+#include "arcane/core/MathUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,8 +59,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du graphe
+ * \brief Graph test module
  */
 class GraphUnitTest
 : public ArcaneGraphUnitTestObject
@@ -365,7 +368,7 @@ _createGraphOfDof(IItemFamily* particle_family)
     info() << "CREATE DUALNODE[" << dual_node_uid << "] DUAL CELL : " << dual_item_uid;
   }
 
-  //BD
+  //Boundary Domain
   //graphdofs->addDualNodes(graph_nb_dual_node,dual_node_kind,cells_dual_nodes_infos);
   graph_modifier->addDualNodes(graph_nb_dual_node, dual_node_kind, cells_dual_nodes_infos);
 
@@ -436,7 +439,7 @@ _createGraphOfDof(IItemFamily* particle_family)
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // CREATION DE LINKS CELL-CELL
+  // CREATION OF CELL-CELL LINKS
   //
   auto nb_dual_node_per_link = 2;
   {
@@ -448,8 +451,8 @@ _createGraphOfDof(IItemFamily* particle_family)
     Integer links_infos_index = 0;
     Integer link_count = 0;
 
-    // CREATION DE LINK CELL-CELL
-    // On remplit le tableau links_infos
+    // CREATION OF CELL-CELL LINK
+    // We fill the links_infos array
     ENUMERATE_FACE (iface, ownFaces()) {
       auto const& back_cell = iface->backCell();
       auto const& front_cell = iface->frontCell();
@@ -469,18 +472,18 @@ _createGraphOfDof(IItemFamily* particle_family)
     }
     nb_link = link_count;
     links_infos.resize(nb_link * (1 + nb_dual_node_per_link));
-    info() << "Creation des links CellCell pour links_infos"; //<<links_infos;
+    info() << "Creation of CellCell links for links_infos"; //<<links_infos;
     graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos);
     graphdofs->printLinks();
   }
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // CREATION DE LINK CELL-FACE
+  // CREATION OF CELL-FACE LINK
   //
   {
     Integer nb_facemax = 6;
-    // Création des links
+    // Creation of links
     Integer nb_link = ownCells().size() * nb_facemax;
 
     //Int64UniqueArray links_infos2(nb_link*7);
@@ -490,7 +493,7 @@ _createGraphOfDof(IItemFamily* particle_family)
     Integer links_infos_index = 0;
     Integer link_count = 0;
 
-    // On remplit le tableau links_infos
+    // We fill the links_infos array
     ENUMERATE_CELL (icell, ownCells()) {
       Cell cell = *icell;
 
@@ -509,7 +512,7 @@ _createGraphOfDof(IItemFamily* particle_family)
       }
     }
     nb_link = link_count;
-    info() << "Creation des links pour CellFace_cell links_infos2"; //<<links_infos2;
+    info() << "Creation of links for CellFace_cell links_infos2"; //<<links_infos2;
 
     links_infos2.resize(nb_link * (nb_dual_node_per_link + 1));
     graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos2);
@@ -518,7 +521,7 @@ _createGraphOfDof(IItemFamily* particle_family)
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // CREATION DE LINK CELL-PARTICLE
+  // CREATION OF CELL-PARTICLE LINK
   //
   {
     Integer nb_link = all_particles.size();
@@ -527,7 +530,7 @@ _createGraphOfDof(IItemFamily* particle_family)
 
     Integer links_infos_index = 0;
     Integer link_count = 0;
-    // On remplit le tableau links_infos
+    // We fill the links_infos array
     ENUMERATE_PARTICLE (i_part, all_particles) {
       const Particle part = *i_part;
       const Cell& cell = i_part->cell();
@@ -538,14 +541,14 @@ _createGraphOfDof(IItemFamily* particle_family)
     }
     nb_link = link_count;
     links_infos3.resize(nb_link * (nb_dual_node_per_link + 1));
-    info() << "Creation des link pour CellParticule links_infos3"; //<<links_infos3;
+    info() << "Creation of links for CellParticle links_infos3"; //<<links_infos3;
     graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos3);
     graphdofs->printLinks();
   }
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // CREATION DE LINK FACE-PARTICLE
+  // CREATION OF FACE-PARTICLE LINK
   //
   {
     Integer nb_link = ownFaces().size() * all_particles.size();
@@ -556,7 +559,7 @@ _createGraphOfDof(IItemFamily* particle_family)
     Integer links_infos_index = 0;
     Integer link_count = 0;
 
-    // On remplit le tableau links_infos
+    // We fill the links_infos array
     ENUMERATE_FACE (iface, ownFaces()) {
       auto const& face = *iface;
       auto const& back_cell = iface->backCell();
@@ -596,7 +599,7 @@ _createGraphOfDof(IItemFamily* particle_family)
     }
     nb_link = link_count;
     links_infos4.resize(nb_link * (nb_dual_node_per_link + 1));
-    info() << "Creation des links pour FaceParticule links_infos4"; //<<links_infos4;
+    info() << "Creation of links for FaceParticle links_infos4"; //<<links_infos4;
     graph_modifier->addLinks(nb_link, nb_dual_node_per_link, links_infos4);
     graphdofs->printLinks();
   }
@@ -647,10 +650,7 @@ _checkGraphDofConnectivity(IGraph2* graph_dof)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//ARCANE_MESH_END_NAMESPACE
-//ARCANE_END_NAMESPACE
-
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

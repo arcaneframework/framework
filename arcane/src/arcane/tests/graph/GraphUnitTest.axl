@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
-<!-- Options du jeu de donn�es pour le service de test du graphe -->
+﻿<?xml version="1.0" ?>
+<!-- Dataset options for the graph test service -->
 
-<service name="GraphUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
- <interface name="Arcane::IUnitTest" inherited="false" />
- 
+<service name="GraphUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
+
   <variables>
-  
+
     <variable
       field-name="orig_cell_owner"
       name="OrigCellOwner"
@@ -13,10 +14,10 @@
       item-kind="cell"
       dim="0"
       dump="false"
-      need-sync="true" 
+      need-sync="true"
     />
   </variables>
 
-  <options />
+  <options/>
 
 </service>

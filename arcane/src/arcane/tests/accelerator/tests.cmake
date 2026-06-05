@@ -1,5 +1,4 @@
-
-set(ARCANE_TEST_CASEPATH ${TEST_PATH}/accelerator)
+﻿set(ARCANE_TEST_CASEPATH ${TEST_PATH}/accelerator)
 
 if (ARCANE_HAS_ACCELERATOR_API)
 
@@ -37,7 +36,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_message_passing_hybrid(hydro_accelerator5 CASE_FILE testHydroAccelerator-5.arc NB_SHM 2 NB_MPI 2 ARGS -m 50)
   if (ARCANE_ACCELERATOR_RUNTIME_NAME STREQUAL cuda)
     arcane_add_accelerator_test_sequential(hydro_accelerator5_cupti testHydroAccelerator-5.arc -m 20 -We,ARCANE_CUPTI_LEVEL,1)
-  endif()
+  endif ()
 
   arcane_add_accelerator_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
   arcane_add_test_sequential(hydro_accelerator5_multiple_queue testHydroAccelerator-5-multiple_queue.arc -m 50)
@@ -160,4 +159,4 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
   arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
 
-endif()
+endif ()

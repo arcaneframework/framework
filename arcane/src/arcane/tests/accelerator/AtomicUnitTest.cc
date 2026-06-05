@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AtomicUnitTest.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des fonctions 'atomic' sur accélérateur.                  */
+/* Test service for 'atomic' functions on accelerator.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,8 +44,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AtomicUnitTest
 : public BasicUnitTest
@@ -168,7 +169,7 @@ _executeTestType()
   if (isAcceleratorPolicy(policy)) {
     info() << "ExecuteTest1: using accelerator";
     if (policy != ax::eExecutionPolicy::HIP) {
-      // Ne fonctionne pas sur les gros tableaux (>50000 valeurs) avec ROCM
+      // Does not work on large arrays (>50000 values) with ROCM
       _executeTest1<DataType, Operation>(eMemoryRessource::UnifiedMemory);
       _executeTest1<DataType, Operation>(eMemoryRessource::HostPinned);
     }
@@ -241,8 +242,8 @@ _executeTest1(eMemoryRessource mem_ressource)
       DataType v = x + add0;
       DataType old_v = ax::doAtomic<Operation>(inout_a(iter), v);
       DataType new_v = inout_a(iter);
-      // Si l'opération est l'ajout, teste que l'ancienne valeur plus
-      // la valeur ajoutée vaut la nouvelle
+      // If the operation is addition, test that the old value plus
+      // the added value equals the new value
       if (Operation == ax::eAtomicOperation::Add) {
         out_is_ok[i] = (new_v == (old_v + v));
       }

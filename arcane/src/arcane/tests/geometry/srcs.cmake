@@ -1,4 +1,4 @@
-list(APPEND ARCANE_SOURCES
+﻿list(APPEND ARCANE_SOURCES
   geometry/GeometryUnitTest.cc
   geometry/GeometricUnitTest.cc
 )

@@ -1,11 +1,8 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+﻿<?xml version="1.0" ?>
 
 <module name="ExternalPluginTester" version="1.0" namespace-name="ArcaneTest::ExternalPluginTester" >
   <description>
-    Module de test des plugins externes
+    External plugin testing module
   </description>
   <entry-points>
     <entry-point method-name="build" name="EPT_Build" where="build" property="none" />

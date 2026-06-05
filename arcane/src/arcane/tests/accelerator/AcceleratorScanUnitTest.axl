@@ -1,7 +1,8 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
-<!-- Options du jeu de données pour le service de test 'AcceleratorScanUnitTest' -->
-<service name="AcceleratorScanUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
-  <interface name="Arcane::IUnitTest" inherited="false" />
+﻿<?xml version="1.0" ?>
+<!-- Dataset options for the 'AcceleratorScanUnitTest' test service -->
+<service name="AcceleratorScanUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
   <options>
   </options>
 </service>

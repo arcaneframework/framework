@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TypesParallelTester.h                                       (C) 2000-2021 */
 /*                                                                           */
-/* Types du module de test du parallélisme.                                  */
+/* Types of the parallelism test module.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TESTS_TYPESPARALLELTESTER_H
 #define ARCANE_TESTS_TYPESPARALLELTESTER_H
@@ -41,10 +41,9 @@ struct TypesParallelTester
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MultiMemoryCopyUnitTest.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des noyaux de recopie mémoire.                            */
+/* Memory copy kernel test service.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des noyaux de recopie mémoire.
+ * \brief Memory copy kernel test service.
  */
 class MultiMemoryCopyUnitTest
 : public BasicUnitTest
@@ -119,9 +120,9 @@ initializeTest()
 void MultiMemoryCopyUnitTest::
 _fillIndexes(NumArray<Int32, MDDim1>& indexes, SmallSpan<const Int32> nb_element_by_dim)
 {
-  // Pour tester la copie avec MultiMemory, le tableau d'indices
-  // contient pour les index pairs le numéro de la mémoire et
-  // pour les index impairs l'indice dans le tableau correspondant
+  // To test the copy with MultiMemory, the index array
+  // contains the memory number for even indices and
+  // the index in the corresponding array for odd indices
   Int32 nb_dim2 = nb_element_by_dim.size();
   Int32 nb_index = 0;
   {
@@ -203,9 +204,9 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
 
   info() << "Test Rank1";
 
-  // Buffer contenant les valeurs sérialisées
+  // Buffer containing the serialized values
   NumArray<double, MDDim1> buffer(mem_kind);
-  // Permet de vérifier que tout les autres NumArray ont bien le bon allocateur
+  // Allows checking that all other NumArrays have the correct allocator
   IMemoryAllocator* allocator = buffer.memoryAllocator();
   buffer.resize(nb_index);
 
@@ -219,8 +220,8 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
       ARCANE_FATAL("Bad allocator");
   }
 
-  // Attention à ne plus modifier les dimensions dans 'memories'
-  // après avoir récupérer les 'Span'
+  // Be careful not to modify the dimensions in 'memories'
+  // after retrieving the 'Span'
   UniqueArray<Span<std::byte>> memories_as_bytes(platform::getDefaultDataAllocator(), nb_dim2);
   for (int i = 0; i < nb_dim2; ++i)
     memories_as_bytes[i] = memories[i].bytes();
@@ -236,12 +237,12 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
     };
   }
 
-  // Effectue la copie dans le buffer
+  // Performs the copy into the buffer
   {
     ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double));
     MutableMemoryView destination(buffer.to1DSpan());
     MemoryUtils::copyWithIndexedSource(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
-    // Teste copie vide
+    // Test empty copy
     MemoryUtils::copyWithIndexedSource(destination, source_memory_view, {}, queue_ptr);
   }
 
@@ -256,7 +257,7 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
   NumArray<double, MDDim1> host_buffer(eMemoryRessource::Host);
   host_buffer.copy(buffer);
 
-  // Vérifie le résultat
+  // Checks the result
   info() << "Check result copyTo";
   for (int i = 0; i < nb_index; ++i) {
     Int32 array_index = indexes[(i * 2)];
@@ -268,7 +269,7 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
     }
   }
 
-  // Remet des valeurs fausses dans t1
+  // Put false values back into t1
   for (int zz = 0; zz < nb_dim2; ++zz) {
     auto command = makeCommand(queue);
     auto out_t1 = viewOut(command, memories[zz]);
@@ -279,16 +280,16 @@ _executeCopy1Rank1(eMemoryRessource mem_kind, bool use_queue)
     };
   }
 
-  // Effectue la copie depuis le buffer
+  // Performs the copy from the buffer
   {
     MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double));
     ConstMemoryView source(buffer.to1DSpan());
     MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
-    // Teste copie vide
+    // Test empty copy
     MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, {}, queue_ptr);
   }
 
-  // Vérifie le résultat
+  // Checks the result
   info() << "Check result copyFrom";
   for (int i = 0; i < nb_index; ++i) {
     Int32 array_index = indexes[(i * 2)];
@@ -323,9 +324,9 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
   _fillIndexes(indexes, nb_element_by_dim);
   const Int32 nb_index = indexes.dim1Size() / 2;
 
-  // Buffer contenant les valeurs sérialisées
+  // Buffer containing serialized values
   NumArray<double, MDDim2> buffer(mem_kind);
-  // Permet de vérifier que tout les autres NumArray ont bien le bon allocateur
+  // Allows checking that all other NumArrays have the correct allocator
   IMemoryAllocator* allocator = buffer.memoryAllocator();
   buffer.resize(nb_index, n2);
 
@@ -339,8 +340,8 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
       ARCANE_FATAL("Bad allocator");
   }
 
-  // Attention à ne plus modifier les dimensions dans 'memories'
-  // après avoir récupérer les 'Span'
+  // Be careful not to modify the dimensions in 'memories'
+  // after retrieving the 'Span'
   UniqueArray<Span<std::byte>> memories_as_bytes(platform::getDefaultDataAllocator(), nb_dim2);
   for (int i = 0; i < nb_dim2; ++i)
     memories_as_bytes[i] = memories[i].bytes();
@@ -356,12 +357,12 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
     };
   }
 
-  // Effectue la copie dans le buffer
+  // Performs the copy into the buffer
   {
     ConstMultiMemoryView source_memory_view(memories_as_bytes.constView(), sizeof(double) * n2);
     MutableMemoryView destination(buffer.to1DSpan(), n2);
     MemoryUtils::copyWithIndexedSource(destination, source_memory_view, indexes.to1DSpan().smallView(), queue_ptr);
-    // Teste copie vide
+    // Test empty copy
     MemoryUtils::copyWithIndexedSource(destination, source_memory_view, {}, queue_ptr);
   }
 
@@ -376,7 +377,7 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
   NumArray<double, MDDim2> host_buffer(eMemoryRessource::Host);
   host_buffer.copy(buffer);
 
-  // Vérifie le résultat
+  // Checks the result
   info() << "Check result copyTo";
   for (int i = 0; i < nb_index; ++i) {
     Int32 array_index = indexes[(i * 2)];
@@ -390,7 +391,7 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
     }
   }
 
-  // Remet des valeurs fausses dans t1
+  // Sets false values in t1
   for (int zz = 0; zz < nb_dim2; ++zz) {
     auto command = makeCommand(queue);
     auto out_t1 = viewOut(command, memories[zz]);
@@ -401,16 +402,16 @@ _executeCopy1Rank2(eMemoryRessource mem_kind, bool use_queue)
     };
   }
 
-  // Effectue la copie depuis le buffer
+  // Performs the copy from the buffer
   {
     MutableMultiMemoryView destination_memory_view(memories_as_bytes.view(), sizeof(double) * n2);
     ConstMemoryView source(buffer.to1DSpan(), n2);
     MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, indexes.to1DSpan().smallView(), queue_ptr);
-    // Teste copie vide
+    // Test empty copy
     MemoryUtils::copyWithIndexedDestination(destination_memory_view, source, {}, queue_ptr);
   }
 
-  // Vérifie le résultat
+  // Checks the result
   info() << "Check result copyFrom";
   for (int i = 0; i < nb_index; ++i) {
     Int32 array_index = indexes[(i * 2)];
@@ -457,8 +458,8 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
   for (int i = 0; i < nb_dim2; ++i)
     memories[i].resize(nb_element_by_dim[i]);
 
-  // Attention à ne plus modifier les dimensions dans 'memories'
-  // après avoir récupérer les 'Span'
+  // Be careful not to modify the dimensions in 'memories'
+  // after retrieving the 'Span'
   UniqueArray<Span<std::byte>> memories_as_bytes(platform::getDefaultDataAllocator(), nb_dim2);
   for (int i = 0; i < nb_dim2; ++i)
     memories_as_bytes[i] = memories[i].bytes();
@@ -476,7 +477,7 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
 
   const double fill_value = 4.9;
 
-  // Effectue le remplissage pour les indices \a m_indexes
+  // Performs the filling for the indices \a m_indexes
   {
     UniqueArray<double> fill_buffer(1);
     fill_buffer[0] = fill_value;
@@ -488,7 +489,7 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
       MemoryUtils::fill(destination_memory_view, source_memory_view, queue_ptr);
   }
 
-  // Recopie dans la mémoire hôte
+  // Copies back to host memory
   UniqueArray<NumArray<double, MDDim1>> host_memories;
   for (int i = 0; i < nb_dim2; ++i)
     host_memories.add(NumArray<double, MDDim1>(eMemoryRessource::Host));
@@ -496,7 +497,7 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     host_memories[i].copy(memories[i]);
   }
 
-  // Range la liste des index dans un ensemble
+  // Stores the list of indices in a set
   std::set<std::pair<Int32, Int32>> index_set;
   for (int i = 0; i < nb_index; ++i) {
     Int32 array_index = indexes[(i * 2)];
@@ -504,7 +505,7 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     index_set.insert(std::make_pair(array_index, value_index));
   }
 
-  // Regarde si les valeurs correspondantes aux index sont correctes
+  // Checks if the values corresponding to the indices are correct
   info() << "Check result fill";
   for (int i = 0; i < nb_index; ++i) {
     Int32 array_index = indexes[(i * 2)];
@@ -516,13 +517,13 @@ _executeFill1Rank1(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     }
   }
 
-  // Regarde toutes les valeurs
+  // Checks all values
   info() << "Check all values";
   for (Int32 zz = 0; zz < nb_dim2; ++zz) {
     SmallSpan<const double> sub_values = host_memories[zz];
     for (Int32 i = 0, dim2 = sub_values.size(); i < dim2; ++i) {
       Real compare_value = fill_value;
-      // Si pas dans la liste des indices copiés, on doit avoir la valeur initiale
+      // If not in the list of copied indices, it must have the initial value
       if (use_index && index_set.find(std::make_pair(zz, i)) == index_set.end())
         compare_value = _getValue(i);
       auto v2 = host_memories[zz][i];

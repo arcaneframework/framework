@@ -1,33 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SubMeshTestModule.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Module de test du sous-maillage                                           */
+/* Sub-mesh test module                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/List.h"
 
-#include "arcane/Directory.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/MeshToMeshTransposer.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/Connectivity.h"
-#include "arcane/MeshStats.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/UnstructuredMeshConnectivity.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/MeshToMeshTransposer.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/Connectivity.h"
+#include "arcane/core/MeshStats.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/UnstructuredMeshConnectivity.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/SubMeshTest_axl.h"
@@ -47,8 +47,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test de sous-maillage dans Arcane.
+ * \brief Sub-mesh test module in Arcane.
  */
 class SubMeshTestModule
 : public ArcaneSubMeshTestObject
@@ -59,8 +60,8 @@ class SubMeshTestModule
   ~SubMeshTestModule();
 
  public:
-	
-  virtual VersionInfo versionInfo() const { return VersionInfo(0,0,2); }
+
+  virtual VersionInfo versionInfo() const { return VersionInfo(0, 0, 2); }
 
  public:
 
@@ -87,14 +88,14 @@ class SubMeshTestModule
 
  private:
 
-  Directory m_output_directory; 
+  Directory m_output_directory;
   bool m_output_dir_created;
 
  private:
 
-  // Les variables de traitement du cas test
+  // Variables for handling the test case
 
-  // Variables de contrôle
+  // Control variables
   VariableNodeInt64* node_uids = nullptr;
   bool check_variable = false;
   VariableCellInt64* new_cell_uids = nullptr;
@@ -103,7 +104,7 @@ class SubMeshTestModule
 
   IMesh* new_mesh = nullptr;
 
-  // Génération d'un sous-maillage du genre demandé
+  // Generation of a sub-mesh of the requested type
   eItemKind parentKind = IK_Unknown;
 
   IItemFamily* myParentFamily = nullptr;
@@ -113,7 +114,7 @@ class SubMeshTestModule
   ItemGroup myOldParentItems;
 
   // Post-processing
-  RealUniqueArray times; 
+  RealUniqueArray times;
   VariableCellReal* new_data = nullptr;
 
  private:
@@ -124,11 +125,10 @@ class SubMeshTestModule
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_DEFINE_STANDARD_MODULE(SubMeshTestModule,SubMeshTest);
+ARCANE_DEFINE_STANDARD_MODULE(SubMeshTestModule, SubMeshTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -136,8 +136,8 @@ ARCANE_DEFINE_STANDARD_MODULE(SubMeshTestModule,SubMeshTest);
 SubMeshTestModule::
 SubMeshTestModule(const ModuleBuildInfo& mb)
 : ArcaneSubMeshTestObject(mb)
-, m_cell_real_values(VariableBuildInfo(this,"TestParallelCellRealValues"))
-, m_face_real_values(VariableBuildInfo(this,"TestParallelFaceRealValues"))
+, m_cell_real_values(VariableBuildInfo(this, "TestParallelCellRealValues"))
+, m_face_real_values(VariableBuildInfo(this, "TestParallelFaceRealValues"))
 , m_output_dir_created(false)
 , node_uids(nullptr)
 , check_variable(true)
@@ -146,20 +146,20 @@ SubMeshTestModule(const ModuleBuildInfo& mb)
 , new_node_uids(nullptr)
 , new_data(nullptr)
 {
-  addEntryPoint(this,"Build",
+  addEntryPoint(this, "Build",
                 &SubMeshTestModule::build,
                 IEntryPoint::WBuild,
                 IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"Init",
+  addEntryPoint(this, "Init",
                 &SubMeshTestModule::init,
                 IEntryPoint::WInit);
-  addEntryPoint(this,"StartInit",
+  addEntryPoint(this, "StartInit",
                 &SubMeshTestModule::startInit,
                 IEntryPoint::WStartInit);
-  addEntryPoint(this,"ContinueInit",
+  addEntryPoint(this, "ContinueInit",
                 &SubMeshTestModule::continueInit,
                 IEntryPoint::WContinueInit);
-  addEntryPoint(this,"compute",
+  addEntryPoint(this, "compute",
                 &SubMeshTestModule::compute);
 }
 
@@ -184,7 +184,7 @@ _checkCreateOutputDir()
 {
   if (m_output_dir_created)
     return;
-  m_output_directory = Directory(subDomain()->exportDirectory(),"depouillement2");
+  m_output_directory = Directory(subDomain()->exportDirectory(), "depouillement2");
   m_output_directory.createDirectory();
   m_output_dir_created = true;
 }
@@ -195,7 +195,7 @@ _checkCreateOutputDir()
 void SubMeshTestModule::
 _checkSubMeshIntegrity()
 {
-  ENUMERATE_NODE(inode,mesh()->allNodes()) {
+  ENUMERATE_NODE (inode, mesh()->allNodes()) {
     if ((*node_uids)[inode] != inode->uniqueId())
       fatal() << "Bad Global Node variable data : " << ItemPrinter(*inode) << " " << (*node_uids)[inode];
   }
@@ -212,18 +212,18 @@ _checkSubMeshIntegrity()
   info() << "TestMesh " << m_global_iteration() << " parent group own/all sizes "
          << myParentItems.own().size() << " / " << myParentItems.size();
 
-  MeshStats stats(traceMng(),new_mesh,subDomain()->parallelMng());
+  MeshStats stats(traceMng(), new_mesh, subDomain()->parallelMng());
   stats.dumpStats();
 
-//   ENUMERATE_NODE(inode,new_mesh->allNodes()) {
-//     info() << "AllNodes : " << inode.index() << " : " << FullItemPrinter(*inode);
-//   }
-//   ENUMERATE_FACE(iface,new_mesh->allFaces()) {
-//     info() << "AllFaces : " << iface.index() << " : " << FullItemPrinter(*iface);
-//   }
-//   ENUMERATE_CELL(icell,new_mesh->allCells()) {
-//     info() << "AllCells : " << icell.index() << " : " << FullItemPrinter(*icell);
-//   }
+  //   ENUMERATE_NODE(inode,new_mesh->allNodes()) {
+  //     info() << "AllNodes : " << inode.index() << " : " << FullItemPrinter(*inode);
+  //   }
+  //   ENUMERATE_FACE(iface,new_mesh->allFaces()) {
+  //     info() << "AllFaces : " << iface.index() << " : " << FullItemPrinter(*iface);
+  //   }
+  //   ENUMERATE_CELL(icell,new_mesh->allCells()) {
+  //     info() << "AllCells : " << icell.index() << " : " << FullItemPrinter(*icell);
+  //   }
 
   if (check_variable) {
     const Integer nerror_max = 10;
@@ -232,23 +232,23 @@ _checkSubMeshIntegrity()
     new_face_uids->synchronize();
     new_cell_uids->synchronize();
 
-    ENUMERATE_NODE(inode, new_mesh->allNodes())
+    ENUMERATE_NODE (inode, new_mesh->allNodes())
       if ((*new_node_uids)[inode] != inode->uniqueId())
         if (nerror++ < nerror_max)
           error() << "Node UniqueIds not consistent on item " << ItemPrinter(*inode) << " : " << (*new_node_uids)[inode];
     if (nerror > 0)
       fatal() << "Node UniqueIds not consistent (" << nerror << ")";
-    if ((nerror=new_node_uids->checkIfSync(nerror_max))>0)
+    if ((nerror = new_node_uids->checkIfSync(nerror_max)) > 0)
       fatal() << "Node uniqueIds not synchronized (" << nerror << ")";
-    if ((nerror=new_face_uids->checkIfSync(nerror_max))>0)
+    if ((nerror = new_face_uids->checkIfSync(nerror_max)) > 0)
       fatal() << "Face uniqueIds not synchronized (" << nerror << ")";
-    if ((nerror=new_cell_uids->checkIfSync(nerror_max))>0)
+    if ((nerror = new_cell_uids->checkIfSync(nerror_max)) > 0)
       fatal() << "Cell uniqueIds not synchronized (" << nerror << ")";
   }
 
-  SharedVariableNodeInt64 shared_node_uids(new_mesh->nodeFamily(),*node_uids);
+  SharedVariableNodeInt64 shared_node_uids(new_mesh->nodeFamily(), *node_uids);
   NodeGroup myAllNodes = new_mesh->allNodes();
-  ENUMERATE_NODE(inode,myAllNodes) {
+  ENUMERATE_NODE (inode, myAllNodes) {
     if (shared_node_uids[inode] != inode->uniqueId())
       fatal() << "Bad shared Node variable data : " << ItemPrinter(*inode) << " " << shared_node_uids[inode];
   }
@@ -256,17 +256,18 @@ _checkSubMeshIntegrity()
   // Not sync after addItems (step 3)
   std::set<Int64> do_not_check;
   if (m_global_iteration() == 3)
-    ENUMERATE_ITEM(iitem,myNewParentItems)
+    ENUMERATE_ITEM (iitem, myNewParentItems)
       do_not_check.insert(iitem->uniqueId());
 
   if (check_variable) {
     Integer nerror2 = 0;
-    ENUMERATE_CELL(icell,new_mesh->allCells()) {
+    ENUMERATE_CELL (icell, new_mesh->allCells()) {
       Cell cell = *icell;
       Item parent = cell.parent();
       if (do_not_check.find(cell.uniqueId().asInt64()) != do_not_check.end()) {
-        (*new_cell_uids)[cell] = parent.uniqueId(); // mise à jour des non check
-      } else {
+        (*new_cell_uids)[cell] = parent.uniqueId(); // update of non-checked items
+      }
+      else {
         if ((*new_cell_uids)[cell] != parent.uniqueId() || cell.uniqueId() != parent.uniqueId()) {
           error() << "Inconsistent sub-mesh uniqueId on item " << ItemPrinter(cell)
                   << " vs variable uid " << (*new_cell_uids)[cell] << " vs parent uid " << parent.uniqueId();
@@ -274,12 +275,13 @@ _checkSubMeshIntegrity()
         }
       }
     }
-    if (nerror2>0) fatal() << nerror2 << " errors";
+    if (nerror2 > 0)
+      fatal() << nerror2 << " errors";
   }
   new_mesh->checkValidMeshFull();
 
 #if 0
-  { // Comparaison des uids entre Item et Item parent à l'écran
+  { // Comparison of uids between Item and parent Item on screen
     eItemKind kinds[] = { IK_Node, IK_Face, IK_Cell };
     Integer nbKind = sizeof(kinds)/sizeof(eItemKind);
     for(Integer i=0;i<nbKind;++i) {
@@ -289,7 +291,7 @@ _checkSubMeshIntegrity()
         ItemGroup myAllItems = family->allItems();
         ENUMERATE_ITEM(iitem,myAllItems) {
           info() << ItemPrinter(*iitem) << " " << ItemPrinter((*iitem).parent());
-          
+
         }
       }
     }
@@ -304,7 +306,7 @@ void SubMeshTestModule::
 build()
 {
   Connectivity c(mesh()->connectivity());
-  if (options()->submeshKind() == IK_Face){
+  if (options()->submeshKind() == IK_Face) {
     info() << "Adding edge connectivity";
     c.enableConnectivity(Connectivity::CT_HasEdge);
   }
@@ -319,12 +321,12 @@ init()
 {
   info() << "SubMesh Test started";
 
-//  ENUMERATE_EDGE (iedge,mesh()->allEdges()) {
-//    info() << " Test edge " << FullItemPrinter(*iedge);
-//  }
+  //  ENUMERATE_EDGE (iedge,mesh()->allEdges()) {
+  //    info() << " Test edge " << FullItemPrinter(*iedge);
+  //  }
 
-  // Génération d'un sous-maillage du genre demandé
-  parentKind = options()->submeshKind(); 
+  // Generation of a sub-mesh of the requested type
+  parentKind = options()->submeshKind();
 
   myParentFamily = mesh()->itemFamily(parentKind);
   myParentItems = myParentFamily->createGroup("MyItems");
@@ -334,42 +336,42 @@ init()
 
   if (parentKind == IK_Face) {
 
-    IItemFamily * groupFamily = mesh()->faceFamily();
+    IItemFamily* groupFamily = mesh()->faceFamily();
     Int32UniqueArray item_localids;
-    ENUMERATE_FACE(iface,groupFamily->findGroup("XMIN"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("XMIN"))
       item_localids.add(iface->localId());
-    ENUMERATE_FACE(iface,groupFamily->findGroup("YMIN"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("YMIN"))
       item_localids.add(iface->localId());
-    ENUMERATE_FACE(iface,groupFamily->findGroup("ZMIN"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("ZMIN"))
       item_localids.add(iface->localId());
     myParentItems.addItems(item_localids);
 
     item_localids.clear();
-    ENUMERATE_FACE(iface,groupFamily->findGroup("YMAX"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("YMAX"))
       item_localids.add(iface->localId());
-    ENUMERATE_FACE(iface,groupFamily->findGroup("YMIN"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("YMIN"))
       item_localids.add(iface->localId());
     myOldParentItems.addItems(item_localids);
-    
+
     item_localids.clear();
-    ENUMERATE_FACE(iface,groupFamily->findGroup("ZMAX"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("ZMAX"))
       item_localids.add(iface->localId());
     myNewParentItems.addItems(item_localids);
+  }
+  else if (parentKind == IK_Cell) {
 
-  } else if (parentKind == IK_Cell) {
-
-    IItemFamily * groupFamily = mesh()->faceFamily();
+    IItemFamily* groupFamily = mesh()->faceFamily();
     std::set<Int64> restricted_uids;
-    ENUMERATE_FACE(iface,groupFamily->findGroup("XMIN").own())
+    ENUMERATE_FACE (iface, groupFamily->findGroup("XMIN").own())
       restricted_uids.insert(iface->boundaryCell().uniqueId());
-    ENUMERATE_FACE(iface,groupFamily->findGroup("YMIN").own())
+    ENUMERATE_FACE (iface, groupFamily->findGroup("YMIN").own())
       restricted_uids.insert(iface->boundaryCell().uniqueId());
-    ENUMERATE_FACE(iface,groupFamily->findGroup("ZMIN").own())
+    ENUMERATE_FACE (iface, groupFamily->findGroup("ZMIN").own())
       restricted_uids.insert(iface->boundaryCell().uniqueId());
-    ENUMERATE_FACE(iface,groupFamily->findGroup("ZMAX").own())
+    ENUMERATE_FACE (iface, groupFamily->findGroup("ZMAX").own())
       restricted_uids.insert(iface->boundaryCell().uniqueId());
     Int32UniqueArray item_localids;
-    ENUMERATE_CELL(icell,ownCells()) {
+    ENUMERATE_CELL (icell, ownCells()) {
       if (restricted_uids.find(icell->uniqueId()) == restricted_uids.end())
         item_localids.add(icell->localId());
     }
@@ -380,14 +382,14 @@ init()
            << myParentItems.own().size() << " " << myParentItems.size();
 
     item_localids.clear();
-    ENUMERATE_FACE(iface,groupFamily->findGroup("YMAX"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("YMAX"))
       item_localids.add(iface->boundaryCell().localId());
-//     ENUMERATE_FACE(iface,groupFamily->findGroup("YMIN"))
-//       item_localids.add(iface->boundaryCell().localId());
+    //     ENUMERATE_FACE(iface,groupFamily->findGroup("YMIN"))
+    //       item_localids.add(iface->boundaryCell().localId());
     myOldParentItems.addItems(item_localids);
-    
+
     item_localids.clear();
-    ENUMERATE_FACE(iface,groupFamily->findGroup("ZMAX"))
+    ENUMERATE_FACE (iface, groupFamily->findGroup("ZMAX"))
       item_localids.add(iface->boundaryCell().localId());
     myNewParentItems.addItems(item_localids);
   }
@@ -395,30 +397,30 @@ init()
     fatal() << "Not implemented sub-mesh kind " << parentKind;
 
   info() << "MyParentItems : " << myParentItems.size() << " / " << allParentItems.size();
-  ENUMERATE_ITEM(iitem,myParentItems){
+  ENUMERATE_ITEM (iitem, myParentItems) {
     debug(Trace::High) << "Item to build : " << ItemPrinter(*iitem);
   }
   info() << "MyOldParentItems : " << myOldParentItems.size() << " / " << allParentItems.size();
-  ENUMERATE_ITEM(iitem, myOldParentItems){
+  ENUMERATE_ITEM (iitem, myOldParentItems) {
     debug(Trace::High) << "Item to delete : " << ItemPrinter(*iitem);
   }
   info() << "MyNewParentItems : " << myNewParentItems.size() << " / " << allParentItems.size();
-  ENUMERATE_ITEM(iitem, myNewParentItems){
+  ENUMERATE_ITEM (iitem, myNewParentItems) {
     debug(Trace::High) << "Item to add : " << ItemPrinter(*iitem);
   }
-  
+
   _checkCreateOutputDir();
   IPostProcessorWriter* post_processor = options()->format();
   post_processor->setBaseDirectoryName(m_output_directory.path());
 
   m_global_deltat = 1.;
 
-  // Données de contrôle
+  // Control data
   node_uids = new VariableNodeInt64(Arcane::VariableBuildInfo(mesh(), "Uids", mesh()->nodeFamily()->name()));
-  ENUMERATE_NODE(inode,mesh()->allNodes())
+  ENUMERATE_NODE (inode, mesh()->allNodes())
     (*node_uids)[inode] = inode->uniqueId();
 
-  // Teste la connectivité aux arêtes
+  // Test connectivity to edges
   if (options()->submeshKind() == IK_Face)
     _checkEdgeConnectivity();
 }
@@ -445,40 +447,40 @@ continueInit()
 /*---------------------------------------------------------------------------*/
 
 void SubMeshTestModule::
-_compute1CreateMesh() 
+_compute1CreateMesh()
 {
-  // Création du sous-maillage
+  // Creation of the sub-mesh
   new_mesh = subDomain()->mainFactory()->createSubMesh(mesh(),
                                                        myParentItems,
                                                        "TestMesh");
-  // Statistiques sur sous-maillage
-  MeshStats stats(traceMng(),new_mesh,subDomain()->parallelMng());
+  // Statistics on sub-mesh
+  MeshStats stats(traceMng(), new_mesh, subDomain()->parallelMng());
   stats.dumpStats();
 
-  // Si le maillage est de dimension 1, vérifie que toutes les mailles
-  // ont bien 2 faces.
+  // If the mesh is dimension 1, check that all meshes
+  // have exactly 2 faces.
   Int32 mesh_dimension = new_mesh->dimension();
-  if (mesh_dimension==1){
-    ENUMERATE_(Cell,icell,new_mesh -> allCells()) {
+  if (mesh_dimension == 1) {
+    ENUMERATE_ (Cell, icell, new_mesh->allCells()) {
       Cell c = *icell;
       //info()<<"SUBMESH CELL : "<<icell->uniqueId()<<" nb faces = "<<c.nbFace();
-      if (c.nbFace()!=2)
+      if (c.nbFace() != 2)
         ARCANE_FATAL("Bad number of faces for cell");
     }
   }
 
-  if (check_variable){
+  if (check_variable) {
     new_data = new VariableCellReal(Arcane::VariableBuildInfo(new_mesh, "Data", new_mesh->cellFamily()->name())); // , Arcane::IVariable::PNoDump|Arcane::IVariable::PNoNeedSync));
-    new_cell_uids  = new VariableCellInt64(Arcane::VariableBuildInfo(new_mesh, "CellUids", new_mesh->cellFamily()->name()));
-    new_face_uids  = new VariableFaceInt64(Arcane::VariableBuildInfo(new_mesh, "FaceUids", new_mesh->faceFamily()->name()));
-    new_node_uids  = new VariableNodeInt64(Arcane::VariableBuildInfo(new_mesh, "NodeUids", new_mesh->nodeFamily()->name()));
+    new_cell_uids = new VariableCellInt64(Arcane::VariableBuildInfo(new_mesh, "CellUids", new_mesh->cellFamily()->name()));
+    new_face_uids = new VariableFaceInt64(Arcane::VariableBuildInfo(new_mesh, "FaceUids", new_mesh->faceFamily()->name()));
+    new_node_uids = new VariableNodeInt64(Arcane::VariableBuildInfo(new_mesh, "NodeUids", new_mesh->nodeFamily()->name()));
 
-    // Mise en place de données de contrôle
-    ENUMERATE_CELL(icell,new_mesh->allCells())
+    // Setting up control data
+    ENUMERATE_CELL (icell, new_mesh->allCells())
       (*new_cell_uids)[icell] = icell->uniqueId();
-    ENUMERATE_FACE(iface,new_mesh->allFaces())
+    ENUMERATE_FACE (iface, new_mesh->allFaces())
       (*new_face_uids)[iface] = iface->uniqueId();
-    ENUMERATE_NODE(inode,new_mesh->allNodes())
+    ENUMERATE_NODE (inode, new_mesh->allNodes())
       (*new_node_uids)[inode] = inode->uniqueId();
   }
 }
@@ -487,53 +489,56 @@ _compute1CreateMesh()
 /*---------------------------------------------------------------------------*/
 
 void SubMeshTestModule::
-_compute2RemoveItems() 
+_compute2RemoveItems()
 {
-  // Suppression d'items du support...
+  // Deletion of items from the support...
   info() << "Remove parent items from group " << myOldParentItems.name() << " " << myOldParentItems.size() << " / " << allParentItems.size();
-  ENUMERATE_ITEM(iitem,myOldParentItems) debug(Trace::Highest) << "Removing " << iitem.index() << " " << ItemPrinter(*iitem);
+  ENUMERATE_ITEM (iitem, myOldParentItems)
+    debug(Trace::Highest) << "Removing " << iitem.index() << " " << ItemPrinter(*iitem);
 
   if (parentKind == IK_Cell) {
-    // Suppression depuis le groupe support
+    // Deletion from the support group
     myParentItems.removeItems(myOldParentItems.view().localIds());
-    // On peut aussi supprimer depuis le maillage support, mais ce maillage doit alors être correct (pas d'item orphelin)
-    // Suppression réelle depuis le maillage
+    // We can also delete from the support mesh, but this mesh must then be correct (no orphaned items)
+    // Actual deletion from the mesh
     // mesh()->modifier()->removeCells(myOldParentItems.view().localIds());
     // mesh()->modifier()->endUpdate();
-  } else if (parentKind == IK_Face) {
-    // Suppression depuis le groupe support
+  }
+  else if (parentKind == IK_Face) {
+    // Deletion from the support group
     myParentItems.removeItems(myOldParentItems.view().localIds());
-  } else 
+  }
+  else
     fatal() << "Not implemented sub-mesh kind " << parentKind;
 
   // SdC add ghost rebuild layer in tests (usage in IFPEN applications)
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(true, true); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true, true); // RELOCATE THE CONCEPT IN ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SubMeshTestModule::
-_compute3AddItems() 
+_compute3AddItems()
 {
-  // Ajout de nouveaux items sur le groupe fondation du sous-maillage
-  // induit un retaillage du sous-maillage
+  // Addition of new items to the sub-mesh foundation group
+  // induces a re-meshing of the sub-mesh
   info() << "Add parent items from group " << myNewParentItems.name() << " " << myNewParentItems.size() << " / " << allParentItems.size();
   myParentItems.addItems(myNewParentItems.view().localIds());
 
-  if (new_mesh){
-    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
-      
+  if (new_mesh) {
+    new_mesh->modifier()->endUpdate(true, true); // RELOCATE THE CONCEPT IN ARCANE
+
     // Not sync after addItems (step 3)
-    ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(),new_mesh,myNewParentItems.view(),true);
+    ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(), new_mesh, myNewParentItems.view(), true);
     if (check_variable) {
-      ENUMERATE_CELL(icell,parent2sub) {
+      ENUMERATE_CELL (icell, parent2sub) {
         (*new_cell_uids)[icell] = icell->uniqueId();
-        for ( Face face : icell->faces()){
+        for (Face face : icell->faces()) {
           (*new_face_uids)[face] = face.uniqueId();
         }
-        for ( Node node : icell->nodes()){
+        for (Node node : icell->nodes()) {
           (*new_node_uids)[node] = node.uniqueId();
         }
       }
@@ -545,19 +550,19 @@ _compute3AddItems()
 /*---------------------------------------------------------------------------*/
 
 void SubMeshTestModule::
-_compute4TransposeItems() 
+_compute4TransposeItems()
 {
   if (!new_mesh)
     return;
 
-  // Test de transposition
-  ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(),new_mesh,allParentItems.view());
+  // Transposition test
+  ItemVector parent2sub = MeshToMeshTransposer::transpose(mesh(), new_mesh, allParentItems.view());
   //     info() << "Parent ParentItems";
   //     ENUMERATE_ITEM(iitem,ParentItems) info() << ItemPrinter(*iitem);
   //     info() << "Transposed ParentItems on TestMesh";
   //     ENUMERATE_ITEM(iitem,parent2sub) if (iitem.localId() != NULL_ITEM_LOCAL_ID) info() << ItemPrinter(*iitem);
   info() << "-----------------------------------------------------";
-  ItemVector sub2parent = MeshToMeshTransposer::transpose(new_mesh,mesh(),new_mesh->allCells().view());
+  ItemVector sub2parent = MeshToMeshTransposer::transpose(new_mesh, mesh(), new_mesh->allCells().view());
   //     info() << "TestMesh AllCells";
   //     ENUMERATE_ITEM(iitem,new_mesh->allCells()) info() << ItemPrinter(*iitem);
   //     info() << "Transposed AllCells to Parent Mesh";
@@ -569,42 +574,40 @@ _compute4TransposeItems()
 /*---------------------------------------------------------------------------*/
 
 void SubMeshTestModule::
-_compute5MoveItems() 
+_compute5MoveItems()
 {
-  // Test de migration
+  // Migration test
   VariableItemInt32& cells_new_owner = mesh()->toPrimaryMesh()->itemsNewOwner(IK_Cell);
-  ENUMERATE_FACE(iface,allFaces()) {
+  ENUMERATE_FACE (iface, allFaces()) {
     if (!iface->isOwn())
-      for( CellLocalId icell : iface->cells())
+      for (CellLocalId icell : iface->cells())
         cells_new_owner[icell] = iface->owner();
   }
   info() << "Own cells before migration (" << ownCells().size() << " / " << allCells().size() << " )";
   //     ENUMERATE_CELL(icell,mesh()->ownCells()) info() << icell.index() << ": " << ItemPrinter(*icell);
   cells_new_owner.synchronize();
   Integer moved_cell_count = 0;
-  ENUMERATE_CELL(icell,ownCells()) {
-    if (cells_new_owner[icell] != icell->owner())
-      {
-        ++moved_cell_count;
-        debug(Trace::Highest) << "Move cell " << ItemPrinter(*icell) << " to " << cells_new_owner[icell];
-      }
+  ENUMERATE_CELL (icell, ownCells()) {
+    if (cells_new_owner[icell] != icell->owner()) {
+      ++moved_cell_count;
+      debug(Trace::Highest) << "Move cell " << ItemPrinter(*icell) << " to " << cells_new_owner[icell];
+    }
   }
 
-  if (new_mesh)
-    {
-      // Casse volontairement les données ghosts pour vérifier le bon transfert des originaux
-      ENUMERATE_CELL(icell,new_mesh->allCells())
-        if (!icell->isOwn())
-          (*new_cell_uids)[icell] = NULL_ITEM_UNIQUE_ID;
-      ENUMERATE_FACE(iface,new_mesh->allFaces())
-        if (!iface->isOwn())
-          (*new_face_uids)[iface] = NULL_ITEM_UNIQUE_ID;
-      ENUMERATE_NODE(inode,new_mesh->allNodes())
-        if (!inode->isOwn())
-          (*new_node_uids)[inode] = NULL_ITEM_UNIQUE_ID;
-    }      
+  if (new_mesh) {
+    // Voluntarily break the ghost data to verify the correct transfer of originals
+    ENUMERATE_CELL (icell, new_mesh->allCells())
+      if (!icell->isOwn())
+        (*new_cell_uids)[icell] = NULL_ITEM_UNIQUE_ID;
+    ENUMERATE_FACE (iface, new_mesh->allFaces())
+      if (!iface->isOwn())
+        (*new_face_uids)[iface] = NULL_ITEM_UNIQUE_ID;
+    ENUMERATE_NODE (inode, new_mesh->allNodes())
+      if (!inode->isOwn())
+        (*new_node_uids)[inode] = NULL_ITEM_UNIQUE_ID;
+  }
 
-  info() << "Own cells to move in migration : " <<  moved_cell_count;
+  info() << "Own cells to move in migration : " << moved_cell_count;
   mesh()->utilities()->changeOwnersFromCells();
 
   mesh()->modifier()->setDynamic(true);
@@ -613,7 +616,7 @@ _compute5MoveItems()
   //     ENUMERATE_CELL(icell,mesh()->ownCells()) info() << icell.index() << ": " << ItemPrinter(*icell);
 
   if (new_mesh)
-    new_mesh->modifier()->endUpdate(true,true); // RELOCALISER LE CONCEPT DANS ARCANE
+    new_mesh->modifier()->endUpdate(true, true); // RELOCATE THE CONCEPT IN ARCANE
 }
 
 /*---------------------------------------------------------------------------*/
@@ -633,24 +636,26 @@ _postProcessSubMesh()
 
   if (parentKind == IK_Face) {
     info() << "Post-processor item kind " << parentKind;
-    m_face_real_values.fill(0,allParentItems);
-    m_face_real_values.fill(2,myParentItems);
-  } else if (parentKind == IK_Cell) {
+    m_face_real_values.fill(0, allParentItems);
+    m_face_real_values.fill(2, myParentItems);
+  }
+  else if (parentKind == IK_Cell) {
     info() << "Post-processor item kind " << parentKind;
-    m_cell_real_values.fill(0,allParentItems);
-    m_cell_real_values.fill(2,myParentItems);
+    m_cell_real_values.fill(0, allParentItems);
+    m_cell_real_values.fill(2, myParentItems);
     info() << "myParentItems : " << myParentItems.size();
-  } else
+  }
+  else
     fatal() << "Not implemented sub-mesh kind " << parentKind;
 
   m_data.fill(0.);
-  ENUMERATE_CELL(icell,allCells()) {
+  ENUMERATE_CELL (icell, allCells()) {
     m_data[icell] = icell->owner();
   }
 
   if (check_variable) {
     new_data->fill(0.);
-    ENUMERATE_CELL(icell,new_mesh->allCells()) {
+    ENUMERATE_CELL (icell, new_mesh->allCells()) {
       (*new_data)[icell] = icell->owner();
     }
   }
@@ -662,7 +667,7 @@ _postProcessSubMesh()
     ItemGroupList groups;
     groups.add(new_mesh->allCells());
     post_processor->setGroups(groups);
-    IVariableMng * vm = subDomain()->variableMng();
+    IVariableMng* vm = subDomain()->variableMng();
     vm->writePostProcessing(post_processor);
   }
 }
@@ -678,16 +683,20 @@ compute()
   if (current_iteration == 1) {
     info() << "Step 1 - create mesh";
     _compute1CreateMesh();
-  } else if (current_iteration == 2) {
+  }
+  else if (current_iteration == 2) {
     info() << "Step 2 - remove items";
     _compute2RemoveItems();
-  } else if (current_iteration == 3) {
+  }
+  else if (current_iteration == 3) {
     info() << "Step 3 - add items";
     _compute3AddItems();
-  } else if (current_iteration == 4) {
+  }
+  else if (current_iteration == 4) {
     info() << "Step 4 - transpose items";
     _compute4TransposeItems();
-  } else if (current_iteration > 4) {
+  }
+  else if (current_iteration > 4) {
     info() << "Step >4 - move items";
     _compute5MoveItems();
   }
@@ -695,7 +704,7 @@ compute()
   _checkSubMeshIntegrity();
   _postProcessSubMesh();
 
-  if (current_iteration>options()->nbIteration())
+  if (current_iteration > options()->nbIteration())
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
 
@@ -712,22 +721,22 @@ _checkEdgeConnectivity()
   auto edge_face = mc.edgeFace();
   auto edge_cell = mc.edgeCell();
   Int64 total_id = 0;
-  ENUMERATE_(Edge,iedge,mesh()->allEdges()){
+  ENUMERATE_ (Edge, iedge, mesh()->allEdges()) {
     Edge edge = *iedge;
-    bool do_print = edge.localId()<12;
+    bool do_print = edge.localId() < 12;
     if (do_print)
       info() << "EDGE i=" << edge.localId();
-    for( NodeLocalId node : edge_node.nodes(edge) ){
+    for (NodeLocalId node : edge_node.nodes(edge)) {
       if (do_print)
         info() << "  NODE i=" << node.localId();
       total_id += node.localId();
     }
-    for( FaceLocalId face : edge_face.faces(edge) ){
+    for (FaceLocalId face : edge_face.faces(edge)) {
       if (do_print)
         info() << "  FACE i=" << face.localId();
       total_id += face.localId();
     }
-    for( CellLocalId cell : edge_cell.cells(edge) ){
+    for (CellLocalId cell : edge_cell.cells(edge)) {
       if (do_print)
         info() << "  CELL i=" << cell.localId();
       total_id += cell.localId();

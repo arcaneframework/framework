@@ -1,27 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableSimdUnitTest.cc                                     (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des variables.                                            */
+/* Variable testing service.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/SimdOperation.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/SimdItem.h"
-#include "arcane/VariableView.h"
-#include "arcane/Timer.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/SimdItem.h"
+#include "arcane/core/VariableView.h"
+#include "arcane/core/Timer.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -29,7 +29,7 @@
 /*---------------------------------------------------------------------------*/
 
 #ifdef __GNUG__
-#define ARCANE_GCC_VECTORIZE __attribute__((noinline,optimize(2,"tree-vectorize")))
+#define ARCANE_GCC_VECTORIZE __attribute__((noinline, optimize(2, "tree-vectorize")))
 #else
 #define ARCANE_GCC_VECTORIZE
 #endif
@@ -51,34 +51,39 @@ using namespace Arcane;
 namespace
 {
 
-//! Classe pour tester l'utilisation des vues avec une indirection supplémentaire
-template<typename T>
-class IndirectArrayView
-{
- public:
-  IndirectArrayView() = default;
-  IndirectArrayView(const ArrayView<T>& h): m_array_view(h)
+  //! Class to test the use of views with an additional indirection
+  template <typename T>
+  class IndirectArrayView
   {
-    m_array_view_ptr = &m_array_view;
-  }
-  T& operator[](Int32 i) { return (*m_array_view_ptr)[i]; }
-  IndirectArrayView& operator=(const ArrayView<T>& v)
-  {
-    m_array_view = v;
-    m_array_view_ptr = &m_array_view;
-    return (*this);
-  }
- private:
-  ArrayView<T>* m_array_view_ptr = nullptr;
-  ArrayView<T> m_array_view;
-};
+   public:
 
-}
+    IndirectArrayView() = default;
+    IndirectArrayView(const ArrayView<T>& h)
+    : m_array_view(h)
+    {
+      m_array_view_ptr = &m_array_view;
+    }
+    T& operator[](Int32 i) { return (*m_array_view_ptr)[i]; }
+    IndirectArrayView& operator=(const ArrayView<T>& v)
+    {
+      m_array_view = v;
+      m_array_view_ptr = &m_array_view;
+      return (*this);
+    }
+
+   private:
+
+    ArrayView<T>* m_array_view_ptr = nullptr;
+    ArrayView<T> m_array_view;
+  };
+
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la vectorisation sur les variables.
+ * \brief Service for testing vectorization on variables.
  */
 class VariableSimdUnitTest
 : public BasicUnitTest
@@ -100,8 +105,8 @@ class VariableSimdUnitTest
   VariableCellReal m_var3;
   VariableCellReal m_var4;
 
-  // Ces classes gardent une référence sur une vue de la variable associée.
-  // Il faut donc les initialiser qu'une fois que les variables sont allouées
+  // These classes hold a reference to a view of the associated variable.
+  // They must therefore be initialized only after the variables are allocated.
   IndirectArrayView<Real> m_var1_indirect_array_view;
   IndirectArrayView<Real> m_var2_indirect_array_view;
   IndirectArrayView<Real> m_var3_indirect_array_view;
@@ -122,13 +127,13 @@ class VariableSimdUnitTest
   void _doItemDirectDereference();
   void _doItemPointer() ARCANE_GCC_VECTORIZE;
   void _doItemNoIndirect() ARCANE_GCC_VECTORIZE;
-  void _doTest( void (VariableSimdUnitTest::*functor)(), const String& name);
+  void _doTest(void (VariableSimdUnitTest::*functor)(), const String& name);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(VariableSimdUnitTest,IUnitTest,VariableSimdUnitTest);
+ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(VariableSimdUnitTest, IUnitTest, VariableSimdUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -136,11 +141,11 @@ ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(VariableSimdUnitTest,IUnitTest,Variab
 VariableSimdUnitTest::
 VariableSimdUnitTest(const ServiceBuildInfo& sb)
 : BasicUnitTest(sb)
-, m_var1(VariableBuildInfo(sb.mesh(),"Var1"))
-, m_var2(VariableBuildInfo(sb.mesh(),"Var2"))
-, m_var3(VariableBuildInfo(sb.mesh(),"Var3"))
-, m_var4(VariableBuildInfo(sb.mesh(),"Var4"))
-, m_timer(sb.subDomain(),"Test",Timer::TimerReal)
+, m_var1(VariableBuildInfo(sb.mesh(), "Var1"))
+, m_var2(VariableBuildInfo(sb.mesh(), "Var2"))
+, m_var3(VariableBuildInfo(sb.mesh(), "Var3"))
+, m_var4(VariableBuildInfo(sb.mesh(), "Var4"))
+, m_timer(sb.subDomain(), "Test", Timer::TimerReal)
 {
 }
 
@@ -162,7 +167,8 @@ _doSimdItem()
   auto in_v2 = viewIn(m_var2);
   auto in_v3 = viewIn(m_var3);
   auto in_v4 = viewIn(m_var4);
-  ENUMERATE_SIMD_CELL(icell,m_cells){
+  ENUMERATE_SIMD_CELL(icell, m_cells)
+  {
     SimdCell vi = *icell;
     out_v1[vi] = in_v2[vi] * in_v3[vi] + in_v4[vi];
   }
@@ -178,7 +184,8 @@ _doSimdItemIter()
   auto in_v2 = viewIn(m_var2);
   auto in_v3 = viewIn(m_var3);
   auto in_v4 = viewIn(m_var4);
-  ENUMERATE_SIMD_CELL(icell,m_cells){
+  ENUMERATE_SIMD_CELL(icell, m_cells)
+  {
     out_v1[icell] = in_v2[icell] * in_v3[icell] + in_v4[icell];
   }
 }
@@ -193,11 +200,11 @@ _doSimdItemDirect()
   auto in_v2 = viewIn(m_var2);
   auto in_v3 = viewIn(m_var3);
   auto in_v4 = viewIn(m_var4);
-  ENUMERATE_SIMD_CELL(icell,m_cells){
-    // ATTENTION pour l'instant il n'y a pas de tests de débordement
-    // dans SimdItemDirect et donc si le nombre d'éléments de m_cells
-    // n'est pas un multiple de la taille d'un vecteur Simd il peut y
-    // avoir plantage.
+  ENUMERATE_SIMD_CELL(icell, m_cells)
+  {
+    // ATTENTION for now there are no overflow tests
+    // in SimdItemDirect and thus if the number of elements in m_cells
+    // is not a multiple of the size of a Simd vector, a crash may occur.
     SimdItemDirectT<Cell> vi(icell.direct());
     out_v1[vi] = in_v2[vi] * in_v3[vi] + in_v4[vi];
   }
@@ -206,10 +213,11 @@ _doSimdItemDirect()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Lambda>
-void applySimdDirectLambda(const CellGroup& cells,Lambda& lambda)
+template <typename Lambda>
+void applySimdDirectLambda(const CellGroup& cells, Lambda& lambda)
 {
-  ENUMERATE_SIMD_CELL(icell,cells){
+  ENUMERATE_SIMD_CELL(icell, cells)
+  {
     lambda(icell.direct());
   }
 }
@@ -221,10 +229,10 @@ _doSimdItemDirectLambda()
   auto in_v2 = viewIn(m_var2);
   auto in_v3 = viewIn(m_var3);
   auto in_v4 = viewIn(m_var4);
-  auto f = [=](SimdItemDirectT<Cell> vi){
+  auto f = [=](SimdItemDirectT<Cell> vi) {
     out_v1[vi] = in_v2[vi] * in_v3[vi] + in_v4[vi];
   };
-  applySimdDirectLambda(m_cells,f);
+  applySimdDirectLambda(m_cells, f);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,7 +241,7 @@ _doSimdItemDirectLambda()
 void VariableSimdUnitTest::
 _doItem()
 {
-  ENUMERATE_CELL(icell,m_cells){
+  ENUMERATE_CELL (icell, m_cells) {
     m_var1[icell] = m_var2[icell] * m_var3[icell] + m_var4[icell];
   }
 }
@@ -248,7 +256,7 @@ _doItemView()
   auto in_v2 = viewIn(m_var2);
   auto in_v3 = viewIn(m_var3);
   auto in_v4 = viewIn(m_var4);
-  ENUMERATE_CELL(icell,m_cells){
+  ENUMERATE_CELL (icell, m_cells) {
     out_v1[icell] = in_v2[icell] * in_v3[icell] + in_v4[icell];
   }
 }
@@ -265,7 +273,7 @@ _doItemDirect()
   RealConstArrayView in_v3 = m_var3.asArray();
   RealConstArrayView in_v4 = m_var4.asArray();
 
-  for( Integer i=0, n=idx.size(); i<n; ++i ){
+  for (Integer i = 0, n = idx.size(); i < n; ++i) {
     out_v1[idx[i]] = in_v2[idx[i]] * in_v3[idx[i]] + in_v4[idx[i]];
   }
 }
@@ -282,7 +290,7 @@ _doItemDirectDereference()
   IndirectArrayView<Real> in_v3 = m_var3_indirect_array_view;
   IndirectArrayView<Real> in_v4 = m_var4_indirect_array_view;
 
-  for( Integer i=0, n=idx.size(); i<n; ++i ){
+  for (Integer i = 0, n = idx.size(); i < n; ++i) {
     out_v1[idx[i]] = in_v2[idx[i]] * in_v3[idx[i]] + in_v4[idx[i]];
   }
 }
@@ -305,7 +313,7 @@ _doItemPointer()
   const Real* in_v3 = ain_v3.data();
   const Real* in_v4 = ain_v4.data();
 
-  for( Integer i=0, n=aidx.size(); i<n; ++i ){
+  for (Integer i = 0, n = aidx.size(); i < n; ++i) {
     out_v1[idx[i]] = in_v2[idx[i]] * in_v3[idx[i]] + in_v4[idx[i]];
   }
 }
@@ -327,7 +335,7 @@ _doItemNoIndirect()
   const Real* in_v3 = ain_v3.data();
   const Real* in_v4 = ain_v4.data();
 
-  for( Integer i=0, n=aidx.size(); i<n; ++i ){
+  for (Integer i = 0, n = aidx.size(); i < n; ++i) {
     out_v1[i] = in_v2[i] * in_v3[i] + in_v4[i];
   }
 }
@@ -336,18 +344,18 @@ _doItemNoIndirect()
 /*---------------------------------------------------------------------------*/
 
 void VariableSimdUnitTest::
-_doTest( void (VariableSimdUnitTest::*functor)(), const String& name)
+_doTest(void (VariableSimdUnitTest::*functor)(), const String& name)
 {
   info(4) << "Begin test name=" << name;
-  // Multiplier cette valeur par 40 si on veut faire des tests de performances
+  // Multiply this value by 40 if we want to run performance tests
   Integer nb_z = 500;
-  // Réduit la taille du test en débug pour qu'il ne dure pas trop longtemps
+  // Reduce the test size in debug mode so it doesn't take too long
   //if (arcaneIsDebug())
   //nb_z /= 20;
 
   {
     Timer::Sentry ts(&m_timer);
-    for( Integer k=0; k<nb_z; ++k ){
+    for (Integer k = 0; k < nb_z; ++k) {
       (this->*functor)();
     }
   }
@@ -362,53 +370,54 @@ executeTest()
 {
   info() << "Execute test nb_cell=" << m_cells.size();
   info() << "Init values";
-  ENUMERATE_CELL(icell,m_cells){
+  ENUMERATE_CELL (icell, m_cells) {
     Cell cell = *icell;
     Real x = (Real)(cell.uniqueId().asInt64());
     m_var2[icell] = x * 2.0;
     m_var3[icell] = x + 1.0;
     m_var4[icell] = x * 3.0 - 5.0;
   }
-  
-  info() << "Do vectorisation";
 
-  // Vérifie que SimdItemDirect fonctionne bien.
+  info() << "Do vectorization";
+
+  // Check that SimdItemDirect works correctly.
   {
     auto out_v1 = viewOut(m_var1);
     auto in_v2 = viewIn(m_var2);
     auto in_v3 = viewIn(m_var3);
     auto in_v4 = viewIn(m_var4);
-    // Vérifie conversion DataType -> SimdType.
-    ENUMERATE_SIMD_CELL(icell,m_cells){
+    // Check DataType -> SimdType conversion.
+    ENUMERATE_SIMD_CELL(icell, m_cells)
+    {
       out_v1[icell] = 3.2;
     }
-    ENUMERATE_SIMD_CELL(icell,m_cells){
-      // ATTENTION pour l'instant il n'y a pas de tests de débordement
-      // dans SimdItemDirect et donc si le nombre d'éléments de m_cells
-      // n'est pas un multiple de la taille d'un vecteur Simd il peut y
-      // avoir plantage.
+    ENUMERATE_SIMD_CELL(icell, m_cells)
+    {
+      // ATTENTION for now there are no overflow tests
+      // in SimdItemDirect and thus if the number of elements in m_cells
+      // is not a multiple of the size of a Simd vector, a crash may occur.
       //SimdItemDirectT<Cell> vi(icell.direct());
       SimdItemT<Cell> vi(*icell);
       out_v1[vi] = in_v2[vi] * in_v3[vi] + in_v4[vi];
     }
-    ENUMERATE_CELL(icell,m_cells){
+    ENUMERATE_CELL (icell, m_cells) {
       Real expected = m_var2[icell] * m_var3[icell] + m_var4[icell];
-      if (expected!=m_var1[icell]){
+      if (expected != m_var1[icell]) {
         info() << "ERROR: Bad value e=" << expected << " v=" << m_var1[icell] << " lid=" << icell.itemLocalId();
       }
     }
   }
 
-  _doTest(&VariableSimdUnitTest::_doSimdItem,"SimdItem");
-  _doTest(&VariableSimdUnitTest::_doSimdItemIter,"SimdItemIter");
-  _doTest(&VariableSimdUnitTest::_doSimdItemDirect,"SimdItemDirect");
-  _doTest(&VariableSimdUnitTest::_doSimdItemDirectLambda,"SimdItemDirectLambda");
-  _doTest(&VariableSimdUnitTest::_doItem,"Item");
-  _doTest(&VariableSimdUnitTest::_doItemView,"ItemView");
-  _doTest(&VariableSimdUnitTest::_doItemDirect,"ItemDirect");
-  _doTest(&VariableSimdUnitTest::_doItemDirectDereference,"ItemDirectDereference");
-  _doTest(&VariableSimdUnitTest::_doItemPointer,"ItemPointer");
-  _doTest(&VariableSimdUnitTest::_doItemNoIndirect,"ItemNoIndirect");
+  _doTest(&VariableSimdUnitTest::_doSimdItem, "SimdItem");
+  _doTest(&VariableSimdUnitTest::_doSimdItemIter, "SimdItemIter");
+  _doTest(&VariableSimdUnitTest::_doSimdItemDirect, "SimdItemDirect");
+  _doTest(&VariableSimdUnitTest::_doSimdItemDirectLambda, "SimdItemDirectLambda");
+  _doTest(&VariableSimdUnitTest::_doItem, "Item");
+  _doTest(&VariableSimdUnitTest::_doItemView, "ItemView");
+  _doTest(&VariableSimdUnitTest::_doItemDirect, "ItemDirect");
+  _doTest(&VariableSimdUnitTest::_doItemDirectDereference, "ItemDirectDereference");
+  _doTest(&VariableSimdUnitTest::_doItemPointer, "ItemPointer");
+  _doTest(&VariableSimdUnitTest::_doItemNoIndirect, "ItemNoIndirect");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -423,26 +432,26 @@ initializeTest()
          << " vector_size=" << SimdReal::Length
          << " index_size=" << SimdInfo::Int32IndexSize;
 
-  // Pour tester toutes les configurations, il faut que le nombre de mailles
-  // soit un nombre premier. Comme cela on est certain lors des ENUMERATE
-  // qu'on ne tombe pas sur un multiple de la taille d'un registre vectoriel.
+  // To test all configurations, the number of meshes
+  // must be a prime number. This ensures that during ENUMERATE
+  // we do not land on a multiple of the vector register size.
 
   Integer n = 10957;
   Int32UniqueArray ids;
-  
+
   {
     Integer index = 0;
-    ENUMERATE_CELL(icell,allCells()){
-      if (index<n){
+    ENUMERATE_CELL (icell, allCells()) {
+      if (index < n) {
         ++index;
         ids.add(icell.itemLocalId());
       }
     }
   }
-  if (ids.size()!=n)
-    throw FatalErrorException(A_FUNCINFO,"Bad size");
-  
-  m_cells = mesh()->cellFamily()->createGroup("PrimeCells",ids);
+  if (ids.size() != n)
+    throw FatalErrorException(A_FUNCINFO, "Bad size");
+
+  m_cells = mesh()->cellFamily()->createGroup("PrimeCells", ids);
 
   m_var1_indirect_array_view = m_var1.asArray();
   m_var2_indirect_array_view = m_var2.asArray();

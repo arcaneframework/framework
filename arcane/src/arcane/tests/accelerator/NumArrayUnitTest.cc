@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* NumArrayUnitTest.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des 'NumArray'.                                           */
+/* Test service for 'NumArray'.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,17 +46,18 @@ namespace ax = Arcane::Accelerator;
 
 namespace
 {
-inline MDSpan<double,MDDim1> _toMDSpan(const Span<double>& v)
-{
-  std::array<Int32,1> sizes = { (Int32)v.size() };
-  return MDSpan<double,MDDim1>(v.data(),sizes);
-}
-}
+  inline MDSpan<double, MDDim1> _toMDSpan(const Span<double>& v)
+  {
+    std::array<Int32, 1> sizes = { (Int32)v.size() };
+    return MDSpan<double, MDDim1>(v.data(), sizes);
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class NumArrayUnitTest
 : public BasicUnitTest
@@ -93,7 +94,7 @@ class NumArrayUnitTest
   }
 
   template <typename NumArrayType> double
-  _doSum(const NumArrayType& values, std::array<Int32,NumArrayType::rank()> bounds, RunQueue* queue = nullptr)
+  _doSum(const NumArrayType& values, std::array<Int32, NumArrayType::rank()> bounds, RunQueue* queue = nullptr)
   {
     if (queue)
       queue->barrier();
@@ -106,14 +107,14 @@ class NumArrayUnitTest
 
  public:
 
-  template<typename NumArrayType> void
-  _doRank1(RunQueue& queue,NumArrayType& t1,Real expected_sum);
-  template<typename NumArrayType> void
-  _doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum);
-  template<typename NumArrayType> void
-  _doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum);
-  template<typename NumArrayType> void
-  _doRank4(RunQueue& queue,NumArrayType& t1,Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank1(RunQueue& queue, NumArrayType& t1, Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank2(RunQueue& queue, NumArrayType& t1, Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank3(RunQueue& queue, NumArrayType& t1, Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank4(RunQueue& queue, NumArrayType& t1, Real expected_sum);
 
  public:
 
@@ -125,7 +126,7 @@ class NumArrayUnitTest
 
  private:
 
-  void _checkPointerAttribute(eMemoryRessource mem,const void* ptr);
+  void _checkPointerAttribute(eMemoryRessource mem, const void* ptr);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -190,8 +191,7 @@ executeTest()
     _executeTest4(eMemoryRessource::Host);
   }
 
-  // Appelle deux fois _executeTest2() pour vérifier l'utilisation des pools
-  // de RunQueue.
+  // Calls _executeTest2() twice to verify the use of RunQueue pools.
   _executeTest2();
   _executeTest2();
   _executeTest3();
@@ -201,8 +201,8 @@ executeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArrayType> void NumArrayUnitTest::
-_doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+template <typename NumArrayType> void NumArrayUnitTest::
+_doRank2(RunQueue& queue, NumArrayType& t1, Real expected_sum)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -225,8 +225,8 @@ _doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArrayType> void NumArrayUnitTest::
-_doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+template <typename NumArrayType> void NumArrayUnitTest::
+_doRank3(RunQueue& queue, NumArrayType& t1, Real expected_sum)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -251,8 +251,8 @@ _doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArrayType> void NumArrayUnitTest::
-_doRank4(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+template <typename NumArrayType> void NumArrayUnitTest::
+_doRank4(RunQueue& queue, NumArrayType& t1, Real expected_sum)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -287,10 +287,10 @@ _executeTest1(eMemoryRessource mem_kind)
   info() << "Execute Test1 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
-  Accelerator::ProfileRegion ps(queue,"NumArrayUniTest_Test1");
+  Accelerator::ProfileRegion ps(queue, "NumArrayUniTest_Test1");
 
-  // Ne pas changer les dimensions du tableau sinon
-  // il faut aussi changer le calcul des sommes
+  // Do not change the array dimensions otherwise
+  // you must also change the sum calculation
   constexpr int n1 = 1000;
   constexpr int n2 = 3;
   constexpr int n3 = 4;
@@ -386,7 +386,7 @@ _executeTest1(eMemoryRessource mem_kind)
     }
   }
 
-  // Tableaux 2D
+  // 2D Arrays
   {
     NumArray<double, MDDim2> t1(mem_kind);
     t1.resizeDestructive(n1, n2);
@@ -407,7 +407,7 @@ _executeTest1(eMemoryRessource mem_kind)
     _doRank2(queue, t1, expected_sum2);
   }
 
-  // Tableaux 3D
+  // 3D Arrays
   {
     NumArray<double, MDDim3, LeftLayout> t1(mem_kind);
     t1.resizeDestructive(n1, n2, n3);
@@ -433,7 +433,7 @@ _executeTest1(eMemoryRessource mem_kind)
     _doRank3(queue, t1, expected_sum3);
   }
 
-  // Tableaux 4D
+  // 4D Arrays
   {
     NumArray<double, MDDim4> t1(mem_kind);
     t1.resize(n1, n2, n3, n4);
@@ -455,7 +455,7 @@ _executeTest1(eMemoryRessource mem_kind)
   }
 
   {
-    // Test copie.
+    // Test copy.
     NumArray<double, MDDim1> t1(mem_kind);
     //t1.resize(22);
     t1.resize(n1);
@@ -503,11 +503,11 @@ _executeTest1(eMemoryRessource mem_kind)
 void NumArrayUnitTest::
 _executeTest2()
 {
-  // Teste plusieurs queues simultanément.
+  // Test multiple queues simultaneously.
   ValueChecker vc(A_FUNCINFO);
 
-  // Ne pas changer les dimensions du tableau sinon
-  // il faut aussi changer le calcul des sommes
+  // Do not change the array dimensions otherwise
+  // you must also change the sum calculation
   constexpr int n1 = 1000;
   constexpr int n2 = 3;
   constexpr int n3 = 4;
@@ -515,7 +515,7 @@ _executeTest2()
 
   constexpr double expected_sum4 = 164736000.0;
 
-  // Test copie de Runner
+  // Test Runner copy
   Runner runner1(m_runner);
   Runner runner2;
   runner2 = runner1;
@@ -528,20 +528,20 @@ _executeTest2()
 
   NumArray<double, MDDim4> t1(n1, n2, n3, n4);
 
-  // NOTE: Normalement il ne devrait pas être autorisé d'accéder au
-  // même tableau depuis plusieurs commandes sur des files différentes
-  // mais cela fonctionne avec la mémoire unifiée.
+  // NOTE: Normally it should not be allowed to access
+  // the same array from multiple commands on different queues
+  // but this works with unified memory.
 
-  // Utilise 3 files asynchrones pour positionner les valeurs du tableau,
-  // chaque file gérant une partie du tableau.
+  // Uses 3 asynchronous queues to position the array values,
+  // each queue managing a part of the array.
   {
     auto command = makeCommand(queue1);
     auto out_t1 = viewOut(command, t1);
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue1,out_t1.to1DSpan().data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue1, out_t1.to1DSpan().data());
 
     Int32 s1 = 300;
     auto b = makeLoopRanges(s1, n2, n3, n4);
-    command << RUNCOMMAND_LOOP(iter, b)
+    command << RUNCOMMAND_LOOP (iter, b)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
@@ -553,7 +553,7 @@ _executeTest2()
     Int32 base = 300;
     Int32 s1 = 400;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
-    command << RUNCOMMAND_LOOP(iter, b)
+    command << RUNCOMMAND_LOOP (iter, b)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
@@ -565,7 +565,7 @@ _executeTest2()
     Int32 base = 700;
     Int32 s1 = 300;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
-    command << RUNCOMMAND_LOOP(iter, b)
+    command << RUNCOMMAND_LOOP (iter, b)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
@@ -590,7 +590,6 @@ _executeTest3()
   Arcane::_arcaneTestRealArray2Variant();
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -604,8 +603,8 @@ _executeTest4(eMemoryRessource mem_kind)
   auto queue = makeQueue(m_runner);
   queue.setAsync(true);
 
-  // Ne pas changer les dimensions du tableau sinon
-  // il faut aussi changer le calcul des sommes
+  // Do not change the array dimensions otherwise
+  // you must also change the sum calculation
   constexpr int n1 = 1000;
 
   constexpr double expected_sum1 = 999000.0;
@@ -700,48 +699,48 @@ _executeTest5()
 /*---------------------------------------------------------------------------*/
 namespace
 {
-void _checkMemoryType(ax::ePointerMemoryType expected,ax::ePointerMemoryType current)
-{
-  if (expected!=current)
-    ARCANE_FATAL("Bad memory type expected={0} current={1}",(int)expected,(int)current);
-}
-void _checkNonNullHostPointer(const ax::PointerAttribute& pa)
-{
-  const void* p = pa.hostPointer();
-  if (!p)
-    ARCANE_FATAL("Host pointer is null");
-}
-void _checkNonNullDevicePointer(const ax::PointerAttribute& pa)
-{
-  const void* p = pa.devicePointer();
-  if (!p)
-    ARCANE_FATAL("Device pointer is null");
-}
-}
+  void _checkMemoryType(ax::ePointerMemoryType expected, ax::ePointerMemoryType current)
+  {
+    if (expected != current)
+      ARCANE_FATAL("Bad memory type expected={0} current={1}", (int)expected, (int)current);
+  }
+  void _checkNonNullHostPointer(const ax::PointerAttribute& pa)
+  {
+    const void* p = pa.hostPointer();
+    if (!p)
+      ARCANE_FATAL("Host pointer is null");
+  }
+  void _checkNonNullDevicePointer(const ax::PointerAttribute& pa)
+  {
+    const void* p = pa.devicePointer();
+    if (!p)
+      ARCANE_FATAL("Device pointer is null");
+  }
+} // namespace
 void NumArrayUnitTest::
-_checkPointerAttribute(eMemoryRessource mem,const void* ptr)
+_checkPointerAttribute(eMemoryRessource mem, const void* ptr)
 {
   ValueChecker vc(A_FUNCINFO);
   ax::PointerAttribute pa;
-  m_runner.fillPointerAttribute(pa,ptr);
+  m_runner.fillPointerAttribute(pa, ptr);
   auto mem_type = pa.memoryType();
   info() << "PointerInfo mem_ressource=" << mem
          << " allocated_type=" << (int)mem_type
          << " host_ptr=" << pa.hostPointer()
          << " device_ptr=" << pa.devicePointer()
          << " device=" << pa.device()
-         << " access_info=" << (int)getPointerAccessibility(&m_runner,ptr);
-  if (mem==eMemoryRessource::UnifiedMemory){
-    _checkMemoryType(mem_type,ax::ePointerMemoryType::Managed);
+         << " access_info=" << (int)getPointerAccessibility(&m_runner, ptr);
+  if (mem == eMemoryRessource::UnifiedMemory) {
+    _checkMemoryType(mem_type, ax::ePointerMemoryType::Managed);
     _checkNonNullHostPointer(pa);
     _checkNonNullDevicePointer(pa);
   }
-  if (mem==eMemoryRessource::HostPinned){
-    _checkMemoryType(mem_type,ax::ePointerMemoryType::Host);
+  if (mem == eMemoryRessource::HostPinned) {
+    _checkMemoryType(mem_type, ax::ePointerMemoryType::Host);
     _checkNonNullHostPointer(pa);
   }
-  if (mem==eMemoryRessource::Device){
-    _checkMemoryType(mem_type,ax::ePointerMemoryType::Device);
+  if (mem == eMemoryRessource::Device) {
+    _checkMemoryType(mem_type, ax::ePointerMemoryType::Device);
     _checkNonNullDevicePointer(pa);
   }
 }
@@ -754,53 +753,53 @@ _checkPointerAttribute(eMemoryRessource mem,const void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Exemples d'utilisation de NumArray pour la documentation
+//! NumArray usage examples for documentation
 extern "C" void
 _arcaneNumArraySamples()
 {
   //![SampleNumArrayDeclarations]
-  Arcane::NumArray<double, Arcane::MDDim1> a1; //< Tableau dynamique de rang 1.
-  Arcane::NumArray<double, Arcane::MDDim2> a2; //< Tableau dynamique de rang 2.
-  Arcane::NumArray<double, Arcane::MDDim3> a3; //< Tableau dynamique de rang 3.
-  Arcane::NumArray<double, Arcane::MDDim4> a4; //< Tableau dynamique de rang 4.
+  Arcane::NumArray<double, Arcane::MDDim1> a1; //< 1D dynamic array.
+  Arcane::NumArray<double, Arcane::MDDim2> a2; //< 2D dynamic array.
+  Arcane::NumArray<double, Arcane::MDDim3> a3; //< 3D dynamic array.
+  Arcane::NumArray<double, Arcane::MDDim4> a4; //< 4D dynamic array.
   //![SampleNumArrayDeclarations]
 
   //![SampleNumArrayDeclarationsExtented]
-  // Tableau 2D avec 2 dimensions statiques (3x4)
+  // 2D array with 2 static dimensions (3x4)
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, 3, 4>> t1;
-  // Tableau 2D avec la première dimension dynamique et la deuxième fixée à 5.
+  // 2D array with the first dimension dynamic and the second fixed at 5.
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 5>> t2;
-  // Tableau 3D avec la première dimension et troisième dimension dynamique et la deuxième fixée à 5.
+  // 3D array with the first and third dimensions dynamic and the second fixed at 5.
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 7, Arcane::DynExtent>> t3;
   //![SampleNumArrayDeclarationsExtented]
 
   //![SampleNumArrayResize]
-  // Tableau 2D avec 2 dimensions statiques (3x4)
+  // 2D array with 2 static dimensions (3x4)
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, 3, 4>> t4;
-  // Tableau 2D avec 8x5 valeurs
+  // 2D array with 8x5 values
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 5>> t5(8);
-  // Tableau 3D avec 3x7x9 valeurs
+  // 3D array with 3x7x9 values
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 7, Arcane::DynExtent>> t6(3, 9);
-  // Redimensionne t2 avec 6x5 valeurs
+  // Resize t2 with 6x5 values
   t2.resize(6);
-  // Redimensionne t3 avec 2x7x4 valeurs
+  // Resize t3 with 2x7x4 values
   t3.resizeDestructive(2, 4);
-  // Redimensionne a1 avec 12 valeurs
+  // Resize a1 with 12 values
   a1.resizeDestructive(12);
-  // Redimensionne a2 avec 3x4 valeurs
+  // Resize a2 with 3x4 values
   a2.resizeDestructive(3, 4);
-  // Redimensionne a3 avec 2x7x6 valeurs
+  // Resize a3 with 2x7x6 values
   a3.resizeDestructive(2, 7, 6);
-  // Redimensionne a1 avec 2x9x4x6 valeurs
+  // Resize a1 with 2x9x4x6 values
   a4.resizeDestructive(2, 9, 4, 6);
   //![SampleNumArrayResize]
 
   //![SampleNumArrayDeclarationsMemory]
-  // Tableau 2D avec 2 dimensions statiques (3x4) sur l'accélérateur
+  // 2D array with 2 static dimensions (3x4) on the accelerator
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, 3, 4>> t7(Arcane::eMemoryRessource::Device);
-  // Tableau 2D avec 8x5 valeurs alloué sur l'hôte.
+  // 2D array with 8x5 values allocated on the host.
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 5>> t8(8, Arcane::eMemoryRessource::Host);
-  // Tableau 3D avec 3x7x9 valeurs allouée sur le device.
+  // 3D array with 3x7x9 values allocated on the device.
   Arcane::NumArray<double, Arcane::ExtentsV<Arcane::Int32, Arcane::DynExtent, 7, Arcane::DynExtent>> t9(3, 9, Arcane::eMemoryRessource::Device);
   //![SampleNumArrayDeclarationsMemory]
 

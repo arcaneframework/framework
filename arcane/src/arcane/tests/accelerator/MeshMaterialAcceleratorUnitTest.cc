@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2026 */
 /*                                                                           */
-/* Service de test unitaire du support accélérateurs des matériaux/milieux.  */
+/* Unit test service for the material/environment accelerator support.       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,8 +66,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test unitaire du support accélérateurs des constituants.
+ * \brief Unit test service for the constituent accelerator support.
  */
 class MeshMaterialAcceleratorUnitTest
 : public BasicUnitTest
@@ -113,8 +114,8 @@ class MeshMaterialAcceleratorUnitTest
 
  public:
 
-  // Les méthodes suivantes doivent être publiques pour
-  // sur accélérateur
+  // The following methods must be public for
+  // on accelerator
 
   void _executeTest1(Integer nb_z, EnvCellVectorView env1);
   void _executeTest2(Integer nb_z);
@@ -177,7 +178,7 @@ initializeTest()
   m_runner = subDomain()->acceleratorMng()->runner();
   m_mm_mng = IMeshMaterialMng::getReference(mesh());
 
-  // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
+  // Reads material info from the JDD and registers it in the manager.
   UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3", "MAT4" };
   for (String v : mat_names) {
     m_mm_mng->registerMaterialInfo(v);
@@ -218,7 +219,7 @@ initializeTest()
     Integer nb_cell = allCells().size();
     Int64 total_nb_cell = nb_cell;
     ENUMERATE_CELL (icell, allCells()) {
-      if (icell.itemLocalId() != 0) { // on ne veut pas de la première maille pour tester un cas tordu en //
+      if (icell.itemLocalId() != 0) { // we don't want the first mesh to test a twisted case in //
         Cell cell = *icell;
         Int64 cell_index = cell.uniqueId();
         if (cell_index < ((2 * total_nb_cell) / 3)) {
@@ -232,11 +233,11 @@ initializeTest()
       }
     }
 
-    // Ajoute les mailles du milieu 1
+    // Adds the meshes of environment 1
     {
       Materials::MeshMaterialModifier modifier(m_mm_mng);
       Materials::IMeshEnvironment* env = mat1->environment();
-      // Ajoute les mailles du milieu
+      // Adds the meshes of the environment
       //modifier.addCells(env,env1_indexes);
       Int32UniqueArray mat1_indexes;
       Int32UniqueArray mat2_indexes;
@@ -250,14 +251,14 @@ initializeTest()
         if (add_to_mat2)
           mat2_indexes.add(env1_indexes[z]);
       }
-      // Ajoute les mailles du matériau 1
+      // Adds the meshes of material 1
       modifier.addCells(mat1, mat1_indexes);
       Integer nb_mat = env->nbMaterial();
       if (nb_mat > 1)
-        // Ajoute les mailles du matériau 2
+        // Adds the meshes of material 2
         modifier.addCells(m_mm_mng->environments()[0]->materials()[1], mat2_indexes);
     }
-    // Ajoute les mailles du milieu 2
+    // Adds the meshes of environment 2
     if (mat2) {
       Materials::MeshMaterialModifier modifier(m_mm_mng);
       //modifier.addCells(m_mat2->environment(),mat2_indexes);
@@ -275,7 +276,7 @@ initializeTest()
     info() << "** ** NB_PURE=" << nb_pure_env;
   }
 
-  // Créé un groupe contenant un sous-ensemble des mailles pour test EnvCellVector
+  // Created a group containing a subset of meshes for EnvCellVector test
   {
     UniqueArray<Int32> sub_indexes;
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -346,12 +347,12 @@ executeTest()
   {
     RunQueue queue = makeQueue(m_runner);
     if (!queue.isAcceleratorPolicy()) {
-      // Le mode concurrent n'est pas supporté avec les accélérateurs
-      // (uniquement le multi-threading ou le séquentiel)
+      // Concurrent mode is not supported with accelerators
+      // (only multi-threading or sequential)
       queue.setConcurrentCommandCreation(true);
       if (!queue.isConcurrentCommandCreation())
         ARCANE_FATAL("Can not create concurrent commands");
-      // Teste l'exécution multhread de la création de MatCellVector/EnvCellVector
+      // Tests the multithreaded execution of MatCellVector/EnvCellVector creation
       ParallelLoopOptions loop_options;
       loop_options.setGrainSize(1);
       arcaneParallelFor(1, 20, loop_options,
@@ -408,10 +409,11 @@ _initializeVariables(ComponentItemVectorView component)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test du RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
- * avec en paramètres l'environnement et cherchant à accèder
- * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
+ * \brief Test of RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
+ * with the environment as a parameter and trying to access
+ * the multimat variables via the envcell (i.e., the MatVarIndex)
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest1(Integer nb_z, EnvCellVectorView env1)
@@ -451,10 +453,11 @@ _executeTest1(Integer nb_z, EnvCellVectorView env1)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test du RUNCOMMAND_MAT_ENUMERATE(MatCell, ...
- * avec en paramètres le matériau et cherchant à accèder
- * aux variables multimat par la matcell (i.e. le MatVarIndex en fait)
+ * \brief Test of RUNCOMMAND_MAT_ENUMERATE(MatCell, ...
+ * with the material as a parameter and trying to access
+ * the multimat variables via the matcell (i.e., the MatVarIndex)
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest5(Integer nb_z, MatCellVectorView mat1)
@@ -487,7 +490,7 @@ _executeTest5(Integer nb_z, MatCellVectorView mat1)
 
   _checkMatValues1();
 
-  // Test récupération des MatCell
+  // Test retrieval of MatCells
   {
     auto cmd = makeCommand(queue);
     auto in_b = ax::viewIn(cmd, m_mat_b);
@@ -506,11 +509,12 @@ _executeTest5(Integer nb_z, MatCellVectorView mat1)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test du RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
- * avec en paramètres une collection d'envcell et cherchant à accèder
- * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
- * mais aussi aux variables globales par le cell ID
+ * \brief Test of RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
+ * with a collection of envcells as parameters and trying to access
+ * the multimat variables via the envcell (i.e., the MatVarIndex)
+ * but also the global variables via the cell ID
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest2(Integer nb_z)
@@ -617,10 +621,10 @@ _executeTest2(Integer nb_z)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test du RUNCOMMAND_ENUMERATE(EnvCell, ...
- * Même chose que le test2 mais avec l'utilisation d'un pool
- * de run queue asynchrone
+ * \brief Test of RUNCOMMAND_ENUMERATE(EnvCell, ...
+ * Same as test2 but with the use of an asynchronous run queue pool
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest3(Integer nb_z)
@@ -691,10 +695,11 @@ _executeTest3(Integer nb_z)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test du RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(...
- * Test qui boucle sur les mailles puis sur les env/mal cells
- * de chaque maille.
+ * \brief Test of RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(...
+ * Test that loops over meshes and then over env/mat cells
+ * of each mesh.
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest4(Integer nb_z, bool use_new_impl)
@@ -924,11 +929,11 @@ _executeTest6()
     auto out_mat_a = viewOut(command, mat_a);
     command << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, iter, m_env1)
     {
-      EnvAndGlobalCellIteratorValue evi = iter; // Valeur de l'itérateur
+      EnvAndGlobalCellIteratorValue evi = iter; // Iterator value
       auto [iter_mvi, iter_cid] = evi();
-      EnvCellLocalId mvi = iter_mvi; // Numéro local de la maille milieu
-      Arcane::CellLocalId cid = iter_cid; // Numéro de la maille globale de la maille milieu courante
-      Int32 iter_index = evi.index(); // Index de l'itération
+      EnvCellLocalId mvi = iter_mvi; // Local ID of the middle mesh
+      Arcane::CellLocalId cid = iter_cid; // Global ID of the current middle mesh
+      Int32 iter_index = evi.index(); // Iteration index
       cells_local_id_view[iter_index] = cid;
       out_mat_a[mvi] = 1.2;
     };
@@ -949,6 +954,7 @@ _executeTest6()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Tests passages CellVector vers EnvCellVectorView ou MatCellVectorView
  */
@@ -957,7 +963,7 @@ _executeTest7(RunQueue& queue)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  // Créé un CellVector contenant une maille sur 2
+  // Create a CellVector containing a mesh on 2
   IItemFamily* cell_family = mesh()->cellFamily();
   const Int32 nb_cell_to_add = cell_family->maxLocalId() / 2;
   CellVector cell_vector1;
@@ -966,7 +972,7 @@ _executeTest7(RunQueue& queue)
     auto cmd = makeCommand(queue);
     ids_to_use.resize(nb_cell_to_add);
     auto out_c = ids_to_use.smallSpan();
-    // Prend une maille sur 2 pour le vecteur.
+    // Take a mesh on 2 for the vector.
     cmd << RUNCOMMAND_LOOP1(iter, nb_cell_to_add)
     {
       auto [i] = iter();
@@ -983,7 +989,7 @@ _executeTest7(RunQueue& queue)
     EnvCellVectorView sub_env_view(env_vector.view());
     Int32 nb_sub_item = sub_env_view.nbItem();
     info() << "NB_SUB_ITEM (env)=" << nb_sub_item;
-    // TODO: Vérifier la validité
+    // TODO: Check validity
 
     ENUMERATE_ENVCELL (ienvcell, sub_env_view) {
       EnvCell ec = *ienvcell;
@@ -1003,7 +1009,7 @@ _executeTest7(RunQueue& queue)
     }
   }
   {
-    // Teste sous vecteur vide
+    // Test under empty vector
     CellVector empty_cell_vector;
     MatCellVector mat_vector(empty_cell_vector.view(), m_env1->materials()[1]);
     MatCellVectorView sub_mat_view(mat_vector.view());
@@ -1021,7 +1027,7 @@ void MeshMaterialAcceleratorUnitTest::
 _testComponentSetSpecificExecutionPolicy()
 {
   ValueChecker vc(A_FUNCINFO);
-  // Vérifie le changement politique d'exécution d'un IMeshComponent
+  // Checks the change of execution policy of an IMeshComponent
   m_env1->setSpecificExecutionPolicy(Accelerator::eExecutionPolicy::Sequential);
   EnvCellVector sub_env1(m_sub_env_group1, m_env1);
   m_env1->setSpecificExecutionPolicy(Accelerator::eExecutionPolicy::None);
@@ -1120,7 +1126,7 @@ _testSelection()
 
   info() << "NbEnvCell=" << nb_env_cell;
 
-  // Créé une sélection avec une entité sur 2
+  // Create a selection with an entity on 2
   UniqueArray<Int32> selection_indices(MemoryUtils::getDefaultDataAllocator());
   selection_indices.reserve((nb_env_cell / 2) + 1);
   for (Int32 i = 0; i < nb_env_cell; ++i) {
@@ -1129,23 +1135,23 @@ _testSelection()
   }
   info() << "NbSelection=" << selection_indices.size();
 
-  // ... remplit une liste d'indices dans [ 0 ; env_cells.nbItems()-1 ]
+  // ... fills a list of indices in [ 0 ; env_cells.nbItems()-1 ]
   EnvCellVectorSelectionView partial_env_cells{ env_cells, selection_indices.constSmallSpan() };
 
-  // Sélection contenant toutes les entités.
+  // Selection containing all entities.
   EnvCellVectorSelectionView full_partial_env_cells{ env_cells };
 
   MaterialVariableCellInt32 test_var(VariableBuildInfo(mesh(), "SelectionTestVar"));
 
   test_var.fill(1);
 
-  // phase de calcul
+  // calculation phase
   RunQueue queue = makeQueue(m_runner);
 
   {
     auto command = makeCommand(queue);
     auto myVarView = viewInOut(command, test_var);
-    // premiere methode 1
+    // first method 1
     command << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, partial_env_cells)
     {
       myVarView[evi] += 1;
@@ -1172,7 +1178,7 @@ _testSelection()
   {
     auto command = makeCommand(queue);
     auto myVarView = viewInOut(command, test_var);
-    // troisieme possibilité
+    // third possibility
     command << RUNCOMMAND_LOOP1(idx, partial_env_cells.size())
     {
       myVarView[partial_env_cells[idx]] += 1;
@@ -1184,10 +1190,10 @@ _testSelection()
     total += test_var[ienvcell];
   }
   info() << "TOTAL0=" << total;
-  // On fait 3 boucles sur la sélection partielle, 1 sur la sélection complète
-  // et on commence à 1 pour toutes les valeurs.
-  // On a donc la valeur 5 sur toutes les mailles de 'partial_env_cells' et
-  // la valeur 2 sur les autres.
+  // We run 3 loops on the partial selection, 1 on the full selection
+  // and we start at 1 for all values.
+  // So we have the value 5 on all meshes in 'partial_env_cells' and
+  // the value 2 on the others.
   Int64 ref0 = (2 * nb_env_cell) + (partial_env_cells.size() * 3);
   if (ref0 != total)
     ARCANE_FATAL("Bad value ref0={0} total={1}", ref0, total);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialTesterModule.h                                  (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire des matériaux.                             */
+/* Material manager test module.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TESTS_MESHMATERIALTESTERMODULE_H
 #define ARCANE_TESTS_MESHMATERIALTESTERMODULE_H
@@ -20,7 +20,7 @@
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 #include "arcane/core/materials/MeshEnvironmentVariableRef.h"
 
-#include "IMaterialEquationOfState.h"
+#include "arcane/tests/material/IMaterialEquationOfState.h"
 #include "arcane/tests/material/MeshMaterialTester_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -60,8 +60,9 @@ class MeshMaterialVariableTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test pour la gestion des matériaux et des milieux.
+ * \brief Test module for material and environment management.
  */
 class MeshMaterialTesterModule
 : public ArcaneMeshMaterialTesterObject
@@ -88,21 +89,21 @@ class MeshMaterialTesterModule
   VariableCellReal m_density;
   VariableCellReal m_pressure;
   MaterialVariableCellReal m_mat_density2;
-  //! Variable pour tester la bonne prise en compte du PNoDump
+  //! Variable to test the correct handling of PNoDump
   MaterialVariableCellReal m_mat_nodump_real;
   VariableCellInt32 m_present_material;
   MaterialVariableCellInt32 m_mat_int32;
-  //! Variable pour tester la bonne prise en compte de setUsed(false)
+  //! Variable to test the correct handling of setUsed(false)
   MaterialVariableCellReal m_mat_not_used_real;
-  VariableScalarInt64 m_nb_starting_cell; //<! Nombre de mailles au démarrage
+  VariableScalarInt64 m_nb_starting_cell; //<! Number of meshes at startup
   IMeshMaterial* m_mat1 = nullptr;
   IMeshMaterial* m_mat2 = nullptr;
   IMeshBlock* m_block1 = nullptr;
   UniqueArray<VariableCellReal*> m_density_post_processing;
-  //! Partitioner en cas d'équilibrage. Est géré par une option du JDD.
+  //! Partitioner in case of balancing. Managed by a JDD option.
   IMeshPartitioner* m_mesh_partitioner = nullptr;
-  // Si non nul, indique qu'il faut vérifier les valeurs spectrales,
-  // car on a fait un re-partitionnement
+  // If not null, indicates that spectral values must be checked,
+  // because a re-partitioning was done
   Integer m_check_spectral_values_iteration = 0;
 
  private:

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshTestUtils.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
+/* Utility functions for 'CartesianMesh' tests.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CEA_TESTS_CARTESIANMESHTESTUTILS_H
 #define ARCANE_CEA_TESTS_CARTESIANMESHTESTUTILS_H
@@ -15,8 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/ArcaneTypes.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableTypes.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
@@ -34,8 +34,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour tester les variantes de 'CartesianMesh'
+ * \brief Utility class for testing 'CartesianMesh' variants
  */
 class CartesianMeshTestUtils
 : public TraceAccessor
@@ -53,7 +54,7 @@ class CartesianMeshTestUtils
 
   void checkSameId(Face item, FaceLocalId local_id) { _checkSameId(item, local_id); }
   void checkSameId(Cell item, CellLocalId local_id) { _checkSameId(item, local_id); }
-  void checkSameId(Node item,NodeLocalId local_id) { _checkSameId(item,local_id); }
+  void checkSameId(Node item, NodeLocalId local_id) { _checkSameId(item, local_id); }
   void setNbPrint(Int32 v) { m_nb_print = v; }
 
  private:
@@ -63,7 +64,7 @@ class CartesianMeshTestUtils
   Accelerator::IAcceleratorMng* m_accelerator_mng = nullptr;
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
-  VariableNodeReal m_node_density; 
+  VariableNodeReal m_node_density;
   Int32 m_nb_print = 100;
   bool m_is_amr = false;
 
@@ -93,7 +94,7 @@ class CartesianMeshTestUtils
 
  public:
 
-  //! Méthodes publiques car accessibles sur accélérateur
+  //! Public methods because they are accessible on the accelerator
   void _testDirCellAccelerator();
   void _testDirFaceAccelerator(int idir);
   void _testDirCellNodeAccelerator();
@@ -102,7 +103,7 @@ class CartesianMeshTestUtils
   void _testNodeToCellConnectivity3DAccelerator();
   void _testCellToNodeConnectivity3DAccelerator();
   void _testConnectivityByDirection();
-  template<typename ItemType> void
+  template <typename ItemType> void
   _testConnectivityByDirectionHelper(const ItemGroup& group);
 };
 
@@ -114,5 +115,4 @@ class CartesianMeshTestUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

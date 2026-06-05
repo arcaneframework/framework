@@ -1,19 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorMathUnitTest.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Service de test des fonctions mathématiques pour les accélérateurs.       */
+/* Test service for mathematical functions for accelerators.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ValueChecker.h"
 
 #include "arcane/utils/NumArray.h"
+
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/ServiceFactory.h"
 
@@ -33,8 +34,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'AcceleratorViews'.
+ * \brief Test service for the 'AcceleratorViews' class.
  */
 class AcceleratorMathUnitTest
 : public BasicUnitTest

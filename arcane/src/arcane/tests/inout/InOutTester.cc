@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* InOutTester.cc                                              (C) 2000-2015 */
 /*                                                                           */
-/* Service du test avancé des variables In/Out               .               */
+/* Advanced test service for In/Out variables.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
- 
+#include "arcane/core/BasicUnitTest.h"
+
 #include "arcane/tests/inout/InOutTester_axl.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,19 +32,20 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Service de test de InOut
+ * \brief InOut test service
  */
 class InOutTester
-  : public ArcaneInOutTesterObject
+: public ArcaneInOutTesterObject
 {
-public:
- 
+ public:
+
   InOutTester(const ServiceBuildInfo& sbi)
-    : ArcaneInOutTesterObject(sbi) {}
+  : ArcaneInOutTesterObject(sbi)
+  {}
 
   ~InOutTester() {}
-  
-public:
+
+ public:
 
   void initializeTest() {}
   void executeTest() {}
@@ -52,12 +54,12 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_INOUTTESTER(InOutTester,InOutTester);
+ARCANE_REGISTER_SERVICE_INOUTTESTER(InOutTester, InOutTester);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

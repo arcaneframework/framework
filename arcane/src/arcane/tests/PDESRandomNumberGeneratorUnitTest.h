@@ -1,19 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorUnitTest.h                         (C) 2000-2025 */
 /*                                                                           */
-/* Service de test du générateur de nombres (pseudo-)aléatoires avec         */
-/* l'algorithme pseudo-DES.                                                  */
+/* Test service for the (pseudo-)random number generator using               */
+/* the pseudo-DES algorithm.                                                 */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_TESTS_PDESRANDOMNUMBERGENERATORUNITTEST_H
 #define ARCANE_TESTS_PDESRANDOMNUMBERGENERATORUNITTEST_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,6 +39,7 @@ class PDESRandomNumberGeneratorUnitTest
 {
 
  public:
+
   explicit PDESRandomNumberGeneratorUnitTest(const ServiceBuildInfo& sb)
   : ArcanePDESRandomNumberGeneratorUnitTestObject(sb)
   , ptrRNG(nullptr)
@@ -49,6 +48,7 @@ class PDESRandomNumberGeneratorUnitTest
   ~PDESRandomNumberGeneratorUnitTest() {}
 
  public:
+
   void setUpForClass() override;
   void setUp() override;
 
@@ -59,6 +59,7 @@ class PDESRandomNumberGeneratorUnitTest
   void tearDownForClass() override;
 
  private:
+
   IRandomNumberGenerator* ptrRNG;
 
   const Int64 hardcoded_seed = 4294967297;

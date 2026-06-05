@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshModificationTester.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Service du test de la modification du maillage.                           */
+/* Mesh modification test service.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -119,7 +119,7 @@ executeTest()
 void MeshModificationTester::
 _addRemoveCells()
 {
-  // Uniquement valide pour les maillages 1D.
+  // Only valid for 1D meshes.
   Int32UniqueArray lids(allCells().size());
   ENUMERATE_CELL (icell, allCells()) {
     info() << "cell[" << icell->localId() << "," << icell->uniqueId() << "] type="
@@ -127,7 +127,7 @@ _addRemoveCells()
     lids[icell.index()] = icell->localId();
   }
 
-  // On vide le maillage
+  // Empty the mesh
   IMeshModifier* modifier = mesh()->modifier();
 
   modifier->removeCells(lids);
@@ -137,7 +137,7 @@ _addRemoveCells()
 
   info() << "===================== THE MESH IS EMPTY";
 
-  // On ajoute des noeuds
+  // Add nodes
   Int64UniqueArray nodes_uid(5);
   for (Integer i = 0; i < 5; ++i)
     nodes_uid[i] = i + 10;
@@ -274,16 +274,16 @@ _refineCells()
   UniqueArray<Real3> nodes_to_add_coords;
   VariableNodeReal3& nodes_coords = mesh()->nodesCoordinates();
   ENUMERATE_CELL (cell, all_cells) {
-    //TODO: tester si la maille est un hexaedre
+    //TODO: test if the mesh is a hexahedron
     //if (c.
     ++index;
     if ((index % 3) == 0) {
       cells_to_detach.add(cell.localId());
 
-      to_add_cells.add(8); // Pour une pyramide
-      //to_add_cells.Add(max_cell_uid + index); // Pour le uid
-      to_add_cells.add(cell->uniqueId().asInt64() + max_cell_uid); // Pour le uid, reutilise celui de la maille supprimée
-      //to_add_cells.Add(c.UniqueId); // Pour le uid, reutilise celui de la maille supprimée
+      to_add_cells.add(8); // For a pyramid
+      //to_add_cells.Add(max_cell_uid + index); // For the UID
+      to_add_cells.add(cell->uniqueId().asInt64() + max_cell_uid); // For the UID, reuse that of the deleted mesh
+      //to_add_cells.Add(c.UniqueId); // For the UID, reuse that of the deleted mesh
       to_add_cells.add(cell->node(0).uniqueId().asInt64());
       to_add_cells.add(cell->node(1).uniqueId().asInt64());
       to_add_cells.add(cell->node(2).uniqueId().asInt64());
@@ -329,7 +329,7 @@ _refineCells()
   }
   info() << ".";
 
-  // Avant d'ajouter les nouvelles mailles, il faut dÃ©tacher les anciennes
+  // Before adding new meshes, the old ones must be detached
   modifier->detachCells(cells_to_detach.constView());
   modifier->addCells(nb_cell_to_add, to_add_cells.constView());
   modifier->removeDetachedCells(cells_to_detach.constView());
@@ -359,8 +359,8 @@ _searchMaxUniqueId(ItemGroup group)
 void MeshModificationTester::
 _checkValidNbNode()
 {
-  // Vérifie que le nombre de noeuds correspond à celui géré
-  // via l'évènement IItemFamily::itemListChangedEvent.
+  // Checks that the number of nodes corresponds to the one managed
+  // via the IItemFamily::itemListChangedEvent.
   Int32 nb_expected_node = mesh()->nbNode();
   Int32 nb_node = m_nb_node_from_notify_event;
   info() << "NbNode from event=" << nb_node << " expected=" << nb_expected_node;

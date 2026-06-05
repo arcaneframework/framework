@@ -1,18 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TestUnitTest.cc                                             (C) 2000-2020 */
 /*                                                                           */
-/* Service de test pour les tests unitaires.                                 */
+/* Test service for unit tests.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ServiceBuildInfo.h"
+#include "arcane/core/ServiceBuildInfo.h"
 #include "arcane/tests/ArcaneTestGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace ArcaneTest
 {
@@ -20,8 +23,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du service
+ * \brief Service interface
  */
 class ITestBidonInterface
 {
@@ -53,8 +57,9 @@ namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test des tests unitaires
+ * \brief Unit test tests
  */
 class TestUnitTest
 : public ITestBidonInterface
@@ -67,12 +72,12 @@ class TestUnitTest
 
  public:
 
-  // le boulot normal du service
+  // the service's normal function
   Real compute() override;
 
  public:
 
-  // les méthodes de test
+  // the test methods
   void setUpForClass() override;
   void tearDownForClass() override;
   void setUp() override;
@@ -120,7 +125,7 @@ TestUnitTest::
 void TestUnitTest::
 setUpForClass()
 {
-	info() << "setUpForClass ";
+  info() << "setUpForClass ";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -129,7 +134,7 @@ setUpForClass()
 void TestUnitTest::
 tearDownForClass()
 {
-	info() << "tearDownForClass ";
+  info() << "tearDownForClass ";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -138,7 +143,7 @@ tearDownForClass()
 void TestUnitTest::
 setUp()
 {
-	info() << "setUp ";
+  info() << "setUp ";
   m_parallel_mng = subDomain()->parallelMng();
 }
 
@@ -148,51 +153,51 @@ setUp()
 void TestUnitTest::
 tearDown()
 {
-	info() << "tearDown ";
+  info() << "tearDown ";
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En utilisant les macros...
+// Using macros...
 void TestUnitTest::
 myTestMethod1()
 {
-	ASSERT_EQUAL(5, options()->myInt());
+  ASSERT_EQUAL(5, options()->myInt());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En utilisant les macros...
+// Using macros...
 void TestUnitTest::
 myTestMethod1Parallel()
 {
-	PARALLEL_ASSERT_EQUAL(5, options()->myInt(), m_parallel_mng);
+  PARALLEL_ASSERT_EQUAL(5, options()->myInt(), m_parallel_mng);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En n'utilisant pas les macros...
+// Not using macros...
 void TestUnitTest::
 myTestMethod2()
 {
-	ASSERT_EQUAL(5.5, options()->myDouble());
-	ASSERT_NEARLY_EQUAL(5.5, options()->myDouble());
-	ASSERT_NEARLY_EQUAL_EPSILON(5.5, options()->myDouble(),1e-10);
+  ASSERT_EQUAL(5.5, options()->myDouble());
+  ASSERT_NEARLY_EQUAL(5.5, options()->myDouble());
+  ASSERT_NEARLY_EQUAL_EPSILON(5.5, options()->myDouble(), 1e-10);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// En n'utilisant pas les macros...
+// Not using macros...
 void TestUnitTest::
 myTestMethod2Parallel()
 {
-	PARALLEL_ASSERT_EQUAL(5.5, options()->myDouble(), m_parallel_mng);
-	PARALLEL_ASSERT_NEARLY_EQUAL(5.5, options()->myDouble(), m_parallel_mng);
-	PARALLEL_ASSERT_NEARLY_EQUAL_EPSILON(5.5, options()->myDouble(),1e-10, m_parallel_mng);
+  PARALLEL_ASSERT_EQUAL(5.5, options()->myDouble(), m_parallel_mng);
+  PARALLEL_ASSERT_NEARLY_EQUAL(5.5, options()->myDouble(), m_parallel_mng);
+  PARALLEL_ASSERT_NEARLY_EQUAL_EPSILON(5.5, options()->myDouble(), 1e-10, m_parallel_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,8 +206,8 @@ myTestMethod2Parallel()
 void TestUnitTest::
 myTestMethod3()
 {
-	ASSERT_TRUE(options()->myBoolean());
-	ASSERT_EQUAL(true, options()->myBoolean());
+  ASSERT_TRUE(options()->myBoolean());
+  ASSERT_EQUAL(true, options()->myBoolean());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -211,8 +216,8 @@ myTestMethod3()
 void TestUnitTest::
 myTestMethod3Parallel()
 {
-	PARALLEL_ASSERT_TRUE(options()->myBoolean(), m_parallel_mng);
-	PARALLEL_ASSERT_EQUAL(true, options()->myBoolean(), m_parallel_mng);
+  PARALLEL_ASSERT_TRUE(options()->myBoolean(), m_parallel_mng);
+  PARALLEL_ASSERT_EQUAL(true, options()->myBoolean(), m_parallel_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,8 +226,8 @@ myTestMethod3Parallel()
 void TestUnitTest::
 myTestMethod4()
 {
-	ASSERT_NEARLY_ZERO(m_my_small_double);
-	ASSERT_NEARLY_ZERO(m_my_small_integer);
+  ASSERT_NEARLY_ZERO(m_my_small_double);
+  ASSERT_NEARLY_ZERO(m_my_small_integer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -231,8 +236,8 @@ myTestMethod4()
 void TestUnitTest::
 myTestMethod4Parallel()
 {
-	PARALLEL_ASSERT_NEARLY_ZERO(m_my_small_double, m_parallel_mng);
-	PARALLEL_ASSERT_NEARLY_ZERO(m_my_small_integer, m_parallel_mng);
+  PARALLEL_ASSERT_NEARLY_ZERO(m_my_small_double, m_parallel_mng);
+  PARALLEL_ASSERT_NEARLY_ZERO(m_my_small_integer, m_parallel_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -241,7 +246,7 @@ myTestMethod4Parallel()
 void TestUnitTest::
 myTestMethod5()
 {
-	ASSERT_NEARLY_ZERO_EPSILON(m_my_small_double*5000.0,1.0e-11);
+  ASSERT_NEARLY_ZERO_EPSILON(m_my_small_double * 5000.0, 1.0e-11);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -250,7 +255,7 @@ myTestMethod5()
 void TestUnitTest::
 myTestMethod5Parallel()
 {
-	PARALLEL_ASSERT_NEARLY_ZERO_EPSILON(m_my_small_double*5000.0,1.0e-11, m_parallel_mng);
+  PARALLEL_ASSERT_NEARLY_ZERO_EPSILON(m_my_small_double * 5000.0, 1.0e-11, m_parallel_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,14 +264,14 @@ myTestMethod5Parallel()
 Real TestUnitTest::
 compute()
 {
-	info() << "compute";
-	return options()->myDouble();
+  info() << "compute";
+  return options()->myDouble();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_TESTUNITTEST(TestUnitTest,TestUnitTest);
+ARCANE_REGISTER_SERVICE_TESTUNITTEST(TestUnitTest, TestUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

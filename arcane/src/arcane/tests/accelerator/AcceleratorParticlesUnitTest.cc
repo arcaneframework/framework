@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorParticlesUnitTest.cc                             (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des particules pour les accelerateurs.                    */
+/* Particle test service for accelerators.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,8 +35,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'AcceleratorViews'.
+ * \brief Test service for the 'AcceleratorViews' class.
  */
 class AcceleratorParticlesUnitTest
 : public BasicUnitTest
@@ -174,8 +175,8 @@ _executeTest1()
   NumArray<Int32, MDDim1> particle_cell_lids(max_id);
   VariableParticleInt32 var_particle_cell_lids(VariableBuildInfo(m_particle_family, "ParticleLocalId"));
 
-  // Vérifie que l'accès via la connectivité donne la même valeur que
-  // l'accès via l'entité
+  // Checks that access via connectivity gives the same value as
+  // access via the entity
   {
     auto command = makeCommand(m_queue);
     auto out_particle_cell_lids = viewOut(command, particle_cell_lids);
@@ -212,8 +213,8 @@ _executeTest2()
   NumArray<Int32, MDDim1> particle_cell_lids(max_id);
   VariableParticleInt32 var_particle_cell_lids(VariableBuildInfo(m_particle_family, "ParticleLocalId"));
 
-  // Vérifie que l'accès via la connectivité donne la même valeur que
-  // l'accès via l'entité
+  // Checks that access via connectivity gives the same value as
+  // access via the entity
   {
     auto command = makeCommand(m_queue);
     auto out_particle_cell_lids = viewOut(command, particle_cell_lids);
@@ -222,7 +223,7 @@ _executeTest2()
     command << RUNCOMMAND_ENUMERATE (ParticleLocalId, particle_lid, m_particle_family->allItems())
     {
       Int32 new_cell_lid = (particle_cell_connectivity.cellId(particle_lid) + 1) % max_cell_lid;
-      particle_cell_connectivity.setCellId(particle_lid,CellLocalId(new_cell_lid));
+      particle_cell_connectivity.setCellId(particle_lid, CellLocalId(new_cell_lid));
       out_particle_cell_lids[particle_lid] = new_cell_lid;
       out_var_particle_cell_lids[particle_lid] = new_cell_lid;
     };

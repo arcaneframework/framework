@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryCopyUnitTest.cc                                       (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des noyaux de recopie mémoire.                            */
+/* Memory copy kernel test service.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,8 +35,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Brief test service for the 'NumArray' class.
  */
 class MemoryCopyUnitTest
 : public BasicUnitTest
@@ -197,7 +198,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
 
-      // Remplit t1 avec les bonnes valeurs
+      // Fills t1 with the correct values
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
         auto [i] = iter();
@@ -209,7 +210,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       ConstMemoryView source(t1.to1DSpan());
       MutableMemoryView destination(destination_buffer.to1DSpan());
       MemoryUtils::copyWithIndexedDestination(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
-      // Teste copie vide
+      // Tests empty copy
       MemoryUtils::copyWithIndexedDestination(destination, source, {}, queue_ptr);
     }
 
@@ -229,7 +230,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       }
     }
 
-    // Remet des valeurs fausses dans t1
+    // Sets false values in t1
     {
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
@@ -243,11 +244,11 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       MutableMemoryView t1_view(t1.to1DSpan());
       ConstMemoryView destination_view(destination_buffer.to1DSpan());
       MemoryUtils::copyWithIndexedSource(t1_view, destination_view, indexes.to1DSpan().smallView(), queue_ptr);
-      // Teste copie vide
+      // Tests empty copy
       MemoryUtils::copyWithIndexedSource(t1_view, destination_view, {}, queue_ptr);
     }
 
-    // Vérifie la validité
+    // Checks validity
     {
       NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
       host_t1.copy(t1);
@@ -285,7 +286,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       ConstMemoryView source(t1.to1DSpan(), n2);
       MutableMemoryView destination(destination_buffer.to1DSpan(), n2);
       MemoryUtils::copyWithIndexedDestination(destination, source, indexes.to1DSpan().smallView(), queue_ptr);
-      // Teste copie vide
+      // Tests empty copy
       MemoryUtils::copyWithIndexedDestination(destination, source, {}, queue_ptr);
     }
 
@@ -307,7 +308,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       }
     }
 
-    // Remet des valeurs fausses dans t1
+    // Sets false values in t1
     {
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
@@ -321,7 +322,7 @@ _executeCopy(eMemoryRessource mem_kind, bool use_queue)
       MutableMemoryView t1_view(t1.to1DSpan(), n2);
       ConstMemoryView source_view(destination_buffer.to1DSpan(), n2);
       MemoryUtils::copyWithIndexedSource(t1_view, source_view, indexes.to1DSpan().smallView(), queue_ptr);
-      // Teste copie vide
+      // Tests empty copy
       MemoryUtils::copyWithIndexedSource(t1_view, source_view, {}, queue_ptr);
     }
 
@@ -377,7 +378,7 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
 
-      // Remplit t1 avec les bonnes valeurs
+      // Fills t1 with the correct values
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
         auto [i] = iter();
@@ -385,8 +386,8 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
       };
     }
 
-    // TODO: Ajoute test avec d'autres types (par exemple Real3)
-    // TODO: Faire des tests asynchrones
+    // TODO: Add test with other types (e.g., Real3)
+    // TODO: Do asynchronous tests
 
     const double fill_value = 3.4;
     if (use_index)
@@ -398,7 +399,7 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
     host_t1.copy(t1);
 
     {
-      // Regarde si les valeurs correspondantes aux index sont correctes
+      // Checks if the values corresponding to the indices are correct
       Int32 nb_to_test = (use_index) ? nb_index : n1;
       for (Int32 i = 0; i < nb_to_test; ++i) {
         auto v1 = fill_value;
@@ -416,7 +417,7 @@ _executeFill(eMemoryRessource mem_kind, bool use_queue, bool use_index)
       for (Int32 i = 0; i < nb_index; ++i)
         filter[indexes[i]] = 1;
 
-      // Regarde si les valeurs qui ne correspondent pas aux index sont correctes
+      // Checks if the values that do not correspond to the indices are correct
       for (int i = 0; i < n1; ++i) {
         if (filter[i] == 0) {
           auto v1 = _getValue(i);

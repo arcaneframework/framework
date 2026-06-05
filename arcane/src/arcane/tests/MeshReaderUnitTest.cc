@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshReaderUnitTest.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Service de test de lecture du maillage.                                   */
+/* Mesh reading test service.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,17 +35,18 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Mesh test module
  */
 class MeshReaderUnitTest
 : public ArcaneMeshReaderUnitTestObject
 {
-public:
+ public:
 
   explicit MeshReaderUnitTest(const ServiceBuildInfo& sbi);
 
-public:
+ public:
 
   void buildInitializeTest() override;
   void executeTest() override;
@@ -54,7 +55,7 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MESHREADERUNITTEST(MeshReaderUnitTest,MeshReaderUnitTest);
+ARCANE_REGISTER_SERVICE_MESHREADERUNITTEST(MeshReaderUnitTest, MeshReaderUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,9 +78,9 @@ buildInitializeTest()
   }
   if (!options()->compactMesh()) {
     Properties* p = mesh()->properties();
-    p->setBool("compact",false);
-    p->setBool("compact-after-allocate",false);
-    p->setBool("dump",false);
+    p->setBool("compact", false);
+    p->setBool("compact-after-allocate", false);
+    p->setBool("dump", false);
   }
   if (options()->generateUidFromNodesUid()) {
     mesh()->meshUniqueIdMng()->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(true);
@@ -94,18 +95,18 @@ executeTest()
 {
   info() << "Execute Test";
   if (options()->swapNodesUniqueId()) {
-    
-    // Cela ne fonctionne qu'en séquentiel.
+
+    // This only works in sequential mode.
     IItemFamily* node_family = mesh()->nodeFamily();
     Int32 nb_node = node_family->allItems().size();
     info() << "Swapping uniqueIds() of nodes nb_node=" << nb_node;
     NodeInfoListView nodes(node_family);
     std::minstd_rand generator(42);
-    std::uniform_int_distribution<int> distribution(0, nb_node-1);
+    std::uniform_int_distribution<int> distribution(0, nb_node - 1);
     Int32 nb_swap = nb_node / 2;
-    // Génère deux nombres aléatoires et échange les uniqueId
-    // des deux noeuds ayant comme localId() ceux qui sont générés
-    
+    // Generates two random numbers and swaps the uniqueIds
+    // of the two nodes whose localIds were generated
+
     for (Int32 i = 0; i < nb_swap; ++i) {
       Int32 lid0 = distribution(generator);
       Int32 lid1 = distribution(generator);
@@ -117,14 +118,14 @@ executeTest()
       node0.mutableItemBase().setUniqueId(uid1);
       node1.mutableItemBase().setUniqueId(uid0);
     }
-   mesh()->utilities()->recomputeItemsUniqueIdFromNodesUniqueId();
+    mesh()->utilities()->recomputeItemsUniqueIdFromNodesUniqueId();
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

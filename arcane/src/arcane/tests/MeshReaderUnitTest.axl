@@ -1,9 +1,6 @@
-<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" encoding="utf-8" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
-<!-- Options du jeu de données pour le service de test de lecture du maillage -->
+<!-- Options for the dataset for the mesh reading test service -->
 
 <service name="MeshReaderUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
@@ -12,25 +9,25 @@
 
   <simple name = "create-edges" type = "bool" default = "false">
     <description>
-      Indique si en 3D on créé les arêtes.
+      Indicates whether edges are created in 3D.
     </description>
   </simple>
 
   <simple name = "generate-uid-from-nodes-uid" type = "bool" default = "false">
     <description>
-      Si vrai, génère les uniqueId des arêtes et des faces à partir de ceux des noeuds.
+      If true, generates the uniqueIds of edges and faces based on those of the nodes.
     </description>
   </simple>
 
   <simple name = "compact-mesh" type = "bool" default = "false">
     <description>
-      Indique si on applique la propriété 'compact' et 'compact-after-allocate' au maillage.
+      Indicates whether the 'compact' and 'compact-after-allocate' properties are applied to the mesh.
     </description>
   </simple>
 
   <simple name = "swap-nodes-unique-id" type = "bool" default = "false">
     <description>
-      Indique si on test la modification des uniqueId() des noeuds.
+      Indicates whether the modification of the nodes' uniqueId() is tested.
     </description>
   </simple>
 

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RunQueueUnitTest.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Service de test unitaire des 'RunQueue'.                                  */
+/* Unit test service for 'RunQueue'.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,8 +42,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class RunQueueUnitTest
 : public BasicUnitTest
@@ -205,7 +206,8 @@ _executeTest1(bool use_priority)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Test la synchronisation entre deux RunQueue par un évènement.
+
+// Test synchronization between two RunQueues using an event.
 void RunQueueUnitTest::
 _executeTest2()
 {
@@ -242,7 +244,7 @@ _executeTest2()
 
   queue2.barrier();
 
-  // Vérifie les valeurs
+  // Check values
   for (Integer i = 0; i < nb_value; ++i) {
     Int32 v = values(i);
     Int32 expected_v = (i + 3) * 2;
@@ -252,7 +254,8 @@ _executeTest2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Teste la synchronisation avec un évènement.
+
+// Tests synchronization using an event.
 void RunQueueUnitTest::
 _executeTest3(bool use_pooling)
 {
@@ -296,7 +299,7 @@ _executeTest3(bool use_pooling)
   }
   event_array[0]->wait();
 
-  // Vérifie les valeurs
+  // Check values
   for (Integer i = 0; i < nb_value; ++i) {
     Int32 v = values(i);
     Int32 expected_v = (i + 3) * 2;
@@ -306,7 +309,8 @@ _executeTest3(bool use_pooling)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Test la synchronisation de avec un évènement et sémantique par référence.
+
+// Tests synchronization with an event and reference semantics.
 void RunQueueUnitTest::
 _executeTest4()
 {
@@ -360,7 +364,7 @@ _executeTest4()
   event.wait();
   //![SampleRunQueueEventSample1]
 
-  // Vérifie les valeurs
+  // Check values
   for (Integer i = 0; i < nb_value; ++i) {
     Int32 v = values(i);
     Int32 expected_v = (i + 3) * 2;
@@ -428,7 +432,7 @@ _executeTest6()
   bool use_concurrent = false;
   bool use_no_launch_command = false;
 
-  // Lance un kernel vide pour évaluer le coup du lancement.
+  // Launch an empty kernel to evaluate the launch overhead.
   auto queue = makeQueue(m_runner);
   int nb_iteration = 1000000;
   if (queue.isAcceleratorPolicy())

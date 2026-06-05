@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorPartitionerUnitTest.cc                           (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des algorithmes de partitionnement de liste.              */
+/* Test service for list partitioning algorithms.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,8 +40,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'NumArray'.
+ * \brief Test service for the 'NumArray' class.
  */
 class AcceleratorPartitionerUnitTest
 : public BasicService
@@ -81,7 +82,7 @@ class AcceleratorPartitionerUnitTest
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(AcceleratorPartitionerUnitTest,
-                        ServiceProperty("AcceleratorPartitionerUnitTest",ST_CaseOption),
+                        ServiceProperty("AcceleratorPartitionerUnitTest", ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IUnitTest));
 
 /*---------------------------------------------------------------------------*/
@@ -138,8 +139,9 @@ executeTest2(Int32 size, Int32 test_id)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste le partitionnement en 2 parties.
+ * \brief Tests partitioning into 2 parts.
  */
 template <typename DataType> void AcceleratorPartitionerUnitTest::
 _executeTestDataType2(Int32 size, Int32 test_id)
@@ -200,7 +202,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       // Teste liste vide
       generic_partitioner.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
       Int32 nb_list1 = generic_partitioner.nbFirstPart();
-      vc.areEqual(0,nb_list1,"applyIf 0");
+      vc.areEqual(0, nb_list1, "applyIf 0");
     }
     Int32 nb_list1 = 0;
     generic_partitioner.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
@@ -229,7 +231,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       Int32 nb_list1 = 0;
       generic_partitioner.applyWithIndex(0, setter_lambda, filter_lambda);
       nb_list1 = generic_partitioner.nbFirstPart();
-      vc.areEqual(0,nb_list1,"applyIf 1");
+      vc.areEqual(0, nb_list1, "applyIf 1");
     }
     Int32 nb_list1 = 0;
     generic_partitioner.applyWithIndex(n1, setter_lambda, filter_lambda);
@@ -246,8 +248,9 @@ _executeTestDataType2(Int32 size, Int32 test_id)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste le partitionnement en 3 parties.
+ * \brief Tests partitioning into 3 parts.
  */
 template <typename DataType> void AcceleratorPartitionerUnitTest::
 _executeTestDataType3(Int32 size, Int32 test_id)
@@ -326,7 +329,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
   Int32 nb_part2 = -2;
 
   switch (test_id) {
-  case 0: // Mode avec lambda de filtrage
+  case 0: // Mode with filtering lambda
   {
     //![TestSampleListPartitionerThreeWayIf]
     auto filter1_lambda = [] ARCCORE_HOST_DEVICE(DataType x) -> bool {
@@ -337,7 +340,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
     };
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
     {
-      // Test liste vide
+      // Test empty list
       generic_partitioner.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(),
                                   t3.to1DSpan().begin(), t4.to1DSpan().begin(),
                                   filter1_lambda, filter2_lambda, A_FUNCINFO);
@@ -353,7 +356,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
     nb_part2 = nb_parts[1];
     //![TestSampleListPartitionerThreeWayIf]
   } break;
-  case 1: // Mode avec lambda de filtrage et index
+  case 1: // Mode with filtering lambda and index
   {
     //![TestSampleListPartitionerThreeWayIndex]
     info() << "Doing test with index and setter/lambda";
@@ -379,7 +382,7 @@ _executeTestDataType3(Int32 size, Int32 test_id)
 
     Arcane::Accelerator::GenericPartitioner generic_partitioner(m_queue);
     {
-      // Test liste vide
+      // Test empty list
       generic_partitioner.applyWithIndex(0, first_setter_lambda,
                                          second_setter_lambda, unselected_setter_lambda,
                                          filter1_lambda, filter2_lambda, A_FUNCINFO);

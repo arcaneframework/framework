@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleHydroAcceleratorService.cc                            (C) 2000-2026 */
 /*                                                                           */
-/* Hydrodynamique simplifiée utilisant les accélérateurs.                    */
+/* Simplified hydrodynamics using accelerators.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -65,24 +65,22 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Valeurs des références pour la validation
+// Reference values for validation
 
-double reference_density_ratio_maximum[50] =
-{
-  0.0160000000000123,  0.00170124869728498, 0.00204753556227649, 0.00246464898229085, 0.00296699303969296,
+double reference_density_ratio_maximum[50] = {
+  0.0160000000000123, 0.00170124869728498, 0.00204753556227649, 0.00246464898229085, 0.00296699303969296,
   0.00357184605321602, 0.00429990753718348, 0.00517593569890155, 0.00622948244180328, 0.00749572737143143,
-  0.0090164010818345,  0.0108407663681081,  0.0130265854869945,  0.0156409265893111,  0.0187605241309118,
-  0.0224711528439701,  0.0268650034204973,  0.0320341788827704,  0.0380568426206173,  0.0449697158584332,
-  0.0527158336840399,  0.0610493482313262,  0.0693720874578793,  0.0764829000430237,  0.0802862351795616,
-  0.0670829131533573,  0.0597808473490852,  0.0654293866188612,  0.0698233985169538,  0.0724886365903765,
-  0.0728380430958174,  0.0702035766339136,  0.0641244580818233,  0.0547358261067183,  0.0568567736303723,
-  0.06387075263142,    0.0694149111684302,  0.0726551742001545,  0.072829643927776,   0.0693970119163948,
-  0.0622148000416855,  0.0517264119336657,  0.0592227788170703,  0.0665696529262891,  0.0717611469166364,
-  0.0741457462067702,  0.0730964375784472,  0.0682069575016942,  0.0596677042759776,  0.0543168109309979
+  0.0090164010818345, 0.0108407663681081, 0.0130265854869945, 0.0156409265893111, 0.0187605241309118,
+  0.0224711528439701, 0.0268650034204973, 0.0320341788827704, 0.0380568426206173, 0.0449697158584332,
+  0.0527158336840399, 0.0610493482313262, 0.0693720874578793, 0.0764829000430237, 0.0802862351795616,
+  0.0670829131533573, 0.0597808473490852, 0.0654293866188612, 0.0698233985169538, 0.0724886365903765,
+  0.0728380430958174, 0.0702035766339136, 0.0641244580818233, 0.0547358261067183, 0.0568567736303723,
+  0.06387075263142, 0.0694149111684302, 0.0726551742001545, 0.072829643927776, 0.0693970119163948,
+  0.0622148000416855, 0.0517264119336657, 0.0592227788170703, 0.0665696529262891, 0.0717611469166364,
+  0.0741457462067702, 0.0730964375784472, 0.0682069575016942, 0.0596677042759776, 0.0543168109309979
 };
 
-double reference_global_deltat[50] =
-{
+double reference_global_deltat[50] = {
   0.000000000000000e+00, 1.000000000000000e-04, 1.100000000000000e-04, 1.210000000000000e-04, 1.331000000000000e-04,
   1.464100000000001e-04, 1.610510000000001e-04, 1.771561000000001e-04, 1.948717100000001e-04, 2.143588810000001e-04,
   2.357947691000002e-04, 2.593742460100002e-04, 2.853116706110002e-04, 3.138428376721002e-04, 3.452271214393103e-04,
@@ -97,13 +95,12 @@ double reference_global_deltat[50] =
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module hydrodynamique simplifié avec vectorisation et parallélisation
- * par les threads. 
+ * \brief Simplified hydrodynamic module with vectorization and thread parallelism.
  *
- * Ce module implémente une hydrodynamique simple tri dimensionnelle,
- * parallèle, avec une pseudo-viscosité aux mailles en utilisant
- * les classes de vectorisation fournies par Arcane.
+ * This module implements simple three-dimensional, parallel hydrodynamics,
+ * using pseudo-viscosity on the cells by utilizing the vectorization classes provided by Arcane.
  */
 class SimpleHydroAcceleratorService
 : public ArcaneSimpleHydroAcceleratorObject
@@ -128,14 +125,13 @@ class SimpleHydroAcceleratorService
     ax::RunQueue queue_ref;
   };
 
-  // Note : il faut mettre ce champ statique si on veut que sa valeur
-  // soit correcte lors de la capture avec CUDA (sinon on passe par this et
-  // cela provoque une erreur mémoire)
+  // Note: This field must be static if we want its value
+  // to be correct during CUDA capture (otherwise, passing through this causes a memory error).
   static constexpr Integer MAX_NODE_CELL = 8;
 
  public:
 
-  //! Constructeur
+  //! Constructor
   explicit SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi);
 
  public:
@@ -166,36 +162,36 @@ class SimpleHydroAcceleratorService
 
  private:
 
-  static ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
+  static ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8], Real3 face_coord[6], Span<Real3> cqs);
 
  private:
 
-  VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
-  VariableCellInt32 m_sub_domain_id; //!< Numéro du sous-domaine associé à la maille
-  VariableCellReal m_density; //!< Densité par maille
-  VariableCellReal m_pressure; //!< Pression par maille
-  VariableCellReal m_cell_mass; //!< Masse par maille
-  VariableCellReal m_internal_energy; //!< Énergie interne des mailles
-  VariableCellReal m_volume; //!< Volume des mailles
-  VariableCellReal m_old_volume; //!< Volume d'une maille à l'itération précédente
-  VariableNodeReal3 m_force; //!< Force aux nœuds
-  VariableNodeReal3 m_velocity; //!< Vitesse aux nœuds
-  VariableNodeReal m_node_mass; //! Masse nodale
-  VariableCellReal m_cell_viscosity_force;  //!< Contribution locale des forces de viscosité
-  VariableCellReal m_viscosity_work;  //!< Travail des forces de viscosité par maille
-  VariableCellReal m_adiabatic_cst; //!< Constante adiabatique par maille
-  VariableCellReal m_characteristic_length; //!< Longueur caractéristique par maille
-  VariableCellReal m_sound_speed; //!< Vitesse du son dans la maille
-  VariableNodeReal3 m_node_coord; //!< Coordonnées des nœuds
-  VariableCellArrayReal3 m_cell_cqs; //!< Résultantes aux sommets pour chaque maille
+  VariableCellInt64 m_cell_unique_id; //!< Unique ID associated with the cell
+  VariableCellInt32 m_sub_domain_id; //!< Sub-domain number associated with the cell
+  VariableCellReal m_density; //!< Density per cell
+  VariableCellReal m_pressure; //!< Pressure per cell
+  VariableCellReal m_cell_mass; //!< Mass per cell
+  VariableCellReal m_internal_energy; //!< Internal energy of the cells
+  VariableCellReal m_volume; //!< Volume of the cells
+  VariableCellReal m_old_volume; //!< Volume of a cell at the previous iteration
+  VariableNodeReal3 m_force; //!< Force at the nodes
+  VariableNodeReal3 m_velocity; //!< Velocity at the nodes
+  VariableNodeReal m_node_mass; //! Node mass
+  VariableCellReal m_cell_viscosity_force; //!< Local contribution of viscosity forces
+  VariableCellReal m_viscosity_work; //!< Work done by viscosity forces per cell
+  VariableCellReal m_adiabatic_cst; //!< Adiabatic constant per cell
+  VariableCellReal m_characteristic_length; //!< Characteristic length per cell
+  VariableCellReal m_sound_speed; //!< Speed of sound in the cell
+  VariableNodeReal3 m_node_coord; //!< Node coordinates
+  VariableCellArrayReal3 m_cell_cqs; //!< Vertex results for each cell
 
-  VariableScalarReal m_density_ratio_maximum; //!< Accroissement maximum de la densité sur un pas de temps
-  VariableScalarReal m_delta_t_n; //!< Delta t n entre t^{n-1/2} et t^{n+1/2}
-  VariableScalarReal m_delta_t_f; //!< Delta t n+\demi  entre t^{n} et t^{n+1}
-  VariableScalarReal m_old_dt_f; //!< Delta t n-\demi  entre t^{n-1} et t^{n}
+  VariableScalarReal m_density_ratio_maximum; //!< Maximum density increase over a time step
+  VariableScalarReal m_delta_t_n; //!< Delta t n between t^{n-1/2} and t^{n+1/2}
+  VariableScalarReal m_delta_t_f; //!< Delta t n+1/2 between t^{n} and t^{n+1}
+  VariableScalarReal m_old_dt_f; //!< Delta t n-1/2 between t^{n-1} and t^{n}
 
   SimpleHydro::SimpleHydroModuleBase* m_module = nullptr;
-  //! Indice de chaque nœud dans la maille
+  //! Index of each node in the cell
   UniqueArray<Int8> m_node_index_in_cells;
 
   Runner m_runner;
@@ -221,28 +217,28 @@ class SimpleHydroAcceleratorService
 SimpleHydroAcceleratorService::
 SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 : ArcaneSimpleHydroAcceleratorObject(sbi)
-, m_cell_unique_id (VariableBuildInfo(sbi.mesh(),"UniqueId"))
-, m_sub_domain_id (VariableBuildInfo(sbi.mesh(),"SubDomainId"))
-, m_density (VariableBuildInfo(sbi.mesh(),"Density"))
-, m_pressure(VariableBuildInfo(sbi.mesh(),"Pressure"))
-, m_cell_mass(VariableBuildInfo(sbi.mesh(),"CellMass"))  
-, m_internal_energy(VariableBuildInfo(sbi.mesh(),"InternalEnergy"))  
-, m_volume(VariableBuildInfo(sbi.mesh(),"CellVolume"))
-, m_old_volume(VariableBuildInfo(sbi.mesh(),"OldCellVolume"))
-, m_force(VariableBuildInfo(sbi.mesh(),"Force",IVariable::PNoNeedSync))
-, m_velocity(VariableBuildInfo(sbi.mesh(),"Velocity"))
-, m_node_mass(VariableBuildInfo(sbi.mesh(),"NodeMass"))
-, m_cell_viscosity_force(VariableBuildInfo(sbi.mesh(),"CellViscosityForce"))
-, m_viscosity_work(VariableBuildInfo(sbi.mesh(),"ViscosityWork"))
-, m_adiabatic_cst(VariableBuildInfo(sbi.mesh(),"AdiabaticCst"))
+, m_cell_unique_id(VariableBuildInfo(sbi.mesh(), "UniqueId"))
+, m_sub_domain_id(VariableBuildInfo(sbi.mesh(), "SubDomainId"))
+, m_density(VariableBuildInfo(sbi.mesh(), "Density"))
+, m_pressure(VariableBuildInfo(sbi.mesh(), "Pressure"))
+, m_cell_mass(VariableBuildInfo(sbi.mesh(), "CellMass"))
+, m_internal_energy(VariableBuildInfo(sbi.mesh(), "InternalEnergy"))
+, m_volume(VariableBuildInfo(sbi.mesh(), "CellVolume"))
+, m_old_volume(VariableBuildInfo(sbi.mesh(), "OldCellVolume"))
+, m_force(VariableBuildInfo(sbi.mesh(), "Force", IVariable::PNoNeedSync))
+, m_velocity(VariableBuildInfo(sbi.mesh(), "Velocity"))
+, m_node_mass(VariableBuildInfo(sbi.mesh(), "NodeMass"))
+, m_cell_viscosity_force(VariableBuildInfo(sbi.mesh(), "CellViscosityForce"))
+, m_viscosity_work(VariableBuildInfo(sbi.mesh(), "ViscosityWork"))
+, m_adiabatic_cst(VariableBuildInfo(sbi.mesh(), "AdiabaticCst"))
 , m_characteristic_length(VariableBuildInfo(sbi.mesh(), "CharacteristicLength"))
-, m_sound_speed(VariableBuildInfo(sbi.mesh(),"SoundSpeed"))
-, m_node_coord(VariableBuildInfo(sbi.mesh(),"NodeCoord"))
-, m_cell_cqs(VariableBuildInfo(sbi.mesh(),"CellCQS"))
-, m_density_ratio_maximum(VariableBuildInfo(sbi.mesh(),"DensityRatioMaximum"))
-, m_delta_t_n(VariableBuildInfo(sbi.mesh(),"CenteredDeltaT"))
-, m_delta_t_f(VariableBuildInfo(sbi.mesh(),"SplitDeltaT"))
-, m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
+, m_sound_speed(VariableBuildInfo(sbi.mesh(), "SoundSpeed"))
+, m_node_coord(VariableBuildInfo(sbi.mesh(), "NodeCoord"))
+, m_cell_cqs(VariableBuildInfo(sbi.mesh(), "CellCQS"))
+, m_density_ratio_maximum(VariableBuildInfo(sbi.mesh(), "DensityRatioMaximum"))
+, m_delta_t_n(VariableBuildInfo(sbi.mesh(), "CenteredDeltaT"))
+, m_delta_t_f(VariableBuildInfo(sbi.mesh(), "SplitDeltaT"))
+, m_old_dt_f(VariableBuildInfo(sbi.mesh(), "OldDTf"))
 , m_module(nullptr)
 , m_node_index_in_cells(MemoryUtils::getDefaultDataAllocator())
 , m_runner(sbi.subDomain()->acceleratorMng()->runner())
@@ -280,86 +276,87 @@ hydroExit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialisation du module hydro lors du démarrage du cas.
+ * \brief Initialization of the hydro module when the case starts.
  */
 void SimpleHydroAcceleratorService::
 hydroStartInit()
 {
-  // Indique que les connectivités doivent être dupliquées sur accélérateur
-  // et pré-copie leur valeur.
+  // Indicates that connectivities must be duplicated on the accelerator
+  // and pre-copy their value.
   MeshUtils::markMeshConnectivitiesAsMostlyReadOnly(mesh(), &m_default_queue, true);
 
-  // Indique qu'on souhaite allouer la vitesse sur l'accélérateur si c'est actif.
-  // Cela permet de tester l'usage d'une variable côté accélérateur.
-  if (m_default_queue.isAcceleratorPolicy()){
+  // Indicates that we want to allocate velocity on the accelerator if it is active.
+  // This allows testing the use of a variable on the accelerator side.
+  if (m_default_queue.isAcceleratorPolicy()) {
     VariableUtils::experimentalChangeAllocator(m_velocity, eMemoryRessource::Device);
-    // On alloue aussi la force sur le device si possible.
-    // Comme cette variable sera synchronisée, on ne le fait que si MPI le supporte
-    // sinon cela va provoquer un accès mémoire invalide.
+    // We also allocate force on the device if possible.
+    // Since this variable will be synchronized, we only do it if MPI supports it
+    // otherwise, it will cause an invalid memory access.
     if (mesh()->parallelMng()->_internalApi()->isAcceleratorAware())
       VariableUtils::experimentalChangeAllocator(m_force, eMemoryRessource::Device);
   }
 
-  // Juste pour tester l'exemple de calcul du centre des mailles
-  _doTestInit(); 
+  // Just to test the cell center calculation example
+  _doTestInit();
 
   info() << "START_INIT sizeof(ItemLocalId)=" << sizeof(ItemLocalId);
   m_connectivity_view.setMesh(this->mesh());
 
-  ENUMERATE_CELL(icell,allCells()){
+  ENUMERATE_CELL (icell, allCells()) {
     m_sub_domain_id[icell] = subDomain()->subDomainId();
     m_cell_unique_id[icell] = icell->uniqueId();
   }
 
-  // Dimensionne les variables tableaux
+  // Dimension the array variables
   m_cell_cqs.resize(8);
   _computeNodeIndexInCells();
-  
+
   //info() << "SimpleHydro SIMD initialisation vec_size=" << SimdReal::BLOCK_SIZE;
 
-  // Vérifie que les valeurs initiales sont correctes
+  // Check that the initial values are correct
   {
     Integer nb_error = 0;
     auto command = makeCommand(m_default_queue);
-    auto in_pressure = ax::viewIn(command,m_pressure);
-    auto in_adiabatic_cst = ax::viewIn(command,m_adiabatic_cst);
-    ax::VariableCellRealInView in_density = ax::viewIn(command,m_density);
-    ENUMERATE_CELL(icell,allCells()){
+    auto in_pressure = ax::viewIn(command, m_pressure);
+    auto in_adiabatic_cst = ax::viewIn(command, m_adiabatic_cst);
+    ax::VariableCellRealInView in_density = ax::viewIn(command, m_density);
+    ENUMERATE_CELL (icell, allCells()) {
       CellLocalId cid = *icell;
       Real pressure = in_pressure[cid];
       Real adiabatic_cst = in_adiabatic_cst[cid];
       Real density = in_density[cid];
-      if (math::isZero(pressure) || math::isZero(density) || math::isZero(adiabatic_cst)){
-        info() << "Null valeur for cell=" << ItemPrinter(*icell)
+      if (math::isZero(pressure) || math::isZero(density) || math::isZero(adiabatic_cst)) {
+        info() << "Null value for cell=" << ItemPrinter(*icell)
                << " density=" << density
                << " pressure=" << pressure
                << " adiabatic_cst=" << adiabatic_cst;
         ++nb_error;
       }
     }
-    if (nb_error!=0)
-      ARCANE_FATAL("Some ({0}) cells are not initialised",nb_error);
+    if (nb_error != 0)
+      ARCANE_FATAL("Some ({0}) cells are not initialised", nb_error);
   }
-  
-  // Initialise le delta-t
+
+  // Initialize delta-t
   Real deltat_init = m_module->getDeltatInit();
   m_delta_t_n = deltat_init;
   m_delta_t_f = deltat_init;
 
-  // Initialise les données géométriques : volume, cqs, longueurs caractéristiques
+  // Initialize geometric data: volume, cqs, characteristic lengths
   computeGeometricValues();
 
   m_node_mass.fill(ARCANE_REAL(0.0));
   m_velocity.fill(Real3::zero(), &m_default_queue);
 
-  // Initialisation de la masse des mailles et des masses nodales
+  // Initialization of cell mass and nodal masses
   ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
     m_cell_mass[icell] = m_density[icell] * m_volume[icell];
 
     Real contrib_node_mass = ARCANE_REAL(0.125) * m_cell_mass[cell];
-    for( NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node ){
+    for (NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node) {
       m_node_mass[i_node] += contrib_node_mass;
     }
   }
@@ -369,32 +366,32 @@ hydroStartInit()
   {
     info() << "Initialize SoundSpeed and InternalEnergy";
     auto command = makeCommand(m_default_queue);
-    // Initialise l'énergie et la vitesse du son
-    auto in_pressure = ax::viewIn(command,m_pressure);
-    auto in_density = ax::viewIn(command,m_density);
-    auto in_adiabatic_cst = ax::viewIn(command,m_adiabatic_cst);
+    // Initialize energy and speed of sound
+    auto in_pressure = ax::viewIn(command, m_pressure);
+    auto in_density = ax::viewIn(command, m_density);
+    auto in_adiabatic_cst = ax::viewIn(command, m_adiabatic_cst);
 
-    auto out_internal_energy = ax::viewOut(command,m_internal_energy);
-    auto out_sound_speed = ax::viewOut(command,m_sound_speed);
+    auto out_internal_energy = ax::viewOut(command, m_internal_energy);
+    auto out_sound_speed = ax::viewOut(command, m_sound_speed);
 
-    command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
     {
       Real pressure = in_pressure[vi];
       Real adiabatic_cst = in_adiabatic_cst[vi];
       Real density = in_density[vi];
-      out_internal_energy[vi] = pressure / ((adiabatic_cst-1.0) * density);
-      out_sound_speed[vi] = math::sqrt(adiabatic_cst*pressure/density);
+      out_internal_energy[vi] = pressure / ((adiabatic_cst - 1.0) * density);
+      out_sound_speed[vi] = math::sqrt(adiabatic_cst * pressure / density);
     };
   }
 
-  // Remplit la structure contenant les informations sur les conditions aux limites
-  // Cela permet de garantir avec les accélérateurs qu'on pourra accéder
-  // de manière concurrente aux données.
+  // Fills the structure containing boundary condition information
+  // This ensures that with accelerators, we can access the data
+  // concurrently.
   {
     bool use_multiple_queue = options()->useMultipleQueueForBoundaryConditions;
     info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
     m_boundary_conditions.clear();
-    for( const auto& bc : m_module->getBoundaryConditions() ){
+    for (const auto& bc : m_module->getBoundaryConditions()) {
       FaceGroup face_group = bc->getSurface();
       Real value = bc->getValue();
       TypesSimpleHydro::eBoundaryCondition type = bc->getType();
@@ -413,27 +410,28 @@ hydroStartInit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des forces au temps courant \f$t^{n}\f$
+ * \brief Calculation of forces at the current time \f$t^{n}\f$
  */
 void SimpleHydroAcceleratorService::
 computeForces()
 {
-  // Calcul pour chaque nœud de chaque maille la contribution
-  // des forces de pression et de la pseudo-viscosité si necessaire
-  if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
+  // Calculation for every node in every mesh cell of the contribution
+  // of pressure forces and pseudo-viscosity if necessary
+  if (m_module->getViscosity() == TypesSimpleHydro::ViscosityCellScalar) {
     _computePressureForces();
     _computePseudoViscosityForces();
   }
-  else{
+  else {
     auto command = makeCommand(m_default_queue);
-    auto out_force = ax::viewOut(command,m_force);
-    auto in_force = ax::viewIn(command,m_force);
+    auto out_force = ax::viewOut(command, m_force);
+    auto in_force = ax::viewIn(command, m_force);
 
-    ENUMERATE_CELL(icell,allCells()){
+    ENUMERATE_CELL (icell, allCells()) {
       Cell cell = *icell;
       Real pressure = m_pressure[cell];
-      for( NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node ){
+      for (NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node) {
         NodeLocalId nid = *i_node;
         out_force[nid] = in_force[nid] + pressure * m_cell_cqs[icell][i_node.index()];
       }
@@ -443,8 +441,9 @@ computeForces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Pseudo viscosité scalaire aux mailles
+ * \brief Scalar pseudo-viscosity in cells
  */
 void SimpleHydroAcceleratorService::
 _computePressureForces()
@@ -454,38 +453,38 @@ _computePressureForces()
 
   auto cnc = m_connectivity_view.cellNode();
 
-  // Calcul de la divergence de la vitesse et de la viscosité scalaire
+  // Calculation of velocity divergence and scalar viscosity
 
   auto command = makeCommand(m_default_queue);
-  auto in_density = ax::viewIn(command,m_density);
-  auto in_velocity = ax::viewIn(command,m_velocity);
+  auto in_density = ax::viewIn(command, m_density);
+  auto in_velocity = ax::viewIn(command, m_velocity);
   auto in_characteristic_length = ax::viewIn(command, m_characteristic_length);
-  auto in_volume = ax::viewIn(command,m_volume);
-  auto in_sound_speed = ax::viewIn(command,m_sound_speed);
-  auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
-  auto out_cell_viscosity_force = ax::viewOut(command,m_cell_viscosity_force);
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+  auto in_volume = ax::viewIn(command, m_volume);
+  auto in_sound_speed = ax::viewIn(command, m_sound_speed);
+  auto in_cell_cqs = ax::viewIn(command, m_cell_cqs);
+  auto out_cell_viscosity_force = ax::viewOut(command, m_cell_viscosity_force);
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
     Real delta_speed = 0.0;
     Int32 i = 0;
-    for( NodeLocalId node : cnc.nodes(cid) ){
-      delta_speed += math::dot(in_velocity[node],in_cell_cqs[cid][i]);
+    for (NodeLocalId node : cnc.nodes(cid)) {
+      delta_speed += math::dot(in_velocity[node], in_cell_cqs[cid][i]);
       ++i;
     }
     delta_speed /= in_volume[cid];
 
-    // Capture uniquement les chocs
-    bool shock = (math::min(ARCANE_REAL(0.0),delta_speed)<ARCANE_REAL(0.0));
-    if (shock){
+    // Capture only shocks
+    bool shock = (math::min(ARCANE_REAL(0.0), delta_speed) < ARCANE_REAL(0.0));
+    if (shock) {
       Real rho = in_density[cid];
       Real sound_speed = in_sound_speed[cid];
       Real dx = in_characteristic_length[cid];
       Real quadratic_viscosity = rho * dx * dx * delta_speed * delta_speed;
-      Real linear_viscosity = -rho*sound_speed* dx * delta_speed;
+      Real linear_viscosity = -rho * sound_speed * dx * delta_speed;
       Real scalar_viscosity = linear_coef * linear_viscosity + quadratic_coef * quadratic_viscosity;
       out_cell_viscosity_force[cid] = scalar_viscosity;
     }
-    else{
+    else {
       out_cell_viscosity_force[cid] = 0.0;
     }
   };
@@ -498,22 +497,22 @@ void SimpleHydroAcceleratorService::
 _computePseudoViscosityForces()
 {
   auto command = makeCommand(m_default_queue);
-  auto in_pressure = ax::viewIn(command,m_pressure);
-  auto in_cell_viscosity_force = ax::viewIn(command,m_cell_viscosity_force);
-  auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
-  auto out_force = ax::viewOut(command,m_force);
+  auto in_pressure = ax::viewIn(command, m_pressure);
+  auto in_cell_viscosity_force = ax::viewIn(command, m_cell_viscosity_force);
+  auto in_cell_cqs = ax::viewIn(command, m_cell_cqs);
+  auto out_force = ax::viewOut(command, m_force);
   auto node_index_in_cells = m_node_index_in_cells.constSpan();
   auto nc_cty = m_connectivity_view.nodeCell();
-  command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
+  command << RUNCOMMAND_ENUMERATE (Node, node, allNodes())
   {
     Int32 first_pos = node.localId() * MAX_NODE_CELL; //max_node_cell;
     Real3 force;
     Integer index = 0;
-    for( CellLocalId cell : nc_cty.cells(node) ){
+    for (CellLocalId cell : nc_cty.cells(node)) {
       Int16 node_index = node_index_in_cells[first_pos + index];
       Real scalar_viscosity = in_cell_viscosity_force[cell];
       Real pressure = in_pressure[cell];
-      force += (pressure + scalar_viscosity)*in_cell_cqs[cell][node_index];
+      force += (pressure + scalar_viscosity) * in_cell_cqs[cell][node_index];
       ++index;
     }
     out_force[node] = force;
@@ -522,8 +521,9 @@ _computePseudoViscosityForces()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase2).
+ * \brief Compute velocity (phase 2).
  */
 void SimpleHydroAcceleratorService::
 computeVelocity()
@@ -531,15 +531,15 @@ computeVelocity()
   m_force.synchronize();
 
   auto command = makeCommand(m_default_queue);
-  auto in_node_mass = ax::viewIn(command,m_node_mass);
-  auto in_force = ax::viewIn(command,m_force);
-  auto in_out_velocity = ax::viewInOut(command,m_velocity);
+  auto in_node_mass = ax::viewIn(command, m_node_mass);
+  auto in_force = ax::viewIn(command, m_force);
+  auto in_out_velocity = ax::viewInOut(command, m_velocity);
   Real delta_t_n = m_delta_t_n();
 
-  // Calcule l'impulsion aux nœuds
-  command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
+  // Calculates the momentum at the nodes
+  command << RUNCOMMAND_ENUMERATE (Node, node, allNodes())
   {
-    Real node_mass  = in_node_mass[node];
+    Real node_mass = in_node_mass[node];
     Real3 old_velocity = in_out_velocity[node];
     Real3 new_velocity = old_velocity + (delta_t_n / node_mass) * in_force[node];
     in_out_velocity[node] = new_velocity;
@@ -548,28 +548,29 @@ computeVelocity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'impulsion (phase3).
+ * \brief Compute viscosity work (phase 3).
  */
 void SimpleHydroAcceleratorService::
 computeViscosityWork()
 {
   auto command = makeCommand(m_default_queue);
-  auto in_cell_viscosity_force = ax::viewIn(command,m_cell_viscosity_force);
-  auto in_velocity = ax::viewIn(command,m_velocity);
-  auto out_viscosity_work = ax::viewOut(command,m_viscosity_work);
-  auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
+  auto in_cell_viscosity_force = ax::viewIn(command, m_cell_viscosity_force);
+  auto in_velocity = ax::viewIn(command, m_velocity);
+  auto out_viscosity_work = ax::viewOut(command, m_viscosity_work);
+  auto in_cell_cqs = ax::viewIn(command, m_cell_cqs);
   auto cnc = m_connectivity_view.cellNode();
 
-  // Calcul du travail des forces de viscosité dans une maille
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+  // Calculation of the work done by viscosity forces in a cell
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
     Real work = 0.0;
     Real scalar_viscosity = in_cell_viscosity_force[cid];
-    if (!math::isZero(scalar_viscosity)){
+    if (!math::isZero(scalar_viscosity)) {
       Integer i = 0;
-      for( NodeLocalId node : cnc.nodes(cid) ){
-        work += math::dot(scalar_viscosity*in_cell_cqs[cid][i],in_velocity[node]);
+      for (NodeLocalId node : cnc.nodes(cid)) {
+        work += math::dot(scalar_viscosity * in_cell_cqs[cid][i], in_velocity[node]);
         ++i;
       }
     }
@@ -579,25 +580,26 @@ computeViscosityWork()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Prise en compte des conditions aux limites.
+ * \brief Apply boundary conditions.
  */
 void SimpleHydroAcceleratorService::
 applyBoundaryCondition()
 {
   auto queue = makeQueue(m_runner);
 
-  // Pour cette méthode, comme les conditions aux limites sont sur des groupes
-  // indépendants (ou alors avec la même valeur si c'est sur les mêmes nœuds),
-  // on peut exécuter les noyaux en asynchrone.
+  // For this method, since boundary conditions are on independent groups
+  // (or have the same value if they are on the same nodes),
+  // we can execute the kernels asynchronously.
   queue.setAsync(true);
   bool use_one_queue = !options()->useMultipleQueueForBoundaryConditions;
 
-  // Repositionne les vues si les groupes associés ont été modifiés
-  for( auto& bc : m_boundary_conditions )
+  // Reposition the views if the associated groups have been modified
+  for (auto& bc : m_boundary_conditions)
     bc.view = bc.nodes.view();
 
-  for( const auto& bc : m_boundary_conditions ){
+  for (const auto& bc : m_boundary_conditions) {
     Real value = bc.value;
     TypesSimpleHydro::eBoundaryCondition type = bc.type;
     NodeVectorView view = bc.view;
@@ -606,16 +608,23 @@ applyBoundaryCondition()
     if (use_one_queue)
       used_queue = queue;
     auto command = makeCommand(used_queue);
-    auto in_out_velocity = ax::viewInOut(command,m_velocity);
-    // boucle sur les faces de la surface
-    command << RUNCOMMAND_ENUMERATE(Node,node,view)
+    auto in_out_velocity = ax::viewInOut(command, m_velocity);
+    // loop over the faces of the surface
+    command << RUNCOMMAND_ENUMERATE (Node, node, view)
     {
-      // boucle sur les nœuds de la face
+      // loop over the nodes of the face
       switch (type) {
-      case TypesSimpleHydro::VelocityX: in_out_velocity[node].setX(value); break;
-      case TypesSimpleHydro::VelocityY: in_out_velocity[node].setY(value); break;
-      case TypesSimpleHydro::VelocityZ: in_out_velocity[node].setZ(value); break;
-      case TypesSimpleHydro::Unknown: break;
+      case TypesSimpleHydro::VelocityX:
+        in_out_velocity[node].setX(value);
+        break;
+      case TypesSimpleHydro::VelocityY:
+        in_out_velocity[node].setY(value);
+        break;
+      case TypesSimpleHydro::VelocityZ:
+        in_out_velocity[node].setZ(value);
+        break;
+      case TypesSimpleHydro::Unknown:
+        break;
       }
     };
   }
@@ -629,19 +638,20 @@ applyBoundaryCondition()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Déplace les noeuds.
+ * \brief Move nodes.
  */
 void SimpleHydroAcceleratorService::
 moveNodes()
 {
   auto command = makeCommand(m_default_queue);
   Real deltat_f = m_delta_t_f();
-  
-  auto in_velocity = ax::viewIn(command,m_velocity);
-  auto in_out_node_coord = ax::viewInOut(command,m_node_coord);
 
-  command << RUNCOMMAND_ENUMERATE(Node,node,allNodes())
+  auto in_velocity = ax::viewIn(command, m_velocity);
+  auto in_out_node_coord = ax::viewInOut(command, m_node_coord);
+
+  command << RUNCOMMAND_ENUMERATE (Node, node, allNodes())
   {
     Real3 coord = in_out_node_coord[node];
     in_out_node_coord[node] = coord + (deltat_f * in_velocity[node]);
@@ -650,9 +660,10 @@ moveNodes()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Mise à jour des densités et calcul de l'accroissement max
- *	  de la densité sur l'ensemble du maillage.
+ * \brief Update densities and calculate the maximum increase
+ *	  of density across the entire mesh.
  */
 void SimpleHydroAcceleratorService::
 updateDensity()
@@ -661,11 +672,11 @@ updateDensity()
   ax::ReducerMax2<double> density_ratio_maximum(command);
   density_ratio_maximum.setValue(0.0);
 
-  auto in_cell_mass = viewIn(command,m_cell_mass);
-  auto in_volume = viewIn(command,m_volume);
-  auto in_out_density = viewInOut(command,m_density);
+  auto in_cell_mass = viewIn(command, m_cell_mass);
+  auto in_volume = viewIn(command, m_volume);
+  auto in_out_density = viewInOut(command, m_density);
 
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells(),density_ratio_maximum)
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells(), density_ratio_maximum)
   {
     Real old_density = in_out_density[cid];
     Real new_density = in_cell_mass[cid] / in_volume[cid];
@@ -679,18 +690,18 @@ updateDensity()
 
   m_density_ratio_maximum = density_ratio_maximum.reducedValue();
 
-  // Vérifie la validité du ratio calculé. La référence n'est valide
-  // qu'en séquentiel, car ce ratio n'est pas réduit sur tous les
-  // sous-domaines.
-  if (m_module->isCheckNumericalResult()){
-    if (!mesh()->parallelMng()->isParallel()){
+  // Checks the validity of the calculated ratio. The reference is valid
+  // only in sequential mode, because this ratio is not reduced over all
+  // subdomains.
+  if (m_module->isCheckNumericalResult()) {
+    if (!mesh()->parallelMng()->isParallel()) {
       Integer iteration = m_global_iteration();
-      if (iteration<=50){
+      if (iteration <= 50) {
         Real max_dr = m_density_ratio_maximum();
-        Real ref_max_dr = reference_density_ratio_maximum[iteration-1];
-        if (!math::isNearlyEqualWithEpsilon(max_dr,ref_max_dr,1.0e-12))
+        Real ref_max_dr = reference_density_ratio_maximum[iteration - 1];
+        if (!math::isNearlyEqualWithEpsilon(max_dr, ref_max_dr, 1.0e-12))
           ARCANE_FATAL("Bad value for density_ratio_maximum: ref={0} v={1} diff={2}",
-                       ref_max_dr,max_dr,(ref_max_dr-max_dr)/ref_max_dr);
+                       ref_max_dr, max_dr, (ref_max_dr - max_dr) / ref_max_dr);
       }
     }
   }
@@ -698,48 +709,49 @@ updateDensity()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'équation d'état et calcul l'énergie interne et la
- * pression.
+ * \brief Apply the equation of state and calculate internal energy and
+ * pressure.
  */
 void SimpleHydroAcceleratorService::
 applyEquationOfState()
 {
   auto command = makeCommand(m_default_queue);
   const Real deltatf = m_delta_t_f();
-  const bool add_viscosity_force = (m_module->getViscosity()!=TypesSimpleHydro::ViscosityNo);
-  
-  auto in_adiabatic_cst = ax::viewIn(command,m_adiabatic_cst);
-  auto in_volume = ax::viewIn(command,m_volume);
-  auto in_density = ax::viewIn(command,m_density);
-  auto in_old_volume = ax::viewIn(command,m_old_volume);
-  auto in_cell_mass = ax::viewIn(command,m_cell_mass);
-  auto in_viscosity_work = ax::viewIn(command,m_viscosity_work);
+  const bool add_viscosity_force = (m_module->getViscosity() != TypesSimpleHydro::ViscosityNo);
 
-  auto in_out_internal_energy = ax::viewInOut(command,m_internal_energy);
-  auto out_sound_speed = ax::viewOut(command,m_sound_speed);
-  auto out_pressure = ax::viewOut(command,m_pressure);
+  auto in_adiabatic_cst = ax::viewIn(command, m_adiabatic_cst);
+  auto in_volume = ax::viewIn(command, m_volume);
+  auto in_density = ax::viewIn(command, m_density);
+  auto in_old_volume = ax::viewIn(command, m_old_volume);
+  auto in_cell_mass = ax::viewIn(command, m_cell_mass);
+  auto in_viscosity_work = ax::viewIn(command, m_viscosity_work);
 
-  // Calcul de l'énergie interne
-  command << RUNCOMMAND_ENUMERATE(Cell,vi,allCells())
+  auto in_out_internal_energy = ax::viewInOut(command, m_internal_energy);
+  auto out_sound_speed = ax::viewOut(command, m_sound_speed);
+  auto out_pressure = ax::viewOut(command, m_pressure);
+
+  // Calculation of internal energy
+  command << RUNCOMMAND_ENUMERATE (Cell, vi, allCells())
   {
     Real adiabatic_cst = in_adiabatic_cst[vi];
     Real volume_ratio = in_volume[vi] / in_old_volume[vi];
-    Real x = 0.5* (adiabatic_cst-1.0);
-    Real numer_accrois_nrj = 1.0 + x*(1.0-volume_ratio);
-    Real denom_accrois_nrj = 1.0 + x*(1.0-(1.0/volume_ratio));
+    Real x = 0.5 * (adiabatic_cst - 1.0);
+    Real numer_accrois_nrj = 1.0 + x * (1.0 - volume_ratio);
+    Real denom_accrois_nrj = 1.0 + x * (1.0 - (1.0 / volume_ratio));
     Real internal_energy = in_out_internal_energy[vi];
-    internal_energy = internal_energy * (numer_accrois_nrj/denom_accrois_nrj);
+    internal_energy = internal_energy * (numer_accrois_nrj / denom_accrois_nrj);
 
-    // Prise en compte du travail des forces de viscosité
+    // Account for the work done by viscosity forces
     if (add_viscosity_force)
-      internal_energy = internal_energy - deltatf*in_viscosity_work[vi] / (in_cell_mass[vi]*denom_accrois_nrj);
+      internal_energy = internal_energy - deltatf * in_viscosity_work[vi] / (in_cell_mass[vi] * denom_accrois_nrj);
 
     in_out_internal_energy[vi] = internal_energy;
 
     Real density = in_density[vi];
-    Real pressure = (adiabatic_cst-1.0) * density * internal_energy;
-    Real sound_speed = math::sqrt(adiabatic_cst*pressure/density);
+    Real pressure = (adiabatic_cst - 1.0) * density * internal_energy;
+    Real sound_speed = math::sqrt(adiabatic_cst * pressure / density);
     out_pressure[vi] = pressure;
     out_sound_speed[vi] = sound_speed;
   };
@@ -747,15 +759,16 @@ applyEquationOfState()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des nouveaux pas de temps.
+ * \brief Calculation of new time steps.
  */
 void SimpleHydroAcceleratorService::
 computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
 
-  // Calcul du pas de temps pour le respect du critère de CFL
+  // Calculation of the time step to respect the CFL criterion
 
   Real minimum_aux = 0.0;
 
@@ -763,9 +776,9 @@ computeDeltaT()
     auto command = makeCommand(m_default_queue);
     command.addNbStride(16);
     ax::ReducerMin2<double> minimum_aux_reducer(command);
-    auto in_sound_speed = ax::viewIn(command,m_sound_speed);
+    auto in_sound_speed = ax::viewIn(command, m_sound_speed);
     auto in_characteristic_length = ax::viewIn(command, m_characteristic_length);
-    command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells(),minimum_aux_reducer)
+    command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells(), minimum_aux_reducer)
     {
       Real cell_dx = in_characteristic_length[cid];
       Real sound_speed = in_sound_speed[cid];
@@ -775,67 +788,68 @@ computeDeltaT()
     minimum_aux = minimum_aux_reducer.reducedValue();
   }
 
-  Real new_dt = m_module->getCfl()*minimum_aux;
+  Real new_dt = m_module->getCfl() * minimum_aux;
 
-  // Pas de variations trop brutales à la hausse comme à la baisse
+  // No overly drastic variations upwards or downwards
   Real max_dt = (1.0 + m_module->getVariationSup()) * old_dt;
   Real min_dt = (1.0 - m_module->getVariationInf()) * old_dt;
 
-  new_dt = math::min(new_dt,max_dt);
-  new_dt = math::max(new_dt,min_dt);
+  new_dt = math::min(new_dt, max_dt);
+  new_dt = math::max(new_dt, min_dt);
 
   Real max_density_ratio = m_density_ratio_maximum();
 
-  // control de l'accroissement relatif de la densité
+  // control of the relative density increase
   Real dgr = m_module->getDensityGlobalRatio();
-  if (max_density_ratio>dgr)
-    new_dt = math::min(old_dt*dgr/max_density_ratio,new_dt);
+  if (max_density_ratio > dgr)
+    new_dt = math::min(old_dt * dgr / max_density_ratio, new_dt);
 
   IParallelMng* pm = mesh()->parallelMng();
-  new_dt = pm->reduce(Parallel::ReduceMin,new_dt);
+  new_dt = pm->reduce(Parallel::ReduceMin, new_dt);
 
-  // Respect des valeurs min et max imposées par le fichier de données .plt
-  new_dt = math::min(new_dt,m_module->getDeltatMax());
-  new_dt = math::max(new_dt,m_module->getDeltatMin());
+  // Respect of min and max values imposed by the .plt data file
+  new_dt = math::min(new_dt, m_module->getDeltatMax());
+  new_dt = math::max(new_dt, m_module->getDeltatMin());
 
-  if (m_module->isCheckNumericalResult()){
+  if (m_module->isCheckNumericalResult()) {
     Integer iteration = m_global_iteration();
-    if (iteration<25){
+    if (iteration < 25) {
       Real ref_new_dt = reference_global_deltat[iteration];
-      if (!math::isNearlyEqual(new_dt,ref_new_dt))
+      if (!math::isNearlyEqual(new_dt, ref_new_dt))
         ARCANE_FATAL("Bad value for 'new_dt' ref={0} v={1} diff={2}",
-                     ref_new_dt,new_dt,(new_dt-ref_new_dt)/ref_new_dt);
+                     ref_new_dt, new_dt, (new_dt - ref_new_dt) / ref_new_dt);
     }
   }
 
-  // Le dernier calcul se fait exactement au temps stopTime()
+  // The last calculation is done exactly at stopTime()
   {
-    Real stop_time  = m_module->getFinalTime();
-    bool not_yet_finish = ( m_global_time() < stop_time);
-    bool too_much = ( (m_global_time()+new_dt) > stop_time);
+    Real stop_time = m_module->getFinalTime();
+    bool not_yet_finish = (m_global_time() < stop_time);
+    bool too_much = ((m_global_time() + new_dt) > stop_time);
 
-    if ( not_yet_finish && too_much ){
+    if (not_yet_finish && too_much) {
       new_dt = stop_time - m_global_time();
       subDomain()->timeLoopMng()->stopComputeLoop(true);
     }
   }
 
-  // Mise à jour des variables
+  // Update variables
   m_old_dt_f.assign(old_dt);
-  m_delta_t_n.assign(ARCANE_REAL(0.5)*(old_dt+new_dt));
+  m_delta_t_n.assign(ARCANE_REAL(0.5) * (old_dt + new_dt));
   m_delta_t_f.assign(new_dt);
   m_global_deltat.assign(new_dt);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul des résultantes aux nœuds d'une maille hexaédrique.
+ * \brief Calculation of resultant forces at the nodes of a hexahedral mesh.
  *
- * La méthode utilisée est celle du découpage en quatre triangles.
+ * The method used is the one of dividing into four triangles.
  */
 ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
-computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
+computeCQs(Real3 node_coord[8], Real3 face_coord[6], Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];
   const Real3 c1 = face_coord[1];
@@ -847,130 +861,137 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
   constexpr Real demi = 0.5;
   constexpr Real five = 5.0;
 
-  // Calcul des normales face 1 :
-  const Real3 n1a04 = demi * math::cross(node_coord[0] - c0 , node_coord[3] - c0);
-  const Real3 n1a03 = demi * math::cross(node_coord[3] - c0 , node_coord[2] - c0);
-  const Real3 n1a02 = demi * math::cross(node_coord[2] - c0 , node_coord[1] - c0);
-  const Real3 n1a01 = demi * math::cross(node_coord[1] - c0 , node_coord[0] - c0);
+  // Calculation of face 1 normals:
+  const Real3 n1a04 = demi * math::cross(node_coord[0] - c0, node_coord[3] - c0);
+  const Real3 n1a03 = demi * math::cross(node_coord[3] - c0, node_coord[2] - c0);
+  const Real3 n1a02 = demi * math::cross(node_coord[2] - c0, node_coord[1] - c0);
+  const Real3 n1a01 = demi * math::cross(node_coord[1] - c0, node_coord[0] - c0);
 
-  // Calcul des normales face 2 :
-  const Real3 n2a05 = demi * math::cross(node_coord[0] - c1 , node_coord[4] - c1);
-  const Real3 n2a12 = demi * math::cross(node_coord[4] - c1 , node_coord[7] - c1);
-  const Real3 n2a08 = demi * math::cross(node_coord[7] - c1 , node_coord[3] - c1);
-  const Real3 n2a04 = demi * math::cross(node_coord[3] - c1 , node_coord[0] - c1);
+  // Calculation of face 2 normals:
+  const Real3 n2a05 = demi * math::cross(node_coord[0] - c1, node_coord[4] - c1);
+  const Real3 n2a12 = demi * math::cross(node_coord[4] - c1, node_coord[7] - c1);
+  const Real3 n2a08 = demi * math::cross(node_coord[7] - c1, node_coord[3] - c1);
+  const Real3 n2a04 = demi * math::cross(node_coord[3] - c1, node_coord[0] - c1);
 
-  // Calcul des normales face 3 :
-  const Real3 n3a01 = demi * math::cross(node_coord[0] - c2 , node_coord[1] - c2);
-  const Real3 n3a06 = demi * math::cross(node_coord[1] - c2 , node_coord[5] - c2);
-  const Real3 n3a09 = demi * math::cross(node_coord[5] - c2 , node_coord[4] - c2);
-  const Real3 n3a05 = demi * math::cross(node_coord[4] - c2 , node_coord[0] - c2);
+  // Calculation of face 3 normals:
+  const Real3 n3a01 = demi * math::cross(node_coord[0] - c2, node_coord[1] - c2);
+  const Real3 n3a06 = demi * math::cross(node_coord[1] - c2, node_coord[5] - c2);
+  const Real3 n3a09 = demi * math::cross(node_coord[5] - c2, node_coord[4] - c2);
+  const Real3 n3a05 = demi * math::cross(node_coord[4] - c2, node_coord[0] - c2);
 
-  // Calcul des normales face 4 :
-  const Real3 n4a09 = demi * math::cross(node_coord[4] - c3 , node_coord[5] - c3);
-  const Real3 n4a10 = demi * math::cross(node_coord[5] - c3 , node_coord[6] - c3);
-  const Real3 n4a11 = demi * math::cross(node_coord[6] - c3 , node_coord[7] - c3);
-  const Real3 n4a12 = demi * math::cross(node_coord[7] - c3 , node_coord[4] - c3);
-	
-  // Calcul des normales face 5 :
-  const Real3 n5a02 = demi * math::cross(node_coord[1] - c4 , node_coord[2] - c4);
-  const Real3 n5a07 = demi * math::cross(node_coord[2] - c4 , node_coord[6] - c4);
-  const Real3 n5a10 = demi * math::cross(node_coord[6] - c4 , node_coord[5] - c4);
-  const Real3 n5a06 = demi * math::cross(node_coord[5] - c4 , node_coord[1] - c4);
-      
-  // Calcul des normales face 6 :
-  const Real3 n6a03 = demi * math::cross(node_coord[2] - c5 , node_coord[3] - c5);
-  const Real3 n6a08 = demi * math::cross(node_coord[3] - c5 , node_coord[7] - c5);
-  const Real3 n6a11 = demi * math::cross(node_coord[7] - c5 , node_coord[6] - c5);
-  const Real3 n6a07 = demi * math::cross(node_coord[6] - c5 , node_coord[2] - c5);
+  // Calculation of face 4 normals:
+  const Real3 n4a09 = demi * math::cross(node_coord[4] - c3, node_coord[5] - c3);
+  const Real3 n4a10 = demi * math::cross(node_coord[5] - c3, node_coord[6] - c3);
+  const Real3 n4a11 = demi * math::cross(node_coord[6] - c3, node_coord[7] - c3);
+  const Real3 n4a12 = demi * math::cross(node_coord[7] - c3, node_coord[4] - c3);
+
+  // Calculation of face 5 normals:
+  const Real3 n5a02 = demi * math::cross(node_coord[1] - c4, node_coord[2] - c4);
+  const Real3 n5a07 = demi * math::cross(node_coord[2] - c4, node_coord[6] - c4);
+  const Real3 n5a10 = demi * math::cross(node_coord[6] - c4, node_coord[5] - c4);
+  const Real3 n5a06 = demi * math::cross(node_coord[5] - c4, node_coord[1] - c4);
+
+  // Calculation of face 6 normals:
+  const Real3 n6a03 = demi * math::cross(node_coord[2] - c5, node_coord[3] - c5);
+  const Real3 n6a08 = demi * math::cross(node_coord[3] - c5, node_coord[7] - c5);
+  const Real3 n6a11 = demi * math::cross(node_coord[7] - c5, node_coord[6] - c5);
+  const Real3 n6a07 = demi * math::cross(node_coord[6] - c5, node_coord[2] - c5);
 
   constexpr Real real_1div12 = 1.0 / 12.0;
 
-  // Calcul des résultantes aux sommets :
-  cqs[0] = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
-            (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*real_1div12;
-  cqs[1] = (five*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
-            (n1a04 + n1a03 + n3a09 + n3a05 + n5a10 + n5a07))*real_1div12;
-  cqs[2] = (five*(n1a02 + n1a03 + n5a07 + n5a02 + n6a07 + n6a03) +
-            (n1a01 + n1a04 + n5a06 + n5a10 + n6a11 + n6a08))*real_1div12;
-  cqs[3] = (five*(n1a03 + n1a04 + n2a08 + n2a04 + n6a08 + n6a03) +
-            (n1a01 + n1a02 + n2a05 + n2a12 + n6a07 + n6a11))*real_1div12;
-  cqs[4] = (five*(n2a05 + n2a12 + n3a05 + n3a09 + n4a09 + n4a12) +
-            (n2a08 + n2a04 + n3a01 + n3a06 + n4a10 + n4a11))*real_1div12;
-  cqs[5] = (five*(n3a06 + n3a09 + n4a09 + n4a10 + n5a10 + n5a06) +
-            (n3a01 + n3a05 + n4a12 + n4a11 + n5a07 + n5a02))*real_1div12;
-  cqs[6] = (five*(n4a11 + n4a10 + n5a10 + n5a07 + n6a07 + n6a11) +
-            (n4a12 + n4a09 + n5a06 + n5a02 + n6a03 + n6a08))*real_1div12;
-  cqs[7] = (five*(n2a08 + n2a12 + n4a12 + n4a11 + n6a11 + n6a08) +
-            (n2a04 + n2a05 + n4a09 + n4a10 + n6a07 + n6a03))*real_1div12;
+  // Calculation of resultant forces at the vertices:
+  cqs[0] = (five * (n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
+            (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09)) *
+  real_1div12;
+  cqs[1] = (five * (n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
+            (n1a04 + n1a03 + n3a09 + n3a05 + n5a10 + n5a07)) *
+  real_1div12;
+  cqs[2] = (five * (n1a02 + n1a03 + n5a07 + n5a02 + n6a07 + n6a03) +
+            (n1a01 + n1a04 + n5a06 + n5a10 + n6a11 + n6a08)) *
+  real_1div12;
+  cqs[3] = (five * (n1a03 + n1a04 + n2a08 + n2a04 + n6a08 + n6a03) +
+            (n1a01 + n1a02 + n2a05 + n2a12 + n6a07 + n6a11)) *
+  real_1div12;
+  cqs[4] = (five * (n2a05 + n2a12 + n3a05 + n3a09 + n4a09 + n4a12) +
+            (n2a08 + n2a04 + n3a01 + n3a06 + n4a10 + n4a11)) *
+  real_1div12;
+  cqs[5] = (five * (n3a06 + n3a09 + n4a09 + n4a10 + n5a10 + n5a06) +
+            (n3a01 + n3a05 + n4a12 + n4a11 + n5a07 + n5a02)) *
+  real_1div12;
+  cqs[6] = (five * (n4a11 + n4a10 + n5a10 + n5a07 + n6a07 + n6a11) +
+            (n4a12 + n4a09 + n5a06 + n5a02 + n6a03 + n6a08)) *
+  real_1div12;
+  cqs[7] = (five * (n2a08 + n2a12 + n4a12 + n4a11 + n6a11 + n6a08) +
+            (n2a04 + n2a05 + n4a09 + n4a10 + n6a07 + n6a03)) *
+  real_1div12;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul du volume des mailles, des longueurs caractéristiques
- * et des résultantes aux sommets.
+ * \brief Calculation of mesh volumes, characteristic lengths
+ * and resultant forces at the vertices.
  */
 void SimpleHydroAcceleratorService::
 computeGeometricValues()
 {
   auto command = makeCommand(m_default_queue);
-  auto in_node_coord = ax::viewIn(command,m_node_coord);
-  auto in_out_cell_cqs = ax::viewInOut(command,m_cell_cqs);
-  auto in_volume = ax::viewIn(command,m_volume);
+  auto in_node_coord = ax::viewIn(command, m_node_coord);
+  auto in_out_cell_cqs = ax::viewInOut(command, m_cell_cqs);
+  auto in_volume = ax::viewIn(command, m_volume);
 
-  auto out_volume = ax::viewOut(command,m_volume);
+  auto out_volume = ax::viewOut(command, m_volume);
   auto out_old_volume = ax::viewOut(command, m_old_volume);
   auto out_characteristic_length = ax::viewOut(command, m_characteristic_length);
 
   auto cnc = m_connectivity_view.cellNode();
 
-  command << RUNCOMMAND_ENUMERATE(Cell,cid,allCells())
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
     auto nodes = cnc.nodes(cid);
 
-    // Copie locale des coordonnées des sommets d'une maille
-    Real3 coord[8] =
-    {
-      in_node_coord[nodes[0]],in_node_coord[nodes[1]],
-      in_node_coord[nodes[2]],in_node_coord[nodes[3]],
-      in_node_coord[nodes[4]],in_node_coord[nodes[5]],
-      in_node_coord[nodes[6]],in_node_coord[nodes[7]]
+    // Local copy of the coordinates of a mesh's vertices
+    Real3 coord[8] = {
+      in_node_coord[nodes[0]], in_node_coord[nodes[1]],
+      in_node_coord[nodes[2]], in_node_coord[nodes[3]],
+      in_node_coord[nodes[4]], in_node_coord[nodes[5]],
+      in_node_coord[nodes[6]], in_node_coord[nodes[7]]
     };
 
-    // Coordonnées des centres des faces
-    Real3 face_coord[6] =
-    {
-      0.25 * ( coord[0] + coord[3] + coord[2] + coord[1] ),
-      0.25 * ( coord[0] + coord[4] + coord[7] + coord[3] ),
-      0.25 * ( coord[0] + coord[1] + coord[5] + coord[4] ),
-      0.25 * ( coord[4] + coord[5] + coord[6] + coord[7] ),
-      0.25 * ( coord[1] + coord[2] + coord[6] + coord[5] ),
-      0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] ),
+    // Coordinates of the face centers
+    Real3 face_coord[6] = {
+      0.25 * (coord[0] + coord[3] + coord[2] + coord[1]),
+      0.25 * (coord[0] + coord[4] + coord[7] + coord[3]),
+      0.25 * (coord[0] + coord[1] + coord[5] + coord[4]),
+      0.25 * (coord[4] + coord[5] + coord[6] + coord[7]),
+      0.25 * (coord[1] + coord[2] + coord[6] + coord[5]),
+      0.25 * (coord[2] + coord[3] + coord[7] + coord[6]),
     };
 
-    // Calcule la longueur caractéristique de la maille.
+    // Calculates the characteristic length of the mesh.
     {
-      Real3 median1 = face_coord[0]-face_coord[3];
-      Real3 median2 = face_coord[2]-face_coord[5];
-      Real3 median3 = face_coord[1]-face_coord[4];
+      Real3 median1 = face_coord[0] - face_coord[3];
+      Real3 median2 = face_coord[2] - face_coord[5];
+      Real3 median3 = face_coord[1] - face_coord[4];
       Real d1 = median1.normL2();
       Real d2 = median2.normL2();
       Real d3 = median3.normL2();
 
-      Real dx_numerator   = d1*d2*d3;
+      Real dx_numerator = d1 * d2 * d3;
       Real dx_denominator = d1 * d2 + d1 * d3 + d2 * d3;
       out_characteristic_length[cid] = dx_numerator / dx_denominator;
     }
 
-    // Calcule les résultantes aux sommets
-    computeCQs(coord,face_coord,in_out_cell_cqs[cid]);
+    // Calculates the resultant forces at the vertices
+    computeCQs(coord, face_coord, in_out_cell_cqs[cid]);
 
-    // Calcule le volume de la maille
+    // Calculates the volume of the mesh
     {
       SmallSpan<const Real3> in_cqs(in_out_cell_cqs[cid]);
       Real volume = 0.0;
       for (Integer i_node = 0; i_node < 8; ++i_node)
-        volume += math::dot(coord[i_node],in_cqs[i_node]);
+        volume += math::dot(coord[i_node], in_cqs[i_node]);
       volume /= 3.0;
 
       out_old_volume[cid] = in_volume[cid];
@@ -985,12 +1006,12 @@ computeGeometricValues()
 void SimpleHydroAcceleratorService::
 hydroInit()
 {
-  if (m_module->getBackwardIteration()!=0){
+  if (m_module->getBackwardIteration() != 0) {
     subDomain()->timeLoopMng()->setBackwardSavePeriod(10);
   }
   info() << "INIT: DTmin=" << m_module->getDeltatMin()
-         << " DTmax="<< m_module->getDeltatMax()
-         << " DT="<< m_global_deltat();
+         << " DTmax=" << m_module->getDeltatMax()
+         << " DT=" << m_global_deltat();
   if (m_global_deltat() > m_module->getDeltatMax())
     ARCANE_FATAL("DeltaT > DTMax");
 }
@@ -1002,12 +1023,12 @@ void SimpleHydroAcceleratorService::
 _computeNodeIndexInCells()
 {
   info() << "ComputeNodeIndexInCells with accelerator";
-  // Un nœud est connecté au maximum à MAX_NODE_CELL mailles
-  // Calcule pour chaque nœud son index dans chacune des
-  // mailles à laquelle il est connecté.
+  // A node is connected to a maximum of MAX_NODE_CELL meshes
+  // Calculates for each node its index in each of the
+  // meshes it is connected to.
   NodeGroup nodes = allNodes();
   Integer nb_node = nodes.size();
-  m_node_index_in_cells.resize(MAX_NODE_CELL*nb_node);
+  m_node_index_in_cells.resize(MAX_NODE_CELL * nb_node);
 
   auto node_cell_cty = m_connectivity_view.nodeCell();
   auto cell_node_cty = m_connectivity_view.cellNode();
@@ -1015,15 +1036,15 @@ _computeNodeIndexInCells()
   auto command = makeCommand(m_default_queue);
   auto inout_node_index_in_cells = m_node_index_in_cells.span();
 
-  command << RUNCOMMAND_ENUMERATE(Node,node,nodes)
+  command << RUNCOMMAND_ENUMERATE (Node, node, nodes)
   {
     Int32 first_pos = node.localId() * MAX_NODE_CELL;
 
     Int32 index = 0;
-    for( CellLocalId cell : node_cell_cty.cells(node) ){
+    for (CellLocalId cell : node_cell_cty.cells(node)) {
       Int8 node_index_in_cell = 0;
-      for( NodeLocalId cell_node : cell_node_cty.nodes(cell) ){
-        if (cell_node==node)
+      for (NodeLocalId cell_node : cell_node_cty.nodes(cell)) {
+        if (cell_node == node)
           break;
         ++node_index_in_cell;
       }
@@ -1031,8 +1052,8 @@ _computeNodeIndexInCells()
       ++index;
     }
 
-    // Remplit avec la valeur nulle les derniers éléments
-    for( ; index<MAX_NODE_CELL; ++index )
+    // Fills the last elements with the null value
+    for (; index < MAX_NODE_CELL; ++index)
       inout_node_index_in_cells[first_pos + index] = -1;
   };
 }
@@ -1048,7 +1069,7 @@ class TestConnectivity
   TestConnectivity(IMesh* mesh, const RunQueue& queue)
   : m_mesh(mesh)
   , m_queue(queue)
-  , m_cells_center(VariableBuildInfo(mesh,"CellsCenterTest"))
+  , m_cells_center(VariableBuildInfo(mesh, "CellsCenterTest"))
   {
     m_connectivity_view.setMesh(mesh);
   }
@@ -1061,8 +1082,8 @@ class TestConnectivity
 
     auto command = makeCommand(m_queue);
 
-    auto in_node_coord = viewIn(command,nodes_coord_var);
-    auto out_cells_center = viewOut(command,m_cells_center);
+    auto in_node_coord = viewIn(command, nodes_coord_var);
+    auto out_cells_center = viewOut(command, m_cells_center);
 
     // Cell->Node connectivity
     Arcane::IndexedCellNodeConnectivityView cnc = m_connectivity_view.cellNode();
@@ -1070,14 +1091,15 @@ class TestConnectivity
     // Generic information for cells
     Arcane::ItemGenericInfoListView cells_infos(m_mesh->cellFamily());
 
-    command << RUNCOMMAND_ENUMERATE(Cell,cid,m_mesh->allCells()){
+    command << RUNCOMMAND_ENUMERATE (Cell, cid, m_mesh->allCells())
+    {
       if (!cells_infos.isOwn(cid))
         return;
-      if (cells_infos.typeId(cid)!=IT_Hexaedron8)
+      if (cells_infos.typeId(cid) != IT_Hexaedron8)
         return;
       Real3 center;
       // Iterate on nodes of Cell 'cid'
-      for( NodeLocalId node : cnc.nodes(cid) )
+      for (NodeLocalId node : cnc.nodes(cid))
         center += in_node_coord[node];
 
       out_cells_center[cid] = center / 8.0;
@@ -1100,7 +1122,7 @@ void SimpleHydroAcceleratorService::
 _doTestInit() const
 {
   info() << "DoTestInit";
-  TestConnectivity tester(mesh(),m_default_queue);
+  TestConnectivity tester(mesh(), m_default_queue);
   tester.computeCenterForOwnHexa();
 }
 

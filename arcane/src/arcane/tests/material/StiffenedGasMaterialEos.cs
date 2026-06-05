@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Arcane;
 using Arcane.Materials;
 using Real = System.Double;
@@ -34,8 +34,8 @@ public class StiffedGasMaterialEos : MaterialEos.IMaterialEquationOfState_Wrappe
                                 MaterialVariableCellReal mat_sound_speed)
   {
     Console.WriteLine("[C#] StiffenedGas Apply mat={0} nb_cell={1}",mat.Name(),mat.Cells().Size());
-    // On met zéro car comme les valeurs calculées sont fictives il peut arriver que
-    // la pression soit négative si la tension limite est non nulle.
+    // We set it to zero because since the calculated values are fictitious,
+    // the pressure might be negative if the limit tension is non-zero.
     Real limit_tension = 0.0;
     foreach(MatItem mc in mat){
       Real internal_energy = mat_internal_energy[mc];

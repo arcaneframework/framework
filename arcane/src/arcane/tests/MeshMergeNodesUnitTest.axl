@@ -1,18 +1,15 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+ï»¿<?xml version="1.0" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
-<!-- Options du jeu de données pour le service de fusion des noeuds -->
+<!-- Dataset options for the node merging service -->
 
 <service name="MeshMergeNodesUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
   <options>
     <simple name = "nb-node-pair" type = "integer" >
-      <description>Nombre de paires de noeuds à supprimer</description>
+      <description>Number of node pairs to delete</description>
     </simple>
     <simple name = "nb-final-node" type = "integer" >
-      <description>Nombre de noeuds après fusion</description>
+      <description>Number of nodes after merging</description>
     </simple>
   </options>
 </service>

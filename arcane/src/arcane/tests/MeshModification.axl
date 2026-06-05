@@ -1,14 +1,14 @@
-<?xml version="1.0" ?>
+﻿<?xml version="1.0" ?>
 <service name="MeshModification" version="1.0" type="caseoption" parent-name="Arcane.IUnitTest_WrapperService">
 
-<description>Jeu de données du service MeshModification</description>
+<description>MeshModification service dataset</description>
   <interface name="IUnitTest" inherited='false'/>
 
   <options>
     <simple name="remove-fraction" type="int32">
-      <description>Fraction de mailles a supprimer. Si la valeur est
-      de 2, on supprime la moitié des mailles. Si la valeur est 3 on
-      supprime un tier des mailles</description>
+      <description>Fraction of meshes to remove. If the value is
+      2, half of the meshes are removed. If the value is 3, we
+      remove one third of the meshes</description>
     </simple>
   </options>
 

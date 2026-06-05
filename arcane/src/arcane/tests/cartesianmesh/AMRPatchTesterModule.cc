@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRPatchTesterModule.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Module de test de l'AMR type 3.                                           */
+/* AMR type 3 test module.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -146,8 +146,7 @@ compute()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * Ce n'est pas un vrai reset total (l'objet CartesianPatchGroup n'est pas
- * remis à zéro).
+ * This is not a true total reset (the CartesianPatchGroup object is not reset).
  */
 void AMRPatchTesterModule::
 _reset()
@@ -594,7 +593,7 @@ _svgOutput(const String& name)
   Int32 comm_rank = pm->commRank();
   Int32 comm_size = pm->commSize();
 
-  // Exporte le patch au format SVG
+  // Export the patch in SVG format
   String amr_filename = String::format("MeshPatch_{0}_I{1}_P{2}-{3}.html", name, globalIteration(), comm_rank, comm_size);
   String amr_full_filename = subDomain()->exportDirectory().file(amr_filename);
   std::ofstream amr_ofile(amr_full_filename.localstr());

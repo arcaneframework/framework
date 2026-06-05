@@ -1,24 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SingletonServiceTestModule.cc                               (C) 2000-2018 */
 /*                                                                           */
-/* Module de test des services singletons.                                   */
+/* Singleton service test module.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/BasicService.h"
-#include "arcane/FactoryService.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/Configuration.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/Configuration.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -38,8 +38,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test de sous-maillage dans Arcane.
+ * \brief Sub-domain test module in Arcane.
  */
 class SingletonServiceTestModule
 : public ArcaneSingletonServiceTestObject
@@ -51,7 +52,7 @@ class SingletonServiceTestModule
 
  public:
 
-  VersionInfo versionInfo() const override { return VersionInfo(1,0,0); }
+  VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 
  public:
 
@@ -71,6 +72,7 @@ class TestSingletonService
 , public IServiceInterface4
 {
  public:
+
   TestSingletonService(const ServiceBuildInfo& sbi)
   : BasicService(sbi)
   {
@@ -80,7 +82,9 @@ class TestSingletonService
   {
     info() << "INFO: Destroy test singleton service ptr=" << this;
   }
+
  public:
+
   void* getPointer3() override { return this; }
   void* getPointer4() override { return this; }
 };
@@ -93,6 +97,7 @@ class TestSingletonService2
 , public IServiceInterface5
 {
  public:
+
   TestSingletonService2(const ServiceBuildInfo& sbi)
   : BasicService(sbi)
   {
@@ -102,7 +107,9 @@ class TestSingletonService2
   {
     info() << "INFO: Destroy test singleton service2 ptr=" << this;
   }
+
  public:
+
   void* getPointer5() override { return this; }
 };
 
@@ -114,6 +121,7 @@ class TestSingletonService3
 , public IServiceInterface6
 {
  public:
+
   TestSingletonService3(const ServiceBuildInfo& sbi)
   : BasicService(sbi)
   {
@@ -123,35 +131,36 @@ class TestSingletonService3
   {
     info() << "INFO: Destroy test singleton service3 ptr=" << this;
   }
+
  public:
+
   void* getPointer6() override { return this; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_DEFINE_STANDARD_MODULE(SingletonServiceTestModule,SingletonServiceTestModule);
+ARCANE_DEFINE_STANDARD_MODULE(SingletonServiceTestModule, SingletonServiceTestModule);
 
 ARCANE_REGISTER_SERVICE(TestSingletonService,
-                        ServiceProperty("TestSingleton1",ST_SubDomain,SFP_Singleton),
+                        ServiceProperty("TestSingleton1", ST_SubDomain, SFP_Singleton),
                         ARCANE_SERVICE_INTERFACE(IServiceInterface3),
                         ARCANE_SERVICE_INTERFACE(IServiceInterface4));
 
 ARCANE_REGISTER_SERVICE(TestSingletonService,
-                        ServiceProperty("TestSingleton2",ST_SubDomain,SFP_Singleton),
+                        ServiceProperty("TestSingleton2", ST_SubDomain, SFP_Singleton),
                         ARCANE_SERVICE_INTERFACE(IServiceInterface3));
 
 ARCANE_REGISTER_SERVICE(TestSingletonService2,
-                        ServiceProperty("TestSingleton5",ST_SubDomain,SFP_Singleton),
+                        ServiceProperty("TestSingleton5", ST_SubDomain, SFP_Singleton),
                         ARCANE_SERVICE_INTERFACE(IServiceInterface5));
 
 ARCANE_REGISTER_SERVICE(TestSingletonService3,
-                        ServiceProperty("TestSingleton6",ST_SubDomain,SFP_Singleton),
+                        ServiceProperty("TestSingleton6", ST_SubDomain, SFP_Singleton),
                         ARCANE_SERVICE_INTERFACE(IServiceInterface6));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 SingletonServiceTestModule::
 SingletonServiceTestModule(const ModuleBuildInfo& mb)
@@ -161,7 +170,6 @@ SingletonServiceTestModule(const ModuleBuildInfo& mb)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 SingletonServiceTestModule::
 ~SingletonServiceTestModule()
@@ -203,28 +211,28 @@ init()
   void* ptr4 = msi4->getPointer4();
   info() << "VALUE4=" << msi4 << " ptr4=" << ptr4;
 
-  if (ptr1!=ptr2)
-    ARCANE_FATAL("Different singleton instance ptr1={0} ptr2={1}",ptr1,ptr2);
+  if (ptr1 != ptr2)
+    ARCANE_FATAL("Different singleton instance ptr1={0} ptr2={1}", ptr1, ptr2);
 
-  if (ptr3!=ptr4)
-    ARCANE_FATAL("Different singleton instance ptr3={0} ptr4={1}",ptr3,ptr4);
+  if (ptr3 != ptr4)
+    ARCANE_FATAL("Different singleton instance ptr3={0} ptr4={1}", ptr3, ptr4);
 
   IConfiguration* configuration = subDomain()->configuration();
   info() << "SubDomainConfiguration=" << configuration;
   configuration->dump();
 
   IConfigurationSection* cs = configuration->mainSection();
-  Integer v1 = cs->valueAsInteger("TestGlobalConfig1",0);
-  if (v1!=267)
-    ARCANE_FATAL("Bad config value for TestGlobalConfig1 v={0}",v1);
+  Integer v1 = cs->valueAsInteger("TestGlobalConfig1", 0);
+  if (v1 != 267)
+    ARCANE_FATAL("Bad config value for TestGlobalConfig1 v={0}", v1);
 
-  Real v2 = cs->valueAsReal("TestGlobalConfig2",0.0);
-  if (v2!=4.5)
-    ARCANE_FATAL("Bad config value for TestGlobalConfig2 v={0}",v2);
+  Real v2 = cs->valueAsReal("TestGlobalConfig2", 0.0);
+  if (v2 != 4.5)
+    ARCANE_FATAL("Bad config value for TestGlobalConfig2 v={0}", v2);
 
-  Real v3 = cs->valueAsReal("TestGlobalConfig3",0.0);
-  if (v3!=9.3)
-    ARCANE_FATAL("Bad config value for TestGlobalConfig3 v={0}",v3);
+  Real v3 = cs->valueAsReal("TestGlobalConfig3", 0.0);
+  if (v3 != 9.3)
+    ARCANE_FATAL("Bad config value for TestGlobalConfig3 v={0}", v3);
 
   {
     ServiceBuilder<IServiceInterface5> sb(subDomain());
@@ -244,12 +252,9 @@ init()
 void SingletonServiceTestModule::
 compute()
 {
-  if (subDomain()->commonVariables().globalIteration()>10)
+  if (subDomain()->commonVariables().globalIteration() > 10)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

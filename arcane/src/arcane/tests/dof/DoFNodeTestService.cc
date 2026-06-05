@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DoFNodeTestService.cc                                       (C) 2000-2022 */
 /*                                                                           */
-/* Service de test de création de DoF à partir de Node.                      */
+/* Test service for creating DoFs from Nodes.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
-#include "arcane/IIndexedIncrementalItemConnectivity.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/mesh/DoFFamily.h"
 
@@ -32,8 +32,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des variables
+ * \brief Variable test module
  */
 class DoFNodeTestService
 : public BasicUnitTest
@@ -120,7 +121,7 @@ _buildDoFs()
   dof_family->endUpdate();
   info() << "NB_DOF=" << dof_family->allItems().size();
 
-  // Création d'une connectivité Node->DoF
+  // Creation of Node->DoF connectivity
   m_node_dof_connectivity = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(mesh()->nodeFamily(), dof_item_family, "DoFNode");
   auto* cn = m_node_dof_connectivity->connectivity();
   {
@@ -135,7 +136,7 @@ _buildDoFs()
   }
   info() << "End build Dofs";
 
-  // Remplit les 3 DoF par les coordonnées des noeuds
+  // Fill the 3 DoFs with node coordinates
   info() << "Fill DoFs";
   VariableDoFReal dof_var(VariableBuildInfo(dof_item_family, "DofValues"));
   VariableNodeReal3& node_coords(mesh()->nodesCoordinates());
@@ -143,9 +144,9 @@ _buildDoFs()
   ENUMERATE_ (Node, inode, ownNodes()) {
     Node node = *inode;
     Real3 coord = node_coords[node];
-    dof_var[node_dof.dofId(node,0)] = coord.x;
-    dof_var[node_dof.dofId(node,1)] = coord.y;
-    dof_var[node_dof.dofId(node,2)] = coord.z;
+    dof_var[node_dof.dofId(node, 0)] = coord.x;
+    dof_var[node_dof.dofId(node, 1)] = coord.y;
+    dof_var[node_dof.dofId(node, 2)] = coord.z;
   }
 }
 

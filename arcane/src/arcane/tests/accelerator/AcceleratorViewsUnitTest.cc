@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorViewsUnitTest.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Service de test des vues pour les accelerateurs.                          */
+/* Test service for accelerator views.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,8 +40,9 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la classe 'AcceleratorViews'.
+ * \brief Test service for the 'AcceleratorViews' class.
  */
 class AcceleratorViewsUnitTest
 : public BasicUnitTest
@@ -392,8 +393,8 @@ _executeTest2()
   }
 
   {
-    // Test l'utilisation des vues avec Item comme type de base
-    // (par exemple VariableItemReal2)
+    // Test the use of views with Item as the base type
+    // (for example VariableItemReal2)
     VariableItemReal2 cell1_as_item_real2(VariableBuildInfo(mesh(), "CellAsItemReal2"), IK_Cell);
     {
       auto command = makeCommand(queue);
@@ -494,8 +495,9 @@ _executeTest2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test command avec IteratorWithIndex.
+ * \brief Test command with IteratorWithIndex.
  */
 void AcceleratorViewsUnitTest::
 _executeTest3()
@@ -509,13 +511,13 @@ _executeTest3()
   NumArray<Int32, MDDim1> checked_local_ids(max_local_id);
   checked_local_ids.fill(-1, queue);
   {
-    // Remplit out_checked_local_ids avec le i-ème localId() du groupe.
+    // Fills out_checked_local_ids with the i-th localId() of the group.
     auto out_checked_local_ids = viewOut(command, checked_local_ids);
     command << RUNCOMMAND_ENUMERATE (IteratorWithIndex<CellLocalId>, vi, own_cells)
     {
       out_checked_local_ids[vi.index()] = vi.value();
     };
-    // Vérifie tout est OK.
+    // Checks that everything is OK.
     ENUMERATE_ (Cell, icell, own_cells) {
       Int32 my_lid = icell.itemLocalId();
       Int32 computed_lid = checked_local_ids[icell.index()];
@@ -785,7 +787,7 @@ _executeTestMemoryCopy()
   NumArray<Int32, MDDim1> b(nb_value, source_mem);
   NumArray<Int32, MDDim1> c(nb_value, source_mem);
 
-  // Initialise les tableaux
+  // Initialize the arrays
   for (int i = 0; i < nb_value; ++i) {
     a(i) = i + 3;
     b[i] = i + 5;
@@ -795,8 +797,8 @@ _executeTestMemoryCopy()
   NumArray<Int32, MDDim1> d_b(nb_value, dest_mem);
   NumArray<Int32, MDDim1> d_c(nb_value, dest_mem);
 
-  // Copie explicitement les données dans le device
-  // Test la construction en donnant les tailles explicitement.
+  // Explicitly copy data to the device
+  // Test construction by explicitly providing sizes.
   auto queue = makeQueue(m_runner);
   queue.copyMemory(ax::MemoryCopyArgs(d_a.bytes().data(), a.bytes().data(), nb_value * sizeof(Int32)).addAsync());
   queue.copyMemory(ax::MemoryCopyArgs(d_b.bytes().data(), b.bytes().data(), nb_value * sizeof(Int32)).addAsync());
@@ -812,11 +814,11 @@ _executeTestMemoryCopy()
       out_c(iter) = in_a[iter] + in_b(iter);
     };
   }
-  // Recopie du device vers l'hôte
+  // Copy back from device to host
   queue.copyMemory(ax::MemoryCopyArgs(MutableMemoryView(c.bytes()), ConstMemoryView(d_c.bytes())));
 
-  // Vérifie que tout est OK.
-  // Initialise les tableaux
+  // Verify that everything is OK.
+  // Initialize the arrays
   for (int i = 0; i < nb_value; ++i) {
     Int32 expected_value = (i + 3) + (i + 5);
     if (c(i) != expected_value)
@@ -977,7 +979,7 @@ _executeTestMultiArray()
     auto command = makeCommand(queue);
     auto out_values_view = viewOut(command, result_values);
     if (queue.executionPolicy() == ax::eExecutionPolicy::Thread) {
-      // Teste le changement du nombre de threads
+      // Test changing the number of threads
       ParallelLoopOptions opts = command.parallelLoopOptions();
       if (opts.maxThread() > 2)
         opts.setMaxThread(2);

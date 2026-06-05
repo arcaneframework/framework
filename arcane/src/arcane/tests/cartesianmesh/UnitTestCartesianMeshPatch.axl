@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+﻿<?xml version="1.0" ?>
 <service name="UnitTestCartesianMeshPatch" version="1.0" namespace-name="ArcaneTest" type="caseoption">
   <tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
     <test name="Test cartesian mesh patch cells and parents" method-name="testCartesianMeshPatchCellsAndParents"/>

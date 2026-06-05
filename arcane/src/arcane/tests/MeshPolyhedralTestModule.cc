@@ -98,7 +98,7 @@ _testKind(IMesh* mesh)
 {
   // Check mesh kind
   if (mesh->meshKind().meshStructure() != eMeshStructure::Polyhedral) {
-    ARCANE_FATAL("Mesh kind for mesh {0} is not eMeshStructure::Polyhedral",mesh->name());
+    ARCANE_FATAL("Mesh kind for mesh {0} is not eMeshStructure::Polyhedral", mesh->name());
   }
   // Set mesh kind (for test, done by mesh reader)
   // So far for PolyhedralMesh must be : eMeshStructure::Polyhedral, eMeshAMRKind::Node
@@ -106,7 +106,7 @@ _testKind(IMesh* mesh)
   kind.setMeshStructure(eMeshStructure::Polyhedral);
   kind.setMeshAMRKind(eMeshAMRKind::None);
   mesh->_internalApi()->setMeshKind(kind);
-  // Finalize internalApi check. Dof tests done in DoFTester
+  // Finalize internalApi check. DoF tests done in DoFTester
   auto dof_mng = mesh->_internalApi()->dofConnectivityMng();
   if (!dof_mng)
     ARCANE_FATAL("Cannot get DoFConnectivityMng from PolyhedralMesh");
@@ -179,12 +179,18 @@ _testEnumerationAndConnectivities(IMesh* mesh)
       debug(Trace::High) << "face edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
     // check boundaryCell
-    if (iface->cells().size() == 1 && !iface->isSubDomainBoundary()) {ARCANE_FATAL("A face with one cell is boundary.");}
+    if (iface->cells().size() == 1 && !iface->isSubDomainBoundary()) {
+      ARCANE_FATAL("A face with one cell is boundary.");
+    }
     if (iface->isSubDomainBoundary()) {
       debug(Trace::High) << "face boundary cell lid " << iface->boundaryCell().localId();
       debug(Trace::High) << "face boundary cell uid " << iface->boundaryCell().uniqueId().asInt64();
-      if (iface->boundaryCell().localId() == NULL_ITEM_LOCAL_ID) {ARCANE_FATAL("A boundary face's boundary cell is null.");}
-      if (iface->cells().size() > 1) {ARCANE_FATAL("A boundary face has only one cell.");}
+      if (iface->boundaryCell().localId() == NULL_ITEM_LOCAL_ID) {
+        ARCANE_FATAL("A boundary face's boundary cell is null.");
+      }
+      if (iface->cells().size() > 1) {
+        ARCANE_FATAL("A boundary face has only one cell.");
+      }
     }
   }
   // Check face flags
@@ -225,7 +231,7 @@ _testEnumerationAndConnectivities(IMesh* mesh)
       debug(Trace::High) << "edge node lid " << node.localId() << " uid " << node.uniqueId();
     }
   }
-  // Active items : no AMR available with polyhedral mesh but must return all items
+  // Active items: no AMR available with polyhedral mesh but must return all items
   bool is_active_ok = (mesh->allActiveCells().size() == mesh->allCells().size());
   is_active_ok &= (mesh->ownActiveCells().size() == mesh->ownCells().size());
   is_active_ok &= (mesh->allActiveFaces().size() == mesh->allFaces().size());
@@ -337,10 +343,10 @@ void MeshPolyhedralTestModule::_testVariables(IMesh* mesh)
   }
   for (const auto& variable_with_ref_option : options()->checkCellVariableIntegerWithRefValue()) {
     String variable_name = variable_with_ref_option->getVarName();
-    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh,variable_name ))
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
       ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
     VariableCellInteger var{ VariableBuildInfo(mesh, variable_name) };
-    _checkVariableWithRefValue(var, mesh->allCells(),variable_with_ref_option->getVarRefSum());
+    _checkVariableWithRefValue(var, mesh->allCells(), variable_with_ref_option->getVarRefSum());
   }
 }
 
@@ -483,20 +489,20 @@ _testMeshUtilities(Arcane::IMesh* mesh)
   auto& face_owners = mesh->faceFamily()->itemsNewOwner();
   auto& edge_owners = mesh->edgeFamily()->itemsNewOwner();
   auto& node_owners = mesh->nodeFamily()->itemsNewOwner();
-  ENUMERATE_(Cell,icell,allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     cell_owners[icell] = 1;
-    info() << "Cell uid " << icell->uniqueId() << " cell_owner[icell] "  << cell_owners[icell];
-    info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();
+    info() << "Cell uid " << icell->uniqueId() << " cell_owner[icell] " << cell_owners[icell];
+    info() << "Cell uid " << icell->uniqueId() << " has owner " << icell->owner();
   }
   mesh_utilities->changeOwnersFromCells();
   bool has_error = false;
-  ENUMERATE_ (Face,iface,allFaces()) {
+  ENUMERATE_ (Face, iface, allFaces()) {
     has_error |= face_owners[iface] != 1;
   }
-  ENUMERATE_ (Node,inode,allNodes()) {
+  ENUMERATE_ (Node, inode, allNodes()) {
     has_error |= node_owners[inode] != 1;
   }
-  ENUMERATE_ (Edge,iedge,allEdges()) {
+  ENUMERATE_ (Edge, iedge, allEdges()) {
     has_error |= edge_owners[iedge] != 1;
   }
   if (has_error) {
@@ -525,9 +531,9 @@ void MeshPolyhedralTestModule::
 _testConnectivity(IMesh* mesh)
 {
   info() << "Testing connectivity";
-  Connectivity connectivity{mesh->connectivity()};
-  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_Default),"PolyhedralMesh must have standard connectivity");
-  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_EdgeConnectivity),"PolyhedralMesh must have Edge Connectivity");
+  Connectivity connectivity{ mesh->connectivity() };
+  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_Default), "PolyhedralMesh must have standard connectivity");
+  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_EdgeConnectivity), "PolyhedralMesh must have Edge Connectivity");
 }
 
 /*---------------------------------------------------------------------------*/

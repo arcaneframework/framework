@@ -1,40 +1,38 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
 <module name="CartesianMeshTester" version="1.0" namespace-name="ArcaneTest">
   <description>
-    Module de test du gestionnaire de maillages cartésiesns
+    Test module for the Cartesian mesh manager
   </description>
 
   <options>
     <simple name="unstructured-mesh-file" type="string" optional="true">
       <description>
-        Nom du fichier contenant un maillage non structuré pour
-        tester le partitionnement sur une grille
+        Name of the file containing an unstructured mesh to test partitioning on a grid
       </description>
     </simple>
     <simple name="check-contiguous-face-unique-ids" type="bool" default="true">
       <description>
-        Indique si on vérifie que les uniqueId() des faces sont bien contigus.
+        Indicates whether the uniqueId() of the faces are contiguous.
       </description>
     </simple>
     <simple name="expected-mesh-origin" type="real3" optional="true">
       <description>
-        Valeur de l'origine du maillage
+        Value of the mesh origin
       </description>
     </simple>
     <simple name="expected-mesh-length" type="real3" optional="true">
       <description>
-        Valeur de la longueur du maillage
+        Value of the mesh length
       </description>
     </simple>
     <simple name="has-edges" type="bool" default="false">
       <description>
-        Indique si on construit les arêtes
+        Indicates whether edges are constructed
       </description>
     </simple>
     <simple name="coarse-cartesian-mesh" type="int32" default="0">
       <description>
-        Indique la version utilisée pour le dé-raffinement du maillage cartésien initial.
-        Si '0', on ne fait rien
+        Indicates the version used for the coarsening of the initial Cartesian mesh. If '0', nothing is done.
       </description>
     </simple>
   </options>

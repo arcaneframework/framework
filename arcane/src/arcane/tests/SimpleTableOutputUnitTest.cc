@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableOutputUnitTest.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Service de test pour les services implémentant ISimpleTableOutput.        */
+/* Test service for services implementing ISimpleTableOutput.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,7 +51,7 @@ setUp()
 void SimpleTableOutputUnitTest::
 testInit()
 {
-  // La position de la première ligne et de la première colonne doivent être 0.
+  // The position of the first row and the first column must be 0.
   ptrSTO->addRow("Ma ligne");
   ptrSTO->addColumn("Ma colonne");
 
@@ -159,8 +159,8 @@ testAddColumn3()
 void SimpleTableOutputUnitTest::
 testAddColumn4()
 {
-  // On regarde si les valeurs des lignes non
-  // utilisées sont à 0.
+  // We check if the values of unused rows
+  // are 0.
   RealUniqueArray result = { 0.0, 2.0, 3.0, 0.0, 5.0, 6.0, 7.0, 8.0 };
 
   ptrSTO->addColumn("Ma colonne 1");
@@ -177,7 +177,7 @@ testAddColumn4()
   ptrSTO->addElementInRow("Ma ligne 1", 0);
   ptrSTO->addElementInRow("Ma ligne 4", 0);
 
-  for(Integer i = 2; i < 11; ++i){
+  for (Integer i = 2; i < 11; ++i) {
     ptrSTO->addColumn("Ma colonne " + String::fromNumber(i));
 
     ptrSTO->addElementInRow("Ma ligne 2", 2);
@@ -189,7 +189,7 @@ testAddColumn4()
     ptrSTO->addElementInRow("Ma ligne 8", 8);
   }
 
-  for(Integer i = 1; i < 11; ++i){
+  for (Integer i = 1; i < 11; ++i) {
     _assertEqualArray(result, ptrSTO->column("Ma colonne " + String::fromNumber(i)));
   }
 }
@@ -974,7 +974,7 @@ testEditElemUDLR1()
 void SimpleTableOutputUnitTest::
 testEditElemDown1()
 {
-  // Voir testAddRowSameColumn3()
+  // See testAddRowSameColumn3()
   ptrSTO->addColumn("Ma colonne 1");
 
   ptrSTO->addRow("Ma ligne 1");
@@ -1007,7 +1007,7 @@ testEditElemDown1()
 void SimpleTableOutputUnitTest::
 testEditElemRight1()
 {
-  // Voir testAddColumnSameRow3()
+  // See testAddColumnSameRow3()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
   ptrSTO->addColumn("Ma colonne 3");
@@ -1103,7 +1103,7 @@ testWriteFile()
 void SimpleTableOutputUnitTest::
 tearDown()
 {
-  // N'est pas exécuté après un test qui a échoué.
+  // Not executed after a failed test.
 }
 
 void SimpleTableOutputUnitTest::

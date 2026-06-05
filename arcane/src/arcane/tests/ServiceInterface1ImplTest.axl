@@ -1,9 +1,9 @@
-<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 
 <service name="ServiceInterface1ImplTest" version="1.0" namespace-name="ArcaneTest"> 
   <description>
-    Service de test implémentant Module de test des options du jeu de données
-    Test des entités spéciales: 
+    Test service implementing Data set options test module
+    Special entity test:
   </description>
 
   <interface name="ArcaneTest::IServiceInterface1" />
@@ -12,13 +12,13 @@
  
     <!-- - - - - - post-processor1 - - - - -->
     <service-instance name = "post-processor1" type = "Arcane::IPostProcessorWriter">
-      <description>Service d'écriture</description>
+      <description>Writer service</description>
     </service-instance>
 
     <!-- - - - - - post-processor1 - - - - -->
     <service-instance name = "multi-post-processor" type = "Arcane::IPostProcessorWriter"
                       minOccurs="0" maxOccurs="unbounded">
-      <description>Service d'écriture multiple</description>
+      <description>Multiple writing service</description>
     </service-instance>
 
     <!-- - - - - - complex1 - - - - -->

@@ -19,7 +19,7 @@
 
   <options>
     <service-instance name="random-number-generator" type="Arcane::IRandomNumberGenerator">
-      <description>Service implémentant IRandomNumberGenerator</description>
+      <description>Service implementing IRandomNumberGenerator</description>
     </service-instance>
   </options>
 

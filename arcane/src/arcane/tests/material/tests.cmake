@@ -1,5 +1,4 @@
-
-set(ARCANE_TEST_CASEPATH ${TEST_PATH}/material)
+﻿set(ARCANE_TEST_CASEPATH ${TEST_PATH}/material)
 
 arcane_add_test_sequential(material1_simd1 testMaterialSimd-1.arc)
 
@@ -27,16 +26,16 @@ arcane_add_test_parallel_thread(material_sync3 testMaterial-sync-3.arc 4)
 # Material Heat
 #################################
 
-foreach(test_index 1 2 3 4)
-  foreach(opt_level 0 3 7 11 15)
+foreach (test_index 1 2 3 4)
+  foreach (opt_level 0 3 7 11 15)
     set(TEST_MODIFICATION_FLAG ${opt_level})
 
-    # Test sans équilibrage
+    # Test without load balancing
     set(TEST_ACTIVE_LOAD_BALANCE "false")
     set(_TEST_FILENAME "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}.arc")
     configure_file("${ARCANE_TEST_CASEPATH}/testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME}")
 
-    # Test avec équilibrage
+    # Test with load balancing
     set(TEST_ACTIVE_LOAD_BALANCE "true")
     set(_TEST_FILENAME_LB "${ARCANE_TEST_PATH}/testMaterialHeat-${test_index}-opt${opt_level}-lb.arc")
     configure_file("${ARCANE_TEST_CASEPATH}/testMaterialHeat-${test_index}.arc.in" "${_TEST_FILENAME_LB}")
@@ -45,9 +44,9 @@ foreach(test_index 1 2 3 4)
       arcane_add_test_parallel_thread(material_heat${test_index}_opt${opt_level} ${_TEST_FILENAME} 4)
       arcane_add_test(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB})
       arcane_add_test_parallel_thread(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB} 4)
-    endif()
-  endforeach()
-endforeach()
+    endif ()
+  endforeach ()
+endforeach ()
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2" "-We,ARCANE_PRINT_USELESS_TRANSFORMATION,1")
   arcane_add_test_sequential(material_heat2_opt15_2small_force_transform testMaterialHeat-2-small-opt15.arc "-We,ARCANE_MATERIAL_FORCE_TRANSFORM,1")
@@ -70,20 +69,20 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init1_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20" "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,1")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
-    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2"  "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
+    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init3_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
     "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3" "-We,ARCANE_ALLENVCELL_FOR_RUNCOMMAND,1")
-  if(HDF5_FOUND)
+  if (HDF5_FOUND)
     arcane_add_test(material_heat2_vtkhdfv2 testMaterialHeat-2-vtkhdfv2.arc)
-  endif()
+  endif ()
 
-endif()
+endif ()
 #################################
 #################################
 
 # ----------------------------------------------------------------------------
 # Test wrapping C#
-# Il faut que le wrapper matériaux soit disponible
+# The material wrapper must be available
 if (TARGET arcane_dotnet_wrapper_cea_materials)
   message(STATUS "Add target to test C# material wrapper: current_dir=${CMAKE_CURRENT_SOURCE_DIR}")
   message(STATUS "ArcaneSourceDir: ${Arcane_SOURCE_DIR}")
@@ -103,8 +102,7 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
   set(MATERIAL_CSHARP_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
   file(MAKE_DIRECTORY ${MATERIAL_CSHARP_OUTDIR})
 
-  # NOTE: le nom doit commencer par 'lib' pour que mono trouve la bibliothèque
-  # au moment de l'exécution
+  # NOTE: the name must start with 'lib' so that mono can find the library at runtime
   swig_add_library(test_material_eos_csharp
     TYPE SHARED
     LANGUAGE CSHARP
@@ -112,8 +110,8 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
     OUTPUT_DIR ${MATERIAL_CSHARP_OUTDIR}/cs_files
     OUTFILE_DIR ${MATERIAL_CSHARP_OUTDIR}/cpp_files
   )
-  # Génère une cible 'test_material_eos_csharp_swig_depend' pour garantir que le
-  # wrapper swig est bien exécuté avant de compiler les tests.
+  # Generates a target 'test_material_eos_csharp_swig_depend' to ensure that the
+  # swig wrapper is executed before compiling the tests.
   if (CMAKE_VERSION VERSION_LESS_EQUAL 3.21 OR CMAKE_GENERATOR MATCHES "Make")
     add_custom_target(test_material_eos_csharp_swig_depend ALL DEPENDS test_material_eos_csharp)
   else ()
@@ -123,8 +121,7 @@ if (TARGET arcane_dotnet_wrapper_cea_materials)
 
   target_link_libraries(test_material_eos_csharp PUBLIC arcane_dotnet_wrapper_cea_materials arcane_materials)
   target_include_directories(test_material_eos_csharp PUBLIC ${Arcane_SOURCE_DIR}/tools/wrapper)
-  # Il faut que la cible soit installée au même endroit que l'exécutable de test pour
-  # qu'elle soit trouvée facilement.
+  # The target must be installed in the same location as the test executable so that it can be easily found.
   #set_property(TARGET libmaterial_eos_csharp PROPERTY LIBRARY_OUTPUT_DIRECTORY ${EOS_BINARY_DIR})
   target_link_libraries(arcane_tests_lib PUBLIC test_material_eos_csharp)
 endif ()
@@ -147,8 +144,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   endif ()
   arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
 
-  # Les trois tests suivants doivent faire le même nombre d'itérations et avoir le
-  # même nombre de mailles (pour test)
+  # The following three tests must run the same number of iterations and have the same number of meshes (for testing)
   ARCANE_ADD_TEST(material2 testMaterial-2.arc "-m 13")
   ARCANE_ADD_TEST(material2_opt1 testMaterial-2-opt1.arc "-m 13")
   ARCANE_ADD_TEST(material2_opt3 testMaterial-2-opt3.arc "-m 13")
@@ -167,8 +163,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
 
 
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
-  # NOTE Ajoute test optmisation uniquement en sequentiel car pour l'instant cela
-  # ne marche pas en parallele a cause de la suppression de mailles.
+  # NOTE Adds optimization test only in sequential because currently this does not work in parallel due to mesh suppression.
   ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
   ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
   ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")
@@ -184,9 +179,9 @@ endif ()
 ###################
 # WRAPPING '.Net' #
 ###################
-# TODO: Utiliser les macros génériques pour tester pour les modes
+# TODO: Use generic macros to test for modes
 if (TARGET arcane_test_cs)
-  # Cette variable est utilisée dans 'arcane_add_csharp_test_sequential'
+  # This variable is used in 'arcane_add_csharp_test_sequential'
   set(ARCANE_TEST_DOTNET_ASSEMBLY "${LIBRARY_OUTPUT_PATH}/ArcaneMaterialsTest.dll")
   message(STATUS "Adding '.Net' tests")
   if (MONO_EXEC)
@@ -196,6 +191,5 @@ if (TARGET arcane_test_cs)
     arcane_add_test_sequential(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
     arcane_add_test_sequential(material_eos_cs_coreclr testMaterial-eos-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
   endif ()
-  arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4 )
+  arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4)
 endif ()
-

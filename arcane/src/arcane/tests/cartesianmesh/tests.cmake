@@ -1,5 +1,4 @@
-
-set(ARCANE_TEST_CASEPATH ${TEST_PATH}/cartesianmesh)
+﻿set(ARCANE_TEST_CASEPATH ${TEST_PATH}/cartesianmesh)
 
 
 arcane_add_test(cartesian1 testCartesianMesh-1.arc "-m 20")
@@ -23,7 +22,7 @@ arcane_add_test(cartesian3D_coarsen2 testCartesianMesh3D-coarsen-2.arc "-m 20" "
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
   arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-endif()
+endif ()
 
 
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-1 testAMRCartesianMesh2D-Cell-RenumberingV1-1.arc "-m 20")
@@ -150,11 +149,11 @@ arcane_add_test_sequential(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1
 arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-2 testAMRCartesianMesh3D-V1-coarse-2.arc 8 "-m 10")
 
 
-# Test AMR dé-raffinement avec équilibrage.
-# Pas encore actif car ne fonctionne pas
+# Test AMR de-refinement with balancing.
+# Not yet active because it doesn't work
 # arcane_add_test_parallel(amr-cartesian2D-V1-coarse-lb-1 testAMRCartesianMesh2D-V1-coarse-lb-1.arc 4 "-m 20")
 
-# Ce test prend du temps (environ 30 secondes) donc on ne l'active pas par défaut
+# This test takes time (about 30 seconds) so it is not enabled by default
 if (BIG_TEST)
   arcane_add_test_sequential(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc "-m 10")
   arcane_add_test_parallel_thread(amr-cartesian3D-V1-coarse-3 testAMRCartesianMesh3D-V1-coarse-3.arc 8 "-m 10")
@@ -224,7 +223,7 @@ if (BIG_TEST)
 
   arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 3 5)
   arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 3 5)
-endif()
+endif ()
 
 arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-1.arc 4 "-m 20")
 arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-2 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-2.arc 4 "-m 20")
@@ -234,12 +233,12 @@ arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-4 testAMRCa
 arcane_add_test_parallel(amr-cartesian3D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh3D-Cell-ReduceNbGhostLayers-1.arc 8 "-m 20")
 
 
-# Tests sur le renumérotation des faces en cartésien
-# L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
-# nombre de sous-domaines dans chaque direction est différent.
-# Du coup on utilise le mode mémoire partagée au lieu de MPI pour
-# que les tests fonctionnent bien même si la machine n'a pas beaucoup
-# de coeurs.
+# Tests on Cartesian face renumbering
+# Ideally, there should be quite a few subdomains to ensure that the
+# number of subdomains in each direction is different.
+# So we use shared memory mode instead of MPI so that
+# the tests work well even if the machine does not have many
+# cores.
 arcane_add_test_sequential(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc "-m 10")
 arcane_add_test_parallel_thread(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc 6 "-m 10")
 arcane_add_test_sequential(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc "-m 10")
@@ -251,7 +250,7 @@ arcane_add_test_parallel_thread(cartesian3d_face_edge_renumbering testCartesianM
 arcane_add_test_sequential(cartesian3d_face_edgev3_renumbering testCartesianMesh3D-face-edgev3-renumbering.arc "-m 10")
 arcane_add_test_parallel_thread(cartesian3d_face_edgev3_renumbering testCartesianMesh3D-face-edgev3-renumbering.arc 12 "-m 10")
 
-# Tests sur le partitionnement avec grille en cartésien
+# Tests on grid partitioning in Cartesian
 arcane_add_test(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.arc "-m 10")
 arcane_add_test_parallel(cartesian_grid_partitioning_6proc testCartesianMesh-grid-partitioning6.arc 6 "-m 10")
 arcane_add_test_parallel(cartesian_grid_partitioning_12proc testCartesianMesh-grid-partitioning12.arc 12 "-m 10")
@@ -262,8 +261,8 @@ arcane_add_test_parallel(cartesian3d_grid_partitioning_12proc testCartesianMesh3
 #################################
 # CARTESIAN MESH GENERATOR TEST #
 #################################
-# Ces tests ont besoin d'Aleph
-# TODO: faire des tests sans avoir besoin de Aleph
+# These tests require Aleph
+# TODO: create tests without needing Aleph
 if (TARGET arcane_aleph_hypre)
   arcane_add_test_parallel(cartesianMeshGenerator testCartesianMeshGenerator.arc 1 "-m 1")
   arcane_add_test_parallel(cartesianMeshGenerator testCartesianMeshGenerator.arc 8 "-m 1")
@@ -282,9 +281,9 @@ if (TARGET arcane_aleph_hypre)
 
   arcane_add_test_parallel(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 1)
   arcane_add_test_parallel(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 4)
-endif()
+endif ()
 
-# Pas actif pour l'instant car en échec
+# Not active for now because it is failing
 arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)
 
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ void _printAvailableAllocators()
 
 void _testSum(IAcceleratorMng* acc_mng)
 {
-  // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
+  // Test the sum of two arrays 'a' and 'b' into an array 'c'.
 
   int nb_value = 10000;
   NumArray<Int64, MDDim1> a(nb_value);
@@ -94,7 +94,7 @@ void _testSum(IAcceleratorMng* acc_mng)
 
 void _testBinOp(IAcceleratorMng* acc_mng)
 {
-  // Test des opérateurs binaires pour les views
+  // Test binary operators for views
 
   int nb_value = 10000;
   NumArray<Int64, MDDim1> a(nb_value);
@@ -141,7 +141,7 @@ void _testBinOp(IAcceleratorMng* acc_mng)
   if (total != expected_total)
     ARCANE_FATAL("Bad value for operator+= {0} (expected={1})", total, expected_total);
 
-  // -= et /=
+  // -= and /=
   {
     auto command = makeCommand(acc_mng->queue());
     auto in_out_a = viewInOut(command, a);
@@ -168,7 +168,7 @@ void _testBinOp(IAcceleratorMng* acc_mng)
 RunQueue*
 _testEmptyKernelHelper(IAcceleratorMng* acc_mng, bool use_async, bool use_concurrent, bool use_no_launch_command)
 {
-  // Lance un kernel vide pour évaluer le coup du lancement.
+  // Launch an empty kernel to evaluate the launch overhead.
   int nb_iteration = 10000;
 
   auto queue = makeQueue(acc_mng->defaultRunner());
@@ -201,8 +201,8 @@ _testEmptyKernelHelper(IAcceleratorMng* acc_mng, bool use_async, bool use_concur
 
 void _testEmptyKernel(IAcceleratorMng* acc_mng)
 {
-  // On garde les références sur les files créées pour ne pas les
-  // réutiliser. Cela permet d'avoir des mesures fiables sur les temps.
+  // We keep references to the created queues so as not to
+  // reuse them. This allows for reliable time measurements.
   Runner runner = acc_mng->runner();
   Accelerator::DeviceInfo device_info = runner.deviceInfo();
   std::cout << "Device: sharedMemPerBlock=" << device_info.sharedMemoryPerBlock() << "\n";
@@ -264,9 +264,9 @@ extern "C++" ARCANE_EXPORT int
 arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_args,
                                         const String& method_name)
 {
-  int r =0;
-  try{
-    r = _testStandaloneLauncher(cmd_line_args,method_name);
+  int r = 0;
+  try {
+    r = _testStandaloneLauncher(cmd_line_args, method_name);
   }
   catch (const Exception& ex) {
     std::cerr << "EXCEPTION: " << ex << "\n";

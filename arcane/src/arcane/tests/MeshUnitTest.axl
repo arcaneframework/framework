@@ -1,14 +1,12 @@
-<?xml version="1.0" encoding="utf-8" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" encoding="utf-8" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+<!-- Data set options for the mesh test service -->
 
-<!-- Options du jeu de données pour le service de test du maillage -->
+<service name="MeshUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
 
-<service name="MeshUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
- <interface name="Arcane::IUnitTest" inherited="false" />
-
- <variables>
+  <variables>
     <variable
       field-name="cell_flag"
       name="MeshUnitTest_CellFlags"
@@ -16,183 +14,182 @@
       item-kind="cell"
       dim="0"
       dump="false"
-      need-sync="true" 
+      need-sync="true"
     />
   </variables>
 
- <options>
-  <!-- Fichier de sortie pour les maillages -->
-  <simple
-   name = "output-file"
-   type = "string"
-   default = "meshinfos"
-  >
-   <name lang='fr'>fichier-sortie</name>
-   <description>
-Nom du fichier de sortie des infos de maillage. Pour chaque sous-domaine, trois
-fichiers sont écrit: un fichier avec le maillage trié pour comparaisons avec
-un autre maillage, un fichier contenant la connectivité et un fichier écrit
-avec l'écrivain de maillage par défaut.
-   </description>
-  </simple>
-
-  <extended
-   name = "compute-normal"
-   type = "Arcane::FaceGroup"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>calcul-normale</name>
-   <description>
-Groupe de faces dont on souhaite calculer la normale.
-   </description>
-  </extended>
-
-  <extended
-   name = "compute-direction"
-   type = "Arcane::NodeGroup"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>calcul-direction</name>
-   <description>
-Groupe de noeuds formant une ligne dont on souhaite calculer la direction
-   </description>
-  </extended>
-
-  <simple
-   name = "test-variable-writer"
-   type = "bool"
-   default = "true"
-  >
-   <name lang='fr'>test-ecrivain-variable</name>
-   <description>
-Vrai si on teste l'ecriture des variables au format HDF5.
-   </description>
-  </simple>
-
-  <simple
-   name = "test-adjency"
-   type = "bool"
-   default = "true"
-  >
-   <name lang='fr'>test-adjacence</name>
-   <description>
-Vrai si on teste la création des groupes d'adjacence.
-   </description>
-  </simple>
-
-  <simple
-   name = "write-mesh"
-   type = "bool"
-   default = "true"
-  >
-   <name lang='fr'>ecrire-maillage</name>
-   <description>
-Vrai si on ecrit les informations de maillage dans un un fichier (dont le nom est donnee par l'options 'sortie-fichier').
-   </description>
-  </simple>
-
-  <simple
-   name = "write-mesh-service-name"
-   type = "string"
-   default = "Lima"
-  >
-   <description>
-Nom du service utilisé pour écrire le maillage.
-   </description>
-  </simple>
-
-  <simple
-    name = "connectivity-file-checksum"
-    type = "string"
-    optional = "true"
-  >
-   <description>
-     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas séquentiels
-   </description>
-  </simple>
-
-  <simple
-    name = "connectivity-file-checksum-parallel"
-    type = "string"
-    minOccurs = "0"
-    maxOccurs = "unbounded"
+  <options>
+    <!-- Output file for meshes -->
+    <simple
+      name="output-file"
+      type="string"
+      default="meshinfos"
     >
-   <description>
-     Checksum au format SHA3-256 du fichier de connectivité trié pour les cas parallèles.
-     La i-ème instance correspond à la checksum du rang i.
-   </description>
-  </simple>
+      <name lang='fr'>fichier-sortie</name>
+      <description>
+        Name of the mesh info output file. For each subdomain, three files are written:
+        a file with the sorted mesh for comparison with another mesh, a file
+        containing the connectivity, and a file written with the default mesh writer.
+      </description>
+    </simple>
 
-  <simple
-   name = "additional-mesh"
-   type = "string"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>maillage-additionnel</name>
-   <description>
-Nom d'un maillage à lire en plus du maillage par défaut.
-   </description>
-  </simple>
+    <extended
+      name="compute-normal"
+      type="Arcane::FaceGroup"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <name lang='fr'>calcul-normale</name>
+      <description>
+        Group of faces for which the normal is desired to be calculated.
+      </description>
+    </extended>
 
-  <simple
-   name = "test-deallocate-mesh"
-   type = "bool"
-   default = "false"
-  >
-   <name lang='fr'>test-desallocation-maillage</name>
-   <description>
-Teste la désallocation du maillage
-   </description>
-  </simple>
+    <extended
+      name="compute-direction"
+      type="Arcane::NodeGroup"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <name lang='fr'>calcul-direction</name>
+      <description>
+        Group of nodes forming a line for which the direction is desired to be calculated.
+      </description>
+    </extended>
 
-  <simple
-   name = "test-sort-node-faces-and-edges"
-   type = "bool"
-   default = "false"
-  >
-   <description>
-     Indique si on tri les faces et les arêtes connectées aux noeuds
-   </description>
-  </simple>
+    <simple
+      name="test-variable-writer"
+      type="bool"
+      default="true"
+    >
+      <name lang='fr'>test-ecrivain-variable</name>
+      <description>
+        True if we are testing the writing of variables in HDF5 format.
+      </description>
+    </simple>
 
-  <simple name = "create-edges" type = "bool" default = "false">
-    <description>
-      Indique si en 3D on créé les arêtes.
-    </description>
-  </simple>
+    <simple
+      name="test-adjency"
+      type="bool"
+      default="true"
+    >
+      <name lang='fr'>test-adjacence</name>
+      <description>
+        True if we are testing the creation of adjacency groups.
+      </description>
+    </simple>
 
-  <simple name = "generate-uid-from-nodes-uid" type = "bool" default = "false">
-    <description>
-      Si vrai, génère les uniqueId des arêtes et des faces à partir de ceux des noeuds.
-    </description>
-  </simple>
+    <simple
+      name="write-mesh"
+      type="bool"
+      default="true"
+    >
+      <name lang='fr'>ecrire-maillage</name>
+      <description>
+        True if we write the mesh information into a file (whose name is given by the 'output-file' option).
+      </description>
+    </simple>
 
-  <simple name = "check-read-property" type = "string" minOccurs="0" maxOccurs="unbounded">
-    <description>
-      Indique que l'on veut vérifier si la variable dont le nom est donnée a bien été créée et conservée.
-    </description>
-  </simple>
+    <simple
+      name="write-mesh-service-name"
+      type="string"
+      default="Lima"
+    >
+      <description>
+        Name of the service used to write the mesh.
+      </description>
+    </simple>
 
-  <simple name = "compact-mesh" type = "bool" default = "true">
-    <description>
-      Indique si on applique la propriété 'compact' et 'compact-after-allocate' au maillage.
-    </description>
-  </simple>
+    <simple
+      name="connectivity-file-checksum"
+      type="string"
+      optional="true"
+    >
+      <description>
+        SHA3-256 checksum of the sorted connectivity file for sequential cases
+      </description>
+    </simple>
 
-  <simple name = "compute-owners-direct" type = "bool" default = "false">
-    <description>
-      Si vrai, utilise 'ItemsOwnerBuilder' pour calculer les propriétaires des noeuds et faces.
-    </description>
-  </simple>
+    <simple
+      name="connectivity-file-checksum-parallel"
+      type="string"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <description>
+        SHA3-256 checksum of the sorted connectivity file for parallel cases.
+        The i-th instance corresponds to the checksum of rank i.
+      </description>
+    </simple>
 
-  <simple name = "check-local-ids-from-connectivity" type = "bool" default = "false">
-    <description>
-      Si vrai, test 'IMeshUtilities::localIdsFromConnectivity()'
-    </description>
-  </simple>
+    <simple
+      name="additional-mesh"
+      type="string"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <name lang='fr'>maillage-additionnel</name>
+      <description>
+        Name of a mesh to read in addition to the default mesh.
+      </description>
+    </simple>
 
- </options>
+    <simple
+      name="test-deallocate-mesh"
+      type="bool"
+      default="false"
+    >
+      <name lang='fr'>test-desallocation-maillage</name>
+      <description>
+        Tests the deallocation of the mesh.
+      </description>
+    </simple>
+
+    <simple
+      name="test-sort-node-faces-and-edges"
+      type="bool"
+      default="false"
+    >
+      <description>
+        Indicates whether faces and edges connected to nodes are sorted.
+      </description>
+    </simple>
+
+    <simple name="create-edges" type="bool" default="false">
+      <description>
+        Indicates whether edges are created in 3D.
+      </description>
+    </simple>
+
+    <simple name="generate-uid-from-nodes-uid" type="bool" default="false">
+      <description>
+        If true, generates the uniqueIds of edges and faces from those of the nodes.
+      </description>
+    </simple>
+
+    <simple name="check-read-property" type="string" minOccurs="0" maxOccurs="unbounded">
+      <description>
+        Indicates that we want to check if the variable whose name is given has been created and preserved.
+      </description>
+    </simple>
+
+    <simple name="compact-mesh" type="bool" default="true">
+      <description>
+        Indicates whether the 'compact' and 'compact-after-allocate' properties are applied to the mesh.
+      </description>
+    </simple>
+
+    <simple name="compute-owners-direct" type="bool" default="false">
+      <description>
+        If true, uses 'ItemsOwnerBuilder' to calculate the owners of nodes and faces.
+      </description>
+    </simple>
+
+    <simple name="check-local-ids-from-connectivity" type="bool" default="false">
+      <description>
+        If true, tests 'IMeshUtilities::localIdsFromConnectivity()'.
+      </description>
+    </simple>
+
+  </options>
 </service>

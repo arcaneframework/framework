@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneTestInit.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Initialisation pour les tests.                                            */
+/* Initialization for tests.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,23 +17,23 @@
 
 #include "arcane/impl/ArcaneMain.h"
 
-// Pour détecter si Hdf5 est disponible.
+// To detect if Hdf5 is available.
 #include "arcane_packages.h"
 
-// Pour forcer enregistrement de 'arcane_std'
+// To force registration of 'arcane_std'
 #include "arcane/std/ArcaneStdRegisterer.h"
 
 #ifdef ARCANE_HAS_PACKAGE_HDF5
 #include "arcane/hdf5/ArcaneHdf5Registerer.h"
 #endif
 
-// La fonction doit être 'C' pour pouvoir être appelée depuis le C#.
+// The function must be 'C' so that it can be called from C#.
 extern "C" ARCANE_EXPORT void
 arcaneTestSetApplicationInfo()
 {
   using namespace Arcane;
 
-  // Force le chargement de 'arcane_std'
+  // Forces the loading of 'arcane_std'
   ArcaneStdRegisterer::registerLibrary();
 #ifdef ARCANE_HAS_PACKAGE_HDF5
   ArcaneHdf5Registerer::registerLibrary();
@@ -42,7 +42,7 @@ arcaneTestSetApplicationInfo()
   ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
   app_build_info.setApplicationName("ArcaneTest");
   app_build_info.setCodeName("ArcaneTest");
-  app_build_info.setCodeVersion(VersionInfo(1,0,0));
+  app_build_info.setCodeVersion(VersionInfo(1, 0, 0));
 
   app_build_info.addDynamicLibrary("arcane_driverlib");
   app_build_info.addDynamicLibrary("arcane_geometry");
@@ -54,11 +54,11 @@ arcaneTestSetApplicationInfo()
   app_build_info.addDynamicLibrary("arcane_aleph_kappa");
 #endif
 
-  // Modifie le répertoire de sortie pour prendren en compte le nom du
-  // test s'il est défini.
+  // Modifies the output directory to take into account the name of the
+  // test if it is defined.
   String test_name = platform::getEnvironmentVariable("ARCANE_TEST_NAME");
   if (!test_name.empty())
-    app_build_info.setOutputDirectory(String("test_output_")+test_name);
+    app_build_info.setOutputDirectory(String("test_output_") + test_name);
   ArcaneMain::setUseTestLogger(true);
 }
 

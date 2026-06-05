@@ -1,6 +1,6 @@
-<?xml version="1.0" ?>
+﻿<?xml version="1.0" ?>
 <module name="SimpleHeatTest" version="1.0">
-  <description>Descripteur du module SimpleHeatTest</description>
+  <description>Descriptor of the SimpleHeatTest module</description>
   <entry-points>
     <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
     <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />

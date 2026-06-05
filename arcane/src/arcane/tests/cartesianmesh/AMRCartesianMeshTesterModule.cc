@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMRCartesianMeshTesterModule.cc                             (C) 2000-2026 */
 /*                                                                           */
-/* Module de test du gestionnaire de maillages cartésiens AMR.               */
+/* AMR Cartesian mesh manager test module.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -69,8 +69,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test pour les infos sur les maillages cartésiens.
+ * \brief Test module for Cartesian mesh information.
  */
 class AMRCartesianMeshTesterModule
 : public ArcaneAMRCartesianMeshTesterObject
@@ -85,7 +86,7 @@ class AMRCartesianMeshTesterModule
   static void staticInitialize(ISubDomain* sd);
 
  public:
-  
+
   void buildInit() override;
   void compute() override;
   void init() override;
@@ -96,7 +97,7 @@ class AMRCartesianMeshTesterModule
   VariableCellReal m_old_density;
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
-  VariableNodeReal m_node_density; 
+  VariableNodeReal m_node_density;
   ICartesianMesh* m_cartesian_mesh;
   Ref<CartesianMeshTestUtils> m_utils;
   UniqueArray<VariableCellReal*> m_cell_patch_variables;
@@ -133,11 +134,11 @@ class AMRCartesianMeshTesterModule
 AMRCartesianMeshTesterModule::
 AMRCartesianMeshTesterModule(const ModuleBuildInfo& mbi)
 : ArcaneAMRCartesianMeshTesterObject(mbi)
-, m_density(VariableBuildInfo(this,"Density"))
-, m_old_density(VariableBuildInfo(this,"OldDensity"))
-, m_cell_center(VariableBuildInfo(this,"CellCenter"))
-, m_face_center(VariableBuildInfo(this,"FaceCenter"))
-, m_node_density(VariableBuildInfo(this,"NodeDensity"))
+, m_density(VariableBuildInfo(this, "Density"))
+, m_old_density(VariableBuildInfo(this, "OldDensity"))
+, m_cell_center(VariableBuildInfo(this, "CellCenter"))
+, m_face_center(VariableBuildInfo(this, "FaceCenter"))
+, m_node_density(VariableBuildInfo(this, "NodeDensity"))
 , m_cartesian_mesh(nullptr)
 {
 }
@@ -166,19 +167,19 @@ staticInitialize(ISubDomain* sd)
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("AMRCartesianMeshTester.buildInit"));
-    time_loop->setEntryPoints(ITimeLoop::WBuild,clist);
+    time_loop->setEntryPoints(ITimeLoop::WBuild, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("AMRCartesianMeshTester.init"));
-    time_loop->setEntryPoints(ITimeLoop::WInit,clist);
+    time_loop->setEntryPoints(ITimeLoop::WInit, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("AMRCartesianMeshTester.compute"));
-    time_loop->setEntryPoints(ITimeLoop::WComputeLoop,clist);
+    time_loop->setEntryPoints(ITimeLoop::WComputeLoop, clist);
   }
 
   {
@@ -242,27 +243,27 @@ init()
   IItemFamily* cell_family = mesh->cellFamily();
   Int32UniqueArray ids(1);
   ids[0] = 0;
-  cell_family->createGroup("CELL0",ids,true);
+  cell_family->createGroup("CELL0", ids, true);
   ids[0] = 1;
-  cell_family->createGroup("CELL1",ids,true);
+  cell_family->createGroup("CELL1", ids, true);
   ids[0] = 2;
-  cell_family->createGroup("CELL2",ids,true);
+  cell_family->createGroup("CELL2", ids, true);
   IItemFamily* face_family = defaultMesh()->faceFamily();
   ids[0] = 0;
-  face_family->createGroup("FACE0",ids,true);
+  face_family->createGroup("FACE0", ids, true);
   ids[0] = 1;
-  face_family->createGroup("FACE1",ids,true);
+  face_family->createGroup("FACE1", ids, true);
   ids[0] = 2;
-  face_family->createGroup("FACE2",ids,true);
+  face_family->createGroup("FACE2", ids, true);
   ids[0] = 3;
-  face_family->createGroup("FACE3",ids,true);
+  face_family->createGroup("FACE3", ids, true);
   ids[0] = 4;
-  face_family->createGroup("FACE4",ids,true);
+  face_family->createGroup("FACE4", ids, true);
   ids[0] = 5;
-  face_family->createGroup("FACE5",ids,true);
+  face_family->createGroup("FACE5", ids, true);
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
-  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
+  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh, acceleratorMng()));
 
   m_merge_patches = options()->mergePatches();
 
@@ -277,22 +278,21 @@ init()
 
   _computeCenters();
 
-
   const bool do_coarse_at_init = options()->coarseAtInit();
 
   const Integer dimension = defaultMesh()->dimension();
-  if (dimension==2)
+  if (dimension == 2)
     m_nb_expected_patch = 1 + options()->refinement2d().size();
-  else if (dimension==3)
+  else if (dimension == 3)
     m_nb_expected_patch = 1 + options()->refinement3d().size();
 
-  // Si on dé-raffine à l'init, on aura un patch de plus
+  // If coarsening is done at init, we will have one more patch
   if (do_coarse_at_init)
     ++m_nb_expected_patch;
 
   if (subDomain()->isContinue())
     m_cartesian_mesh->recreateFromDump();
-  else{
+  else {
     m_cartesian_mesh->computeDirections();
     CartesianMeshRenumberingInfo renumbering_info;
     renumbering_info.setRenumberPatchMethod(options()->renumberPatchMethod());
@@ -306,42 +306,42 @@ init()
     info() << "MaxUid for mesh=" << MeshUtils::getMaxItemUniqueIdCollective(m_cartesian_mesh->mesh());
   }
 
-  // Initialise la densité.
-  // On met une densité de 1.0 à l'intérieur
-  // et on ajoute une densité de 5.0 pour chaque direction dans les
-  // mailles de bord.
+  // Initialize density.
+  // We set a density of 1.0 inside
+  // and add a density of 5.0 for each direction in the
+  // boundary meshes.
   m_density.fill(1.0);
-  for( Integer idir=0, nb_dir=dimension; idir<nb_dir; ++idir){
+  for (Integer idir = 0, nb_dir = dimension; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     Integer nb_boundary1 = 0;
     Integer nb_boundary2 = 0;
-    ENUMERATE_CELL(icell,cdm.innerCells()){
+    ENUMERATE_CELL (icell, cdm.innerCells()) {
       DirCell cc(cdm.cell(*icell));
       Cell next = cc.next();
       Cell prev = cc.previous();
-      if (next.null() || prev.null()){
-        // Maille au bord. J'ajoute de la densité.
-        // Ne devrait pas arriver car on est sur les innerCells()
+      if (next.null() || prev.null()) {
+        // Mesh at the boundary. I add density.
+        // Should not happen since we are on innerCells()
         ++nb_boundary1;
         m_density[icell] += 5.0;
       }
     }
-    // Parcours les mailles frontières pour la direction
-    ENUMERATE_CELL(icell,cdm.outerCells()){
+    // Iterate over boundary meshes for the direction
+    ENUMERATE_CELL (icell, cdm.outerCells()) {
       DirCell cc(cdm[icell]);
-      if (icell.index()<5)
+      if (icell.index() < 5)
         info() << "CELL: cell=" << ItemPrinter(*icell)
                << " next=" << ItemPrinter(cc.next())
                << " previous=" << ItemPrinter(cc.previous());
-      // Maille au bord. J'ajoute de la densité.
+      // Mesh at the boundary. I add density.
       ++nb_boundary2;
       m_density[icell] += 5.0;
     }
 
     info() << "NB_BOUNDARY1=" << nb_boundary1 << " NB_BOUNDARY2=" << nb_boundary2;
   }
-  bool is_amr = m_nb_expected_patch!=1;
-  if (options()->verbosityLevel()==0)
+  bool is_amr = m_nb_expected_patch != 1;
+  if (options()->verbosityLevel() == 0)
     m_utils->setNbPrint(5);
   m_utils->testAll(is_amr);
   _writePostProcessing();
@@ -387,12 +387,12 @@ _svgOutput()
   SimpleHTMLMeshAMRPatchExporter amr_exporter;
   Directory directory = subDomain()->exportDirectory();
 
-  // Affiche les informations sur les patchs
+  // Display patch information
   for (Integer i = 0; i < nb_patch; ++i) {
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
     CellGroup patch_cells(p->cells());
 
-    // Exporte le patch au format SVG
+    // Export the patch in SVG format
     String filename = String::format("Patch{0}-{1}-{2}.svg", i, comm_rank, comm_size);
     String full_filename = directory.file(filename);
     std::ofstream ofile(full_filename.localstr());
@@ -414,7 +414,7 @@ void AMRCartesianMeshTesterModule::
 _processPatches()
 {
   const bool do_check = true;
-  const bool is_verbose = options()->verbosityLevel()>=1;
+  const bool is_verbose = options()->verbosityLevel() >= 1;
 
   const Int32 dimension = defaultMesh()->dimension();
 
@@ -424,81 +424,81 @@ _processPatches()
   else if (dimension == 3)
     without_coarse_zone = options()->coarseZone3d().empty();
 
-  // Vérifie qu'il y a autant de patchs que d'options raffinement dans
-  // le jeu de données (en comptant le patch 0 qui est le maillage cartésien).
-  // Cela permet de vérifier que les appels successifs
-  // à computeDirections() n'ajoutent pas de patchs.
-  // Cette vérification ne s'applique que s'il n'y a pas de zone de dé-raffinement.
-  // En effet, dé-raffiner un patch complet le supprime de la liste des patchs.
-  // Elle est aussi désactivée s'il y a fusion possible des patchs.
+  // Checks that there are as many patches as refinement options in
+  // the dataset (counting patch 0, which is the Cartesian mesh).
+  // This allows checking that successive calls
+  // to computeDirections() do not add patches.
+  // This check only applies if there is no coarsening zone.
+  // Indeed, coarsening a full patch removes it from the list of patches.
+  // It is also disabled if patch merging is possible.
   Integer nb_expected_patch = m_nb_expected_patch;
-    
+
   Integer nb_patch = m_cartesian_mesh->nbPatch();
   if (without_coarse_zone && nb_expected_patch != nb_patch && !m_merge_patches)
-    ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
+    ARCANE_FATAL("Bad number of patchs expected={0} value={1}", nb_expected_patch, nb_patch);
 
   IParallelMng* pm = parallelMng();
   Int32 comm_rank = pm->commRank();
 
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
-  if (nb_cells_expected.size()!=nb_patch)
+  if (nb_cells_expected.size() != nb_patch)
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
-                 nb_cells_expected.size(),nb_patch,options()->expectedNumberOfCellsInPatchs.name());
+                 nb_cells_expected.size(), nb_patch, options()->expectedNumberOfCellsInPatchs.name());
 
-  // Nombre de mailles fantômes attendu. Utilisé uniquement en parallèle
+  // Expected number of ghost cells. Used only in parallel
   bool has_expected_ghost_cells = options()->expectedNumberOfGhostCellsInPatchs.isPresent();
   if (!pm->isParallel())
     has_expected_ghost_cells = false;
 
   UniqueArray<Int32> nb_ghost_cells_expected(options()->expectedNumberOfGhostCellsInPatchs);
-  if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
+  if (has_expected_ghost_cells && (nb_ghost_cells_expected.size() != nb_patch))
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
                  nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
 
-  // Affiche les informations sur les patchs
-  for( Integer i=0; i<nb_patch; ++i ){
+  // Displays information about the patches
+  for (Integer i = 0; i < nb_patch; ++i) {
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
     CellGroup patch_cells(p->cells());
     info() << "Patch cell_group=" << patch_cells.name() << " nb_cell=" << patch_cells.size();
-    VariableCellReal* cellv = new VariableCellReal(VariableBuildInfo(defaultMesh(),String("CellPatch")+i));
+    VariableCellReal* cellv = new VariableCellReal(VariableBuildInfo(defaultMesh(), String("CellPatch") + i));
     m_cell_patch_variables.add(cellv);
     cellv->fill(0.0);
-    ENUMERATE_CELL(icell,patch_cells){
+    ENUMERATE_CELL (icell, patch_cells) {
       (*cellv)[icell] = 2.0;
     }
 
     CellGroup patch_own_cell = patch_cells.own();
     UniqueArray<Int64> own_cells_uid;
-    ENUMERATE_(Cell,icell,patch_own_cell){
-      Cell cell{*icell};
+    ENUMERATE_ (Cell, icell, patch_own_cell) {
+      Cell cell{ *icell };
       if (is_verbose)
         info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
       own_cells_uid.add(cell.uniqueId());
     }
-    // Affiche la liste globales des uniqueId() des mailles.
+    // Displays the global list of cell uniqueIds().
     {
       UniqueArray<Int64> global_cells_uid;
-      pm->allGatherVariable(own_cells_uid,global_cells_uid);
-      std::sort(global_cells_uid.begin(),global_cells_uid.end());
+      pm->allGatherVariable(own_cells_uid, global_cells_uid);
+      std::sort(global_cells_uid.begin(), global_cells_uid.end());
       Integer nb_global_uid = global_cells_uid.size();
       info() << "GlobalUids Patch=" << i << " NB=" << nb_global_uid
              << " expected=" << nb_cells_expected[i];
-      // Vérifie que le nombre de mailles par patch est le bon.
-      if (do_check && nb_cells_expected[i]!=nb_global_uid)
+      // Checks that the number of cells per patch is correct.
+      if (do_check && nb_cells_expected[i] != nb_global_uid)
         ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
-                     i,nb_global_uid,nb_cells_expected[i]);
+                     i, nb_global_uid, nb_cells_expected[i]);
       if (is_verbose)
-        for( Integer c=0; c<nb_global_uid; ++c )
+        for (Integer c = 0; c < nb_global_uid; ++c)
           info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
     }
-    // Teste le nombre de mailles fantômes
-    if (has_expected_ghost_cells){
+    // Tests the number of ghost cells
+    if (has_expected_ghost_cells) {
       Int32 local_nb_ghost_cell = patch_cells.size() - patch_own_cell.size();
-      Int32 total = pm->reduce(Parallel::ReduceSum,local_nb_ghost_cell);
+      Int32 total = pm->reduce(Parallel::ReduceSum, local_nb_ghost_cell);
       pinfo() << "NbGhostCells my_rank=" << comm_rank << " local=" << local_nb_ghost_cell << " total=" << total;
-      if (total!=nb_ghost_cells_expected[i])
+      if (total != nb_ghost_cells_expected[i])
         ARCANE_FATAL("Bad number of ghost cells for patch I={0} N={1} expected={2}",
-                     i,total,nb_ghost_cells_expected[i]);
+                     i, total, nb_ghost_cells_expected[i]);
     }
   }
 }
@@ -511,26 +511,26 @@ _computeCenters()
 {
   IMesh* mesh = defaultMesh();
 
-  // Calcule le centre des mailles
+  // Calculates the cell center
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_CELL(icell,allCells()){
+    ENUMERATE_CELL (icell, allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for( NodeLocalId inode : cell.nodes() )
+      for (NodeLocalId inode : cell.nodes())
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
     }
   }
 
-  // Calcule le centre des faces
+  // Calculates the face center
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_FACE(iface,allFaces()){
+    ENUMERATE_FACE (iface, allFaces()) {
       Face face = *iface;
       Real3 center;
-      for( NodeLocalId inode : face.nodes() )
+      for (NodeLocalId inode : face.nodes())
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
@@ -547,9 +547,9 @@ _initAMR()
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   amr_mng.setOverlapLayerSizeTopLevel(options()->overlapLayerSizeTopLevel());
 
-  // Regarde si on dé-raffine le maillage initial
-  if (options()->coarseAtInit()){
-    // Il faut que les directions aient été calculées avant d'appeler le dé-raffinement
+  // Checks if the initial mesh is coarsened
+  if (options()->coarseAtInit()) {
+    // Directions must be calculated before calling the coarsening
     m_cartesian_mesh->computeDirections();
 
     info() << "Doint initial coarsening";
@@ -570,15 +570,15 @@ _initAMR()
     {
       Int32 index = 0;
       info() << "NB_PATCH=" << nb_patch;
-      for( CartesianPatch p : patches){
+      for (CartesianPatch p : patches) {
         info() << "Patch i=" << index << " nb_cell=" << p.cells().size();
         ++index;
       }
     }
   }
-  // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans le boîte englobante
-  // spécifiée dans le jeu de données.
+  // Iterates through active meshes and adds to the list of meshes
+  // to refine those contained in the bounding box
+  // specified in the dataset.
   Int32 dim = defaultMesh()->dimension();
   if (dim == 2) {
     for (const auto& x : options()->refinement2d()) {
@@ -679,24 +679,25 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule la densité d'une maille AMR.
+ * \brief Calculates the density of an AMR cell.
  */
 void AMRCartesianMeshTesterModule::
 _computeSubCellDensity(Cell cell)
 {
   Int32 nb_children = cell.nbHChildren();
-  if (nb_children==0)
+  if (nb_children == 0)
     return;
-  // Pour les mailles AMR, la densité est la moyenne des noeuds qui la compose.
-  for( Int32 j=0; j<nb_children; ++j ) {
+  // For AMR cells, the density is the average of the nodes that compose it.
+  for (Int32 j = 0; j < nb_children; ++j) {
     Real sub_density = 0.0;
     Cell sub_cell = cell.hChild(j);
     Integer sub_cell_nb_node = sub_cell.nbNode();
-    for( Integer k=0; k<sub_cell_nb_node; ++k )
+    for (Integer k = 0; k < sub_cell_nb_node; ++k)
       sub_density += m_node_density[sub_cell.node(k)];
     sub_density /= (Real)sub_cell_nb_node;
-    m_density[sub_cell] =sub_density;
+    m_density[sub_cell] = sub_density;
     _computeSubCellDensity(sub_cell);
   }
 }
@@ -707,23 +708,23 @@ _computeSubCellDensity(Cell cell)
 void AMRCartesianMeshTesterModule::
 _compute1()
 {
-  // Pour test, on parcours les N directions
-  // et pour chaque maille, on modifie sa densité
-  // par la formule new_density = (density+density_next+density_prev) / 3.0.
-  
-  // Effectue l'operation en deux fois. Une premiere sur les
-  // mailles internes, et une deuxieme sur les mailles externes.
-  // Du coup, il faut passer par une variable intermediaire (m_old_density)
-  // mais on evite un test dans la boucle principale
+  // For testing, we iterate over the N directions
+  // and for each cell, we modify its density
+  // using the formula new_density = (density+density_next+density_prev) / 3.0.
+
+  // Performs the operation in two steps. The first on the
+  // internal cells, and a second on the external cells.
+  // Therefore, we must use an intermediate variable (m_old_density)
+  // but we avoid a test in the main loop
   IMesh* mesh = defaultMesh();
   Integer nb_dir = mesh->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     m_old_density.copy(m_density);
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
-    // Travail sur les mailles internes
+    // Working on internal cells
     info() << "Direction=" << idir << " cells=" << cdm.innerCells().name()
            << " n=" << cdm.innerCells().size();
-    ENUMERATE_CELL(icell,cdm.innerCells()){
+    ENUMERATE_CELL (icell, cdm.innerCells()) {
       Cell cell = *icell;
       DirCell cc(cdm.cell(cell));
       Cell next = cc.next();
@@ -732,20 +733,20 @@ _compute1()
       m_density[icell] = d / 3.0;
       _computeSubCellDensity(cell);
     }
-    // Travail sur les mailles externes
-    // Test si la maille avant ou apres est nulle.
-    ENUMERATE_CELL(icell,cdm.outerCells()){
+    // Working on external cells
+    // Test if the cell before or after is null.
+    ENUMERATE_CELL (icell, cdm.outerCells()) {
       Cell cell = *icell;
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
       Cell prev = cc.previous();
       Real d = m_old_density[icell];
       Integer n = 1;
-      if (!next.null()){
+      if (!next.null()) {
         d += m_old_density[next];
         ++n;
       }
-      if (!prev.null()){
+      if (!prev.null()) {
         d += m_old_density[prev];
         ++n;
       }
@@ -753,13 +754,13 @@ _compute1()
       _computeSubCellDensity(cell);
     }
   }
-  // Modifie la densité aux noeuds.
-  // Elle sera égale à la moyenne des densités des mailles entourant ce noeud
-  ENUMERATE_NODE(inode,mesh->allNodes()){
+  // Modifies the density at the nodes.
+  // It will be equal to the average of the densities of the cells surrounding this node
+  ENUMERATE_NODE (inode, mesh->allNodes()) {
     Node node = *inode;
     Integer nb_cell = node.nbCell();
     Real density = 0.0;
-    for( Integer i=0; i<nb_cell; ++i )
+    for (Integer i = 0; i < nb_cell; ++i)
       density += m_density[node.cell(i)];
     density /= (Real)nb_cell;
     m_node_density[inode] = density;
@@ -772,28 +773,28 @@ _compute1()
 void AMRCartesianMeshTesterModule::
 _compute2()
 {
-  // Pour test, on parcours les N directions
-  // et pour chaque maille, on modifie sa densité
-  // par la formule new_density = (density+density_next+density_prev) / 3.0.
+  // For testing, we iterate over the N directions
+  // and for each cell, we modify its density
+  // using the formula new_density = (density+density_next+density_prev) / 3.0.
 
-  // A noter que cette methode ne donne pas le meme comportement que
-  // _compute1() car les mailles de bord et internes sont mises à jour
-  // dans un ordre différent.
+  // Note that this method does not give the same behavior as
+  // _compute1() because the boundary and internal cells are updated
+  // in a different order.
   Integer nb_dir = defaultMesh()->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
-    // Travail sur toutes les mailles
-    ENUMERATE_CELL(icell,cdm.allCells()){
+    // Working on all cells
+    ENUMERATE_CELL (icell, cdm.allCells()) {
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
       Cell prev = cc.previous();
       Real d = m_density[icell];
       Integer n = 1;
-      if (!next.null()){
+      if (!next.null()) {
         d += m_density[next];
         ++n;
       }
-      if (!prev.null()){
+      if (!prev.null()) {
         d += m_density[prev];
         ++n;
       }
@@ -811,7 +812,7 @@ _writePostProcessing()
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   info() << "Post-process AMR";
   IPostProcessorWriter* post_processor = options()->postProcessor();
-  Directory output_directory = Directory(subDomain()->exportDirectory(),"amrtestpost1");
+  Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost1");
   output_directory.createDirectory();
   info() << "Creating output dir '" << output_directory.path() << "' for export";
   UniqueArray<Real> times;
@@ -823,7 +824,7 @@ _writePostProcessing()
   VariableList variables;
   //variables.add(m_density.variable());
   //variables.add(m_node_density.variable());
-  for( VariableCellReal* v : m_cell_patch_variables )
+  for (VariableCellReal* v : m_cell_patch_variables)
     variables.add(v->variable());
   post_processor->setVariables(variables);
   ItemGroupList groups;
@@ -846,13 +847,13 @@ _testDirections()
   Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = m_cartesian_mesh->mesh()->dimension();
   NodeDirectionMng node_dm2;
-  for( Integer ipatch=0; ipatch<nb_patch; ++ipatch ){
+  for (Integer ipatch = 0; ipatch < nb_patch; ++ipatch) {
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
-    for( Integer idir=0; idir<nb_dir; ++idir ){
+    for (Integer idir = 0; idir < nb_dir; ++idir) {
       NodeDirectionMng node_dm(p->nodeDirection(idir));
       node_dm2 = p->nodeDirection(idir);
       NodeGroup dm_all_nodes = node_dm.allNodes();
-      ENUMERATE_NODE(inode,dm_all_nodes){
+      ENUMERATE_NODE (inode, dm_all_nodes) {
         DirNode dir_node(node_dm[inode]);
         DirNode dir_node2(node_dm2[inode]);
         Node prev_node = dir_node.previous();
@@ -908,19 +909,19 @@ _checkDirections()
 }
 
 /*!
- * \brief Méthode permettant de calculer un hash à partir d'un tableau d'items "autour".
+ * \brief Method allowing calculation of a hash from an array of "around" items.
  *
- * Le tableau doit avoir la forme {uid_item, uid_item_aroundn, ...}.
- * Le nombre de "uid_item_aroundn" pour chaque "uid_item" doit être donné en second paramètre.
+ * The array must be in the form {item_uid, item_uid_aroundn, ...}.
+ * The number of "item_uid_aroundn" for each "item_uid" must be provided in the second parameter.
  *
- * \param own_items_uid_around Le tableau d'items autour.
- * \param nb_items_around Le nombre d'items autour de chaque item.
- * \return Le hash.
+ * \param own_items_uid_around The array of surrounding items.
+ * \param nb_items_around The number of items around each item.
+ * \return The hash.
  */
 String AMRCartesianMeshTesterModule::
 _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, Integer nb_items_around)
 {
-  // +1 car on a le uid dedans.
+  // +1 because we have the uid inside.
   Integer size_of_once_case_around = nb_items_around + 1;
 
   UniqueArray<Int64> final_all_items_uid;
@@ -933,7 +934,7 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
       Int64 index = 0;
       for (Int64 i = 0; i < global_items_uid_around.size(); i += size_of_once_case_around) {
         Int64 uid = global_items_uid_around[i];
-        ARCANE_ASSERT((uid != -1), ("Un uid dans le tableau est = -1"));
+        ARCANE_ASSERT((uid != -1), ("A uid in the array is = -1"));
         global_items_uid[index++] = &(global_items_uid_around[i]);
       }
     }
@@ -941,7 +942,7 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
     std::sort(global_items_uid.begin(), global_items_uid.end(),
               [](const Int64* a, const Int64* b) {
                 return *a < *b;
-    });
+              });
 
     final_all_items_uid.resize(global_items_uid_around.size());
 
@@ -950,7 +951,7 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
 
     for (Int64* ptr_uid : global_items_uid) {
       if (*ptr_uid == previous_uid) {
-        ARCANE_FATAL("Le uid {0} est dupliqué", *ptr_uid);
+        ARCANE_FATAL("The uid {0} is duplicated", *ptr_uid);
       }
       previous_uid = *ptr_uid;
       for (Integer iaround = 0; iaround < size_of_once_case_around; ++iaround) {
@@ -968,13 +969,13 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
 }
 
 /*!
- * \brief Méthode permettant de récupérer un tableau contenant les mailles
- * autour des mailles.
+ * \brief Method allowing retrieval of an array containing the meshes
+ * around the meshes.
  *
- * Le tableau aura la forme : {uid_cell, uid_cell_dir0_pred, uid_cell_dir0_succ, uid_cell_dir1_pred, ...}
+ * The array will be in the form: {uid_cell, uid_cell_dir0_pred, uid_cell_dir0_succ, uid_cell_dir1_pred, ...}
  *
- * \param own_cells_uid_around_cells [OUT] Un tableau vide
- * \return Le nombre de mailles autour de chaque maille (en 2D : 4 et en 3D : 6).
+ * \param own_cells_uid_around_cells [OUT] An empty array
+ * \return The number of meshes around each mesh (4 in 2D and 6 in 3D).
  */
 Integer AMRCartesianMeshTesterModule::
 _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
@@ -984,19 +985,19 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
-    ARCANE_FATAL("Pas compatible sans ghost");
+    ARCANE_FATAL("Not compatible without ghost");
   }
 
   Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = mesh->dimension();
   Integer nb_items = mesh->cellFamily()->allItems().own().size();
 
-  // On a que pred et succ.
+  // We only have pred and succ.
   constexpr Integer nb_items_per_dir = 2;
   constexpr Integer ipred = 0;
   constexpr Integer isucc = 1;
 
-  // +1 car on a le uid dedans.
+  // +1 because we have the uid inside.
   Integer size_of_once_case_around = nb_dir * nb_items_per_dir + 1;
 
   own_cells_uid_around_cells.resize(nb_items * size_of_once_case_around, -1);
@@ -1013,28 +1014,28 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
     //         << " -- uid_pred : " << uid_pred
     //         << " -- uid_succ : " << uid_succ;
 
-    ARCANE_ASSERT((uid != -1), ("Uid ne peut pas être égal à -1"));
+    ARCANE_ASSERT((uid != -1), ("Uid cannot be equal to -1"));
 
     for (Integer i = 0; i < own_cells_uid_around_cells.size(); i += size_of_once_case_around) {
       if (own_cells_uid_around_cells[i] == uid) {
         Integer pos_final = i + 1 + (dir * nb_items_per_dir);
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
-        // En AMR classique, il ne peut pas y avoir une maille dans deux
-        // patchs différents (pas de mailles de recouvrement).
+        // In classic AMR, there cannot be a mesh in two
+        // different patches (no overlapping meshes).
         if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::Cell) {
           if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
-            ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
+            ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
           }
           if (own_cells_uid_around_cells[pos_succ] != -1 && own_cells_uid_around_cells[pos_succ] != uid_succ) {
-            ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
+            ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_cells[pos_succ], uid_succ);
           }
           own_cells_uid_around_cells[pos_pred] = uid_pred;
           own_cells_uid_around_cells[pos_succ] = uid_succ;
         }
-        // En AMR par patch, une maille II_Overlap n'a pas forcément les mêmes
-        // voisins pour un patch ou pour un autre.
-        // On retire les vérifications (pour l'instant) (si modif, changement de hash !).
+        // In patch AMR, an II_Overlap mesh does not necessarily have the same
+        // neighbors for one patch or another.
+        // We remove the checks (for now) (if modified, hash changes!).
         else {
           own_cells_uid_around_cells[pos_pred] = std::max(own_cells_uid_around_cells[pos_pred], uid_pred);
           own_cells_uid_around_cells[pos_succ] = std::max(own_cells_uid_around_cells[pos_succ], uid_succ);
@@ -1067,17 +1068,17 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
     }
   }
 
-  return size_of_once_case_around-1;
+  return size_of_once_case_around - 1;
 }
 
 /*!
- * \brief Méthode permettant de récupérer un tableau contenant les mailles
- * autour des faces.
+ * \brief Method allowing retrieval of an array containing the meshes
+ * around the faces.
  *
- * Le tableau aura la forme : {uid_face, uid_cell_pred, uid_cell_succ, ...}
+ * The array will be in the form: {uid_face, uid_cell_pred, uid_cell_succ, ...}
  *
- * \param own_cells_uid_around_faces [OUT] Un tableau vide
- * \return Le nombre de mailles autour de chaque face (=2).
+ * \param own_cells_uid_around_faces [OUT] An empty array
+ * \return The number of meshes around each face (=2).
  */
 Integer AMRCartesianMeshTesterModule::
 _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
@@ -1087,19 +1088,19 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
-    ARCANE_FATAL("Pas compatible sans ghost");
+    ARCANE_FATAL("Not compatible without ghost");
   }
 
   Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = mesh->dimension();
   Integer nb_items = mesh->faceFamily()->allItems().own().size();
 
-  // On a que pred et succ.
+  // We only have pred and succ.
   constexpr Integer nb_items_per_dir = 2;
   constexpr Integer ipred = 0;
   constexpr Integer isucc = 1;
 
-  // +1 car on a le uid dedans.
+  // +1 because we have the uid inside.
   Integer size_of_once_case_around = nb_items_per_dir * nb_patch + 1;
 
   own_cells_uid_around_faces.resize(nb_items * size_of_once_case_around, -1);
@@ -1115,7 +1116,7 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
     //         << " -- uid_pred : " << uid_pred
     //         << " -- uid_succ : " << uid_succ;
 
-    ARCANE_ASSERT((uid != -1), ("Uid ne peut pas être égal à -1"));
+    ARCANE_ASSERT((uid != -1), ("Uid cannot be equal to -1"));
 
     for (Integer i = 0; i < own_cells_uid_around_faces.size(); i += size_of_once_case_around) {
       if (own_cells_uid_around_faces[i] == uid) {
@@ -1123,10 +1124,10 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
         if (own_cells_uid_around_faces[pos_pred] != -1 && own_cells_uid_around_faces[pos_pred] != uid_pred) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_faces[pos_pred], uid_pred);
+          ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_faces[pos_pred], uid_pred);
         }
         if (own_cells_uid_around_faces[pos_succ] != -1 && own_cells_uid_around_faces[pos_succ] != uid_succ) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_faces[pos_succ], uid_succ);
+          ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_cells_uid_around_faces[pos_succ], uid_succ);
         }
         own_cells_uid_around_faces[pos_pred] = uid_pred;
         own_cells_uid_around_faces[pos_succ] = uid_succ;
@@ -1135,7 +1136,7 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
     }
   };
 
-  // // TODO : Il faut pouvoir récupérer le patch correspondant.
+  // // TODO: It is necessary to retrieve the corresponding patch.
   // for (Integer idir = 0; idir < nb_dir; ++idir) {
   //   FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
   //   ENUMERATE_ (Face, iface, fdm.allFaces().own()) {
@@ -1159,22 +1160,22 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
     }
   }
 
-  return size_of_once_case_around-1;
+  return size_of_once_case_around - 1;
 }
 
 /*!
- * \brief Méthode permettant de récupérer un tableau contenant les noeuds
- * autour des noeuds.
+ * \brief Method allowing retrieval of an array containing the nodes
+ * around the nodes.
  *
- * Le tableau aura la forme : {uid_noeud, uid_noeud_patch0_dir0_pred,
- * uid_noeud_patch0_dir0_succ, uid_noeud_patch0_dir1_pred, ...}
+ * The array will be in the form: {node_uid, node_uid_patch0_dir0_pred,
+ * node_uid_patch0_dir0_succ, node_uid_patch0_dir1_pred, ...}
  *
- * Attention, chaque noeud aura possiblement un noeud pred et succ différent dans
- * chaque patch (les noeuds n'étant pas dupliqués avec l'AMR classique).
+ * Note that each node may have a different pred and succ node in
+ * each patch (since nodes are not duplicated with classic AMR).
  *
- * \param own_nodes_uid_around_nodes [OUT] Un tableau vide
- * \return Le nombre de noeuds autour de chaque noeud
- * (en 2D : 4 * nb_patch et en 3D : 6 * nb_patch).
+ * \param own_nodes_uid_around_nodes [OUT] An empty array
+ * \return The number of nodes around each node
+ * (4 * nb_patch in 2D and 6 * nb_patch in 3D).
  */
 Integer AMRCartesianMeshTesterModule::
 _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
@@ -1184,19 +1185,19 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
 
   if (pm->commSize() != 1 && mesh->ghostLayerMng()->nbGhostLayer() == 0) {
-    ARCANE_FATAL("Pas compatible sans ghost");
+    ARCANE_FATAL("Not compatible without ghost");
   }
 
   Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = mesh->dimension();
   Integer nb_items = mesh->nodeFamily()->allItems().own().size();
 
-  // On a que pred et succ.
+  // We only have pred and succ.
   constexpr Integer nb_items_per_dir = 2;
   constexpr Integer ipred = 0;
   constexpr Integer isucc = 1;
 
-  // +1 car on a le uid dedans.
+  // +1 because we have the uid inside.
   Integer size_of_once_case_around = nb_dir * nb_items_per_dir * nb_patch + 1;
 
   own_nodes_uid_around_nodes.resize(nb_items * size_of_once_case_around, -1);
@@ -1214,7 +1215,7 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
     //         << " -- uid_pred : " << uid_pred
     //         << " -- uid_succ : " << uid_succ;
 
-    ARCANE_ASSERT((uid != -1), ("Uid ne peut pas être égal à -1"));
+    ARCANE_ASSERT((uid != -1), ("Uid cannot be equal to -1"));
 
     for (Integer i = 0; i < own_nodes_uid_around_nodes.size(); i += size_of_once_case_around) {
       if (own_nodes_uid_around_nodes[i] == uid) {
@@ -1222,10 +1223,10 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
         if (own_nodes_uid_around_nodes[pos_pred] != -1 && own_nodes_uid_around_nodes[pos_pred] != uid_pred) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_nodes_uid_around_nodes[pos_pred], uid_pred);
+          ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_nodes_uid_around_nodes[pos_pred], uid_pred);
         }
         if (own_nodes_uid_around_nodes[pos_succ] != -1 && own_nodes_uid_around_nodes[pos_succ] != uid_succ) {
-          ARCANE_FATAL("Problème de cohérence entre les patchs (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_nodes_uid_around_nodes[pos_succ], uid_succ);
+          ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_succ={1} -- new_uid_succ={2})", uid, own_nodes_uid_around_nodes[pos_succ], uid_succ);
         }
         own_nodes_uid_around_nodes[pos_pred] = uid_pred;
         own_nodes_uid_around_nodes[pos_succ] = uid_succ;
@@ -1234,7 +1235,7 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
     }
   };
 
-  // // TODO : Il faut pouvoir récupérer le patch correspondant.
+  // // TODO: It is necessary to retrieve the corresponding patch.
   // for (Integer idir = 0; idir < nb_dir; ++idir) {
   //   NodeDirectionMng ndm(m_cartesian_mesh->nodeDirection(idir));
   //   ENUMERATE_ (Node, inode, ndm.allNodes().own()) {
@@ -1258,7 +1259,7 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
     }
   }
 
-  return size_of_once_case_around-1;
+  return size_of_once_case_around - 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1292,9 +1293,9 @@ _checkSync()
 void AMRCartesianMeshTesterModule::
 _cellsInPatch(Real3 position, Real3 length, bool is_3d, Int32 level, UniqueArray<Int32>& cells_in_patch)
 {
-  // Parcours les mailles actives et ajoute dans la liste des mailles
-  // à raffiner celles qui sont contenues dans le boîte englobante
-  // spécifiée dans le jeu de données.
+  // Iterates over active meshes and adds to the list of meshes
+  // to refine that are contained within the bounding box
+  // specified in the dataset.
   Real3 min_pos = position;
   Real3 max_pos = min_pos + length;
   ENUMERATE_ (Cell, icell, mesh()->allCells()) {

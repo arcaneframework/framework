@@ -1,24 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PartialVariableTester.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Service de test des variables partielles.                                 */
+/* Partial variable test service.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicTimeLoopService.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/BasicTimeLoopService.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/ItemPrinter.h"
+
 #include "arcane/tests/PartialVariableTester_axl.h"
 
 #include "arcane/random/Uniform01.h"
@@ -38,8 +39,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test des variables partielles.
+ * \brief Partial variable test.
  */
 class PartialVariableTester
 : public ArcanePartialVariableTesterObject
@@ -56,12 +58,12 @@ class PartialVariableTester
   
  private:
 
-  // test historique
+  // historical test
   VariableCellReal m_cell_temperature;
   VariableNodeReal m_node_temperature;
   PartialVariableCellReal m_high_cell_temperature;
 
-  // test pour l'équilibrage
+  // test for balancing
   VariableCellInteger m_current_rank;
   VariableCellInteger m_initial_rank;
   PartialVariableCellInteger m_partial_initial_rank;
@@ -97,7 +99,7 @@ init()
 {
   m_global_deltat = 0.1;
   
-  // test historique
+  // historical test
   
   IItemFamily* cell_family = mesh()->cellFamily();
   //CellGroup high_group = cell_family->createGroup("HIGH");
@@ -119,7 +121,7 @@ init()
   }
   m_high_cell_temperature.synchronize();
 
-  // test pour l'équilibrage
+  // test for balancing
 
   const Integer rank = subDomain()->parallelMng()->commRank();
   
@@ -142,11 +144,11 @@ init()
               << m_partial_initial_rank.itemGroup().name();
     
     group.addItems(new_cells.viewAsArray());
-    // Mise à jour du synchronizer car modif manuelle
+    // Update of the synchronizer because of manual modification
     group.synchronizer()->compute();
   }
   
-  // Marche pas encore
+  // Not working yet
   // {
   //   if (m_all_cells_uid.itemGroup() != allCells())
   //     fatal() << "Bad group for m_all_cells_rank="
@@ -225,7 +227,7 @@ compute()
   if (m_global_iteration()>options()->maxIteration())
     subDomain()->timeLoopMng()->stopComputeLoop(true);
   
-  // test historique
+  // historical test
   
   IItemFamily* cell_family = mesh()->cellFamily();
   CellGroup high_group = cell_family->findGroup("HIGH");
@@ -233,8 +235,8 @@ compute()
     ARCANE_FATAL("Bad group for m_high_cell_temperature group={0}",
                  m_high_cell_temperature.itemGroup().name());
 
-  // Vérifie que les valeurs partielles sont les même que les valeurs globales.
-  // Ce test permet de vérifier après un équilibrage que les valeurs sont correctes
+  // Checks that partial values are the same as global values.
+  // This test allows checking after a balancing that the values are correct
   ENUMERATE_CELL(icell,high_group){
     Cell cell = *icell;
     Real partial = m_high_cell_temperature[icell];
@@ -251,7 +253,7 @@ compute()
         cells_local_id.add(icell.itemLocalId());
     }
     high_group.setItems(cells_local_id);
-    // Mise à jour du synchronizer car modif manuelle
+    // Update of the synchronizer because of manual modification
     m_high_cell_temperature.itemGroup().synchronizer()->compute();
   }
 
@@ -281,7 +283,7 @@ compute()
   if (m_high_cell_temperature.checkIfSync(10) != 0)
     ARCANE_FATAL("Not synchronized variable");
 
-  // test pour l'équilibrage
+  // test for balancing
 
   const Integer rank = subDomain()->parallelMng()->commRank();
   
@@ -320,7 +322,7 @@ compute()
               << " from partial variable";
   }
 
-  // Ne marche pas 
+  // Not working
   // ENUMERATE_CELL(icell,allCells()) {
   //   if(m_all_cells_uid[icell] != icell->uniqueId())
   //     fatal() << "proc " << rank << " : error cell(" << icell->localId() 

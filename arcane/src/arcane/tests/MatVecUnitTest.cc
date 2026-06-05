@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatVecUnitTest.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Service de test des matrices/vecteurs.                                    */
+/* Matrix/vector test service.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,8 +39,9 @@ using namespace MatVec;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test du maillage
+ * \brief Module for mesh testing
  */
 class MatVecUnitTest
 : public ArcaneMatVecUnitTestObject
@@ -76,7 +77,7 @@ class MatVecUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MATVECUNITTEST(MatVecUnitTest,MatVecUnitTest);
+ARCANE_REGISTER_SERVICE_MATVECUNITTEST(MatVecUnitTest, MatVecUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,9 +85,9 @@ ARCANE_REGISTER_SERVICE_MATVECUNITTEST(MatVecUnitTest,MatVecUnitTest);
 MatVecUnitTest::
 MatVecUnitTest(const ServiceBuildInfo& mb)
 : ArcaneMatVecUnitTestObject(mb)
-, m_pressure(VariableBuildInfo(mb.mesh(),"MatVecPressure"))
-, m_cell_matrix_row(VariableBuildInfo(mb.mesh(),"MatVecCellMatrixRow"))
-, m_cell_matrix_column(VariableBuildInfo(mb.mesh(),"MatVecCellMatrixColumn"))
+, m_pressure(VariableBuildInfo(mb.mesh(), "MatVecPressure"))
+, m_cell_matrix_row(VariableBuildInfo(mb.mesh(), "MatVecCellMatrixRow"))
+, m_cell_matrix_column(VariableBuildInfo(mb.mesh(), "MatVecCellMatrixColumn"))
 {
 }
 
@@ -132,15 +133,15 @@ _testArcaneMatrix1()
 {
   using namespace MatVec;
   Integer s = 5;
-  Matrix m(s,s);
+  Matrix m(s, s);
   Matrix m1(Matrix::read("test.mat"));
   cout << "** o=" << m.nbRow() << '\n';
   cout << "** M1=";
   m1.dump(cout);
   cout << '\n';
   Vector v1(10);
-  for( Integer i=0; i<10; ++i ){
-    v1.values()[i] = (Real)(i+1);
+  for (Integer i = 0; i < 10; ++i) {
+    v1.values()[i] = (Real)(i + 1);
   }
   Real epsilon = 1.0e-8;
   {
@@ -157,13 +158,13 @@ _testArcaneMatrix1()
     cout << "\n";
 #endif
     Vector b3(10);
-    for( Integer i=0; i<10; ++i ){
-      b3.values()[i] = (Real)(i+1);
+    for (Integer i = 0; i < 10; ++i) {
+      b3.values()[i] = (Real)(i + 1);
     }
     Vector x3(10);
     DiagonalPreconditioner p(m1);
     ConjugateGradientSolver solver;
-    solver.solve(m1,b3,x3,epsilon,&p);
+    solver.solve(m1, b3, x3, epsilon, &p);
   }
 
   IntegerUniqueArray rows_size(s);
@@ -206,7 +207,7 @@ _testArcaneMatrix1()
   columns[10] = 3;
   columns[11] = 0;
   columns[12] = 4;
-  m.setValues(columns,values);
+  m.setValues(columns, values);
   m.dump(cout);
   cout << '\n';
   Vector b(5);
@@ -218,7 +219,7 @@ _testArcaneMatrix1()
   rav[4] = 1.0;
   Vector x(5);
   ConjugateGradientSolver solver;
-  solver.solve(m,b,x,epsilon);
+  solver.solve(m, b, x, epsilon);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,19 +234,19 @@ _initPressure()
 /*---------------------------------------------------------------------------*/
 
 void MatVecUnitTest::
-_printResidualInfo(const Matrix& a,const Vector& b,const Vector& x)
+_printResidualInfo(const Matrix& a, const Vector& b, const Vector& x)
 {
   OStringStream ostr;
   Vector tmp(b.size());
   // tmp = b - Ax
   MatrixOperation mat_op;
-  mat_op.matrixVectorProduct(a,x,tmp);
+  mat_op.matrixVectorProduct(a, x, tmp);
   //ostr() << "\nAX=";
   //tmp.dump(ostr());
   mat_op.negateVector(tmp);
-  mat_op.addVector(tmp,b);
+  mat_op.addVector(tmp, b);
   Real r = mat_op.dot(tmp);
-  info() << " RESIDUAL NORM="  << r;
+  info() << " RESIDUAL NORM=" << r;
 
   //ostr() << "\nR=";
   //tmp.dump(ostr());
@@ -268,55 +269,55 @@ _initMatrix()
   m_cell_matrix_row.fill(-1);
   m_cell_matrix_column.fill(-1);
   {
-    Integer index = 0;;
-    ENUMERATE_CELL(icell,cells){
+    Integer index = 0;
+    ;
+    ENUMERATE_CELL (icell, cells) {
       //const Cell& cell = *icell;
       m_cell_matrix_row[icell] = index;
-      m_cell_matrix_column[icell] = index; // Uniquement valable en sequentiel
+      m_cell_matrix_column[icell] = index; // Only valid in sequential mode
       ++index;
     }
   }
-
 
   IntegerUniqueArray rows_size(nb_cell);
   rows_size.fill(0);
   IntegerUniqueArray columns;
   RealUniqueArray values;
   {
-    ENUMERATE_CELL(icell,cells){
+    ENUMERATE_CELL (icell, cells) {
       const Cell& cell = *icell;
       //Integer nb_face = cell.nbFace();
       Integer cell_row = m_cell_matrix_row[icell];
       Integer nb_col = 0;
-      for( Face face : cell.faces() ){
+      for (Face face : cell.faces()) {
         Integer face_nb_cell = face.nbCell();
-        if (face_nb_cell==2){
-          Cell opposite_cell = (face.cell(0)==cell) ? face.cell(1) : face.cell(0);
+        if (face_nb_cell == 2) {
+          Cell opposite_cell = (face.cell(0) == cell) ? face.cell(1) : face.cell(0);
           columns.add(m_cell_matrix_column[opposite_cell]);
           values.add(-1.0);
           ++nb_col;
         }
       }
       columns.add(m_cell_matrix_column[icell]);
-      values.add(10.0+(Real)(nb_col));
+      values.add(10.0 + (Real)(nb_col));
       ++nb_col;
       rows_size[cell_row] = nb_col;
     }
   }
 
-  MatVec::Matrix matrix(nb_row,nb_column);
+  MatVec::Matrix matrix(nb_row, nb_column);
   matrix.setRowsSize(rows_size);
-  matrix.setValues(columns,values);
+  matrix.setValues(columns, values);
   Integer nb_element = values.size();
   info() << "** MATRIX NB_ELEMENT=" << nb_element;
-  if (nb_element<500){
+  if (nb_element < 500) {
     OStringStream ostr;
     matrix.dump(ostr());
     info() << " MATRIX = " << ostr.str();
   }
   MatVec::Vector rhs(nb_row);
-  for(Integer i=0; i<nb_row; ++i ){
-    rhs.values()[i] = (Real)(i*10+1);
+  for (Integer i = 0; i < nb_row; ++i) {
+    rhs.values()[i] = (Real)(i * 10 + 1);
     //rhs.values()[i] = 2.0;
   }
   //{
@@ -326,7 +327,7 @@ _initMatrix()
   //}
   Real epsilon = 1.0e-7;
 
-  if (1){
+  if (1) {
     //AMGSolver amg(traceMng());
     //amg.build(matrix);
 
@@ -338,16 +339,16 @@ _initMatrix()
     AMGPreconditioner amg_preconditioner(traceMng());
     amg_preconditioner.build(matrix);
     MatVec::ConjugateGradientSolver cgs;
-    cgs.solve(matrix,rhs,x,epsilon,&amg_preconditioner);
+    cgs.solve(matrix, rhs, x, epsilon, &amg_preconditioner);
     OStringStream ostr;
     x.dump(ostr());
     info() << "SOLVE FULL_PRECONDITIONNER NB_ITERATION=" << cgs.nbIteration()
            << " norm=" << cgs.residualNorm();
     //<< " X=" << ostr.str();
-    _printResidualInfo(matrix,rhs,x);
+    _printResidualInfo(matrix, rhs, x);
   }
 
-  if (1){
+  if (1) {
     AMGSolver amg(traceMng());
     amg.build(matrix);
 
@@ -356,17 +357,17 @@ _initMatrix()
 
     info() << "SOLVE USING AMG ";
 
-    for( Integer nb_iter=0; nb_iter<5; ++nb_iter ){
+    for (Integer nb_iter = 0; nb_iter < 5; ++nb_iter) {
       //OStringStream ostr;
-      amg.solve(rhs,x);
+      amg.solve(rhs, x);
       //x.dump(ostr());
       //info() << "SOLVE USING AMG " << nb_iter << " X=" << ostr.str();
       info() << "SOLVE USING AMG " << nb_iter;
-      _printResidualInfo(matrix,rhs,x);
+      _printResidualInfo(matrix, rhs, x);
     }
   }
 
-  if (0){
+  if (0) {
     AMGSolver amg(traceMng());
     amg.build(matrix);
 
@@ -374,11 +375,11 @@ _initMatrix()
     x.values().fill(0.0);
 
     info() << "SOLVE USING AMG ONE_ITERATION";
-    amg.solve(rhs,x);
-    _printResidualInfo(matrix,rhs,x);
+    amg.solve(rhs, x);
+    _printResidualInfo(matrix, rhs, x);
 
     MatVec::ConjugateGradientSolver cgs;
-    cgs.solve(matrix,rhs,x,epsilon,0);
+    cgs.solve(matrix, rhs, x, epsilon, 0);
     OStringStream ostr;
     x.dump(ostr());
     info() << "SOLVE AMG ONE_ITERATION NB_ITERATION=" << cgs.nbIteration()
@@ -386,17 +387,17 @@ _initMatrix()
            << " X=" << ostr.str();
   }
 
-  if (0){
+  if (0) {
     MatVec::Vector x(nb_row);
     x.values().fill(0.0);
     MatVec::ConjugateGradientSolver cgs;
-    cgs.solve(matrix,rhs,x,epsilon,0);
+    cgs.solve(matrix, rhs, x, epsilon, 0);
     OStringStream ostr;
     x.dump(ostr());
     info() << "SOLVE CONJUGATE_GRADIENT NB_ITERATION=" << cgs.nbIteration()
            << " norm=" << cgs.residualNorm()
            << " X=" << ostr.str();
-    _printResidualInfo(matrix,rhs,x);
+    _printResidualInfo(matrix, rhs, x);
   }
 }
 
@@ -407,7 +408,7 @@ void MatVecUnitTest::
 _testMatrix2()
 {
   info() << "TEST DIAGONAL CONJUGATE GRADIENT";
-  Matrix m(6,6);
+  Matrix m(6, 6);
   IntegerUniqueArray rows(6);
   //for( Integer i=0; i<6; ++i )
   //rows[i] = 6;
@@ -418,45 +419,45 @@ _testMatrix2()
   rows[4] = 3;
   rows[5] = 2;
   m.setRowsSize(rows);
-   
-  // Normalement cette matrice converge tres difficilement
-  // voire ne converge pas.
-  m.setValue(0,0, 1.31814608610996E-12);
-  m.setValue(0,1,-1.31814608610859E-12);
 
-  m.setValue(1,0,-1.31814608610859E-12);
-  m.setValue(1,1, 4.66093078486141E-11);
-  m.setValue(1,2,-4.5291161762499E-11);
-    
-  m.setValue(2,1,-4.5291161762499E-11);
-  m.setValue(2,2,1.95243397695228E-10);
-  m.setValue(2,3,-1.49952235932723E-10);
+  // Normally this matrix converges very difficultly
+  // or does not converge.
+  m.setValue(0, 0, 1.31814608610996E-12);
+  m.setValue(0, 1, -1.31814608610859E-12);
 
-  m.setValue(3,2,-1.49952235932723E-10);
-  m.setValue(3,3,4.31954546380107E-10);
-  m.setValue(3,4,-2.82002310447369E-10);
-    
-  m.setValue(4,3,-2.82002310447369E-10);
-  m.setValue(4,4,3.27500080633377E-08);
-  m.setValue(4,5,-3.24680057528885E-08);
-    
-  m.setValue(5,4,-3.24680057528885E-08);
-  m.setValue(5,5,3.24680057528886E-08);
+  m.setValue(1, 0, -1.31814608610859E-12);
+  m.setValue(1, 1, 4.66093078486141E-11);
+  m.setValue(1, 2, -4.5291161762499E-11);
+
+  m.setValue(2, 1, -4.5291161762499E-11);
+  m.setValue(2, 2, 1.95243397695228E-10);
+  m.setValue(2, 3, -1.49952235932723E-10);
+
+  m.setValue(3, 2, -1.49952235932723E-10);
+  m.setValue(3, 3, 4.31954546380107E-10);
+  m.setValue(3, 4, -2.82002310447369E-10);
+
+  m.setValue(4, 3, -2.82002310447369E-10);
+  m.setValue(4, 4, 3.27500080633377E-08);
+  m.setValue(4, 5, -3.24680057528885E-08);
+
+  m.setValue(5, 4, -3.24680057528885E-08);
+  m.setValue(5, 5, 3.24680057528886E-08);
 
   //m.Dump(Console.Out);
   //Console.WriteLine();
   //_PrintMatrix(m);
 
   Vector b(6);
-  b.values()[0] =  2.883E+014;
+  b.values()[0] = 2.883E+014;
   b.values()[1] = -1.745E+016;
-  b.values()[2] =  5.996E+015;
+  b.values()[2] = 5.996E+015;
   b.values()[3] = -1.530E+017;
   b.values()[4] = -1.021E+019;
-  b.values()[5] =  9.716E+018;
+  b.values()[5] = 9.716E+018;
 
   //Vector xref = new Vector(6);
-  //xref.Values[0] = 
+  //xref.Values[0] =
   Vector x(6);
   //for( int i=0; i<6; ++i )
   //x.Values[i] = 0.0;
@@ -464,18 +465,17 @@ _testMatrix2()
     x.values().fill(0.0);
     ConjugateGradientSolver cg;
     DiagonalPreconditioner diag(m);
-    cg.solve(m,b,x,1e-12,&diag);
-    info() << String::format("DIAG NB ITER={0} RESIDU={1}",cg.nbIteration(),cg.residualNorm());
+    cg.solve(m, b, x, 1e-12, &diag);
+    info() << String::format("DIAG NB ITER={0} RESIDU={1}", cg.nbIteration(), cg.residualNorm());
   }
   {
     x.values().fill(0.0);
     ConjugateGradientSolver cg;
     AMGPreconditioner amg_preconditioner(traceMng());
     amg_preconditioner.build(m);
-    cg.solve(m,b,x,1e-12,&amg_preconditioner);
-    info() << String::format("AMG NB ITER={0} RESIDU={1}",cg.nbIteration(),cg.residualNorm());
+    cg.solve(m, b, x, 1e-12, &amg_preconditioner);
+    info() << String::format("AMG NB ITER={0} RESIDU={1}", cg.nbIteration(), cg.residualNorm());
   }
-
 
   //Console.WriteLine("X=");
   //x.Dump(Console.Out);
@@ -532,7 +532,7 @@ _testArcaneMatrix3()
     AMGPreconditioner amg_preconditioner(traceMng());
     amg_preconditioner.build(matrix);
 
-    cg.solve(matrix,vector_b,vector_x,1e-12,&amg_preconditioner);
+    cg.solve(matrix, vector_b, vector_x, 1e-12, &amg_preconditioner);
     auto vx = vector_x.values();
     for (Int32 i = 0; i < nb_row; ++i) {
       Real v = vx[i];
@@ -554,12 +554,11 @@ _testArcaneMatrix2()
 {
   using namespace MatVec;
 
-
   Matrix m1(Matrix::read("test.mat"));
   MatrixOperation2 mat_op2;
   Matrix m2(m1.clone());
-  Matrix m3 = mat_op2.matrixMatrixProduct(m1,m2);  
-  Matrix m4 = mat_op2.matrixMatrixProductFast(m1,m2);
+  Matrix m3 = mat_op2.matrixMatrixProduct(m1, m2);
+  Matrix m4 = mat_op2.matrixMatrixProductFast(m1, m2);
   OStringStream ostr;
   ostr() << "\nLEFT_MATRIX=";
   m1.dump(ostr());
@@ -574,12 +573,13 @@ _testArcaneMatrix2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Génère une matrice et le vector solution pour une
- * équation de poisson 3D sur un cube unité.
+ * \brief Generates a matrix and the solution vector for a
+ * 3D Poisson equation on a unit cube.
  *
- * \a cube_size est le nombre d'inconnues par côté. La taille de la matrice
- * est donc `cube_size ^ 3`.
+ * \a cube_size is the number of unknowns per side. The matrix size
+ * is therefore `cube_size ^ 3`.
  */
 void MatVecUnitTest::
 _buildPoissonMatrixAndRHS(Matrix& matrix, Vector& rhs_vector, Int32 cube_size)

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TestTraceMessageListener.h                                  (C) 2000-2011 */
 /*                                                                           */
-/* Test d'un ITraceMessageListener.                                          */
+/* Test of an ITraceMessageListener.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANETEST_TESTTRACEMESSAGELISTENER_H
 #define ARCANETEST_TESTTRACEMESSAGELISTENER_H
@@ -21,11 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANETEST_BEGIN_NAMESPACE
-
+namespace ArcaneTest
+{
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
@@ -35,29 +32,38 @@ class TestTraceMessageListener
 : public ITraceMessageListener
 {
  public:
-  TestTraceMessageListener() : m_total(0){ toto = 0; }
+
+  TestTraceMessageListener()
+  : m_total(0)
+  {
+    toto = 0;
+  }
+
  public:
+
   virtual bool visitMessage(const TraceMessageListenerArgs& args)
   {
     ConstArrayView<char> str(args.buffer());
-    if (args.message()->type()!=Trace::Info)
+    if (args.message()->type() != Trace::Info)
       return false;
     ++toto;
-    if (m_total>20000){
+    if (m_total > 20000) {
       //if(args.message()->level()>0 && (toto%2)==0)
-      if((toto%3)==0)
+      if ((toto % 3) == 0)
         return true;
-      else{
+      else {
         String toto(str.data());
         toto = String("REDIRECT <<") + toto + ">>";
-        args.message()->parent()->writeDirect(args.message(),toto);
+        args.message()->parent()->writeDirect(args.message(), toto);
       }
     }
     m_total += str.size();
     //std::cout << "RECEIVING : total=" << m_total << " " << str.begin();
     return false;
   }
+
  private:
+
   Integer m_total;
   Integer toto;
 };
@@ -65,10 +71,9 @@ class TestTraceMessageListener
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

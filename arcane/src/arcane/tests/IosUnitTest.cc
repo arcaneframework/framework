@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IosUnitTest.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Service du test des formats d'entrée/sortie du maillage.                  */
+/* Service for testing mesh input/output formats.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,8 +41,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Module de test des Ios
+ * \brief I/O test module
  */
 class IosUnitTest
 : public ArcaneIosUnitTestObject
@@ -63,11 +64,10 @@ class IosUnitTest
                             const String& service_base_name, Integer index);
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_IOSUNITTEST(IosUnitTest,IosUnitTest);
+ARCANE_REGISTER_SERVICE_IOSUNITTEST(IosUnitTest, IosUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,12 +98,12 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
   // Otherwise, prepare to do the test
   ISubDomain* sd = subDomain();
   //	IServiceMng* sm = sd->serviceMng();
-	IParallelMng* pm = sd->parallelMng();
-	IApplication* app = sd->application();
-	IMainFactory* main_factory = app->mainFactory();
-	
-	ScopedPtrT<IXmlDocumentHolder> xdoc(domutils::createXmlDocument());
-	XmlNode dummyXmlNode = xdoc->documentNode();
+  IParallelMng* pm = sd->parallelMng();
+  IApplication* app = sd->application();
+  IMainFactory* main_factory = app->mainFactory();
+
+  ScopedPtrT<IXmlDocumentHolder> xdoc(domutils::createXmlDocument());
+  XmlNode dummyXmlNode = xdoc->documentNode();
   Directory write_directory(sd->exportDirectory());
   String this_directory(write_directory.path());
   StringBuilder output_file_name(options()->outputFileName() + "." + file_extension.lower());
@@ -144,27 +144,27 @@ _testIosWriterReader(IMesh* this_mesh, const String& file_extension,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Ce test va lancer séquentiellement une écriture suivit d'une lecture
- de l'ensemble des maillages lus à l'initialisation.
- [SOD|SIMPLE(1)|SIMPLE(2)] -> wVTU -> rVTU -> wXMF -> rXMF -> wMsh -> rMsh,
- en checkValidMesh-ant ceux lus.
- Un test plus consistant serait à effectuer d'ailleur sur ceux-ci.
+ * This test will sequentially run a write followed by a read of all meshes found during initialization.
+ * [SOD|SIMPLE(1)|SIMPLE(2)] -> wVTU -> rVTU -> wXMF -> rXMF -> wMsh -> rMsh,
+ * checking the validity of those read.
+ * A more comprehensive test should be performed elsewhere on these.
 */
 void IosUnitTest::
 executeTest()
 {
-	info() << "[IosUnitTest] executeTest";
+  info() << "[IosUnitTest] executeTest";
 
-	String meshName("Mesh");
-	IMesh* current_mesh;
-	for (Integer z=0; (current_mesh=subDomain()->findMesh(meshName+z, false)) != 0; ++z){
+  String meshName("Mesh");
+  IMesh* current_mesh;
+  for (Integer z = 0; (current_mesh = subDomain()->findMesh(meshName + z, false)) != 0; ++z) {
     IPrimaryMesh* pm = current_mesh->toPrimaryMesh();
 
-		info() << "##############################";
-		info() << "[IosUnitTest] Working on mesh " << z << " name=" << current_mesh->name() << " pm=" << pm;
-		info() << "NodeFamily1=" << pm->nodeFamily();
-		info() << "NodeFamily2=" << current_mesh->nodeFamily();
+    info() << "##############################";
+    info() << "[IosUnitTest] Working on mesh " << z << " name=" << current_mesh->name() << " pm=" << pm;
+    info() << "NodeFamily1=" << pm->nodeFamily();
+    info() << "NodeFamily2=" << current_mesh->nodeFamily();
 
     if (options()->writeVtu() && (!_testIosWriterReader(current_mesh, "vtu", "VtuNew", z)))
       ARCANE_FATAL("Error in >vtu< test");
@@ -179,22 +179,21 @@ executeTest()
       ARCANE_FATAL("Error in >vtk< test");
   }
 
-  // Pour test, affiche les coordonnées des noeuds des 10 premières mailles
+  // For testing, display the coordinates of the nodes of the first 10 meshes
   {
     VariableNodeReal3& nodes_coord_var(mesh()->nodesCoordinates());
-    ENUMERATE_(Cell,icell,allCells()){
+    ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
-      if (cell.localId()>10)
+      if (cell.localId() > 10)
         break;
       info() << "Cell uid=" << ItemPrinter(cell);
-      for(Node node : cell.nodes()){
+      for (Node node : cell.nodes()) {
         info() << "Node uid=" << ItemPrinter(node) << " pos=" << nodes_coord_var[node];
       }
     }
   }
-	info() << "[IosUnitTest] done";
+  info() << "[IosUnitTest] done";
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -208,7 +207,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

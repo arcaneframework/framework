@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshCriteriaLoadBalanceMngTestModule.cc                     (C) 2000-2024 */
 /*                                                                           */
-/* Module de test pour les implementations de MeshCriteriaLoadBalanceMng.    */
+/* Test module for the implementations of MeshCriteriaLoadBalanceMng.        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -83,7 +83,7 @@ init()
   m_partitioners.resize(subDomain()->meshes().size());
   m_quality.resize(subDomain()->meshes().size());
 
-  for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
+  for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     IMesh* mesh = subDomain()->meshes()[imesh];
     m_density_meshes_ref[imesh] = makeRef(new VariableCellInt32(VariableBuildInfo(mesh->handle(), "Density")));
     m_faces_density_meshes_ref[imesh] = makeRef(new VariableFaceInt32(VariableBuildInfo(mesh->handle(), "FaceDensity")));
@@ -94,7 +94,7 @@ init()
     VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());
 
     mesh->modifier()->setDynamic(true);
-    ENUMERATE_ (Cell, icell, mesh->ownCells()){
+    ENUMERATE_ (Cell, icell, mesh->ownCells()) {
       density[icell] = icell->uniqueId().asInt32();
       sum += icell->uniqueId().asInt32();
     }
@@ -124,8 +124,8 @@ init()
             << " -- ReduceSum density : " << m_sum[imesh];
   }
 
-  // On enregistre les critères. On peut le faire ici ou dans loop avec un reset à chaque fois si
-  // l'on change de variables à chaque repartitionnement.
+  // We register the criteria. We can do this here or in loop with a reset every time if
+  // we change variables during each partitioning.
   for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     VariableCellInt32& density = *(m_density_meshes_ref[imesh].get());
     VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());

@@ -1,29 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemVectorUnitTest.cc                                       (C) 2000-2023 */
 /*                                                                           */
-/* Service de test des tableaux.                                             */
+/* Array testing service.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/FactoryService.h"
-
 #include "arcane/tests/ArcaneTestGlobal.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/ItemVector.h"
-
-#include "arcane/ItemPrinter.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/ItemVector.h"
+#include "arcane/core/ItemPrinter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,30 +38,53 @@ class ItemVectorPrinter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour imprimer les infos sur une entité.
+ * \brief Utility class for printing entity information.
  */
 class ItemPrinter2
 {
  private:
+
   static const Int32 ONLY_UID = 1 << 1;
   static const Int32 CONNECTIVITY = 1 << 2;
+
  public:
-  ItemPrinter2(ItemInternal* item,eItemKind ik)
-  : m_item(item), m_item_kind(ik), m_has_item_kind(true)
-  { _init(); }
+
+  ItemPrinter2(ItemInternal* item, eItemKind ik)
+  : m_item(item)
+  , m_item_kind(ik)
+  , m_has_item_kind(true)
+  {
+    _init();
+  }
   ItemPrinter2(ItemInternal* item)
-  : m_item(item), m_item_kind(IK_Unknown), m_has_item_kind(false)
-  { _init(); }
+  : m_item(item)
+  , m_item_kind(IK_Unknown)
+  , m_has_item_kind(false)
+  {
+    _init();
+  }
   ItemPrinter2(const Item& item)
-  : m_item(item), m_item_kind(IK_Unknown), m_has_item_kind(false)
-  { _init(); }
-  ItemPrinter2(const Item& item,eItemKind ik)
-  : m_item(item), m_item_kind(ik), m_has_item_kind(true)
-  { _init(); }
+  : m_item(item)
+  , m_item_kind(IK_Unknown)
+  , m_has_item_kind(false)
+  {
+    _init();
+  }
+  ItemPrinter2(const Item& item, eItemKind ik)
+  : m_item(item)
+  , m_item_kind(ik)
+  , m_has_item_kind(true)
+  {
+    _init();
+  }
   ItemPrinter2()
-  : m_item_kind(IK_Unknown), m_has_item_kind(false)
-  { _init(); }
+  : m_item_kind(IK_Unknown)
+  , m_has_item_kind(false)
+  {
+    _init();
+  }
 
  public:
 
@@ -97,11 +118,11 @@ class ItemPrinter2
 
  private:
 
-  void _print(std::ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& name) const;
+  void _print(std::ostream& o, ItemVectorPrinter& ivp, ItemVectorView view, const String& name) const;
 
   void _printIndent(std::ostream& o) const
   {
-    for( Integer z=0; z<m_indent_level*4; ++z ){
+    for (Integer z = 0; z < m_indent_level * 4; ++z) {
       o << ' ';
     }
   }
@@ -118,11 +139,10 @@ class ItemPrinter2
   bool m_has_item_kind;
   Int32 m_flags;
   Integer m_indent_level;
-
 };
 
 inline std::ostream&
-operator<<(std::ostream& o,const ItemPrinter2& ip)
+operator<<(std::ostream& o, const ItemPrinter2& ip)
 {
   ip.print(o);
   return o;
@@ -134,24 +154,32 @@ operator<<(std::ostream& o,const ItemPrinter2& ip)
 class ItemVectorPrinter
 {
  public:
-  ItemVectorPrinter() : m_indent_level(0) {}
-  ItemVectorPrinter(ItemVectorView iv) : m_item_vector(iv),m_indent_level(0){}
+
+  ItemVectorPrinter()
+  : m_indent_level(0)
+  {}
+  ItemVectorPrinter(ItemVectorView iv)
+  : m_item_vector(iv)
+  , m_indent_level(0)
+  {}
+
  public:
+
   void print(std::ostream& o) const
   {
     Integer n = m_item_vector.size();
     o << "(";
-    char delim =  (m_indent_level>=0) ? '\n' : ' ';
+    char delim = (m_indent_level >= 0) ? '\n' : ' ';
     if (!m_name.null())
       o << m_name;
-    else 
+    else
       o << "ItemVector";
     o << " size=" << n;
     o << delim;
 
     //if (m_indent_level>=0)
     //  m_item_printer.setIndentLevel(m_indent_level+2);
-    for( Integer i=0; i<n; ++i ){
+    for (Integer i = 0; i < n; ++i) {
       _printIndent(o);
       m_item_printer.assign(m_item_vector[i]);
       o << "I=" << i << ' ' << m_item_printer;
@@ -185,13 +213,16 @@ class ItemVectorPrinter
   }
 
  private:
+
   void _printIndent(std::ostream& o) const
   {
-    for( Integer z=0; z<m_indent_level*4; ++z ){
+    for (Integer z = 0; z < m_indent_level * 4; ++z) {
       o << ' ';
     }
   }
+
  private:
+
   String m_name;
   ItemVectorView m_item_vector;
   mutable ItemPrinter2 m_item_printer;
@@ -202,7 +233,7 @@ class ItemVectorPrinter
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const ItemVectorPrinter& ip)
+operator<<(std::ostream& o, const ItemVectorPrinter& ip)
 {
   ip.print(o);
   return o;
@@ -214,12 +245,12 @@ operator<<(std::ostream& o,const ItemVectorPrinter& ip)
 void ItemPrinter2::
 print(std::ostream& o) const
 {
-  if (m_item.localId()==NULL_ITEM_LOCAL_ID){
+  if (m_item.localId() == NULL_ITEM_LOCAL_ID) {
     o << "(null_item)";
     return;
   }
-      
-  if (m_flags & ONLY_UID){
+
+  if (m_flags & ONLY_UID) {
     o << m_item.uniqueId();
     return;
   }
@@ -227,28 +258,28 @@ print(std::ostream& o) const
   o << "{id=" << m_item.uniqueId()
     << ':' << m_item.localId()
     << ",o=" << m_item.owner();
-  if (m_has_item_kind){
+  if (m_has_item_kind) {
     o << ",k=" << itemKindName(m_item_kind);
   }
-  
-  if (m_flags & CONNECTIVITY){
+
+  if (m_flags & CONNECTIVITY) {
     eItemKind ik = m_item.kind();
     ItemVectorPrinter ivp;
     ivp.setIndentLevel(-1);
     std::cout << "KIND=" << ik << '\n';
     auto item_base = m_item.itemBase();
     o << '\n';
-    if (ik!=IK_Node)
-      if (item_base.nbNode()!=0)
-        _print(o,ivp,item_base.nodeList(),"Nodes");
-    if (item_base.nbEdge()!=0)
-      _print(o,ivp,item_base.edgeList(),"Edges");
-    if (item_base.nbFace()!=0)
-      _print(o,ivp,item_base.faceList(),"Faces");
-    if (ik!=IK_Cell)
-      if (item_base.nbCell()!=0)
-        _print(o,ivp,item_base.cellList(),"Cells");
-    if (ik==IK_Face){
+    if (ik != IK_Node)
+      if (item_base.nbNode() != 0)
+        _print(o, ivp, item_base.nodeList(), "Nodes");
+    if (item_base.nbEdge() != 0)
+      _print(o, ivp, item_base.edgeList(), "Edges");
+    if (item_base.nbFace() != 0)
+      _print(o, ivp, item_base.faceList(), "Faces");
+    if (ik != IK_Cell)
+      if (item_base.nbCell() != 0)
+        _print(o, ivp, item_base.cellList(), "Cells");
+    if (ik == IK_Face) {
       o << "BackCell " << ItemPrinter2(item_base.backCell()) << ' ';
       o << "FrontCell " << ItemPrinter2(item_base.frontCell()) << ' ';
       o << '\n';
@@ -260,9 +291,9 @@ print(std::ostream& o) const
 }
 
 void ItemPrinter2::
-_print(std::ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& name) const
+_print(std::ostream& o, ItemVectorPrinter& ivp, ItemVectorView view, const String& name) const
 {
-  if (view.size()>0){
+  if (view.size() > 0) {
     _printIndent(o);
     o << ivp.assign(view).setName(name) << '\n';
   }
@@ -270,8 +301,9 @@ _print(std::ostream& o,ItemVectorPrinter& ivp,ItemVectorView view,const String& 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test des ItemVector
+ * \brief ItemVector testing service
  */
 class ItemVectorUnitTest
 : public BasicUnitTest
@@ -288,7 +320,7 @@ class ItemVectorUnitTest
 
  private:
 
-  template<typename ItemVectorType>
+  template <typename ItemVectorType>
   void _executeTest(IItemFamily* family);
   void _printArray(Int32ConstArrayView view);
 };
@@ -296,7 +328,7 @@ class ItemVectorUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(ItemVectorUnitTest,IUnitTest,ItemVectorUnitTest);
+ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(ItemVectorUnitTest, IUnitTest, ItemVectorUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -322,7 +354,7 @@ void ItemVectorUnitTest::
 _printArray(Int32ConstArrayView view)
 {
   info() << "View n=" << view.size();
-  for( Integer i=0; i<view.size(); ++i ){
+  for (Integer i = 0; i < view.size(); ++i) {
     info() << "I=" << i << ' ' << view[i];
   }
 }
@@ -331,13 +363,13 @@ void ItemVectorUnitTest::
 executeTest()
 {
   Int32UniqueArray v0(53);
-  for( Integer i=0; i<v0.size(); ++i )
-    v0[i] = i+1;
+  for (Integer i = 0; i < v0.size(); ++i)
+    v0[i] = i + 1;
   Int32ArrayView v = v0.view();
-  Int32ArrayView v1 = v.subView(0,5);
-  Int32ArrayView v2 = v.subView(7,15);
-  Int32ArrayView v3 = v.subView(15,45);
-  Int32ArrayView v4 = v.subView(0,53);
+  Int32ArrayView v1 = v.subView(0, 5);
+  Int32ArrayView v2 = v.subView(7, 15);
+  Int32ArrayView v3 = v.subView(15, 45);
+  Int32ArrayView v4 = v.subView(0, 53);
   _printArray(v);
   _printArray(v1);
   _printArray(v2);
@@ -353,22 +385,23 @@ executeTest()
 
   _executeTest<ItemVector>(mesh()->cellFamily());
 
-//mesh()->utilities()->writeToFile("toto.unf","Lima");
+  //mesh()->utilities()->writeToFile("toto.unf","Lima");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemVectorType>
+template <typename ItemVectorType>
 void ItemVectorUnitTest::
 _executeTest(IItemFamily* item_family)
 {
   typedef typename ItemVectorType::ItemType ItemType;
 
   ItemVectorType vec(item_family);
-  ENUMERATE_GENERIC(ItemType,iitem,item_family->allItems()){
+  ENUMERATE_GENERIC(ItemType, iitem, item_family->allItems())
+  {
     Int32 lid = iitem.itemLocalId();
-    if ((lid%2)!=0){
+    if ((lid % 2) != 0) {
       vec.add(lid);
       vec.addItem(*iitem);
     }
@@ -383,41 +416,42 @@ _executeTest(IItemFamily* item_family)
   iv_printer.setItemPrinter(item_printer);
   {
     Integer sum_lid = 0;
-    ENUMERATE_GENERIC(ItemType,iitem,vec.view()){
+    ENUMERATE_GENERIC(ItemType, iitem, vec.view())
+    {
       sum_lid += iitem.itemLocalId();
     }
     info() << "** SUM_ID1 sum_lid=" << sum_lid;
-    info() << iv_printer.assign(vec.view().subView(0,10)).setName(item_family->name());
+    info() << iv_printer.assign(vec.view().subView(0, 10)).setName(item_family->name());
   }
 
   {
     Integer sum_lid = 0;
-    for( Integer i=0, n=vec.size(); i<n; ++i ){
+    for (Integer i = 0, n = vec.size(); i < n; ++i) {
       ItemType item = vec[i];
       sum_lid += item.localId();
     }
-    info() << "** SUM_ID2 sum_lid="<< sum_lid;
+    info() << "** SUM_ID2 sum_lid=" << sum_lid;
   }
   info() << "** BEFORE REMOVE size=" << vec2.size();
-  info() << iv_printer.assign(vec2.view().subView(0,30)).setName(item_family->name());
-  for( Integer i=0, n=vec2.size(); i<n; ++i ){
-    if (i>=vec2.size())
+  info() << iv_printer.assign(vec2.view().subView(0, 30)).setName(item_family->name());
+  for (Integer i = 0, n = vec2.size(); i < n; ++i) {
+    if (i >= vec2.size())
       break;
-    if ((i%3)==0)
+    if ((i % 3) == 0)
       vec2.removeAt(i);
   }
   info() << "** AFTER REMOVE size=" << vec2.size();
-  info() << iv_printer.assign(vec2.view().subView(0,10)).setName(item_family->name());
+  info() << iv_printer.assign(vec2.view().subView(0, 10)).setName(item_family->name());
 
   {
-    // Teste les itérateurs sur les ItemVectorView
+    // Test the iterators on ItemVectorView
     Integer index = 0;
     ItemVectorView view = vec2.view();
-    for( Item x : view ){
+    for (Item x : view) {
       info() << "X=" << ItemPrinter(x);
       Item ref_x = view[index];
-      if (x!=ref_x)
-        ARCANE_FATAL("Bad item x={0} ref={1} index={2}",ItemPrinter(x),ItemPrinter(ref_x),index);
+      if (x != ref_x)
+        ARCANE_FATAL("Bad item x={0} ref={1} index={2}", ItemPrinter(x), ItemPrinter(ref_x), index);
       ++index;
     }
     ItemInternal* wanted_item_ptr = item_family->findOneItem(5);
@@ -425,12 +459,12 @@ _executeTest(IItemFamily* item_family)
       wanted_item_ptr = ItemInternal::nullItem();
     Item wanted_item(wanted_item_ptr);
 
-    bool is_found = std::binary_search(view.begin(),view.end(),wanted_item);
+    bool is_found = std::binary_search(view.begin(), view.end(), wanted_item);
     info() << "BinarySearch found=" << is_found;
-    auto iter = std::find(view.begin(),view.end(),wanted_item);
-    if (iter!=view.end()){
+    auto iter = std::find(view.begin(), view.end(), wanted_item);
+    if (iter != view.end()) {
       Item x = *iter;
-      if (x.uniqueId()!=5)
+      if (x.uniqueId() != 5)
         ARCANE_FATAL("Bad found item");
       info() << "FOUND! item=" << ItemPrinter(*iter);
     }
@@ -440,7 +474,7 @@ _executeTest(IItemFamily* item_family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

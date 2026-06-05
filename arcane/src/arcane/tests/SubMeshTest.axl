@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+ï»¿<?xml version="1.0" ?>
 
 <module name="SubMeshTest" version="1.0" namespace-name="ArcaneTest" >
   <description>
-    Module de test du sous-maillage
+    Submesh test module
   </description>
 
   <variables>
@@ -19,29 +16,28 @@
                       >
       <name lang='fr'>format-service</name>
       <description>
-        Indique le type de bibliothèque à utiliser pour les sorties
-        de dépouillement.
+        Indicates the type of library to use for dump outputs.
       </description>
     </service-instance>
     
-    <!-- Nombre d'itérations à effectuer -->
+    <!-- Number of iterations to perform -->
     <simple
         name = "nb-iteration"
         type = "integer"
         >
       <description>
-        Nombre d'itérations à effectuer
+        Number of iterations to perform
       </description>
     </simple>
 
-    <!-- nature du sous-maillage -->
+    <!-- submesh nature -->
     <enumeration
         name    = "submesh-kind"
         type    = "Arcane::eItemKind"
         default = "cell"
         >
       <name lang='fr'>genre-sous-maillage</name>
-      <description>Nature du sous-maillage</description>
+      <description>Submesh nature</description>
       <enumvalue genvalue="Arcane::IK_Cell" name="cell" />
       <enumvalue genvalue="Arcane::IK_Face" name="face" />
     </enumeration>

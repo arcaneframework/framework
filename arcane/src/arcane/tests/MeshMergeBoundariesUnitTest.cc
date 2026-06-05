@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMergeBoundariesUnitTest.cc                              (C) 2000-2024 */
 /*                                                                           */
-/* Service de test de la fusion de la frontière de plusieurs maillages.      */
+/* Test service for merging the boundary of multiple meshes.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,14 +34,15 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Service de test de la fusion de la frontière de plusieurs maillages.
+ * \brief Test service for merging the boundary of multiple meshes.
  *
- * Ce service permet de prendre N maillages de même dimension et
- * de générer un nouveau maillage contenant uniquement la frontière ce ces
- * N maillages.
+ * This service allows taking N meshes of the same dimension and
+ * generating a new mesh containing only the boundary of these
+ * N meshes.
  *
- * /note Pour l'instant cela ne fonctionne que en séquentiel.
+ * /note For now, this only works in sequential mode.
  */
 class MeshMergeBoundariesUnitTest
 : public BasicUnitTest
@@ -104,8 +105,8 @@ executeTest()
   UniqueArray<Int64> cells_infos;
   cells_infos.reserve(10000);
 
-  // Contient l'offset à ajouter aux uniqueId()
-  // pour éviter qu'ils soient identiques
+  // Contains the offset to add to uniqueId()
+  // to prevent them from being identical
   Int64 offset_cell_uid = 0;
   Int64 offset_node_uid = 0;
   Int32 nb_cell = 0;
@@ -140,7 +141,7 @@ executeTest()
   }
   boundary_mesh->allocateCells(nb_cell, cells_infos);
 
-  // Maintenant remplit les coordonnées des noeuds
+  // Now fills the node coordinates
   {
     VariableNodeReal3& node_coord = boundary_mesh->nodesCoordinates();
     ENUMERATE_ (Node, inode, boundary_mesh->allNodes()) {
@@ -149,7 +150,7 @@ executeTest()
     }
   }
 
-  // Ecrit le maillage
+  // Writes the mesh
   boundary_mesh->utilities()->writeToFile("boundary.vtk", "VtkLegacyMeshWriter");
 }
 

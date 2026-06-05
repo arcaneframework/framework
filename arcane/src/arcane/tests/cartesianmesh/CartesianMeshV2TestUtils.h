@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshTestUtils.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour les tests de 'CartesianMesh' V2.               */
+/* Utility functions for 'CartesianMesh' V2 tests.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CEA_TESTS_CARTESIANMESHV2TESTUTILS_H
 #define ARCANE_CEA_TESTS_CARTESIANMESHV2TESTUTILS_H
@@ -32,8 +32,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour tester les variantes de 'CartesianMesh' V2
+ * \brief Utility class for testing 'CartesianMesh' V2 variants
  */
 class CartesianMeshV2TestUtils
 : public TraceAccessor
@@ -58,5 +59,4 @@ class CartesianMeshV2TestUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+ï»¿<?xml version="1.0" ?>
 
 <module name="MiniWeather" version="1.0" namespace-name="ArcaneTest::MiniWeather" >
   <description>
-    Module de l'application 'MiniWeather'
+    Module for the 'MiniWeather' application
     (https://github.com/mrnorman/miniWeather)
   </description>
   <entry-points>
@@ -17,27 +14,27 @@
   <options>
     <simple name = "nb-cell-x" type = "int32" default="400" >
       <description>
-        Nombre de mailles en X (uniquement pour la version original de 'miniweather'
+        Number of cells in X (only for the original 'miniweather' version)
       </description>
     </simple>
     <simple name = "nb-cell-z" type = "int32" default="200" >
       <description>
-        Nombre de mailles en Z (uniquement pour la version original de 'miniweather'
+        Number of cells in Z (only for the original 'miniweather' version)
       </description>
     </simple>
     <simple name = "final-time" type = "real" default="2.0" >
       <description>
-        Temps final
+        Final time
       </description>
     </simple>
     <simple name = "use-device-memory" type = "bool" default="false" >
       <description>
-        Indique si on utilise la mémoire du device au lieu de la mémoire unifiée
+        Indicates whether to use device memory instead of unified memory
       </description>
     </simple>
     <simple name = "use-left-layout" type = "bool" default="false" >
       <description>
-        Indique si on utilise la disposition 'LeftLayout' pour les tableaux.
+        Indicates whether to use the 'LeftLayout' layout for tables.
       </description>
     </simple>
     <service-instance type="ArcaneTest::MiniWeather::IMiniWeatherService" name="implementation" />

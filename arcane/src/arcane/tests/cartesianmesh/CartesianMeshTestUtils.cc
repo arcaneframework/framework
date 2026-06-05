@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshTestUtils.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
+/* Utility functions for 'CartesianMesh' tests.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -113,26 +113,26 @@ _computeCenters()
 {
   IMesh* mesh = m_mesh;
 
-  // Calcule le centre des mailles
+  // Calculates the center of the cells
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
     ENUMERATE_CELL (icell, m_mesh->allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for (NodeLocalId inode : cell.nodeIds() )
+      for (NodeLocalId inode : cell.nodeIds())
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
     }
   }
 
-  // Calcule le centre des faces
+  // Calculates the center of the faces
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
     ENUMERATE_FACE (iface, m_mesh->allFaces()) {
       Face face = *iface;
       Real3 center;
-      for (NodeLocalId inode : face.nodeIds() )
+      for (NodeLocalId inode : face.nodeIds())
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
@@ -200,7 +200,7 @@ _testDirCell()
       DirCell dir_cell(cdm[icell]);
       Cell prev_cell = dir_cell.previous();
       Cell next_cell = dir_cell.next();
-      // AH: Désactivation de ce if : bloquant s'il n'y a qu'une seule couche de mailles.
+      // AH: Deactivation of this if: blocking if there is only one layer of cells.
       // if (prev_cell.null() && next_cell.null())
       //   ARCANE_FATAL("Null previous and next cell");
       DirCell dir_cell2(cdm2[icell]);
@@ -259,12 +259,12 @@ _testDirCellAccelerator()
     _checkItemGroupIsSorted(cdm.allCells());
     auto command = makeCommand(queue);
     auto inout_dummy_var = viewInOut(command, dummy_var);
-    command << RUNCOMMAND_ENUMERATE(Cell, icell, cdm.allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, icell, cdm.allCells())
     {
       DirCellLocalId dir_cell(cdm.dirCellId(icell));
       CellLocalId prev_cell = dir_cell.previous();
       CellLocalId next_cell = dir_cell.next();
-      // AH: Désactivation de ce if : bloquant s'il n'y a qu'une seule couche de mailles.
+      // AH: Deactivation of this if: blocking if there is only one layer of cells.
       // if (prev_cell.isNull() && next_cell.isNull()) {
       //   inout_dummy_var[icell] = -5;
       //   return;
@@ -333,12 +333,12 @@ _testDirFaceAccelerator()
 void CartesianMeshTestUtils::
 _testDirFace(int idir)
 {
-  // Teste l'utilisation de DirFace et vérifie que
-  // les valeurs sont correctes: pour une face donnée,
-  // il faut que selon la direction choisie, la coordonnée du centre
-  // de la maille avant (previousCell()) soit inférieure à celle
-  // de la maille après (nextCell()) et aussi celle de la maille avant
-  // soit inférieure à ce
+  // Tests the use of DirFace and verifies that
+  // the values are correct: for a given face,
+  // it must be that according to the chosen direction, the center coordinate
+  // of the previous cell (previousCell()) is less than that
+  // of the next cell (nextCell()) and also that the center coordinate of the previous cell
+  // is less than this
   Integer nb_print = m_nb_print;
   Integer nb_error = 0;
   Integer iprint = 0;
@@ -414,12 +414,11 @@ void CartesianMeshTestUtils::
 _testDirFaceAccelerator(int idir)
 {
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  // Teste l'utilisation de DirFace et vérifie que
-  // les valeurs sont correctes: pour une face donnée,
-  // il faut que selon la direction choisie, la coordonnée du centre
-  // de la maille avant (previousCell()) soit inférieure à celle
-  // de la maille après (nextCell()) et aussi celle de la maille avant
-  // soit inférieure à ce
+  // Tests the use of DirFace and verifies that
+  // the values are correct: for a given face,
+  // it must be that according to the chosen direction, the coordinate of the center
+  // of the previous mesh cell (previousCell()) is less than that
+  // of the next mesh cell (nextCell()) and also that of the previous mesh cell
 
   FaceDirectionMng fdm2;
   FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
@@ -435,7 +434,7 @@ _testDirFaceAccelerator(int idir)
   auto in_face_center = viewIn(command, m_face_center);
   auto in_cell_center = viewIn(command, m_cell_center);
 
-  command << RUNCOMMAND_ENUMERATE(Face, iface, fdm.allFaces())
+  command << RUNCOMMAND_ENUMERATE (Face, iface, fdm.allFaces())
   {
     DirFaceLocalId dir_face(fdm.dirFaceId(iface));
     DirFaceLocalId dir_face2(fdm2.dirFaceId(iface));
@@ -503,7 +502,7 @@ _testDirNode()
   Integer nb_print = m_nb_print;
   Integer nb_error = 0;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-  // Pour tester l'opérateur 'operator='
+  // To test the 'operator=' operator
   NodeDirectionMng node_dm2;
   NodeDirectionMng node_dm3;
   for (Integer idir = 0; idir < nb_dir; ++idir) {
@@ -576,7 +575,7 @@ _testDirNode()
       }
       if (prev_node.null() && next_node.null())
         ARCANE_FATAL("Null previous and next node for node {0}", ItemPrinter(node));
-      //TODO: Vérifier que les coordonnées autres que celle de idir sont bien les mêmes pour next,prev et my_coord.
+      //TODO: Verify that coordinates other than that of idir are the same for next, prev, and my_coord.
       if (!prev_node.null() && !next_node.null()) {
         Real next_coord = nodes_coord[next_node][idir];
         Real prev_coord = nodes_coord[prev_node][idir];
@@ -620,7 +619,7 @@ _testDirNode()
   if (nb_error != 0)
     ARCANE_FATAL("Bad connectivity for DirNode");
 
-  // Vérifie qu'on a parcouru tous les noeuds
+  // Verify that all nodes have been traversed
   ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node node = *inode;
     if (node.cell(0).level() != 0)
@@ -647,7 +646,7 @@ _testDirNodeAccelerator()
   IMesh* mesh = m_mesh;
   Integer nb_dir = mesh->dimension();
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-  // Pour tester l'opérateur 'operator='
+  // To test the 'operator=' operator
   NodeDirectionMng node_dm2;
   NodeDirectionMng node_dm3;
 
@@ -675,7 +674,7 @@ _testDirNodeAccelerator()
     auto inout_dummy_var = viewInOut(command, dummy_var);
     auto in_nodes_coord = viewInOut(command, nodes_coord);
 
-    command << RUNCOMMAND_ENUMERATE(Node, node, dm_all_nodes)
+    command << RUNCOMMAND_ENUMERATE (Node, node, dm_all_nodes)
     {
       DirNodeLocalId dir_node(node_dm.dirNodeId(node));
       DirNodeLocalId dir_node2(node_dm2.dirNodeId(node));
@@ -728,7 +727,7 @@ _testDirNodeAccelerator()
         inout_dummy_var[node] = -20;
         return;
       }
-      //TODO: Vérifier que les coordonnées autres que celle de idir sont bien les mêmes pour next,prev et my_coord.
+      //TODO: Verify that coordinates other than that of idir are the same for next,prev and my_coord.
       if (!prev_node.isNull() && !next_node.isNull()) {
         Real next_coord = in_nodes_coord[next_node][idir];
         Real prev_coord = in_nodes_coord[prev_node][idir];
@@ -829,7 +828,7 @@ _testDirCellNodeAccelerator()
     auto inout_dummy_var = viewInOut(command, dummy_var);
     auto in_nodes_coord = viewIn(command, nodes_coord);
     auto out_computed_center = viewOut(command, computed_center);
-    command << RUNCOMMAND_ENUMERATE(Cell, cell, cdm.allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, cell, cdm.allCells())
     {
       inout_dummy_var[cell] = 0;
       DirCellNodeLocalId cn(cdm.dirCellNodeId(cell));
@@ -931,7 +930,7 @@ _testDirCellFaceAccelerator()
 
     info() << "DIRECTION=" << idir;
 
-    command << RUNCOMMAND_ENUMERATE(Cell, cell, cdm.allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, cell, cdm.allCells())
     {
       inout_dummy_var[cell] = 0;
 
@@ -1073,7 +1072,7 @@ _testNodeToCellConnectivity3DAccelerator()
   auto in_cell_center = viewIn(command, m_cell_center);
   auto in_node_coord = viewIn(command, nodes_coord);
   auto inout_dummy_var = viewInOut(command, dummy_var);
-  command << RUNCOMMAND_ENUMERATE(Node, node, m_mesh->allNodes())
+  command << RUNCOMMAND_ENUMERATE (Node, node, m_mesh->allNodes())
   {
     Real3 node_coord = in_node_coord[node];
     {
@@ -1321,7 +1320,7 @@ _testCellToNodeConnectivity3DAccelerator()
   auto in_node_coord = viewIn(command, nodes_coord);
   auto inout_dummy_var = viewInOut(command, dummy_var);
 
-  command << RUNCOMMAND_ENUMERATE(Cell, cell, m_mesh->allCells())
+  command << RUNCOMMAND_ENUMERATE (Cell, cell, m_mesh->allCells())
   {
     Real3 cell_coord = in_cell_center[cell];
     inout_dummy_var[cell] = 0;
@@ -1467,7 +1466,7 @@ _testCellToNodeConnectivity2D()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType> void CartesianMeshTestUtils::
+template <typename ItemType> void CartesianMeshTestUtils::
 _testConnectivityByDirectionHelper(const ItemGroup& group)
 {
   ValueChecker vc(A_FUNCINFO);
@@ -1476,28 +1475,28 @@ _testConnectivityByDirectionHelper(const ItemGroup& group)
   info() << "Test ConnectivityByDirection 2D";
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
   ENUMERATE_ (ItemType, iitem, group) {
-    vc.areEqual(cc.upperLeftId(iitem),cc.upperLeftId(iitem,0),"Item0 dir0");
-    vc.areEqual(cc.upperRightId(iitem),cc.upperRightId(iitem,0),"Item1 dir0");
-    vc.areEqual(cc.lowerRightId(iitem),cc.lowerRightId(iitem,0),"Item2 dir0");
-    vc.areEqual(cc.lowerLeftId(iitem),cc.lowerLeftId(iitem,0),"Item3 dir0");
+    vc.areEqual(cc.upperLeftId(iitem), cc.upperLeftId(iitem, 0), "Item0 dir0");
+    vc.areEqual(cc.upperRightId(iitem), cc.upperRightId(iitem, 0), "Item1 dir0");
+    vc.areEqual(cc.lowerRightId(iitem), cc.lowerRightId(iitem, 0), "Item2 dir0");
+    vc.areEqual(cc.lowerLeftId(iitem), cc.lowerLeftId(iitem, 0), "Item3 dir0");
 
-    if (nb_dim>1){
-      vc.areEqual(cc.lowerLeftId(iitem),cc.upperLeftId(iitem,1),"Item0 dir1");
-      vc.areEqual(cc.upperLeftId(iitem),cc.upperRightId(iitem,1),"Item1 dir1");
-      vc.areEqual(cc.upperRightId(iitem),cc.lowerRightId(iitem,1),"Item2 dir1");
-      vc.areEqual(cc.lowerRightId(iitem),cc.lowerLeftId(iitem,1),"Item3 dir1");
+    if (nb_dim > 1) {
+      vc.areEqual(cc.lowerLeftId(iitem), cc.upperLeftId(iitem, 1), "Item0 dir1");
+      vc.areEqual(cc.upperLeftId(iitem), cc.upperRightId(iitem, 1), "Item1 dir1");
+      vc.areEqual(cc.upperRightId(iitem), cc.lowerRightId(iitem, 1), "Item2 dir1");
+      vc.areEqual(cc.lowerRightId(iitem), cc.lowerLeftId(iitem, 1), "Item3 dir1");
     }
 
-    if (nb_dim>2){
-      vc.areEqual(cc.upperRightId(iitem),cc.upperLeftId(iitem,2),"Item0 dir2");
-      vc.areEqual(cc.topZUpperRightId(iitem),cc.upperRightId(iitem,2),"Item1 dir2");
-      vc.areEqual(cc.topZLowerRightId(iitem),cc.lowerRightId(iitem,2),"Item2 dir2");
-      vc.areEqual(cc.lowerRightId(iitem),cc.lowerLeftId(iitem,2),"Item3 dir2");
+    if (nb_dim > 2) {
+      vc.areEqual(cc.upperRightId(iitem), cc.upperLeftId(iitem, 2), "Item0 dir2");
+      vc.areEqual(cc.topZUpperRightId(iitem), cc.upperRightId(iitem, 2), "Item1 dir2");
+      vc.areEqual(cc.topZLowerRightId(iitem), cc.lowerRightId(iitem, 2), "Item2 dir2");
+      vc.areEqual(cc.lowerRightId(iitem), cc.lowerLeftId(iitem, 2), "Item3 dir2");
 
-      vc.areEqual(cc.upperLeftId(iitem),cc.topZUpperLeftId(iitem,2),"Item4 dir2");
-      vc.areEqual(cc.topZUpperLeftId(iitem),cc.topZUpperRightId(iitem,2),"Item5 dir2");
-      vc.areEqual(cc.topZLowerLeftId(iitem),cc.topZLowerRightId(iitem,2),"Item6 dir2");
-      vc.areEqual(cc.lowerLeftId(iitem),cc.topZLowerLeftId(iitem,2),"Item7 dir2");
+      vc.areEqual(cc.upperLeftId(iitem), cc.topZUpperLeftId(iitem, 2), "Item4 dir2");
+      vc.areEqual(cc.topZUpperLeftId(iitem), cc.topZUpperRightId(iitem, 2), "Item5 dir2");
+      vc.areEqual(cc.topZLowerLeftId(iitem), cc.topZLowerRightId(iitem, 2), "Item6 dir2");
+      vc.areEqual(cc.lowerLeftId(iitem), cc.topZLowerLeftId(iitem, 2), "Item7 dir2");
     }
   }
 }
@@ -1524,10 +1523,10 @@ _sample(ICartesianMesh* cartesian_mesh)
   CartesianConnectivity cc = cartesian_mesh->connectivity();
   ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node n = *inode;
-    Cell c1 = cc.upperLeft(n); // Maille en haut à gauche
-    Cell c2 = cc.upperRight(n); // Maille en haut à droite
-    Cell c3 = cc.lowerRight(n); // Maille en bas à droite
-    Cell c4 = cc.lowerLeft(n); // Maille en bas à gauche
+    Cell c1 = cc.upperLeft(n); // Upper-left cell
+    Cell c2 = cc.upperRight(n); // Upper-right cell
+    Cell c3 = cc.lowerRight(n); // Lower-right cell
+    Cell c4 = cc.lowerLeft(n); // Lower-left cell
     info(6) << " C1=" << ItemPrinter(c1) << " C2=" << ItemPrinter(c2)
             << " C3=" << ItemPrinter(c3) << " C4=" << ItemPrinter(c4);
   }

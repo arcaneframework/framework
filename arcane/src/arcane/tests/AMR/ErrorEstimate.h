@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ErrorEstimate.hc                                            (C) 2000-2022 */
+/* ErrorEstimate.h                                             (C) 2000-2022 */
 /*                                                                           */
-/* Service de solutions analytiques utilisees pour estimer l'erreur AMR.     */
+/* Service of analytical solutions used to estimate AMR error.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TEST_AMR_ERRORESTIMATE_H
 #define ARCANE_TEST_AMR_ERRORESTIMATE_H
@@ -16,7 +16,7 @@
 
 #include "arcane/utils/Real3.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,26 +39,26 @@ class ErrorEstimate
  public:
 
   /**
-   * Attacher une fonction arbitraire calculant
-   * la valeur exacte de la solution dans un point donné.
+   * Attach an arbitrary function calculating
+   * the exact value of the solution at a given point.
    */
   void attachExactValue(Real fptr(const Real3& p));
 
   /**
-   * Attacher une fonction arbitraire calculant
-   * la valeur exacte du gradient de la solution dans un point donné.
+   * Attach an arbitrary function calculating
+   * the exact value of the solution gradient at a given point.
    */
   void attachExactGradient(Real3 fptr(const Real3& p));
 
   /**
-   * Attacher une fonction arbitraire calculant
-   * la valeur exacte du hessien de la solution dans un point donné.
+   * Attach an arbitrary function calculating
+   * the exact value of the solution Hessian at a given point.
    */
   void attachExactHessian(Real3x3 fptr(const Real3& p));
 
   /**
-   * Calcul et stockage de l'erreur de la solution e = u-u_h,
-   * du gradient grad(e) = grad(u) - grad(u_h), et aussi le hessien
+   * Calculation and storage of the solution error e = u-u_h,
+   * of the gradient grad(e) = grad(u) - grad(u_h), and also the Hessian
    * grad(grad(e)) = grad(grad(u)) - grad(grad(u_h)).
    */
   void computeSol(RealArray& sol, IMesh* mesh);
@@ -68,54 +68,54 @@ class ErrorEstimate
   void errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
                             const Real& coarsen_frac, const Integer& max_level, IMesh* mesh);
   /**
-   * erreur L2.
-   * Note: pas de calcul de l'erreur,
-   * il faut appeler d'abord le compute_error()
+   * L2 error.
+   * Note: error is not calculated,
+   * you must call compute_error() first.
    */
   Real l2Error();
 
   /**
-   * erreur LInf.
-   * Note: pas de calcul de l'erreur,
-   * il faut appeler d'abord le compute_error()
+   * LInf error.
+   * Note: error is not calculated,
+   * you must call compute_error() first.
    */
   Real lInfError();
 
   /**
-   * Cette methode retourne l'erreur dans la norme demandée.
-   *  Note: pas de calcul de l'erreur,
-   * il faut appeler d'abord le compute_error()
+   * This method returns the error in the requested norm.
+   *  Note: error is not calculated,
+   * you must call compute_error() first.
    */
   Real errorNorm(const NormType& norm);
 
  private:
 
   /**
-   * Function pointer à une fonction fournit par l'utilisateur
-   * Celle-ci calcule la valeur exacte de la solution.
+   * Function pointer to a function provided by the user
+   * This calculates the exact value of the solution.
    */
   Real (*m_exact_value)(const Real3& p) = nullptr;
 
   /**
-   * Function pointer à une fonction fournit par l'utilisateur
-   * Celle-ci calcule la dérivée exacte de la solution.
+   * Function pointer to a function provided by the user
+   * This calculates the exact derivative of the solution.
    */
   Real3 (*m_exact_gradient)(const Real3& p) = nullptr;
 
   /**
-   * Function pointer à une fonction fournit par l'utilisateur
-   * Celle-ci calcule la dérivéee seconde exacte de la solution.
+   * Function pointer to a function provided by the user
+   * This calculates the exact second derivative of the solution.
    */
   Real3x3 (*m_exact_hessian)(const Real3& p) = nullptr;
 
   /**
-   * Calcul l'erreur sur la solution et ses dérivées pour un système scalaire.
-   * elle peut être utilisée pour résoudre des systèmes vectoriels
+   * Calculates the error on the solution and its derivatives for a scalar system.
+   * It can be used to solve vector systems.
    */
   void _computeError(RealArray& error_vals, IMesh* mesh);
 
   /**
-   * Vecteur propre au stockage de l'erreur globale.
+   * Vector dedicated to storing the global error.
    */
   Real3 m_error_vals;
 };

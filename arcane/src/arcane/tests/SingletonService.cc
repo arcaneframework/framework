@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SingletonService.cc                                         (C) 2000-2018 */
 /*                                                                           */
-/* Service singleton de test.                                                */
+/* Test singleton service.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,9 +16,8 @@
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/BasicUnitTest.h"
-
-#include "arcane/ServiceBuildInfo.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceBuildInfo.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/IServiceInterface.h"
@@ -33,8 +32,9 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Test des particules
+ * \brief Particle test
  */
 class SingletonService
 : public ArcaneSingletonServiceObject
@@ -46,6 +46,7 @@ class SingletonService
   ~SingletonService();
 
  public:
+
   Integer value() override { return 0; }
   void* getPointer1() override { return this; }
   void* getPointer2() override { return this; }
@@ -76,7 +77,7 @@ SingletonService::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_SINGLETONSERVICE(SingletonService1,SingletonService);
+ARCANE_REGISTER_SERVICE_SINGLETONSERVICE(SingletonService1, SingletonService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
