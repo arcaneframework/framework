@@ -106,13 +106,13 @@ staticInitialize(ISubDomain* sd)
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("DynamicCircleAMR.init"));
-    time_loop->setEntryPoints(ITimeLoop::WInit,clist);
+    time_loop->setEntryPoints(ITimeLoop::WInit, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("DynamicCircleAMR.compute"));
-    time_loop->setEntryPoints(ITimeLoop::WComputeLoop,clist);
+    time_loop->setEntryPoints(ITimeLoop::WComputeLoop, clist);
   }
 
   {

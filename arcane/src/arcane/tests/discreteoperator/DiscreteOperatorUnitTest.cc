@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,54 +11,59 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <arcane/BasicUnitTest.h>
+#include "arcane/core/BasicUnitTest.h"
 
-#include <arcane/tests/ArcaneTestGlobal.h>
+#include "arcane/tests/ArcaneTestGlobal.h"
+#include "arcane/geometry/IGeometry.h"
+#include "arcane/geometry/IGeometryMng.h"
 
-#include <arcane/geometry/IGeometry.h>
-#include <arcane/geometry/IGeometryMng.h>
-#include <arcane/discreteoperator/IDivKGradDiscreteOperator.h>
+#include "arcane/discreteoperator/IDivKGradDiscreteOperator.h"
 
 using namespace Arcane::Numerics;
 #include "arcane/tests/discreteoperator/DiscreteOperatorUnitTest_axl.h"
 
-#include <arcane/ITimeLoopMng.h>
+#include "arcane/core/ITimeLoopMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
-
-
+namespace ArcaneTest
+{
 using namespace Arcane;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class DiscreteOperatorUnitTest
-  : public ArcaneDiscreteOperatorUnitTestObject
+: public ArcaneDiscreteOperatorUnitTestObject
 {
-public:
+ public:
+
   /** Class constructor */
   DiscreteOperatorUnitTest(const ServiceBuildInfo& cb)
-    : ArcaneDiscreteOperatorUnitTestObject(cb)
+  : ArcaneDiscreteOperatorUnitTestObject(cb)
   {
     ;
   }
 
   /** Class destructor */
   virtual ~DiscreteOperatorUnitTest() {}
-  
-public:
+
+ public:
+
   virtual void initializeTest();
   virtual void executeTest();
 
   /** Returns the module version number */
-  virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1,0,0); }
+  virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1, 0, 0); }
 
-private:
+ private:
+
   // Discrete operator
-  IDivKGradDiscreteOperator * m_op;
+  IDivKGradDiscreteOperator* m_op;
 
   // Geometric service
-  IGeometryMng * m_geom;
+  IGeometryMng* m_geom;
 
   // Permeabilities
   boost::shared_ptr<VariableCellReal> m_k;
@@ -68,34 +73,32 @@ private:
   // Face groupss
   boost::shared_ptr<FaceGroup> m_internal_faces;
   boost::shared_ptr<FaceGroup> m_boundary_faces;
-
 };
 
-void 
-DiscreteOperatorUnitTest::
+void DiscreteOperatorUnitTest::
 initializeTest()
 {
   // Initialize services
   info() << "Initializing services";
   m_geom = options()->geometryService();
-  m_op = options()->op();  
+  m_op = options()->op();
 
   m_geom->init();
   m_op->init();
 
   m_op->setGeometryService(m_geom);
 
-  // Initialize diffusion 
+  // Initialize diffusion
   info() << "Initializing diffusion coefficient";
-  VariableBuildInfo vb(allCells().mesh(), "k", IVariable::PPrivate|IVariable::PTemporary);
+  VariableBuildInfo vb(allCells().mesh(), "k", IVariable::PPrivate | IVariable::PTemporary);
   m_k.reset(new VariableCellReal(vb));
 
-  Real    kT = 1;
-  ENUMERATE_CELL(iT, allCells()) {
+  Real kT = 1;
+  ENUMERATE_CELL (iT, allCells()) {
     (*m_k)[*iT] = kT;
   }
 
-  // Create face groups  
+  // Create face groups
   info() << "Creating face groups";
   m_internal_faces.reset(new FaceGroup(subDomain()->mesh()->allCells().innerFaceGroup()));
   m_boundary_faces.reset(new FaceGroup(subDomain()->mesh()->allCells().outerFaceGroup()));
@@ -104,8 +107,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-DiscreteOperatorUnitTest::
+void DiscreteOperatorUnitTest::
 executeTest()
 {
   // Prepare coefficient containers
@@ -114,7 +116,7 @@ executeTest()
   CoefficientArrayT<Face> face_coefficients(allFaces(), *m_boundary_faces);
 
   // Prepare containers
-  FaceGroup c_internal_faces  = m_internal_faces->itemFamily()->createGroup("C_INTERNAL_FACES");
+  FaceGroup c_internal_faces = m_internal_faces->itemFamily()->createGroup("C_INTERNAL_FACES");
   FaceGroup cf_internal_faces = m_internal_faces->itemFamily()->createGroup("CF_INTERNAL_FACES");
 
   // Prepare the operator
@@ -149,7 +151,12 @@ executeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_DISCRETEOPERATORUNITTEST(DiscreteOperatorUnitTest,DiscreteOperatorUnitTest);
+ARCANE_REGISTER_SERVICE_DISCRETEOPERATORUNITTEST(DiscreteOperatorUnitTest, DiscreteOperatorUnitTest);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

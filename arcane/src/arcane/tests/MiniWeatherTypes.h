@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,8 +34,8 @@ class IMiniWeatherService
 
  public:
 
-  virtual void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time,
-                    eMemoryRessource r,bool use_left_layout) = 0;
+  virtual void init(IAcceleratorMng* am, Int32 nb_x, Int32 nb_z, Real final_time,
+                    eMemoryRessource r, bool use_left_layout) = 0;
   virtual bool loop() = 0;
   /*!
    * \brief End-of-execution entry point.

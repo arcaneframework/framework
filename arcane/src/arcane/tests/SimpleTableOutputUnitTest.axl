@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<service name="SimpleTableOutputUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest"> 
+<service name="SimpleTableOutputUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited='false'/>
 
   <description>Descriptor of the SimpleTableOutputUnitTest service</description>
@@ -75,7 +76,7 @@
     <test name="Test editColumnName()" method-name="testEditNameColumn"/>
 
     <test name="Test writeFile()" method-name="testWriteFile"/>
-  </tests> 
+  </tests>
 
   <options>
 

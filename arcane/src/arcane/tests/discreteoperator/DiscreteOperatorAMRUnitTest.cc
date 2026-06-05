@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,18 +13,15 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <arcane/BasicUnitTest.h>
-
-#include <arcane/tests/ArcaneTestGlobal.h>
-
-#include <arcane/geometry/IGeometry.h>
-#include <arcane/geometry/IGeometryMng.h>
-#include <arcane/discreteoperator/IDivKGradDiscreteOperator.h>
-
-#include <arcane/IMainFactory.h>
-#include <arcane/IMeshModifier.h>
-#include <arcane/ITimeLoopMng.h>
-#include <arcane/MeshStats.h>
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/tests/ArcaneTestGlobal.h"
+#include "arcane/geometry/IGeometry.h"
+#include "arcane/geometry/IGeometryMng.h"
+#include "arcane/discreteoperator/IDivKGradDiscreteOperator.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/MeshStats.h"
 #include "arcane/solvers/ILinearSolver.h"
 #include "arcane/solvers/ILinearSystemOneStepBuilder.h"
 #include "arcane/solvers/impl/LinearSystemOneStepBuilder.h"
@@ -35,38 +32,40 @@ using namespace Arcane::Numerics;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
-
-
+namespace ArcaneTest
+{
 using namespace Arcane;
 
 class DiscreteOperatorAMRUnitTest
-  : public ArcaneDiscreteOperatorAMRUnitTestObject
+: public ArcaneDiscreteOperatorAMRUnitTestObject
 {
-public:
+ public:
+
   /** Class constructor */
   DiscreteOperatorAMRUnitTest(const ServiceBuildInfo& cb)
-    : ArcaneDiscreteOperatorAMRUnitTestObject(cb)
+  : ArcaneDiscreteOperatorAMRUnitTestObject(cb)
   {
     ;
   }
 
   /** Class destructor */
   virtual ~DiscreteOperatorAMRUnitTest() {}
-  
-public:
+
+ public:
+
   virtual void initializeTest();
   virtual void executeTest();
 
   /** Returns the module version number */
-  virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1,0,0); }
+  virtual Arcane::VersionInfo versionInfo() const { return Arcane::VersionInfo(1, 0, 0); }
 
-private:
+ private:
+
   // Discrete operator
-  IDivKGradDiscreteOperator * m_op;
+  IDivKGradDiscreteOperator* m_op;
 
   // Geometric service
-  IGeometryMng * m_geom;
+  IGeometryMng* m_geom;
 
   // Permeabilities
   boost::shared_ptr<VariableCellReal> m_k;
@@ -75,74 +74,70 @@ private:
   boost::shared_ptr<FaceGroup> m_internal_faces;
   boost::shared_ptr<FaceGroup> m_boundary_faces;
 
-  IMesh * m_mesh;
+  IMesh* m_mesh;
 
   // Private functions
   void _refine(Integer nb_to_refine);
-
 };
 
-void 
-DiscreteOperatorAMRUnitTest::
+void DiscreteOperatorAMRUnitTest::
 initializeTest()
 {
-//! AMR
+  //! AMR
   _refine(1);
 
   // Initialize mesh
   m_mesh = subDomain()->mesh();
 
   // Mesh statistics
-  MeshStats stats(traceMng(),m_mesh,subDomain()->parallelMng());
+  MeshStats stats(traceMng(), m_mesh, subDomain()->parallelMng());
   stats.dumpStats();
 
   // Initialize services
   debug() << "Initializing services";
   m_geom = options()->geometryService();
-  m_op = options()->op();  
+  m_op = options()->op();
 
   m_geom->init();
   m_op->init();
 
   m_op->setGeometryService(m_geom);
 
-  // Initialize diffusion 
+  // Initialize diffusion
   debug() << "Initializing diffusion coefficient";
-  VariableBuildInfo vb(m_mesh, "k", IVariable::PPrivate|IVariable::PTemporary);
+  VariableBuildInfo vb(m_mesh, "k", IVariable::PPrivate | IVariable::PTemporary);
   m_k.reset(new VariableCellReal(vb));
 
   Real kT = 1;
-  ENUMERATE_CELL(iT, m_mesh->allCells()) {
+  ENUMERATE_CELL (iT, m_mesh->allCells()) {
     (*m_k)[*iT] = kT;
   }
 
-  // Create face groups  
-  debug() << "Creating face groups";  
+  // Create face groups
+  debug() << "Creating face groups";
   m_internal_faces.reset(new FaceGroup(m_mesh->allCells().innerActiveFaceGroup()));
   m_boundary_faces.reset(new FaceGroup(m_mesh->allCells().outerActiveFaceGroup()));
-
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-DiscreteOperatorAMRUnitTest::
+void DiscreteOperatorAMRUnitTest::
 executeTest()
 {
-//! AMR
+  //! AMR
   // Prepare coefficient containers
   debug() << "Preparing coefficient containers";
-  CoefficientArrayT<Cell> cell_coefficients(m_mesh->allActiveFaces(), 
+  CoefficientArrayT<Cell> cell_coefficients(m_mesh->allActiveFaces(),
                                             m_mesh->allActiveCells());
-  CoefficientArrayT<Face> face_coefficients(m_mesh->allActiveFaces(), 
+  CoefficientArrayT<Face> face_coefficients(m_mesh->allActiveFaces(),
                                             *m_boundary_faces);
 
   // Prepare containers
-  FaceGroup c_internal_faces  = 
-    m_internal_faces->itemFamily()->createGroup("C_INTERNAL_FACES");
-  FaceGroup cf_internal_faces = 
-    m_internal_faces->itemFamily()->createGroup("CF_INTERNAL_FACES");
+  FaceGroup c_internal_faces =
+  m_internal_faces->itemFamily()->createGroup("C_INTERNAL_FACES");
+  FaceGroup cf_internal_faces =
+  m_internal_faces->itemFamily()->createGroup("CF_INTERNAL_FACES");
 
   // Prepare the operator
   debug() << "Preparing discrete operator";
@@ -155,42 +150,42 @@ executeTest()
 
   // Compute relevant geometric properties
   debug() << "Computing geometric data";
-  m_geom->addItemGroupProperty(m_op->cells(), 
+  m_geom->addItemGroupProperty(m_op->cells(),
                                m_op->getCellGeometricProperties() | IGeometryProperty::PMeasure);
   m_geom->addItemGroupProperty(m_op->faces(), m_op->getFaceGeometricProperties());
   m_geom->update();
 
   // Print relevant geometric properties
-  const IGeometryMng::Real3GroupMap & face_center = 
-    m_geom->getReal3GroupMapProperty(m_op->faces(), IGeometryProperty::PCenter);
-  const IGeometryMng::Real3GroupMap & face_normal = 
-    m_geom->getReal3GroupMapProperty(m_op->faces(), IGeometryProperty::PNormal);
+  const IGeometryMng::Real3GroupMap& face_center =
+  m_geom->getReal3GroupMapProperty(m_op->faces(), IGeometryProperty::PCenter);
+  const IGeometryMng::Real3GroupMap& face_normal =
+  m_geom->getReal3GroupMapProperty(m_op->faces(), IGeometryProperty::PNormal);
 
   debug() << std::setw(20) << "Face"
           << std::setw(20) << "Normal"
           << std::setw(20) << "Center";
-  ENUMERATE_FACE(iF, m_op->faces()) {
-    const Face & F = *iF;
+  ENUMERATE_FACE (iF, m_op->faces()) {
+    const Face& F = *iF;
 
     std::ostringstream center, normal;
     face_normal[F].printXyz(normal);
     face_center[F].printXyz(center);
 
     debug() << std::setw(20) << iF->localId()
-            << std::setw(20) << normal.str() 
+            << std::setw(20) << normal.str()
             << std::setw(20) << center.str();
   }
 
-  const IGeometryMng::Real3GroupMap & cell_center = 
-    m_geom->getReal3GroupMapProperty(m_op->cells(), IGeometryProperty::PCenter);
-  const IGeometryMng::RealGroupMap & cell_measure =
-    m_geom->getRealGroupMapProperty(m_op->cells(), IGeometryProperty::PMeasure);
+  const IGeometryMng::Real3GroupMap& cell_center =
+  m_geom->getReal3GroupMapProperty(m_op->cells(), IGeometryProperty::PCenter);
+  const IGeometryMng::RealGroupMap& cell_measure =
+  m_geom->getRealGroupMapProperty(m_op->cells(), IGeometryProperty::PMeasure);
 
   debug() << std::setw(20) << "Cell"
           << std::setw(20) << "Center"
           << std::setw(20) << "Measure";
-  ENUMERATE_CELL(iT, m_op->cells()) {
-    const Cell & T = *iT;
+  ENUMERATE_CELL (iT, m_op->cells()) {
+    const Cell& T = *iT;
 
     std::ostringstream center;
     cell_center[T].printXyz(center);
@@ -210,111 +205,106 @@ executeTest()
   debug() << "Face coefficients";
   face_coefficients.print(debug());
 
-  
   // Build and solve linear system
-  ILinearSolver * solver = options()->linearSolver();
+  ILinearSolver* solver = options()->linearSolver();
   LinearSystemOneStepBuilder builder;
   solver->setLinearSystemBuilder(&builder);
   solver->init();
 
-
   // Define entry and equation
   const IIndexManager::Entry entry =
-    builder.getIndexManager()->buildVariableEntry(m_pressure.variable(), IIndexManager::Direct);
-  const IIndexManager::Equation equation = 
-    builder.getIndexManager()->buildEquation("Equation", entry);
+  builder.getIndexManager()->buildVariableEntry(m_pressure.variable(), IIndexManager::Direct);
+  const IIndexManager::Equation equation =
+  builder.getIndexManager()->buildEquation("Equation", entry);
 
   debug() << "Defining entries end equations";
-  ENUMERATE_CELL(icell, m_mesh->allActiveCells()) {
-    const Cell & T = *icell;
+  ENUMERATE_CELL (icell, m_mesh->allActiveCells()) {
+    const Cell& T = *icell;
     debug() << "Define entry " << T.uniqueId();
     builder.getIndexManager()->defineEntryIndex(entry, T);
   }
-  ENUMERATE_CELL(icell, m_mesh->ownActiveCells()) {
-    const Cell & T = *icell;
+  ENUMERATE_CELL (icell, m_mesh->ownActiveCells()) {
+    const Cell& T = *icell;
     debug() << "Define equation " << T.uniqueId();
     builder.getIndexManager()->defineEquationIndex(equation, T);
   }
 
   // Initialize pressure (this is needed since mesh has been refined)
-  ENUMERATE_CELL(icell, m_mesh->ownActiveCells()) {
-    const Cell & T = *icell;
+  ENUMERATE_CELL (icell, m_mesh->ownActiveCells()) {
+    const Cell& T = *icell;
     m_pressure[T] = 0.;
   }
   m_pressure.synchronize();
-  
 
   // Assemble linear system
   debug() << "Assembling linear system";
   solver->start();
 
   // Right-hand side
-  ENUMERATE_CELL(iT, m_mesh->ownActiveCells()) { // m_op->cells().own()) {
+  ENUMERATE_CELL (iT, m_mesh->ownActiveCells()) { // m_op->cells().own()) {
     const Cell& T = *iT;
     debug() << "Assembling RHS for cell" << T.uniqueId();
     ARCANE_ASSERT(T.isActive(), ("Inactive cell found"));
     Real mT = cell_measure[T];
-    if(T.isActive())
+    if (T.isActive())
       builder.addRHSData(builder.getIndexManager()->getEquationIndex(equation, T), mT);
   }
 
   // Internal faces
   debug() << "-- Internal faces";
-  ENUMERATE_FACE(iface, m_op->internalFaces())
-    {
-      const Face & F = *iface;
+  ENUMERATE_FACE (iface, m_op->internalFaces()) {
+    const Face& F = *iface;
 
-      debug() << std::setw(20) << "Internal face" << F.localId();
+    debug() << std::setw(20) << "Internal face" << F.localId();
 
-      const Cell & T0  = F.backCell();  // back cell
-      const Cell & T1  = F.frontCell(); // front cell
+    const Cell& T0 = F.backCell(); // back cell
+    const Cell& T1 = F.frontCell(); // front cell
 
-      ARCANE_ASSERT(T0.isActive() && T1.isActive(), ("Inactive cell found"));
+    ARCANE_ASSERT(T0.isActive() && T1.isActive(), ("Inactive cell found"));
 
+    UniqueArray<Integer> entry_indices(cell_coefficients.getStencilSize(F));
+    builder.getIndexManager()->getEntryIndex(entry,
+                                             cell_coefficients.getStencil(F),
+                                             entry_indices);
+    if (T0.isOwn() || T1.isOwn()) {
       UniqueArray<Integer> entry_indices(cell_coefficients.getStencilSize(F));
       builder.getIndexManager()->getEntryIndex(entry,
                                                cell_coefficients.getStencil(F),
                                                entry_indices);
-      if (T0.isOwn() || T1.isOwn()) {
-        UniqueArray<Integer> entry_indices(cell_coefficients.getStencilSize(F));
-        builder.getIndexManager()->getEntryIndex(entry,
-                                                 cell_coefficients.getStencil(F),
-                                                 entry_indices);
-        if(T0.isOwn())
-          builder.addData(builder.getIndexManager()->getEquationIndex(equation, T0),
-                          1., 
-                          entry_indices, 
-                          cell_coefficients.getCoefficients(F));
-        if(T1.isOwn())
-          builder.addData(builder.getIndexManager()->getEquationIndex(equation, T1),
-                          -1., 
-                          entry_indices,
-                          cell_coefficients.getCoefficients(F));
-      }
+      if (T0.isOwn())
+        builder.addData(builder.getIndexManager()->getEquationIndex(equation, T0),
+                        1.,
+                        entry_indices,
+                        cell_coefficients.getCoefficients(F));
+      if (T1.isOwn())
+        builder.addData(builder.getIndexManager()->getEquationIndex(equation, T1),
+                        -1.,
+                        entry_indices,
+                        cell_coefficients.getCoefficients(F));
     }
+  }
 
   // Boundary faces
   debug() << "-- Boundary faces";
-  ENUMERATE_FACE(iface, m_op->boundaryFaces())
-    {
-      const Face & F = *iface;
+  ENUMERATE_FACE (iface, m_op->boundaryFaces()) {
+    const Face& F = *iface;
 
-      debug() << std::setw(20) << "Boundary face" << F.localId();
+    debug() << std::setw(20) << "Boundary face" << F.localId();
 
-      const Cell & T0  = F.boundaryCell();  // back cell
+    const Cell& T0 = F.boundaryCell(); // back cell
 
-      ARCANE_ASSERT(T0.isActive(), ("Inactive cell found"));
+    ARCANE_ASSERT(T0.isActive(), ("Inactive cell found"));
 
-      UniqueArray<Integer> entry_indices(cell_coefficients.getStencilSize(F));
-      builder.getIndexManager()->getEntryIndex(entry,
-                                               cell_coefficients.getStencil(F),
-                                               entry_indices);
-      if(T0.isOwn())
-        builder.addData(builder.getIndexManager()->getEquationIndex(equation, T0),
-                        1., 
-                        entry_indices, 
-                        cell_coefficients.getCoefficients(F));
-    }
+    UniqueArray<Integer> entry_indices(cell_coefficients.getStencilSize(F));
+    builder.getIndexManager()->getEntryIndex(entry,
+                                             cell_coefficients.getStencil(F),
+                                             entry_indices);
+    if (T0.isOwn())
+      builder.addData(builder.getIndexManager()->getEquationIndex(equation, T0),
+                      1.,
+                      entry_indices,
+                      cell_coefficients.getCoefficients(F));
+  }
 
   // Solve the system
   debug() << "Solving linear system";
@@ -324,7 +314,7 @@ executeTest()
 
   // Retrieve solution
   debug() << "Retrieving solution";
-  solver->getSolution() ;
+  solver->getSolution();
   solver->end();
   builder.end();
 
@@ -335,25 +325,23 @@ executeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-DiscreteOperatorAMRUnitTest::
+void DiscreteOperatorAMRUnitTest::
 _refine(Integer nb_to_refine)
 {
-//! AMR
+  //! AMR
   // Search for the first nb_to_refine cells of type IT_Hexaedron8
-  ENUMERATE_CELL(icell, subDomain()->mesh()->ownActiveCells())
-    {
-      Cell cell = *icell;
-      ItemInternal* iitem = cell.internal();
-      if (cell.type()==IT_Hexaedron8){
-        Integer f = iitem->flags();
-        f |= ItemInternal::II_Refine;
-        iitem->setFlags(f);
-        nb_to_refine--;
-        if (nb_to_refine == 0)
-          break;
-      }
+  ENUMERATE_CELL (icell, subDomain()->mesh()->ownActiveCells()) {
+    Cell cell = *icell;
+    ItemInternal* iitem = cell.internal();
+    if (cell.type() == IT_Hexaedron8) {
+      Integer f = iitem->flags();
+      f |= ItemInternal::II_Refine;
+      iitem->setFlags(f);
+      nb_to_refine--;
+      if (nb_to_refine == 0)
+        break;
     }
+  }
 
   subDomain()->mesh()->modifier()->refineItems();
 }
@@ -361,7 +349,12 @@ _refine(Integer nb_to_refine)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_DISCRETEOPERATORAMRUNITTEST(DiscreteOperatorAMRUnitTest,DiscreteOperatorAMRUnitTest);
+ARCANE_REGISTER_SERVICE_DISCRETEOPERATORAMRUNITTEST(DiscreteOperatorAMRUnitTest, DiscreteOperatorAMRUnitTest);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

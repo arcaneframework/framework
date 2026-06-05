@@ -11,22 +11,22 @@ set(ARCANE_TEST_SCRIPT_COMMAND ${ARCANE_TEST_DRIVER} script)
 if (ARCANE_TEST_EXECNAME)
   message(STATUS "[Tests] Using executable '${ARCANE_TEST_EXECNAME}' for tests")
   set(ARCANE_TEST_LAUNCH_COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -E ${ARCANE_TEST_EXECNAME})
-endif()
+endif ()
 if (ARCANE_TEST_DOTNET_ASSEMBLY)
   message(STATUS "[Tests] Using '.Net' assembly '${ARCANE_TEST_DOTNET_ASSEMBLY}' for tests")
-endif()
+endif ()
 
 # Searches for the test path and returns it in 'full_case_file'
 macro(ARCANE_GET_CASE_PATH case_file)
   string(REGEX MATCH "^/" _is_full ${case_file})
-  if(_is_full)
-    if(VERBOSE)
+  if (_is_full)
+    if (VERBOSE)
       message(STATUS "      IS FULL! ${case_file}")
-    endif(VERBOSE)
+    endif (VERBOSE)
     set(full_case_file ${case_file})
-  else(_is_full)
+  else (_is_full)
     set(full_case_file ${ARCANE_TEST_CASEPATH}/${case_file})
-  endif(_is_full)
+  endif (_is_full)
 endmacro(ARCANE_GET_CASE_PATH case_file)
 
 # ----------------------------------------------------------------------------
@@ -35,19 +35,19 @@ endmacro(ARCANE_GET_CASE_PATH case_file)
 # Encapsulates the CMake function 'add_test' to add certain useful information
 # for tests (such as an environment variable containing the test name).
 function(arcane_add_test_direct)
-  set(options        )
-  set(oneValueArgs   NAME WORKING_DIRECTORY)
+  set(options)
+  set(oneValueArgs NAME WORKING_DIRECTORY)
   set(multiValueArgs COMMAND)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   if (NOT ARGS_NAME)
     message(FATAL_ERROR "No 'NAME' argument")
-  endif()
+  endif ()
   if (NOT ARGS_WORKING_DIRECTORY)
     message(FATAL_ERROR "No 'WORKING_DIRECTORY' argument")
-  endif()
+  endif ()
   if (NOT ARGS_COMMAND)
     message(FATAL_ERROR "No 'COMMAND' argument")
-  endif()
+  endif ()
   add_test(NAME ${ARGS_NAME}
     COMMAND ${ARGS_COMMAND}
     WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
@@ -55,16 +55,16 @@ function(arcane_add_test_direct)
   if (EXISTS "${RESULT_FILE}")
     message(VERBOSE "ADD_TEST_RESULT_FILE name=${ARGS_NAME} path=${RESULT_FILE}")
     set_property(TEST ${ARGS_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_TEST_RESULT_FILE=${RESULT_FILE}")
-  endif()
+  endif ()
   set_property(TEST ${ARGS_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_TEST_NAME=${ARGS_NAME}")
 endfunction()
 
 # ----------------------------------------------------------------------------
 # Adds a sequential test
 function(ARCANE_ADD_TEST_SEQUENTIAL test_name case_file)
-  if(VERBOSE)
+  if (VERBOSE)
     message(STATUS "    ADD SEQUENTIAL TEST OPT=${ARCANE_TEST_CASEPATH} ${case_file}")
-  endif()
+  endif ()
   ARCANE_GET_CASE_PATH(${case_file})
   arcane_add_test_direct(NAME ${test_name}
     COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} ${ARGN} ${full_case_file}
@@ -73,9 +73,9 @@ endfunction()
 
 # Adds a sequential test with checkpointing
 function(ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL test_name case_file nb_continue nb_iteration)
-  if(VERBOSE)
+  if (VERBOSE)
     message(STATUS "    ADD CHECKPOINT SEQUENTIAL TEST OPT=${ARCANE_TEST_CASEPATH} ${case_file}")
-  endif()
+  endif ()
   ARCANE_GET_CASE_PATH(${case_file})
   arcane_add_test_direct(NAME ${test_name}
     COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -c ${nb_continue} -m ${nb_iteration} ${ARGN} ${full_case_file}
@@ -84,9 +84,9 @@ endfunction()
 
 # Adds a sequential test with environment variable
 function(ARCANE_ADD_TEST_SEQUENTIAL_ENV test_name case_file envvar envvalue)
-  if(VERBOSE)
+  if (VERBOSE)
     message(STATUS "    ADD SEQUENTIAL TEST OPT=${ARCANE_TEST_CASEPATH} ${case_file} ENV:${envar}=${envvalue}")
-  endif()
+  endif ()
   arcane_add_test_direct(NAME ${test_name}
     COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -We,${envvar},${envvalue} ${ARGN} ${ARCANE_TEST_CASEPATH}/${case_file}
     WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
@@ -94,53 +94,53 @@ endfunction()
 
 # Adds a parallel test
 macro(ARCANE_ADD_TEST_PARALLEL test_name case_file nb_proc)
-  if(TARGET arcane_mpi)
-    if(VERBOSE)
+  if (TARGET arcane_mpi)
+    if (VERBOSE)
       MESSAGE(STATUS "    ADD PARALLEL MPI TEST OPT=${test_name} ${case_file}")
-    endif()
+    endif ()
     ARCANE_GET_CASE_PATH(${case_file})
     arcane_add_test_direct(NAME ${test_name}_${nb_proc}proc
       COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -n ${nb_proc} ${ARGN} ${full_case_file}
       WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
     set_tests_properties(${test_name}_${nb_proc}proc PROPERTIES PROCESSORS ${nb_proc})
-  endif()
+  endif ()
 endmacro()
 
 # Adds a parallel test
 macro(arcane_add_test_sequential_task test_name case_file nb_task)
   # If nb_task is 0, all CPUs on the node are used.
-  if(ARCANE_HAS_TASKS)
-    if(VERBOSE)
+  if (ARCANE_HAS_TASKS)
+    if (VERBOSE)
       message(STATUS "    Add Test Task OPT=${test_name} ${case_file}")
-    endif()
+    endif ()
     set(_TEST_NAME ${test_name}_task${nb_task})
     if (${nb_task} STREQUAL 0)
       set(_TEST_NAME ${test_name}_taskmax)
-    endif()
+    endif ()
     arcane_get_case_path(${case_file})
     arcane_add_test_direct(NAME ${_TEST_NAME}
       COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -K ${nb_task} ${ARGN} ${full_case_file}
       WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
     if (${nb_task} STREQUAL 0)
       set_tests_properties(${_TEST_NAME} PROPERTIES RUN_SERIAL TRUE)
-    else()
+    else ()
       set_tests_properties(${_TEST_NAME} PROPERTIES PROCESSORS ${nb_task})
-    endif()
-  endif()
+    endif ()
+  endif ()
 endmacro()
 
 # Adds a parallel test in shared memory mode
 macro(arcane_add_test_parallel_thread test_name case_file nb_proc)
-  if(NOT ARCANE_USE_MPC)
-    if(VERBOSE)
+  if (NOT ARCANE_USE_MPC)
+    if (VERBOSE)
       message(STATUS "    ADD TEST THREAD OPT=${test_name} ${case_file}")
-    endif()
+    endif ()
     ARCANE_GET_CASE_PATH(${case_file})
     arcane_add_test_direct(NAME ${test_name}_${nb_proc}thread
       COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -T ${nb_proc} ${ARGN} ${full_case_file}
       WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
     set_tests_properties(${test_name}_${nb_proc}thread PROPERTIES PROCESSORS ${nb_proc})
-  endif()
+  endif ()
 endmacro()
 
 
@@ -157,8 +157,8 @@ endmacro()
 #    [ARGS args]
 # )
 function(arcane_add_test_message_passing_hybrid test_name)
-  set(options        )
-  set(oneValueArgs   NB_MPI NB_SHM CASE_FILE)
+  set(options)
+  set(oneValueArgs NB_MPI NB_SHM CASE_FILE)
   set(multiValueArgs ARGS)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -167,22 +167,22 @@ function(arcane_add_test_message_passing_hybrid test_name)
 
   if (NOT ARGS_NB_MPI)
     message(FATAL_ERROR "Missing argument 'NB_MPI'")
-  endif()
+  endif ()
   if (NOT ARGS_NB_SHM)
     message(FATAL_ERROR "Missing argument 'NB_SHM'")
-  endif()
+  endif ()
   set(nb_proc ${ARGS_NB_MPI})
   set(nb_thread ${ARGS_NB_SHM})
 
-  if(NOT TARGET arcane_mpithread)
+  if (NOT TARGET arcane_mpithread)
     return()
-  endif()
+  endif ()
   # The CASE_FILE argument can be null
   if (ARGS_CASE_FILE)
     arcane_get_case_path(${ARGS_CASE_FILE})
-  else()
+  else ()
     set(full_case_file "")
-  endif()
+  endif ()
   set(_arcane_test_name ${test_name}_hybrid_${nb_proc}_${nb_thread}_mpithread)
   arcane_add_test_direct(NAME ${_arcane_test_name}
     COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -n ${nb_proc} -T ${nb_thread} ${ARGS_ARGS} ${full_case_file}
@@ -194,7 +194,7 @@ function(arcane_add_test_message_passing_hybrid test_name)
   # In certain CI workflows
   if (${_total_nb_proc} GREATER "4")
     set_tests_properties(${_arcane_test_name} PROPERTIES LABELS LARGE_HYBRID)
-  endif()
+  endif ()
 endfunction()
 
 
@@ -221,8 +221,8 @@ endfunction()
 # )
 
 function(arcane_add_test_generic test_name)
-  set(options        MP_SEQUENTIAL MP_SHM MP_MPI MP_HYBRID)
-  set(oneValueArgs   TYPE NB_MPI NB_SHM CASE_FILE)
+  set(options MP_SEQUENTIAL MP_SHM MP_MPI MP_HYBRID)
+  set(oneValueArgs TYPE NB_MPI NB_SHM CASE_FILE)
   set(multiValueArgs ARGS)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -235,32 +235,32 @@ function(arcane_add_test_generic test_name)
   # Otherwise, it is considered that all available message passing mechanisms are used
   if (ARGS_MP_SEQUENTIAL OR ARGS_MP_SHM OR ARGS_MP_MPI OR ARGS_MP_HYBRID)
     set(HAS_MP_VALUE TRUE)
-  else()
+  else ()
     set(ARGS_MP_SEQUENTIAL TRUE)
     set(ARGS_MP_SHM TRUE)
     set(ARGS_MP_MPI TRUE)
     set(ARGS_MP_HYBRID TRUE)
-  endif()
+  endif ()
 
   if (NOT ARGS_NB_MPI)
     set(ARGS_NB_MPI 4)
-  endif()
+  endif ()
   if (NOT ARGS_NB_SHM)
     set(ARGS_NB_SHM 3)
-  endif()
+  endif ()
 
   if (ARGS_MP_SEQUENTIAL)
     arcane_add_test_sequential(${test_name} ${ARGS_CASE_FILE} ${ARGS_ARGS})
-  endif()
+  endif ()
   if (ARGS_MP_MPI)
     arcane_add_test_parallel(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_MPI} ${ARGS_ARGS})
-  endif()
+  endif ()
   if (ARGS_MP_SHM)
     arcane_add_test_parallel_thread(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_SHM} ${ARGS_ARGS})
-  endif()
+  endif ()
   if (ARGS_MP_HYBRID)
     arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${ARGS_CASE_FILE} NB_MPI ${ARGS_NB_MPI} NB_SHM ${ARGS_NB_SHM} ARGS ${ARGS_ARGS})
-  endif()
+  endif ()
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -279,28 +279,28 @@ endmacro()
 
 # Adds a parallel test with checkpointing
 function(ARCANE_ADD_TEST_CHECKPOINT_PARALLEL test_name case_file nb_proc nb_continue nb_iteration)
-  if(TARGET arcane_mpi)
-    if(VERBOSE)
+  if (TARGET arcane_mpi)
+    if (VERBOSE)
       MESSAGE(STATUS "    ADD TEST CHECKPOINT PARALLEL MPI OPT=${test_name} ${case_file}")
-    endif()
+    endif ()
     ARCANE_GET_CASE_PATH(${case_file})
     arcane_add_test_direct(NAME ${test_name}_${nb_proc}proc
       COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -c ${nb_continue} -m ${nb_iteration} -n ${nb_proc} ${ARGN} ${full_case_file}
       WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
     set_tests_properties(${test_name}_${nb_proc}proc PROPERTIES PROCESSORS ${nb_proc})
-  endif()
+  endif ()
 endfunction()
 
 # Adds a parallel test with environment variable
 macro(ARCANE_ADD_TEST_PARALLEL_ENV test_name case_file nb_proc envvar envvalue)
-  if(TARGET arcane_mpi)
-    if(VERBOSE)
+  if (TARGET arcane_mpi)
+    if (VERBOSE)
       message(STATUS "    ADD TEST PARALLEL MPI OPT=${test_name} ${case_file} ENV:${envvar}=${envvalue}")
-    endif()
+    endif ()
     arcane_add_test_direct(NAME ${test_name}_${nb_proc}proc
       COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -We,${envvar},${envvalue} -n ${nb_proc} ${ARGN} ${ARCANE_TEST_CASEPATH}/${case_file}
       WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
-  endif()
+  endif ()
 endmacro()
 
 # Adds a sequential and parallel test
@@ -325,7 +325,7 @@ macro(arcane_add_test_script test_name script_file)
   arcane_add_test_direct(NAME ${test_name}
     COMMAND ${ARCANE_TEST_SCRIPT_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/${script_file}
     WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR}
-    )
+  )
 endmacro()
 
 # ----------------------------------------------------------------------------
@@ -334,14 +334,14 @@ endmacro()
 # - launch with 'coreclr' via dotnet (coreclr_dotnet)
 # - launch with the classic executable and embedded coreclr (coreclr_embedded)
 function(arcane_add_csharp_test_direct)
-  set(options        )
+  set(options)
   set(oneValueArgs CASE_FILE_PATH TEST_NAME WORKING_DIRECTORY ASSEMBLY EXTERNAL_ASSEMBLY)
   set(multiValueArgs LAUNCH_COMMAND ARGS)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if (NOT ARGS_TEST_NAME)
     message(FATAL_ERROR "No 'TEST_NAME' argument")
-  endif()
+  endif ()
 
   cmake_path(GET ARGS_CASE_FILE_PATH EXTENSION LAST_ONLY _EXTENSION_ARC)
 
@@ -374,7 +374,7 @@ function(arcane_add_csharp_test_direct)
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_dotnet
       COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  endif()
+  endif ()
 
   if (TARGET arcane_dotnet_coreclr)
     # Test with embedded coreclr
@@ -391,7 +391,7 @@ function(arcane_add_csharp_test_direct)
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_embedded
       COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${ARGS_ARGS} ${_FILE_ARC} ${_ALL_ARGS} ${_EXTERNAL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  endif()
+  endif ()
 
 endfunction()
 
@@ -399,9 +399,9 @@ endfunction()
 # Adds a sequential C# test
 #
 macro(arcane_add_csharp_test_sequential test_name case_file)
-  if(VERBOSE)
+  if (VERBOSE)
     message(STATUS "    ADD C# SEQUENTIAL TEST=${ARCANE_TEST_CASEPATH} ${case_file}")
-  endif()
+  endif ()
   arcane_get_case_path(${case_file})
   message(STATUS "ADD C# test name=${test_name} assembly=${ARCANE_TEST_DOTNET_ASSEMBLY}")
   arcane_add_csharp_test_direct(TEST_NAME ${test_name}
@@ -410,7 +410,7 @@ macro(arcane_add_csharp_test_sequential test_name case_file)
     CASE_FILE_PATH ${full_case_file}
     ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
     ARGS ${ARGN}
-    )
+  )
 endmacro()
 
 # ----------------------------------------------------------------------------
@@ -423,13 +423,13 @@ macro(arcane_add_csharp_test_sequential_external_assembly test_name case_file as
   arcane_get_case_path(${case_file})
   message(STATUS "ADD C# test name=${test_name} assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} external assembly=${assembly_file}")
   arcane_add_csharp_test_direct(
-          TEST_NAME ${test_name}
-          WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR}
-          LAUNCH_COMMAND ${ARCANE_TEST_LAUNCH_COMMAND}
-          CASE_FILE_PATH ${full_case_file}
-          ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
-          EXTERNAL_ASSEMBLY ${assembly_file}
-          ARGS ${ARGN}
+    TEST_NAME ${test_name}
+    WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR}
+    LAUNCH_COMMAND ${ARCANE_TEST_LAUNCH_COMMAND}
+    CASE_FILE_PATH ${full_case_file}
+    ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
+    EXTERNAL_ASSEMBLY ${assembly_file}
+    ARGS ${ARGN}
   )
 endmacro()
 
@@ -437,9 +437,9 @@ endmacro()
 # Adds a parallel C# test
 #
 macro(arcane_add_csharp_test_parallel test_name case_file nb_proc)
-  if(VERBOSE)
+  if (VERBOSE)
     message(STATUS "    ADD C# PARALELL TEST=${ARCANE_TEST_CASEPATH} ${case_file}")
-  endif()
+  endif ()
   set(_TEST_BASE_NAME ${test_name}_${nb_proc}proc)
   message(STATUS "ADD C# test name=${test_name} assembly=${ARCANE_TEST_DOTNET_ASSEMBLY}")
   arcane_get_case_path(${case_file})
@@ -449,7 +449,7 @@ macro(arcane_add_csharp_test_parallel test_name case_file nb_proc)
     CASE_FILE_PATH ${full_case_file}
     ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
     ARGS -n ${nb_proc} ${ARGN}
-    )
+  )
 endmacro()
 
 # ----------------------------------------------------------------------------
@@ -464,8 +464,8 @@ macro(arcane_add_accelerator_test_sequential test_name case_file)
     message(STATUS "ADD ACCELERATOR test name=${test_name}")
     arcane_add_test_sequential(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file}
       "-A,UseAccelerator=1" ${ARGN}
-      )
-  endif()
+    )
+  endif ()
 endmacro()
 
 # Adds an MPI parallel test for accelerator if available
@@ -473,8 +473,8 @@ macro(arcane_add_accelerator_test_parallel test_name case_file nb_proc)
   if (ARCANE_ACCELERATOR_RUNTIME_NAME)
     arcane_add_test_parallel(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file} ${nb_proc}
       "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
-      )
-  endif()
+    )
+  endif ()
 endmacro()
 
 # Adds a 'sharedmemory' parallel test for accelerator if available
@@ -482,8 +482,8 @@ macro(arcane_add_accelerator_test_parallel_thread test_name case_file nb_proc)
   if (ARCANE_ACCELERATOR_RUNTIME_NAME)
     arcane_add_test_parallel_thread(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file} ${nb_proc}
       "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
-      )
-  endif()
+    )
+  endif ()
 endmacro()
 
 # Adds a 'hybrid' parallel test for accelerator if available
@@ -492,7 +492,7 @@ macro(arcane_add_accelerator_test_message_passing_hybrid test_name)
     arcane_add_test_message_passing_hybrid(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${ARGN}
       "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}"
     )
-  endif()
+  endif ()
 endmacro()
 
 macro(arcane_add_test_sequential_host_and_accelerator test_name case_file)

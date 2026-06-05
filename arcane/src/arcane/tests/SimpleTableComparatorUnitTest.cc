@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -49,7 +49,6 @@ testSimple()
   ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
   ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
-
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -102,7 +101,6 @@ testError()
   ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
 
-
   // Init STC
   ptrSTC->init(ptrSTO);
   ASSERT_TRUE(ptrSTC->writeReferenceFile());
@@ -126,7 +124,6 @@ testIncludeRow()
   ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
   ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
-
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -156,7 +153,6 @@ testIncludeColumn()
   ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
 
-
   // Init STC
   ptrSTC->init(ptrSTO);
   ASSERT_TRUE(ptrSTC->writeReferenceFile());
@@ -184,7 +180,6 @@ testIncludeRowColumn()
   ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
   ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
-
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -218,12 +213,11 @@ testRegexRow()
   ptrSTO->addColumn("Ma colonne 2");
   ptrSTO->addColumn("Ma colonne 3");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3});
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6});
-  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9});
-  ptrSTO->addRow("Ma ligne 4", RealUniqueArray{ 4, 5, 7});
-  ptrSTO->addRow("Ma ligne 5", RealUniqueArray{ 8, 1, 2});
-
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+  ptrSTO->addRow("Ma ligne 4", RealUniqueArray{ 4, 5, 7 });
+  ptrSTO->addRow("Ma ligne 5", RealUniqueArray{ 8, 1, 2 });
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -261,7 +255,6 @@ testRegexColumn()
   ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6, 7, 8 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9, 1, 2 });
 
-
   // Init STC
   ptrSTC->init(ptrSTO);
   ASSERT_TRUE(ptrSTC->writeReferenceFile());
@@ -294,14 +287,13 @@ testRegexRowColumn()
   ptrSTO->addColumn("Ma colonne 4");
   ptrSTO->addColumn("Ma colonne 5");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2,   3, 4,   5 });
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5,   6, 7,   8 });
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3, 4, 5 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6, 7, 8 });
 
-  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8,   9, 1,   2 });
-  ptrSTO->addRow("Ma ligne 4", RealUniqueArray{ 4, 5,   7, 4,   5 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9, 1, 2 });
+  ptrSTO->addRow("Ma ligne 4", RealUniqueArray{ 4, 5, 7, 4, 5 });
 
-  ptrSTO->addRow("Ma ligne 5", RealUniqueArray{ 8, 1,   2, 7,   8 });
-
+  ptrSTO->addRow("Ma ligne 5", RealUniqueArray{ 8, 1, 2, 7, 8 });
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -338,9 +330,8 @@ testEpsilonColumn()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
-
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 3478974.40208692104, 299512107932106.125 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 299538753331624.312, 3445501.01118461927 });
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -373,9 +364,8 @@ testEpsilonRow()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
-
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 3478974.40208692104, 299512107932106.125 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 299538753331624.312, 3445501.01118461927 });
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -408,9 +398,8 @@ testEpsilonRowColumn()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
-
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 3478974.40208692104, 299512107932106.125 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 299538753331624.312, 3445501.01118461927 });
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -445,9 +434,8 @@ testCompareOneElem()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
-
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 3478974.40208692104, 299512107932106.125 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 299538753331624.312, 3445501.01118461927 });
 
   // Init STC
   ptrSTC->init(ptrSTO);
@@ -483,9 +471,8 @@ testCompareWithElem()
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
-
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 3478974.40208692104, 299512107932106.125 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 299538753331624.312, 3445501.01118461927 });
 
   // Init STC
   ptrSTC->init(ptrSTO);

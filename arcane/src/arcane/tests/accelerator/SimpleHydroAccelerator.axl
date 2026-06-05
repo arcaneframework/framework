@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <!-- Dataset options for the 'SimpleHydroAccelerator' service -->
 <service name="SimpleHydroAccelerator" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="SimpleHydro">
   <interface name="SimpleHydro::ISimpleHydroService" />

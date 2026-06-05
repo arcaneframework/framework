@@ -1,19 +1,20 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<service name="PDESRandomNumberGeneratorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
-  <interface name="Arcane::IUnitTest" inherited="false" />
- 
+<service name="PDESRandomNumberGeneratorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
+
   <variables>
   </variables>
 
-  <tests 
-   class-set-up="setUpForClass" 
-   test-set-up="setUp" 
-   class-tear-down="tearDownForClass" 
-   test-tear-down="tearDown"
+  <tests
+    class-set-up="setUpForClass"
+    test-set-up="setUp"
+    class-tear-down="tearDownForClass"
+    test-tear-down="tearDown"
   >
     <test name="Test generated values" method-name="testHardcodedValues"/>
     <test name="Test generated seeds" method-name="testHardcodedSeeds"/>
-  </tests> 
+  </tests>
 
 
   <options>

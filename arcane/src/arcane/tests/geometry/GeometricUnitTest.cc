@@ -60,14 +60,14 @@ class GeometricUnitTest
   geometric::GeomShapeMng m_shape_mng;
 
  private:
-  
+
   void _checkCoords(const CellGroup& cells);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_GEOMETRICUNITTEST(GeometricUnitTest,GeometricUnitTest);
+ARCANE_REGISTER_SERVICE_GEOMETRICUNITTEST(GeometricUnitTest, GeometricUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,15 +95,15 @@ _checkCoords(const CellGroup& cells)
 {
   VariableNodeReal3& node_coords(mesh()->nodesCoordinates());
   geometric::GeomShapeView shape_view;
-  ENUMERATE_CELL(icell,cells){
+  ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
-    m_shape_mng.initShape(shape_view,*icell);
+    m_shape_mng.initShape(shape_view, *icell);
 
     // Checks that node coordinates are OK.
     Integer nb_node = cell.nbNode();
-    for( Integer z=0; z<nb_node; ++z )
+    for (Integer z = 0; z < nb_node; ++z)
       if (node_coords[cell.node(z)] != shape_view.node(z))
-        throw FatalErrorException(A_FUNCINFO,"Invalid node coordinates for GeomShape");
+        throw FatalErrorException(A_FUNCINFO, "Invalid node coordinates for GeomShape");
   }
 }
 
@@ -166,7 +166,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

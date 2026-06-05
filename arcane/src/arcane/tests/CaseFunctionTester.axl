@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 
-<module name="CaseFunctionTester" version="1.0" namespace-name="ArcaneTest"> 
+<module name="CaseFunctionTester" version="1.0" namespace-name="ArcaneTest">
   <description>
     Test module for 'ICaseFunction'.
   </description>

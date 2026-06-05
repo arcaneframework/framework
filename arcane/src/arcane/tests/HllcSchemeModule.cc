@@ -201,7 +201,7 @@ init()
   // Initialize boundary conditions on faces
   {
     // Default value: all faces are at Wall (0)
-    ENUMERATE_(Face, iface, allFaces()) {
+    ENUMERATE_ (Face, iface, allFaces()) {
       m_face_bc_type[iface] = static_cast<Int32>(TypesHllcScheme::Wall);
     }
 
@@ -213,7 +213,7 @@ init()
       Real3 bc_velocity = Real3(bc.velocityX(), bc.velocityY(), bc.velocityZ());
       Real bc_pressure = bc.pressure();
 
-      ENUMERATE_(Face, iface, face_group) {
+      ENUMERATE_ (Face, iface, face_group) {
         m_face_bc_type[iface] = static_cast<Int32>(bc_type);
         m_face_bc_density[iface] = bc_density;
         m_face_bc_velocity[iface] = bc_velocity;
@@ -225,19 +225,25 @@ init()
   Real3 center = Real3::zero();
   {
     Real3 min_pos, max_pos;
-    ENUMERATE_(Node, inode, allNodes()) {
+    ENUMERATE_ (Node, inode, allNodes()) {
       Real3 pos = m_node_coord[inode];
       if (inode.index() == 0) {
         min_pos = pos;
         max_pos = pos;
         continue;
       }
-      if (pos.x < min_pos.x) min_pos.x = pos.x;
-      if (pos.y < min_pos.y) min_pos.y = pos.y;
-      if (pos.z < min_pos.z) min_pos.z = pos.z;
-      if (pos.x > max_pos.x) max_pos.x = pos.x;
-      if (pos.y > max_pos.y) max_pos.y = pos.y;
-      if (pos.z > max_pos.z) max_pos.z = pos.z;
+      if (pos.x < min_pos.x)
+        min_pos.x = pos.x;
+      if (pos.y < min_pos.y)
+        min_pos.y = pos.y;
+      if (pos.z < min_pos.z)
+        min_pos.z = pos.z;
+      if (pos.x > max_pos.x)
+        max_pos.x = pos.x;
+      if (pos.y > max_pos.y)
+        max_pos.y = pos.y;
+      if (pos.z > max_pos.z)
+        max_pos.z = pos.z;
     }
     center = Real(0.5) * (min_pos + max_pos);
     info() << "Mesh bounds: min=" << min_pos << " max=" << max_pos;
@@ -245,7 +251,7 @@ init()
 
   Real gamma = options()->gamma();
 
-  ENUMERATE_(Cell, icell, allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     Real3 c = m_cell_center[icell];
 
     Real density_init, pressure_init;
@@ -373,12 +379,12 @@ _faceCenter(const Face& face) const
 void HllcSchemeModule::
 _computeGeometry()
 {
-  ENUMERATE_(Cell, icell, allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
     m_cell_center[icell] = _cellCenter(cell);
   }
 
-  ENUMERATE_(Face, iface, allFaces()) {
+  ENUMERATE_ (Face, iface, allFaces()) {
     Face face = *iface;
     Real3 normal = _faceNormal(face);
     m_face_normal[iface] = normal;
@@ -388,7 +394,7 @@ _computeGeometry()
 
   Real inv_dim = Real(1.0) / Real(m_dimension);
 
-  ENUMERATE_(Cell, icell, allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
     Real volume = Real(0.0);
     Real3 cell_center = m_cell_center[icell];
@@ -437,7 +443,7 @@ _computeDeltat()
   ax::ReducerMin2<Real> min_dt_reducer(command);
   min_dt_reducer.setValue(FloatInfo<Real>::maxValue());
 
-  command << RUNCOMMAND_ENUMERATE(Cell, cid, ownCells(), min_dt_reducer)
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, ownCells(), min_dt_reducer)
   {
     Real rho = in_density[cid];
     Real3 vel = in_momentum[cid] / rho;
@@ -514,7 +520,7 @@ _updateConservative()
   auto out_momentum = ax::viewOut(command, m_momentum);
   auto out_energy = ax::viewOut(command, m_energy);
 
-  command << RUNCOMMAND_ENUMERATE(Cell, cid, allCells())
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
     Real flux_rho = Real(0.0);
     Real3 flux_mom = Real3::zero();
@@ -704,7 +710,7 @@ _computePressure()
   auto out_pressure = ax::viewOut(command, m_pressure);
   auto out_sound_speed = ax::viewOut(command, m_sound_speed);
 
-  command << RUNCOMMAND_ENUMERATE(Cell, cid, allCells())
+  command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
     Real rho = in_density[cid];
     Real3 rho_u = in_momentum[cid];
@@ -757,7 +763,7 @@ exit()
   Real sum_energy = Real(0.0);
   Real sum_pressure = Real(0.0);
 
-  ENUMERATE_(Cell, icell, ownCells()) {
+  ENUMERATE_ (Cell, icell, ownCells()) {
     sum_mass += m_density[icell];
     sum_energy += m_energy[icell];
     sum_pressure += m_pressure[icell];

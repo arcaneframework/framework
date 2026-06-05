@@ -1,8 +1,9 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <!-- Dataset options for the graph test service -->
 
-<service name="GraphUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
- <interface name="Arcane::IUnitTest" inherited="false" />
+<service name="GraphUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
 
   <variables>
 
@@ -17,6 +18,6 @@
     />
   </variables>
 
-  <options />
+  <options/>
 
 </service>

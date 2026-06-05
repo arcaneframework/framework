@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -214,7 +214,7 @@ void MeshMergeNodesUnitTest::
 initializeTest()
 {
   if (mesh()->parallelMng()->isParallel()) {
-    if (mesh()->dimension()!=2)
+    if (mesh()->dimension() != 2)
       ARCANE_FATAL("This test is only valid for specific 'merge_nodes_2d.vtk'");
     // In parallel, since we cannot determine the list of connected nodes
     // because they are not necessarily in the same subdomain,

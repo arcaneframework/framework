@@ -103,7 +103,7 @@ class CartesianMeshTesterModule
   static void staticInitialize(ISubDomain* sd);
 
  public:
-  
+
   void buildInit() override;
   void compute() override;
   void init() override;
@@ -114,7 +114,7 @@ class CartesianMeshTesterModule
   VariableCellReal m_old_density;
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
-  VariableNodeReal m_node_density; 
+  VariableNodeReal m_node_density;
   VariableFaceInt64 m_faces_uid;
   ICartesianMesh* m_cartesian_mesh;
   IInitialPartitioner* m_initial_partitioner;
@@ -130,7 +130,7 @@ class CartesianMeshTesterModule
   void _testGridPartitioning();
   void _printCartesianMeshInfos();
   void _checkFaceUniqueIdsAreContiguous();
-  void _checkNearlyEqual(Real3 a,Real3 b,const String& message);
+  void _checkNearlyEqual(Real3 a, Real3 b, const String& message);
   void _testCoarsening();
   void _checkSpecificApplyOperator();
 };
@@ -143,9 +143,13 @@ class CartesianMeshPartitionerService
 , public IMeshPartitionerBase
 {
  public:
+
   explicit CartesianMeshPartitionerService(const ServiceBuildInfo& sbi)
-  : BasicService(sbi){}
+  : BasicService(sbi)
+  {}
+
  public:
+
   void build() override {}
   void notifyEndPartition() override {}
   IPrimaryMesh* primaryMesh() override { return mesh()->toPrimaryMesh(); }
@@ -163,7 +167,7 @@ class CartesianMeshPartitionerService
     Int64 nb_bloc = nb_rank * 3;
     Int64 cell_index = 0;
     info() << "Partitioning with 'CartesianMeshPartitionerService' nb_rank=" << nb_rank;
-    ENUMERATE_CELL(icell,mesh->ownCells()){
+    ENUMERATE_CELL (icell, mesh->ownCells()) {
       Cell cell = *icell;
       // Use Int64 instead of Int32 to ensure no overflow.
       Int64 new_owner = ((cell_index * nb_bloc) / nb_cell) % nb_rank;
@@ -179,7 +183,7 @@ class CartesianMeshPartitionerService
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(CartesianMeshPartitionerService,
-                        Arcane::ServiceProperty("CartesianMeshPartitionerTester",Arcane::ST_SubDomain),
+                        Arcane::ServiceProperty("CartesianMeshPartitionerTester", Arcane::ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
 /*---------------------------------------------------------------------------*/
@@ -192,30 +196,35 @@ class CartesianMeshInitialPartitioner
  public:
 
   CartesianMeshInitialPartitioner(ISubDomain* sd)
-  : TraceAccessor(sd->traceMng()), m_sub_domain(sd)
+  : TraceAccessor(sd->traceMng())
+  , m_sub_domain(sd)
   {
   }
   void build() override {}
   void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes) override
   {
-    for( IMesh* mesh : meshes ){
+    for (IMesh* mesh : meshes) {
       info() << "Partitioning mesh name=" << mesh->name();
       _doPartition(mesh);
     }
   }
+
  private:
+
   void _doPartition(IMesh* mesh)
   {
     ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
     String service_name = "CartesianMeshPartitionerTester";
-    auto mesh_partitioner(sbuilder.createReference(service_name,mesh));
+    auto mesh_partitioner(sbuilder.createReference(service_name, mesh));
 
     bool is_dynamic = mesh->isDynamic();
     mesh->modifier()->setDynamic(true);
-    mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner.get(),true);
+    mesh->utilities()->partitionAndExchangeMeshWithReplication(mesh_partitioner.get(), true);
     mesh->modifier()->setDynamic(is_dynamic);
   }
+
  private:
+
   ISubDomain* m_sub_domain;
 };
 
@@ -228,17 +237,17 @@ class CartesianMeshInitialPartitioner
 CartesianMeshTesterModule::
 CartesianMeshTesterModule(const ModuleBuildInfo& mbi)
 : ArcaneCartesianMeshTesterObject(mbi)
-, m_density(VariableBuildInfo(this,"Density"))
-, m_old_density(VariableBuildInfo(this,"OldDensity"))
-, m_cell_center(VariableBuildInfo(this,"CellCenter"))
-, m_face_center(VariableBuildInfo(this,"FaceCenter"))
-, m_node_density(VariableBuildInfo(this,"NodeDensity"))
-, m_faces_uid(VariableBuildInfo(this,"CartesianMeshTesterNodeUid"))
+, m_density(VariableBuildInfo(this, "Density"))
+, m_old_density(VariableBuildInfo(this, "OldDensity"))
+, m_cell_center(VariableBuildInfo(this, "CellCenter"))
+, m_face_center(VariableBuildInfo(this, "FaceCenter"))
+, m_node_density(VariableBuildInfo(this, "NodeDensity"))
+, m_faces_uid(VariableBuildInfo(this, "CartesianMeshTesterNodeUid"))
 , m_cartesian_mesh(nullptr)
 , m_initial_partitioner(nullptr)
 {
   // Checks if partitioning needs to be tested
-  if (!platform::getEnvironmentVariable("TEST_PARTITIONING").null()){
+  if (!platform::getEnvironmentVariable("TEST_PARTITIONING").null()) {
     ISubDomain* sd = mbi.subDomain();
     m_initial_partitioner = new CartesianMeshInitialPartitioner(sd);
     info() << "SETTING INITIAL PARTITIONER";
@@ -269,19 +278,19 @@ staticInitialize(ISubDomain* sd)
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("CartesianMeshTester.buildInit"));
-    time_loop->setEntryPoints(ITimeLoop::WBuild,clist);
+    time_loop->setEntryPoints(ITimeLoop::WBuild, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("CartesianMeshTester.init"));
-    time_loop->setEntryPoints(ITimeLoop::WInit,clist);
+    time_loop->setEntryPoints(ITimeLoop::WInit, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("CartesianMeshTester.compute"));
-    time_loop->setEntryPoints(ITimeLoop::WComputeLoop,clist);
+    time_loop->setEntryPoints(ITimeLoop::WComputeLoop, clist);
   }
 
   {
@@ -305,11 +314,11 @@ buildInit()
 {
   bool has_edge = options()->hasEdges();
   info() << "Adding edge connectivity?=" << has_edge;
-  if (has_edge){
+  if (has_edge) {
     Connectivity c(mesh()->connectivity());
     c.enableConnectivity(Connectivity::CT_HasEdge);
   }
-  
+
   m_global_deltat.assign(1.0);
 
   IItemFamily* cell_family = defaultMesh()->cellFamily();
@@ -339,32 +348,32 @@ init()
   IItemFamily* cell_family = mesh->cellFamily();
   Int32UniqueArray ids(1);
   ids[0] = 0;
-  cell_family->createGroup("CELL0",ids,true);
+  cell_family->createGroup("CELL0", ids, true);
   ids[0] = 1;
-  cell_family->createGroup("CELL1",ids,true);
+  cell_family->createGroup("CELL1", ids, true);
   ids[0] = 2;
-  cell_family->createGroup("CELL2",ids,true);
+  cell_family->createGroup("CELL2", ids, true);
   IItemFamily* face_family = defaultMesh()->faceFamily();
   ids[0] = 0;
-  face_family->createGroup("FACE0",ids,true);
+  face_family->createGroup("FACE0", ids, true);
   ids[0] = 1;
-  face_family->createGroup("FACE1",ids,true);
+  face_family->createGroup("FACE1", ids, true);
   ids[0] = 2;
-  face_family->createGroup("FACE2",ids,true);
+  face_family->createGroup("FACE2", ids, true);
   ids[0] = 3;
-  face_family->createGroup("FACE3",ids,true);
+  face_family->createGroup("FACE3", ids, true);
   ids[0] = 4;
-  face_family->createGroup("FACE4",ids,true);
+  face_family->createGroup("FACE4", ids, true);
   ids[0] = 5;
-  face_family->createGroup("FACE5",ids,true);
+  face_family->createGroup("FACE5", ids, true);
 
   // Calculate the cell centers
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_CELL(icell,allCells()){
+    ENUMERATE_CELL (icell, allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for( NodeLocalId inode : cell.nodeIds() )
+      for (NodeLocalId inode : cell.nodeIds())
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -374,10 +383,10 @@ init()
   // Calculate the face centers
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_FACE(iface,allFaces()){
+    ENUMERATE_FACE (iface, allFaces()) {
       Face face = *iface;
       Real3 center;
-      for( NodeLocalId inode : face.nodeIds() )
+      for (NodeLocalId inode : face.nodeIds())
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
@@ -387,7 +396,7 @@ init()
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
   m_cartesian_mesh->computeDirections();
 
-  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
+  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh, acceleratorMng()));
   m_utils_v2 = makeRef(new CartesianMeshV2TestUtils(m_cartesian_mesh));
 
   // Initialize the density.
@@ -396,15 +405,15 @@ init()
   // boundary cells.
   m_density.fill(1.0);
   Integer nb_dir = defaultMesh()->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     Integer nb_boundary1 = 0;
     Integer nb_boundary2 = 0;
-    ENUMERATE_CELL(icell,cdm.innerCells()){
+    ENUMERATE_CELL (icell, cdm.innerCells()) {
       DirCell cc(cdm.cell(*icell));
       Cell next = cc.next();
       Cell prev = cc.previous();
-      if (next.null() || prev.null()){
+      if (next.null() || prev.null()) {
         // Cell at the boundary. I add density.
         // Should not happen because we are on the innerCells()
         ++nb_boundary1;
@@ -412,9 +421,9 @@ init()
       }
     }
     // Iterate through the boundary cells for the direction
-    ENUMERATE_CELL(icell,cdm.outerCells()){
+    ENUMERATE_CELL (icell, cdm.outerCells()) {
       DirCell cc(cdm[icell]);
-      if (icell.index()<5)
+      if (icell.index() < 5)
         info() << "CELL: cell=" << ItemPrinter(*icell)
                << " next=" << ItemPrinter(cc.next())
                << " previous=" << ItemPrinter(cc.previous());
@@ -445,41 +454,41 @@ _testCoarsening()
   IMesh* mesh = m_cartesian_mesh->mesh();
   Int32 mesh_dim = mesh->dimension();
   const Int32 coarse_factor = 1 << mesh_dim;
-  if (coarse_version==1){
+  if (coarse_version == 1) {
     info() << "Test CartesianCoarsening V1";
     Ref<CartesianMeshCoarsening> coarser = m_cartesian_mesh->createCartesianMeshCoarsening();
     IItemFamily* cell_family = mesh->cellFamily();
     CellInfoListView cells(cell_family);
     coarser->createCoarseCells();
     Int32 index = 0;
-    for( Int32 cell_lid : coarser->coarseCells()){
+    for (Int32 cell_lid : coarser->coarseCells()) {
       Cell cell = cells[cell_lid];
       info() << "Test1: CoarseCell= " << ItemPrinter(cell);
       ConstArrayView<Int32> sub_cells(coarser->refinedCells(index));
       ++index;
-      for( Int32 sub_lid : sub_cells )
+      for (Int32 sub_lid : sub_cells)
         info() << "SubCell=" << ItemPrinter(cells[sub_lid]);
     }
     coarser->removeRefinedCells();
   }
 
-  if (coarse_version==2){
+  if (coarse_version == 2) {
     info() << "Test CartesianCoarsening V2";
     const Int32 nb_orig_cell = ownCells().size();
     Ref<CartesianMeshCoarsening2> coarser = CartesianMeshUtils::createCartesianMeshCoarsening2(m_cartesian_mesh);
     coarser->createCoarseCells();
-    ENUMERATE_(Cell,icell,allCells()){
+    ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
-      if (cell.level()!=0)
+      if (cell.level() != 0)
         continue;
       info() << "Test2: CoarseCell= " << ItemPrinter(cell);
-      for( Int32 i=0, n=cell.nbHChildren(); i<n; ++i ){
+      for (Int32 i = 0, n = cell.nbHChildren(); i < n; ++i) {
         info() << "SubCell=" << ItemPrinter(cell.hChild(i));
       }
     }
     Int32 nb_patch = m_cartesian_mesh->nbPatch();
     info() << "NB_PATCH=" << nb_patch;
-    for( Int32 i=0; i<nb_patch; ++i ){
+    for (Int32 i = 0; i < nb_patch; ++i) {
       ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
       info() << "Patch i=" << i << " nb_cell=" << p->cells().size();
     }
@@ -501,7 +510,7 @@ _testCoarsening()
 void CartesianMeshTesterModule::
 compute()
 {
-  if (m_global_iteration()==1)
+  if (m_global_iteration() == 1)
     _testCoarsening();
 
   _compute1();
@@ -516,17 +525,17 @@ _compute1()
   // For testing, we iterate over the N directions
   // and for each cell, we modify its density
   // using the formula new_density = (density+density_next+density_prev) / 3.0.
-  
+
   // Performs the operation in two passes. The first on the
   // internal cells, and the second on the external cells.
   // Therefore, we must use an intermediate variable (m_old_density)
   // but we avoid a test in the main loop
   Integer nb_dir = defaultMesh()->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     m_old_density.copy(m_density);
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     // Working on internal cells
-    ENUMERATE_CELL(icell,cdm.innerCells()){
+    ENUMERATE_CELL (icell, cdm.innerCells()) {
       DirCell cc(cdm.cell(*icell));
       Cell next = cc.next();
       Cell prev = cc.previous();
@@ -535,17 +544,17 @@ _compute1()
     }
     // Working on external cells
     // Test if the previous or next cell is null.
-    ENUMERATE_CELL(icell,cdm.outerCells()){
+    ENUMERATE_CELL (icell, cdm.outerCells()) {
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
       Cell prev = cc.previous();
       Real d = m_old_density[icell];
       Integer n = 1;
-      if (!next.null()){
+      if (!next.null()) {
         d += m_old_density[next];
         ++n;
       }
-      if (!prev.null()){
+      if (!prev.null()) {
         d += m_old_density[prev];
         ++n;
       }
@@ -555,17 +564,17 @@ _compute1()
 
   {
     Int64 to_add = m_global_iteration();
-    ENUMERATE_(Face,iface,ownFaces()){
+    ENUMERATE_ (Face, iface, ownFaces()) {
       Int64 uid = iface->uniqueId();
       m_faces_uid[iface] = uid + to_add;
     }
     m_faces_uid.synchronize();
-    ENUMERATE_(Face,iface,allFaces()){
+    ENUMERATE_ (Face, iface, allFaces()) {
       Face face(*iface);
       Int64 uid = face.uniqueId();
       Int64 expected_value = uid + to_add;
-      if (expected_value!=m_faces_uid[iface])
-        ARCANE_FATAL("Bad FaceUid face={0} expected={1} value={2}",ItemPrinter(face),expected_value,m_faces_uid[iface]);
+      if (expected_value != m_faces_uid[iface])
+        ARCANE_FATAL("Bad FaceUid face={0} expected={1} value={2}", ItemPrinter(face), expected_value, m_faces_uid[iface]);
     }
   }
 }
@@ -584,20 +593,20 @@ _compute2()
   // _compute1() because the boundary and internal cells are updated
   // in a different order.
   Integer nb_dir = defaultMesh()->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     // Working on all cells
-    ENUMERATE_CELL(icell,cdm.allCells()){
+    ENUMERATE_CELL (icell, cdm.allCells()) {
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
       Cell prev = cc.previous();
       Real d = m_density[icell];
       Integer n = 1;
-      if (!next.null()){
+      if (!next.null()) {
         d += m_density[next];
         ++n;
       }
-      if (!prev.null()){
+      if (!prev.null()) {
         d += m_density[prev];
         ++n;
       }
@@ -614,7 +623,7 @@ _sample(ICartesianMesh* cartesian_mesh)
 {
   //! [SampleNodeToCell]
   CartesianConnectivity cc = cartesian_mesh->connectivity();
-  ENUMERATE_NODE(inode,allNodes()){
+  ENUMERATE_NODE (inode, allNodes()) {
     Node n = *inode;
     Cell c1 = cc.upperLeft(n); // Top-left cell
     Cell c2 = cc.upperRight(n); // Top-right cell
@@ -638,13 +647,13 @@ _checkFaceUniqueIdsAreContiguous()
   // Iterate over the faces and verify that the uniqueId() of each face is not
   // greater than the total number of faces.
   Int64 total_nb_face = allFaces().own().size();
-  total_nb_face = parallelMng()->reduce(Parallel::ReduceSum,total_nb_face);
+  total_nb_face = parallelMng()->reduce(Parallel::ReduceSum, total_nb_face);
   info() << "TotalNbFace=" << total_nb_face;
-  ENUMERATE_(Face,iface,allFaces()){
+  ENUMERATE_ (Face, iface, allFaces()) {
     Face face = *iface;
-    if (face.uniqueId()>=total_nb_face)
+    if (face.uniqueId() >= total_nb_face)
       ARCANE_FATAL("FaceUniqueId is too big: uid={0} total_nb_face={1}",
-                   face.uniqueId(),total_nb_face);
+                   face.uniqueId(), total_nb_face);
   }
 }
 
@@ -657,16 +666,16 @@ _testXmlInfos()
   info() << "PRINT Xml infos for <cartesian> mesh generator";
   ICaseDocument* cd = subDomain()->caseDocument();
   XmlNodeList mesh_elements = cd->meshElements();
-  if (mesh_elements.size()==0)
+  if (mesh_elements.size() == 0)
     return;
   XmlNode mesh_generator_element = mesh_elements[0].child("meshgenerator");
   // If null, it means we are not using the 'meshgenerator'.
-  if (mesh_generator_element.null()){
+  if (mesh_generator_element.null()) {
     info() << "No element <meshgenerator> found";
     return;
   }
   XmlNode cartesian_node = mesh_generator_element.child("cartesian");
-  if (cartesian_node.null()){
+  if (cartesian_node.null()) {
     info() << "No element <cartesian> found";
     return;
   }
@@ -676,9 +685,9 @@ _testXmlInfos()
   // Retrieves and displays the info for <lx>.
   XmlNodeList lx_node_list = cartesian_node.children("lx");
   info() << "NB_X=" << lx_node_list.size();
-  for( XmlNode lx_node : lx_node_list ){
+  for (XmlNode lx_node : lx_node_list) {
     Real lx_value = lx_node.valueAsReal(true);
-    Integer nx_value = lx_node.attr("nx",true).valueAsInteger(true);
+    Integer nx_value = lx_node.attr("nx", true).valueAsInteger(true);
     Real px_value = lx_node.attr("prx").valueAsReal(true);
     info() << "V=" << lx_value << " nx=" << nx_value << " px=" << px_value;
   }
@@ -708,36 +717,36 @@ _testGridPartitioning()
   Arcane::IParallelMng* pm = current_mesh->parallelMng();
 
   Arcane::MeshReaderMng reader_mng(sd);
-  Arcane::IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2",file_name,pm);
+  Arcane::IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2", file_name, pm);
   info() << "MESH=" << new_mesh;
 
   // Creation of the partitioning service
   Arcane::ServiceBuilder<Arcane::IGridMeshPartitioner> sbuilder(sd);
-  auto partitioner_ref = sbuilder.createReference("SimpleGridMeshPartitioner",new_mesh);
+  auto partitioner_ref = sbuilder.createReference("SimpleGridMeshPartitioner", new_mesh);
   Arcane::IGridMeshPartitioner* partitioner = partitioner_ref.get();
 
   // Positions the coordinates of our subdomain in the grid
   Int32 sd_x = cartesian_mesh->cellDirection(MD_DirX).subDomainOffset();
   Int32 sd_y = cartesian_mesh->cellDirection(MD_DirY).subDomainOffset();
   Int32 sd_z = cartesian_mesh->cellDirection(MD_DirZ).subDomainOffset();
-  partitioner->setPartIndex(sd_x,sd_y,sd_z);
+  partitioner->setPartIndex(sd_x, sd_y, sd_z);
 
   // Positions the bounding box of our subdomain.
   // To do this, iterate only over our nodes and take the min and max coordinates
   Real max_value = FloatInfo<Real>::maxValue();
   Real min_value = -max_value;
-  Arcane::Real3 min_box(max_value,max_value,max_value);
-  Arcane::Real3 max_box(min_value,min_value,min_value);
+  Arcane::Real3 min_box(max_value, max_value, max_value);
+  Arcane::Real3 max_box(min_value, min_value, min_value);
   VariableNodeReal3& nodes_coord = current_mesh->nodesCoordinates();
-  ENUMERATE_(Cell,icell,current_mesh->ownCells()){
-    Cell cell{*icell};
-    for( Node node : cell.nodes() ){
+  ENUMERATE_ (Cell, icell, current_mesh->ownCells()) {
+    Cell cell{ *icell };
+    for (Node node : cell.nodes()) {
       Real3 coord = nodes_coord[node];
-      min_box = math::min(min_box,coord);
-      max_box = math::max(max_box,coord);
+      min_box = math::min(min_box, coord);
+      max_box = math::max(max_box, coord);
     }
   }
-  partitioner->setBoundingBox(min_box,max_box);
+  partitioner->setBoundingBox(min_box, max_box);
 
   // Applies the partitioning
   partitioner->applyMeshPartitioning(new_mesh);
@@ -746,20 +755,20 @@ _testGridPartitioning()
   // Now, write the unstructured mesh file and our
   // Cartesian part.
   const bool is_debug = false;
-  if (is_debug){
+  if (is_debug) {
     ServiceBuilder<IMeshWriter> sbuilder2(sd);
-    auto mesh_writer = sbuilder2.createReference("VtkLegacyMeshWriter",SB_Collective);
+    auto mesh_writer = sbuilder2.createReference("VtkLegacyMeshWriter", SB_Collective);
     {
       StringBuilder fname = "cut_mesh_";
       fname += pm->commRank();
       fname += ".vtk";
-      mesh_writer->writeMeshToFile(new_mesh,fname);
+      mesh_writer->writeMeshToFile(new_mesh, fname);
     }
     {
       StringBuilder fname = "my_mesh_";
       fname += pm->commRank();
       fname += ".vtk";
-      mesh_writer->writeMeshToFile(current_mesh,fname);
+      mesh_writer->writeMeshToFile(current_mesh, fname);
     }
   }
 }
@@ -768,16 +777,16 @@ _testGridPartitioning()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTesterModule::
-_checkNearlyEqual(Real3 a,Real3 b,const String& message)
+_checkNearlyEqual(Real3 a, Real3 b, const String& message)
 {
   info() << "A=" << a;
   info() << "B=" << b;
-  if (!math::isNearlyEqual(a.x,b.x))
-    ARCANE_FATAL("Bad value X expected={0} value={1} message={2}",a.x,b.x,message);
-  if (!math::isNearlyEqual(a.y,b.y))
-    ARCANE_FATAL("Bad value Y expected={0} value={1} message={2}",a.y,b.y,message);
-  if (!math::isNearlyEqual(a.z,b.z))
-    ARCANE_FATAL("Bad value Z expected={0} value={1} message={2}",a.z,b.z,message);
+  if (!math::isNearlyEqual(a.x, b.x))
+    ARCANE_FATAL("Bad value X expected={0} value={1} message={2}", a.x, b.x, message);
+  if (!math::isNearlyEqual(a.y, b.y))
+    ARCANE_FATAL("Bad value Y expected={0} value={1} message={2}", a.y, b.y, message);
+  if (!math::isNearlyEqual(a.z, b.z))
+    ARCANE_FATAL("Bad value Z expected={0} value={1} message={2}", a.z, b.z, message);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -786,7 +795,7 @@ _checkNearlyEqual(Real3 a,Real3 b,const String& message)
 void CartesianMeshTesterModule::
 _printCartesianMeshInfos()
 {
-  auto* cartesian_info = ICartesianMeshGenerationInfo::getReference(defaultMesh(),false);
+  auto* cartesian_info = ICartesianMeshGenerationInfo::getReference(defaultMesh(), false);
   if (!cartesian_info)
     ARCANE_FATAL("No cartesian info");
 
@@ -795,9 +804,9 @@ _printCartesianMeshInfos()
   info() << " Length=" << cartesian_info->globalLength();
 
   if (options()->expectedMeshOrigin.isPresent())
-    _checkNearlyEqual(cartesian_info->globalOrigin(),options()->expectedMeshOrigin(),"Origin");
+    _checkNearlyEqual(cartesian_info->globalOrigin(), options()->expectedMeshOrigin(), "Origin");
   if (options()->expectedMeshLength.isPresent())
-    _checkNearlyEqual(cartesian_info->globalLength(),options()->expectedMeshLength(),"Length");
+    _checkNearlyEqual(cartesian_info->globalLength(), options()->expectedMeshLength(), "Length");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -6,27 +6,36 @@
 //-----------------------------------------------------------------------------
 #ifndef ARCANE_TESTS_IMATERIALEQUATIONOFSTATE_H
 #define ARCANE_TESTS_IMATERIALEQUATIONOFSTATE_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/ItemTypes.h"
+#include "arcane/core/VariableTypedef.h"
 
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace MaterialEos
 {
 using namespace Arcane;
 using namespace Arcane::Materials;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Interface for the equation of state calculation model service.
 class IMaterialEquationOfState
 {
  public:
+
   /** Class destructor */
   virtual ~IMaterialEquationOfState() = default;
 
  public:
+
   /*!
    *  Initializes the equation of state for the mesh group passed as argument
    *  and calculates the sound speed and internal energy.
@@ -35,8 +44,7 @@ class IMaterialEquationOfState
                        const MaterialVariableCellReal& pressure,
                        const MaterialVariableCellReal& density,
                        MaterialVariableCellReal& internal_energy,
-                       MaterialVariableCellReal& sound_speed
-                       ) =0;
+                       MaterialVariableCellReal& sound_speed) = 0;
   /*!
    *  Applies the equation of state to the mesh group passed as argument
    *  and calculates the sound speed and pressure.
@@ -45,11 +53,13 @@ class IMaterialEquationOfState
                         const MaterialVariableCellReal& density,
                         const MaterialVariableCellReal& internal_energy,
                         MaterialVariableCellReal& pressure,
-                        MaterialVariableCellReal& sound_speed
-                        ) = 0;
+                        MaterialVariableCellReal& sound_speed) = 0;
 };
 
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace MaterialEos
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

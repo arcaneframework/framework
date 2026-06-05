@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,10 +24,10 @@
 #include "arcane/utils/Array4View.h"
 #include "arcane/utils/MemoryAllocator.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/FactoryService.h"
-#include "arcane/Timer.h"
-#include "arcane/ServiceFinder2.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/ServiceFinder2.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -42,69 +42,76 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class Wrapper
 {
  public:
+
   static Integer nb_new;
+
  public:
+
   Wrapper()
   : m_value(new DataType)
-    {
-      (*m_value) = DataType();
-      ++nb_new;
-    }
+  {
+    (*m_value) = DataType();
+    ++nb_new;
+  }
   Wrapper(DataType data)
   : m_value(new DataType(data))
-    {
-      ++nb_new;
-    }
+  {
+    ++nb_new;
+  }
   Wrapper(const Wrapper<DataType>& rhs)
   : m_value(new DataType(rhs.value()))
-    {
-      ++nb_new;
-    }
+  {
+    ++nb_new;
+  }
   ~Wrapper()
-    {
-      delete m_value;
-      --nb_new;
-    }
+  {
+    delete m_value;
+    --nb_new;
+  }
+
  public:
-  operator DataType ()
-    {
-      return *m_value;
-    }
+
+  operator DataType()
+  {
+    return *m_value;
+  }
   void operator=(DataType v)
-    {
-      *m_value = v;
-    }
+  {
+    *m_value = v;
+  }
   void operator=(const Wrapper<DataType>& v)
-    {
-      *m_value = v.value();
-    }
+  {
+    *m_value = v.value();
+  }
   bool operator==(const Wrapper<DataType>& rhs) const
-    {
-      return (*m_value) == (*rhs.m_value);
-    }
+  {
+    return (*m_value) == (*rhs.m_value);
+  }
   bool operator==(const DataType& rhs) const
-    {
-      return (*m_value) == rhs;
-    }
+  {
+    return (*m_value) == rhs;
+  }
   DataType value() const { return *m_value; }
+
  private:
+
   DataType* m_value;
 };
 
-template<typename DataType> Integer Wrapper<DataType>::nb_new = 0;
+template <typename DataType> Integer Wrapper<DataType>::nb_new = 0;
 
-template<class T> inline std::ostream&
-operator<<(std::ostream& o,const Wrapper<T>& v)
+template <class T> inline std::ostream&
+operator<<(std::ostream& o, const Wrapper<T>& v)
 {
   o << v.value();
   return o;
 }
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -123,53 +130,54 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class Array2UnitTest
 : public TraceAccessor
 {
  public:
+
   Array2UnitTest(ITraceMng* tm)
   : TraceAccessor(tm)
   {
   }
 
   void _printArray(const Array2<DataType>& array)
-    {
-      OStringStream ostr;
-      Integer n1 = array.dim1Size();
-      Integer n2 = array.dim2Size();
-      ostr() << " Dim1=" << n1
-             << " Dim2=" << n2
-             << "\n";
-      for( Integer i=0; i<n1; ++i ){
-        ostr() << " I=[" << i << "] ->";
-        for( Integer j=0; j<n2; ++j )
-          ostr() << " [" << j << "]=" << array[i][j];
-        ostr() << "\n";
-      }
+  {
+    OStringStream ostr;
+    Integer n1 = array.dim1Size();
+    Integer n2 = array.dim2Size();
+    ostr() << " Dim1=" << n1
+           << " Dim2=" << n2
+           << "\n";
+    for (Integer i = 0; i < n1; ++i) {
+      ostr() << " I=[" << i << "] ->";
+      for (Integer j = 0; j < n2; ++j)
+        ostr() << " [" << j << "]=" << array[i][j];
       ostr() << "\n";
-      info() << ostr.str();
     }
+    ostr() << "\n";
+    info() << ostr.str();
+  }
   void _setArray(Array2<DataType>& array)
-    {
-      Integer n1 = array.dim1Size();
-      Integer n2 = array.dim2Size();
-      for( Integer i=0; i<n1; ++i )
-        for( Integer j=0; j<n2; ++j )
-          array[i][j] = (double)((i*n2)+j);
-    }
-  void _checkArray(Array2<DataType>& array,Integer original_dim2,Integer dim1,Integer dim2)
-    {
-      double total = DataType();
-      for( Integer i=0; i<dim1; ++i )
-        for( Integer j=0; j<dim2; ++j ){
-          double v = (i*original_dim2)+j;
-          info() << "VALUE i=" << i << " j=" << j << " v=" << v << " a=" << array[i][j];
-          _check(array[i][j]==DataType(v),"Bad value");
-          total += array[i][j];
-        }
-      info() << "TOTAL = " << total;
-    }
+  {
+    Integer n1 = array.dim1Size();
+    Integer n2 = array.dim2Size();
+    for (Integer i = 0; i < n1; ++i)
+      for (Integer j = 0; j < n2; ++j)
+        array[i][j] = (double)((i * n2) + j);
+  }
+  void _checkArray(Array2<DataType>& array, Integer original_dim2, Integer dim1, Integer dim2)
+  {
+    double total = DataType();
+    for (Integer i = 0; i < dim1; ++i)
+      for (Integer j = 0; j < dim2; ++j) {
+        double v = (i * original_dim2) + j;
+        info() << "VALUE i=" << i << " j=" << j << " v=" << v << " a=" << array[i][j];
+        _check(array[i][j] == DataType(v), "Bad value");
+        total += array[i][j];
+      }
+    info() << "TOTAL = " << total;
+  }
   void doTest()
   {
     {
@@ -183,52 +191,52 @@ class Array2UnitTest
       UniqueArray2<DataType> array;
       info() << array.dim1Size();
       info() << array.dim2Size();
-      array.resize(5,2);
-      _check(array.dim1Size()==5,"Bad dim1size");
-      _check(array.dim2Size()==2,"Bad dim2size");
+      array.resize(5, 2);
+      _check(array.dim1Size() == 5, "Bad dim1size");
+      _check(array.dim2Size() == 2, "Bad dim2size");
       _printArray(array);
     }
     {
       info() << "Test 3";
-      UniqueArray2<DataType> array(5,2);
+      UniqueArray2<DataType> array(5, 2);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
       _printArray(array);
-      _check(array.dim1Size()==5,"Bad dim1size");
-      _check(array.dim2Size()==2,"Bad dim2size");
+      _check(array.dim1Size() == 5, "Bad dim1size");
+      _check(array.dim2Size() == 2, "Bad dim2size");
     }
     {
       info() << "Test 4";
       UniqueArray2<DataType> array;
-      array.resize(5,3);
+      array.resize(5, 3);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
-      _check(array.dim1Size()==5,"Bad size");
-      _check(array.dim2Size()==3,"Bad dim2size");
+      _check(array.dim1Size() == 5, "Bad size");
+      _check(array.dim2Size() == 3, "Bad dim2size");
       _setArray(array);
-      _checkArray(array,3,5,3);
-      
+      _checkArray(array, 3, 5, 3);
+
       // Test size reduction
-      array.resize(7,2);
+      array.resize(7, 2);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
-      _check(array.dim1Size()==7,"Bad size (1)");
-      _check(array.dim2Size()==2,"Bad dim2size (1)");
-      _checkArray(array,3,5,2);
+      _check(array.dim1Size() == 7, "Bad size (1)");
+      _check(array.dim2Size() == 2, "Bad dim2size (1)");
+      _checkArray(array, 3, 5, 2);
       info() << " NB NEW1=" << Wrapper<Real>::nb_new;
 
       // Test size augmentation
-      array.resize(9,5);
+      array.resize(9, 5);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
       _printArray(array);
-      _check(array.dim1Size()==9,"Bad size (2)");
-      _check(array.dim2Size()==5,"Bad dim2size (2)");
-      _checkArray(array,3,5,2);
+      _check(array.dim1Size() == 9, "Bad size (2)");
+      _check(array.dim2Size() == 5, "Bad dim2size (2)");
+      _checkArray(array, 3, 5, 2);
       info() << " NB NEW2=" << Wrapper<Real>::nb_new;
 
       // Test size reduction of the first dimension
-      array.resize(7,5);
+      array.resize(7, 5);
       info() << "D1=" << array.dim1Size() << " D2=" << array.dim2Size();
-      _check(array.dim1Size()==7,"Bad size (3)");
-      _check(array.dim2Size()==5,"Bad dim2size (3)");
-      _checkArray(array,3,5,2);
+      _check(array.dim1Size() == 7, "Bad size (3)");
+      _check(array.dim2Size() == 5, "Bad dim2size (3)");
+      _checkArray(array, 3, 5, 2);
       info() << " NB NEW3=" << Wrapper<Real>::nb_new;
     }
 
@@ -236,16 +244,16 @@ class Array2UnitTest
       info() << "Test 5.1";
       UniqueArray2<DataType> array;
       info() << array.dim2Size();
-      array.resize(0,5);
-      _check(array.dim1Size()==0,"Bad size (3)");
-      _check(array.dim2Size()==5,"Bad dim2size (3)");
-      array.resize(3,5);
+      array.resize(0, 5);
+      _check(array.dim1Size() == 0, "Bad size (3)");
+      _check(array.dim2Size() == 5, "Bad dim2size (3)");
+      array.resize(3, 5);
       _printArray(array);
       array.add(DataType(6.3));
       _printArray(array);
-      for( Integer j=0; j<5; ++j ){
+      for (Integer j = 0; j < 5; ++j) {
         info() << "j=" << j << " v=" << array[3][j];
-        _check(array[3][j]==ARCANE_REAL(6.3),"Bad value (4)");
+        _check(array[3][j] == ARCANE_REAL(6.3), "Bad value (4)");
       }
     }
 
@@ -255,20 +263,20 @@ class Array2UnitTest
       info() << "Test 5.2";
       UniqueArray2<DataType> array;
       info() << array.dim2Size();
-      array.resize(50,0);
-      _check(array.dim1Size()==50,"Bad size (4.1)");
-      _check(array.dim2Size()==0,"Bad dim2size (4.1)");
+      array.resize(50, 0);
+      _check(array.dim1Size() == 50, "Bad size (4.1)");
+      _check(array.dim2Size() == 0, "Bad dim2size (4.1)");
       UniqueArray2<DataType> array2(array);
-      _check(array2.dim1Size()==50,"Bad size (4.2)");
-      _check(array2.dim2Size()==0,"Bad dim2size (4.2)");
+      _check(array2.dim1Size() == 50, "Bad size (4.2)");
+      _check(array2.dim2Size() == 0, "Bad dim2size (4.2)");
       UniqueArray2<DataType> array3;
       array3 = array;
-      _check(array3.dim1Size()==50,"Bad size (4.3)");
-      _check(array3.dim2Size()==0,"Bad dim2size (4.3)");
+      _check(array3.dim1Size() == 50, "Bad size (4.3)");
+      _check(array3.dim2Size() == 0, "Bad dim2size (4.3)");
       UniqueArray2<DataType> array4;
       array4.copy(array);
-      _check(array4.dim1Size()==50,"Bad size (4.4)");
-      _check(array4.dim2Size()==0,"Bad dim2size (4.4)");
+      _check(array4.dim1Size() == 50, "Bad size (4.4)");
+      _check(array4.dim2Size() == 0, "Bad dim2size (4.4)");
     }
 
     // Checks that ArrayImplBase::shared_null has not been touched
@@ -276,91 +284,92 @@ class Array2UnitTest
       info() << "Test 5.3";
       UniqueArray2<DataType> array;
       info() << array.dim1Size() << " " << array.dim2Size();
-      _check(array.dim1Size()==0,"Bad size (5)");
-      _check(array.dim2Size()==0,"Bad dim2size (5)");
+      _check(array.dim1Size() == 0, "Bad size (5)");
+      _check(array.dim2Size() == 0, "Bad dim2size (5)");
     }
   }
   void _fill(Array2<DataType>& array)
   {
     Integer dim1_size = array.dim1Size();
     Integer dim2_size = array.dim2Size();
-    for( Integer i=0; i<dim1_size; ++i ){
-      for( Integer j=0; j<dim2_size; ++j ){
-        array[i][j] = (DataType)(i*j);
+    for (Integer i = 0; i < dim1_size; ++i) {
+      for (Integer j = 0; j < dim2_size; ++j) {
+        array[i][j] = (DataType)(i * j);
       }
     }
   }
-  void _checkSame(Array2<DataType>& array1,Array2<DataType>& array2)
+  void _checkSame(Array2<DataType>& array1, Array2<DataType>& array2)
   {
     Integer dim1_size = array1.dim1Size();
     Integer dim2_size = array1.dim2Size();
     Integer dim1_size_2 = array2.dim1Size();
     Integer dim2_size_2 = array2.dim2Size();
-    _check(dim1_size==dim1_size_2,"Bad same size");
-    _check(dim2_size==dim2_size_2,"Bad same size");
-    for( Integer i=0; i<dim1_size; ++i ){
-      for( Integer j=0; j<dim2_size; ++j ){
-        _check(array1[i][j]==array2[i][j],"Bad value");
+    _check(dim1_size == dim1_size_2, "Bad same size");
+    _check(dim2_size == dim2_size_2, "Bad same size");
+    for (Integer i = 0; i < dim1_size; ++i) {
+      for (Integer j = 0; j < dim2_size; ++j) {
+        _check(array1[i][j] == array2[i][j], "Bad value");
       }
     }
   }
-  void _check(bool expression,const String& message)
-    {
-      if (!expression)
-        throw FatalErrorException("Array2UnitTest::_check()",message);
-    }
+  void _check(bool expression, const String& message)
+  {
+    if (!expression)
+      throw FatalErrorException("Array2UnitTest::_check()", message);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class UniqueArray2UnitTest
 : public TraceAccessor
 {
  public:
+
   UniqueArray2UnitTest(ITraceMng* tm)
   : TraceAccessor(tm)
   {
   }
 
   void _printArray(const UniqueArray2<DataType>& array)
-    {
-      OStringStream ostr;
-      Integer n1 = array.dim1Size();
-      Integer n2 = array.dim2Size();
-      ostr() << " Dim1=" << n1
-             << " Dim2=" << n2
-             << "\n";
-      for( Integer i=0; i<n1; ++i ){
-        ostr() << " I=[" << i << "] ->";
-        for( Integer j=0; j<n2; ++j )
-          ostr() << " [" << j << "]=" << array[i][j];
-        ostr() << "\n";
-      }
+  {
+    OStringStream ostr;
+    Integer n1 = array.dim1Size();
+    Integer n2 = array.dim2Size();
+    ostr() << " Dim1=" << n1
+           << " Dim2=" << n2
+           << "\n";
+    for (Integer i = 0; i < n1; ++i) {
+      ostr() << " I=[" << i << "] ->";
+      for (Integer j = 0; j < n2; ++j)
+        ostr() << " [" << j << "]=" << array[i][j];
       ostr() << "\n";
-      info() << ostr.str();
     }
+    ostr() << "\n";
+    info() << ostr.str();
+  }
   void _setArray(UniqueArray2<DataType>& array)
-    {
-      Integer n1 = array.dim1Size();
-      Integer n2 = array.dim2Size();
-      for( Integer i=0; i<n1; ++i )
-        for( Integer j=0; j<n2; ++j )
-          array[i][j] = (double)((i*n2)+j);
-    }
-  void _checkArray(UniqueArray2<DataType>& array,Integer original_dim2,Integer dim1,Integer dim2)
-    {
-      double total = DataType();
-      for( Integer i=0; i<dim1; ++i )
-        for( Integer j=0; j<dim2; ++j ){
-          double v = (i*original_dim2)+j;
-          info() << "VALUE i=" << i << " j=" << j << " v=" << v << " a=" << array[i][j];
-          _check(array[i][j]==DataType(v),"Bad value");
-          total += array[i][j];
-        }
-      info() << "TOTAL = " << total;
-    }
+  {
+    Integer n1 = array.dim1Size();
+    Integer n2 = array.dim2Size();
+    for (Integer i = 0; i < n1; ++i)
+      for (Integer j = 0; j < n2; ++j)
+        array[i][j] = (double)((i * n2) + j);
+  }
+  void _checkArray(UniqueArray2<DataType>& array, Integer original_dim2, Integer dim1, Integer dim2)
+  {
+    double total = DataType();
+    for (Integer i = 0; i < dim1; ++i)
+      for (Integer j = 0; j < dim2; ++j) {
+        double v = (i * original_dim2) + j;
+        info() << "VALUE i=" << i << " j=" << j << " v=" << v << " a=" << array[i][j];
+        _check(array[i][j] == DataType(v), "Bad value");
+        total += array[i][j];
+      }
+    info() << "TOTAL = " << total;
+  }
 
   void _testSwap(bool use_own_swap)
   {
@@ -369,61 +378,61 @@ class UniqueArray2UnitTest
     info() << "TestSwap use_own_swap=" << use_own_swap;
 
     // Normally, the pointers of the 2 arrays should just be swapped.
-    UniqueArray2<DataType> c1(7,5);
+    UniqueArray2<DataType> c1(7, 5);
     DataType* x1 = c1.viewAsArray().data();
     info() << "** C1_this = " << &c1;
     info() << "** C1_BASE = " << x1;
-    UniqueArray2<DataType> c2(3,4);
+    UniqueArray2<DataType> c2(3, 4);
     DataType* x2 = c2.viewAsArray().data();
     info() << "** C2_this = " << &c2;
     info() << "** C2_BASE = " << x2;
 
     if (use_own_swap)
-      swap(c1,c2);
+      swap(c1, c2);
     else
-      std::swap(c1,c2);
+      std::swap(c1, c2);
 
     DataType* after_x1 = c1.viewAsArray().data();
     DataType* after_x2 = c2.viewAsArray().data();
     info() << "** C1_BASE_AFTER = " << after_x1 << " size=" << c1.dim1Size();
     info() << "** C2_BASE_AFTER = " << after_x2 << " size=" << c2.dim1Size();
 
-    _check(x1==after_x2,"Bad value after swap [1]");
-    _check(x2==after_x1,"Bad value after swap [2]");
-    _check(c1.dim1Size()==3,"Bad value after swap [3]");
-    _check(c2.dim1Size()==7,"Bad value after swap [4]");
+    _check(x1 == after_x2, "Bad value after swap [1]");
+    _check(x2 == after_x1, "Bad value after swap [2]");
+    _check(c1.dim1Size() == 3, "Bad value after swap [3]");
+    _check(c2.dim1Size() == 7, "Bad value after swap [4]");
   }
   void _doTestWithAllocator(IMemoryAllocator* allocator)
   {
     info() << "Test with allocator v=" << allocator;
 
     UniqueArray2<DataType> array(allocator);
-    array.resize(5,3);
-    _check(array.dim1Size()==5,"Bad size");
-    _check(array.dim2Size()==3,"Bad dim2size");
+    array.resize(5, 3);
+    _check(array.dim1Size() == 5, "Bad size");
+    _check(array.dim2Size() == 3, "Bad dim2size");
     _setArray(array);
-    _checkArray(array,3,5,3);
+    _checkArray(array, 3, 5, 3);
 
     // Test size reduction
-    array.resize(7,2);
-    _check(array.dim1Size()==7,"Bad size (2)");
-    _check(array.dim2Size()==2,"Bad dim2size (1)");
-    _checkArray(array,3,5,2);
+    array.resize(7, 2);
+    _check(array.dim1Size() == 7, "Bad size (2)");
+    _check(array.dim2Size() == 2, "Bad dim2size (1)");
+    _checkArray(array, 3, 5, 2);
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
     // Test size augmentation
-    array.resize(9,5);
-    _check(array.dim1Size()==9,"Bad size (2)");
-    _check(array.dim2Size()==5,"Bad dim2size (1)");
-    _checkArray(array,3,5,2);
+    array.resize(9, 5);
+    _check(array.dim1Size() == 9, "Bad size (2)");
+    _check(array.dim2Size() == 5, "Bad dim2size (1)");
+    _checkArray(array, 3, 5, 2);
     _printArray(array);
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
     // Test size reduction of the first dimension
-    array.resize(7,5);
-    _check(array.dim1Size()==7,"Bad size (2)");
-    _check(array.dim2Size()==5,"Bad dim2size (1)");
-    _checkArray(array,3,5,2);
+    array.resize(7, 5);
+    _check(array.dim1Size() == 7, "Bad size (2)");
+    _check(array.dim2Size() == 5, "Bad dim2size (1)");
+    _checkArray(array, 3, 5, 2);
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
   }
 
@@ -443,17 +452,17 @@ class UniqueArray2UnitTest
       UniqueArray2<DataType> array;
       info() << array.dim1Size();
       info() << array.dim2Size();
-      array.resize(5,2);
-      _check(array.dim1Size()==5,"Bad dim1size");
-      _check(array.dim2Size()==2,"Bad dim2size");
+      array.resize(5, 2);
+      _check(array.dim1Size() == 5, "Bad dim1size");
+      _check(array.dim2Size() == 2, "Bad dim2size");
       _printArray(array);
     }
     {
-      UniqueArray2<DataType> array(5,2);
+      UniqueArray2<DataType> array(5, 2);
       info() << array.dim1Size();
       info() << array.dim2Size();
-      _check(array.dim1Size()==5,"Bad dim1size");
-      _check(array.dim2Size()==2,"Bad dim2size");
+      _check(array.dim1Size() == 5, "Bad dim1size");
+      _check(array.dim2Size() == 2, "Bad dim2size");
       _printArray(array);
     }
     {
@@ -464,55 +473,55 @@ class UniqueArray2UnitTest
     {
       UniqueArray2<DataType> array;
       info() << array.dim2Size();
-      array.resize(0,5);
-      _check(array.dim1Size()==0,"Bad size (3)");
-      _check(array.dim2Size()==5,"Bad dim2size (3)");
-      array.resize(3,5);
+      array.resize(0, 5);
+      _check(array.dim1Size() == 0, "Bad size (3)");
+      _check(array.dim2Size() == 5, "Bad dim2size (3)");
+      array.resize(3, 5);
       _printArray(array);
       array.add(DataType(6.3));
       _printArray(array);
-      for( Integer j=0; j<5; ++j ){
+      for (Integer j = 0; j < 5; ++j) {
         info() << "j=" << j << " v=" << array[3][j];
-        _check(array[3][j]==ARCANE_REAL(6.3),"Bad value (4)");
+        _check(array[3][j] == ARCANE_REAL(6.3), "Bad value (4)");
       }
     }
 
     // Test clone
     {
       UniqueArray2<DataType> array;
-      array.resize(3,5);
+      array.resize(3, 5);
       _fill(array);
       {
         UniqueArray2<DataType> cloned_array(array.clone());
-        _checkSame(array,cloned_array);
+        _checkSame(array, cloned_array);
       }
       {
         UniqueArray2<DataType> implicit_cloned_array(array);
-        _checkSame(array,implicit_cloned_array);
+        _checkSame(array, implicit_cloned_array);
         Real old_value = implicit_cloned_array[2][3];
         implicit_cloned_array[2][3] = 1.0;
-        _check(array[2][3]==old_value,"Bad implicit clone");
+        _check(array[2][3] == old_value, "Bad implicit clone");
         const void* r1 = array.viewAsArray().unguardedBasePointer();
         const void* r2 = implicit_cloned_array.viewAsArray().unguardedBasePointer();
-        _check(r1!=r2,"Bad same pointer");          
+        _check(r1 != r2, "Bad same pointer");
       }
       array.clear();
       info() << "ARRAY SIZE=" << array.dim1Size() << " " << array.dim2Size();
       UniqueArray2<DataType> new_array;
       info() << "NEW ARRAY SIZE=" << new_array.dim1Size() << " " << new_array.dim2Size();
-      _check(array.dim1Size()==0,"Bad size1 (test clone)");
-      _check(array.dim2Size()==0,"Bad size2 (test clone)");
+      _check(array.dim1Size() == 0, "Bad size1 (test clone)");
+      _check(array.dim2Size() == 0, "Bad size2 (test clone)");
     }
 
     // Test copy
     {
       UniqueArray2<DataType> array;
-      array.resize(3,5);
+      array.resize(3, 5);
       _fill(array);
       {
         UniqueArray2<DataType> copy_array;
         copy_array.copy(array);
-        _checkSame(array,copy_array);
+        _checkSame(array, copy_array);
       }
     }
 
@@ -524,7 +533,7 @@ class UniqueArray2UnitTest
 
     // Test std::move() with the same origin and destination
     {
-      UniqueArray2<DataType> c1(7,5);
+      UniqueArray2<DataType> c1(7, 5);
       DataType* x1 = c1.viewAsArray().data();
       info() << "** C1_this = " << &c1 << "\n";
       c1 = std::move(c1);
@@ -532,92 +541,93 @@ class UniqueArray2UnitTest
       info() << "** C1_BASE_AFTER = " << after_x1
              << " dim1size=" << c1.dim1Size()
              << " dim2size=" << c1.dim2Size();
-      _check(x1==after_x1,"Bad value after same std::move() [1]");
+      _check(x1 == after_x1, "Bad value after same std::move() [1]");
       // Dump the array to verify that the addresses are valid.
-      dumpArray(std::cout,c1.viewAsArray().constView(),0);
+      dumpArray(std::cout, c1.viewAsArray().constView(), 0);
     }
   }
   void _fill(Array2<DataType>& array)
   {
     Integer dim1_size = array.dim1Size();
     Integer dim2_size = array.dim2Size();
-    for( Integer i=0; i<dim1_size; ++i ){
-      for( Integer j=0; j<dim2_size; ++j ){
-        array[i][j] = (DataType)(i*j);
+    for (Integer i = 0; i < dim1_size; ++i) {
+      for (Integer j = 0; j < dim2_size; ++j) {
+        array[i][j] = (DataType)(i * j);
       }
     }
   }
-  void _checkSame(Array2<DataType>& array1,Array2<DataType>& array2)
+  void _checkSame(Array2<DataType>& array1, Array2<DataType>& array2)
   {
     Integer dim1_size = array1.dim1Size();
     Integer dim2_size = array1.dim2Size();
     Integer dim1_size_2 = array2.dim1Size();
     Integer dim2_size_2 = array2.dim2Size();
-    _check(dim1_size==dim1_size_2,"Bad same size");
-    _check(dim2_size==dim2_size_2,"Bad same size");
-    for( Integer i=0; i<dim1_size; ++i ){
-      for( Integer j=0; j<dim2_size; ++j ){
-        _check(array1[i][j]==array2[i][j],"Bad value");
+    _check(dim1_size == dim1_size_2, "Bad same size");
+    _check(dim2_size == dim2_size_2, "Bad same size");
+    for (Integer i = 0; i < dim1_size; ++i) {
+      for (Integer j = 0; j < dim2_size; ++j) {
+        _check(array1[i][j] == array2[i][j], "Bad value");
       }
     }
   }
-  void _check(bool expression,const String& message)
-    {
-      if (!expression)
-        throw FatalErrorException(A_FUNCINFO,message);
-    }
+  void _check(bool expression, const String& message)
+  {
+    if (!expression)
+      throw FatalErrorException(A_FUNCINFO, message);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class SharedArray2UnitTest
 : public TraceAccessor
 {
  public:
+
   SharedArray2UnitTest(ITraceMng* tm)
   : TraceAccessor(tm)
   {
   }
 
   void _printArray(const SharedArray2<DataType>& array)
-    {
-      OStringStream ostr;
-      Integer n1 = array.dim1Size();
-      Integer n2 = array.dim2Size();
-      ostr() << " Dim1=" << n1
-             << " Dim2=" << n2
-             << "\n";
-      for( Integer i=0; i<n1; ++i ){
-        ostr() << " I=[" << i << "] ->";
-        for( Integer j=0; j<n2; ++j )
-          ostr() << " [" << j << "]=" << array[i][j];
-        ostr() << "\n";
-      }
+  {
+    OStringStream ostr;
+    Integer n1 = array.dim1Size();
+    Integer n2 = array.dim2Size();
+    ostr() << " Dim1=" << n1
+           << " Dim2=" << n2
+           << "\n";
+    for (Integer i = 0; i < n1; ++i) {
+      ostr() << " I=[" << i << "] ->";
+      for (Integer j = 0; j < n2; ++j)
+        ostr() << " [" << j << "]=" << array[i][j];
       ostr() << "\n";
-      info() << ostr.str();
     }
+    ostr() << "\n";
+    info() << ostr.str();
+  }
   void _setArray(SharedArray2<DataType>& array)
-    {
-      Integer n1 = array.dim1Size();
-      Integer n2 = array.dim2Size();
-      for( Integer i=0; i<n1; ++i )
-        for( Integer j=0; j<n2; ++j )
-          array[i][j] = (double)((i*n2)+j);
-    }
-  void _checkArray(SharedArray2<DataType>& array,Integer original_dim2,Integer dim1,Integer dim2)
-    {
-      double total = DataType();
-      for( Integer i=0; i<dim1; ++i )
-        for( Integer j=0; j<dim2; ++j ){
-          double v = (i*original_dim2)+j;
-          info() << "VALUE i=" << i << " j=" << j << " v=" << v << " a=" << array[i][j];
-          _check(array[i][j]==DataType(v),"Bad value");
-          total += array[i][j];
-        }
-      info() << "TOTAL = " << total;
-    }
+  {
+    Integer n1 = array.dim1Size();
+    Integer n2 = array.dim2Size();
+    for (Integer i = 0; i < n1; ++i)
+      for (Integer j = 0; j < n2; ++j)
+        array[i][j] = (double)((i * n2) + j);
+  }
+  void _checkArray(SharedArray2<DataType>& array, Integer original_dim2, Integer dim1, Integer dim2)
+  {
+    double total = DataType();
+    for (Integer i = 0; i < dim1; ++i)
+      for (Integer j = 0; j < dim2; ++j) {
+        double v = (i * original_dim2) + j;
+        info() << "VALUE i=" << i << " j=" << j << " v=" << v << " a=" << array[i][j];
+        _check(array[i][j] == DataType(v), "Bad value");
+        total += array[i][j];
+      }
+    info() << "TOTAL = " << total;
+  }
   void doTest()
   {
     {
@@ -629,106 +639,106 @@ class SharedArray2UnitTest
       SharedArray2<DataType> array;
       info() << array.dim1Size();
       info() << array.dim2Size();
-      array.resize(5,2);
-      _check(array.dim1Size()==5,"Bad dim1size");
-      _check(array.dim2Size()==2,"Bad dim2size");
+      array.resize(5, 2);
+      _check(array.dim1Size() == 5, "Bad dim1size");
+      _check(array.dim2Size() == 2, "Bad dim2size");
       _printArray(array);
     }
     {
-      SharedArray2<DataType> array(5,2);
+      SharedArray2<DataType> array(5, 2);
       info() << array.dim1Size();
       info() << array.dim2Size();
-      _check(array.dim1Size()==5,"Bad dim1size");
-      _check(array.dim2Size()==2,"Bad dim2size");
+      _check(array.dim1Size() == 5, "Bad dim1size");
+      _check(array.dim2Size() == 2, "Bad dim2size");
       _printArray(array);
     }
     {
       SharedArray2<DataType> array;
-      array.resize(5,3);
-      _check(array.dim1Size()==5,"Bad size");
-      _check(array.dim2Size()==3,"Bad dim2size");
+      array.resize(5, 3);
+      _check(array.dim1Size() == 5, "Bad size");
+      _check(array.dim2Size() == 3, "Bad dim2size");
       _setArray(array);
-      _checkArray(array,3,5,3);
-      
+      _checkArray(array, 3, 5, 3);
+
       // Test reduction of size
-      array.resize(7,2);
-      _check(array.dim1Size()==7,"Bad size (2)");
-      _check(array.dim2Size()==2,"Bad dim2size (1)");
-      _checkArray(array,3,5,2);
+      array.resize(7, 2);
+      _check(array.dim1Size() == 7, "Bad size (2)");
+      _check(array.dim2Size() == 2, "Bad dim2size (1)");
+      _checkArray(array, 3, 5, 2);
       info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
       // Test size increase
-      array.resize(9,5);
-      _check(array.dim1Size()==9,"Bad size (2)");
-      _check(array.dim2Size()==5,"Bad dim2size (1)");
-      _checkArray(array,3,5,2);
+      array.resize(9, 5);
+      _check(array.dim1Size() == 9, "Bad size (2)");
+      _check(array.dim2Size() == 5, "Bad dim2size (1)");
+      _checkArray(array, 3, 5, 2);
       _printArray(array);
       info() << " NB NEW=" << Wrapper<Real>::nb_new;
 
       // Test reduction of size of the first dimension
-      array.resize(7,5);
-      _check(array.dim1Size()==7,"Bad size (2)");
-      _check(array.dim2Size()==5,"Bad dim2size (1)");
-      _checkArray(array,3,5,2);
+      array.resize(7, 5);
+      _check(array.dim1Size() == 7, "Bad size (2)");
+      _check(array.dim2Size() == 5, "Bad dim2size (1)");
+      _checkArray(array, 3, 5, 2);
       info() << " NB NEW=" << Wrapper<Real>::nb_new;
     }
 
     {
       SharedArray2<DataType> array;
       info() << array.dim2Size();
-      array.resize(0,5);
-      _check(array.dim1Size()==0,"Bad size (3)");
-      _check(array.dim2Size()==5,"Bad dim2size (3)");
-      array.resize(3,5);
+      array.resize(0, 5);
+      _check(array.dim1Size() == 0, "Bad size (3)");
+      _check(array.dim2Size() == 5, "Bad dim2size (3)");
+      array.resize(3, 5);
       _printArray(array);
       array.add(DataType(6.3));
       _printArray(array);
-      for( Integer j=0; j<5; ++j ){
+      for (Integer j = 0; j < 5; ++j) {
         info() << "j=" << j << " v=" << array[3][j];
-        _check(array[3][j]==ARCANE_REAL(6.3),"Bad value (4)");
+        _check(array[3][j] == ARCANE_REAL(6.3), "Bad value (4)");
       }
     }
 
     // Test clone
     {
       SharedArray2<DataType> array;
-      array.resize(3,5);
+      array.resize(3, 5);
       _fill(array);
       {
         SharedArray2<DataType> cloned_array(array.clone());
-        _checkSame(array,cloned_array);
+        _checkSame(array, cloned_array);
       }
       array = SharedArray2<DataType>();
       info() << "ARRAY SIZE=" << array.dim1Size() << " " << array.dim2Size();
       SharedArray2<DataType> new_array;
       info() << "NEW ARRAY SIZE=" << new_array.dim1Size() << " " << new_array.dim2Size();
-      _check(array.dim1Size()==0,"Bad size (test clone)");
+      _check(array.dim1Size() == 0, "Bad size (test clone)");
     }
 
     // Test shared
     {
       SharedArray2<DataType> array;
-      array.resize(3,5);
+      array.resize(3, 5);
       _fill(array);
 
       SharedArray2<DataType> new_array(array);
-      _checkSame(new_array,array);
+      _checkSame(new_array, array);
 
       // The arrays are shared and must have the same base pointer.
       const void* r1 = array.viewAsArray().unguardedBasePointer();
       const void* r2 = new_array.viewAsArray().unguardedBasePointer();
-      _check(r1==r2,"Bad same pointer");          
+      _check(r1 == r2, "Bad same pointer");
     }
 
     // Test copy
     {
       SharedArray2<DataType> array;
-      array.resize(3,5);
+      array.resize(3, 5);
       _fill(array);
       {
         SharedArray2<DataType> copy_array;
         copy_array.copy(array);
-        _checkSame(array,copy_array);
+        _checkSame(array, copy_array);
       }
     }
   }
@@ -736,41 +746,42 @@ class SharedArray2UnitTest
   {
     Integer dim1_size = array.dim1Size();
     Integer dim2_size = array.dim2Size();
-    for( Integer i=0; i<dim1_size; ++i ){
-      for( Integer j=0; j<dim2_size; ++j ){
-        array[i][j] = (DataType)(i*j);
+    for (Integer i = 0; i < dim1_size; ++i) {
+      for (Integer j = 0; j < dim2_size; ++j) {
+        array[i][j] = (DataType)(i * j);
       }
     }
   }
-  void _checkSame(SharedArray2<DataType>& array1,SharedArray2<DataType>& array2)
+  void _checkSame(SharedArray2<DataType>& array1, SharedArray2<DataType>& array2)
   {
     Integer dim1_size = array1.dim1Size();
     Integer dim2_size = array1.dim2Size();
     Integer dim1_size_2 = array2.dim1Size();
     Integer dim2_size_2 = array2.dim2Size();
-    _check(dim1_size==dim1_size_2,"Bad same size");
-    _check(dim2_size==dim2_size_2,"Bad same size");
-    for( Integer i=0; i<dim1_size; ++i ){
-      for( Integer j=0; j<dim2_size; ++j ){
-        _check(array1[i][j]==array2[i][j],"Bad value");
+    _check(dim1_size == dim1_size_2, "Bad same size");
+    _check(dim2_size == dim2_size_2, "Bad same size");
+    for (Integer i = 0; i < dim1_size; ++i) {
+      for (Integer j = 0; j < dim2_size; ++j) {
+        _check(array1[i][j] == array2[i][j], "Bad value");
       }
     }
   }
-  void _check(bool expression,const String& message)
-    {
-      if (!expression)
-        throw FatalErrorException("Array2UnitTest::_check()",message);
-    }
+  void _check(bool expression, const String& message)
+  {
+    if (!expression)
+      throw FatalErrorException("Array2UnitTest::_check()", message);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class MultiArray2UnitTest
 : public TraceAccessor
 {
  public:
+
   MultiArray2UnitTest(ITraceMng* tm)
   : TraceAccessor(tm)
   {
@@ -779,41 +790,41 @@ class MultiArray2UnitTest
   void _fill(MultiArray2<DataType>& array)
   {
     Integer dim1_size = array.dim1Size();
-    for( Integer i=0; i<dim1_size; ++i ){
+    for (Integer i = 0; i < dim1_size; ++i) {
       ArrayView<DataType> a = array[i];
       Integer dim2_size = a.size();
-      for( Integer j=0; j<dim2_size; ++j ){
-        array[i][j] = (DataType)(i*j);
+      for (Integer j = 0; j < dim2_size; ++j) {
+        array[i][j] = (DataType)(i * j);
       }
     }
   }
 
   void _printArray(const MultiArray2<DataType>& array)
-    {
-      OStringStream ostr;
-      Integer n1 = array.dim1Size();
-      ostr() << " MultiArray2 Total=" << array.totalNbElement() << " Dim1=" << n1
-             << "\n";
-      for( Integer i=0; i<n1; ++i ){
-        ostr() << " I=[" << i << "] ->";
-        ConstArrayView<DataType> sub_array = array[i];
-        Integer n2 = sub_array.size();
-        for( Integer j=0; j<n2; ++j )
-          ostr() << " [" << j << "]=" << array[i][j];
-        ostr() << "\n";
-      }
+  {
+    OStringStream ostr;
+    Integer n1 = array.dim1Size();
+    ostr() << " MultiArray2 Total=" << array.totalNbElement() << " Dim1=" << n1
+           << "\n";
+    for (Integer i = 0; i < n1; ++i) {
+      ostr() << " I=[" << i << "] ->";
+      ConstArrayView<DataType> sub_array = array[i];
+      Integer n2 = sub_array.size();
+      for (Integer j = 0; j < n2; ++j)
+        ostr() << " [" << j << "]=" << array[i][j];
       ostr() << "\n";
-      info() << ostr.str();
     }
+    ostr() << "\n";
+    info() << ostr.str();
+  }
   void _setArray(MultiArray2<DataType>& array)
-    {
-      Integer n1 = array.dim1Size();
-      for( Integer i=0; i<n1; ++i ){
-        Integer n2 = array[i].size();
-        for( Integer j=0; j<n2; ++j )
-          array[i][j] = (double)((i*n2)+j);
-      }
+  {
+    Integer n1 = array.dim1Size();
+    for (Integer i = 0; i < n1; ++i) {
+      Integer n2 = array[i].size();
+      for (Integer j = 0; j < n2; ++j)
+        array[i][j] = (double)((i * n2) + j);
     }
+  }
 #if 0
   void _CheckArray(Array2<DataType>& array,Integer original_dim2,Integer dim1,Integer dim2)
     {
@@ -829,33 +840,33 @@ class MultiArray2UnitTest
     }
 #endif
 
-  void _checkSame(MultiArray2<DataType>& array1,MultiArray2<DataType>& array2)
+  void _checkSame(MultiArray2<DataType>& array1, MultiArray2<DataType>& array2)
   {
     Integer dim1_size = array1.dim1Size();
     Integer dim2_size = array2.dim1Size();
-    _check(dim1_size==dim2_size,"Bad same size");
-    for( Integer i=0; i<dim1_size; ++i ){
+    _check(dim1_size == dim2_size, "Bad same size");
+    for (Integer i = 0; i < dim1_size; ++i) {
       ArrayView<DataType> a1 = array1[i];
       ArrayView<DataType> a2 = array2[i];
 
       Integer dim2_size1 = a1.size();
       Integer dim2_size2 = a2.size();
-      _check(dim2_size1==dim2_size2,"Bad dim2 size");
+      _check(dim2_size1 == dim2_size2, "Bad dim2 size");
 
-      for( Integer j=0; j<dim2_size1; ++j ){
-        _check(array1[i][j]==array2[i][j],"Bad value");
+      for (Integer j = 0; j < dim2_size1; ++j) {
+        _check(array1[i][j] == array2[i][j], "Bad value");
       }
     }
   }
 
-  void _checkSize(ConstMultiArray2View<DataType> array,IntegerConstArrayView expected_sizes)
+  void _checkSize(ConstMultiArray2View<DataType> array, IntegerConstArrayView expected_sizes)
   {
     IntegerConstArrayView dim2_sizes = array.dim2Sizes();
     Integer array_size = dim2_sizes.size();
     Integer size = expected_sizes.size();
-    _check(array_size==size,"Bad size");
-    for( Integer i=0; i<size; ++i ){
-      _check(dim2_sizes[i]==expected_sizes[i],"Bad dim2 size");
+    _check(array_size == size, "Bad size");
+    for (Integer i = 0; i < size; ++i) {
+      _check(dim2_sizes[i] == expected_sizes[i], "Bad dim2 size");
     }
   }
 
@@ -866,114 +877,114 @@ class MultiArray2UnitTest
 
       {
         IntegerUniqueArray sizes(5);
-        for( Integer i=0, is=sizes.size(); i<is; ++i )
-          sizes[i] = (5+i) % 5;
+        for (Integer i = 0, is = sizes.size(); i < is; ++i)
+          sizes[i] = (5 + i) % 5;
         array.resize(sizes);
 
         _printArray(array);
-        _checkSize(array,sizes);
+        _checkSize(array, sizes);
         _setArray(array);
         _printArray(array);
 
         // Verify a size increase
         sizes.resize(9);
-        for( Integer i=0, is=sizes.size(); i<is; ++i )
-          sizes[i] = (2+i) % 4;
+        for (Integer i = 0, is = sizes.size(); i < is; ++i)
+          sizes[i] = (2 + i) % 4;
         array.resize(sizes);
-        _checkSize(array,sizes);
+        _checkSize(array, sizes);
         _printArray(array);
         _setArray(array);
         _printArray(array);
 
         // Verify a size decrease
         sizes.resize(7);
-        for( Integer i=0, is=sizes.size(); i<is; ++i )
+        for (Integer i = 0, is = sizes.size(); i < is; ++i)
           sizes[i] = (i) % 5;
         array.resize(sizes);
-        _checkSize(array,sizes);
+        _checkSize(array, sizes);
         _printArray(array);
 
         // Verify a resize that does not change the size
         array.resize(sizes);
-        _checkSize(array,sizes);
+        _checkSize(array, sizes);
         _printArray(array);
       }
-      
+
       // Test clone
       {
         UniqueArray<Integer> sizes(5);
-        for( Integer i=0, n=sizes.size(); i<n; ++i )
-          sizes[i] = i+2;
+        for (Integer i = 0, n = sizes.size(); i < n; ++i)
+          sizes[i] = i + 2;
         SharedMultiArray2<DataType> array(sizes);
         _fill(array);
         {
           SharedMultiArray2<DataType> cloned_array(array.clone());
-          _checkSame(array,cloned_array);
+          _checkSame(array, cloned_array);
           // Modify the clone and verify that the original has not changed.
-          DataType zero{0};
+          DataType zero{ 0 };
           cloned_array[2][3] = zero;
-          _check(array[2][3]!=zero,"Bad value (test clone)");
+          _check(array[2][3] != zero, "Bad value (test clone)");
         }
         array = SharedMultiArray2<DataType>();
         SharedMultiArray2<DataType> new_array;
-        _check(array.dim1Size()==0,"Bad size (test clone)");
+        _check(array.dim1Size() == 0, "Bad size (test clone)");
       }
 
       // Test shared
       {
         UniqueArray<Integer> sizes(5);
-        for( Integer i=0, n=sizes.size(); i<n; ++i )
-          sizes[i] = i+2;
+        for (Integer i = 0, n = sizes.size(); i < n; ++i)
+          sizes[i] = i + 2;
         SharedMultiArray2<DataType> array(sizes);
         _fill(array);
 
         SharedMultiArray2<DataType> new_array(array);
-        _checkSame(new_array,array);
+        _checkSame(new_array, array);
         {
           // Modify the new reference and verify that the original has changed.
           new_array[2][3] = 0.0;
-          _check(array[2][3]==0.0,"Bad value (test shared)");
+          _check(array[2][3] == 0.0, "Bad value (test shared)");
         }
 
         // The arrays are shared and must have the same base pointer.
         const void* r1 = array.viewAsArray().unguardedBasePointer();
         const void* r2 = new_array.viewAsArray().unguardedBasePointer();
-        _check(r1==r2,"Bad same pointer");
+        _check(r1 == r2, "Bad same pointer");
       }
 
       // Test copy from a SharedArray
       {
         UniqueArray<Integer> sizes(5);
-        for( Integer i=0, n=sizes.size(); i<n; ++i )
-          sizes[i] = i+2;
+        for (Integer i = 0, n = sizes.size(); i < n; ++i)
+          sizes[i] = i + 2;
         SharedMultiArray2<DataType> array(sizes);
         _fill(array);
 
         {
           UniqueMultiArray2<DataType> new_array(array);
-          _checkSame(new_array,array);
+          _checkSame(new_array, array);
 
           // The arrays are not shared and must not have the same base pointer.
           const void* r1 = array.viewAsArray().unguardedBasePointer();
           const void* r2 = new_array.viewAsArray().unguardedBasePointer();
-          _check(r1!=r2,"Bad same pointer for unique array");
+          _check(r1 != r2, "Bad same pointer for unique array");
 
           {
             // Modify the new reference and verify that the original has not changed.
             new_array[2][3] = 0.0;
-            _check(array[2][3]!=0.0,"Bad value (test shared with unique array)");
+            _check(array[2][3] != 0.0, "Bad value (test shared with unique array)");
           }
         }
         {
           UniqueMultiArray2<DataType> new_array(array);
-          _checkSame(new_array,array);
+          _checkSame(new_array, array);
           new_array[2][3] = 0.0;
           UniqueMultiArray2<DataType> new2_array(new_array);
-          _checkSame(new2_array,new_array);
+          _checkSame(new2_array, new_array);
           new2_array[2][3] = -5.0;
           {
             // Modifies the new reference and checks that the original remains unchanged.
-            _check(new_array[2][3]==0.0,"Bad value (test clone unique array)");
+            _check(new_array[2][3] == 0.0, "Bad value (test clone unique array)");
           }
         }
       }
@@ -984,23 +995,22 @@ class MultiArray2UnitTest
         UniqueMultiArray2<Real> ma;
         Integer n = 10;
         d.resize(n);
-        for( Integer i=0; i<n; ++i ){
+        for (Integer i = 0; i < n; ++i) {
           d[i] = i % 3;
         }
         ma.resize(d);
         const UniqueMultiArray2<Real>& const_ma = ma;
-        for( Integer i=0; i<n; ++i ){
+        for (Integer i = 0; i < n; ++i) {
           ma[i].fill(0.0);
           info() << "S=" << const_ma[i].size();
         }
       }
-
     }
   }
-  void _check(bool expression,const String& message)
+  void _check(bool expression, const String& message)
   {
     if (!expression)
-      throw FatalErrorException("MutliArrayUnitTest::_check()",message);
+      throw FatalErrorException("MutliArrayUnitTest::_check()", message);
   }
 };
 
@@ -1009,54 +1019,57 @@ class MultiArray2UnitTest
 
 namespace ArrayUnitTestNamespace
 {
-class Index
-{
- public:
-  void createFromInteger(Integer i,Integer mid_size)
+  class Index
   {
-    m_array_index = i / mid_size;
-    m_value_index = i - (m_array_index*mid_size);
+   public:
+
+    void createFromInteger(Integer i, Integer mid_size)
+    {
+      m_array_index = i / mid_size;
+      m_value_index = i - (m_array_index * mid_size);
+    };
+
+   public:
+
+    Int32 m_array_index;
+    Int32 m_value_index;
   };
 
- public:
-  Int32 m_array_index;
-  Int32 m_value_index;
-};
+  template <typename DataType>
+  class ArrayList
+  {
+   public:
 
-template<typename DataType>
-class ArrayList
-{
- public:
+    void resize(Integer size)
+    {
+      m_array.resize(size);
+      m_views[0] = m_array.subView(0, size / 2);
+      m_views[1] = m_array.subView(size / 2, size / 2);
+    }
 
-  void resize(Integer size)
-  {
-    m_array.resize(size);
-    m_views[0] = m_array.subView(0,size/2);
-    m_views[1] = m_array.subView(size/2,size/2);
-  }
+   public:
 
- public:
-  const DataType operator[](Integer index) const
-  {
-    //return m_views[ index & 0x1 ][ index >> 1 ];
-    return m_views[ (index & (1<<30)) >> 30 ][ index & ~(1<<30) ];
-  }
-  const DataType operator[](Index index) const
-  {
-    return m_views[ index.m_array_index ][ index.m_value_index ];
-  }
-  void setValue(Integer index,const DataType& value)
-  {
-    m_views[ (index & (1<<30)) >> 30 ][ index & ~(1<<30) ] = value;
-  }
-  void setValue(Index index,const DataType& value)
-  {
-    m_views[ index.m_array_index ][ index.m_value_index ] = value;
-  }
-  ArrayView<DataType> m_views[2];
-  UniqueArray<DataType> m_array;
-};
-}
+    const DataType operator[](Integer index) const
+    {
+      //return m_views[ index & 0x1 ][ index >> 1 ];
+      return m_views[(index & (1 << 30)) >> 30][index & ~(1 << 30)];
+    }
+    const DataType operator[](Index index) const
+    {
+      return m_views[index.m_array_index][index.m_value_index];
+    }
+    void setValue(Integer index, const DataType& value)
+    {
+      m_views[(index & (1 << 30)) >> 30][index & ~(1 << 30)] = value;
+    }
+    void setValue(Index index, const DataType& value)
+    {
+      m_views[index.m_array_index][index.m_value_index] = value;
+    }
+    ArrayView<DataType> m_views[2];
+    UniqueArray<DataType> m_array;
+  };
+} // namespace ArrayUnitTestNamespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1070,7 +1083,10 @@ class ArrayUnitTest
   class BasicStruct
   {
    public:
-    BasicStruct(int v) : m_value(v){}
+
+    BasicStruct(int v)
+    : m_value(v)
+    {}
     int m_value;
   };
 
@@ -1100,11 +1116,11 @@ class ArrayUnitTest
   Real f8();
   Real f8_1();
   Real f8_2();
-  void _Add(RealArray& v,Integer new_size);
+  void _Add(RealArray& v, Integer new_size);
   void _TestArrayDim2();
   void _TestMultiArray2();
   void _TestPerfs();
-  void _check(bool expression,const String& message);
+  void _check(bool expression, const String& message);
   void _TestArray();
   void _TestInterval(Integer nb_interval);
   void _TestAddStruct();
@@ -1114,7 +1130,7 @@ class ArrayUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(ArrayUnitTest,IUnitTest,ArrayUnitTest);
+ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(ArrayUnitTest, IUnitTest, ArrayUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1133,15 +1149,16 @@ ArrayUnitTest::
 {
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ArrayTimer
 {
-  public:
+ public:
+
   ArrayTimer(const char* msg)
-  : m_begin_time(0.0), m_msg(msg)
+  : m_begin_time(0.0)
+  , m_msg(msg)
   {
     m_begin_time = platform::getRealTime();
   }
@@ -1194,21 +1211,21 @@ executeTest()
 /*---------------------------------------------------------------------------*/
 
 static const int NB_Z = 200;
-static const int SIZE = 15000*10;
-const int TRUE_SIZE = SIZE*3;
+static const int SIZE = 15000 * 10;
+const int TRUE_SIZE = SIZE * 3;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64ConstArrayView _viewInterval(Int64Array& array,Integer index,Integer nb_interval)
+Int64ConstArrayView _viewInterval(Int64Array& array, Integer index, Integer nb_interval)
 {
   Integer n = array.size();
   Integer isize = n / nb_interval;
   Integer ibegin = index * isize;
   // For the last interval, takes the remaining elements
-  if ((index+1)==nb_interval)
+  if ((index + 1) == nb_interval)
     isize = n - ibegin;
-  return Int64ConstArrayView(isize,array.data()+ibegin);
+  return Int64ConstArrayView(isize, array.data() + ibegin);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1217,19 +1234,19 @@ Int64ConstArrayView _viewInterval(Int64Array& array,Integer index,Integer nb_int
 void ArrayUnitTest::
 _TestArray()
 {
-  for( Integer i=1; i<13; ++i )
+  for (Integer i = 1; i < 13; ++i)
     _TestInterval(i);
 
   RealUniqueArray v(1200);
-  for( Integer i=0, n=v.size(); i<n; ++i ){
+  for (Integer i = 0, n = v.size(); i < n; ++i) {
     Real a = (Real)i;
-    v[i] = (a*a + 2.0);
+    v[i] = (a * a + 2.0);
   }
   info() << " ValueSize1= " << v.size() << " values=" << v;
   v.resize(240);
   info() << " ValueSize2= " << v.size() << " values=" << v;
   OStringStream ostr;
-  dumpArray(ostr(),v.constView(),100);
+  dumpArray(ostr(), v.constView(), 100);
   info() << " ValueSize3= " << ostr.str();
 }
 
@@ -1239,20 +1256,20 @@ _TestArray()
 void ArrayUnitTest::
 _TestInterval(Integer nb_interval)
 {
-  for( Integer n=0; n<100; ++n ){
+  for (Integer n = 0; n < 100; ++n) {
     UniqueArray<Int64> array(n);
     Int64 my_total = 0;
-    for( Integer i=0; i<n; ++i ){
-      array[i] = (i+1);
-      my_total += (i+1);
+    for (Integer i = 0; i < n; ++i) {
+      array[i] = (i + 1);
+      my_total += (i + 1);
     }
     Int64 interval_total = 0;
-    for( Integer i=0; i<nb_interval; ++i ){
-      Int64ConstArrayView v = array.view().subViewInterval(i,nb_interval);
-      for( Integer z=0, zs=v.size(); z<zs; ++z )
+    for (Integer i = 0; i < nb_interval; ++i) {
+      Int64ConstArrayView v = array.view().subViewInterval(i, nb_interval);
+      for (Integer z = 0, zs = v.size(); z < zs; ++z)
         interval_total += v[z];
     }
-    if (interval_total!=my_total)
+    if (interval_total != my_total)
       fatal() << "Bad total expected=" << my_total << " found=" << interval_total;
     info() << "Size=" << n << " interval=" << nb_interval << " total=" << my_total;
   }
@@ -1268,7 +1285,7 @@ typedef UniqueArray<Real3> Real3UniqueArray;
 typedef ArrayFullAccessorT<Real3> Real3ArrayFullAccessor;
 
 void ArrayUnitTest::
-_Add(RealArray& v,Integer new_size)
+_Add(RealArray& v, Integer new_size)
 {
   v.resize(new_size);
 }
@@ -1286,16 +1303,16 @@ f1()
   c.resize(TRUE_SIZE);
   d.resize(TRUE_SIZE);
   e.resize(TRUE_SIZE);
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     Real z = (Real)i;
     b[i] = c[i] = d[i] = e[i] = z;
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       a[i] = b[i] + c[i] * d[i] + e[i];
     }
-    s += a[z%5];
+    s += a[z % 5];
   }
   return s;
 }
@@ -1314,16 +1331,16 @@ f2()
   c.resize(TRUE_SIZE);
   d.resize(TRUE_SIZE);
   e.resize(TRUE_SIZE);
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     Real z = (Real)i;
     b[i] = c[i] = d[i] = e[i] = z;
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       a[i] = b[i] + c[i] * d[i] + e[i];
     }
-    s += a[z%5];
+    s += a[z % 5];
   }
   return s;
 }
@@ -1341,16 +1358,16 @@ f2_1()
   c.resize(TRUE_SIZE);
   d.resize(TRUE_SIZE);
   e.resize(TRUE_SIZE);
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     Real z = (Real)i;
     a[i] = b[i] = c[i] = d[i] = e[i] = z;
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       a[i] = b[i] + c[i] * d[i] + e[i];
     }
-    s += a[z%5];
+    s += a[z % 5];
   }
   return s;
 }
@@ -1369,19 +1386,19 @@ f3()
   c.resize(TRUE_SIZE);
   d.resize(TRUE_SIZE);
   e.resize(TRUE_SIZE);
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     Real z = (Real)i;
     a[i] = b[i] = c[i] = d[i] = e[i] = z;
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
 #ifdef __ia64
 #pragma ivdep
 #endif
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       a[i] = b[i] + c[i] * d[i] + e[i];
     }
-    s += a[z%5];
+    s += a[z % 5];
   }
   return s;
 }
@@ -1399,20 +1416,20 @@ f3_1()
   c.resize(TRUE_SIZE);
   d.resize(TRUE_SIZE);
   e.resize(TRUE_SIZE);
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     Real z = (Real)i;
     a[i] = b[i] = c[i] = d[i] = e[i] = z;
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
 
 #ifdef __INTEL_COMPILER
 #pragma ivdep
 #endif
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       a[i] = b[i] + c[i] * d[i] + e[i];
     }
-    s += a[z%5];
+    s += a[z % 5];
   }
   return s;
 }
@@ -1424,22 +1441,22 @@ Real ArrayUnitTest::
 f3_2()
 {
   ArrayTimer tm("f3_2 direct,ptr,Real,ivdep,noaccessor");
-  Real *a = new Real[TRUE_SIZE];
-  Real *b = new Real[TRUE_SIZE];
-  Real *c = new Real[TRUE_SIZE];
-  Real *d = new Real[TRUE_SIZE];
-  Real *e = new Real[TRUE_SIZE];
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  Real* a = new Real[TRUE_SIZE];
+  Real* b = new Real[TRUE_SIZE];
+  Real* c = new Real[TRUE_SIZE];
+  Real* d = new Real[TRUE_SIZE];
+  Real* e = new Real[TRUE_SIZE];
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     Real z = (Real)i;
     a[i] = b[i] = c[i] = d[i] = e[i] = z;
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
 #pragma ivdep
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       a[i] = b[i] + c[i] * d[i] + e[i];
     }
-    s += a[z%5];
+    s += a[z % 5];
   }
   delete[] a;
   delete[] b;
@@ -1463,12 +1480,12 @@ f4()
   c.resize(SIZE);
   d.resize(SIZE);
   e.resize(SIZE);
-  for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
     Real z = (Real)i;
-    a[i] = b[i] = d[i] = e[i] = Real3(z,z,z);
+    a[i] = b[i] = d[i] = e[i] = Real3(z, z, z);
   }
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       v1[i] = v2[i] + v3[i] * v4[i] + v5[i];
     }
   }
@@ -1488,16 +1505,16 @@ f5()
   c.resize(SIZE);
   d.resize(SIZE);
   e.resize(SIZE);
-  for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
     Real z = (Real)i;
-    a[i] = b[i] = d[i] = e[i] = Real3(z,z,z);
+    a[i] = b[i] = d[i] = e[i] = Real3(z, z, z);
   }
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
 
 #ifdef __INTEL_COMPILER
 #pragma ivdep
 #endif
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       v1[i] = v2[i] + v3[i] * v4[i] + v5[i];
     }
   }
@@ -1518,16 +1535,16 @@ f6()
   d.resize(TRUE_SIZE);
   e.resize(TRUE_SIZE);
   Integer* index = new Integer[TRUE_SIZE];
-  for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+  for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
     index[i] = i;
     Real z = (Real)i;
     a[i] = b[i] = d[i] = e[i] = z;
   }
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
 #ifdef __INTEL_COMPILER
 #pragma ivdep
 #endif
-    for( Integer i=0, is=TRUE_SIZE; i<is; ++i ){
+    for (Integer i = 0, is = TRUE_SIZE; i < is; ++i) {
       v1[index[i]] = v2[index[i]] + v3[index[i]] * v4[index[i]] + v5[index[i]];
     }
   }
@@ -1549,16 +1566,16 @@ f7()
   d.resize(SIZE);
   e.resize(SIZE);
   Integer* index = new Integer[SIZE];
-  for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
     index[i] = i;
     Real z = (Real)i;
-    a[i] = b[i] = d[i] = e[i] = Real3(z,z,z);
+    a[i] = b[i] = d[i] = e[i] = Real3(z, z, z);
   }
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
 #ifdef __INTEL_COMPILER
 #pragma ivdep
 #endif
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       v1[index[i]] = v2[index[i]] + v3[index[i]] * v4[index[i]] + v5[index[i]];
     }
   }
@@ -1580,17 +1597,17 @@ f7_1()
   d.resize(SIZE);
   e.resize(SIZE);
   Integer* index = new Integer[SIZE];
-  for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
     index[i] = i;
     Real z = (Real)i;
-    a[i] = b[i] = d[i] = e[i] = Real3(z,z,z);
+    a[i] = b[i] = d[i] = e[i] = Real3(z, z, z);
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       v1[index[i]] = v2[index[i]] + v3[index[i]] * v4[index[i]] + v5[index[i]];
     }
-    s += v1[z%5].x;
+    s += v1[z % 5].x;
   }
   delete[] index;
   return s;
@@ -1611,22 +1628,22 @@ f8()
   d.resize(SIZE);
   e.resize(SIZE);
   Integer* index = new Integer[SIZE];
-  for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
     index[i] = i;
     Real z = (Real)i;
-    Real3 z3 = Real3(z,z,z);
-    a.setValue(i,z3);
-    b.setValue(i,z3);
-    c.setValue(i,z3);
-    d.setValue(i,z3);
-    e.setValue(i,z3);
+    Real3 z3 = Real3(z, z, z);
+    a.setValue(i, z3);
+    b.setValue(i, z3);
+    c.setValue(i, z3);
+    d.setValue(i, z3);
+    e.setValue(i, z3);
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       a.setValue(index[i], b[index[i]] + c[index[i]] * d[index[i]] + e[index[i]]);
     }
-    s += a[z%5].x;
+    s += a[z % 5].x;
   }
   delete[] index;
   return s;
@@ -1646,21 +1663,21 @@ f8_1()
   c.resize(SIZE);
   d.resize(SIZE);
   e.resize(SIZE);
-  for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
     Real z = (Real)i;
-    Real3 z3 = Real3(z,z,z);
-    a.setValue(i,z3);
-    b.setValue(i,z3);
-    c.setValue(i,z3);
-    d.setValue(i,z3);
-    e.setValue(i,z3);
+    Real3 z3 = Real3(z, z, z);
+    a.setValue(i, z3);
+    b.setValue(i, z3);
+    c.setValue(i, z3);
+    d.setValue(i, z3);
+    e.setValue(i, z3);
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       a.setValue(i, b[i] + c[i] * d[i] + e[i]);
     }
-    s += a[z%5].x;
+    s += a[z % 5].x;
   }
   return s;
 }
@@ -1680,23 +1697,23 @@ f8_2()
   d.resize(SIZE);
   e.resize(SIZE);
   Index* index = new Index[SIZE];
-  for( Integer i=0, is=SIZE; i<is; ++i ){
-    index[i].createFromInteger(i,SIZE/2);
+  for (Integer i = 0, is = SIZE; i < is; ++i) {
+    index[i].createFromInteger(i, SIZE / 2);
     Real z = (Real)i;
-    Real3 z3 = Real3(z,z,z);
-    a.setValue(i,z3);
-    b.setValue(i,z3);
-    c.setValue(i,z3);
-    d.setValue(i,z3);
-    e.setValue(i,z3);
+    Real3 z3 = Real3(z, z, z);
+    a.setValue(i, z3);
+    b.setValue(i, z3);
+    c.setValue(i, z3);
+    d.setValue(i, z3);
+    e.setValue(i, z3);
   }
   Real s = 0.0;
-  for( Integer z=0, iz=NB_Z; z<iz; ++z ){
-    for( Integer i=0, is=SIZE; i<is; ++i ){
+  for (Integer z = 0, iz = NB_Z; z < iz; ++z) {
+    for (Integer i = 0, is = SIZE; i < is; ++i) {
       Index idx = index[i];
       a.setValue(idx, b[idx] + c[idx] * d[idx] + e[idx]);
     }
-    s += a[z%5].x;
+    s += a[z % 5].x;
   }
   delete[] index;
   return s;
@@ -1713,12 +1730,11 @@ _TestArrayDim2()
     a2.doTest();
   }
   info() << " NB NEW FIRST=" << Wrapper<Real>::nb_new;
-  for( Integer i=0; i<5; ++i ){
-    UniqueArray2UnitTest< Wrapper<Real> > a2(traceMng());
+  for (Integer i = 0; i < 5; ++i) {
+    UniqueArray2UnitTest<Wrapper<Real>> a2(traceMng());
     a2.doTest();
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
   }
-
 
   info() << "TESTING UniqueArray2";
   {
@@ -1727,8 +1743,8 @@ _TestArrayDim2()
   }
 
   info() << " NB NEW FIRST=" << Wrapper<Real>::nb_new;
-  for( Integer i=0; i<5; ++i ){
-    UniqueArray2UnitTest< Wrapper<Real> > a2(traceMng());
+  for (Integer i = 0; i < 5; ++i) {
+    UniqueArray2UnitTest<Wrapper<Real>> a2(traceMng());
     a2.doTest();
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
   }
@@ -1739,8 +1755,8 @@ _TestArrayDim2()
     a2.doTest();
   }
   info() << " NB NEW FIRST=" << Wrapper<Real>::nb_new;
-  for( Integer i=0; i<5; ++i ){
-    SharedArray2UnitTest< Wrapper<Real> > a2(traceMng());
+  for (Integer i = 0; i < 5; ++i) {
+    SharedArray2UnitTest<Wrapper<Real>> a2(traceMng());
     a2.doTest();
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
   }
@@ -1751,28 +1767,28 @@ _TestArrayDim2()
 
 void g2_0(MultiArray2<Int64>& array)
 {
-  for( Integer i=0, is=array.dim1Size(); i<is; ++i ){
-    for( Integer j=0, js=array[i].size(); j<js; ++j )
+  for (Integer i = 0, is = array.dim1Size(); i < is; ++i) {
+    for (Integer j = 0, js = array[i].size(); j < js; ++j)
       //array[i][j] = i*j;
-      array.at(i,j) = i*j;
+      array.at(i, j) = i * j;
   }
 }
 
 void g2_2(MultiArray2<Int64>& array)
 {
-  for( Integer i=0, is=array.dim1Size(); i<is; ++i ){
+  for (Integer i = 0, is = array.dim1Size(); i < is; ++i) {
     Int64ArrayView cav(array[i]);
-    for( Integer j=0, js=cav.size(); j<js; ++j )
-      cav[j] = i*j;
+    for (Integer j = 0, js = cav.size(); j < js; ++j)
+      cav[j] = i * j;
   }
 }
 
 void g2_6(Array2<Int64>& array)
 {
-  for( Integer i=0, is=array.dim1Size(); i<is; ++i ){
+  for (Integer i = 0, is = array.dim1Size(); i < is; ++i) {
     Int64ArrayView cav(array[i]);
-    for( Integer j=0, js=cav.size(); j<js; ++j )
-      cav[j] = i*j;
+    for (Integer j = 0, js = cav.size(); j < js; ++j)
+      cav[j] = i * j;
   }
 }
 
@@ -1785,8 +1801,8 @@ _TestMultiArray2()
     a2.doTest();
   }
   info() << " NB NEW FIRST=" << Wrapper<Real>::nb_new;
-  for( Integer i=0; i<5; ++i ){
-    MultiArray2UnitTest< Wrapper<Real> > a2(traceMng());
+  for (Integer i = 0; i < 5; ++i) {
+    MultiArray2UnitTest<Wrapper<Real>> a2(traceMng());
     a2.doTest();
     info() << " NB NEW=" << Wrapper<Real>::nb_new;
   }
@@ -1796,7 +1812,7 @@ void ArrayUnitTest::
 _TestPerfs()
 {
   IApplication* app = subDomain()->application();
-  ServiceFinder2T<IProfilingService,IApplication> sf(app,app);
+  ServiceFinder2T<IProfilingService, IApplication> sf(app, app);
   auto ps = sf.createReference("PapiProfilingService");
   ITimerMng* tm = 0;
   if (ps.get())
@@ -1805,7 +1821,7 @@ _TestPerfs()
     tm = subDomain()->timerMng();
   //return;
   //Timer timer(tm,"Test",Timer::TimerReal);
-  Timer timer(subDomain(),"Test",Timer::TimerReal);
+  Timer timer(subDomain(), "Test", Timer::TimerReal);
   {
     SharedMultiArray2<Int64> array;
     Integer n = 1000000;
@@ -1817,31 +1833,30 @@ _TestPerfs()
     array.resize(sizes);
 
     UniqueArray2<Int64> array2;
-    array2.resize(n,35);
+    array2.resize(n, 35);
 
     {
       Timer::Sentry ts(&timer);
-      for( Integer z=0; z<nb_iter; ++ z){
+      for (Integer z = 0; z < nb_iter; ++z) {
         g2_0(array);
       }
     }
     info() << "TIME1 = " << timer.lastActivationTime();
-    
+
     {
       Timer::Sentry ts(&timer);
-      for( Integer z=0; z<nb_iter; ++ z){
+      for (Integer z = 0; z < nb_iter; ++z) {
         g2_2(array);
       }
     }
     info() << "TIME2 = " << timer.lastActivationTime();
 
-
     {
       Timer::Sentry ts(&timer);
-      for( Integer z=0; z<nb_iter; ++ z){
-        for( Integer i=0, is=array2.dim1Size(); i<is; ++i ){
-          for( Integer j=0, js=array2[i].size(); j<js; ++j )
-            array2[i][j] = i*j;
+      for (Integer z = 0; z < nb_iter; ++z) {
+        for (Integer i = 0, is = array2.dim1Size(); i < is; ++i) {
+          for (Integer j = 0, js = array2[i].size(); j < js; ++j)
+            array2[i][j] = i * j;
         }
       }
     }
@@ -1849,10 +1864,10 @@ _TestPerfs()
 
     {
       Timer::Sentry ts(&timer);
-      for( Integer z=0; z<nb_iter; ++ z){
-        for( Integer i=0, is=array2.dim1Size(); i<is; ++i ){
-          for( Integer j=0, js=array2[i].size(); j<js; ++j )
-            array2.setItem(i,j,i*j);
+      for (Integer z = 0; z < nb_iter; ++z) {
+        for (Integer i = 0, is = array2.dim1Size(); i < is; ++i) {
+          for (Integer j = 0, js = array2[i].size(); j < js; ++j)
+            array2.setItem(i, j, i * j);
         }
       }
     }
@@ -1860,10 +1875,10 @@ _TestPerfs()
 
     {
       Timer::Sentry ts(&timer);
-      for( Integer z=0; z<nb_iter; ++ z){
-        for( Integer i=0, is=array2.dim1Size(); i<is; ++i ){
-          for( Integer j=0, js=array2[i].size(); j<js; ++j )
-            array[i][j] = i*j;
+      for (Integer z = 0; z < nb_iter; ++z) {
+        for (Integer i = 0, is = array2.dim1Size(); i < is; ++i) {
+          for (Integer j = 0, js = array2[i].size(); j < js; ++j)
+            array[i][j] = i * j;
         }
       }
     }
@@ -1871,7 +1886,7 @@ _TestPerfs()
 
     {
       Timer::Sentry ts(&timer);
-      for( Integer z=0; z<nb_iter; ++ z){
+      for (Integer z = 0; z < nb_iter; ++z) {
         g2_6(array2);
       }
     }
@@ -1881,18 +1896,18 @@ _TestPerfs()
 
 namespace
 {
-struct FoundInfo
-{
-  Int32 contrib_owner;
-  Int32 owner;
-  Int64 local_id;
-  Int32 face_local_id;
-  Int32 orig_face_local_id;
-  Int32 user_value;
-  Real distance;
-  Real3POD intersection;
-};
-}
+  struct FoundInfo
+  {
+    Int32 contrib_owner;
+    Int32 owner;
+    Int64 local_id;
+    Int32 face_local_id;
+    Int32 orig_face_local_id;
+    Int32 user_value;
+    Real distance;
+    Real3POD intersection;
+  };
+} // namespace
 
 void ArrayUnitTest::
 _TestAddStruct()
@@ -1903,15 +1918,15 @@ _TestAddStruct()
   Integer n = 250;
 
   SharedArray<FoundInfo> found_infos2(found_infos);
-  for( Integer i=0; i<n; ++i ){
+  for (Integer i = 0; i < n; ++i) {
     FoundInfo fi;
-    if ((i%3)==0)
+    if ((i % 3) == 0)
       continue;
     fi.contrib_owner = 5;
     fi.owner = i / 2;
     fi.local_id = i;
-    fi.face_local_id = i-3;
-    fi.orig_face_local_id = i+3;
+    fi.face_local_id = i - 3;
+    fi.orig_face_local_id = i + 3;
     fi.user_value = i;
     fi.intersection.x = 2.0;
     fi.intersection.y = 1.0;
@@ -1921,7 +1936,7 @@ _TestAddStruct()
     found_infos.add(fi);
   }
 
-  for( Integer i=0; i<found_infos.size(); ++i ){
+  for (Integer i = 0; i < found_infos.size(); ++i) {
     const FoundInfo& fi = found_infos[i];
     info() << "V=" << i << " owner=" << fi.contrib_owner << " local_id=" << fi.local_id
            << " user_value=" << fi.user_value << " distance=" << fi.distance;
@@ -1946,7 +1961,7 @@ _TestConstStruct()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -42,7 +42,7 @@ arcaneTestSetApplicationInfo()
   ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
   app_build_info.setApplicationName("ArcaneTest");
   app_build_info.setCodeName("ArcaneTest");
-  app_build_info.setCodeVersion(VersionInfo(1,0,0));
+  app_build_info.setCodeVersion(VersionInfo(1, 0, 0));
 
   app_build_info.addDynamicLibrary("arcane_driverlib");
   app_build_info.addDynamicLibrary("arcane_geometry");
@@ -58,7 +58,7 @@ arcaneTestSetApplicationInfo()
   // test if it is defined.
   String test_name = platform::getEnvironmentVariable("ARCANE_TEST_NAME");
   if (!test_name.empty())
-    app_build_info.setOutputDirectory(String("test_output_")+test_name);
+    app_build_info.setOutputDirectory(String("test_output_") + test_name);
   ArcaneMain::setUseTestLogger(true);
 }
 

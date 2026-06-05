@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,10 +19,10 @@
 #include "arcane/utils/NumVector.h"
 #include "arcane/utils/NumMatrix.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ServiceFactory.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MDVariableUnitTest_axl.h"

@@ -1,109 +1,106 @@
-﻿<?xml version="1.0"?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0"?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+<module name="ParallelTester" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Parallelism test module
+  </description>
+  <options>
+    <!-- Number of iterations to perform -->
+    <simple
+      name="nb-iteration"
+      type="integer"
+      default="2"
+    >
+      <description>
+        Number of iterations to perform
+      </description>
+    </simple>
 
-<module name="ParallelTester" version="1.0" namespace-name="ArcaneTest" >
-    <description>
-      Parallelism test module
-    </description>
- <options>
-  <!-- Number of iterations to perform -->
-  <simple
-   name = "nb-iteration"
-   type = "integer"
-   default = "2"
-  >
-   <description>
-Number of iterations to perform
-   </description>
-  </simple>
+    <!-- Output file for non-regression -->
+    <simple
+      name="output-file"
+      type="string"
+      default="test"
+    >
+      <name lang='fr'>fichier-sortie</name>
+      <description>
+        Test output file.
+      </description>
+    </simple>
 
-  <!-- Output file for non-regression -->
-  <simple
-   name = "output-file"
-   type = "string"
-   default = "test"
-  >
-   <name lang='fr'>fichier-sortie</name>
-   <description>
-Test output file.
-   </description>
-  </simple>
+    <simple
+      name="nb-internal-loop"
+      type="integer"
+      default="10"
+    >
+      <name lang='fr'>nb-boucles-internes</name>
+      <description>
+        Number of internal loops to perform (for load balancing).
+      </description>
+    </simple>
 
-  <simple
-   name = "nb-internal-loop"
-   type = "integer"
-   default = "10"
-  >
-   <name lang='fr'>nb-boucles-internes</name>
-   <description>
-Number of internal loops to perform (for load balancing).
-   </description>
-  </simple>
+    <simple
+      name="nb-test-sync"
+      type="integer"
+      default="1"
+    >
+      <name lang='fr'>nb-test-sync</name>
+      <description>
+        Number of synchronization loops to perform (for performance testing).
+      </description>
+    </simple>
 
-  <simple
-   name = "nb-test-sync"
-   type = "integer"
-   default = "1"
-  >
-   <name lang='fr'>nb-test-sync</name>
-   <description>
-Number of synchronization loops to perform (for performance testing).
-   </description>
-  </simple>
+    <!-- - - - - - load-balance-service - - - - -->
+    <service-instance
+      name="load-balance-service"
+      type="Arcane::IMeshPartitioner"
+      minOccurs="0"
+      maxOccurs="1"
+    >
+      <name lang='fr'>service-equilibrage-charge</name>
+      <description>
+        Service used for load balancing.
+      </description>
+    </service-instance>
 
-  <!-- - - - - - load-balance-service - - - - -->
-  <service-instance
-   name    = "load-balance-service"
-   type    = "Arcane::IMeshPartitioner"
-   minOccurs = "0"
-   maxOccurs = "1"
-  >
-   <name lang='fr'>service-equilibrage-charge</name>
-   <description>
-Service used for load balancing.
-   </description>
-  </service-instance>
+    <enumeration
+      name="test-id"
+      type="TypesParallelTester::eTestParallel"
+    >
+      <description field-name="nom du test">
+        Here is the list of tests to perform:<enum-description/>Test list display.
+      </description>
+      <enumvalue genvalue="TypesParallelTester::TestAll" name="TestAll">
+        <description>
+          Runs all tests
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="TypesParallelTester::TestNone" name="None">
+        <description>
+          Performs no additional tests
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="TypesParallelTester::TestLoadBalance" name="LoadBalance">
+        <description>
+          Tests load balancing
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="TypesParallelTester::TestGhostItemsReduceOperation" name="GhostItemsReduceOperation">
+        <description>
+          Tests parallel operations on ghost entities
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="TypesParallelTester::TestGetVariableValues" name="GetVariableValues">
+        <description>
+          Tests the <strong>IGetVariableValuesParallelOperation</strong> operation
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="TypesParallelTester::TestTransferValues" name="TransferValues">
+        <description>
+          Tests the 'ITransferValuesParallelOperation' operation
+        </description>
+      </enumvalue>
+    </enumeration>
 
-  <enumeration
-   name = "test-id"
-   type = "TypesParallelTester::eTestParallel"
-  >
-   <description field-name="nom du test">
-Here is the list of tests to perform: <enum-description/>Test list display.
-   </description>
-	<enumvalue  genvalue="TypesParallelTester::TestAll" name="TestAll">
-	  <description>
-	    Runs all tests
-	  </description>
-	</enumvalue>
-	<enumvalue  genvalue="TypesParallelTester::TestNone" name="None">
-	  <description>
-	    Performs no additional tests
-	  </description>
-	</enumvalue>
-	<enumvalue  genvalue="TypesParallelTester::TestLoadBalance" name="LoadBalance">
-	  <description>
-	    Tests load balancing
-	  </description>
-	</enumvalue>
-	<enumvalue  genvalue="TypesParallelTester::TestGhostItemsReduceOperation" name="GhostItemsReduceOperation">
-	  <description>
-	    Tests parallel operations on ghost entities
-	  </description>
-	</enumvalue>
-	<enumvalue  genvalue="TypesParallelTester::TestGetVariableValues" name="GetVariableValues">
-	  <description>
-	    Tests the <strong >IGetVariableValuesParallelOperation</strong > operation
-	  </description>
-	</enumvalue>
-	<enumvalue  genvalue="TypesParallelTester::TestTransferValues" name="TransferValues">
-	  <description>
-	    Tests the 'ITransferValuesParallelOperation' operation
-	  </description>
-	</enumvalue>
-  </enumeration>
-
- </options>
+  </options>
 </module>

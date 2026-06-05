@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "MeshMaterialTesterModule.h"
+#include "arcane/tests/material/MeshMaterialTesterModule.h"
 
 #include "arcane/utils/ValueChecker.h"
 
@@ -29,7 +29,6 @@
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshMaterialModifier.h"
 #include "arcane/core/materials/CellToAllEnvCellConverter.h"
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

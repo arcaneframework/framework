@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,19 +11,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
- 
+#include "arcane/core/BasicUnitTest.h"
+
 #include "arcane/tests/anyitem/AnyItemTester_axl.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
-#include "arcane/Timer.h"
+#include "arcane/core/Timer.h"
 
 #include "arcane/anyitem/AnyItem.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,29 +38,30 @@ using namespace Arcane;
  * \brief AnyItem test service
  */
 class AnyItemTester
-  : public ArcaneAnyItemTesterObject
+: public ArcaneAnyItemTesterObject
 {
-public:
- 
+ public:
+
   AnyItemTester(const ServiceBuildInfo& sbi)
-    : ArcaneAnyItemTesterObject(sbi)
-    , m_timer(sbi.subDomain(),"TestTimer",Arcane::Timer::TimerVirtual) 
-    , m_timer_2(sbi.subDomain(),"TestTimer2",Arcane::Timer::TimerVirtual) {}
+  : ArcaneAnyItemTesterObject(sbi)
+  , m_timer(sbi.subDomain(), "TestTimer", Arcane::Timer::TimerVirtual)
+  , m_timer_2(sbi.subDomain(), "TestTimer2", Arcane::Timer::TimerVirtual)
+  {}
 
   ~AnyItemTester() {}
-  
-public:
+
+ public:
 
   void initializeTest();
   void executeTest();
-  
-private:
-  
+
+ private:
+
   void _test1();
   void _test2();
-  
-private:
-  
+
+ private:
+
   Timer m_timer;
   Timer m_timer_2;
 };
@@ -67,12 +69,11 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-AnyItemTester::
+void AnyItemTester::
 initializeTest()
 {
   info() << "init";
-  
+
   m_face_variable.fill(1.);
   m_cell_variable.fill(2.);
 
@@ -83,9 +84,9 @@ initializeTest()
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-void
-AnyItemTester::
+void AnyItemTester::
 executeTest()
 {
   info() << "compute";
@@ -94,34 +95,35 @@ executeTest()
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-void 
-AnyItemTester::
+void AnyItemTester::
 _test1()
 {
   info() << "************************************** test 1 :";
- 
+
   // Creation of a family aggregating groups of cells and faces
   AnyItem::Family family;
-  family << AnyItem::GroupBuilder( allFaces() ) 
-         << AnyItem::GroupBuilder( allCells() );
-  
+  family << AnyItem::GroupBuilder(allFaces())
+         << AnyItem::GroupBuilder(allCells());
+
   // Creation of a variable aggregating cell and face variables
   AnyItem::Variable<Real> variable(family);
   variable[allFaces()] << m_face_variable;
   variable[allCells()] << m_cell_variable;
-  
+
   Real value = 0;
   {
     // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
+    ENUMERATE_ANY_ITEM(iitem, family.allItems())
+    {
       value += variable[iitem];
     }
   }
-  info() << "Aggregate iteration : Value = " << value 
+  info() << "Aggregate iteration : Value = " << value
          << ", Time = " << m_timer.lastActivationTime();
-  
+
   // Creation of a variable array aggregating cell and face variables
   AnyItem::VariableArray<Real> variable_array(family);
   variable_array[allFaces()] << m_face_variable_array;
@@ -131,19 +133,20 @@ _test1()
   {
     // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
-      for(Arcane::Integer i = 0; i < 3; ++i)
+    ENUMERATE_ANY_ITEM(iitem, family.allItems())
+    {
+      for (Arcane::Integer i = 0; i < 3; ++i)
         value += variable_array[iitem][i];
     }
   }
   info() << "Aggregate array iteration : Value = " << value
          << ", Time = " << m_timer.lastActivationTime();
 
-
   AnyItem::Array<Real> array(family.allItems());
   array.fill(0.);
 
-  ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
+  ENUMERATE_ANY_ITEM(iitem, family.allItems())
+  {
     array[iitem] += variable[iitem];
   }
 
@@ -151,7 +154,8 @@ _test1()
   {
     // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
+    ENUMERATE_ANY_ITEM(iitem, family.allItems())
+    {
       value += array[iitem];
     }
   }
@@ -162,8 +166,9 @@ _test1()
   AnyItem::Array2<Real> array2(family.allItems());
   array2.resize(3);
 
-  ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
-    for(Arcane::Integer i = 0; i < 3; ++i)
+  ENUMERATE_ANY_ITEM(iitem, family.allItems())
+  {
+    for (Arcane::Integer i = 0; i < 3; ++i)
       array2[iitem][i] += variable[iitem];
   }
 
@@ -171,8 +176,9 @@ _test1()
   {
     // Enumeration of the aggregated variable via the aggregated group
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ANY_ITEM(iitem, family.allItems()) {
-      for(Arcane::Integer i = 0; i < 3; ++i)
+    ENUMERATE_ANY_ITEM(iitem, family.allItems())
+    {
+      for (Arcane::Integer i = 0; i < 3; ++i)
         value += array2[iitem][i];
     }
   }
@@ -181,14 +187,14 @@ _test1()
          << ", Time = " << m_timer.lastActivationTime();
 
   // The following section is simply for performance study
-  
+
   value = 0;
   {
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_FACE(iface, allFaces()) {
+    ENUMERATE_FACE (iface, allFaces()) {
       value += m_face_variable[iface];
     }
-    ENUMERATE_CELL(icell, allCells()) {
+    ENUMERATE_CELL (icell, allCells()) {
       value += m_cell_variable[icell];
     }
   }
@@ -198,10 +204,10 @@ _test1()
   value = 0;
   {
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_FACE(iitem, allFaces()) {
+    ENUMERATE_FACE (iitem, allFaces()) {
       value += m_face_variable[iitem];
     }
-    ENUMERATE_CELL(iitem, allCells()) {
+    ENUMERATE_CELL (iitem, allCells()) {
       value += m_cell_variable[iitem];
     }
   }
@@ -210,81 +216,84 @@ _test1()
 }
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-void 
-AnyItemTester::
+void AnyItemTester::
 _test2()
 {
   info() << "************************************** test 2 :";
 
   Arcane::FaceGroup faces = allCells().innerFaceGroup();
-  
+
   // Creation of a family aggregating the cell group xmin_cells and face group xmin_faces
   AnyItem::Family family;
-  family << AnyItem::GroupBuilder( allFaces() ) 
-         << AnyItem::GroupBuilder( allCells() );
-  
+  family << AnyItem::GroupBuilder(allFaces())
+         << AnyItem::GroupBuilder(allCells());
+
   AnyItem::Variable<Real> variable(family);
   variable[allFaces()] << m_face_variable;
   variable[allCells()] << m_cell_variable;
-  
+
   Real sum = 0;
-  ENUMERATE_ANY_ITEM(iitem,  family.allItems()) {
+  ENUMERATE_ANY_ITEM(iitem, family.allItems())
+  {
     sum += variable[iitem];
   }
   info() << "SUM=" << sum;
 
   AnyItem::LinkFamily link_family(family);
   link_family.reserve(allFaces().size());
-  
+
   AnyItem::LinkVariable<Real> link_variable(link_family);
   AnyItem::LinkVariableArray<Real> link_variable_array(link_family);
   link_variable_array.resize(3);
   {
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_FACE(iface, allFaces()) {
-      if(iface->isSubDomainBoundary()) return;
+    ENUMERATE_FACE (iface, allFaces()) {
+      if (iface->isSubDomainBoundary())
+        return;
       AnyItem::LinkFamily::Link link = link_family.newLink();
       // TODO : CHECK if applied on non last created link : BUG ?
-      link(allCells(),allCells()) << AnyItem::Pair(iface->backCell(),iface->frontCell());
+      link(allCells(), allCells()) << AnyItem::Pair(iface->backCell(), iface->frontCell());
       link_variable[link] = 1.;
-      for(Arcane::Integer i = 0; i < 3; ++i)
-        link_variable_array[link][i] = i+1.;
+      for (Arcane::Integer i = 0; i < 3; ++i)
+        link_variable_array[link][i] = i + 1.;
     }
   }
   info() << "Add link items = " << m_timer.lastActivationTime();
-  
+
   Real value = 0;
   Real value_array = 0;
   {
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ANY_ITEM_LINK(ilink, link_family) {
-      if(ilink.index() < 10) {
-        info() << "back item = [uid=" << family.item(ilink.back()).uniqueId() 
+    ENUMERATE_ANY_ITEM_LINK(ilink, link_family)
+    {
+      if (ilink.index() < 10) {
+        info() << "back item = [uid=" << family.item(ilink.back()).uniqueId()
                << ",lid=" << family.item(ilink.back()).localId() << ",kind="
                << family.item(ilink.back()).kind() << "]";
-        info() << "front item = [uid=" << family.item(ilink.front()).uniqueId() 
+        info() << "front item = [uid=" << family.item(ilink.front()).uniqueId()
                << ",lid=" << family.item(ilink.front()).localId() << ",kind="
                << family.item(ilink.front()).kind() << "]";
       }
       value += link_variable[ilink] + variable[ilink.back()] + variable[ilink.front()];
-      for(Arcane::Integer i = 0; i < 3; ++i)
+      for (Arcane::Integer i = 0; i < 3; ++i)
         value_array += link_variable_array[ilink][i] + variable[ilink.back()] + variable[ilink.front()];
     }
   }
   info() << "enumerate links = " << m_timer.lastActivationTime()
          << ", value = " << value << " value_array=" << value_array;
-} 
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_ANYITEMTESTER(AnyItemTester,AnyItemTester);
+ARCANE_REGISTER_SERVICE_ANYITEMTESTER(AnyItemTester, AnyItemTester);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

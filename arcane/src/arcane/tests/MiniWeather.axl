@@ -1,7 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+﻿<?xml version="1.0" ?>
 
 <module name="MiniWeather" version="1.0" namespace-name="ArcaneTest::MiniWeather" >
   <description>

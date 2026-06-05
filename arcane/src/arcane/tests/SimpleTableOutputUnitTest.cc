@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -177,7 +177,7 @@ testAddColumn4()
   ptrSTO->addElementInRow("Ma ligne 1", 0);
   ptrSTO->addElementInRow("Ma ligne 4", 0);
 
-  for(Integer i = 2; i < 11; ++i){
+  for (Integer i = 2; i < 11; ++i) {
     ptrSTO->addColumn("Ma colonne " + String::fromNumber(i));
 
     ptrSTO->addElementInRow("Ma ligne 2", 2);
@@ -189,7 +189,7 @@ testAddColumn4()
     ptrSTO->addElementInRow("Ma ligne 8", 8);
   }
 
-  for(Integer i = 1; i < 11; ++i){
+  for (Integer i = 1; i < 11; ++i) {
     _assertEqualArray(result, ptrSTO->column("Ma colonne " + String::fromNumber(i)));
   }
 }

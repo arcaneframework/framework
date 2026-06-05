@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -68,8 +68,8 @@ class ModuleSimpleHydroGeneric
   explicit ModuleSimpleHydroGeneric(const ModuleBuildInfo& mb);
 
  public:
-  
-  VersionInfo versionInfo() const override { return VersionInfo(1,0,1); }
+
+  VersionInfo versionInfo() const override { return VersionInfo(1, 0, 1); }
 
  public:
 
@@ -77,19 +77,19 @@ class ModuleSimpleHydroGeneric
 
   void hydroStartInit() override;
   void hydroInit() override;
-  void hydroContinueInit()  override {}
+  void hydroContinueInit() override {}
   void hydroExit() override;
 
   void computeForces() override { m_service->computeForces(); }
-  void computePseudoViscosity() override{}
+  void computePseudoViscosity() override {}
   void computeVelocity() override { m_service->computeVelocity(); }
   void computeViscosityWork() override { m_service->computeViscosityWork(); }
   void applyBoundaryCondition() override { m_service->applyBoundaryCondition(); }
-  void moveNodes() override{ m_service->moveNodes(); }
+  void moveNodes() override { m_service->moveNodes(); }
   void computeGeometricValues() override { m_service->computeGeometricValues(); }
   void updateDensity() override { m_service->updateDensity(); }
   void applyEquationOfState() override { m_service->applyEquationOfState(); }
-  void computeDeltaT() override{ m_service->computeDeltaT(); }
+  void computeDeltaT() override { m_service->computeDeltaT(); }
   void doOneIteration() override;
   void onMeshChanged() override {}
 
@@ -101,7 +101,7 @@ class ModuleSimpleHydroGeneric
 
  private:
 
-  void _doCall(const char* func_name,std::function<void()> func);
+  void _doCall(const char* func_name, std::function<void()> func);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -114,7 +114,7 @@ ModuleSimpleHydroGeneric::
 ModuleSimpleHydroGeneric(const ModuleBuildInfo& mb)
 : ArcaneSimpleHydroObject(mb)
 , m_time_stats(mb.subDomain()->timeStats())
-, m_elapsed_timer(mb.subDomain(),"HydroGeneric",Timer::TimerReal)
+, m_elapsed_timer(mb.subDomain(), "HydroGeneric", Timer::TimerReal)
 {
 }
 
@@ -173,11 +173,11 @@ hydroExit()
 /*---------------------------------------------------------------------------*/
 
 void ModuleSimpleHydroGeneric::
-_doCall(const char* func_name,std::function<void()> func)
+_doCall(const char* func_name, std::function<void()> func)
 {
   {
     Timer::Sentry ts_elapsed(&m_elapsed_timer);
-    Timer::Action ts_action1(m_time_stats,func_name);
+    Timer::Action ts_action1(m_time_stats, func_name);
     func();
   }
 }
@@ -186,7 +186,7 @@ _doCall(const char* func_name,std::function<void()> func)
 /*---------------------------------------------------------------------------*/
 
 #define DO_CALL(func_name) \
-  _doCall(#func_name, [=]{ s-> func_name ();})
+  _doCall(#func_name, [=] { s->func_name(); })
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -194,11 +194,11 @@ _doCall(const char* func_name,std::function<void()> func)
 void ModuleSimpleHydroGeneric::
 doOneIteration()
 {
-  if (m_global_iteration()==5){
+  if (m_global_iteration() == 5) {
     info() << "Reset time stats";
     m_time_stats->resetStats("SH_DoOneIteration");
     m_time_stats->dumpCurrentStats("SH_DoOneIteration");
- }
+  }
 
   ISimpleHydroService* s = m_service;
   DO_CALL(computeForces);
@@ -215,7 +215,7 @@ doOneIteration()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_DEFINE_STANDARD_MODULE(ModuleSimpleHydroGeneric,SimpleHydroGeneric);
+ARCANE_DEFINE_STANDARD_MODULE(ModuleSimpleHydroGeneric, SimpleHydroGeneric);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

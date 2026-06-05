@@ -119,7 +119,7 @@ _computeCenters()
     ENUMERATE_CELL (icell, m_mesh->allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for (NodeLocalId inode : cell.nodeIds() )
+      for (NodeLocalId inode : cell.nodeIds())
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -132,7 +132,7 @@ _computeCenters()
     ENUMERATE_FACE (iface, m_mesh->allFaces()) {
       Face face = *iface;
       Real3 center;
-      for (NodeLocalId inode : face.nodeIds() )
+      for (NodeLocalId inode : face.nodeIds())
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
@@ -259,7 +259,7 @@ _testDirCellAccelerator()
     _checkItemGroupIsSorted(cdm.allCells());
     auto command = makeCommand(queue);
     auto inout_dummy_var = viewInOut(command, dummy_var);
-    command << RUNCOMMAND_ENUMERATE(Cell, icell, cdm.allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, icell, cdm.allCells())
     {
       DirCellLocalId dir_cell(cdm.dirCellId(icell));
       CellLocalId prev_cell = dir_cell.previous();
@@ -434,7 +434,7 @@ _testDirFaceAccelerator(int idir)
   auto in_face_center = viewIn(command, m_face_center);
   auto in_cell_center = viewIn(command, m_cell_center);
 
-  command << RUNCOMMAND_ENUMERATE(Face, iface, fdm.allFaces())
+  command << RUNCOMMAND_ENUMERATE (Face, iface, fdm.allFaces())
   {
     DirFaceLocalId dir_face(fdm.dirFaceId(iface));
     DirFaceLocalId dir_face2(fdm2.dirFaceId(iface));
@@ -674,7 +674,7 @@ _testDirNodeAccelerator()
     auto inout_dummy_var = viewInOut(command, dummy_var);
     auto in_nodes_coord = viewInOut(command, nodes_coord);
 
-    command << RUNCOMMAND_ENUMERATE(Node, node, dm_all_nodes)
+    command << RUNCOMMAND_ENUMERATE (Node, node, dm_all_nodes)
     {
       DirNodeLocalId dir_node(node_dm.dirNodeId(node));
       DirNodeLocalId dir_node2(node_dm2.dirNodeId(node));
@@ -828,7 +828,7 @@ _testDirCellNodeAccelerator()
     auto inout_dummy_var = viewInOut(command, dummy_var);
     auto in_nodes_coord = viewIn(command, nodes_coord);
     auto out_computed_center = viewOut(command, computed_center);
-    command << RUNCOMMAND_ENUMERATE(Cell, cell, cdm.allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, cell, cdm.allCells())
     {
       inout_dummy_var[cell] = 0;
       DirCellNodeLocalId cn(cdm.dirCellNodeId(cell));
@@ -930,7 +930,7 @@ _testDirCellFaceAccelerator()
 
     info() << "DIRECTION=" << idir;
 
-    command << RUNCOMMAND_ENUMERATE(Cell, cell, cdm.allCells())
+    command << RUNCOMMAND_ENUMERATE (Cell, cell, cdm.allCells())
     {
       inout_dummy_var[cell] = 0;
 
@@ -1072,7 +1072,7 @@ _testNodeToCellConnectivity3DAccelerator()
   auto in_cell_center = viewIn(command, m_cell_center);
   auto in_node_coord = viewIn(command, nodes_coord);
   auto inout_dummy_var = viewInOut(command, dummy_var);
-  command << RUNCOMMAND_ENUMERATE(Node, node, m_mesh->allNodes())
+  command << RUNCOMMAND_ENUMERATE (Node, node, m_mesh->allNodes())
   {
     Real3 node_coord = in_node_coord[node];
     {
@@ -1320,7 +1320,7 @@ _testCellToNodeConnectivity3DAccelerator()
   auto in_node_coord = viewIn(command, nodes_coord);
   auto inout_dummy_var = viewInOut(command, dummy_var);
 
-  command << RUNCOMMAND_ENUMERATE(Cell, cell, m_mesh->allCells())
+  command << RUNCOMMAND_ENUMERATE (Cell, cell, m_mesh->allCells())
   {
     Real3 cell_coord = in_cell_center[cell];
     inout_dummy_var[cell] = 0;
@@ -1466,7 +1466,7 @@ _testCellToNodeConnectivity2D()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType> void CartesianMeshTestUtils::
+template <typename ItemType> void CartesianMeshTestUtils::
 _testConnectivityByDirectionHelper(const ItemGroup& group)
 {
   ValueChecker vc(A_FUNCINFO);
@@ -1475,28 +1475,28 @@ _testConnectivityByDirectionHelper(const ItemGroup& group)
   info() << "Test ConnectivityByDirection 2D";
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
   ENUMERATE_ (ItemType, iitem, group) {
-    vc.areEqual(cc.upperLeftId(iitem),cc.upperLeftId(iitem,0),"Item0 dir0");
-    vc.areEqual(cc.upperRightId(iitem),cc.upperRightId(iitem,0),"Item1 dir0");
-    vc.areEqual(cc.lowerRightId(iitem),cc.lowerRightId(iitem,0),"Item2 dir0");
-    vc.areEqual(cc.lowerLeftId(iitem),cc.lowerLeftId(iitem,0),"Item3 dir0");
+    vc.areEqual(cc.upperLeftId(iitem), cc.upperLeftId(iitem, 0), "Item0 dir0");
+    vc.areEqual(cc.upperRightId(iitem), cc.upperRightId(iitem, 0), "Item1 dir0");
+    vc.areEqual(cc.lowerRightId(iitem), cc.lowerRightId(iitem, 0), "Item2 dir0");
+    vc.areEqual(cc.lowerLeftId(iitem), cc.lowerLeftId(iitem, 0), "Item3 dir0");
 
-    if (nb_dim>1){
-      vc.areEqual(cc.lowerLeftId(iitem),cc.upperLeftId(iitem,1),"Item0 dir1");
-      vc.areEqual(cc.upperLeftId(iitem),cc.upperRightId(iitem,1),"Item1 dir1");
-      vc.areEqual(cc.upperRightId(iitem),cc.lowerRightId(iitem,1),"Item2 dir1");
-      vc.areEqual(cc.lowerRightId(iitem),cc.lowerLeftId(iitem,1),"Item3 dir1");
+    if (nb_dim > 1) {
+      vc.areEqual(cc.lowerLeftId(iitem), cc.upperLeftId(iitem, 1), "Item0 dir1");
+      vc.areEqual(cc.upperLeftId(iitem), cc.upperRightId(iitem, 1), "Item1 dir1");
+      vc.areEqual(cc.upperRightId(iitem), cc.lowerRightId(iitem, 1), "Item2 dir1");
+      vc.areEqual(cc.lowerRightId(iitem), cc.lowerLeftId(iitem, 1), "Item3 dir1");
     }
 
-    if (nb_dim>2){
-      vc.areEqual(cc.upperRightId(iitem),cc.upperLeftId(iitem,2),"Item0 dir2");
-      vc.areEqual(cc.topZUpperRightId(iitem),cc.upperRightId(iitem,2),"Item1 dir2");
-      vc.areEqual(cc.topZLowerRightId(iitem),cc.lowerRightId(iitem,2),"Item2 dir2");
-      vc.areEqual(cc.lowerRightId(iitem),cc.lowerLeftId(iitem,2),"Item3 dir2");
+    if (nb_dim > 2) {
+      vc.areEqual(cc.upperRightId(iitem), cc.upperLeftId(iitem, 2), "Item0 dir2");
+      vc.areEqual(cc.topZUpperRightId(iitem), cc.upperRightId(iitem, 2), "Item1 dir2");
+      vc.areEqual(cc.topZLowerRightId(iitem), cc.lowerRightId(iitem, 2), "Item2 dir2");
+      vc.areEqual(cc.lowerRightId(iitem), cc.lowerLeftId(iitem, 2), "Item3 dir2");
 
-      vc.areEqual(cc.upperLeftId(iitem),cc.topZUpperLeftId(iitem,2),"Item4 dir2");
-      vc.areEqual(cc.topZUpperLeftId(iitem),cc.topZUpperRightId(iitem,2),"Item5 dir2");
-      vc.areEqual(cc.topZLowerLeftId(iitem),cc.topZLowerRightId(iitem,2),"Item6 dir2");
-      vc.areEqual(cc.lowerLeftId(iitem),cc.topZLowerLeftId(iitem,2),"Item7 dir2");
+      vc.areEqual(cc.upperLeftId(iitem), cc.topZUpperLeftId(iitem, 2), "Item4 dir2");
+      vc.areEqual(cc.topZUpperLeftId(iitem), cc.topZUpperRightId(iitem, 2), "Item5 dir2");
+      vc.areEqual(cc.topZLowerLeftId(iitem), cc.topZLowerRightId(iitem, 2), "Item6 dir2");
+      vc.areEqual(cc.lowerLeftId(iitem), cc.topZLowerLeftId(iitem, 2), "Item7 dir2");
     }
   }
 }

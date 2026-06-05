@@ -1,8 +1,5 @@
 ﻿<?xml version="1.0" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
 <!-- Dataset options for the mesh test service -->
 
 <service name="VoronoiTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">

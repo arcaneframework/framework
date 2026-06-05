@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 
 <service name="ServiceInterface1ImplTest" version="1.0" namespace-name="ArcaneTest"> 
   <description>

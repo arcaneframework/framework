@@ -1,8 +1,5 @@
 ﻿<?xml version="1.0" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
 <module name="SubMeshTest" version="1.0" namespace-name="ArcaneTest" >
   <description>
     Submesh test module

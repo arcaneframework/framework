@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,13 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
-#include "arcane/IIndexedIncrementalItemConnectivity.h"
-#include "arcane/IndexedItemConnectivityView.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/core/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/core/IndexedItemConnectivityView.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/mesh/DoFFamily.h"
 
@@ -144,9 +144,9 @@ _buildDoFs()
   ENUMERATE_ (Node, inode, ownNodes()) {
     Node node = *inode;
     Real3 coord = node_coords[node];
-    dof_var[node_dof.dofId(node,0)] = coord.x;
-    dof_var[node_dof.dofId(node,1)] = coord.y;
-    dof_var[node_dof.dofId(node,2)] = coord.z;
+    dof_var[node_dof.dofId(node, 0)] = coord.x;
+    dof_var[node_dof.dofId(node, 1)] = coord.y;
+    dof_var[node_dof.dofId(node, 2)] = coord.z;
   }
 }
 

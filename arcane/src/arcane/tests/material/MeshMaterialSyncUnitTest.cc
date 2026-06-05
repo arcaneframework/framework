@@ -69,7 +69,7 @@ class MeshMaterialSyncUnitTest
   void executeTest() override;
 
  private:
-  
+
   IMeshMaterialMng* m_material_mng;
   VariableCellByte m_variable_is_own_cell;
   VariableCellInt64 m_cell_unique_ids;
@@ -82,7 +82,7 @@ class MeshMaterialSyncUnitTest
  public:
 
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  void _checkVariableSync2(bool do_check,Int32 iteration);
+  void _checkVariableSync2(bool do_check, Int32 iteration);
 #endif
 };
 
@@ -93,9 +93,9 @@ MeshMaterialSyncUnitTest::
 MeshMaterialSyncUnitTest(const ServiceBuildInfo& sbi)
 : ArcaneMeshMaterialSyncUnitTestObject(sbi)
 , m_material_mng(IMeshMaterialMng::getReference(sbi.mesh()))
-, m_variable_is_own_cell(VariableBuildInfo(sbi.meshHandle(),"CellIsOwn"))
-, m_cell_unique_ids(VariableBuildInfo(sbi.meshHandle(),"CellUniqueId"))
-, m_material_uids(MaterialVariableBuildInfo(m_material_mng,"SyncMaterialsUid"))
+, m_variable_is_own_cell(VariableBuildInfo(sbi.meshHandle(), "CellIsOwn"))
+, m_cell_unique_ids(VariableBuildInfo(sbi.meshHandle(), "CellUniqueId"))
+, m_material_uids(MaterialVariableBuildInfo(m_material_mng, "SyncMaterialsUid"))
 {
 }
 
@@ -113,7 +113,7 @@ initializeTest()
   info() << "Number of wanted materials: " << nb_mat;
 
   // Read the materials info from the dataset and register them in the manager
-  for( Integer i=0; i<nb_mat; ++i ){
+  for (Integer i = 0; i < nb_mat; ++i) {
     String mat_name = String("MAT_") + String::fromNumber(i);
     mm->registerMaterialInfo(mat_name);
   }
@@ -123,24 +123,24 @@ initializeTest()
     Integer env_index = 1;
     Integer mat_index = 0;
 
-    while(mat_index<nb_mat){
+    while (mat_index < nb_mat) {
       String env_name = "ENV_" + String::fromNumber(env_index);
       Materials::MeshEnvironmentBuildInfo env_build(env_name);
       // Use a std::set to ensure that the same material is not added twice.
       std::set<String> mats_in_env;
-      for( Integer z=0; z<=env_index; ++z ){
+      for (Integer z = 0; z <= env_index; ++z) {
         String mat1_name = "MAT_" + String::fromNumber(mat_index);
         mats_in_env.insert(mat1_name);
         // Also add materials that are in previous environments
         // to ensure that there are materials belonging to multiple environments.
-        String mat2_name = "MAT_" + String::fromNumber(mat_index/2);
+        String mat2_name = "MAT_" + String::fromNumber(mat_index / 2);
         mats_in_env.insert(mat2_name);
 
         ++mat_index;
-        if (mat_index>=nb_mat)
+        if (mat_index >= nb_mat)
           break;
       }
-      for( String mat_name : mats_in_env ){
+      for (String mat_name : mats_in_env) {
         info() << "Add material " << mat_name << " for environment " << env_name;
         env_build.addMaterial(mat_name);
       }
@@ -191,19 +191,19 @@ _doPhase1()
     MeshMaterialModifier mmodifier(m_material_mng);
     Int32UniqueArray ids;
     // TODO: calculate based on the max uid.
-    for( Integer imat=0; imat<nb_mat; ++imat ){
+    for (Integer imat = 0; imat < nb_mat; ++imat) {
       ids.clear();
-      Int64 min_uid = imat*10;
-      Int64 max_uid = min_uid + 10 + imat*10;
-      ENUMERATE_CELL(icell,cells){
+      Int64 min_uid = imat * 10;
+      Int64 max_uid = min_uid + 10 + imat * 10;
+      ENUMERATE_CELL (icell, cells) {
         Cell cell = *icell;
         Int64 uid = cell.uniqueId();
-        if (uid<max_uid && uid>min_uid)
+        if (uid < max_uid && uid > min_uid)
           ids.add(cell.localId());
       }
       info() << "Adding cells n=" << ids.size() << " to mat " << imat << " (min_uid="
              << min_uid << " max_uid=" << max_uid << ")";
-      mmodifier.addCells(mm->materials()[imat],ids);
+      mmodifier.addCells(mm->materials()[imat], ids);
     }
   }
 
@@ -234,20 +234,20 @@ _doPhase2()
     Int32UniqueArray add_ids;
     Int32UniqueArray remove_ids;
     // TODO: calculate based on the max uid.
-    for( Integer imat=0; imat<nb_mat; ++imat ){
+    for (Integer imat = 0; imat < nb_mat; ++imat) {
       remove_ids.clear();
       add_ids.clear();
-      Int64 phase1_min_uid = imat*10;
-      Int64 phase1_max_uid = phase1_min_uid + 10 + imat*10;
+      Int64 phase1_min_uid = imat * 10;
+      Int64 phase1_max_uid = phase1_min_uid + 10 + imat * 10;
 
-      Int64 min_uid = phase1_max_uid  + 5;
-      Int64 max_uid = min_uid + 20 + imat*5;
-      ENUMERATE_CELL(icell,cells){
+      Int64 min_uid = phase1_max_uid + 5;
+      Int64 max_uid = min_uid + 20 + imat * 5;
+      ENUMERATE_CELL (icell, cells) {
         Cell cell = *icell;
         Int64 uid = cell.uniqueId();
-        if (uid<phase1_max_uid && uid>phase1_min_uid)
+        if (uid < phase1_max_uid && uid > phase1_min_uid)
           remove_ids.add(cell.localId());
-        else if (uid<max_uid && uid>min_uid)
+        else if (uid < max_uid && uid > min_uid)
           add_ids.add(cell.localId());
       }
       info() << "Adding cells n=" << add_ids.size() << " to mat " << imat << " (min_uid="
@@ -255,8 +255,8 @@ _doPhase2()
       info() << "Removing cells n=" << remove_ids.size() << " to mat " << imat << " (min_uid="
              << phase1_min_uid << " max_uid=" << phase1_max_uid << ")";
       IMeshMaterial* mat = mm->materials()[imat];
-      mmodifier.removeCells(mat,remove_ids);
-      mmodifier.addCells(mat,add_ids);
+      mmodifier.removeCells(mat, remove_ids);
+      mmodifier.addCells(mat, add_ids);
     }
   }
 
@@ -264,18 +264,18 @@ _doPhase2()
   m_material_mng->checkMaterialsInCells();
   _checkVariableSync1();
   m_variable_is_own_cell.fill(0);
-  ENUMERATE_(Cell,icell,ownCells()){
+  ENUMERATE_ (Cell, icell, ownCells()) {
     m_variable_is_own_cell[icell] = 1;
   }
-  ENUMERATE_(Cell,icell,allCells()){
+  ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
     m_cell_unique_ids[cell] = cell.uniqueId();
   }
 
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  for( int i=0; i<10; ++i )
-    _checkVariableSync2(false,i);
-  _checkVariableSync2(true,5);
+  for (int i = 0; i < 10; ++i)
+    _checkVariableSync2(false, i);
+  _checkVariableSync2(true, 5);
 #endif
 }
 
@@ -286,12 +286,12 @@ void MeshMaterialSyncUnitTest::
 _checkVariableSync1()
 {
   // Checks that variable synchronization works correctly
-  MaterialVariableCellInt32 mat_indexes(MaterialVariableBuildInfo(m_material_mng,"SyncMatIndexes"));
+  MaterialVariableCellInt32 mat_indexes(MaterialVariableBuildInfo(m_material_mng, "SyncMatIndexes"));
 
-  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,ownCells()){
+  ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, ownCells()) {
     AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+      ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
         MatCell mc = *imatcell;
         mat_indexes[mc] = mc.materialId() + 1;
       }
@@ -301,14 +301,14 @@ _checkVariableSync1()
   mat_indexes.synchronize();
 
   Integer nb_error = 0;
-  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,allCells()){
+  ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, allCells()) {
     AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
+      ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
         MatCell mc = *imatcell;
-        if (mat_indexes[mc] != (mc.materialId() + 1)){
+        if (mat_indexes[mc] != (mc.materialId() + 1)) {
           ++nb_error;
-          if (nb_error<10)
+          if (nb_error < 10)
             error() << "VariableSync error mat=" << mc.materialId()
                     << " mat_index=" << mat_indexes[mc]
                     << " cell=" << ItemPrinter(mc.globalCell());
@@ -316,8 +316,8 @@ _checkVariableSync1()
       }
     }
   }
-  if (nb_error!=0)
-    ARCANE_FATAL("Bad variable synchronization nb_error={0}",nb_error);
+  if (nb_error != 0)
+    ARCANE_FATAL("Bad variable synchronization nb_error={0}", nb_error);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ _checkVariableSync1()
 
 #if defined(ARCANE_HAS_ACCELERATOR_API)
 void MeshMaterialSyncUnitTest::
-_checkVariableSync2(bool do_check,Int32 iteration)
+_checkVariableSync2(bool do_check, Int32 iteration)
 {
   // TODO: Also do this with materials when they are available
   // TODO: Do not put the same value in every environment/material mesh (make a uid offset)
@@ -333,23 +333,24 @@ _checkVariableSync2(bool do_check,Int32 iteration)
 
   // Checks that variable synchronization works correctly
 
-  ENUMERATE_ENV(ienv, m_material_mng) {
+  ENUMERATE_ENV (ienv, m_material_mng) {
     IMeshEnvironment* env = *ienv;
     EnvCellVectorView envcellsv = env->envView();
     auto cmd = makeCommand(queue);
     auto out_mat_uids = viewOut(cmd, m_material_uids);
     auto in_is_own_cell = ax::viewIn(cmd, m_variable_is_own_cell);
     auto in_cell_uids = ax::viewIn(cmd, m_cell_unique_ids);
-    cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
+    cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv)
+    {
       auto [mvi, cid] = evi();
-      if (in_is_own_cell[cid]==1){
+      if (in_is_own_cell[cid] == 1) {
         out_mat_uids[mvi] = in_cell_uids[cid];
       }
     };
   }
 
   // With version 7 of synchronizations, we test the non-blocking version once in two.
-  if ((iteration%2)==0 && m_material_mng->synchronizeVariableVersion()==7){
+  if ((iteration % 2) == 0 && m_material_mng->synchronizeVariableVersion() == 7) {
     MeshMaterialVariableSynchronizerList vlist(m_material_mng);
     m_material_uids.synchronize(vlist);
     vlist.beginSynchronize();
@@ -362,22 +363,22 @@ _checkVariableSync2(bool do_check,Int32 iteration)
     return;
 
   Integer nb_error = 0;
-  ENUMERATE_ALLENVCELL(iallenvcell,m_material_mng,allCells()){
+  ENUMERATE_ALLENVCELL (iallenvcell, m_material_mng, allCells()) {
     AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
+    ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
       EnvCell mc = *ienvcell;
       Cell global_cell = mc.globalCell();
-      if (m_material_uids[mc] != global_cell.uniqueId()){
+      if (m_material_uids[mc] != global_cell.uniqueId()) {
         ++nb_error;
-        if (nb_error<10)
+        if (nb_error < 10)
           error() << "VariableSync error mat=" << mc
                   << " uid_value=" << m_material_uids[mc]
                   << " cell=" << ItemPrinter(mc.globalCell());
       }
     }
   }
-  if (nb_error!=0)
-    ARCANE_FATAL("Bad variable synchronization nb_error={0}",nb_error);
+  if (nb_error != 0)
+    ARCANE_FATAL("Bad variable synchronization nb_error={0}", nb_error);
 }
 #endif
 
@@ -390,7 +391,7 @@ ARCANE_REGISTER_SERVICE_MESHMATERIALSYNCUNITTEST(MeshMaterialSyncUnitTest,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -52,7 +52,8 @@ class UnitTestCartesianMeshPatchService
 : public ArcaneUnitTestCartesianMeshPatchObject
 {
  public:
-  explicit UnitTestCartesianMeshPatchService(const ServiceBuildInfo &sbi);
+
+  explicit UnitTestCartesianMeshPatchService(const ServiceBuildInfo& sbi);
   virtual ~UnitTestCartesianMeshPatchService() {}
 
   const Arcane::String getImplName() const { return serviceInfo()->localName(); }
@@ -137,7 +138,7 @@ class UnitTestCartesianMeshPatchService
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_nodedir_next_uid;
   std::vector<std::vector<std::vector<Arcane::Int64>>> m_patch_nodedir_prev_uid;
 
-	// Arrays of connectivity nodes -> cells by patch
+  // Arrays of connectivity nodes -> cells by patch
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_upper_right_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_upper_left_uid;
   std::vector<std::vector<Arcane::Int64>> m_patch_nodecell_lower_right_uid;
@@ -159,11 +160,11 @@ class UnitTestCartesianMeshPatchService
 /*---------------------------------------------------------------------------*/
 inline Cell lowerLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_upper_right{dir_cell_nodey.nextRight()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_upper_right{ dir_cell_nodey.nextRight() };
       if (node_upper_right == t_node) {
         return cell;
       }
@@ -184,11 +185,11 @@ inline Cell lowerLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const
 /*---------------------------------------------------------------------------*/
 inline Cell lowerRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_upper_left{dir_cell_nodey.nextLeft()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_upper_left{ dir_cell_nodey.nextLeft() };
       if (node_upper_left == t_node) {
         return cell;
       }
@@ -209,11 +210,11 @@ inline Cell lowerRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, cons
 /*---------------------------------------------------------------------------*/
 inline Cell upperLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_lower_right{dir_cell_nodey.previousRight()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_lower_right{ dir_cell_nodey.previousRight() };
       if (node_lower_right == t_node) {
         return cell;
       }
@@ -234,11 +235,11 @@ inline Cell upperLeft(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const
 /*---------------------------------------------------------------------------*/
 inline Cell upperRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, const Int32 t_lvl)
 {
-  CellDirectionMng cell_dmy{t_cm_patch->cellDirection(MD_DirY)};
+  CellDirectionMng cell_dmy{ t_cm_patch->cellDirection(MD_DirY) };
   for (const Cell& cell : t_node.cells()) {
     if (cell.level() == t_lvl) {
-      const DirCellNode& dir_cell_nodey{cell_dmy.cellNode(cell)};
-      const Node& node_lower_left{dir_cell_nodey.previousLeft()};
+      const DirCellNode& dir_cell_nodey{ cell_dmy.cellNode(cell) };
+      const Node& node_lower_left{ dir_cell_nodey.previousLeft() };
       if (node_lower_left == t_node) {
         return cell;
       }
@@ -258,10 +259,11 @@ inline Cell upperRight(const Node& t_node, ICartesianMeshPatch* t_cm_patch, cons
 /*---------------------------------------------------------------------------*/
 inline Cell prevCell(const DirFace& t_dir_face, const Int32 t_lvl)
 {
-  const Cell& cell_prev{t_dir_face.previousCell()};
+  const Cell& cell_prev{ t_dir_face.previousCell() };
   if (cell_prev.level() == t_lvl) {
     return cell_prev;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
@@ -277,10 +279,11 @@ inline Cell prevCell(const DirFace& t_dir_face, const Int32 t_lvl)
 /*---------------------------------------------------------------------------*/
 inline Cell nextCell(const DirFace& t_dir_face, const Int32 t_lvl)
 {
-  const Cell& cell_next{t_dir_face.nextCell()};
+  const Cell& cell_next{ t_dir_face.nextCell() };
   if (cell_next.level() == t_lvl) {
     return cell_next;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
@@ -296,10 +299,11 @@ inline Cell nextCell(const DirFace& t_dir_face, const Int32 t_lvl)
 /*---------------------------------------------------------------------------*/
 inline Cell prev(const DirCell& t_dir_cell, const Int32 t_lvl)
 {
-  const Cell& cell_prev{t_dir_cell.previous()};
+  const Cell& cell_prev{ t_dir_cell.previous() };
   if (cell_prev.level() == t_lvl) {
     return cell_prev;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
@@ -315,10 +319,11 @@ inline Cell prev(const DirCell& t_dir_cell, const Int32 t_lvl)
 /*---------------------------------------------------------------------------*/
 inline Cell next(const DirCell& t_dir_cell, const Int32 t_lvl)
 {
-  const Cell& cell_next{t_dir_cell.next()};
+  const Cell& cell_next{ t_dir_cell.next() };
   if (cell_next.level() == t_lvl) {
     return cell_next;
-  } else {
+  }
+  else {
     return Cell{};
   }
 }
@@ -356,9 +361,9 @@ setUpForClass()
   {
     Integer nb_patch = m_cartesian_mesh->nbPatch();
     Directory export_dir(subDomain()->exportDirectory());
-    for( Integer i=0; i<nb_patch; ++i ){
+    for (Integer i = 0; i < nb_patch; ++i) {
       ICartesianMeshPatch* patch = m_cartesian_mesh->patch(i);
-      String filename = export_dir.file(String::format("Patch{0}.svg",i));
+      String filename = export_dir.file(String::format("Patch{0}.svg", i));
       std::ofstream ofile(filename.localstr());
       SimpleSVGMeshExporter writer(ofile);
       writer.write(patch->cells());
@@ -2046,8 +2051,7 @@ setUpForClass()
  * Actions to perform before each test
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::setUp()
+void UnitTestCartesianMeshPatchService::setUp()
 {
 }
 
@@ -2057,8 +2061,7 @@ UnitTestCartesianMeshPatchService::setUp()
  * Actions to perform after each test
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::tearDown()
+void UnitTestCartesianMeshPatchService::tearDown()
 {
 }
 
@@ -2068,8 +2071,7 @@ UnitTestCartesianMeshPatchService::tearDown()
  * Actions to perform after all tests
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::tearDownForClass()
+void UnitTestCartesianMeshPatchService::tearDownForClass()
 {
 }
 
@@ -2079,19 +2081,18 @@ UnitTestCartesianMeshPatchService::tearDownForClass()
  * Test on cells by refinement level and their parents
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
 {
-  for (Int32 lvl{0}; lvl < 3; ++lvl) {
-    const std::vector<Int64>& cell_uid{m_lvl_cell_uid[lvl]};
-    const std::vector<Int64>& cell_p_uid{m_lvl_cell_p_uid[lvl]};
-    const std::vector<Int64>& cell_tp_uid{m_lvl_cell_tp_uid[lvl]};
+  for (Int32 lvl{ 0 }; lvl < 3; ++lvl) {
+    const std::vector<Int64>& cell_uid{ m_lvl_cell_uid[lvl] };
+    const std::vector<Int64>& cell_p_uid{ m_lvl_cell_p_uid[lvl] };
+    const std::vector<Int64>& cell_tp_uid{ m_lvl_cell_tp_uid[lvl] };
 
-    const CellGroup& allLevelCells{this->mesh()->allLevelCells(lvl)};
+    const CellGroup& allLevelCells{ this->mesh()->allLevelCells(lvl) };
     ASSERT_EQUAL(static_cast<Integer>(cell_uid.size()), allLevelCells.size());
 
     ENUMERATE_CELL (cell_i, allLevelCells) {
-      const Int64 i{cell_i.index()};
+      const Int64 i{ cell_i.index() };
 
       ASSERT_EQUAL(cell_uid[i], cell_i->uniqueId().asInt64());
       if (lvl > 0) {
@@ -2108,72 +2109,71 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellsAndParents()
  * Cartesian view test on cells
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
 {
   ASSERT_EQUAL(m_cartesian_mesh->nbPatch(), 5);
 
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
-    const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
-    const std::vector<Int64>& cell_uid{m_patch_cell_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& celldir_next_uid{m_patch_celldir_next_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& celldir_prev_uid{m_patch_celldir_prev_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& cellfacedir_next_uid{m_patch_cellfacedir_next_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& cellfacedir_prev_uid{m_patch_cellfacedir_prev_uid[ipatch]};
-    const std::vector<Int64>& cellnode_upper_right_uid{m_patch_cellnode_upper_right_uid[ipatch]};
-    const std::vector<Int64>& cellnode_upper_left_uid{m_patch_cellnode_upper_left_uid[ipatch]};
-    const std::vector<Int64>& cellnode_lower_right_uid{m_patch_cellnode_lower_right_uid[ipatch]};
-    const std::vector<Int64>& cellnode_lower_left_uid{m_patch_cellnode_lower_left_uid[ipatch]};
+    const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
+    const std::vector<Int64>& cell_uid{ m_patch_cell_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& celldir_next_uid{ m_patch_celldir_next_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& celldir_prev_uid{ m_patch_celldir_prev_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& cellfacedir_next_uid{ m_patch_cellfacedir_next_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& cellfacedir_prev_uid{ m_patch_cellfacedir_prev_uid[ipatch] };
+    const std::vector<Int64>& cellnode_upper_right_uid{ m_patch_cellnode_upper_right_uid[ipatch] };
+    const std::vector<Int64>& cellnode_upper_left_uid{ m_patch_cellnode_upper_left_uid[ipatch] };
+    const std::vector<Int64>& cellnode_lower_right_uid{ m_patch_cellnode_lower_right_uid[ipatch] };
+    const std::vector<Int64>& cellnode_lower_left_uid{ m_patch_cellnode_lower_left_uid[ipatch] };
 
-    for (Int32 dir{0}; dir < 2; ++dir) {
-      CellDirectionMng cell_dm{(patch_i == -1) ? m_cartesian_mesh->cellDirection(dir) : cm_patch->cellDirection(dir)};
+    for (Int32 dir{ 0 }; dir < 2; ++dir) {
+      CellDirectionMng cell_dm{ (patch_i == -1) ? m_cartesian_mesh->cellDirection(dir) : cm_patch->cellDirection(dir) };
 
       info() << "Patch = " << patch_i << " dir=" << dir;
-      const std::vector<Int64>& cell_next_uid{celldir_next_uid[dir]};
-      const std::vector<Int64>& cell_prev_uid{celldir_prev_uid[dir]};
-      const std::vector<Int64>& cellface_next_uid{cellfacedir_next_uid[dir]};
-      const std::vector<Int64>& cellface_prev_uid{cellfacedir_prev_uid[dir]};
+      const std::vector<Int64>& cell_next_uid{ celldir_next_uid[dir] };
+      const std::vector<Int64>& cell_prev_uid{ celldir_prev_uid[dir] };
+      const std::vector<Int64>& cellface_next_uid{ cellfacedir_next_uid[dir] };
+      const std::vector<Int64>& cellface_prev_uid{ cellfacedir_prev_uid[dir] };
 
-      const CellGroup& allCellDMCells{cell_dm.allCells()};
+      const CellGroup& allCellDMCells{ cell_dm.allCells() };
       ASSERT_EQUAL(static_cast<Integer>(cell_uid.size()), allCellDMCells.size());
 
       ENUMERATE_CELL (cell_i, allCellDMCells) {
-        const Int64 i{cell_i.index()};
-        const Cell& cell{*cell_i};
+        const Int64 i{ cell_i.index() };
+        const Cell& cell{ *cell_i };
 
         ASSERT_EQUAL(cell_uid[i], cell_i->uniqueId().asInt64());
 
         {
-          DirCell dir_cell{cell_dm[cell_i]};
+          DirCell dir_cell{ cell_dm[cell_i] };
           info() << "Cell = " << cell_i->uniqueId() << " expected_next=" << cell_next_uid[i] << " expected_prev=" << cell_prev_uid[i];
           ASSERT_EQUAL(cell_next_uid[i], dir_cell.next().uniqueId().asInt64());
           ASSERT_EQUAL(cell_prev_uid[i], dir_cell.previous().uniqueId().asInt64());
         }
 
         {
-          const DirCellFace& dir_cellface{cell_dm.cellFace(cell)};
+          const DirCellFace& dir_cellface{ cell_dm.cellFace(cell) };
           ASSERT_EQUAL(cellface_next_uid[i], dir_cellface.next().uniqueId().asInt64());
           ASSERT_EQUAL(cellface_prev_uid[i], dir_cellface.previous().uniqueId().asInt64());
         }
 
         {
-          const DirCellNode& dir_cellnode{cell_dm.cellNode(cell)};
+          const DirCellNode& dir_cellnode{ cell_dm.cellNode(cell) };
           {
-            const Node& node_upper_right{(dir == 1) ? dir_cellnode.nextRight() : dir_cellnode.nextLeft()};
+            const Node& node_upper_right{ (dir == 1) ? dir_cellnode.nextRight() : dir_cellnode.nextLeft() };
             ASSERT_EQUAL(cellnode_upper_right_uid[i], node_upper_right.uniqueId().asInt64());
           }
           {
-            const Node& node_upper_left{(dir == 1) ? dir_cellnode.nextLeft() : dir_cellnode.previousLeft()};
+            const Node& node_upper_left{ (dir == 1) ? dir_cellnode.nextLeft() : dir_cellnode.previousLeft() };
             ASSERT_EQUAL(cellnode_upper_left_uid[i], node_upper_left.uniqueId().asInt64());
           }
           {
-            const Node& node_lower_right{(dir == 1) ? dir_cellnode.previousRight() : dir_cellnode.nextRight()};
+            const Node& node_lower_right{ (dir == 1) ? dir_cellnode.previousRight() : dir_cellnode.nextRight() };
             ASSERT_EQUAL(cellnode_lower_right_uid[i], node_lower_right.uniqueId().asInt64());
           }
           {
-            const Node& node_lower_left{(dir == 1) ? dir_cellnode.previousLeft() : dir_cellnode.previousRight()};
+            const Node& node_lower_left{ (dir == 1) ? dir_cellnode.previousLeft() : dir_cellnode.previousRight() };
             ASSERT_EQUAL(cellnode_lower_left_uid[i], node_lower_left.uniqueId().asInt64());
           }
         }
@@ -2188,33 +2188,32 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchCellDirectionMng()
  * Cartesian view test on faces
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
 {
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
-    const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
-    const std::vector<std::vector<Int64>>& facedir_uid{m_patch_facedir_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& facedir_next_cell_uid{m_patch_facedir_next_cell_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& facedir_prev_cell_uid{m_patch_facedir_prev_cell_uid[ipatch]};
+    const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
+    const std::vector<std::vector<Int64>>& facedir_uid{ m_patch_facedir_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& facedir_next_cell_uid{ m_patch_facedir_next_cell_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& facedir_prev_cell_uid{ m_patch_facedir_prev_cell_uid[ipatch] };
 
-    for (Int32 dir{0}; dir < 2; ++dir) {
-      FaceDirectionMng face_dm{(patch_i == -1) ? m_cartesian_mesh->faceDirection(dir) : cm_patch->faceDirection(dir)};
+    for (Int32 dir{ 0 }; dir < 2; ++dir) {
+      FaceDirectionMng face_dm{ (patch_i == -1) ? m_cartesian_mesh->faceDirection(dir) : cm_patch->faceDirection(dir) };
 
       info() << "Patch = " << patch_i << " dir=" << dir;
 
-      const std::vector<Int64>& face_uid{facedir_uid[dir]};
-      const std::vector<Int64>& face_next_cell_uid{facedir_next_cell_uid[dir]};
-      const std::vector<Int64>& face_prev_cell_uid{facedir_prev_cell_uid[dir]};
+      const std::vector<Int64>& face_uid{ facedir_uid[dir] };
+      const std::vector<Int64>& face_next_cell_uid{ facedir_next_cell_uid[dir] };
+      const std::vector<Int64>& face_prev_cell_uid{ facedir_prev_cell_uid[dir] };
 
-      const FaceGroup& allFaceDMFaces{face_dm.allFaces()};
+      const FaceGroup& allFaceDMFaces{ face_dm.allFaces() };
       ASSERT_EQUAL(static_cast<Integer>(face_uid.size()), allFaceDMFaces.size());
 
       ENUMERATE_FACE (face_i, allFaceDMFaces) {
-        const Int64 i{face_i.index()};
+        const Int64 i{ face_i.index() };
 
-        DirFace dir_face{face_dm[face_i]};
+        DirFace dir_face{ face_dm[face_i] };
         Cell next_cell = dir_face.nextCell();
         Cell prev_cell = dir_face.previousCell();
         ASSERT_EQUAL(face_prev_cell_uid[i], dir_face.previousCell().uniqueId().asInt64());
@@ -2237,32 +2236,31 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchFaceDirectionMng()
  * Cartesian view test on nodes
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
 {
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
-    const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
-    const std::vector<Int64>& node_uid{m_patch_node_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& nodedir_next_uid{m_patch_nodedir_next_uid[ipatch]};
-    const std::vector<std::vector<Int64>>& nodedir_prev_uid{m_patch_nodedir_prev_uid[ipatch]};
+    const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
+    const std::vector<Int64>& node_uid{ m_patch_node_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& nodedir_next_uid{ m_patch_nodedir_next_uid[ipatch] };
+    const std::vector<std::vector<Int64>>& nodedir_prev_uid{ m_patch_nodedir_prev_uid[ipatch] };
 
-    for (Int32 dir{0}; dir < 2; ++dir) {
-      NodeDirectionMng node_dm{(patch_i == -1) ? m_cartesian_mesh->nodeDirection(dir) : cm_patch->nodeDirection(dir)};
+    for (Int32 dir{ 0 }; dir < 2; ++dir) {
+      NodeDirectionMng node_dm{ (patch_i == -1) ? m_cartesian_mesh->nodeDirection(dir) : cm_patch->nodeDirection(dir) };
 
-      const std::vector<Int64>& node_next_uid{nodedir_next_uid[dir]};
-      const std::vector<Int64>& node_prev_uid{nodedir_prev_uid[dir]};
+      const std::vector<Int64>& node_next_uid{ nodedir_next_uid[dir] };
+      const std::vector<Int64>& node_prev_uid{ nodedir_prev_uid[dir] };
 
-      const NodeGroup& allNodeDMNodes{node_dm.allNodes()};
+      const NodeGroup& allNodeDMNodes{ node_dm.allNodes() };
       ASSERT_EQUAL(static_cast<Integer>(node_uid.size()), allNodeDMNodes.size());
 
       ENUMERATE_NODE (node_i, allNodeDMNodes) {
-        const Int64 i{node_i.index()};
+        const Int64 i{ node_i.index() };
 
         ASSERT_EQUAL(node_uid[i], node_i->uniqueId().asInt64());
 
-        const DirNode& dir_node{node_dm[node_i]};
+        const DirNode& dir_node{ node_dm[node_i] };
         ASSERT_EQUAL(node_next_uid[i], dir_node.next().uniqueId().asInt64());
         ASSERT_EQUAL(node_prev_uid[i], dir_node.previous().uniqueId().asInt64());
       }
@@ -2276,83 +2274,83 @@ UnitTestCartesianMeshPatchService::testCartesianMeshPatchNodeDirectionMng()
  * Test Cartesian connectivity cell -> node and node -> cell
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::testCartesianMeshPatchCartesianConnectivity()
+void UnitTestCartesianMeshPatchService::testCartesianMeshPatchCartesianConnectivity()
 {
   // Not done for now because it does not work.
   warning() << A_FUNCINFO << " This test is not activated because it does not (yet) work.";
   return;
 
-  const CartesianConnectivity& cc{m_cartesian_mesh->connectivity()};
+  const CartesianConnectivity& cc{ m_cartesian_mesh->connectivity() };
 
-  for (Int32 patch_i{-1}; patch_i < 5; ++patch_i) {
-    ICartesianMeshPatch* cm_patch{(patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i)};
+  for (Int32 patch_i{ -1 }; patch_i < 5; ++patch_i) {
+    ICartesianMeshPatch* cm_patch{ (patch_i == -1) ? nullptr : m_cartesian_mesh->patch(patch_i) };
 
     {
-      const Int32 ipatch{(patch_i == -1) ? 0 : patch_i};
+      const Int32 ipatch{ (patch_i == -1) ? 0 : patch_i };
 
-      const std::vector<Int64>& cellnode_upper_right_uid{m_patch_cellnode_upper_right_uid[ipatch]};
-      const std::vector<Int64>& cellnode_upper_left_uid{m_patch_cellnode_upper_left_uid[ipatch]};
-      const std::vector<Int64>& cellnode_lower_right_uid{m_patch_cellnode_lower_right_uid[ipatch]};
-      const std::vector<Int64>& cellnode_lower_left_uid{m_patch_cellnode_lower_left_uid[ipatch]};
+      const std::vector<Int64>& cellnode_upper_right_uid{ m_patch_cellnode_upper_right_uid[ipatch] };
+      const std::vector<Int64>& cellnode_upper_left_uid{ m_patch_cellnode_upper_left_uid[ipatch] };
+      const std::vector<Int64>& cellnode_lower_right_uid{ m_patch_cellnode_lower_right_uid[ipatch] };
+      const std::vector<Int64>& cellnode_lower_left_uid{ m_patch_cellnode_lower_left_uid[ipatch] };
 
-      CellDirectionMng cell_dm{(patch_i == -1) ? m_cartesian_mesh->cellDirection(MD_DirX)
-                                               : cm_patch->cellDirection(MD_DirX)};
-      const CellGroup& allCellDMCells{cell_dm.allCells()};
+      CellDirectionMng cell_dm{ (patch_i == -1) ? m_cartesian_mesh->cellDirection(MD_DirX)
+                                                : cm_patch->cellDirection(MD_DirX) };
+      const CellGroup& allCellDMCells{ cell_dm.allCells() };
       ENUMERATE_CELL (cell_i, allCellDMCells) {
-        const Int64 i{cell_i.index()};
-        const Cell& cell{*cell_i};
+        const Int64 i{ cell_i.index() };
+        const Cell& cell{ *cell_i };
 
         {
-          const Node& node_upper_right{cc.upperRight(cell)};
+          const Node& node_upper_right{ cc.upperRight(cell) };
           ASSERT_EQUAL(cellnode_upper_right_uid[i], node_upper_right.uniqueId().asInt64());
         }
         {
-          const Node& node_upper_left{cc.upperLeft(cell)};
+          const Node& node_upper_left{ cc.upperLeft(cell) };
           ASSERT_EQUAL(cellnode_upper_left_uid[i], node_upper_left.uniqueId().asInt64());
         }
         {
-          const Node& node_lower_right{cc.lowerRight(cell)};
+          const Node& node_lower_right{ cc.lowerRight(cell) };
           ASSERT_EQUAL(cellnode_lower_right_uid[i], node_lower_right.uniqueId().asInt64());
         }
         {
-          const Node& node_lower_left{cc.lowerLeft(cell)};
+          const Node& node_lower_left{ cc.lowerLeft(cell) };
           ASSERT_EQUAL(cellnode_lower_left_uid[i], node_lower_left.uniqueId().asInt64());
         }
       }
     }
 
     {
-      const Int32 ipatch{patch_i + 1};
-      const Int32 lvl{(patch_i < 1) ? 0 : (patch_i < 3) ? 1 : 2};
+      const Int32 ipatch{ patch_i + 1 };
+      const Int32 lvl{ (patch_i < 1) ? 0 : (patch_i < 3) ? 1
+                                                         : 2 };
 
-      const std::vector<Int64>& nodecell_upper_right_uid{m_patch_nodecell_upper_right_uid[ipatch]};
-      const std::vector<Int64>& nodecell_upper_left_uid{m_patch_nodecell_upper_left_uid[ipatch]};
-      const std::vector<Int64>& nodecell_lower_right_uid{m_patch_nodecell_lower_right_uid[ipatch]};
-      const std::vector<Int64>& nodecell_lower_left_uid{m_patch_nodecell_lower_left_uid[ipatch]};
+      const std::vector<Int64>& nodecell_upper_right_uid{ m_patch_nodecell_upper_right_uid[ipatch] };
+      const std::vector<Int64>& nodecell_upper_left_uid{ m_patch_nodecell_upper_left_uid[ipatch] };
+      const std::vector<Int64>& nodecell_lower_right_uid{ m_patch_nodecell_lower_right_uid[ipatch] };
+      const std::vector<Int64>& nodecell_lower_left_uid{ m_patch_nodecell_lower_left_uid[ipatch] };
 
-      NodeDirectionMng node_dm{(patch_i == -1) ? m_cartesian_mesh->nodeDirection(MD_DirX)
-                                               : cm_patch->nodeDirection(MD_DirX)};
-      const NodeGroup& allNodeDMNodes{node_dm.allNodes()};
+      NodeDirectionMng node_dm{ (patch_i == -1) ? m_cartesian_mesh->nodeDirection(MD_DirX)
+                                                : cm_patch->nodeDirection(MD_DirX) };
+      const NodeGroup& allNodeDMNodes{ node_dm.allNodes() };
       ENUMERATE_NODE (node_i, allNodeDMNodes) {
-        const Int64 i{node_i.index()};
-        const Node node{*node_i};
+        const Int64 i{ node_i.index() };
+        const Node node{ *node_i };
         info() << " Node: " << ItemPrinter(node) << " patch=" << patch_i;
         {
-          Cell cell_upper_right{(patch_i == -1) ? cc.upperRight(node) : upperRight(node, cm_patch, lvl)};
+          Cell cell_upper_right{ (patch_i == -1) ? cc.upperRight(node) : upperRight(node, cm_patch, lvl) };
           info() << " CellUpperRight: " << ItemPrinter(cell_upper_right) << " expected=" << nodecell_upper_right_uid[i];
           ASSERT_EQUAL(nodecell_upper_right_uid[i], cell_upper_right.uniqueId().asInt64());
         }
         {
-          const Cell& cell_upper_left{(patch_i == -1) ? cc.upperLeft(node) : upperLeft(node, cm_patch, lvl)};
+          const Cell& cell_upper_left{ (patch_i == -1) ? cc.upperLeft(node) : upperLeft(node, cm_patch, lvl) };
           ASSERT_EQUAL(nodecell_upper_left_uid[i], cell_upper_left.uniqueId().asInt64());
         }
         {
-          const Cell& cell_lower_right{(patch_i == -1) ? cc.lowerRight(node) : lowerRight(node, cm_patch, lvl)};
+          const Cell& cell_lower_right{ (patch_i == -1) ? cc.lowerRight(node) : lowerRight(node, cm_patch, lvl) };
           ASSERT_EQUAL(nodecell_lower_right_uid[i], cell_lower_right.uniqueId().asInt64());
         }
         {
-          const Cell& cell_lower_left{(patch_i == -1) ? cc.lowerLeft(node) : lowerLeft(node, cm_patch, lvl)};
+          const Cell& cell_lower_left{ (patch_i == -1) ? cc.lowerLeft(node) : lowerLeft(node, cm_patch, lvl) };
           ASSERT_EQUAL(nodecell_lower_left_uid[i], cell_lower_left.uniqueId().asInt64());
         }
       }
@@ -2367,4 +2365,8 @@ ARCANE_REGISTER_SERVICE_UNITTESTCARTESIANMESHPATCH(UnitTestCartesianMeshPatch, U
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 } // namespace ArcaneTest
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

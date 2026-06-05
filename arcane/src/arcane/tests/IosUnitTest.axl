@@ -1,59 +1,57 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+﻿<?xml version="1.0" ?>
 
 <!-- Data set options for the iOS test service -->
 
-<service name="IosUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
-  <interface name="Arcane::IUnitTest" inherited="false" />
+<service name="IosUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
   <variables>
-    <variable field-name="test_cell_variable" name="TestCellVariable" data-type="real" item-kind="cell" dim="0" />
+    <variable field-name="test_cell_variable" name="TestCellVariable" data-type="real" item-kind="cell" dim="0"/>
   </variables>
   <options>
     <simple
-      name = "output-file-name"
-      type = "string"
-      default = "iosOutput">
+      name="output-file-name"
+      type="string"
+      default="iosOutput">
       <name lang='fr'>fichier-sortie</name>
       <description>
-	Base name of the output file.
+        Base name of the output file.
       </description>
     </simple>
- 
+
     <simple
-      name = "write-vtu"
-      type = "bool"
-      default = "true">
+      name="write-vtu"
+      type="bool"
+      default="true">
       <name lang='fr'>ecriture-vtu</name>
       <description>
-	True to save the arcane mesh in a VTU file.
+        True to save the arcane mesh in a VTU file.
       </description>
     </simple>
     <simple
-      name = "write-xmf"
-      type = "bool"
-      default = "true">
+      name="write-xmf"
+      type="bool"
+      default="true">
       <name lang='fr'>ecriture-xmf</name>
       <description>
-	True to save the arcane mesh in an XMF file.
+        True to save the arcane mesh in an XMF file.
       </description>
     </simple>
     <simple
-      name = "write-msh"
-      type = "bool"
-      default = "true">
+      name="write-msh"
+      type="bool"
+      default="true">
       <name lang='fr'>ecriture-msh</name>
       <description>
-	True to save the arcane mesh in an MSH file.
+        True to save the arcane mesh in an MSH file.
       </description>
     </simple>
     <simple
-      name = "write-vtk-legacy"
-      type = "bool"
-      default = "false">
+      name="write-vtk-legacy"
+      type="bool"
+      default="false">
       <description>
-	True to save the arcane mesh in VtkLegacy format
+        True to save the arcane mesh in VtkLegacy format
       </description>
     </simple>
   </options>

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,10 +13,10 @@
 
 #include "arcane/tests/AMR/ErrorEstimate.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/SharedVariable.h"
-#include "arcane/IMesh.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/SharedVariable.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

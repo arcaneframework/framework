@@ -404,7 +404,7 @@ compute()
   if (iteration <= 2)
     _changeVariableAllocator();
 
-  if (iteration>=2){
+  if (iteration >= 2) {
     Runner runner = *acceleratorMng()->defaultRunner();
     ostringstream o;
     runner._internalApi()->printProfilingInfos(o);

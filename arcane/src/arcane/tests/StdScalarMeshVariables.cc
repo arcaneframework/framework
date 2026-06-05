@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,9 +31,9 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> StdScalarMeshVariables<ItemType>::
-StdScalarMeshVariables(const MeshHandle& mesh_handle,const String& basestr)
-: StdMeshVariables< StdMeshVariableTraits2<ItemType,0> >(mesh_handle,basestr,"Scalar")
+template <class ItemType> StdScalarMeshVariables<ItemType>::
+StdScalarMeshVariables(const MeshHandle& mesh_handle, const String& basestr)
+: StdMeshVariables<StdMeshVariableTraits2<ItemType, 0>>(mesh_handle, basestr, "Scalar")
 , m_nb_display_error(10)
 , m_nb_displayed_error(0)
 {
@@ -42,9 +42,9 @@ StdScalarMeshVariables(const MeshHandle& mesh_handle,const String& basestr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> StdScalarMeshVariables<ItemType>::
-StdScalarMeshVariables(const MeshHandle& mesh_handle,const String& basestr,const String& family_name)
-: StdMeshVariables< StdMeshVariableTraits2<ItemType,0> >(mesh_handle,basestr,"Scalar",family_name)
+template <class ItemType> StdScalarMeshVariables<ItemType>::
+StdScalarMeshVariables(const MeshHandle& mesh_handle, const String& basestr, const String& family_name)
+: StdMeshVariables<StdMeshVariableTraits2<ItemType, 0>>(mesh_handle, basestr, "Scalar", family_name)
 , m_nb_display_error(10)
 , m_nb_displayed_error(0)
 {
@@ -55,35 +55,35 @@ StdScalarMeshVariables(const MeshHandle& mesh_handle,const String& basestr,const
 
 namespace
 {
-void _setReferenceValue(Int64 n,MultiScalarValue& sv)
-{
-  Real r = Convert::toReal(n);
-  float fr = static_cast<float>(r);
-  sv.m_byte = (Byte)(n % 255);
-  sv.m_real = r;
-  sv.m_int64 = n;
-  sv.m_int32 = static_cast<Int32>(n);
-  sv.m_int16 = static_cast<Int16>(n);
-  sv.m_real2 = Real2 (r, r+1);
-  sv.m_real2x2 = Real2x2::fromLines (r, r+1., r+2., r+3.);
-  sv.m_real3 = Real3 (r, r+1., r+2.0);
-  sv.m_real3x3 = Real3x3::fromLines (r, r+1., r+2., r+3., r+4., r+5., r+6., r+7., r+8.);
-  sv.m_int8 = static_cast<Int8>(n);
-  sv.m_bfloat16 = fr;
-  sv.m_float16 = fr;
-  sv.m_float32 = fr;
-}
-}
+  void _setReferenceValue(Int64 n, MultiScalarValue& sv)
+  {
+    Real r = Convert::toReal(n);
+    float fr = static_cast<float>(r);
+    sv.m_byte = (Byte)(n % 255);
+    sv.m_real = r;
+    sv.m_int64 = n;
+    sv.m_int32 = static_cast<Int32>(n);
+    sv.m_int16 = static_cast<Int16>(n);
+    sv.m_real2 = Real2(r, r + 1);
+    sv.m_real2x2 = Real2x2::fromLines(r, r + 1., r + 2., r + 3.);
+    sv.m_real3 = Real3(r, r + 1., r + 2.0);
+    sv.m_real3x3 = Real3x3::fromLines(r, r + 1., r + 2., r + 3., r + 4., r + 5., r + 6., r + 7., r + 8.);
+    sv.m_int8 = static_cast<Int8>(n);
+    sv.m_bfloat16 = fr;
+    sv.m_float16 = fr;
+    sv.m_float32 = fr;
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> void StdScalarMeshVariables<ItemType>::
+template <class ItemType> void StdScalarMeshVariables<ItemType>::
 setItemValues(Int64 n, ItemType item)
 {
   MultiScalarValue sv;
-  
-  _setReferenceValue(n,sv);
+
+  _setReferenceValue(n, sv);
 
   this->m_byte[item] = sv.m_byte;
   this->m_real[item] = sv.m_real;
@@ -103,46 +103,46 @@ setItemValues(Int64 n, ItemType item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> void StdScalarMeshVariables<ItemType>::
+template <class ItemType> void StdScalarMeshVariables<ItemType>::
 setEvenValues(Integer iteration, const GroupType& group)
 {
-  ENUMERATE_ITEM(iter,group){
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
-    Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
-    setItemValues(n,item);
+    Int64 n = 1 + (item.uniqueId().asInt64() + iteration * 7);
+    setItemValues(n, item);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> void StdScalarMeshVariables<ItemType>::
+template <class ItemType> void StdScalarMeshVariables<ItemType>::
 setOddValues(Integer iteration, const GroupType& group)
 {
-  ENUMERATE_ITEM(iter,group){
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
-    Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
-    setItemValues(-n,item);
+    Int64 n = 1 + (item.uniqueId().asInt64() + iteration * 7);
+    setItemValues(-n, item);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> void StdScalarMeshVariables<ItemType>::
+template <class ItemType> void StdScalarMeshVariables<ItemType>::
 setValues(Integer iteration, const GroupType& group)
 {
-  ENUMERATE_ITEM(iter,group){
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
-    Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
-    setItemValues(n,item);
+    Int64 n = 1 + (item.uniqueId().asInt64() + iteration * 7);
+    setItemValues(n, item);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> void StdScalarMeshVariables<ItemType>::
+template <class ItemType> void StdScalarMeshVariables<ItemType>::
 setValuesWithViews(Integer seed, const GroupType& group)
 {
   auto out_byte = viewOut(this->m_byte);
@@ -161,10 +161,10 @@ setValuesWithViews(Integer seed, const GroupType& group)
 
   MultiScalarValue sv;
 
-  ENUMERATE_ITEM(iter,group){
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
-    Int64 n = 1 + (item.uniqueId().asInt64() + seed*7);
-    _setReferenceValue(n,sv);
+    Int64 n = 1 + (item.uniqueId().asInt64() + seed * 7);
+    _setReferenceValue(n, sv);
 
     out_byte[item] = sv.m_byte;
     out_real[item] = sv.m_real;
@@ -185,9 +185,9 @@ setValuesWithViews(Integer seed, const GroupType& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
-_writeError(ITraceMng* tm,const char* type_name,const DataType& value,
-            const DataType& expected_value,const Item& item)
+template <class DataType> void
+_writeError(ITraceMng* tm, const char* type_name, const DataType& value,
+            const DataType& expected_value, const Item& item)
 {
   tm->info() << "Bad scalar value type=" << type_name
              << " value=" << value
@@ -198,21 +198,21 @@ _writeError(ITraceMng* tm,const char* type_name,const DataType& value,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define CHECK_VALUE(type_name)\
-    if (ref_sv.m_##type_name!=current_sv.m_##type_name){\
-      ++nb_error;\
-      ++m_nb_displayed_error;\
-      if (m_nb_displayed_error<m_nb_display_error){\
-        _writeError(tm,#type_name,current_sv.m_##type_name,ref_sv.m_##type_name,item);\
-      }\
-    }
+#define CHECK_VALUE(type_name) \
+  if (ref_sv.m_##type_name != current_sv.m_##type_name) { \
+    ++nb_error; \
+    ++m_nb_displayed_error; \
+    if (m_nb_displayed_error < m_nb_display_error) { \
+      _writeError(tm, #type_name, current_sv.m_##type_name, ref_sv.m_##type_name, item); \
+    } \
+  }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> Integer
+template <class ItemType> Integer
 StdScalarMeshVariables<ItemType>::
-_checkValue(ItemType item,const MultiScalarValue& ref_sv,
+_checkValue(ItemType item, const MultiScalarValue& ref_sv,
             const MultiScalarValue& current_sv)
 {
   ITraceMng* tm = this->m_mesh_handle.mesh()->traceMng();
@@ -237,47 +237,46 @@ _checkValue(ItemType item,const MultiScalarValue& ref_sv,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> Integer StdScalarMeshVariables<ItemType>::
+template <class ItemType> Integer StdScalarMeshVariables<ItemType>::
 _checkItemValues(Integer seed, ItemType item, const MultiScalarValue& current_sv)
 {
   MultiScalarValue ref_sv;
 
-  Int64 n = 1 + (item.uniqueId().asInt64() + seed*7);
-  _setReferenceValue(n,ref_sv);
+  Int64 n = 1 + (item.uniqueId().asInt64() + seed * 7);
+  _setReferenceValue(n, ref_sv);
 
-  return _checkValue(item,ref_sv,current_sv);
+  return _checkValue(item, ref_sv, current_sv);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> Integer StdScalarMeshVariables<ItemType>::
+template <class ItemType> Integer StdScalarMeshVariables<ItemType>::
 checkGhostValuesOddOrEven(Integer iteration, const GroupType& group)
 {
   Integer nb_error = 0;
   MultiScalarValue current_sv;
   m_nb_displayed_error = 0;
-  
-  auto check_value = [&](ItemType item)
-  {
+
+  auto check_value = [&](ItemType item) {
     MultiScalarValue ref_sv;
-    
+
     Int64 uid = item.uniqueId();
-    Int64 n = 1 + (uid + iteration*7);
-    
+    Int64 n = 1 + (uid + iteration * 7);
+
     if (uid % 2 != 0) {
       n = -n;
     }
-    
+
     _setReferenceValue(n, ref_sv);
-    
-    return _checkValue(item,ref_sv,current_sv);
+
+    return _checkValue(item, ref_sv, current_sv);
   };
-  
-  ENUMERATE_ITEM(iter,group){
+
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
 
-    if (!item.isOwn()){
+    if (!item.isOwn()) {
       current_sv.m_byte = this->m_byte[item];
       current_sv.m_real = this->m_real[item];
       current_sv.m_int64 = this->m_int64[item];
@@ -301,13 +300,13 @@ checkGhostValuesOddOrEven(Integer iteration, const GroupType& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> Integer StdScalarMeshVariables<ItemType>::
-checkValues (Integer iteration, const GroupType& group)
+template <class ItemType> Integer StdScalarMeshVariables<ItemType>::
+checkValues(Integer iteration, const GroupType& group)
 {
   Integer nb_error = 0;
   MultiScalarValue current_sv;
   m_nb_displayed_error = 0;
-  ENUMERATE_ITEM(iter,group){
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
 
     current_sv.m_byte = this->m_byte[item];
@@ -324,7 +323,7 @@ checkValues (Integer iteration, const GroupType& group)
     current_sv.m_float16 = this->m_float16[item];
     current_sv.m_float32 = this->m_float32[item];
 
-    nb_error += _checkItemValues(iteration,item,current_sv);
+    nb_error += _checkItemValues(iteration, item, current_sv);
   }
 
   return nb_error;
@@ -333,7 +332,7 @@ checkValues (Integer iteration, const GroupType& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> Integer StdScalarMeshVariables<ItemType>::
+template <class ItemType> Integer StdScalarMeshVariables<ItemType>::
 checkValuesWithViews(Integer seed, const GroupType& group)
 {
   auto in_byte = viewIn(this->m_byte);
@@ -355,7 +354,7 @@ checkValuesWithViews(Integer seed, const GroupType& group)
   m_nb_displayed_error = 0;
 
   Integer nb_error = 0;
-  ENUMERATE_ITEM(iter,group){
+  ENUMERATE_ITEM (iter, group) {
     ItemType item = (*iter).itemBase();
 
     current_sv.m_byte = in_byte[item];
@@ -372,7 +371,7 @@ checkValuesWithViews(Integer seed, const GroupType& group)
     current_sv.m_float16 = in_float16[item];
     current_sv.m_float32 = in_float32[item];
 
-    nb_error += _checkItemValues(seed,item,current_sv);
+    nb_error += _checkItemValues(seed, item, current_sv);
   }
 
   return nb_error;
@@ -381,7 +380,7 @@ checkValuesWithViews(Integer seed, const GroupType& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType> Integer StdScalarMeshVariables<ItemType>::
+template <class ItemType> Integer StdScalarMeshVariables<ItemType>::
 checkReplica()
 {
   Integer nb_error = 0;
@@ -416,7 +415,7 @@ template class StdScalarMeshVariables<Particle>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

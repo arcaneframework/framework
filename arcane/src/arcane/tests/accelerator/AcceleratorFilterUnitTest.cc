@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
         // Test empty call
         generic_filterer.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
         Int32 nb_out_empty = generic_filterer.nbOutputElement();
-        vc.areEqual(0,nb_out_empty,"ApplyIf 0");
+        vc.areEqual(0, nb_out_empty, "ApplyIf 0");
       }
 
       generic_filterer.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
@@ -207,7 +207,7 @@ _executeTestDataType(Int32 size, Int32 test_id)
         // Test empty call
         generic_filterer.applyWithIndex(0, filter_lambda_index, setter_lambda_index);
         Int32 nb_out_empty = generic_filterer.nbOutputElement();
-        vc.areEqual(0,nb_out_empty,"ApplyIf 1");
+        vc.areEqual(0, nb_out_empty, "ApplyIf 1");
       }
       generic_filterer.applyWithIndex(input_view.size(), filter_lambda_index, setter_lambda_index);
       nb_out = generic_filterer.nbOutputElement();
@@ -240,8 +240,8 @@ _executeTestDataType(Int32 size, Int32 test_id)
   }
 }
 
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace ArcaneTest
 

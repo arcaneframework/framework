@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 <module name="AMRCartesianMeshTester" version="1.0" namespace-name="ArcaneTest">
   <description>
     Test module for the Cartesian mesh manager with AMR

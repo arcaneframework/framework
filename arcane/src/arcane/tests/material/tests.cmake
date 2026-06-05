@@ -26,8 +26,8 @@ arcane_add_test_parallel_thread(material_sync3 testMaterial-sync-3.arc 4)
 # Material Heat
 #################################
 
-foreach(test_index 1 2 3 4)
-  foreach(opt_level 0 3 7 11 15)
+foreach (test_index 1 2 3 4)
+  foreach (opt_level 0 3 7 11 15)
     set(TEST_MODIFICATION_FLAG ${opt_level})
 
     # Test without load balancing
@@ -44,9 +44,9 @@ foreach(test_index 1 2 3 4)
       arcane_add_test_parallel_thread(material_heat${test_index}_opt${opt_level} ${_TEST_FILENAME} 4)
       arcane_add_test(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB})
       arcane_add_test_parallel_thread(material_heat${test_index}_lb_opt${opt_level} ${_TEST_FILENAME_LB} 4)
-    endif()
-  endforeach()
-endforeach()
+    endif ()
+  endforeach ()
+endforeach ()
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(material_heat2_opt15_2small testMaterialHeat-2-small-opt15.arc "-We,ARCANE_DEBUG_MATERIAL_MODIFIER,2" "-We,ARCANE_PRINT_USELESS_TRANSFORMATION,1")
   arcane_add_test_sequential(material_heat2_opt15_2small_force_transform testMaterialHeat-2-small-opt15.arc "-We,ARCANE_MATERIAL_FORCE_TRANSFORM,1")
@@ -69,14 +69,14 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_sequential(material_heat4_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init1_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20" "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,1")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init2_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
-    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2"  "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
+    "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,2" "-We,ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL,2")
   arcane_add_test_sequential_host_and_accelerator(material_heat4_init3_accelerator "${ARCANE_TEST_PATH}/testMaterialHeat-4-opt15.arc" "-m 20"
     "-We,ARCANE_MATERIAL_NEW_ITEM_INIT,3" "-We,ARCANE_ALLENVCELL_FOR_RUNCOMMAND,1")
-  if(HDF5_FOUND)
+  if (HDF5_FOUND)
     arcane_add_test(material_heat2_vtkhdfv2 testMaterialHeat-2-vtkhdfv2.arc)
-  endif()
+  endif ()
 
-endif()
+endif ()
 #################################
 #################################
 
@@ -191,5 +191,5 @@ if (TARGET arcane_test_cs)
     arcane_add_test_sequential(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
     arcane_add_test_sequential(material_eos_cs_coreclr testMaterial-eos-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
   endif ()
-  arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4 )
+  arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4)
 endif ()

@@ -1,60 +1,57 @@
-﻿<?xml version="1.0"?><!-- -*- SGML -*- -->
-
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
+﻿<?xml version="1.0"?>
 
 <!-- Data set options concerning the test module -->
 
 <service name="CheckpointTester" version="1.0" type="caseoption"
-  namespace-name="ArcaneTest" parent-name="Arcane::BasicTimeLoopService">
- <description>
-  Partial variable test service
- </description>
- <interface name="Arcane::ITimeLoopService" inherited='false'/>
- <options>
+         namespace-name="ArcaneTest" parent-name="Arcane::BasicTimeLoopService">
+  <description>
+    Partial variable test service
+  </description>
+  <interface name="Arcane::ITimeLoopService" inherited='false'/>
+  <options>
 
-  <!-- Number of iterations to perform -->
-  <simple
-   name = "nb-iteration"
-   type = "integer"
-   default = "2"
-  >
-   <description>
-Number of iterations to perform
-   </description>
-  </simple>
+    <!-- Number of iterations to perform -->
+    <simple
+      name="nb-iteration"
+      type="integer"
+      default="2"
+    >
+      <description>
+        Number of iterations to perform
+      </description>
+    </simple>
 
-  <!-- Protection/recovery service to test -->
-  <!-- <simple
-   name = "service-name"
-   type = "string"
-  >
-   <description>
-Name of the protection service to test
-   </description>
-  </simple> -->
+    <!-- Protection/recovery service to test -->
+    <!-- <simple
+     name = "service-name"
+     type = "string"
+    >
+     <description>
+  Name of the protection service to test
+     </description>
+    </simple> -->
 
-  <!-- Backup period for rollbacks -->
-  <simple
-   name = "backward-period"
-   type = "integer"
-   default = "1"
-  >
-   <description>
-Backup period for rollbacks
-   </description>
-  </simple>
+    <!-- Backup period for rollbacks -->
+    <simple
+      name="backward-period"
+      type="integer"
+      default="1"
+    >
+      <description>
+        Backup period for rollbacks
+      </description>
+    </simple>
 
-  <!-- Iteration at which the rollback is triggered -->
-  <simple
-   name = "backward-iteration"
-   type = "integer"
-   default = "1"
-  >
-   <description>
-Iteration at which the rollback is triggered
-   </description>
-  </simple>
+    <!-- Iteration at which the rollback is triggered -->
+    <simple
+      name="backward-iteration"
+      type="integer"
+      default="1"
+    >
+      <description>
+        Iteration at which the rollback is triggered
+      </description>
+    </simple>
 
- </options>
+  </options>
 </service>

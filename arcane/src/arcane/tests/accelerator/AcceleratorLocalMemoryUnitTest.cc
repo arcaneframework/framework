@@ -157,7 +157,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
   auto command = makeCommand(m_queue);
 
   ax::WorkGroupLoopRange<Int32> loop_range;
-  if (group_size > 0){
+  if (group_size > 0) {
     Int32 total = group_size * nb_group_or_total_nb_element;
     loop_range = ax::WorkGroupLoopRange<Int32>(total);
     loop_range.setBlockSize(group_size);
@@ -208,7 +208,7 @@ _doTest(Int32 group_size, Int32 nb_group_or_total_nb_element)
 
     // Processes each loop index managed by the WorkItem.
     // It will add values to the shared memory.
-    for ( Int32 i : work_item.linearIndexes() ) {
+    for (Int32 i : work_item.linearIndexes()) {
       ax::doAtomicAdd(&local_span_int32[i % local_span_int32.size()], 1);
       ax::doAtomicAdd(&local_span_int64[i % local_span_int64.size()], 10);
     }

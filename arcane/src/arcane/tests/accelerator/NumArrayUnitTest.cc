@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,12 +46,12 @@ namespace ax = Arcane::Accelerator;
 
 namespace
 {
-inline MDSpan<double,MDDim1> _toMDSpan(const Span<double>& v)
-{
-  std::array<Int32,1> sizes = { (Int32)v.size() };
-  return MDSpan<double,MDDim1>(v.data(),sizes);
-}
-}
+  inline MDSpan<double, MDDim1> _toMDSpan(const Span<double>& v)
+  {
+    std::array<Int32, 1> sizes = { (Int32)v.size() };
+    return MDSpan<double, MDDim1>(v.data(), sizes);
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,7 +94,7 @@ class NumArrayUnitTest
   }
 
   template <typename NumArrayType> double
-  _doSum(const NumArrayType& values, std::array<Int32,NumArrayType::rank()> bounds, RunQueue* queue = nullptr)
+  _doSum(const NumArrayType& values, std::array<Int32, NumArrayType::rank()> bounds, RunQueue* queue = nullptr)
   {
     if (queue)
       queue->barrier();
@@ -107,14 +107,14 @@ class NumArrayUnitTest
 
  public:
 
-  template<typename NumArrayType> void
-  _doRank1(RunQueue& queue,NumArrayType& t1,Real expected_sum);
-  template<typename NumArrayType> void
-  _doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum);
-  template<typename NumArrayType> void
-  _doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum);
-  template<typename NumArrayType> void
-  _doRank4(RunQueue& queue,NumArrayType& t1,Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank1(RunQueue& queue, NumArrayType& t1, Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank2(RunQueue& queue, NumArrayType& t1, Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank3(RunQueue& queue, NumArrayType& t1, Real expected_sum);
+  template <typename NumArrayType> void
+  _doRank4(RunQueue& queue, NumArrayType& t1, Real expected_sum);
 
  public:
 
@@ -126,7 +126,7 @@ class NumArrayUnitTest
 
  private:
 
-  void _checkPointerAttribute(eMemoryRessource mem,const void* ptr);
+  void _checkPointerAttribute(eMemoryRessource mem, const void* ptr);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -201,8 +201,8 @@ executeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArrayType> void NumArrayUnitTest::
-_doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+template <typename NumArrayType> void NumArrayUnitTest::
+_doRank2(RunQueue& queue, NumArrayType& t1, Real expected_sum)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -225,8 +225,8 @@ _doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArrayType> void NumArrayUnitTest::
-_doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+template <typename NumArrayType> void NumArrayUnitTest::
+_doRank3(RunQueue& queue, NumArrayType& t1, Real expected_sum)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -251,8 +251,8 @@ _doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename NumArrayType> void NumArrayUnitTest::
-_doRank4(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+template <typename NumArrayType> void NumArrayUnitTest::
+_doRank4(RunQueue& queue, NumArrayType& t1, Real expected_sum)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -287,7 +287,7 @@ _executeTest1(eMemoryRessource mem_kind)
   info() << "Execute Test1 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
-  Accelerator::ProfileRegion ps(queue,"NumArrayUniTest_Test1");
+  Accelerator::ProfileRegion ps(queue, "NumArrayUniTest_Test1");
 
   // Do not change the array dimensions otherwise
   // you must also change the sum calculation
@@ -537,11 +537,11 @@ _executeTest2()
   {
     auto command = makeCommand(queue1);
     auto out_t1 = viewOut(command, t1);
-    ARCANE_CHECK_ACCESSIBLE_POINTER(queue1,out_t1.to1DSpan().data());
+    ARCANE_CHECK_ACCESSIBLE_POINTER(queue1, out_t1.to1DSpan().data());
 
     Int32 s1 = 300;
     auto b = makeLoopRanges(s1, n2, n3, n4);
-    command << RUNCOMMAND_LOOP(iter, b)
+    command << RUNCOMMAND_LOOP (iter, b)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
@@ -553,7 +553,7 @@ _executeTest2()
     Int32 base = 300;
     Int32 s1 = 400;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
-    command << RUNCOMMAND_LOOP(iter, b)
+    command << RUNCOMMAND_LOOP (iter, b)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
@@ -565,7 +565,7 @@ _executeTest2()
     Int32 base = 700;
     Int32 s1 = 300;
     auto b = makeLoopRanges({ base, s1 }, n2, n3, n4);
-    command << RUNCOMMAND_LOOP(iter, b)
+    command << RUNCOMMAND_LOOP (iter, b)
     {
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
@@ -589,7 +589,6 @@ _executeTest3()
   Arcane::_arcaneTestRealArrayVariant();
   Arcane::_arcaneTestRealArray2Variant();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -700,48 +699,48 @@ _executeTest5()
 /*---------------------------------------------------------------------------*/
 namespace
 {
-void _checkMemoryType(ax::ePointerMemoryType expected,ax::ePointerMemoryType current)
-{
-  if (expected!=current)
-    ARCANE_FATAL("Bad memory type expected={0} current={1}",(int)expected,(int)current);
-}
-void _checkNonNullHostPointer(const ax::PointerAttribute& pa)
-{
-  const void* p = pa.hostPointer();
-  if (!p)
-    ARCANE_FATAL("Host pointer is null");
-}
-void _checkNonNullDevicePointer(const ax::PointerAttribute& pa)
-{
-  const void* p = pa.devicePointer();
-  if (!p)
-    ARCANE_FATAL("Device pointer is null");
-}
-}
+  void _checkMemoryType(ax::ePointerMemoryType expected, ax::ePointerMemoryType current)
+  {
+    if (expected != current)
+      ARCANE_FATAL("Bad memory type expected={0} current={1}", (int)expected, (int)current);
+  }
+  void _checkNonNullHostPointer(const ax::PointerAttribute& pa)
+  {
+    const void* p = pa.hostPointer();
+    if (!p)
+      ARCANE_FATAL("Host pointer is null");
+  }
+  void _checkNonNullDevicePointer(const ax::PointerAttribute& pa)
+  {
+    const void* p = pa.devicePointer();
+    if (!p)
+      ARCANE_FATAL("Device pointer is null");
+  }
+} // namespace
 void NumArrayUnitTest::
-_checkPointerAttribute(eMemoryRessource mem,const void* ptr)
+_checkPointerAttribute(eMemoryRessource mem, const void* ptr)
 {
   ValueChecker vc(A_FUNCINFO);
   ax::PointerAttribute pa;
-  m_runner.fillPointerAttribute(pa,ptr);
+  m_runner.fillPointerAttribute(pa, ptr);
   auto mem_type = pa.memoryType();
   info() << "PointerInfo mem_ressource=" << mem
          << " allocated_type=" << (int)mem_type
          << " host_ptr=" << pa.hostPointer()
          << " device_ptr=" << pa.devicePointer()
          << " device=" << pa.device()
-         << " access_info=" << (int)getPointerAccessibility(&m_runner,ptr);
-  if (mem==eMemoryRessource::UnifiedMemory){
-    _checkMemoryType(mem_type,ax::ePointerMemoryType::Managed);
+         << " access_info=" << (int)getPointerAccessibility(&m_runner, ptr);
+  if (mem == eMemoryRessource::UnifiedMemory) {
+    _checkMemoryType(mem_type, ax::ePointerMemoryType::Managed);
     _checkNonNullHostPointer(pa);
     _checkNonNullDevicePointer(pa);
   }
-  if (mem==eMemoryRessource::HostPinned){
-    _checkMemoryType(mem_type,ax::ePointerMemoryType::Host);
+  if (mem == eMemoryRessource::HostPinned) {
+    _checkMemoryType(mem_type, ax::ePointerMemoryType::Host);
     _checkNonNullHostPointer(pa);
   }
-  if (mem==eMemoryRessource::Device){
-    _checkMemoryType(mem_type,ax::ePointerMemoryType::Device);
+  if (mem == eMemoryRessource::Device) {
+    _checkMemoryType(mem_type, ax::ePointerMemoryType::Device);
     _checkNonNullDevicePointer(pa);
   }
 }

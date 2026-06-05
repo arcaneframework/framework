@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -76,8 +76,7 @@ ParameterOptionTest(const ServiceBuildInfo& sbi)
 /*---------------------------------------------------------------------------*/
 
 ParameterOptionTest::
-~ParameterOptionTest()
-= default;
+~ParameterOptionTest() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,7 +84,6 @@ ParameterOptionTest::
 void ParameterOptionTest::
 initializeTest()
 {
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,12 +104,12 @@ _internalStructs()
 {
   ParameterOptionElementsCollection poec;
 
-  POption option0{"module/option0", "0 0"};
+  POption option0{ "module/option0", "0 0" };
 
   const UniqueArray<POption> p_options{
-    {"//module/option1", "5"},
-    {"//module/option2", "aa"},
-    {"//module/option2[2]", "bb"}
+    { "//module/option1", "5" },
+    { "//module/option2", "aa" },
+    { "//module/option2[2]", "bb" }
   };
 
   poec.addElement(option0.param, option0.value);
@@ -174,7 +172,7 @@ _internalStructs()
     UniqueArray<Integer> index;
     poec.getIndexInAddr(addr_option, index);
 
-    if (index != UniqueArray<Integer>{1, 2}) {
+    if (index != UniqueArray<Integer>{ 1, 2 }) {
       ARCANE_FATAL("_internalStructs -- Test 5");
     }
   }
@@ -235,7 +233,7 @@ _internalStructs()
     }
 
     UniqueArray<Integer> index(3);
-    UniqueArray<Integer> result{1, 3, 10};
+    UniqueArray<Integer> result{ 1, 3, 10 };
     bool ret = addr1_option.getIndexInAddr(addr2_option, index.view());
 
     if (!ret) {
@@ -459,7 +457,7 @@ _userStruct()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

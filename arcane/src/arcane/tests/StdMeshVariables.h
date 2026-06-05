@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,59 +31,57 @@
 
 namespace ArcaneTest
 {
-
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType,int dim>
+template <typename ItemType, typename DataType, int dim>
 class StdMeshVariablesTraits;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-class StdMeshVariablesTraits<ItemType,DataType,0>
+template <typename ItemType, typename DataType>
+class StdMeshVariablesTraits<ItemType, DataType, 0>
 {
  public:
-  typedef MeshVariableScalarRefT<ItemType,DataType> VariableRefType;
+
+  typedef MeshVariableScalarRefT<ItemType, DataType> VariableRefType;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-class StdMeshVariablesTraits<ItemType,DataType,1>
+template <typename ItemType, typename DataType>
+class StdMeshVariablesTraits<ItemType, DataType, 1>
 {
  public:
-  typedef MeshVariableArrayRefT<ItemType,DataType> VariableRefType;
+
+  typedef MeshVariableArrayRefT<ItemType, DataType> VariableRefType;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,int dim>
+template <typename ItemType, int dim>
 class StdMeshVariableTraits2
 {
  public:
-  typedef typename StdMeshVariablesTraits<ItemType,Byte,dim>::VariableRefType VariableByteType;
-  typedef typename StdMeshVariablesTraits<ItemType,Real,dim>::VariableRefType VariableRealType;
-  typedef typename StdMeshVariablesTraits<ItemType,Int64,dim>::VariableRefType VariableInt64Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Int32,dim>::VariableRefType VariableInt32Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Int16,dim>::VariableRefType VariableInt16Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Int8,dim>::VariableRefType VariableInt8Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Float16,dim>::VariableRefType VariableFloat16Type;
-  typedef typename StdMeshVariablesTraits<ItemType,BFloat16,dim>::VariableRefType VariableBFloat16Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Float32,dim>::VariableRefType VariableFloat32Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Real3,dim>::VariableRefType VariableReal3Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Real3x3,dim>::VariableRefType VariableReal3x3Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Real2,dim>::VariableRefType VariableReal2Type;
-  typedef typename StdMeshVariablesTraits<ItemType,Real2x2,dim>::VariableRefType VariableReal2x2Type;
+
+  typedef typename StdMeshVariablesTraits<ItemType, Byte, dim>::VariableRefType VariableByteType;
+  typedef typename StdMeshVariablesTraits<ItemType, Real, dim>::VariableRefType VariableRealType;
+  typedef typename StdMeshVariablesTraits<ItemType, Int64, dim>::VariableRefType VariableInt64Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Int32, dim>::VariableRefType VariableInt32Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Int16, dim>::VariableRefType VariableInt16Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Int8, dim>::VariableRefType VariableInt8Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Float16, dim>::VariableRefType VariableFloat16Type;
+  typedef typename StdMeshVariablesTraits<ItemType, BFloat16, dim>::VariableRefType VariableBFloat16Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Float32, dim>::VariableRefType VariableFloat32Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Real3, dim>::VariableRefType VariableReal3Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Real3x3, dim>::VariableRefType VariableReal3x3Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Real2, dim>::VariableRefType VariableReal2Type;
+  typedef typename StdMeshVariablesTraits<ItemType, Real2x2, dim>::VariableRefType VariableReal2x2Type;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -109,7 +107,7 @@ struct MultiScalarValue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits>
+template <typename Traits>
 class StdMeshVariables
 {
  public:
@@ -130,8 +128,8 @@ class StdMeshVariables
 
  public:
 
-  StdMeshVariables(const MeshHandle& mesh_handle,const String& basestr,const String& base2str);
-  StdMeshVariables(const MeshHandle& mesh_handle,const String& basestr,const String& base2str,const String& family_name);
+  StdMeshVariables(const MeshHandle& mesh_handle, const String& basestr, const String& base2str);
+  StdMeshVariables(const MeshHandle& mesh_handle, const String& basestr, const String& base2str, const String& family_name);
 
  public:
 
@@ -146,7 +144,7 @@ class StdMeshVariables
    * The functor must define the operator operator()(T&) where
    * \a T is the variable type.
    */
-  template<typename Functor> void
+  template <typename Functor> void
   applyFunctor(Functor& lambda)
   {
     lambda(m_byte);
@@ -188,7 +186,7 @@ class StdMeshVariables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

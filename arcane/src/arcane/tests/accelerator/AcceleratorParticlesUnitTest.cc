@@ -223,7 +223,7 @@ _executeTest2()
     command << RUNCOMMAND_ENUMERATE (ParticleLocalId, particle_lid, m_particle_family->allItems())
     {
       Int32 new_cell_lid = (particle_cell_connectivity.cellId(particle_lid) + 1) % max_cell_lid;
-      particle_cell_connectivity.setCellId(particle_lid,CellLocalId(new_cell_lid));
+      particle_cell_connectivity.setCellId(particle_lid, CellLocalId(new_cell_lid));
       out_particle_cell_lids[particle_lid] = new_cell_lid;
       out_var_particle_cell_lids[particle_lid] = new_cell_lid;
     };

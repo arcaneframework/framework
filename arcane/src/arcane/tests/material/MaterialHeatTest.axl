@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?><!-- -*- SGML -*- -->
+﻿<?xml version="1.0" ?>
 
 <module name="MaterialHeatTest" version="1.0" namespace-name="ArcaneTest">
   <description>
@@ -37,7 +37,7 @@
     <!-- List of environments and material composition -->
     <complex name="environment" type="Environment" minOccurs="1" maxOccurs="unbounded">
       <description>Milieu</description>
-      <simple name = "name" type = "string">
+      <simple name="name" type="string">
         <description>Name of the environment</description>
       </simple>
       <simple name="material" type="string" minOccurs="1" maxOccurs="unbounded">
@@ -67,17 +67,19 @@
   </options>
 
   <entry-points>
-    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
-    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
-    <entry-point method-name="continueInit" name="ContinueInit" where="continue-init" property="none" />
-    <entry-point method-name="buildInit" name="BuildInit" where="build" property="none" />
+    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none"/>
+    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none"/>
+    <entry-point method-name="continueInit" name="ContinueInit" where="continue-init" property="none"/>
+    <entry-point method-name="buildInit" name="BuildInit" where="build" property="none"/>
   </entry-points>
 
   <variables>
-    <variable field-name="mat_temperature" name="Temperature" data-type="real" item-kind="cell" dim="0" material="true" />
-    <variable field-name="cell_center" name="CellCenter" data-type="real3" item-kind="cell" dim="0" />
-    <variable field-name="all_temperature" name="AllTemperatures" data-type="real" item-kind="cell" dim="1" />
-    <variable field-name="mat_device_temperature" name="DeviceTemperature" data-type="real" item-kind="cell" dim="0" material="true" />
+    <variable field-name="mat_temperature" name="Temperature" data-type="real" item-kind="cell" dim="0"
+              material="true"/>
+    <variable field-name="cell_center" name="CellCenter" data-type="real3" item-kind="cell" dim="0"/>
+    <variable field-name="all_temperature" name="AllTemperatures" data-type="real" item-kind="cell" dim="1"/>
+    <variable field-name="mat_device_temperature" name="DeviceTemperature" data-type="real" item-kind="cell" dim="0"
+              material="true"/>
   </variables>
 
 </module>

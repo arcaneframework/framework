@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -97,7 +97,8 @@ class MeshUnitTest
  public:
 
   class CountOperationByBasicType
-  : public TraceAccessor, public AbstractItemOperationByBasicType
+  : public TraceAccessor
+  , public AbstractItemOperationByBasicType
   {
    public:
 
@@ -163,7 +164,7 @@ class MeshUnitTest
                               IItemConnectivityInfo* node_family);
   void _testSharedItems();
   void _testVisitors();
-  template<typename ItemKind,typename SubItemKind>
+  template <typename ItemKind, typename SubItemKind>
   void _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
                           eItemKind link_kind);
   void _testAdditionalMeshes();
@@ -191,7 +192,7 @@ class MeshUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MESHUNITTEST(MeshUnitTest,MeshUnitTest);
+ARCANE_REGISTER_SERVICE_MESHUNITTEST(MeshUnitTest, MeshUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,8 +215,8 @@ buildInitializeTest()
   }
   if (!options()->compactMesh()) {
     Properties* p = mesh()->properties();
-    p->setBool("compact",false);
-    p->setBool("compact-after-allocate",false);
+    p->setBool("compact", false);
+    p->setBool("compact-after-allocate", false);
   }
   if (options()->generateUidFromNodesUid()) {
     mesh()->meshUniqueIdMng()->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(true);
@@ -234,7 +235,7 @@ executeTest()
 
   bool do_sort_faces_and_edges = options()->testSortNodeFacesAndEdges();
   if (do_sort_faces_and_edges) {
-    mesh()->nodeFamily()->properties()->setBool("sort-connected-faces-edges",true);
+    mesh()->nodeFamily()->properties()->setBool("sort-connected-faces-edges", true);
     mesh()->modifier()->endUpdate();
   }
 
@@ -256,7 +257,7 @@ executeTest()
   if (do_sort_faces_and_edges)
     _testSortedNodeFaces();
   _testGroups();
-  if (options()->testAdjency()){
+  if (options()->testAdjency()) {
     _testItemAdjacency();
     _testItemAdjacency2();
     _testItemAdjacency3();
@@ -328,7 +329,7 @@ _testNullItem()
          << " nb_node=" << null_cell.nbNode()
          << " nb_edge=" << null_cell.nbEdge()
          << " nb_face=" << null_cell.nbFace()
-  //<< " nb_hparent=" << null_cell.nbParent()
+         //<< " nb_hparent=" << null_cell.nbParent()
          << " nb_hchildren=" << null_cell.nbHChildren();
   Node null_node;
   info() << "NULL_NODE"
@@ -337,7 +338,7 @@ _testNullItem()
          << " nb_cell=" << null_node.nbCell();
 
   NodeGroup null_node_group;
-  ENUMERATE_(Node,inode,null_node_group){
+  ENUMERATE_ (Node, inode, null_node_group) {
     Node node = *inode;
     info() << "NODE FOR null group: " << node.localId();
   }
@@ -363,20 +364,20 @@ _dumpMesh()
 {
   ServiceBuilder<IMeshWriter> sbu(subDomain());
   String write_service_name = options()->writeMeshServiceName();
-  auto mesh_io(sbu.createReference(write_service_name,SB_AllowNull));
+  auto mesh_io(sbu.createReference(write_service_name, SB_AllowNull));
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
   Int32 my_rank = pm->commRank();
   Directory base_path(subDomain()->exportDirectory());
   StringBuilder sorted_file_name(options()->outputFile());
   sorted_file_name += "-sorted";
-  if (is_parallel){
+  if (is_parallel) {
     sorted_file_name += "-";
     sorted_file_name += my_rank;
   }
   mesh_utils::writeMeshInfosSorted(mesh(), base_path.file(sorted_file_name));
   StringBuilder file_name_b(options()->outputFile());
-  if (is_parallel){
+  if (is_parallel) {
     file_name_b += "-";
     file_name_b += my_rank;
   }
@@ -407,8 +408,8 @@ _dumpMesh()
       ARCANE_FATAL("Bad connectivity checksum x={0} expected={1}", x, connectivity_checksum);
   }
 
-  if (mesh_io.get()){
-    if (write_service_name=="Lima")
+  if (mesh_io.get()) {
+    if (write_service_name == "Lima")
       file_name = file_name + ".unf";
     mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
   }
@@ -431,7 +432,7 @@ _dumpMesh()
 /*---------------------------------------------------------------------------*/
 
 void MeshUnitTest::
-_dumpConnectivityInfos(IItemConnectivityInfo* cell_family,IItemConnectivityInfo* face_family,
+_dumpConnectivityInfos(IItemConnectivityInfo* cell_family, IItemConnectivityInfo* face_family,
                        IItemConnectivityInfo* node_family)
 {
   info() << "max node per cell = " << cell_family->maxNodePerItem();
@@ -456,7 +457,7 @@ _testUsedVariables()
   VariableList vars;
   cell_family->usedVariables(vars);
   std::set<String> var_names;
-  for( VariableList::Enumerator i(vars); ++i; ){
+  for (VariableList::Enumerator i(vars); ++i;) {
     IVariable* var = *i;
     info() << "name=" << var->name();
     var_names.insert(var->name());
@@ -467,7 +468,6 @@ _testUsedVariables()
       ARCANE_FATAL("Error while reading mesh {0}. Variable {1} is not kept after reading.", mesh()->name(), read_var_check_name);
     }
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -486,7 +486,7 @@ _dumpTiedInterfaces()
   Integer nb_error = 0;
   Integer max_print_error = 50;
   std::set<Int64> nodes_in_master_face;
-  for( TiedInterfaceCollection::Enumerator i(tied_interfaces); ++i; ){
+  for (TiedInterfaceCollection::Enumerator i(tied_interfaces); ++i;) {
     ITiedInterface* interface = *i;
     FaceGroup slave_group = interface->slaveInterface();
     FaceGroup master_group = interface->masterInterface();
@@ -496,92 +496,91 @@ _dumpTiedInterfaces()
            << " nb_face=" << master_group.size();
     TiedInterfaceNodeList tied_nodes(interface->tiedNodes());
     TiedInterfaceFaceList tied_faces(interface->tiedFaces());
-    ENUMERATE_FACE(iface,master_group){
+    ENUMERATE_FACE (iface, master_group) {
       Face face = *iface;
       Int32 master_face_owner = face.owner();
       FaceVectorView slave_faces = face.slaveFaces();
-      if (!face.isMasterFace()){
+      if (!face.isMasterFace()) {
         ++nb_error;
-        if (nb_error<max_print_error)
+        if (nb_error < max_print_error)
           error() << " Face uid=" << ItemPrinter(face) << " should have isMaster() true";
       }
-      if (iface.index()<100000){
+      if (iface.index() < 100000) {
         nodes_in_master_face.clear();
         info() << "Master face uid=" << ItemPrinter(face)
                << " kind=" << face.kind()
                << " cell=" << ItemPrinter(face.cell(0));
         Int32 cell_face_owner = face.cell(0).owner();
-        if (cell_face_owner!=master_face_owner){
+        if (cell_face_owner != master_face_owner) {
           ++nb_error;
-          if (nb_error<max_print_error)
+          if (nb_error < max_print_error)
             error() << "master_face and its cell do not have the same owner: face_owner=" << master_face_owner
                     << " cell_owner=" << cell_face_owner;
         }
-        ENUMERATE_CONNECTED_(Node,inode,face,nodes()){
+        ENUMERATE_CONNECTED_ (Node, inode, face, nodes()) {
           info() << "Master face node uid=" << inode->uniqueId();
         }
-        for( Integer zz=0, zs=tied_nodes[iface.index()].size(); zz<zs; ++zz ){
+        for (Integer zz = 0, zs = tied_nodes[iface.index()].size(); zz < zs; ++zz) {
           TiedNode tn = tied_nodes[iface.index()][zz];
           nodes_in_master_face.insert(tn.node().uniqueId());
-          if (zz<20){
+          if (zz < 20) {
             info() << " node_uid=" << tn.node().uniqueId()
                    << " iso=" << tn.isoCoordinates()
                    << " kind=" << tn.node().kind();
           }
         }
-        ENUMERATE_CONNECTED_(Node,inode,face,nodes()){
-          if (nodes_in_master_face.find(inode->uniqueId())==nodes_in_master_face.end()){
+        ENUMERATE_CONNECTED_ (Node, inode, face, nodes()) {
+          if (nodes_in_master_face.find(inode->uniqueId()) == nodes_in_master_face.end()) {
             ++nb_error;
-            if (nb_error<max_print_error)
+            if (nb_error < max_print_error)
               error() << "node in master face not in slave node list uid=" << inode->uniqueId();
           }
         }
         Integer nb_tied = tied_faces[iface.index()].size();
-        if (nb_tied!=slave_faces.size()){
+        if (nb_tied != slave_faces.size()) {
           ++nb_error;
-          if (nb_error<max_print_error)
+          if (nb_error < max_print_error)
             error() << "bad number of slave faces interne=" << slave_faces.size() << " struct=" << nb_tied;
         }
-        for( Integer zz=0, zs=tied_faces[iface.index()].size(); zz<zs; ++zz ){
+        for (Integer zz = 0, zs = tied_faces[iface.index()].size(); zz < zs; ++zz) {
           TiedFace tf = tied_faces[iface.index()][zz];
           Face tied_slave_face = tf.face();
-          if (!tied_slave_face.isSlaveFace()){
+          if (!tied_slave_face.isSlaveFace()) {
             ++nb_error;
-            if (nb_error<max_print_error)
+            if (nb_error < max_print_error)
               error() << "slave face uid=" << ItemPrinter(tf.face()) << " should have isSlave() true";
           }
-          if (tied_slave_face.masterFace()!=face){
+          if (tied_slave_face.masterFace() != face) {
             ++nb_error;
-            if (nb_error<max_print_error)
+            if (nb_error < max_print_error)
               error() << "slave face uid=" << ItemPrinter(tf.face()) << " should have masterSlave() valid";
           }
-          if (tied_slave_face!=slave_faces[zz]){
+          if (tied_slave_face != slave_faces[zz]) {
             ++nb_error;
-            if (nb_error<max_print_error)
+            if (nb_error < max_print_error)
               error() << "bad number of slave faces internal=" << ItemPrinter(slave_faces[zz])
                       << " struct=" << ItemPrinter(tied_slave_face);
           }
           Int32 slave_face_owner = tf.face().owner();
-          if (slave_face_owner!=master_face_owner){
+          if (slave_face_owner != master_face_owner) {
             ++nb_error;
-            if (nb_error<max_print_error)
+            if (nb_error < max_print_error)
               error() << "master_face and its slave_face do not have the same owner:"
                       << " master_face=" << ItemPrinter(face)
                       << " master_cell=" << ItemPrinter(face.cell(0))
                       << " slave_face=" << ItemPrinter(tf.face())
                       << " slave_cell=" << ItemPrinter(tf.face().cell(0));
           }
-          if (zz<20){
+          if (zz < 20) {
             info() << " face_uid=" << tf.face().uniqueId() << " cell=" << ItemPrinter(tf.face().cell(0));
-
           }
         }
       }
     }
   }
   info() << "---------------------------------------------------------";
-  if (nb_error!=0){
-    ARCANE_FATAL("Errors in tied interface n={0}",nb_error);
+  if (nb_error != 0) {
+    ARCANE_FATAL("Errors in tied interface n={0}", nb_error);
   }
 }
 
@@ -604,10 +603,10 @@ _testGroups()
     ARCANE_FATAL("AllItems group is not sorted");
 
   Integer nb_item = all_items.size();
-  CellGroup group = mesh()->cellFamily()->findGroup("TestGroup",true);
+  CellGroup group = mesh()->cellFamily()->findGroup("TestGroup", true);
   {
     UniqueArray<Int32> items;
-    for( Integer i=4, n=(nb_item/2); i<n; ++i )
+    for (Integer i = 4, n = (nb_item / 2); i < n; ++i)
       items.add(i);
     group.setItems(items);
     items.clear();
@@ -616,23 +615,23 @@ _testGroups()
     // should no longer be sorted.
     items.add(0);
     group.addItems(items);
-    if (group.size()>1)
+    if (group.size() > 1)
       if (group.checkIsSorted())
         ARCANE_FATAL("Group should not be sorted");
   }
   {
     Int32UniqueArray items;
     Integer range = nb_item / 5;
-    for( Integer i=0; i<range; ++i )
+    for (Integer i = 0; i < range; ++i)
       items.add(i);
     group.setItems(items);
     items.clear();
-    for( Integer i=range, is=range*2; i<is; ++i )
+    for (Integer i = range, is = range * 2; i < is; ++i)
       items.add(i);
     group.addItems(items);
     items.clear();
-    for( Integer i=0, is=range; i<is; ++i )
-      items.add(i*2);
+    for (Integer i = 0, is = range; i < is; ++i)
+      items.add(i * 2);
     group.removeItems(items);
   }
 
@@ -641,15 +640,15 @@ _testGroups()
   info() << " NB NODE in group " << nodes.size() << " addr=" << nodes.internal();
   const char* P_SORT = "sort-subitemitem-group";
   // Forces sorting for the faces group of 'group' and checks if OK.
-  bool is_sort = mesh()->properties()->getBoolWithDefault(P_SORT,false);
-  mesh()->properties()->setBool(P_SORT,true);
+  bool is_sort = mesh()->properties()->getBoolWithDefault(P_SORT, false);
+  mesh()->properties()->setBool(P_SORT, true);
   FaceGroup faces = group.faceGroup();
   info() << " NB FACE in group " << faces.size() << " addr=" << faces.internal();
-  if (!faces.checkIsSorted()){
+  if (!faces.checkIsSorted()) {
     ARCANE_FATAL("FaceGroup should be sorted!");
   }
   // Resets as before.
-  mesh()->properties()->setBool(P_SORT,is_sort);
+  mesh()->properties()->setBool(P_SORT, is_sort);
   CellGroup cells = nodes.cellGroup();
   info() << " NB CELL in nodes " << cells.size() << " addr=" << cells.internal();
   CellGroup cells2 = group.cellGroup();
@@ -657,20 +656,20 @@ _testGroups()
 
   {
     Int32UniqueArray items;
-    items.add(nb_item-1);
+    items.add(nb_item - 1);
     items.add(0);
-    items.add(nb_item/2);
-    group.setItems(items,true);
+    items.add(nb_item / 2);
+    group.setItems(items, true);
     Int64 last_uid = NULL_ITEM_UNIQUE_ID;
-    ENUMERATE_ITEM(iitem,group){
+    ENUMERATE_ITEM (iitem, group) {
       Item item = *iitem;
-      if (item.uniqueId()<last_uid)
+      if (item.uniqueId() < last_uid)
         fatal() << "Group is not sorted";
       last_uid = item.uniqueId();
     }
     bool is_sorted = group.checkIsSorted();
     if (!is_sorted)
-      throw FatalErrorException(A_FUNCINFO,"Incorrect value for ItemGroup::checkIsSorted()");
+      throw FatalErrorException(A_FUNCINFO, "Incorrect value for ItemGroup::checkIsSorted()");
   }
 }
 
@@ -681,13 +680,13 @@ void MeshUnitTest::
 _dumpComputeFaceGroupNormal()
 {
   Integer nb_compute = options()->computeNormal.size();
-  for( Integer i=0; i<nb_compute; ++i ){
+  for (Integer i = 0; i < nb_compute; ++i) {
     FaceGroup surface = options()->computeNormal[i];
     info() << " COMPUTING NORMAL INFORMATION FOR THE SURFACE <" << surface.name() << ">";
     IMesh* mesh = surface.itemFamily()->mesh();
     IMeshUtilities* util = mesh->utilities();
     VariableNodeReal3& nodes_coord(mesh->toPrimaryMesh()->nodesCoordinates());
-    Real3 value = util->computeNormal(surface,nodes_coord);
+    Real3 value = util->computeNormal(surface, nodes_coord);
     info() << " NORMAL IS <" << value << ">";
   }
 }
@@ -699,7 +698,7 @@ void MeshUnitTest::
 _dumpComputeNodeGroupDirection()
 {
   Integer nb_compute = options()->computeDirection.size();
-  for( Integer i=0; i<nb_compute; ++i ){
+  for (Integer i = 0; i < nb_compute; ++i) {
     NodeGroup group = options()->computeDirection[i];
     info() << " COMPUTING DIRECTION INFORMATION FOR GROUP <" << group.name() << ">";
     IMesh* mesh = group.itemFamily()->mesh();
@@ -716,25 +715,28 @@ _dumpComputeNodeGroupDirection()
 void MeshUnitTest::
 _testItemAdjacency2()
 {
-  FaceFaceGroup ad_list(allFaces(),outerFaces(),IK_Node);
+  FaceFaceGroup ad_list(allFaces(), outerFaces(), IK_Node);
   info() << " COMPUTE ITEM ADJENCY LIST2!";
 
   std::set<Integer> boundary_set;
-  ENUMERATE_FACE(iface,outerFaces())
+  ENUMERATE_FACE (iface, outerFaces())
     boundary_set.insert(iface->localId());
 
   // Test access to the value via the iterator
-  VariableFaceInt32 face_id(VariableBuildInfo(mesh(),"FaceId"));
-  ENUMERATE_ITEMPAIR(Face,Face,iface,ad_list){
+  VariableFaceInt32 face_id(VariableBuildInfo(mesh(), "FaceId"));
+  ENUMERATE_ITEMPAIR(Face, Face, iface, ad_list)
+  {
     face_id[iface] = iface.itemLocalId();
   }
 
   Int64 total_uid = 0;
-  ENUMERATE_ITEMPAIR(Face,Face,iface,ad_list){
-    if (face_id[iface]!=iface.itemLocalId())
-      ARCANE_FATAL("Bad value for variable v={0} expected={1}",face_id[iface],iface.itemLocalId());
+  ENUMERATE_ITEMPAIR(Face, Face, iface, ad_list)
+  {
+    if (face_id[iface] != iface.itemLocalId())
+      ARCANE_FATAL("Bad value for variable v={0} expected={1}", face_id[iface], iface.itemLocalId());
 
-    ENUMERATE_SUB_ITEM(Face,isubface,iface){
+    ENUMERATE_SUB_ITEM(Face, isubface, iface)
+    {
       const Face& subface = *isubface;
       total_uid += subface.uniqueId().asInt64();
       // info() << " SUBITEM #" << isubface.index() << " : " << subface.localId()
@@ -756,62 +758,63 @@ _testItemAdjacency3()
   // The functor calculates neighboring meshes to meshes by faces
   // and compares the result with the equivalent ItemPairGroup calculated by
   // Arcane.
-  auto f = [](ItemPairGroupBuilder& builder)
-    {
-      const ItemPairGroup& pair_group = builder.group();
-      const ItemGroup& items = pair_group.itemGroup();
-      const ItemGroup& sub_items = pair_group.subItemGroup();
+  auto f = [](ItemPairGroupBuilder& builder) {
+    const ItemPairGroup& pair_group = builder.group();
+    const ItemGroup& items = pair_group.itemGroup();
+    const ItemGroup& sub_items = pair_group.subItemGroup();
 
-      // Marks all entities that are not allowed to belong to
-      // the connectivity list, because they are not in \a sub_items
-      std::set<Int32> allowed_ids;
-      ENUMERATE_CELL(iitem,sub_items) {
-        allowed_ids.insert(iitem.itemLocalId());
-      }
+    // Marks all entities that are not allowed to belong to
+    // the connectivity list, because they are not in \a sub_items
+    std::set<Int32> allowed_ids;
+    ENUMERATE_CELL (iitem, sub_items) {
+      allowed_ids.insert(iitem.itemLocalId());
+    }
 
-      Int32UniqueArray local_ids;
-      local_ids.reserve(8);
+    Int32UniqueArray local_ids;
+    local_ids.reserve(8);
 
-      // List of entities already processed for the current mesh
-      std::set<Int32> already_in_list;
-      ENUMERATE_CELL(icell,items){
-        Cell cell = *icell;
-        local_ids.clear();
-        Int32 current_local_id = icell.itemLocalId();
-        already_in_list.clear();
+    // List of entities already processed for the current mesh
+    std::set<Int32> already_in_list;
+    ENUMERATE_CELL (icell, items) {
+      Cell cell = *icell;
+      local_ids.clear();
+      Int32 current_local_id = icell.itemLocalId();
+      already_in_list.clear();
 
-        // To avoid adding itself to its own connectivity list
-        already_in_list.insert(current_local_id);
+      // To avoid adding itself to its own connectivity list
+      already_in_list.insert(current_local_id);
 
-        for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-          Face face = *iface;
-          for( CellEnumerator isubcell(face.cells()); isubcell.hasNext(); ++isubcell ){
-            const Int32 sub_local_id = isubcell.itemLocalId();
-            // Checks if we are in the list of allowed meshes and if we
-            // have not yet been processed.
-            if (allowed_ids.find(sub_local_id)==allowed_ids.end())
-              continue;
-            if (already_in_list.find(sub_local_id)!=already_in_list.end())
-              continue;
-            // This mesh must be added. We mark it so we don't
-            // traverse it and we add it to the list.
-            already_in_list.insert(sub_local_id);
-            local_ids.add(sub_local_id);
-          }
+      for (FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface) {
+        Face face = *iface;
+        for (CellEnumerator isubcell(face.cells()); isubcell.hasNext(); ++isubcell) {
+          const Int32 sub_local_id = isubcell.itemLocalId();
+          // Checks if we are in the list of allowed meshes and if we
+          // have not yet been processed.
+          if (allowed_ids.find(sub_local_id) == allowed_ids.end())
+            continue;
+          if (already_in_list.find(sub_local_id) != already_in_list.end())
+            continue;
+          // This mesh must be added. We mark it so we don't
+          // traverse it and we add it to the list.
+          already_in_list.insert(sub_local_id);
+          local_ids.add(sub_local_id);
         }
-        builder.addNextItem(local_ids);
       }
-    };
+      builder.addNextItem(local_ids);
+    }
+  };
 
-  CellCellGroup ad_list(allCells(),allCells(),functor::makePointer(f));
+  CellCellGroup ad_list(allCells(), allCells(), functor::makePointer(f));
   info() << " CUSTOM COMPUTE ITEM ADJACENCY LIST2!";
-  ItemPairGroupT<Cell,Cell> ref_ad_list(allCells(),allCells(),IK_Face);
+  ItemPairGroupT<Cell, Cell> ref_ad_list(allCells(), allCells(), IK_Face);
 
   Int32UniqueArray items;
   Int32UniqueArray sub_items;
-  ENUMERATE_ITEMPAIR(Cell,Cell,iitem,ad_list){
+  ENUMERATE_ITEMPAIR(Cell, Cell, iitem, ad_list)
+  {
     items.add(iitem.itemLocalId());
-    ENUMERATE_SUB_ITEM(Cell,isubitem,iitem){
+    ENUMERATE_SUB_ITEM(Cell, isubitem, iitem)
+    {
       sub_items.add(isubitem.itemLocalId());
     }
   }
@@ -819,21 +822,23 @@ _testItemAdjacency3()
   // Checks that the lists are the same between our functor and the reference.
   Int32UniqueArray ref_items;
   Int32UniqueArray ref_sub_items;
-  ENUMERATE_ITEMPAIR(Cell,Cell,iitem,ref_ad_list){
+  ENUMERATE_ITEMPAIR(Cell, Cell, iitem, ref_ad_list)
+  {
     ref_items.add(iitem.itemLocalId());
-    ENUMERATE_SUB_ITEM(Cell,isubitem,iitem){
+    ENUMERATE_SUB_ITEM(Cell, isubitem, iitem)
+    {
       ref_sub_items.add(isubitem.itemLocalId());
     }
   }
   ValueChecker vc(A_FUNCINFO);
-  vc.areEqual(items,ref_items,"bad items");
-  vc.areEqual(sub_items,ref_sub_items,"bad sub items");
+  vc.areEqual(items, ref_items, "bad items");
+  vc.areEqual(sub_items, ref_sub_items, "bad sub items");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemKind,typename SubItemKind> void MeshUnitTest::
+template <typename ItemKind, typename SubItemKind> void MeshUnitTest::
 _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
                    eItemKind link_kind)
 {
@@ -845,25 +850,27 @@ _testItemAdjacency(ItemGroupT<ItemKind> items, ItemGroupT<SubItemKind> subitems,
 
   Int64 total_uid = 0;
   Integer nb_item = 0;
-  ENUMERATE_ITEMPAIR(ItemKind,SubItemKind,iitem,ad_list){
+  ENUMERATE_ITEMPAIR(ItemKind, SubItemKind, iitem, ad_list)
+  {
     ++nb_item;
-    ENUMERATE_SUB_ITEM(SubItemKind,isubitem,iitem){
+    ENUMERATE_SUB_ITEM(SubItemKind, isubitem, iitem)
+    {
       Item subitem = *isubitem;
       total_uid += subitem.uniqueId().asInt64();
     }
   }
-  if (nb_item!=items.size())
-    ARCANE_FATAL("Bad number of items n={0} expected={1}",nb_item,items.size());
+  if (nb_item != items.size())
+    ARCANE_FATAL("Bad number of items n={0} expected={1}", nb_item, items.size());
 
   // We do not know the value of the total but it must not be zero
   // unless the link is edges where in some cases it is 1D.
   info() << " TOTAL uid=" << total_uid;
-  bool may_be_null = (link_kind==IK_Edge);
-  if (items.mesh()->dimension()==1){
-    may_be_null = may_be_null || (link_kind==IK_Face && items.itemKind()==IK_Node);
-    may_be_null = may_be_null || (link_kind==IK_Node && items.itemKind()==IK_Face);
+  bool may_be_null = (link_kind == IK_Edge);
+  if (items.mesh()->dimension() == 1) {
+    may_be_null = may_be_null || (link_kind == IK_Face && items.itemKind() == IK_Node);
+    may_be_null = may_be_null || (link_kind == IK_Node && items.itemKind() == IK_Face);
   }
-  if (total_uid==0 && !may_be_null)
+  if (total_uid == 0 && !may_be_null)
     ARCANE_FATAL("Null total");
 }
 
@@ -900,36 +907,41 @@ _testItemPartialAdjacency()
   // Chooses a cell in the "middle" of ownCells().
   CellGroup myCells = ownCells();
   Integer nb_my_cells = myCells.size();
-  Cell center_cell = myCells.view()[nb_my_cells/2].toCell();
+  Cell center_cell = myCells.view()[nb_my_cells / 2].toCell();
 
   Int32UniqueArray center_cell_list;
   center_cell_list.add(center_cell.localId());
-  CellGroup center_cell_group = mesh()->cellFamily()->createGroup("CenterCell",center_cell_list);
+  CellGroup center_cell_group = mesh()->cellFamily()->createGroup("CenterCell", center_cell_list);
 
-  CellCellGroup center_neighbor_pairgroup(center_cell_group,allCells(),IK_Node);
+  CellCellGroup center_neighbor_pairgroup(center_cell_group, allCells(), IK_Node);
   Int32UniqueArray center_neighbor_list;
 
-  ENUMERATE_ITEMPAIR(Cell,Cell,icell,center_neighbor_pairgroup) {
+  ENUMERATE_ITEMPAIR(Cell, Cell, icell, center_neighbor_pairgroup)
+  {
     const Cell& item = *icell;
     info() << " CENTER ITEM uid=" << item.uniqueId() << " nb_sub=" << icell.nbSubItem();
     center_neighbor_list.add(item.localId());
-    if (item != center_cell) fatal() << "Inconsistent center cell";
-    ENUMERATE_SUB_ITEM(Cell,isubcell,icell){
+    if (item != center_cell)
+      fatal() << "Inconsistent center cell";
+    ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+    {
       const Cell& subcell = *isubcell;
       center_neighbor_list.add(subcell.localId());
     }
   }
 
-  CellGroup center_neighbor_group = mesh()->cellFamily()->createGroup("CenterNeighBor",center_neighbor_list);
-  m_cell_flag.fill(1);                       // Forbidden cells except ...
-  m_cell_flag.fill(0,center_neighbor_group); // Allowed cells
-  CellCellGroup ad_list(center_neighbor_group,center_neighbor_group,IK_Node);
+  CellGroup center_neighbor_group = mesh()->cellFamily()->createGroup("CenterNeighBor", center_neighbor_list);
+  m_cell_flag.fill(1); // Forbidden cells except ...
+  m_cell_flag.fill(0, center_neighbor_group); // Allowed cells
+  CellCellGroup ad_list(center_neighbor_group, center_neighbor_group, IK_Node);
 
-  ENUMERATE_ITEMPAIR(Cell,Cell,icell,ad_list){
+  ENUMERATE_ITEMPAIR(Cell, Cell, icell, ad_list)
+  {
     //const Cell& item = *icell;
     // info() << " ITEM uid=" << item.uniqueId() << " nb_sub=" << icell.nbSubItem();
 
-    ENUMERATE_SUB_ITEM(Cell,isubcell,icell){
+    ENUMERATE_SUB_ITEM(Cell, isubcell, icell)
+    {
       const Cell& subcell = *isubcell;
       if (m_cell_flag[subcell])
         fatal() << "Out of group subcell";
@@ -951,7 +963,7 @@ _dumpConnections()
   Int32ConstArrayView comm_ranks = vsync->communicatingRanks();
   Integer nb_comm_rank = comm_ranks.size();
   info() << "Nb communicating ranks=" << nb_comm_rank;
-  for( Integer i=0; i<nb_comm_rank; ++i ){
+  for (Integer i = 0; i < nb_comm_rank; ++i) {
     Int32ConstArrayView share_ids = vsync->sharedItems(i);
     Int32ConstArrayView ghost_ids = vsync->ghostItems(i);
     Integer nb_share = share_ids.size();
@@ -969,23 +981,23 @@ void MeshUnitTest::
 _testVariableWriter()
 {
   info() << " TEST VARIABLE WRITER!";
-  if (mesh()->parallelMng()->isThreadImplementation()){
+  if (mesh()->parallelMng()->isThreadImplementation()) {
     info() << "Disabling VariableWriter with hdf5 in shared memory mode because hdf5 is not thread-safe";
     return;
   }
 
   ServiceBuilder<IPostProcessorWriter> sbu(subDomain());
-  auto s_writer(sbu.createReference("Hdf5VariableWriter",SB_AllowNull));
+  auto s_writer(sbu.createReference("Hdf5VariableWriter", SB_AllowNull));
   IPostProcessorWriter* writer = s_writer.get();
-  if (!writer){
+  if (!writer) {
     warning() << A_FUNCINFO << ": no writer";
-		return;
-	}
+    return;
+  }
   info() << " V=" << writer;
 
-  VariableFaceReal face_temperature(VariableBuildInfo(mesh(),"FaceTemperature"));
-  VariableFaceReal face_pressure(VariableBuildInfo(mesh(),"FacePressure"));
-  ENUMERATE_FACE(iface,allFaces()){
+  VariableFaceReal face_temperature(VariableBuildInfo(mesh(), "FaceTemperature"));
+  VariableFaceReal face_pressure(VariableBuildInfo(mesh(), "FacePressure"));
+  ENUMERATE_FACE (iface, allFaces()) {
     const Face& face = *iface;
     face_temperature[iface] = 3.2 * Convert::toReal(face.uniqueId().asInt64());
     face_pressure[iface] = 2.4 * Convert::toReal(face.uniqueId().asInt64());
@@ -998,7 +1010,7 @@ _testVariableWriter()
   IParallelMng* pm = subDomain()->parallelMng();
   String dir_name = "ic";
   Int32 replication_rank = pm->replication()->replicationRank();
-  if (replication_rank>0){
+  if (replication_rank > 0) {
     dir_name = dir_name + String::fromNumber(replication_rank);
   }
   Directory out_dir(subDomain()->exportDirectory(), dir_name);
@@ -1032,8 +1044,7 @@ _testVisitors()
 
   info() << "TEST MeshVisitor";
   int nb_group = 0;
-  auto func = [&](const ItemGroup& g)
-  {
+  auto func = [&](const ItemGroup& g) {
     info() << "VisitGroup name=" << g.name();
     ++nb_group;
   };
@@ -1043,26 +1054,25 @@ _testVisitors()
   // of groups in the family.
   info() << "TEST Visit CellFamily";
   MeshUtils::visitGroups(item_family, func);
-  vc.areEqual(nb_group,item_family->groups().count(),"Bad number of group for cell family");
+  vc.areEqual(nb_group, item_family->groups().count(), "Bad number of group for cell family");
   info() << "Nb group=" << nb_group;
 
   info() << "TEST Visit IMesh";
   nb_group = 0;
   Integer nb_expected_group = 0;
-  for( IItemFamilyCollection::Enumerator ifamily(mesh()->itemFamilies()); ++ifamily; ){
+  for (IItemFamilyCollection::Enumerator ifamily(mesh()->itemFamilies()); ++ifamily;) {
     nb_expected_group += (*ifamily)->groups().count();
   }
   MeshUtils::visitGroups(mesh(), func);
-  vc.areEqual(nb_group,nb_expected_group,"Bad number of group for mesh");
+  vc.areEqual(nb_group, nb_expected_group, "Bad number of group for mesh");
   info() << "Nb group=" << nb_group;
 
   // Checks the number of sorted groups.
   {
     int nb_sorted_group = 0;
-    nb_group =0;
+    nb_group = 0;
     info() << "Check sorted groups";
-    auto check_sorted_func = [&](ItemGroup& g)
-    {
+    auto check_sorted_func = [&](ItemGroup& g) {
       ++nb_group;
       if (g.checkIsSorted())
         ++nb_sorted_group;
@@ -1077,23 +1087,27 @@ _testVisitors()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ENUMERATE_CELLZ(name,array) \
+#define ENUMERATE_CELLZ(name, array) \
   for (ItemEnumerator2T<Cell> name((array).enumerator()); (name).hasNext(); ++(name))
 
-template<typename ItemType>
+template <typename ItemType>
 class ItemEnumerator2T
 : public ItemEnumerator
 {
  public:
 
-  ItemEnumerator2T(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
-  : ItemEnumerator(items,local_ids,n) {}
+  ItemEnumerator2T(const ItemInternalPtr* items, const Int32* local_ids, Integer n)
+  : ItemEnumerator(items, local_ids, n)
+  {}
   ItemEnumerator2T(const ItemInternalEnumerator& rhs)
-  : ItemEnumerator(rhs) {}
+  : ItemEnumerator(rhs)
+  {}
   ItemEnumerator2T(const ItemEnumerator& rhs)
-  : ItemEnumerator(rhs) {}
+  : ItemEnumerator(rhs)
+  {}
   ItemEnumerator2T(const ItemVectorViewT<ItemType>& rhs)
-  : ItemEnumerator(rhs) {}
+  : ItemEnumerator(rhs)
+  {}
 
  public:
 
@@ -1110,8 +1124,11 @@ class MyCellClass
 : public Cell
 {
  public:
+
   //! Constructs a reference to the base entity \a
-  explicit MyCellClass(Item aitem) : Cell(aitem) {}
+  explicit MyCellClass(Item aitem)
+  : Cell(aitem)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1122,55 +1139,56 @@ _testItemArray()
 {
   Int32UniqueArray local_ids;
   IItemFamily* family = mesh()->cellFamily();
-  ENUMERATE_CELL(icell,family->allItems()){
+  ENUMERATE_CELL (icell, family->allItems()) {
     local_ids.add((*icell).localId());
   }
 
   // To test the default constructor.
   [[maybe_unused]] ItemLocalIdToItemConverter empty_converter;
 
-  ItemVectorView v(family,local_ids);
+  ItemVectorView v(family, local_ids);
   ItemInfoListView cells_info_view(family);
   ItemLocalIdToItemConverter cells_local_id_converter(family);
   ItemVectorViewT<Cell> v2(v);
   Integer z = v2.size();
   info() << "NB CELL=" << z;
-  for( Integer i=0; i<z; ++i ){
+  for (Integer i = 0; i < z; ++i) {
     Cell c = v2[i];
     Item c2 = cells_info_view[local_ids[i]];
     Item c3 = cells_local_id_converter[local_ids[i]];
     Item c4 = cells_local_id_converter[ItemLocalId(local_ids[i])];
-    if (c2!=c3)
+    if (c2 != c3)
       ARCANE_FATAL("Bad same item item2={0} item3={1}", ItemPrinter(c2), ItemPrinter(c3));
-    if (c2!=c4)
+    if (c2 != c4)
       ARCANE_FATAL("Bad same item item2={0} item4={1}", ItemPrinter(c2), ItemPrinter(c4));
     info(6) << "CELL =" << ItemPrinter(c);
-    if (c2.uniqueId()!=c.uniqueId())
-      ARCANE_FATAL("Not same uniqueId() (1) uid1={0} uid2={1}",c.uniqueId(),c2.uniqueId());
-    if (cells_info_view.uniqueId(local_ids[i])!=c.uniqueId())
-      ARCANE_FATAL("Not same uniqueId() (2) uid1={0} uid2={1}",cells_info_view.uniqueId(local_ids[i]),c.uniqueId());
-    if (cells_info_view.owner(local_ids[i])!=c.owner())
-      ARCANE_FATAL("Not same owner() owner1={0} owner2={1}",cells_info_view.owner(local_ids[i]),c.owner());
-    if (cells_info_view.typeId(local_ids[i])!=c.type())
-      ARCANE_FATAL("Not same typeId() type1={0} type2={1}",cells_info_view.typeId(local_ids[i]),c.type());
+    if (c2.uniqueId() != c.uniqueId())
+      ARCANE_FATAL("Not same uniqueId() (1) uid1={0} uid2={1}", c.uniqueId(), c2.uniqueId());
+    if (cells_info_view.uniqueId(local_ids[i]) != c.uniqueId())
+      ARCANE_FATAL("Not same uniqueId() (2) uid1={0} uid2={1}", cells_info_view.uniqueId(local_ids[i]), c.uniqueId());
+    if (cells_info_view.owner(local_ids[i]) != c.owner())
+      ARCANE_FATAL("Not same owner() owner1={0} owner2={1}", cells_info_view.owner(local_ids[i]), c.owner());
+    if (cells_info_view.typeId(local_ids[i]) != c.type())
+      ARCANE_FATAL("Not same typeId() type1={0} type2={1}", cells_info_view.typeId(local_ids[i]), c.type());
   }
-  ENUMERATE_CELLZ(icell,v2){
+  ENUMERATE_CELLZ(icell, v2)
+  {
     Cell c = *icell;
     info(6) << "CELL =" << ItemPrinter(c);
-    for( NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode ){
+    for (NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode) {
       info(7) << "NODE =" << ItemPrinter(*inode);
     }
   }
 
-  VariableCellInt32 var_counter(VariableBuildInfo(mesh(),"CellCounter"));
+  VariableCellInt32 var_counter(VariableBuildInfo(mesh(), "CellCounter"));
   Int64 total = 0;
-  ENUMERATE_(MyCellClass,icell,v2){
+  ENUMERATE_ (MyCellClass, icell, v2) {
     const MyCellClass& c = *icell;
     MyCellClass c2 = *icell;
     info(6) << "CELL =" << ItemPrinter(c);
     var_counter[icell] = c.localId();
     total += var_counter[c] + var_counter[c2];
-    for( NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode ){
+    for (NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode) {
       info(7) << "NODE =" << ItemPrinter(*inode);
     }
   }
@@ -1186,52 +1204,52 @@ _testItemVectorView()
   ValueChecker vc(A_FUNCINFO);
   IItemFamily* cell_family = mesh()->cellFamily();
   CellGroup cells = cell_family->allItems();
-  if (cells.size()<13)
+  if (cells.size() < 13)
     return;
   UniqueArray<Int32> local_ids;
   Int64 total_ref_uid = 0;
-  ENUMERATE_(Cell,icell,cells){
+  ENUMERATE_ (Cell, icell, cells) {
     local_ids.add(icell.itemLocalId());
     total_ref_uid += icell.itemLocalId();
   }
-  CellVector cell_vector(cell_family,local_ids);
+  CellVector cell_vector(cell_family, local_ids);
   CellVectorView cell_vector_view(cell_vector);
   {
     Int64 total_uid_cell_vector = 0;
-    ENUMERATE_(Cell,icell,cell_vector){
+    ENUMERATE_ (Cell, icell, cell_vector) {
       total_uid_cell_vector += icell.itemLocalId();
     }
-    vc.areEqual(total_ref_uid,total_uid_cell_vector,"SameCellVector");
+    vc.areEqual(total_ref_uid, total_uid_cell_vector, "SameCellVector");
   }
   {
     Int64 total_uid_cell_vector_view = 0;
-    ENUMERATE_(Cell,icell,cell_vector_view){
+    ENUMERATE_ (Cell, icell, cell_vector_view) {
       total_uid_cell_vector_view += icell.itemLocalId();
     }
-    vc.areEqual(total_ref_uid,total_uid_cell_vector_view,"SameCellVectorView");
+    vc.areEqual(total_ref_uid, total_uid_cell_vector_view, "SameCellVectorView");
   }
 
   auto cell_iter = cell_vector_view.begin();
   auto cell_iter2 = cell_iter;
   ++cell_iter2;
-  vc.areEqual(cell_vector[1],*cell_iter2,"SameCell1");
+  vc.areEqual(cell_vector[1], *cell_iter2, "SameCell1");
   auto cell_iter3 = cell_iter + 5;
-  vc.areEqual(cell_vector[5],*cell_iter3,"SameCell2");
+  vc.areEqual(cell_vector[5], *cell_iter3, "SameCell2");
   auto cell_iter4 = cell_iter3 - 2;
-  vc.areEqual(cell_vector[3],*cell_iter4,"SameCell3");
+  vc.areEqual(cell_vector[3], *cell_iter4, "SameCell3");
   auto diff1 = cell_iter4 - cell_iter3;
   CellVectorView::const_iterator::difference_type wanted_diff1 = -2;
-  vc.areEqual(wanted_diff1,diff1,"SameDiff1");
+  vc.areEqual(wanted_diff1, diff1, "SameDiff1");
   auto diff2 = cell_iter3 - cell_iter4;
   CellVectorView::const_iterator::difference_type wanted_diff2 = 2;
-  vc.areEqual(wanted_diff2,diff2,"SameDiff2");
+  vc.areEqual(wanted_diff2, diff2, "SameDiff2");
 
-  auto cell_iter5 = std::find(cell_vector_view.begin(),cell_vector_view.end(),cell_vector[12]);
+  auto cell_iter5 = std::find(cell_vector_view.begin(), cell_vector_view.end(), cell_vector[12]);
   auto diff3 = cell_iter5 - cell_vector_view.begin();
   CellVectorView::const_iterator::difference_type wanted_diff3 = 12;
-  vc.areEqual(wanted_diff3,diff3,"SameDiff3");
+  vc.areEqual(wanted_diff3, diff3, "SameDiff3");
 
-  vc.areEqual(cell_vector[12],*cell_iter5,"SameCell4");
+  vc.areEqual(cell_vector[12], *cell_iter5, "SameCell4");
 
   {
     UniqueArray<Int32> int32_lid1;
@@ -1239,12 +1257,12 @@ _testItemVectorView()
     cells.view().fillLocalIds(int32_lid1);
     cells.view().indexes().fillLocalIds(int32_lid2);
     Int32 index = 0;
-    ENUMERATE_(Cell,icell,cells){
+    ENUMERATE_ (Cell, icell, cells) {
       Cell cell = *icell;
-      if (cell.localId()!=int32_lid1[index])
-        ARCANE_FATAL("Bad 1 local id v={0} expected={1}",cell.localId(),int32_lid1[index]);
-      if (cell.localId()!=int32_lid2[index])
-        ARCANE_FATAL("Bad 2 local id v={0} expected={1}",cell.localId(),int32_lid2[index]);
+      if (cell.localId() != int32_lid1[index])
+        ARCANE_FATAL("Bad 1 local id v={0} expected={1}", cell.localId(), int32_lid1[index]);
+      if (cell.localId() != int32_lid2[index])
+        ARCANE_FATAL("Bad 2 local id v={0} expected={1}", cell.localId(), int32_lid2[index]);
       ++index;
     }
   }
@@ -1272,24 +1290,24 @@ _testProjection()
   info() << "** VALUE = " << uvw;
 #endif
 
-  a[0] = Real3(1.09457822497375,1.36432427695779,-0.380286258927967);
-  a[1] = Real3(1.20134150773065,1.27621011028963,-0.363546544084165);
-  a[2] = Real3(1.21554570376586,1.30122221118225,-0.182671960715687);
-  a[3] = Real3(1.10818506119729,1.39266571127366,-0.191070818885339);
-  point = Real3(1.14802467452944,1.32021370596031,-0.371906240050006);
-  for( Integer i=0; i<4; ++i )
+  a[0] = Real3(1.09457822497375, 1.36432427695779, -0.380286258927967);
+  a[1] = Real3(1.20134150773065, 1.27621011028963, -0.363546544084165);
+  a[2] = Real3(1.21554570376586, 1.30122221118225, -0.182671960715687);
+  a[3] = Real3(1.10818506119729, 1.39266571127366, -0.191070818885339);
+  point = Real3(1.14802467452944, 1.32021370596031, -0.371906240050006);
+  for (Integer i = 0; i < 4; ++i)
     mapping.m_pos[i] = a[i];
-  v = mapping.cartesianToIso2(point,uvw,traceMng());
+  v = mapping.cartesianToIso2(point, uvw, traceMng());
   info() << "** VALUE = " << uvw << ' ' << v;
 
-  a[0] = Real3(1.09457822497375,1.36432427695779,0.0);
-  a[1] = Real3(1.20134150773065,1.27621011028963,0.0);
-  a[2] = Real3(1.21554570376586,1.30122221118225,0.0);
-  a[3] = Real3(1.10818506119729,1.39266571127366,0.0);
-  point = Real3(1.14802467452944,1.32021370596031,0.0);
-  for( Integer i=0; i<4; ++i )
+  a[0] = Real3(1.09457822497375, 1.36432427695779, 0.0);
+  a[1] = Real3(1.20134150773065, 1.27621011028963, 0.0);
+  a[2] = Real3(1.21554570376586, 1.30122221118225, 0.0);
+  a[3] = Real3(1.10818506119729, 1.39266571127366, 0.0);
+  point = Real3(1.14802467452944, 1.32021370596031, 0.0);
+  for (Integer i = 0; i < 4; ++i)
     mapping.m_pos[i] = a[i];
-  v = mapping.cartesianToIso(point,uvw,traceMng());
+  v = mapping.cartesianToIso(point, uvw, traceMng());
   info() << "** VALUE = " << uvw << ' ' << v;
   //Real a1 = 0.0;
   //Real a2 = 0.0;
@@ -1312,22 +1330,22 @@ _testSharedItems()
 {
   info() << "Checking if shared items are marked";
   // Should contain how many subdomains the mesh belongs to.
-  VariableCellInt32 var_counter(VariableBuildInfo(mesh(),"CellCounter"));
+  VariableCellInt32 var_counter(VariableBuildInfo(mesh(), "CellCounter"));
   var_counter.fill(1);
   IItemFamily* cell_family = mesh()->cellFamily();
-  cell_family->reduceFromGhostItems(var_counter.variable(),Parallel::ReduceSum);
+  cell_family->reduceFromGhostItems(var_counter.variable(), Parallel::ReduceSum);
   Int64 nb_shared = 0;
-  ENUMERATE_ITEM(iitem,cell_family->allItems()){
+  ENUMERATE_ITEM (iitem, cell_family->allItems()) {
     Item item = *iitem;
     Int32 counter = var_counter[item.toCell()];
-    if (counter>1)
+    if (counter > 1)
       ++nb_shared;
-    if (counter>1 && !item.isShared())
+    if (counter > 1 && !item.isShared())
       ARCANE_FATAL("Item not marked shared item={0} counter={1} is_shared={2}",
-                   ItemPrinter(item),counter,item.isShared());
-    if (counter==1 && item.isShared())
+                   ItemPrinter(item), counter, item.isShared());
+    if (counter == 1 && item.isShared())
       ARCANE_FATAL("Item marked shared item={0} counter={1} is_shared={2}",
-                   ItemPrinter(item),counter,item.isShared());
+                   ItemPrinter(item), counter, item.isShared());
   }
   info() << "NbSharedItems=" << nb_shared;
   TestLogger::stream() << "NbSharedItems=" << nb_shared << "\n";
@@ -1343,15 +1361,15 @@ _testAdditionalMeshes()
   // even if running in parallel.
   ConstArrayView<String> additional_meshes = options()->additionalMesh.view();
   Integer nb_mesh = additional_meshes.size();
-  if (nb_mesh==0)
+  if (nb_mesh == 0)
     return;
   MeshReaderMng mesh_reader_mng(subDomain());
   Integer mesh_index = 0;
-  for( String mesh_file_name : additional_meshes ){
+  for (String mesh_file_name : additional_meshes) {
     info() << "Reading mesh with file_name " << mesh_file_name;
     String mesh_name = String("TestSequentialMesh") + mesh_index;
     ++mesh_index;
-    IMesh* mesh = mesh_reader_mng.readMesh(mesh_name,mesh_file_name);
+    IMesh* mesh = mesh_reader_mng.readMesh(mesh_name, mesh_file_name);
     info() << "Success in reading mesh named '" << mesh->name() << "'";
   }
 }
@@ -1364,7 +1382,7 @@ _testCustomMeshTools()
 {
 #ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
   // Tests external tooling dependency for custom mesh (e.g., polyhedral)
-  Neo::Mesh mesh{"test_mesh"};
+  Neo::Mesh mesh{ "test_mesh" };
   info() << "Neo::Mesh{" << mesh.name() << "}";
 #endif
 }
@@ -1385,37 +1403,37 @@ _testAdditionnalConnectivity()
   IItemFamily* face_family = mesh()->faceFamily();
   CellGroup cells = cell_family->allItems();
   // NOTE: the object is automatically destroyed by the mesh
-  auto idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family, face_family, "CellNoBoundaryFace");
   auto* cn = idx_cn->connectivity();
-  ENUMERATE_CELL(icell,cells){
+  ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
     Integer nb_face = cell.nbFace();
-    for( Integer i=0; i<nb_face; ++i ){
+    for (Integer i = 0; i < nb_face; ++i) {
       Face face = cell.face(i);
-      if (face.nbCell()==2)
-        cn->addConnectedItem(cell,face);
+      if (face.nbCell() == 2)
+        cn->addConnectedItem(cell, face);
     }
   }
 
   IndexedCellFaceConnectivityView cn_view(idx_cn->view());
   Int64 total_face_lid = 0;
-  ENUMERATE_(Cell,icell,cells){
-    for( FaceLocalId face : cn_view.faces(icell) )
+  ENUMERATE_ (Cell, icell, cells) {
+    for (FaceLocalId face : cn_view.faces(icell))
       total_face_lid += face.localId();
-    vc.areEqual(cn_view.faces(icell),cn_view.faceIds(icell),"SameArray");
+    vc.areEqual(cn_view.faces(icell), cn_view.faceIds(icell), "SameArray");
     Int32 n = cn_view.nbFace(icell);
-    vc.areEqual(n,cn_view.faceIds(icell).size(),"SameSize");
-    for( Int32 i=0; i<n; ++i )
-      vc.areEqual(cn_view.faceId(icell,i),cn_view.faces(icell)[i],"SameItem");
+    vc.areEqual(n, cn_view.faceIds(icell).size(), "SameSize");
+    for (Int32 i = 0; i < n; ++i)
+      vc.areEqual(cn_view.faceId(icell, i), cn_view.faces(icell)[i], "SameItem");
   }
   info() << "TOTAL_NB_FACE = " << total_face_lid;
 
-  auto idx_cn2 = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto idx_cn2 = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family, face_family, "CellNoBoundaryFace");
   auto idx_cn3 = mesh()->indexedConnectivityMng()->findConnectivity("CellNoBoundaryFace");
 
-  if (idx_cn2->connectivity()!=cn)
+  if (idx_cn2->connectivity() != cn)
     ARCANE_FATAL("Bad findOrCreateConnectivity");
-  if (idx_cn3->connectivity()!=cn)
+  if (idx_cn3->connectivity() != cn)
     ARCANE_FATAL("Bad findConnectivity");
 }
 
@@ -1433,72 +1451,72 @@ _testUnstructuredConnectivities()
   {
     // Tests Cell->Face
     IndexedCellFaceConnectivityView icv(connectivity_view.cellFace());
-    ENUMERATE_(Cell,icell,allCells()){
+    ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
       // Checks consistency between methods
       auto f1 = icv.faces(icell);
       auto f2 = icv.faceIds(icell);
       auto f3 = cell.faceIds();
-      vc.areEqual(f1,f2,"SameFaceArray1");
-      vc.areEqual(f1,f3,"SameFaceArray2");
+      vc.areEqual(f1, f2, "SameFaceArray1");
+      vc.areEqual(f1, f3, "SameFaceArray2");
       Int32 n = icv.nbFace(icell);
-      vc.areEqual(n,icv.faceIds(icell).size(),"SameFaceSize");
-      for( Int32 i=0; i<n; ++i )
-        vc.areEqual(icv.faceId(icell,i),icv.faces(icell)[i],"SameFaceItem");
+      vc.areEqual(n, icv.faceIds(icell).size(), "SameFaceSize");
+      for (Int32 i = 0; i < n; ++i)
+        vc.areEqual(icv.faceId(icell, i), icv.faces(icell)[i], "SameFaceItem");
     }
   }
 
   {
     // Tests Cell->Node
     IndexedCellNodeConnectivityView icv(connectivity_view.cellNode());
-    ENUMERATE_(Cell,icell,allCells()){
+    ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
       // Checks consistency between methods
       auto f1 = icv.nodes(icell);
       auto f2 = icv.nodeIds(icell);
       auto f3 = cell.nodeIds();
-      vc.areEqual(f1,f2,"SameNodeArray1");
-      vc.areEqual(f1,f3,"SameNodeArray2");
+      vc.areEqual(f1, f2, "SameNodeArray1");
+      vc.areEqual(f1, f3, "SameNodeArray2");
       Int32 n = icv.nbNode(icell);
-      vc.areEqual(n,icv.nodeIds(icell).size(),"SameNodeSize");
-      for( Int32 i=0; i<n; ++i )
-        vc.areEqual(icv.nodeId(icell,i),icv.nodes(icell)[i],"SameNodeItem");
+      vc.areEqual(n, icv.nodeIds(icell).size(), "SameNodeSize");
+      for (Int32 i = 0; i < n; ++i)
+        vc.areEqual(icv.nodeId(icell, i), icv.nodes(icell)[i], "SameNodeItem");
     }
   }
 
   {
     // Tests Cell->Edge
     IndexedCellEdgeConnectivityView icv(connectivity_view.cellEdge());
-    ENUMERATE_(Cell,icell,allCells()){
+    ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
       // Checks consistency between methods
       auto f1 = icv.edges(icell);
       auto f2 = icv.edgeIds(icell);
       auto f3 = cell.edgeIds();
-      vc.areEqual(f1,f2,"SameEdgeArray1");
-      vc.areEqual(f1,f3,"SameEdgeArray2");
+      vc.areEqual(f1, f2, "SameEdgeArray1");
+      vc.areEqual(f1, f3, "SameEdgeArray2");
       Int32 n = icv.nbEdge(icell);
-      vc.areEqual(n,icv.edgeIds(icell).size(),"SameEdgeSize");
-      for( Int32 i=0; i<n; ++i )
-        vc.areEqual(icv.edgeId(icell,i),icv.edges(icell)[i],"SameEdgeItem");
+      vc.areEqual(n, icv.edgeIds(icell).size(), "SameEdgeSize");
+      for (Int32 i = 0; i < n; ++i)
+        vc.areEqual(icv.edgeId(icell, i), icv.edges(icell)[i], "SameEdgeItem");
     }
   }
 
   {
     // Tests Node->Cell
     IndexedNodeCellConnectivityView icv(connectivity_view.nodeCell());
-    ENUMERATE_(Node,inode,allNodes()){
+    ENUMERATE_ (Node, inode, allNodes()) {
       Node node = *inode;
       // Checks consistency between methods
       auto f1 = icv.cells(inode);
       auto f2 = icv.cellIds(inode);
       auto f3 = node.cellIds();
-      vc.areEqual(f1,f2,"SameCellArray1");
-      vc.areEqual(f1,f3,"SameCellArray2");
+      vc.areEqual(f1, f2, "SameCellArray1");
+      vc.areEqual(f1, f3, "SameCellArray2");
       Int32 n = icv.nbCell(inode);
-      vc.areEqual(n,icv.cellIds(inode).size(),"SameCellSize");
-      for( Int32 i=0; i<n; ++i )
-        vc.areEqual(icv.cellId(inode,i),icv.cells(inode)[i],"SameCellItem");
+      vc.areEqual(n, icv.cellIds(inode).size(), "SameCellSize");
+      for (Int32 i = 0; i < n; ++i)
+        vc.areEqual(icv.cellId(inode, i), icv.cells(inode)[i], "SameCellItem");
     }
   }
 }
@@ -1517,12 +1535,12 @@ _testSortedNodeFaces()
   UnstructuredMeshConnectivityView connectivity_view;
   connectivity_view.setMesh(this->mesh());
 
-  ENUMERATE_(Node,inode,allNodes()){
+  ENUMERATE_ (Node, inode, allNodes()) {
     Node node = *inode;
     Face previous_face;
-    for( Face face : node.faces() ){
-      if (!previous_face.null()){
-        if (previous_face.uniqueId()>face.uniqueId())
+    for (Face face : node.faces()) {
+      if (!previous_face.null()) {
+        if (previous_face.uniqueId() > face.uniqueId())
           ARCANE_FATAL("Connected faces are not sorted node={0} previous_face={1} current_face={2}",
                        ItemPrinter(node), ItemPrinter(previous_face), ItemPrinter(face));
       }
@@ -1538,10 +1556,10 @@ void MeshUnitTest::
 _testShrinkGroups()
 {
   info() << A_FUNCINFO;
-  mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
+  mesh_utils::printMeshGroupsMemoryUsage(mesh(), 1);
   mesh_utils::shrinkMeshGroups(mesh());
-  mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
-  Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(),0);
+  mesh_utils::printMeshGroupsMemoryUsage(mesh(), 1);
+  Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(), 0);
   info() << "TotalMemoryForGroups=" << total;
 }
 
@@ -1554,11 +1572,11 @@ _testFaces()
   info() << A_FUNCINFO;
   ValueChecker vc(A_FUNCINFO);
 
-  ENUMERATE_(Face,iface,allFaces()){
+  ENUMERATE_ (Face, iface, allFaces()) {
     Face face = *iface;
     Int32 flags = face.itemBase().flags();
-    vc.areEqual(face.backCell().itemLocalId(),face.backCellId(),"BackCell");
-    vc.areEqual(face.frontCell().itemLocalId(),face.frontCellId(),"FrontCell");
+    vc.areEqual(face.backCell().itemLocalId(), face.backCellId(), "BackCell");
+    vc.areEqual(face.frontCell().itemLocalId(), face.frontCellId(), "FrontCell");
     vc.areEqual(face.isSubDomainBoundary(), ItemFlags::isSubDomainBoundary(flags), "IsSubDomainBoundary");
     vc.areEqual(!face.backCell().null(), ItemFlags::hasBackCell(flags), "HasBackCell");
 
@@ -1578,15 +1596,15 @@ _testFaces()
     }
   }
 
-  ENUMERATE_(Cell,icell,allCells()){
+  ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;
-    for( Face face : cell.faces() ){
-      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell1");
+    for (Face face : cell.faces()) {
+      vc.areEqual(face.oppositeCell(cell).itemLocalId(), face.oppositeCellId(cell), "OppositeCell1");
     }
     Int32 nb_face = cell.nbFace();
     FaceConnectedListViewType faces = cell.faces();
-    for(Int32 i=0; i<nb_face; ++i ){
-      vc.areEqual(faces[i].oppositeCell(cell).itemLocalId(),faces[i].oppositeCellId(cell),"OppositeCell2");
+    for (Int32 i = 0; i < nb_face; ++i) {
+      vc.areEqual(faces[i].oppositeCell(cell).itemLocalId(), faces[i].oppositeCellId(cell), "OppositeCell2");
     }
     // Tests compatibility between ItemVectorView and ItemConnectedListView.
     // To maintain compatibility between versions 3.8+ and earlier
@@ -1596,9 +1614,9 @@ _testFaces()
     FaceVectorView::const_iterator face_vector_begin2 = cell.faces().begin();
     FaceVectorView::const_iterator face_vector_begin1 = faces_as_vector.begin();
     auto face_begin1 = faces.begin();
-    if (face_begin1!=face_vector_begin1)
+    if (face_begin1 != face_vector_begin1)
       ARCANE_FATAL("Bad face1");
-    if (face_vector_begin1!=face_vector_begin2)
+    if (face_vector_begin1 != face_vector_begin2)
       ARCANE_FATAL("Bad face2");
   }
 }
@@ -1640,20 +1658,19 @@ _testGroupsAsBlocks()
 {
   ITraceMng* tm = mesh()->traceMng();
   ValueChecker vc(A_FUNCINFO);
-  auto xx = [&](const ItemGroup& group)
-  {
+  auto xx = [&](const ItemGroup& group) {
     if (group.internal()->parent())
       return;
     Int32 nb_item = group.size();
-    if (nb_item==0)
+    if (nb_item == 0)
       return;
     BlockIndexList bli;
     BlockIndexListBuilder bli_builder(tm);
     bli_builder.setBlockSizeAsPowerOfTwo(5); // Block of 2^5 = 32
-    bli_builder.build(bli,group.view().localIds(),group.name());
+    bli_builder.build(bli, group.view().localIds(), group.name());
     UniqueArray<Int32> computed_values;
     bli.fillArray(computed_values);
-    vc.areEqualArray(computed_values.constView(),group.view().localIds(),group.name());
+    vc.areEqualArray(computed_values.constView(), group.view().localIds(), group.name());
   };
   MeshUtils::visitGroups(mesh(), xx);
 }
@@ -1667,9 +1684,9 @@ _testCoherency()
   MeshKind mk = mesh()->meshKind();
   info() << "MeshKind amr=" << mk.meshAMRKind() << " structure=" << mk.meshStructure();
   bool is_amr = mesh()->isAmrActivated();
-  if (is_amr && mk.meshAMRKind()==eMeshAMRKind::None)
+  if (is_amr && mk.meshAMRKind() == eMeshAMRKind::None)
     ARCANE_FATAL("AMR incoherence: is_amr==true but eMeshAMRKind == None");
-  if (!is_amr && mk.meshAMRKind()!=eMeshAMRKind::None)
+  if (!is_amr && mk.meshAMRKind() != eMeshAMRKind::None)
     ARCANE_FATAL("AMR incoherence: is_amr==false but eMeshAMRKind != None");
 }
 
@@ -1683,8 +1700,8 @@ _testFindOneItem()
   UniqueArray<Int32> local_ids;
   {
     Int32 index = 0;
-    ENUMERATE_(Cell,icell,allCells()){
-      if (index>100)
+    ENUMERATE_ (Cell, icell, allCells()) {
+      if (index > 100)
         break;
       Cell cell = *icell;
       unique_ids.add(cell.uniqueId());
@@ -1698,28 +1715,28 @@ _testFindOneItem()
   // Tests the null entity
   {
     Int64 max_uid = 0;
-    ENUMERATE_(Cell,icell,allCells()){
+    ENUMERATE_ (Cell, icell, allCells()) {
       Cell cell = *icell;
       Int64 uid = cell.uniqueId();
-      max_uid = math::max(max_uid,uid);
+      max_uid = math::max(max_uid, uid);
     }
 
-    Cell cell = MeshUtils::findOneItem(cell_family,max_uid+1);
+    Cell cell = MeshUtils::findOneItem(cell_family, max_uid + 1);
     if (!cell.null())
-      ARCANE_FATAL("Expected null cell but found cell={0}",ItemPrinter(cell));
+      ARCANE_FATAL("Expected null cell but found cell={0}", ItemPrinter(cell));
   }
 
-  for( Int32 i=0, n=unique_ids.size(); i<n; ++i ){
+  for (Int32 i = 0, n = unique_ids.size(); i < n; ++i) {
     Int64 uid = unique_ids[i];
     ItemUniqueId true_uid(uid);
-    Cell cell1 = MeshUtils::findOneItem(cell_family,uid);
+    Cell cell1 = MeshUtils::findOneItem(cell_family, uid);
     if (cell1.null())
       ARCANE_FATAL("Unexpected null cell");
-    if (cell1.localId()!=local_ids[i])
-      ARCANE_FATAL("Bad local id cell1={0} expected_lid={1}",ItemPrinter(cell1),local_ids[i]);
-    Cell cell2 = MeshUtils::findOneItem(cell_family,true_uid);
-    if (cell1!=cell2)
-      ARCANE_FATAL("Unexpected different cell cell1={0} cell2={1}",ItemPrinter(cell1),ItemPrinter(cell2));
+    if (cell1.localId() != local_ids[i])
+      ARCANE_FATAL("Bad local id cell1={0} expected_lid={1}", ItemPrinter(cell1), local_ids[i]);
+    Cell cell2 = MeshUtils::findOneItem(cell_family, true_uid);
+    if (cell1 != cell2)
+      ARCANE_FATAL("Unexpected different cell cell1={0} cell2={1}", ItemPrinter(cell1), ItemPrinter(cell2));
   }
 }
 
@@ -1734,10 +1751,10 @@ _testEvents()
   EventObserverPool pool;
   bool has_call_begin_prepare_dump = false;
   bool has_call_end_prepare_dump = false;
-  auto f1 = [&](const MeshEventArgs&){ has_call_begin_prepare_dump = true; };
-  auto f2 = [&](const MeshEventArgs&){ has_call_end_prepare_dump = true; };
-  mesh()->eventObservable(eMeshEventType::BeginPrepareDump).attach(pool,f1);
-  mesh()->eventObservable(eMeshEventType::EndPrepareDump).attach(pool,f2);
+  auto f1 = [&](const MeshEventArgs&) { has_call_begin_prepare_dump = true; };
+  auto f2 = [&](const MeshEventArgs&) { has_call_end_prepare_dump = true; };
+  mesh()->eventObservable(eMeshEventType::BeginPrepareDump).attach(pool, f1);
+  mesh()->eventObservable(eMeshEventType::EndPrepareDump).attach(pool, f2);
   mesh()->prepareForDump();
   if (!has_call_begin_prepare_dump)
     ARCANE_FATAL("Event BeginPrepareDump has not been called");

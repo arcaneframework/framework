@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ class AcceleratorPartitionerUnitTest
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(AcceleratorPartitionerUnitTest,
-                        ServiceProperty("AcceleratorPartitionerUnitTest",ST_CaseOption),
+                        ServiceProperty("AcceleratorPartitionerUnitTest", ST_CaseOption),
                         ARCANE_SERVICE_INTERFACE(IUnitTest));
 
 /*---------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       // Teste liste vide
       generic_partitioner.applyIf(0, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
       Int32 nb_list1 = generic_partitioner.nbFirstPart();
-      vc.areEqual(0,nb_list1,"applyIf 0");
+      vc.areEqual(0, nb_list1, "applyIf 0");
     }
     Int32 nb_list1 = 0;
     generic_partitioner.applyIf(n1, t1.to1DSpan().begin(), t2.to1DSpan().begin(), filter_lambda);
@@ -231,7 +231,7 @@ _executeTestDataType2(Int32 size, Int32 test_id)
       Int32 nb_list1 = 0;
       generic_partitioner.applyWithIndex(0, setter_lambda, filter_lambda);
       nb_list1 = generic_partitioner.nbFirstPart();
-      vc.areEqual(0,nb_list1,"applyIf 1");
+      vc.areEqual(0, nb_list1, "applyIf 1");
     }
     Int32 nb_list1 = 0;
     generic_partitioner.applyWithIndex(n1, setter_lambda, filter_lambda);

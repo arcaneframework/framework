@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,19 +11,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #include <cassert>
-#include "arcane/BasicUnitTest.h"
+#include "arcane/core/BasicUnitTest.h"
 
 #include "arcane/tests/graph/GraphUnitTest_axl.h"
 
-#include "arcane/IItemOperationByBasicType.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshModifier.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshStats.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IParticleFamily.h"
+#include "arcane/core/IItemOperationByBasicType.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshStats.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IParticleFamily.h"
+
 #include "arcane/anyitem/AnyItem.h"
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/ParticleFamily.h"
@@ -39,16 +40,17 @@
 #include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/GraphBuilder.h"
 
-#include "arcane/IItemConnectivitySynchronizer.h"
+#include "arcane/core/IItemConnectivitySynchronizer.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
-#include "arcane/MathUtils.h"
+#include "arcane/core/MathUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -648,10 +650,7 @@ _checkGraphDofConnectivity(IGraph2* graph_dof)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//ARCANE_MESH_END_NAMESPACE
-//ARCANE_END_NAMESPACE
-
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

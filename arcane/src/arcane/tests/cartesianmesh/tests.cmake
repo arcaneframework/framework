@@ -22,7 +22,7 @@ arcane_add_test(cartesian3D_coarsen2 testCartesianMesh3D-coarsen-2.arc "-m 20" "
 if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
   arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
-endif()
+endif ()
 
 
 arcane_add_test(amr-cartesian2D-cell-renumbering-v1-1 testAMRCartesianMesh2D-Cell-RenumberingV1-1.arc "-m 20")
@@ -223,7 +223,7 @@ if (BIG_TEST)
 
   arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 3 5)
   arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-cell-coarse-zone-4 testAMRCartesianMesh3D-Cell-CoarseZone-4.arc 8 3 5)
-endif()
+endif ()
 
 arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-1 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-1.arc 4 "-m 20")
 arcane_add_test_parallel(amr-cartesian2D-cell-reduce-nb-ghost-layers-2 testAMRCartesianMesh2D-Cell-ReduceNbGhostLayers-2.arc 4 "-m 20")
@@ -281,7 +281,7 @@ if (TARGET arcane_aleph_hypre)
 
   arcane_add_test_parallel(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 1)
   arcane_add_test_parallel(cartesianMeshGeneratorOrigin2D testCartesianMeshGeneratorOrigin2D.arc 4)
-endif()
+endif ()
 
 # Not active for now because it is failing
 arcane_add_test_sequential(cartesianpatch1 unitCartesianPatch1.arc)

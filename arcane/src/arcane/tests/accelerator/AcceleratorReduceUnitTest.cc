@@ -231,7 +231,7 @@ _executeTestDataType(Int32 nb_iteration)
     _executeTestReduceMin(nb_iteration, t1, min_value);
     _executeTestReduceMax(nb_iteration, t1, max_value);
     m_queue.setAsync(false);
-}
+  }
 
   // Using specific kernels
   _executeTestReduceDirect(nb_iteration, t1, sum, min_value, max_value);
@@ -422,7 +422,7 @@ _executeTestReduceV2(Int32 nb_iteration, const NumArray<DataType, MDDim1>& t1,
 
     auto in_t1 = viewIn(command, t1);
     SimpleForLoopRanges<1> range(n1);
-    command << RUNCOMMAND_LOOP(iter, range, reducer_sum, reducer_max, reducer_min)
+    command << RUNCOMMAND_LOOP (iter, range, reducer_sum, reducer_max, reducer_min)
     {
       DataType v = in_t1(iter);
       reducer_sum.combine(v);

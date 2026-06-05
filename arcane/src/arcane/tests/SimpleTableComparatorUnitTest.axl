@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<service name="SimpleTableComparatorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest"> 
+<service name="SimpleTableComparatorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited='false'/>
 
   <description>Descriptor of the SimpleTableComparatorUnitTest service</description>
@@ -22,7 +23,7 @@
     <test name="Test epsilon row and column" method-name="testEpsilonRowColumn"/>
     <test name="Test compare one elem" method-name="testCompareOneElem"/>
     <test name="Test compare with elem" method-name="testCompareWithElem"/>
-  </tests> 
+  </tests>
 
   <options>
 

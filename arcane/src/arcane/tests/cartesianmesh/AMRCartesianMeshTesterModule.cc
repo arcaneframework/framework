@@ -86,7 +86,7 @@ class AMRCartesianMeshTesterModule
   static void staticInitialize(ISubDomain* sd);
 
  public:
-  
+
   void buildInit() override;
   void compute() override;
   void init() override;
@@ -97,7 +97,7 @@ class AMRCartesianMeshTesterModule
   VariableCellReal m_old_density;
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
-  VariableNodeReal m_node_density; 
+  VariableNodeReal m_node_density;
   ICartesianMesh* m_cartesian_mesh;
   Ref<CartesianMeshTestUtils> m_utils;
   UniqueArray<VariableCellReal*> m_cell_patch_variables;
@@ -134,11 +134,11 @@ class AMRCartesianMeshTesterModule
 AMRCartesianMeshTesterModule::
 AMRCartesianMeshTesterModule(const ModuleBuildInfo& mbi)
 : ArcaneAMRCartesianMeshTesterObject(mbi)
-, m_density(VariableBuildInfo(this,"Density"))
-, m_old_density(VariableBuildInfo(this,"OldDensity"))
-, m_cell_center(VariableBuildInfo(this,"CellCenter"))
-, m_face_center(VariableBuildInfo(this,"FaceCenter"))
-, m_node_density(VariableBuildInfo(this,"NodeDensity"))
+, m_density(VariableBuildInfo(this, "Density"))
+, m_old_density(VariableBuildInfo(this, "OldDensity"))
+, m_cell_center(VariableBuildInfo(this, "CellCenter"))
+, m_face_center(VariableBuildInfo(this, "FaceCenter"))
+, m_node_density(VariableBuildInfo(this, "NodeDensity"))
 , m_cartesian_mesh(nullptr)
 {
 }
@@ -167,19 +167,19 @@ staticInitialize(ISubDomain* sd)
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("AMRCartesianMeshTester.buildInit"));
-    time_loop->setEntryPoints(ITimeLoop::WBuild,clist);
+    time_loop->setEntryPoints(ITimeLoop::WBuild, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("AMRCartesianMeshTester.init"));
-    time_loop->setEntryPoints(ITimeLoop::WInit,clist);
+    time_loop->setEntryPoints(ITimeLoop::WInit, clist);
   }
 
   {
     List<TimeLoopEntryPointInfo> clist;
     clist.add(TimeLoopEntryPointInfo("AMRCartesianMeshTester.compute"));
-    time_loop->setEntryPoints(ITimeLoop::WComputeLoop,clist);
+    time_loop->setEntryPoints(ITimeLoop::WComputeLoop, clist);
   }
 
   {
@@ -243,27 +243,27 @@ init()
   IItemFamily* cell_family = mesh->cellFamily();
   Int32UniqueArray ids(1);
   ids[0] = 0;
-  cell_family->createGroup("CELL0",ids,true);
+  cell_family->createGroup("CELL0", ids, true);
   ids[0] = 1;
-  cell_family->createGroup("CELL1",ids,true);
+  cell_family->createGroup("CELL1", ids, true);
   ids[0] = 2;
-  cell_family->createGroup("CELL2",ids,true);
+  cell_family->createGroup("CELL2", ids, true);
   IItemFamily* face_family = defaultMesh()->faceFamily();
   ids[0] = 0;
-  face_family->createGroup("FACE0",ids,true);
+  face_family->createGroup("FACE0", ids, true);
   ids[0] = 1;
-  face_family->createGroup("FACE1",ids,true);
+  face_family->createGroup("FACE1", ids, true);
   ids[0] = 2;
-  face_family->createGroup("FACE2",ids,true);
+  face_family->createGroup("FACE2", ids, true);
   ids[0] = 3;
-  face_family->createGroup("FACE3",ids,true);
+  face_family->createGroup("FACE3", ids, true);
   ids[0] = 4;
-  face_family->createGroup("FACE4",ids,true);
+  face_family->createGroup("FACE4", ids, true);
   ids[0] = 5;
-  face_family->createGroup("FACE5",ids,true);
+  face_family->createGroup("FACE5", ids, true);
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
-  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
+  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh, acceleratorMng()));
 
   m_merge_patches = options()->mergePatches();
 
@@ -278,13 +278,12 @@ init()
 
   _computeCenters();
 
-
   const bool do_coarse_at_init = options()->coarseAtInit();
 
   const Integer dimension = defaultMesh()->dimension();
-  if (dimension==2)
+  if (dimension == 2)
     m_nb_expected_patch = 1 + options()->refinement2d().size();
-  else if (dimension==3)
+  else if (dimension == 3)
     m_nb_expected_patch = 1 + options()->refinement3d().size();
 
   // If coarsening is done at init, we will have one more patch
@@ -293,7 +292,7 @@ init()
 
   if (subDomain()->isContinue())
     m_cartesian_mesh->recreateFromDump();
-  else{
+  else {
     m_cartesian_mesh->computeDirections();
     CartesianMeshRenumberingInfo renumbering_info;
     renumbering_info.setRenumberPatchMethod(options()->renumberPatchMethod());
@@ -312,15 +311,15 @@ init()
   // and add a density of 5.0 for each direction in the
   // boundary meshes.
   m_density.fill(1.0);
-  for( Integer idir=0, nb_dir=dimension; idir<nb_dir; ++idir){
+  for (Integer idir = 0, nb_dir = dimension; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     Integer nb_boundary1 = 0;
     Integer nb_boundary2 = 0;
-    ENUMERATE_CELL(icell,cdm.innerCells()){
+    ENUMERATE_CELL (icell, cdm.innerCells()) {
       DirCell cc(cdm.cell(*icell));
       Cell next = cc.next();
       Cell prev = cc.previous();
-      if (next.null() || prev.null()){
+      if (next.null() || prev.null()) {
         // Mesh at the boundary. I add density.
         // Should not happen since we are on innerCells()
         ++nb_boundary1;
@@ -328,9 +327,9 @@ init()
       }
     }
     // Iterate over boundary meshes for the direction
-    ENUMERATE_CELL(icell,cdm.outerCells()){
+    ENUMERATE_CELL (icell, cdm.outerCells()) {
       DirCell cc(cdm[icell]);
-      if (icell.index()<5)
+      if (icell.index() < 5)
         info() << "CELL: cell=" << ItemPrinter(*icell)
                << " next=" << ItemPrinter(cc.next())
                << " previous=" << ItemPrinter(cc.previous());
@@ -341,8 +340,8 @@ init()
 
     info() << "NB_BOUNDARY1=" << nb_boundary1 << " NB_BOUNDARY2=" << nb_boundary2;
   }
-  bool is_amr = m_nb_expected_patch!=1;
-  if (options()->verbosityLevel()==0)
+  bool is_amr = m_nb_expected_patch != 1;
+  if (options()->verbosityLevel() == 0)
     m_utils->setNbPrint(5);
   m_utils->testAll(is_amr);
   _writePostProcessing();
@@ -415,7 +414,7 @@ void AMRCartesianMeshTesterModule::
 _processPatches()
 {
   const bool do_check = true;
-  const bool is_verbose = options()->verbosityLevel()>=1;
+  const bool is_verbose = options()->verbosityLevel() >= 1;
 
   const Int32 dimension = defaultMesh()->dimension();
 
@@ -433,18 +432,18 @@ _processPatches()
   // Indeed, coarsening a full patch removes it from the list of patches.
   // It is also disabled if patch merging is possible.
   Integer nb_expected_patch = m_nb_expected_patch;
-    
+
   Integer nb_patch = m_cartesian_mesh->nbPatch();
   if (without_coarse_zone && nb_expected_patch != nb_patch && !m_merge_patches)
-    ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
+    ARCANE_FATAL("Bad number of patchs expected={0} value={1}", nb_expected_patch, nb_patch);
 
   IParallelMng* pm = parallelMng();
   Int32 comm_rank = pm->commRank();
 
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
-  if (nb_cells_expected.size()!=nb_patch)
+  if (nb_cells_expected.size() != nb_patch)
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
-                 nb_cells_expected.size(),nb_patch,options()->expectedNumberOfCellsInPatchs.name());
+                 nb_cells_expected.size(), nb_patch, options()->expectedNumberOfCellsInPatchs.name());
 
   // Expected number of ghost cells. Used only in parallel
   bool has_expected_ghost_cells = options()->expectedNumberOfGhostCellsInPatchs.isPresent();
@@ -452,26 +451,26 @@ _processPatches()
     has_expected_ghost_cells = false;
 
   UniqueArray<Int32> nb_ghost_cells_expected(options()->expectedNumberOfGhostCellsInPatchs);
-  if (has_expected_ghost_cells && (nb_ghost_cells_expected.size()!=nb_patch))
+  if (has_expected_ghost_cells && (nb_ghost_cells_expected.size() != nb_patch))
     ARCANE_FATAL("Bad size ({0}, expected={1}) for option '{2}'",
                  nb_ghost_cells_expected.size(), nb_patch, options()->expectedNumberOfGhostCellsInPatchs.name());
 
   // Displays information about the patches
-  for( Integer i=0; i<nb_patch; ++i ){
+  for (Integer i = 0; i < nb_patch; ++i) {
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(i);
     CellGroup patch_cells(p->cells());
     info() << "Patch cell_group=" << patch_cells.name() << " nb_cell=" << patch_cells.size();
-    VariableCellReal* cellv = new VariableCellReal(VariableBuildInfo(defaultMesh(),String("CellPatch")+i));
+    VariableCellReal* cellv = new VariableCellReal(VariableBuildInfo(defaultMesh(), String("CellPatch") + i));
     m_cell_patch_variables.add(cellv);
     cellv->fill(0.0);
-    ENUMERATE_CELL(icell,patch_cells){
+    ENUMERATE_CELL (icell, patch_cells) {
       (*cellv)[icell] = 2.0;
     }
 
     CellGroup patch_own_cell = patch_cells.own();
     UniqueArray<Int64> own_cells_uid;
-    ENUMERATE_(Cell,icell,patch_own_cell){
-      Cell cell{*icell};
+    ENUMERATE_ (Cell, icell, patch_own_cell) {
+      Cell cell{ *icell };
       if (is_verbose)
         info() << "Patch i=" << i << " cell=" << ItemPrinter(*icell);
       own_cells_uid.add(cell.uniqueId());
@@ -479,27 +478,27 @@ _processPatches()
     // Displays the global list of cell uniqueIds().
     {
       UniqueArray<Int64> global_cells_uid;
-      pm->allGatherVariable(own_cells_uid,global_cells_uid);
-      std::sort(global_cells_uid.begin(),global_cells_uid.end());
+      pm->allGatherVariable(own_cells_uid, global_cells_uid);
+      std::sort(global_cells_uid.begin(), global_cells_uid.end());
       Integer nb_global_uid = global_cells_uid.size();
       info() << "GlobalUids Patch=" << i << " NB=" << nb_global_uid
              << " expected=" << nb_cells_expected[i];
       // Checks that the number of cells per patch is correct.
-      if (do_check && nb_cells_expected[i]!=nb_global_uid)
+      if (do_check && nb_cells_expected[i] != nb_global_uid)
         ARCANE_FATAL("Bad number of cells for patch I={0} N={1} expected={2}",
-                     i,nb_global_uid,nb_cells_expected[i]);
+                     i, nb_global_uid, nb_cells_expected[i]);
       if (is_verbose)
-        for( Integer c=0; c<nb_global_uid; ++c )
+        for (Integer c = 0; c < nb_global_uid; ++c)
           info() << "GlobalUid Patch=" << i << " I=" << c << " cell_uid=" << global_cells_uid[c];
     }
     // Tests the number of ghost cells
-    if (has_expected_ghost_cells){
+    if (has_expected_ghost_cells) {
       Int32 local_nb_ghost_cell = patch_cells.size() - patch_own_cell.size();
-      Int32 total = pm->reduce(Parallel::ReduceSum,local_nb_ghost_cell);
+      Int32 total = pm->reduce(Parallel::ReduceSum, local_nb_ghost_cell);
       pinfo() << "NbGhostCells my_rank=" << comm_rank << " local=" << local_nb_ghost_cell << " total=" << total;
-      if (total!=nb_ghost_cells_expected[i])
+      if (total != nb_ghost_cells_expected[i])
         ARCANE_FATAL("Bad number of ghost cells for patch I={0} N={1} expected={2}",
-                     i,total,nb_ghost_cells_expected[i]);
+                     i, total, nb_ghost_cells_expected[i]);
     }
   }
 }
@@ -515,10 +514,10 @@ _computeCenters()
   // Calculates the cell center
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_CELL(icell,allCells()){
+    ENUMERATE_CELL (icell, allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for( NodeLocalId inode : cell.nodes() )
+      for (NodeLocalId inode : cell.nodes())
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -528,10 +527,10 @@ _computeCenters()
   // Calculates the face center
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_FACE(iface,allFaces()){
+    ENUMERATE_FACE (iface, allFaces()) {
       Face face = *iface;
       Real3 center;
-      for( NodeLocalId inode : face.nodes() )
+      for (NodeLocalId inode : face.nodes())
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
@@ -549,7 +548,7 @@ _initAMR()
   amr_mng.setOverlapLayerSizeTopLevel(options()->overlapLayerSizeTopLevel());
 
   // Checks if the initial mesh is coarsened
-  if (options()->coarseAtInit()){
+  if (options()->coarseAtInit()) {
     // Directions must be calculated before calling the coarsening
     m_cartesian_mesh->computeDirections();
 
@@ -571,7 +570,7 @@ _initAMR()
     {
       Int32 index = 0;
       info() << "NB_PATCH=" << nb_patch;
-      for( CartesianPatch p : patches){
+      for (CartesianPatch p : patches) {
         info() << "Patch i=" << index << " nb_cell=" << p.cells().size();
         ++index;
       }
@@ -688,17 +687,17 @@ void AMRCartesianMeshTesterModule::
 _computeSubCellDensity(Cell cell)
 {
   Int32 nb_children = cell.nbHChildren();
-  if (nb_children==0)
+  if (nb_children == 0)
     return;
   // For AMR cells, the density is the average of the nodes that compose it.
-  for( Int32 j=0; j<nb_children; ++j ) {
+  for (Int32 j = 0; j < nb_children; ++j) {
     Real sub_density = 0.0;
     Cell sub_cell = cell.hChild(j);
     Integer sub_cell_nb_node = sub_cell.nbNode();
-    for( Integer k=0; k<sub_cell_nb_node; ++k )
+    for (Integer k = 0; k < sub_cell_nb_node; ++k)
       sub_density += m_node_density[sub_cell.node(k)];
     sub_density /= (Real)sub_cell_nb_node;
-    m_density[sub_cell] =sub_density;
+    m_density[sub_cell] = sub_density;
     _computeSubCellDensity(sub_cell);
   }
 }
@@ -712,20 +711,20 @@ _compute1()
   // For testing, we iterate over the N directions
   // and for each cell, we modify its density
   // using the formula new_density = (density+density_next+density_prev) / 3.0.
-  
+
   // Performs the operation in two steps. The first on the
   // internal cells, and a second on the external cells.
   // Therefore, we must use an intermediate variable (m_old_density)
   // but we avoid a test in the main loop
   IMesh* mesh = defaultMesh();
   Integer nb_dir = mesh->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     m_old_density.copy(m_density);
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     // Working on internal cells
     info() << "Direction=" << idir << " cells=" << cdm.innerCells().name()
            << " n=" << cdm.innerCells().size();
-    ENUMERATE_CELL(icell,cdm.innerCells()){
+    ENUMERATE_CELL (icell, cdm.innerCells()) {
       Cell cell = *icell;
       DirCell cc(cdm.cell(cell));
       Cell next = cc.next();
@@ -736,18 +735,18 @@ _compute1()
     }
     // Working on external cells
     // Test if the cell before or after is null.
-    ENUMERATE_CELL(icell,cdm.outerCells()){
+    ENUMERATE_CELL (icell, cdm.outerCells()) {
       Cell cell = *icell;
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
       Cell prev = cc.previous();
       Real d = m_old_density[icell];
       Integer n = 1;
-      if (!next.null()){
+      if (!next.null()) {
         d += m_old_density[next];
         ++n;
       }
-      if (!prev.null()){
+      if (!prev.null()) {
         d += m_old_density[prev];
         ++n;
       }
@@ -757,11 +756,11 @@ _compute1()
   }
   // Modifies the density at the nodes.
   // It will be equal to the average of the densities of the cells surrounding this node
-  ENUMERATE_NODE(inode,mesh->allNodes()){
+  ENUMERATE_NODE (inode, mesh->allNodes()) {
     Node node = *inode;
     Integer nb_cell = node.nbCell();
     Real density = 0.0;
-    for( Integer i=0; i<nb_cell; ++i )
+    for (Integer i = 0; i < nb_cell; ++i)
       density += m_density[node.cell(i)];
     density /= (Real)nb_cell;
     m_node_density[inode] = density;
@@ -782,20 +781,20 @@ _compute2()
   // _compute1() because the boundary and internal cells are updated
   // in a different order.
   Integer nb_dir = defaultMesh()->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     // Working on all cells
-    ENUMERATE_CELL(icell,cdm.allCells()){
+    ENUMERATE_CELL (icell, cdm.allCells()) {
       DirCell cc(cdm[icell]);
       Cell next = cc.next();
       Cell prev = cc.previous();
       Real d = m_density[icell];
       Integer n = 1;
-      if (!next.null()){
+      if (!next.null()) {
         d += m_density[next];
         ++n;
       }
-      if (!prev.null()){
+      if (!prev.null()) {
         d += m_density[prev];
         ++n;
       }
@@ -813,7 +812,7 @@ _writePostProcessing()
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
   info() << "Post-process AMR";
   IPostProcessorWriter* post_processor = options()->postProcessor();
-  Directory output_directory = Directory(subDomain()->exportDirectory(),"amrtestpost1");
+  Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost1");
   output_directory.createDirectory();
   info() << "Creating output dir '" << output_directory.path() << "' for export";
   UniqueArray<Real> times;
@@ -825,7 +824,7 @@ _writePostProcessing()
   VariableList variables;
   //variables.add(m_density.variable());
   //variables.add(m_node_density.variable());
-  for( VariableCellReal* v : m_cell_patch_variables )
+  for (VariableCellReal* v : m_cell_patch_variables)
     variables.add(v->variable());
   post_processor->setVariables(variables);
   ItemGroupList groups;
@@ -848,13 +847,13 @@ _testDirections()
   Integer nb_patch = amr_mng.nbPatch();
   Integer nb_dir = m_cartesian_mesh->mesh()->dimension();
   NodeDirectionMng node_dm2;
-  for( Integer ipatch=0; ipatch<nb_patch; ++ipatch ){
+  for (Integer ipatch = 0; ipatch < nb_patch; ++ipatch) {
     ICartesianMeshPatch* p = m_cartesian_mesh->patch(ipatch);
-    for( Integer idir=0; idir<nb_dir; ++idir ){
+    for (Integer idir = 0; idir < nb_dir; ++idir) {
       NodeDirectionMng node_dm(p->nodeDirection(idir));
       node_dm2 = p->nodeDirection(idir);
       NodeGroup dm_all_nodes = node_dm.allNodes();
-      ENUMERATE_NODE(inode,dm_all_nodes){
+      ENUMERATE_NODE (inode, dm_all_nodes) {
         DirNode dir_node(node_dm[inode]);
         DirNode dir_node2(node_dm2[inode]);
         Node prev_node = dir_node.previous();
@@ -943,7 +942,7 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
     std::sort(global_items_uid.begin(), global_items_uid.end(),
               [](const Int64* a, const Int64* b) {
                 return *a < *b;
-    });
+              });
 
     final_all_items_uid.resize(global_items_uid_around.size());
 
@@ -1069,7 +1068,7 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
     }
   }
 
-  return size_of_once_case_around-1;
+  return size_of_once_case_around - 1;
 }
 
 /*!
@@ -1161,7 +1160,7 @@ _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
     }
   }
 
-  return size_of_once_case_around-1;
+  return size_of_once_case_around - 1;
 }
 
 /*!
@@ -1260,7 +1259,7 @@ _nodesUidAroundNodes(UniqueArray<Int64>& own_nodes_uid_around_nodes)
     }
   }
 
-  return size_of_once_case_around-1;
+  return size_of_once_case_around - 1;
 }
 
 /*---------------------------------------------------------------------------*/

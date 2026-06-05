@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ init()
   m_partitioners.resize(subDomain()->meshes().size());
   m_quality.resize(subDomain()->meshes().size());
 
-  for(Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh){
+  for (Integer imesh = 0; imesh < subDomain()->meshes().size(); ++imesh) {
     IMesh* mesh = subDomain()->meshes()[imesh];
     m_density_meshes_ref[imesh] = makeRef(new VariableCellInt32(VariableBuildInfo(mesh->handle(), "Density")));
     m_faces_density_meshes_ref[imesh] = makeRef(new VariableFaceInt32(VariableBuildInfo(mesh->handle(), "FaceDensity")));
@@ -94,7 +94,7 @@ init()
     VariableFaceInt32& face_density = *(m_faces_density_meshes_ref[imesh].get());
 
     mesh->modifier()->setDynamic(true);
-    ENUMERATE_ (Cell, icell, mesh->ownCells()){
+    ENUMERATE_ (Cell, icell, mesh->ownCells()) {
       density[icell] = icell->uniqueId().asInt32();
       sum += icell->uniqueId().asInt32();
     }

@@ -196,7 +196,7 @@ computePrimalMassFluxBoundary(Integer direction)
   CellDirectionMng cdm(m_cartesian_mesh->cellDirection(direction));
 
   // Calculation of mass fluxes for boundary cells in the direction of calculation.
-  command << RUNCOMMAND_ENUMERATE(Cell, current_cell, cdm.outerCells())
+  command << RUNCOMMAND_ENUMERATE (Cell, current_cell, cdm.outerCells())
   {
     // For left cell/right cell.
     DirCellLocalId cc(cdm.dirCellId(current_cell));
@@ -243,7 +243,7 @@ computeDualMassFluxBoundary(Integer direction)
   auto inout_nodal_mass_flux_left = viewInOut(command, m_nodal_mass_flux_left);
 
   // Calculation of mass fluxes for boundary cells in the direction of calculation.
-  command << RUNCOMMAND_ENUMERATE(Node, current_node, ndm.outerNodes())
+  command << RUNCOMMAND_ENUMERATE (Node, current_node, ndm.outerNodes())
   {
     // For left cell/right cell.
     DirNodeLocalId cc(ndm.dirNodeId(current_node));
@@ -562,7 +562,7 @@ _evolveDualUpwindedVariables1()
     Real nodal_mass_flux_right_accumulation = 0.0;
     Real nodal_mass_flux_left_accumulation = 0.0;
 
-    for (Cell node_cell : node.cells() ) {
+    for (Cell node_cell : node.cells()) {
 
       nodal_density_sum += m_density[node_cell];
       old_nodal_density_sum += m_old_density[node_cell];

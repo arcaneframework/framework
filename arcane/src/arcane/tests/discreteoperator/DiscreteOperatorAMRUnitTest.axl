@@ -6,7 +6,8 @@
  <interface name="Arcane::IUnitTest" inherited="false" />
   <description>Descriptor of the DiscreteOperatorAMRUnitTest module</description>
 	<variables>
-                <variable field-name="pressure" name="Pressure" data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+		<variable field-name="pressure" name="Pressure" data-type="real" item-kind="cell" dim="0" dump="true"
+		          need-sync="true"/>
 	</variables>
 
 	<options>

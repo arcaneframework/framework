@@ -37,10 +37,10 @@ class TypesHllcScheme
   //! Boundary condition type
   enum eBoundaryCondition
   {
-    Wall,       //!< Sliding wall (zero normal velocity)
-    Inflow,     //!< Inflow (imposed velocity and density)
-    Outflow,    //!< Outflow (zero gradient)
-    Unknown     //!< Unknown type
+    Wall, //!< Sliding wall (zero normal velocity)
+    Inflow, //!< Inflow (imposed velocity and density)
+    Outflow, //!< Outflow (zero gradient)
+    Unknown //!< Unknown type
   };
 
   //! Limiter type for MUSCL reconstruction
@@ -229,18 +229,13 @@ hllcFlux(const PrimitiveState& left, const PrimitiveState& right,
   else {
     Real inv_ds = Real(1.0) / (s_r - s_l);
 
-    f_hll.density_flux = (s_r * fl.density_flux - s_l * fr.density_flux
-                          + s_l * s_r * (wr.density - wl.density)) * inv_ds;
-    f_hll.momentum_flux = (s_r * fl.momentum_flux - s_l * fr.momentum_flux
-                           + s_l * s_r * (wr.momentum - wl.momentum)) * inv_ds;
-    f_hll.energy_flux = (s_r * fl.energy_flux - s_l * fr.energy_flux
-                         + s_l * s_r * (wr.energy - wl.energy)) * inv_ds;
+    f_hll.density_flux = (s_r * fl.density_flux - s_l * fr.density_flux + s_l * s_r * (wr.density - wl.density)) * inv_ds;
+    f_hll.momentum_flux = (s_r * fl.momentum_flux - s_l * fr.momentum_flux + s_l * s_r * (wr.momentum - wl.momentum)) * inv_ds;
+    f_hll.energy_flux = (s_r * fl.energy_flux - s_l * fr.energy_flux + s_l * s_r * (wr.energy - wl.energy)) * inv_ds;
   }
 
   return f_hll;
 }
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

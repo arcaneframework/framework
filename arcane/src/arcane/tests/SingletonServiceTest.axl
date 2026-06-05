@@ -1,8 +1,5 @@
 ﻿<?xml version="1.0" ?>
 
-<!-- ###################################################################### -->
-<!-- ###################################################################### -->
-
 <module name="SingletonServiceTest" version="1.0" namespace-name="ArcaneTest" >
   <description>
     Singleton service test module

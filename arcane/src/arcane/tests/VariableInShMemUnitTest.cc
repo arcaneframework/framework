@@ -425,7 +425,7 @@ _test3()
 
     ENUMERATE_ (Cell, icell, allCells()) {
       var(icell, 0) = parallelMng()->commRank();
-      var(icell, 1) = parallelMng()->commRank()*10;
+      var(icell, 1) = parallelMng()->commRank() * 10;
     }
 
     var_sh.updateVariable();

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,16 +19,16 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/VariableBuildInfo.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/VariableBuildInfo.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
-
+namespace ArcaneTest
+{
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ class StdScalarVariables
 {
  public:
 
-  StdScalarVariables(const MeshHandle& mesh_handle,const String& basestr);
+  StdScalarVariables(const MeshHandle& mesh_handle, const String& basestr);
 
  public:
 
@@ -66,7 +66,7 @@ class StdScalarVariables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

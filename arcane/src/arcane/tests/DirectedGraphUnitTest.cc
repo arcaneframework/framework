@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,8 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-#include "arcane/BasicUnitTest.h"
+#include "arcane/core/BasicUnitTest.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/DirectedGraphUnitTest_axl.h"
@@ -23,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,23 +37,25 @@ using namespace Arcane;
  * \brief Test module for Ios
  */
 class DirectedGraphUnitTest
-  : public ArcaneDirectedGraphUnitTestObject
+: public ArcaneDirectedGraphUnitTestObject
 {
-public:
+ public:
 
   /** Class constructor */
-  DirectedGraphUnitTest(const Arcane::ServiceBuildInfo & sbi)
-    : ArcaneDirectedGraphUnitTestObject(sbi) {}
+  DirectedGraphUnitTest(const Arcane::ServiceBuildInfo& sbi)
+  : ArcaneDirectedGraphUnitTestObject(sbi)
+  {}
 
   /** Class destructor */
   ~DirectedGraphUnitTest() {}
 
-public:
+ public:
 
   virtual void initializeTest();
   virtual void executeTest();
 
-private:
+ private:
+
   void _testDirectedAcyclicGraph();
   void _testDirectedGraph();
 };
@@ -61,7 +63,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_DIRECTEDGRAPHUNITTEST(DirectedGraphUnitTest,DirectedGraphUnitTest);
+ARCANE_REGISTER_SERVICE_DIRECTEDGRAPHUNITTEST(DirectedGraphUnitTest, DirectedGraphUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,7 +83,6 @@ executeTest()
   info() << "[DirectedGraphUnitTest] executeTest";
   _testDirectedGraph();
   _testDirectedAcyclicGraph();
-
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,61 +90,58 @@ executeTest()
 void DirectedGraphUnitTest::
 _testDirectedGraph()
 {
-  DirectedGraphT<String,String> directed_graph(traceMng());
-    directed_graph.addEdge("a", "h", "ah");
-    directed_graph.addEdge("e", "g", "eg");
-    directed_graph.addEdge("a", "b", "ab");
-    directed_graph.addEdge("a", "d", "ad");
-    directed_graph.addEdge("b", "e", "be");
-    directed_graph.addEdge("c", "e", "ce");
-    directed_graph.addEdge("a", "c", "ac");
-    directed_graph.addEdge("e", "f", "ef");
-    directed_graph.addEdge("g", "h", "gh");
-    directed_graph.addEdge("f", "h", "fh");
-    bool test_add_edge_ok = false;
-    try {
-        directed_graph.addEdge("f", "h", "fh"); // Must throw fatal, otherwise the test fails
-    } catch (FatalErrorException& e) {
-        test_add_edge_ok = true;
-    }
-    if (!test_add_edge_ok) fatal() << "Cannot insert twice an edge between the same nodes";
+  DirectedGraphT<String, String> directed_graph(traceMng());
+  directed_graph.addEdge("a", "h", "ah");
+  directed_graph.addEdge("e", "g", "eg");
+  directed_graph.addEdge("a", "b", "ab");
+  directed_graph.addEdge("a", "d", "ad");
+  directed_graph.addEdge("b", "e", "be");
+  directed_graph.addEdge("c", "e", "ce");
+  directed_graph.addEdge("a", "c", "ac");
+  directed_graph.addEdge("e", "f", "ef");
+  directed_graph.addEdge("g", "h", "gh");
+  directed_graph.addEdge("f", "h", "fh");
+  bool test_add_edge_ok = false;
+  try {
+    directed_graph.addEdge("f", "h", "fh"); // Must throw fatal, otherwise the test fails
+  }
+  catch (FatalErrorException& e) {
+    test_add_edge_ok = true;
+  }
+  if (!test_add_edge_ok)
+    fatal() << "Cannot insert twice an edge between the same nodes";
 
-    info() << "Edge (e,g) " << *directed_graph.getEdge("e","g");
-    info() << "Edge (a,b) " << *directed_graph.getEdge("a","b");
-    info() << "Edge (a,d) " << *directed_graph.getEdge("a","d");
-    info() << "Edge (b,e) " << *directed_graph.getEdge("b","e");
-    info() << "Edge (c,e) " << *directed_graph.getEdge("c","e");
-    info() << "Edge (a,c) " << *directed_graph.getEdge("a","c");
-    info() << "Edge (e,f) " << *directed_graph.getEdge("e","f");
-    info() << "Edge (g,h) " << *directed_graph.getEdge("g","h");
-    info() << "Edge (f,h) " << *directed_graph.getEdge("f","h");
+  info() << "Edge (e,g) " << *directed_graph.getEdge("e", "g");
+  info() << "Edge (a,b) " << *directed_graph.getEdge("a", "b");
+  info() << "Edge (a,d) " << *directed_graph.getEdge("a", "d");
+  info() << "Edge (b,e) " << *directed_graph.getEdge("b", "e");
+  info() << "Edge (c,e) " << *directed_graph.getEdge("c", "e");
+  info() << "Edge (a,c) " << *directed_graph.getEdge("a", "c");
+  info() << "Edge (e,f) " << *directed_graph.getEdge("e", "f");
+  info() << "Edge (g,h) " << *directed_graph.getEdge("g", "h");
+  info() << "Edge (f,h) " << *directed_graph.getEdge("f", "h");
   //
-    info() << "Edge eg contains nodes " << *directed_graph.getSourceVertex("eg") << " " << *directed_graph.getTargetVertex("eg");
-    info() << "Edge ab contains nodes " << *directed_graph.getSourceVertex("ab") << " " << *directed_graph.getTargetVertex("ab");
+  info() << "Edge eg contains nodes " << *directed_graph.getSourceVertex("eg") << " " << *directed_graph.getTargetVertex("eg");
+  info() << "Edge ab contains nodes " << *directed_graph.getSourceVertex("ab") << " " << *directed_graph.getTargetVertex("ab");
 
-    // Iterate over vertices or edges
+  // Iterate over vertices or edges
 
-    for (String& vertex : directed_graph.vertices())
-      {
-        info() << "Graph has vertex " << vertex;
-      }
+  for (String& vertex : directed_graph.vertices()) {
+    info() << "Graph has vertex " << vertex;
+  }
 
-    for (String& edge : directed_graph.edges())
-      {
-        info() << "Graph has edge " << edge;
-      }
+  for (String& edge : directed_graph.edges()) {
+    info() << "Graph has edge " << edge;
+  }
 
-    for (const String& edge : directed_graph.inEdges("h"))
-      {
-        info() << "Vertex a has incoming edge " << edge;
-      }
+  for (const String& edge : directed_graph.inEdges("h")) {
+    info() << "Vertex a has incoming edge " << edge;
+  }
 
-    for (const String& edge : directed_graph.outEdges("a"))
-      {
-        info() << "Vertex a has outcoming edge " << edge;
-      }
+  for (const String& edge : directed_graph.outEdges("a")) {
+    info() << "Vertex a has outcoming edge " << edge;
+  }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -152,7 +150,7 @@ void DirectedGraphUnitTest::
 _testDirectedAcyclicGraph()
 {
   // Same code base as DirectedGraphT, the topological sort is added
-  DirectedAcyclicGraphT<String,String> dag(traceMng());
+  DirectedAcyclicGraphT<String, String> dag(traceMng());
   dag.addEdge("a", "h", "ah");
   dag.addEdge("e", "g", "eg");
   dag.addEdge("a", "b", "ab");
@@ -167,59 +165,53 @@ _testDirectedAcyclicGraph()
   dag.print();
 
   // Print topologically ordered graph
-  for (const String& sorted_vertex : dag.topologicalSort())
-    {
-      info() << "Sorted Graph has vertex " << sorted_vertex;
-    }
+  for (const String& sorted_vertex : dag.topologicalSort()) {
+    info() << "Sorted Graph has vertex " << sorted_vertex;
+  }
 
   // Print topologically ordered graph in reverse order
-   for (const String& sorted_vertex : dag.topologicalSort().reverseOrder())
-    {
-       info() << "Reverse order sorted Graph has vertex " << sorted_vertex;
-    }
+  for (const String& sorted_vertex : dag.topologicalSort().reverseOrder()) {
+    info() << "Reverse order sorted Graph has vertex " << sorted_vertex;
+  }
 
   // Print Spanning tree (covering tree)
-  for (const String& edge_tree : dag.spanningTree())
-    {
-      info() << "Spanning tree has edge " << edge_tree;
-    }
+  for (const String& edge_tree : dag.spanningTree()) {
+    info() << "Spanning tree has edge " << edge_tree;
+  }
 
   // Print Spanning tree (covering tree) in reverse order
-  for (const String& edge_tree : dag.spanningTree().reverseOrder())
-    {
-      info() << "Reverse order spanning tree has edge " << edge_tree;
-    }
+  for (const String& edge_tree : dag.spanningTree().reverseOrder()) {
+    info() << "Reverse order spanning tree has edge " << edge_tree;
+  }
 
   // add edge and check impact
-  dag.addEdge("a","dprime","adprime");
-  dag.addEdge("dprime","g","dprimeg");
-  dag.addEdge("h","i","hi");
+  dag.addEdge("a", "dprime", "adprime");
+  dag.addEdge("dprime", "g", "dprimeg");
+  dag.addEdge("h", "i", "hi");
 
-  for (const String& sorted_vertex : dag.topologicalSort())
-    {
-      info() << "Sorted Graph has vertex " << sorted_vertex;
-    }
+  for (const String& sorted_vertex : dag.topologicalSort()) {
+    info() << "Sorted Graph has vertex " << sorted_vertex;
+  }
 
   // Print Spanning tree (covering tree)
-  for (const String& edge_tree : dag.spanningTree())
-    {
-      info() << "Spanning tree has edge " << edge_tree;
-    }
+  for (const String& edge_tree : dag.spanningTree()) {
+    info() << "Spanning tree has edge " << edge_tree;
+  }
 
   // Corrupt the dag inserting a cycle (topologicalSort() and print() will throw FatalErrorException)
-  dag.addEdge("g", "a","ga");
-  dag.addEdge("b", "g","bg");
+  dag.addEdge("g", "a", "ga");
+  dag.addEdge("b", "g", "bg");
 
-  if (!dag.hasCycle()) fatal() << "Error, cycles are not detected in DAG.";
+  if (!dag.hasCycle())
+    fatal() << "Error, cycles are not detected in DAG.";
 
   // The graph is now corrupted...
-
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
