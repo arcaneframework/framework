@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ConstituentListPrinter.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Fonctions utilitaires d'affichage des constituants.                       */
+/* Utility functions for displaying constituents.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTLISTPRINTER_H
 #define ARCANE_MATERIALS_INTERNAL_COMPONENTLISTPRINTER_H
@@ -29,8 +29,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions utilitaires d'affichage des constituants.
+ * \brief Utility functions for displaying constituents.
  */
 class ARCANE_MATERIALS_EXPORT ConstituentListPrinter
 : public TraceAccessor

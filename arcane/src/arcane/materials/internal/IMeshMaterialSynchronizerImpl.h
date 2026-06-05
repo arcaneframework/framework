@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialSynchronizerImpl.h                                  (C) 2000-2024 */
+/* IMeshMaterialSynchronizerImpl.h                             (C) 2000-2024 */
 /*                                                                           */
-/* Synchronisation de la liste des matériaux/milieux des entités.            */
+/* Synchronization of the list of materials/media of entities.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_IMESHMATERIALSYNCHRONIZERIMPL_H
 #define ARCANE_MATERIALS_INTERNAL_IMESHMATERIALSYNCHRONIZERIMPL_H
@@ -17,7 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/ArrayView.h"
 
-#include "arcane/VariableTypedef.h"
+#include "arcane/core/VariableTypedef.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/materials/MatItem.h"
@@ -27,14 +27,16 @@
 
 namespace Arcane::Materials
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Stratégie de synchronisation de la liste des matériaux/milieux des entités.
+ * \brief Strategy for synchronizing the list of materials/media of entities.
  *
- * Cette classe abstraite determine la méthode de syncrhonisation entre les sous-domaines la liste
- * des matériaux/milieux auxquelles une maille appartient.
+ * This abstract class determines the synchronization method between the sub-domains and the list
+ * of materials/media to which a mesh belongs.
  *
  */
 class IMeshMaterialSynchronizerImpl
@@ -48,12 +50,12 @@ class IMeshMaterialSynchronizerImpl
   virtual ~IMeshMaterialSynchronizerImpl() {};
 
   /*!
-   * \brief Synchronisation de la liste des matériaux/milieux des entités.
+   * \brief Synchronization of the list of materials/media of entities.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Retourne \a true si des mailles ont été ajoutées ou supprimées d'un matériau
-   * ou d'un milieu lors de cette opération pour ce sous-domaine.
+   * Returns true if meshes were added or removed from a material
+   * or a medium during this operation for this sub-domain.
    */
   virtual bool synchronizeMaterialsInCells() = 0;
 };

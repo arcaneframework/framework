@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ComponentSimd.cc                                            (C) 2000-2017 */
 /*                                                                           */
-/* Support de la vectorisation pour les matériaux et milieux.                */
+/* Support for vectorization for materials and environments.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,14 +17,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +26,7 @@ MATERIALS_BEGIN_NAMESPACE
 LoopFunctorEnvPartSimdCell LoopFunctorEnvPartSimdCell::
 create(const EnvCellVector& env)
 {
-  return LoopFunctorEnvPartSimdCell(env.pureItems(),env.impureItems());
+  return LoopFunctorEnvPartSimdCell(env.pureItems(), env.impureItems());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -41,14 +35,13 @@ create(const EnvCellVector& env)
 LoopFunctorEnvPartSimdCell LoopFunctorEnvPartSimdCell::
 create(IMeshEnvironment* env)
 {
-  return LoopFunctorEnvPartSimdCell(env->pureItems(),env->impureItems());
+  return LoopFunctorEnvPartSimdCell(env->pureItems(), env->impureItems());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

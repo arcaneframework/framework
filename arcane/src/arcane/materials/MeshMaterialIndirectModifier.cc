@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialIndirectModifier.cc                             (C) 2000-2023 */
 /*                                                                           */
-/* Objet permettant de modifier indirectement les matériaux.                 */
+/* Object allowing indirect modification of materials.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ namespace Arcane::Materials
 MeshMaterialIndirectModifier::
 MeshMaterialIndirectModifier(IMeshMaterialMng* mm)
 : m_material_mng(mm)
-, m_backup(new MeshMaterialBackup(mm,true))
+, m_backup(new MeshMaterialBackup(mm, true))
 , m_has_update(false)
 {
 }
@@ -66,12 +66,12 @@ _endUpdate(bool do_sort)
   if (!m_has_update)
     return;
 
-  if (do_sort){
-    for( MeshMaterialVariableIndexer* v : m_material_mng->_internalApi()->variablesIndexer() ){
+  if (do_sort) {
+    for (MeshMaterialVariableIndexer* v : m_material_mng->_internalApi()->variablesIndexer()) {
       CellGroup cells = v->cells();
       UniqueArray<Int32> items_lid(cells.view().localIds());
       cells.clear();
-      cells.setItems(items_lid,true);
+      cells.setItems(items_lid, true);
     }
   }
 

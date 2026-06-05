@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* EnumeratorTracer.h                                          (C) 2000-2022 */
 /*                                                                           */
-/* Tracage des énumérateurs sur les composants.                              */
+/* Tracing of enumerators on components.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_ENUMERATORTRACER_H
 #define ARCANE_MATERIALS_ENUMERATORTRACER_H
@@ -37,7 +37,7 @@ class ARCANE_MATERIALS_EXPORT EnumeratorTracer
 {
  public:
 
-  EnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_service);
+  EnumeratorTracer(ITraceMng* tm, Ref<IPerformanceCounterService> perf_service);
   ~EnumeratorTracer();
 
  public:

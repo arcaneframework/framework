@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ConstituentModifierWorkInfo.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Structure de travail utilisée lors de la modification des constituants.   */
+/* Working structure used during the modification of constituents.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTMODIFIERWORKINFO_H
 #define ARCANE_MATERIALS_INTERNAL_CONSTITUENTMODIFIERWORKINFO_H
@@ -30,15 +30,16 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Structure de travail utilisée lors de la modification
- * des constituants (via MeshMaterialModifier).
+ * \brief Working structure used during the modification
+ * of constituents (via MeshMaterialModifier).
  *
- * Les instances de cette classe sont conservées durant toute une phase de
- * modification comprenant plusieurs operations de modification des matériaux
+ * Instances of this class are maintained throughout an entire phase of
+ * modification involving several material modification operations
  * (MaterialModifierOperation).
  *
- * Il faut appeler initialize() avant d'utiliser l'instance.
+ * initialize() must be called before using the instance.
  */
 class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 {
@@ -49,86 +50,86 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
  public:
 
   /*!
-   * \brief Liste des mailles pures d'un constituant
-   * ajoutées/supprimées par l'opération en cours.
+   * \brief List of pure mesh elements of a constituent
+   * added/removed by the current operation.
    */
   DualUniqueArray<Int32> pure_local_ids;
   /*!
-   * \brief Liste des mailles partielles d'un constituant
-   * ajoutées/supprimées par l'opération en cours.
+   * \brief List of partial mesh elements of a constituent
+   * added/removed by the current operation.
    */
   DualUniqueArray<Int32> partial_indexes;
   /*!
-   * \brief Tableau dimensionné aux matériaux qui est vrai si un matériau est
-   * concerné par la modification en cours.
+   * \brief Array dimensioned by materials, which is true if a material is
+   * affected by the current modification.
    */
   DualUniqueArray<bool> m_is_materials_modified;
   /*!
-   * \brief Tableau dimensionné aux milieux qui est vrai si un milieu est
-   * concerné par la modification en cours.
+   * \brief Array dimensioned by environments, which is true if an environment is
+   * affected by the current modification.
    */
   DualUniqueArray<bool> m_is_environments_modified;
   bool is_verbose = false;
 
-  //! Liste des mailles d'un milieu qui vont être ajoutées ou supprimées lors d'une opération
+  //! List of mesh elements of an environment that will be added or removed during an operation
   UniqueArray<Int32> cells_changed_in_env;
-  //! Liste des mailles d'un milieu qui sont déjà présentes dans un milieu lors d'une opération
+  //! List of mesh elements of an environment that are already present in an environment during an operation
   UniqueArray<Int32> cells_unchanged_in_env;
 
-  //! Liste des MatVarIndex et LocalId à sauvegarder lors de la suppression de mailles matériaux
+  //! List of MatVarIndex and LocalId to save when deleting material mesh elements
   DualUniqueArray<MatVarIndex> m_saved_matvar_indexes;
   DualUniqueArray<Int32> m_saved_local_ids;
 
-  //! Nombre de matériaux pour le milieu en cours d'évaluation
+  //! Number of materials for the environment currently being evaluated
   UniqueArray<Int16> m_cells_current_nb_material;
 
-  // Filtre indiquant si une maille sera partielle après l'ajout.
-  // Ce tableau est dimensionné au nombre de mailles ajoutées lors de la tranformation courante.
+  // Filter indicating if a mesh element will be partial after addition.
+  // This array is dimensioned by the number of mesh elements added during the current transformation.
   NumArray<bool, MDDim1> m_cells_is_partial;
 
   ComponentItemListBuilder list_builder;
 
-  //! Informations pour les copies entre valeurs partielles et globales.
+  //! Information for copies between partial and global values.
   UniqueArray<CopyBetweenDataInfo> m_host_variables_copy_data;
 
-  //! Informations pour les copies entre valeurs partielles et globales.
+  //! Information for copies between partial and global values.
   NumArray<CopyBetweenDataInfo, MDDim1> m_variables_copy_data;
 
  public:
 
-  //! Initialise l'instance.
+  //! Initializes the instance.
   void initialize(Int32 max_local_id, Int32 nb_material, Int32 nb_environment, RunQueue& queue);
 
  public:
 
-  //! Indique si la maille \a local_id est transformée lors de l'opération courante.
+  //! Indicates if the mesh element \a local_id is transformed during the current operation.
   bool isTransformedCell(CellLocalId local_id) const
   {
     return m_cells_to_transform[local_id.localId()];
   }
 
-  //! Positionne l'état de transformation de la maille \a local_id pour l'opération courante
+  //! Sets the transformation status of the mesh element \a local_id for the current operation
   void setTransformedCell(CellLocalId local_id, bool v)
   {
     m_cells_to_transform[local_id.localId()] = v;
   }
 
-  //! Positionne l'état de transformation de la maille \a local_id pour l'opération courante
+  //! Sets the transformation status of the mesh element \a local_id for the current operation
   void resetTransformedCells(ConstArrayView<Int32> local_ids)
   {
     for (Int32 x : local_ids)
       m_cells_to_transform[x] = false;
   }
-  //! Indique si la maille \a local_id est supprimée du matériaux pour l'opération courante.
+  //! Indicates if the mesh element \a local_id is removed from the material for the current operation.
   bool isRemovedCell(Int32 local_id) const { return m_removed_local_ids_filter[local_id]; }
 
-  //! Positionne à \a value l'état 'Removed' des mailles de \a local_ids
+  //! Sets the 'Removed' status of the mesh elements \a local_ids to \a value
   void setRemovedCells(ConstArrayView<Int32> local_ids, bool value);
 
-  //! Positionne l'opération courante
+  //! Sets the current operation
   void setCurrentOperation(MaterialModifierOperation* operation);
 
-  //! Indique si l'opération courante est un ajout (true) ou une suppression (false) de mailles
+  //! Indicates if the current operation is an addition (true) or a removal (false) of mesh elements
   bool isAdd() const { return m_is_add; }
 
   SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.to1DSmallSpan(); }
@@ -138,12 +139,12 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  private:
 
-  //! Filtre indiquant les mailles qui sont supprimées du constituant
-  // Ce tableau est dimensionné au nombre de mailles.
+  //! Filter indicating the mesh elements that are removed from the constituent
+  // This array is dimensioned by the number of mesh elements.
   NumArray<bool, MDDim1> m_removed_local_ids_filter;
 
-  //! Filtre indiquant les mailles qui doivent changer de status (Pure<->Partial)
-  // Ce tableau est dimensionné au nombre de mailles.
+  //! Filter indicating the mesh elements that must change status (Pure<->Partial)
+  // This array is dimensioned by the number of mesh elements.
   NumArray<bool, MDDim1> m_cells_to_transform;
 
   bool m_is_add = false;

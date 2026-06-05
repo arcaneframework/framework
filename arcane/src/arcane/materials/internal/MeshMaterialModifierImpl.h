@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialModifierImpl.h                                  (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de la modification des matériaux et milieux.               */
+/* Implementation of material and environment modification.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALMODIFIERIMPL_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIALMODIFIERIMPL_H
@@ -38,18 +38,23 @@ class MeshMaterialModifierImpl
 : public TraceAccessor
 {
  private:
-  
+
   using Operation = MaterialModifierOperation;
 
   class OperationList
   {
    public:
+
     ~OperationList();
+
    public:
+
     void add(Operation* o);
     void clear();
     ConstArrayView<Operation*> values() const { return m_operations.constView(); }
+
    public:
+
     UniqueArray<Operation*> m_operations;
   };
 
@@ -117,10 +122,9 @@ class MeshMaterialModifierImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

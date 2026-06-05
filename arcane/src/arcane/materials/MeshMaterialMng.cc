@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialMng.cc                                          (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire des matériaux et milieux d'un maillage.                      */
+/* Material and mesh environment manager.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,19 +53,21 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MaterialsGlobal.h
  *
- * Liste des déclarations globales pour les matériaux.
+ * Global declarations for materials.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*
  * TODO:
- * - Vérifier qu'on ne créé qu'une seule instance de MeshModifier.
- * - Vérifier par exemple dans synchronizeMaterialsInCells()
- * qu'on n'est pas en train de modifier le maillage.
+ * - Verify that only one instance of MeshModifier is created.
+ * - For example, check in synchronizeMaterialsInCells()
+ * that the mesh is not being modified.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -113,9 +115,9 @@ RunnerInfo(Runner& runner)
 void MeshMaterialMng::RunnerInfo::
 initializeAsyncPool(Int32 nb_queue)
 {
-  // Si on utilise une politique accélérateur, créé des RunQueue asynchrones
-  // pour les opérations indépendantes. Cela permettra d'en exécuter plusieurs
-  // à la fois.
+  // If an accelerator policy is used, create asynchronous RunQueues
+  // for independent operations. This will allow several to be executed
+  // at the same time.
   bool is_accelerator = isAcceleratorPolicy(m_runner.executionPolicy());
   m_async_queue_pool.initialize(m_runner, nb_queue);
   if (is_accelerator)
@@ -145,7 +147,7 @@ runQueue(Accelerator::eExecutionPolicy policy) const
 
 MeshMaterialMng::
 MeshMaterialMng(const MeshHandle& mesh_handle, const String& name)
-// TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
+// TODO: use the mesh's ITraceMng. Do it during init
 : TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
 , m_internal_api(std::make_unique<InternalApi>(this))
@@ -204,8 +206,8 @@ MeshMaterialMng::
 
   m_accelerator_envcell_container.reset();
 
-  // On détruit le Runner à la fin pour être sur qu'il n'y a plus de
-  // références dessus dans les autres instances.
+  // Destroy the Runner at the end to ensure there are no more
+  // references to it in other instances.
   m_runner_info.reset();
 }
 
@@ -218,7 +220,7 @@ MeshMaterialMng::
 void MeshMaterialMng::
 build()
 {
-  // Enregistre les fabriques des variables
+  // Register variable factories
   {
     auto* x = MeshMaterialVariableFactoryRegisterer::firstRegisterer();
     while (x) {
@@ -227,35 +229,35 @@ build()
     }
   }
 
-  // Indique si on utilise l'API accélérateur pour le calcul des entités
-  // de ConstituentItemVectorImpl
+  // Indicate whether the accelerator API is used for calculating
+  // ConstituentItemVectorImpl entities
   {
     if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)) {
       m_is_use_accelerator_for_constituent_item_vector = (v.value() != 0);
     }
-    // N'active pas l'utilisation des RunQueue pour le calcul
-    // des 'ComponentItemVector' si le multi-threading est actif. Actuellement
-    // l'utilisation d'une même RunQueue n'est pas multi-thread (et donc
-    // on ne peut pas créer des ComponentItemVector en concurrence)
+    // Do not activate the use of RunQueue for calculating
+    // 'ComponentItemVector' if multi-threading is active. Currently,
+    // using the same RunQueue is not multi-threaded (and therefore
+    // ComponentItemVector cannot be created concurrently)
     if (TaskFactory::isActive())
       m_is_use_accelerator_for_constituent_item_vector = false;
     info() << "Use accelerator API for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
   }
 
-  // Positionne le runner par défaut
+  // Position the default runner
   {
     IAcceleratorMng* acc_mng = m_variable_mng->_internalApi()->acceleratorMng();
     Runner runner;
     if (acc_mng) {
       Runner* default_runner = acc_mng->defaultRunner();
-      // Indique si on active la file accélérateur
+      // Indicate whether the accelerator queue is activated
       bool use_accelerator_runner = true;
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_QUEUE", true))
         use_accelerator_runner = (v.value() != 0);
       if (use_accelerator_runner && default_runner)
         runner = *default_runner;
     }
-    // Si pas de runner enregistré, utiliser un runner séquentiel.
+    // If no runner is registered, use a sequential runner.
     if (!runner.isInitialized())
       runner.initialize(Accelerator::eExecutionPolicy::Sequential);
     m_runner_info = std::make_unique<RunnerInfo>(runner);
@@ -264,22 +266,22 @@ build()
            << " async_queue_size=" << nb_queue;
     m_runner_info->initializeAsyncPool(nb_queue);
 
-    // En mode release et si on utilise un accélérateur alors on alloue par
-    // défaut sur accélérateur. C'est important surtout pour les tableaux
-    // temporaires.
-    // En mode 'check' il faut laisser la mémoire unifiée car les tests sont faits
-    // sur le CPU.
+    // In release mode and if an accelerator is used, allocate by
+    // default on the accelerator. This is important especially for
+    // temporary arrays.
+    // In 'check' mode, unified memory must be left because tests are done
+    // on the CPU.
     RunQueue& q = runQueue();
     if (!arcaneIsCheck() && q.isAcceleratorPolicy())
       q.setMemoryRessource(eMemoryRessource::Device);
   }
 
-  // Choix des optimisations.
+  // Choice of optimizations.
   {
     int default_flags = 0;
 
-    // Ne met pas encore par défaut ces flags car cela ne fonctionne pas
-    // pour tous les codes
+    // Do not set these flags by default yet because it does not work
+    // for all codes
     // default_flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
 
     int opt_flag_value = 0;
@@ -299,7 +301,7 @@ build()
     m_modification_flags = opt_flag_value;
   }
 
-  // Choix de la version de l'implémentation des synchronisations
+  // Choice of synchronization implementation version
   {
     String env_name = "ARCANE_MATSYNCHRONIZE_VERSION";
     String env_value = platform::getEnvironmentVariable(env_name);
@@ -318,7 +320,7 @@ build()
            << "'" << m_synchronize_variable_version << "'";
   }
 
-  // Choix du service de compression
+  // Choice of compression service
   {
     String env_name = "ARCANE_MATERIAL_DATA_COMPRESSOR_NAME";
     String env_value = platform::getEnvironmentVariable(env_name);
@@ -328,7 +330,7 @@ build()
     }
   }
 
-  // Choix du ratio de capacité additionelle
+  // Choice of additional capacity ratio
   {
     if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_ADDITIONAL_CAPACITY_RATIO", true)) {
       if (v >= 0.0) {
@@ -339,10 +341,10 @@ build()
   }
 
   m_exchange_mng->build();
-  // Si les traces des énumérateurs sur les entités sont actives, active celles
-  // sur les matériaux.
-  // TODO: rendre ce code thread-safe en cas d'utilisation de IParallelMng via les threads
-  // et ne l'appeler qu'une fois.
+  // If enumerator traces on entities are active, activate those
+  // on materials.
+  // TODO: make this code thread-safe in case of using IParallelMng via threads
+  // and call it only once.
   IItemEnumeratorTracer* item_tracer = IItemEnumeratorTracer::singleton();
   if (item_tracer) {
     info() << "Adding material enumerator tracing";
@@ -362,11 +364,12 @@ _addVariableIndexer(MeshMaterialVariableIndexer* var_idx)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Création d'un matériau.
+ * \brief Creation of a material.
  *
- * Créé un matériau de nom \a name, dans le milieu \a env, avec les
- * infos \a infos.
+ * Creates a material named \a name, in environment \a env, with
+ * info \a infos.
  */
 MeshMaterial* MeshMaterialMng::
 _createMaterial(MeshEnvironment* env, MeshMaterialInfo* infos, const String& name)
@@ -396,10 +399,10 @@ MeshMaterialInfo* MeshMaterialMng::
 registerMaterialInfo(const String& name)
 {
   _checkEndCreate();
-  // Vérifie que le matériau n'est pas déjà enregistré.
+  // Check that the material is not already registered.
   MeshMaterialInfo* old_mmi = _findMaterialInfo(name);
   if (old_mmi)
-    ARCANE_FATAL("Un matériau de nom '{0}' est déjà enregistré", name);
+    ARCANE_FATAL("A material named '{0}' is already registered", name);
 
   MeshMaterialInfo* mmi = new MeshMaterialInfo(this, name);
   m_materials_info.add(mmi);
@@ -408,33 +411,33 @@ registerMaterialInfo(const String& name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Création d'un milieu.
+ * \brief Creation of an environment.
  *
- * Les infos du milieu sont données par la structure \a infos.
- * En même temps que le milieu sont créés tous les matériaux
- * le constituant.
+ * The environment info is provided by the structure \a infos.
+ * Along with the environment, all constituent materials are created.
  */
 IMeshEnvironment* MeshMaterialMng::
 createEnvironment(const MeshEnvironmentBuildInfo& infos)
 {
   _checkEndCreate();
   Int16 env_index = CheckedConvert::toInt16(m_environments.size());
-  // Vérifie qu'un milieu de même nom n'existe pas.
+  // Check that an environment with the same name does not exist.
   const String& env_name = infos.name();
   MeshEnvironment* old_me = _findEnvironment(env_name);
   if (old_me)
-    ARCANE_FATAL("Un milieu de nom '{0}' est déjà enregistré", env_name);
+    ARCANE_FATAL("An environment named '{0}' is already registered", env_name);
 
   info() << "Creating environment name=" << env_name << " index=" << env_index;
-  // Créé le milieu
+  // Create the environment
   MeshEnvironment* me = new MeshEnvironment(this, env_name, env_index);
   me->build();
   m_true_environments.add(me);
   m_environments.add(me);
   m_environments_as_components.add(me);
 
-  // Créé et ajoute les matériaux
+  // Create and add the materials
   Integer nb_mat = infos.materials().size();
   ConstArrayView<MeshEnvironmentBuildInfo::MatInfo> mat_build_infos = infos.materials();
   for (Integer i = 0; i < nb_mat; ++i) {
@@ -443,15 +446,15 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
     String new_mat_name = env_name + "_" + mat_name;
     MeshMaterialInfo* mat_info = _findMaterialInfo(mat_name);
     if (!mat_info) {
-      ARCANE_FATAL("Aucun matériau de nom '{0}' n'est défini", mat_name);
+      ARCANE_FATAL("No material named '{0}' is defined", mat_name);
     }
     MeshMaterial* mm = _createMaterial(me, mat_info, new_mat_name);
     me->addMaterial(mm);
     mat_info->_addEnvironment(env_name);
   }
-  // Si le milieu contient plusieurs matériaux, il faut lui allouer
-  // des valeurs partielles. Sinon, ses valeurs partielles sont celles
-  // de son unique matériau.
+  // If the environment contains multiple materials, it must be allocated
+  // with partial values. Otherwise, its partial values are those
+  // of its unique material.
   {
     MeshMaterialVariableIndexer* var_idx = nullptr;
     if (nb_mat == 1) {
@@ -476,7 +479,7 @@ createBlock(const MeshBlockBuildInfo& infos)
   _checkEndCreate();
 
   Int32 block_index = m_blocks.size();
-  // Vérifie qu'un bloc de même nom n'existe pas.
+  // Checks that a block with the same name does not exist.
   const String& name = infos.name();
   const MeshBlock* old_mb = _findBlock(name);
   if (old_mb)
@@ -488,7 +491,7 @@ createBlock(const MeshBlockBuildInfo& infos)
   for (Integer i = 0; i < nb_env; ++i)
     info() << " Adding environment name=" << infos.environments()[i]->name() << " to block";
 
-  // Créé le bloc
+  // Create the block
   MeshBlock* mb = new MeshBlock(this, block_index, infos);
   mb->build();
   m_true_blocks.add(mb);
@@ -539,7 +542,7 @@ endCreate(bool is_continue)
   m_all_cells_mat_env_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this, synchronizer, MatVarSpace::MaterialAndEnvironment);
   m_all_cells_env_only_synchronizer = std::make_unique<MeshMaterialVariableSynchronizer>(this, synchronizer, MatVarSpace::Environment);
 
-  // Détermine la liste de tous les composants.
+  // Determines the list of all components.
   {
     Integer nb_component = m_environments_as_components.size() + m_materials_as_components.size();
     m_components.reserve(nb_component);
@@ -547,8 +550,8 @@ endCreate(bool is_continue)
     m_components.addRange(m_materials_as_components);
   }
 
-  // Il faut construire et initialiser les variables qui ont été
-  // créées avant cette allocation.
+  // It is necessary to build and initialize the variables that were
+  // created before this allocation.
   for (const auto& i : m_full_name_variable_map) {
     IMeshMaterialVariable* mv = i.second;
     info(4) << "BUILD FROM MANAGER name=" << mv->name() << " this=" << this;
@@ -558,18 +561,18 @@ endCreate(bool is_continue)
     _endUpdate();
   m_is_end_create = true;
 
-  // Vérifie que les milieux sont valides.
-  // NOTE: on ne peut pas toujours appeler checkValid()
-  // (notamment au démarrage) car les groupes d'entités existent,
-  // mais les infos matériaux associées ne sont pas
-  // forcément encore créés.
-  // (Il faudra regarder une si cela est dû au mode compatible ou pas).
+  // Checks that the environments are valid.
+  // NOTE: we cannot always call checkValid()
+  // (especially at startup) because the entity groups exist,
+  // but the associated material info are not
+  // necessarily created yet.
+  // (It will be necessary to check if this is due to compatible mode or not).
   for (IMeshEnvironment* env : m_environments) {
     env->checkValid();
   }
 
-  // Maintenant que tout est créé, il est valide d'enregistrer les mécanismes
-  // d'échange.
+  // Now that everything is created, it is valid to register the mechanisms
+  // of exchange.
   m_exchange_mng->registerFactory();
 }
 
@@ -688,9 +691,9 @@ forceRecompute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remise à jour des structures suite à une modification des mailles
- * de matériaux ou de milieux.
+ * \brief Updates the structures following a modification of material or environment meshes.
  */
 void MeshMaterialMng::
 _endUpdate()
@@ -700,12 +703,13 @@ _endUpdate()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Met à jour les références des variables.
+ * \brief Updates the variable references.
  *
- * Cela doit être fait lorsque le nombre d'éléments par matériau ou milieu
- * change car les tableaux contenant les variables associées peuvent être
- * modifiés lors de l'opération.
+ * This must be done when the number of elements per material or environment
+ * changes because the arrays containing the associated variables may be
+ * modified during the operation.
  */
 void MeshMaterialMng::
 syncVariablesReferences(bool check_resize)
@@ -763,8 +767,8 @@ checkValid()
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
       if (eii.level() != LEVEL_ENVIRONMENT)
         ARCANE_FATAL("Bad level '{0}' for in env_item", eii.level());
-      // Si la maille n'est pas pure, la variable milieu ne peut être équivalente à
-      // la variable globale.
+      // If the mesh is not pure, the environment variable cannot be equivalent to
+      // the global variable.
       if (cell_nb_env > 1 && ec._varIndex().arrayIndex() == 0)
         ARCANE_FATAL("Global index for a partial cell env_item={0}", ec);
 
@@ -777,8 +781,8 @@ checkValid()
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
         if (mci.level() != LEVEL_MATERIAL)
           ARCANE_FATAL("Bad level '{0}' for in mat_item", mci.level());
-        // Si la maille n'est pas pure, la variable matériau ne peut être équivalente à
-        // la variable globale.
+        // If the mesh is not pure, the material variable cannot be equivalent to
+        // the global variable.
         if ((cell_nb_env > 1 || cell_nb_mat > 1) && mc._varIndex().arrayIndex() == 0) {
           ARCANE_FATAL("Global index for a partial cell matitem={0} name={1} nb_mat={2} nb_env={3}",
                        mc, mc.material()->name(), cell_nb_mat, cell_nb_env);
@@ -802,9 +806,9 @@ findVariable(const String& name)
   if (v)
     return v;
 
-  // Recherche la variable globale de nom \a name
-  // et si on la trouve, prend son nom complet pour
-  // la variable matériau.
+  // Searches for the global variable named \a name
+  // and if found, takes its full name for
+  // the material variable.
   const IVariable* global_var = m_variable_mng->findMeshVariable(mesh(), name);
   if (global_var) {
     v = _findVariableFullyQualified(global_var->fullName());
@@ -847,8 +851,8 @@ fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables)
 {
   variables.clear();
 
-  // Utilise la map sur les noms des variables pour garantir un même
-  // ordre de parcours quels que soient les sous-domaines.
+  // Uses the map based on variable names to ensure the same
+  // traversal order regardless of sub-domains.
   for (const auto& i : m_full_name_variable_map) {
     IMeshMaterialVariable* ivar = i.second;
     if (ivar->globalVariable()->isUsed())
@@ -862,7 +866,7 @@ fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables)
 void MeshMaterialMng::
 _addVariable(IMeshMaterialVariable* var)
 {
-  //TODO: le verrou m_variable_lock doit etre actif.
+  //TODO: the lock m_variable_lock must be active.
   IVariable* gvar = var->globalVariable();
   info(4) << "MAT_ADD_VAR global_var=" << gvar << " var=" << var << " this=" << this;
   m_var_to_mat_var_map.insert(std::make_pair(gvar, var));
@@ -875,7 +879,7 @@ _addVariable(IMeshMaterialVariable* var)
 void MeshMaterialMng::
 _removeVariable(IMeshMaterialVariable* var)
 {
-  //TODO: le verrou m_variable_lock doit etre actif.
+  //TODO: the lock m_variable_lock must be active.
   IVariable* gvar = var->globalVariable();
   info(4) << "MAT:Remove variable global_var=" << gvar << " var=" << var;
   m_var_to_mat_var_map.erase(gvar);
@@ -924,7 +928,8 @@ dumpInfos(std::ostream& o)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner dumpInfos2() et dumpInfo().
+
+// TODO: merge dumpInfos2() and dumpInfo().
 void MeshMaterialMng::
 dumpInfos2(std::ostream& o)
 {
@@ -1085,7 +1090,7 @@ MeshMaterialMngFactory MeshMaterialMngFactory::m_mesh_material_mng_factory{};
 Ref<IMeshMaterialMng> MeshMaterialMngFactory::
 getTrueReference(const MeshHandle& mesh_handle, bool is_create)
 {
-  //TODO: faire lock pour multi-thread
+  //TODO: implement lock for multi-threading
   typedef AutoDestroyUserData<Ref<IMeshMaterialMng>> UserDataType;
 
   const char* name = "MeshMaterialMng_StdMat";
@@ -1137,11 +1142,11 @@ _saveInfosInProperties()
 {
   _checkCreateProperties();
 
-  // Sauve le numéro de version pour être certain que c'est OK en reprise
+  // Save the version number to ensure compatibility during recovery
   m_properties->set("Version", SERIALIZE_VERSION);
 
-  // Sauve dans les propriétés les infos nécessaires pour recréer les
-  // matériaux et milieux.
+  // Save the necessary information in the properties to recreate the
+  // materials and environments.
   UniqueArray<String> material_info_names;
   for (MeshMaterialInfo* mat_info : m_materials_info) {
     material_info_names.add(mat_info->name());
@@ -1166,8 +1171,8 @@ _saveInfosInProperties()
   m_properties->set("EnvNbMat", env_nb_mat);
   m_properties->set("EnvMatNames", env_mat_names);
 
-  // Sauve les infos nécessaires pour les block.
-  // Pour chaque bloc, son nom et le nom du groupe de maille correspondant.
+  // Save the necessary information for the blocks.
+  // For each block, its name and the name of the corresponding cell group.
   UniqueArray<String> block_names;
   UniqueArray<String> block_cell_group_names;
   UniqueArray<Int32> block_nb_env;
@@ -1201,7 +1206,7 @@ recreateFromDump()
 
   info() << "Creating material infos from dump";
 
-  // Sauve le numéro de version pour être sur que c'est OK en reprise
+  // Save the version number to ensure compatibility during recovery
   Int32 v = m_properties->getInt32("Version");
   if (v != SERIALIZE_VERSION)
     ARCANE_FATAL("Bad serializer version: trying to read from incompatible checkpoint v={0} expected={1}",
@@ -1230,8 +1235,8 @@ recreateFromDump()
     this->createEnvironment(env_build);
   }
 
-  // Recréé les blocs.
-  // Pour chaque bloc, son nom et le nom du groupe de maille correspondant.
+  // Recreate the blocks.
+  // For each block, its name and the name of the corresponding cell group.
   UniqueArray<String> block_names;
   UniqueArray<String> block_cell_group_names;
   UniqueArray<String> block_env_names;
@@ -1273,10 +1278,10 @@ recreateFromDump()
 void MeshMaterialMng::
 _onMeshDestroyed()
 {
-  // Il faut détruire cette instance ici car elle a besoin de IItemFamily
-  // dans son destructeur et il est possible qu'il n'y ait plus de famille
-  // si le destructeur de IMeshMaterialMng est appelé après la destruction
-  // du maillage (ce qui peut arriver en C# par exemple).
+  // This instance must be destroyed here because it requires IItemFamily
+  // in its destructor, and it is possible that the family no longer exists
+  // if the IMeshMaterialMng destructor is called after the mesh destruction
+  // (which can happen in C# for example).
   m_exchange_mng.reset();
 
   _unregisterAllVariables();
@@ -1288,9 +1293,9 @@ _onMeshDestroyed()
 void MeshMaterialMng::
 _unregisterAllVariables()
 {
-  // Recopie dans un tableau toutes les références.
-  // Il faut le faire avant les appels à unregisterVariable()
-  // car ces derniers modifient la liste chainée des références
+  // Copy all references into an array.
+  // This must be done before calling unregisterVariable()
+  // because the latter modifies the linked list of references
   UniqueArray<MeshMaterialVariableRef*> m_all_refs;
 
   for (const auto& i : m_full_name_variable_map) {
@@ -1340,9 +1345,9 @@ _dumpStats()
     m_modifier->dumpStats();
 
   for (IMeshEnvironment* env : m_environments) {
-    // N'affiche pas les statistiques si le milieu n'a qu'un seul matériau
-    // car il utilise le même indexeur que la matériau et les statistiques
-    // pour ce dernier seront affichées lors du parcours des matériaux.
+    // Do not display statistics if the environment has only one material
+    // because it uses the same indexer as the material and the statistics
+    // for it will be displayed when iterating over the materials.
     if (env->nbMaterial() > 1)
       env->_internalApi()->variableIndexer()->dumpStats();
   }
@@ -1369,8 +1374,8 @@ createAllCellToAllEnvCell()
 SmallSpan<const Int32> MeshMaterialMng::
 identitySelectionView()
 {
-  // NOTE: ce tableau pourrait peut-être être géré directement
-  // par la famille s'il y a un intérêt à l'utiliser dans d'autres contextes
+  // NOTE: this array could perhaps be managed directly
+  // by the family if there is interest in using it in other contexts
   Int32 max_local_id = m_mesh_handle.mesh()->cellFamily()->maxLocalId();
   {
     std::scoped_lock sl(m_indexed_selection_identity_mutex);

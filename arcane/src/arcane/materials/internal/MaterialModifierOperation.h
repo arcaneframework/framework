@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MaterialModifierOperation.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Opération d'ajout/suppression de mailles d'un matériau.                   */
+/* Operation to add/remove meshes from a material.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MATERIALMODIFIEROPERATION_H
 #define ARCANE_MATERIALS_INTERNAL_MATERIALMODIFIEROPERATION_H
@@ -28,8 +28,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opération d'ajout ou suppression de mailles d'un matériau.
+ * \brief Operation to add or remove meshes from a material.
  */
 class MaterialModifierOperation
 {
@@ -54,26 +55,26 @@ class MaterialModifierOperation
 
  public:
 
-  //! Indique si l'opération consiste à ajouter ou supprimer des mailles du matériau
+  //! Indicates whether the operation is to add or remove meshes from the material
   bool isAdd() const { return m_is_add; }
 
-  //! Matériau dont on souhaite ajouter/supprimer des mailles
+  //! The material for which meshes are to be added/removed
   IMeshMaterial* material() const { return m_mat; }
 
-  //! Liste des localId() des mailles à ajouter/supprimer
+  //! List of localId() of meshes to add/remove
   SmallSpan<const Int32> ids() const { return m_ids.view(); }
 
  public:
 
   /*!
-   * \brief Filtre les ids des mailles.
+   * \brief Filters the mesh IDs.
    *
-   * Si isAdd() est vrai, filtre les ids pour supprimer ceux qui sont déjà dans
-   * la matériau. Si isAdd() est faux, filtre les ids pour supprimer ceux qui
-   * ne sont pas dans le matériau.
+   * If isAdd() is true, filters the IDs to remove those that are already in
+   * the material. If isAdd() is false, filters the IDs to remove those that
+   * are not in the material.
    *
-   * Ces opérations sont couteuses car il faut parcourir toutes les entités présentes.
-   * Il ne faut donc en général utiliser cette méthode qu'en mode vérification.
+   * These operations are costly because all present entities must be traversed.
+   * Therefore, this method should generally only be used in verification mode.
    */
   void filterIds();
 
@@ -98,4 +99,3 @@ class MaterialModifierOperation
 /*---------------------------------------------------------------------------*/
 
 #endif
-

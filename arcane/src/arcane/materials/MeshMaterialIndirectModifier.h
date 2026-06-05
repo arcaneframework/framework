@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialIndirectModifier.h                              (C) 2000-2022 */
 /*                                                                           */
-/* Objet permettant de modifier indirectement les matériaux.                 */
+/* Object allowing indirect modification of materials.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALINDIRECTMODIFIER_H
 #define ARCANE_MATERIALS_MESHMATERIALINDIRECTMODIFIER_H
@@ -35,9 +35,10 @@ class MeshMaterialBackup;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Objet permettant de modifier indirectement les matériaux ou les milieux.
+ * \brief Object allowing indirect modification of materials or media.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialIndirectModifier
 {
@@ -56,26 +57,26 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialIndirectModifier
  public:
 
   /*!
-   * \brief Prépare une modification.
+   * \brief Prepares an update.
    *
    */
   void beginUpdate();
 
   /*!
-   * \brief Met à jour les structures après une modification.
+   * \brief Updates the structures after a modification.
    *
-   * Cette méthode est automatiquement appelée dans le destructeur de
-   * l'instance si nécessaire.
+   * This method is automatically called in the destructor of
+   * the instance if necessary.
    */
   void endUpdate();
 
   /*!
-   * \brief Met à jour les structures après une modification avec tri
-   * préable des groupes de milieux et matériaux.
+   * \brief Updates the structures after a modification with sorting
+   * of media and material groups.
    *
-   * Cette méthode est identique à endUpdate() mais garantit que
-   * les groupes associés aux composants (IMeshComponent::cells())
-   * seront triés par uniqueId() croissant à la fin de la mise à jour.
+   * This method is identical to endUpdate() but ensures that
+   * the groups associated with the components (IMeshComponent::cells())
+   * will be sorted by increasing uniqueId() at the end of the update.
    */
   void endUpdateWithSort();
 
@@ -93,10 +94,9 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialIndirectModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IncrementalComponentModifier_Accelerator.cc                 (C) 2000-2024 */
 /*                                                                           */
-/* Modification incrémentale des constituants.                               */
+/* Incremental modification of constituents.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,9 +66,9 @@ apply(MaterialModifierOperation* operation)
 
   const bool is_device = m_queue.isAcceleratorPolicy();
 
-  // Remplit les tableaux indiquants si un constituant est concerné par
-  // la modification en cours. Si ce n'est pas le cas, on pourra éviter de le tester
-  // dans la boucle des constituants.
+  // Fills the arrays indicating if a constituent is affected by
+  // the current modification. If not, we can avoid testing it
+  // in the constituent loop.
   {
     m_work_info.m_is_materials_modified.fillHost(false);
     m_work_info.m_is_environments_modified.fillHost(false);
@@ -91,13 +91,13 @@ apply(MaterialModifierOperation* operation)
 
   if (nb_mat != 1) {
 
-    // S'il est possible d'avoir plusieurs matériaux par milieu, il faut gérer
-    // pour chaque maille si le milieu évolue suite à l'ajout/suppression de matériau.
-    // Les deux cas sont :
-    // - en cas d'ajout, le milieu évolue pour une maille s'il n'y avait pas
-    //   de matériau avant. Dans ce cas le milieu est ajouté à la maille.
-    // - en cas de suppression, le milieu évolue dans la maille s'il y avait
-    //   1 seul matériau avant. Dans ce cas le milieu est supprimé de la maille.
+    // If it is possible to have multiple materials per environment, it must be handled
+    // for each mesh if the environment changes following the addition/removal of material.
+    // The two cases are:
+    // - in case of addition, the environment changes for a mesh if there was no
+    //   material before. In this case, the environment is added to the mesh.
+    // - in case of removal, the environment changes in the mesh if there was
+    //   only 1 material before. In this case, the environment is removed from the mesh.
 
     UniqueArray<Int32>& cells_changed_in_env = m_work_info.cells_changed_in_env;
     UniqueArray<Int32>& cells_unchanged_in_env = m_work_info.cells_unchanged_in_env;
@@ -158,15 +158,15 @@ apply(MaterialModifierOperation* operation)
       flagRemovedCells(cells_unchanged_in_env, false);
     }
 
-    // Prend pour \a ids uniquement la liste des mailles
-    // qui n'appartenaient pas encore au milieu dans lequel on
-    // ajoute le matériau.
+    // Takes for \a ids only the list of meshes
+    // that did not yet belong to the environment in which we
+    // are adding the material.
     ids = cells_changed_in_env.view();
   }
 
-  // Met à jour le nombre de milieux et de matériaux de chaque maille.
-  // NOTE: il faut d'abord faire l'opération sur les milieux avant
-  // les matériaux.
+  // Updates the number of environments and materials for each mesh.
+  // NOTE: the operation must first be performed on the environments before
+  // the materials.
   {
     Int16 env_id = true_env->componentId();
     Int16 mat_id = true_mat->componentId();
@@ -180,17 +180,17 @@ apply(MaterialModifierOperation* operation)
     }
   }
 
-  // Comme on a ajouté/supprimé des mailles matériau dans le milieu,
-  // il faut transformer les mailles pures en mailles partielles (en cas
-  // d'ajout) ou les mailles partielles en mailles pures (en cas de
-  // suppression).
+  // Since we have added/removed material meshes in the environment,
+  // we must transform pure meshes into partial meshes (in case
+  // of addition) or partial meshes into pure meshes (in case of
+  // removal).
   info(4) << "Transform PartialPure for material name=" << true_mat->name();
   _switchCellsForMaterials(true_mat, orig_ids);
   info(4) << "Transform PartialPure for environment name=" << env->name();
   _switchCellsForEnvironments(env, orig_ids);
 
-  // Si je suis mono-mat, alors mat->cells()<=>env->cells() et il ne faut
-  // mettre à jour que l'un des deux groupes.
+  // If I am mono-mat, then mat->cells()<=>env->cells() and only one
+  // of the two groups needs to be updated.
   bool need_update_env = (nb_mat != 1);
 
   if (is_add) {
@@ -205,16 +205,17 @@ apply(MaterialModifierOperation* operation)
     if (need_update_env)
       _removeItemsInGroup(env->cells(), ids);
     _removeItemsFromEnvironment(true_env, true_mat, ids, need_update_env);
-    // Remet \a removed_local_ids_filter à la valeur initiale pour les prochaines opérations
+    // Reset \a removed_local_ids_filter to the initial value for subsequent operations
     flagRemovedCells(ids, false);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule les mailles à transformer lorsqu'on modifie les mailles
- * d'un milieu.
+ * \brief Calculates the meshes to transform when modifying the meshes
+ * of an environment.
  */
 Int32 IncrementalComponentModifier::
 _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
@@ -232,8 +233,8 @@ _computeCellsToTransformForEnvironments(SmallSpan<const Int32> ids)
     auto [i] = iter();
     Int32 lid = ids[i];
     bool do_transform = false;
-    // En cas d'ajout, on passe de pure à partiel s'il y a plusieurs milieux.
-    // En cas de suppression, on passe de partiel à pure si on est le seul milieu.
+    // In case of addition, we switch from pure to partial if there are multiple environments.
+    // In case of removal, we switch from partial to pure if we are the only environment.
     if (is_add)
       do_transform = cells_nb_env[lid] > 1;
     else
@@ -268,12 +269,11 @@ _computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32
   Int32 nb_partial_added = 0;
   Int32 index_in_partial = var_indexer->maxIndexInMultipleArray();
 
-  // TODO: pour l'instant on remplit en deux fois mais il serait
-  // possible de le faire en une seule fois en utilisation l'algorithme de Partition.
-  // Il faudrait alors inverser les éléments de la deuxième liste pour avoir
-  // le même ordre de parcours qu'avant le passage sur accélérateur.
+  // TODO: for now we fill in two passes, but it would be possible to do it in one go using the Partition algorithm.
+  // We would then need to reverse the elements of the second list to have
+  // the same traversal order as before going to the accelerator.
 
-  // Remplit la liste des mailles pures
+  // Fills the list of pure meshes
   {
     auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
       return !cells_is_partial[index];
@@ -285,7 +285,7 @@ _computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32
     filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
     nb_pure_added = filterer.nbOutputElement();
   }
-  // Remplit la liste des mailles partielles
+  // Fills the list of partial meshes
   {
     auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
       return cells_is_partial[index];
@@ -354,14 +354,14 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
     cells.removeItems(removed_ids.smallView(), false);
   }
   else {
-    // Filtre les entités du groupe \a cells en considérant que
-    // m_work_info.removedCells() vaut vrai pour les mailles qui
-    // doivent être supprimées.
+    // Filters the entities of the group \a cells considering that
+    // m_work_info.removedCells() is true for the cells that
+    // must be deleted.
     ItemGroupImplInternal* impl_internal = cells._internalApi();
     SmallSpan<Int32> items_local_id(impl_internal->itemsLocalId());
 
-    // Lors de l'application du filtre, le tableau d'entrée et de sortie
-    // est le même (c'est normalement supporté par le GenericFilterer).
+    // During the application of the filter, the input and output array
+    // is the same (this is normally supported by the GenericFilterer).
     SmallSpan<Int32> input_ids(items_local_id);
     SmallSpan<const bool> filtered_cells(m_work_info.removedCells());
     Accelerator::GenericFilterer filterer(m_queue);
@@ -381,10 +381,11 @@ _removeItemsInGroup(ItemGroup cells, SmallSpan<const Int32> removed_ids)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Effectue la copie entre les valeurs partielles et globales.
+ * \brief Performs the copy between partial and global values.
  *
- * Cette méthode permet de faire la copie en utilisant une seule RunCommand.
+ * This method allows the copy to be done using a single RunCommand.
  */
 void IncrementalComponentModifier::
 _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args, RunQueue& queue)
@@ -412,9 +413,9 @@ _applyCopyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args,
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, input_indexes.data());
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
 
-  // TODO: Gérer la copie de manière à pouvoir utiliser la coalescence
-  // TODO: Faire des spécialisations si le dim2_size est de 4 ou 8
-  // (voire un multiple) pour éviter la boucle interne.
+  // TODO: Handle the copy in a way that allows using coalescence
+  // TODO: Make specializations if dim2_size is 4 or 8
+  // (or a multiple) to avoid the internal loop.
   auto command = makeCommand(queue);
   command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
   {
@@ -450,9 +451,9 @@ _applyInitializeWithZero(const InitializeWithZeroArgs& args)
   }
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output_indexes.data());
 
-  // TODO: Gérer la copie de manière à pouvoir utiliser la coalescence
-  // TODO: Faire des spécialisations si le dim2_size est de 4 ou 8
-  // (voire un multiple) pour éviter la boucle interne.
+  // TODO: Handle the copy in a way that allows using coalescence
+  // TODO: Make specializations if dim2_size is 4 or 8
+  // (or a multiple) to avoid the internal loop.
   auto command = makeCommand(queue);
   command << RUNCOMMAND_LOOP2(iter, nb_copy, nb_value)
   {
@@ -467,11 +468,12 @@ _applyInitializeWithZero(const InitializeWithZeroArgs& args)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Effectue la copie des vues pour les variables.
+ * \brief Performs the copy of views for variables.
  *
- * Cette méthode permet de faire en une seule RunCommand les copies entre
- * les vues CPU et accélérateurs des variables
+ * This method allows the copies between
+ * the CPU and accelerator views of the variables to be done in a single RunCommand
  */
 void IncrementalComponentModifier::
 _applyCopyVariableViews(RunQueue& queue)
@@ -483,11 +485,11 @@ _applyCopyVariableViews(RunQueue& queue)
   if (nb_copy == 0)
     return;
 
-  // Suppose que toutes les vues ont les mêmes tailles.
-  // C'est le cas car les vues sont composées de 'ArrayView<>' et 'Array2View' et ces
-  // deux classes ont la même taille.
-  // TODO: il serait préférable de prendre le max des tailles et dans la commande
-  // de ne faire la copie que si on ne dépasse pas la taille.
+  // Assumes that all views have the same sizes.
+  // This is the case because the views are composed of 'ArrayView<>' and 'Array2View' and these
+  // two classes have the same size.
+  // TODO: it would be preferable to take the max of the sizes and in the command
+  // only perform the copy if we do not exceed the size.
   Int32 nb_value = host_copy_data[0].m_input.size();
 
   for (Int32 i = 0; i < nb_copy; ++i) {

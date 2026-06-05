@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshEnvironment.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Milieu d'un maillage.                                                     */
+/* Mesh environment.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHENVIRONMENT_H
 #define ARCANE_MATERIALS_INTERNAL_MESHENVIRONMENT_H
@@ -41,12 +41,13 @@ class ComponentItemInternalData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Milieu d'un maillage.
+ * \brief Mesh environment.
  *
- * Cette classe est à usage interne à Arcane et ne doit pas être utilisée
- * explicitement. Il faut utiliser l'interface IMeshEnvironment pour accéder
- * aux milieux.
+ * This class is for internal use within Arcane and should not be used
+ * explicitly. The IMeshEnvironment interface must be used to access
+ * the environments.
  */
 class MeshEnvironment
 : public TraceAccessor
@@ -56,8 +57,13 @@ class MeshEnvironment
   : public IMeshComponentInternal
   {
    public:
-    InternalApi(MeshEnvironment* env) : m_environment(env){}
+
+    InternalApi(MeshEnvironment* env)
+    : m_environment(env)
+    {}
+
    public:
+
     MeshMaterialVariableIndexer* variableIndexer() const override
     {
       return m_environment->variableIndexer();
@@ -77,7 +83,7 @@ class MeshEnvironment
 
  public:
 
-  MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int16 env_id);
+  MeshEnvironment(IMeshMaterialMng* mm, const String& name, Int16 env_id);
 
  public:
 
@@ -121,7 +127,7 @@ class MeshEnvironment
   bool isEnvironment() const override { return true; }
   bool hasSpace(MatVarSpace space) const override
   {
-    return space==MatVarSpace::MaterialAndEnvironment || space==MatVarSpace::Environment;
+    return space == MatVarSpace::MaterialAndEnvironment || space == MatVarSpace::Environment;
   }
   IMeshMaterial* asMaterial() override { return nullptr; }
   IMeshEnvironment* asEnvironment() override { return this; }
@@ -134,7 +140,7 @@ class MeshEnvironment
   EnvImpurePartItemVectorView impureEnvItems() const override;
   EnvPartItemVectorView partEnvItems(eMatPart part) const override;
 
-  //! Indique si le milieu est mono-matériau
+  //! Indicates if the environment is mono-material
   bool isMonoMaterial() const;
 
   void setSpecificExecutionPolicy(Accelerator::eExecutionPolicy policy) override
@@ -154,23 +160,23 @@ class MeshEnvironment
 
   void setConstituentItem(Int32 index, ConstituentItemIndex id)
   {
-    m_data._setConstituentItem(index,id);
+    m_data._setConstituentItem(index, id);
   }
   Int16 componentId() const { return m_data.componentId(); }
 
  public:
 
-  //! Fonctions publiques mais réservées au IMeshMaterialMng
+  //! Public functions but reserved for IMeshMaterialMng
   //@{
   void build();
   void addMaterial(MeshMaterial* mm);
   void setVariableIndexer(MeshMaterialVariableIndexer* idx);
-  //! Recalcule le nombre de mailles par matériau et de mailles totales
+  //! Recalculates the number of cells per material and the total number of cells
   void computeNbMatPerCell();
 
   void computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list);
 
-  //! Nombre total de mailles pour tous les matériaux
+  //! Total number of cells for all materials
   Integer totalNbCellMat() const { return m_total_nb_cell_mat; }
   void addToTotalNbCellMat(Int32 v) { m_total_nb_cell_mat += v; }
 
@@ -188,7 +194,7 @@ class MeshEnvironment
 
  private:
 
-  //! Gestionnaire de matériaux
+  //! Material manager
   IMeshMaterialMng* m_material_mng = nullptr;
 
   IUserMeshEnvironment* m_user_environment = nullptr;
@@ -196,7 +202,7 @@ class MeshEnvironment
   UniqueArray<IMeshMaterial*> m_materials;
   UniqueArray<MeshMaterial*> m_true_materials;
 
-  //! Nombre total de mailles pour tous les matériaux
+  //! Total number of cells for all materials
   Integer m_total_nb_cell_mat = 0;
   IItemGroupObserver* m_group_observer = nullptr;
   MeshComponentData m_data;
@@ -210,8 +216,8 @@ class MeshEnvironment
   void _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, RunQueue& queue);
 
  private:
-  
-  void _changeIds(MeshComponentData* component_data,Int32ConstArrayView old_to_new_ids);
+
+  void _changeIds(MeshComponentData* component_data, Int32ConstArrayView old_to_new_ids);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -222,4 +228,4 @@ class MeshEnvironment
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

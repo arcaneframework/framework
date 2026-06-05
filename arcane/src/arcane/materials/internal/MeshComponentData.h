@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshComponentData.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Données d'un constituant (matériau ou milieu) d'un maillage.              */
+/* Data of a constituent (material or medium) of a mesh.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHCOMPONENTDATA_H
 #define ARCANE_MATERIALS_MESHCOMPONENTDATA_H
@@ -40,13 +40,14 @@ class MeshComponentPartData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Données d'un constituant (matériau ou milieu) d'un maillage.
+ * \brief Data of a constituent (material or medium) of a mesh.
  *
- * Cette classe contient les données communes à MeshMaterial et MeshEnvironnment.
+ * This class contains data common to MeshMaterial and MeshEnvironment.
  *
- * Cette classe est interne à Arcane.
+ * This class is internal to Arcane.
  */
 class MeshComponentData
 : public TraceAccessor
@@ -78,7 +79,7 @@ class MeshComponentData
 
  private:
 
-  //! Retourne une instance vers la \a index-ème entité de la liste
+  //! Returns an instance of the \a index-th entity in the list
   matimpl::ConstituentItemBase _itemBase(Int32 index) const
   {
     return m_constituent_local_id_list.itemBase(index);
@@ -125,34 +126,34 @@ class MeshComponentData
 
  private:
 
-  //! Constituant dont on gère les données.
+  //! Constituent whose data is managed.
   IMeshComponent* m_component = nullptr;
 
   /*!
-   * \brief Indice du constituant (dans la liste des constituants de ce type).
+   * \brief Constituent index (in the list of constituents of this type).
    * \sa IMeshMaterialMng.
    */
   Int16 m_component_id = -1;
 
-  //! Nom du constituant
+  //! Name of the constituent
   String m_name;
 
-  //! Liste des entités de ce constituant
+  //! List of entities of this constituent
   ItemGroup m_items;
 
-  //! Indique si on est propriétaire de l'indexeur (dans ce cas on le détruira avec l'instance)
+  //! Indicates if we own the indexer (in this case, it will be destroyed with the instance)
   bool m_is_indexer_owner = false;
 
-  //! Infos pour l'indexation des variables partielles.
+  //! Info for indexing partial variables.
   MeshMaterialVariableIndexer* m_variable_indexer = nullptr;
 
-  //! Liste des ConstituentItemIndex pour ce constituant.
+  //! List of ConstituentItemIndex for this constituent.
   ConstituentItemLocalIdList m_constituent_local_id_list;
 
   MeshComponentPartData* m_part_data = nullptr;
   FunctorT<MeshComponentData> m_recompute_part_data_functor;
 
-  //! Politique d'exécution spécifique
+  //! Specific execution policy
   Accelerator::eExecutionPolicy m_specific_execution_policy = Accelerator::eExecutionPolicy::None;
 
  private:
@@ -164,9 +165,9 @@ class MeshComponentData
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

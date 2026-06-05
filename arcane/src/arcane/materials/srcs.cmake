@@ -1,6 +1,6 @@
-set(ARCANE_SOURCES
-  # Les fichiers suivants sont en premier car ce sont
-  # les plus longs à compiler
+﻿set(ARCANE_SOURCES
+  # The following files are listed first because they are
+  # the longest to compile
   MeshMaterialVariableScalar.inst.h
   MeshMaterialVariableScalarTpl1.cc
   MeshMaterialVariableScalarTpl2.cc
@@ -149,4 +149,4 @@ set(ARCANE_SOURCES
   internal/IMeshMaterialSynchronizerImpl.h
   internal/LegacyMeshMaterialSynchronizerImpl.h
   internal/AcceleratorMeshMaterialSynchronizerImpl.h
-  )
+)

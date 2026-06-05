@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ComponentItemListBuilder.cc                                 (C) 2000-2024 */
 /*                                                                           */
-/* Classe d'aide à la construction d'une liste de ComponentItem.             */
+/* Helper class for building a list of ComponentItem.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,6 +30,7 @@ namespace
     return opts;
   }
 } // namespace
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,7 +44,7 @@ ComponentItemListBuilder()
 
 ComponentItemListBuilderOld::
 ComponentItemListBuilderOld(MeshMaterialVariableIndexer* var_indexer,
-                         Integer begin_index_in_partial)
+                            Integer begin_index_in_partial)
 : m_component_index(var_indexer->index() + 1)
 , m_index_in_partial(begin_index_in_partial)
 , m_pure_matvar_indexes(_allocInfo("PureMatVarIndexes"))

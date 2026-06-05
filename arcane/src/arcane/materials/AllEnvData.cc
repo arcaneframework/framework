@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AllEnvData.cc                                               (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur les valeurs des milieux.                                 */
+/* Information about environment values.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,8 +77,8 @@ AllEnvData(MeshMaterialMng* mmg)
 , m_material_mng(mmg)
 , m_item_internal_data(mmg)
 {
-  // \a m_component_connectivity_list utilse un compteur de référence
-  // et ne doit pas être détruit explicitement
+  // \a m_component_connectivity_list uses a reference counter
+  // and must not be explicitly destroyed
   m_component_connectivity_list = new ConstituentConnectivityList(m_material_mng);
   m_component_connectivity_list_ref = m_component_connectivity_list->toSourceReference();
 
@@ -116,8 +116,8 @@ _computeNbEnvAndNbMatPerCell()
 {
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
 
-  // Calcule le nombre de milieux par maille, et pour chaque
-  // milieu le nombre de matériaux par maille
+  // Calculates the number of environments per cell, and for each
+  // environment, the number of materials per cell
   for (MeshEnvironment* env : true_environments) {
     env->computeNbMatPerCell();
   }
@@ -129,8 +129,8 @@ _computeNbEnvAndNbMatPerCell()
 void AllEnvData::
 _computeAndResizeEnvItemsInternal()
 {
-  // Calcule le nombre de milieux par maille, et pour chaque
-  // milieu le nombre de matériaux par maille
+  // Calculates the number of environments per cell, and for each
+  // environment, the number of materials per cell
   IMesh* mesh = m_material_mng->mesh();
   const IItemFamily* cell_family = mesh->cellFamily();
   ConstArrayView<MeshEnvironment*> true_environments(m_material_mng->trueEnvironments());
@@ -147,15 +147,15 @@ _computeAndResizeEnvItemsInternal()
     total_mat_cell += env->totalNbCellMat();
   }
 
-  // Il faut ajouter les infos pour les mailles de type AllEnvCell
+  // We must add the information for AllEnvCell type cells
   Int32 max_local_id = cell_family->maxLocalId();
   info(4) << "RESIZE TotalEnvCell=" << total_env_cell
           << " TotalMatCell=" << total_mat_cell
           << " MaxLocalId=" << max_local_id;
 
-  // Redimensionne les tableaux des infos
-  // ATTENTION : ils ne doivent plus être redimensionnés par la suite sous peine
-  // de tout invalider.
+  // Resizes the info arrays
+  // WARNING: they must not be resized subsequently under penalty
+  // of invalidating everything.
   m_item_internal_data.resizeComponentItemInternals(max_local_id, total_env_cell);
 
   if (arcaneIsCheck()) {
@@ -180,8 +180,9 @@ _computeAndResizeEnvItemsInternal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Reconstruit les connectivités incrémentales à parties des groupes.
+ * \brief Rebuilds the incremental connectivities for groups.
  */
 void AllEnvData::
 _rebuildIncrementalConnectivitiesFromGroups()
@@ -220,7 +221,7 @@ _rebuildMaterialsAndEnvironmentsFromGroups()
       if (cells_nb_env[icell.itemLocalId()] > 1)
         list_builder.addPartialItem(icell.itemLocalId());
       else
-        // Je suis le seul milieu de la maille donc je prends l'indice global
+        // I am the only environment of the cell so I take the global index
         list_builder.addPureItem(icell.itemLocalId());
     }
     if (is_full_verbose)
@@ -250,9 +251,9 @@ _computeInfosForAllEnvCells1(RecomputeConstituentCellInfos& work_info)
 
   SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
-  // Calcule pour chaque maille sa position dans le tableau des milieux
-  // en considérant que les milieux de chaque maille sont rangés consécutivement
-  // dans m_env_items_internal.
+  // Calculates for each cell its position in the environment array
+  // considering that the environments of each cell are stored consecutively
+  // in m_env_items_internal.
 
   MemoryUtils::checkResizeArrayWithCapacity(work_info.env_cell_indexes, cells_nb_env.size());
 
@@ -267,7 +268,7 @@ _computeInfosForAllEnvCells1(RecomputeConstituentCellInfos& work_info)
     }
   }
   else {
-    // TODO: Cela ne fonctionne que si all_cells est compacté et
+    // TODO: This only works if all_cells is compacted and
     // local_id[i] <=> i.
     Accelerator::GenericScanner scanner(work_info.m_queue);
     SmallSpan<Int32> env_cell_indexes_view(work_info.env_cell_indexes);
@@ -286,7 +287,7 @@ _computeInfosForAllEnvCells2(RecomputeConstituentCellInfos& work_info)
 
   SmallSpan<const Int16> cells_nb_env = m_component_connectivity_list->cellsNbEnvironment();
 
-  // Positionne les infos pour les AllEnvCell.
+  // Positions the info for AllEnvCell.
   ComponentItemSharedInfo* all_env_shared_info = m_item_internal_data.allEnvSharedInfo();
   auto command = makeCommand(work_info.m_queue);
   SmallSpan<Int32> env_cell_indexes_view(work_info.env_cell_indexes);
@@ -305,8 +306,9 @@ _computeInfosForAllEnvCells2(RecomputeConstituentCellInfos& work_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne les infos pour les EnvCell.
+ * \brief Positions the info for EnvCells.
  */
 void AllEnvData::
 _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info)
@@ -387,9 +389,9 @@ _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie la cohérence des localIds() du variableIndexer().
- * avec la maille globale associée au milieu
+ * \brief Checks the coherence of variableIndexer().localIds() * with the global mesh associated with the environment.
  */
 void AllEnvData::
 _checkLocalIdsCoherency() const
@@ -411,21 +413,21 @@ _checkLocalIdsCoherency() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remise à jour des structures suite à une modification des mailles
- * de matériaux ou de milieux.
+ * \brief Updates structures following a modification of material or
+ * environment meshes.
  *
- * Cette méthode reconstruit les informations uniquement à partir des
- * groupes d'entités associés aux matériaux et milieux. Les variables
- * matériaux ne sont pas prise en compte par cette méthode et il est donc
- * possible qu'elles soient invalidées suite à cet appel. Si on souhaite la conservation
- * des valeurs, il faut d'abord sauvegarder les valeurs partielles,
- * appliquer cette méthode puis restaurer les valeurs partielles. La classe
- * MeshMaterialBackup permet cette sauvegarde/restauration.
+ * This method reconstructs information only from the entity groups associated
+ * with materials and environments. Material variables are not taken into
+ * account by this method, so they may be invalidated after this call. If you
+ * want to preserve the values, you must first save the partial values, apply
+ * this method, and then restore the partial values. The MeshMaterialBackup
+ * class allows this saving/restoring.
  *
- * A noter que cette méthode peut être utilisée en reprise en conservant
- * les valeurs des variables matériaux car la structure des groupes
- * est la même après une reprise ce qui n'invalide pas les valeurs partielles.
+ * Note that this method can be used during recovery while preserving material
+ * variable values because the group structure is the same after a recovery,
+ * which does not invalidate the partial values.
  */
 void AllEnvData::
 forceRecompute(bool compute_all)

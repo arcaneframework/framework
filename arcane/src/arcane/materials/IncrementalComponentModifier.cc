@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IncrementalComponentModifier.cc                             (C) 2000-2025 */
 /*                                                                           */
-/* Modification incrémentale des constituants.                               */
+/* Incremental modification of constituents.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,15 +43,15 @@ IncrementalComponentModifier(AllEnvData* all_env_data, const RunQueue& queue)
 , m_work_info(queue.allocationOptions(), queue.memoryRessource())
 , m_queue(queue)
 {
-  // 0 si on utilise la copie typée (mode historique) et une commande par variable
-  // 1 si on utilise la copie générique et une commande par variable
-  // 2 si on utilise la copie générique et une commande pour toutes les variables
+  // 0 if using typed copy (historical mode) and one command per variable
+  // 1 if using generic copy and one command per variable
+  // 2 if using generic copy and one command for all variables
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_GENERIC_COPY_BETWEEN_PURE_AND_PARTIAL", true)) {
     m_use_generic_copy_between_pure_and_partial = v.value();
   }
   else {
-    // Par défaut sur un accélérateur et en multi-threading, on utilise la copie
-    // avec une seule file, car c'est le mécanisme le plus performant.
+    // By default on an accelerator and in multi-threading, we use the copy
+    // with a single queue, as it is the most performant mechanism.
     if (queue.executionPolicy() != Accelerator::eExecutionPolicy::Sequential)
       m_use_generic_copy_between_pure_and_partial = 2;
   }
@@ -85,17 +85,18 @@ finalize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Transforme les entités pour un milieu.
+ * \brief Transforms entities for an environment.
  *
- * Parcours le milieux \a env et
- * convertie les mailles pures en mailles partielles ou
- * inversement. Après conversion, les valeurs correspondantes aux
- * mailles modifiées sont mises à jour pour chaque variable.
+ * Iterates over the environment \a env and
+ * converts pure meshes to partial meshes or
+ * vice versa. After conversion, the values corresponding to the
+ * modified meshes are updated for each variable.
  *
- * Si \a is_add est vrai, alors on transforme de pure en partiel
- * (ajout de matériau) sinon on transforme de partiel en pure
- * (suppression d'un matériau)
+ * If \a is_add is true, it transforms from pure to partial
+ * (material addition); otherwise, it transforms from partial to pure
+ * (material removal)
  */
 void IncrementalComponentModifier::
 _switchCellsForMaterials(const MeshMaterial* modified_mat,
@@ -107,7 +108,7 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
   for (MeshEnvironment* true_env : m_material_mng->trueEnvironments()) {
     for (MeshMaterial* mat : true_env->trueMaterials()) {
-      // Ne traite pas le matériau en cours de modification.
+      // Do not process the material currently being modified.
       if (mat == modified_mat)
         continue;
 
@@ -153,17 +154,18 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Transforme les entités pour les milieux.
+ * \brief Transforms entities for environments.
  *
- * Parcours les milieux, sauf le milieu modifié \a modified_env et
- * pour chacun convertie les mailles pures en mailles partielles ou
- * inversement. Après conversion, les valeurs correspondantes aux
- * mailles modifiées sont mises à jour pour chaque variable.
+ * Iterates over environments, except the modified environment \a modified_env, and
+ * for each one converts pure meshes to partial meshes or
+ * vice versa. After conversion, the values corresponding to the
+ * modified meshes are updated for each variable.
  *
- * Si \a is_add est vrai, alors on transforme de pure en partiel
- * (dans le cas d'ajout de matériau) sinon on transforme de partiel
- * en pure (dans le cas de suppression d'un matériau)
+ * If \a is_add is true, it transforms from pure to partial
+ * (in the case of material addition); otherwise, it transforms from partial to pure
+ * (in the case of material removal)
  */
 void IncrementalComponentModifier::
 _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
@@ -173,10 +175,10 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
   const bool is_device = m_queue.isAcceleratorPolicy();
   SmallSpan<const bool> is_environments_modified = m_work_info.m_is_environments_modified.view(false);
 
-  // Ne copie pas les valeurs partielles des milieux vers les valeurs globales
-  // en cas de suppression de mailles, car cela sera fait avec la valeur matériau
-  // correspondante. Cela permet d'avoir le même comportement que sans
-  // optimisation. Ce n'est pas actif par défaut pour compatibilité avec l'existant.
+  // Do not copy partial values from environments to global values
+  // in case of mesh removal, because this will be done with the material value
+  // corresponding to it. This allows the same behavior as without
+  // optimization. This is not active by default for compatibility with existing code.
   const bool is_copy = is_add || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
 
   Int32 nb_transformed = _computeCellsToTransformForEnvironments(ids);
@@ -185,10 +187,10 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
     return;
 
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments()) {
-    // Ne traite pas le milieu en cours de modification.
+    // Do not process the environment currently being modified.
     if (env == modified_env)
       continue;
-    // Si je suis mono matériau, la mise à jour de l'indexeur a été faite par le matériau
+    // If I am mono-material, the indexer update was done by the material
     if (env->isMonoMaterial())
       continue;
 
@@ -231,8 +233,9 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule les mailles à transformer pour le matériau \at mat.
+ * \brief Calculates the meshes to transform for material \at mat.
  */
 Int32 IncrementalComponentModifier::
 _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int32> ids)
@@ -248,18 +251,19 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Supprime les mailles d'un matériau du milieu.
+ * \brief Removes meshes of a material from the environment.
  *
- * Supprime les mailles données par \a local_ids du matériau \a mat
- * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
- * est vrai, celui du milieu aussi (ce qui signifie que le milieu disparait
- * des mailles \a local_ids).
+ * Removes the meshes provided by \a local_ids from material \a mat
+ * in the environment. The material indexer is updated, and if \a update_env_indexer
+ * is true, the environment indexer is also updated (which means the environment disappears
+ * from the meshes \a local_ids).
  *
- * TODO: optimiser cela en ne parcourant pas toutes les mailles
- * matériaux du milieu (il faut supprimer removed_local_ids_filter).
- * Si on connait l'indice de chaque maille dans la liste des MatVarIndex
- * de l'indexeur, on peut directement taper dedans.
+ * TODO: optimize this by not iterating over all
+ * materials of the environment (removed_local_ids_filter must be removed).
+ * If we know the index of each mesh in the MatVarIndex
+ * from the indexer, we can directly access it.
  */
 void IncrementalComponentModifier::
 _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
@@ -269,29 +273,30 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 
   Int32 nb_to_remove = local_ids.size();
 
-  // TODO: à faire dans finalize()
+  // TODO: to be done in finalize()
   env->addToTotalNbCellMat(-nb_to_remove);
 
   mat->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
 
   if (update_env_indexer) {
-    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
-    // Cela n'est possible que si le nombre de matériaux du milieu
-    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
-    // ont le même indexeur)
+    // Also updates the entities \a local_ids in the environment's indexer.
+    // This is only possible if the number of environment materials
+    // is greater than or equal to 2 (because otherwise the material and the environment
+    // have the same indexer)
     env->variableIndexer()->endUpdateRemove(m_work_info, nb_to_remove, m_queue);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute les mailles d'un matériau du milieu.
+ * \brief Adds the meshes of an environment material.
  *
- * Ajoute les mailles données par \a local_ids au matériau \a mat
- * du milieu. L'indexeur du matériau est mis à jour et si \a update_env_indexer
- * est vrai, celui du milieu aussi (ce qui signifie que le milieu apparait
- * dans les mailles \a local_ids).
+ * Adds the meshes given by \a local_ids to the environment material \a mat
+ * of the environment. The material indexer is updated, and if \a update_env_indexer
+ * is true, the environment's indexer is also updated (meaning the environment appears
+ * in the meshes \a local_ids).
  */
 void IncrementalComponentModifier::
 _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
@@ -303,7 +308,7 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
   const Int32 nb_to_add = local_ids.size();
 
-  // Met à jour le nombre de matériaux par maille et le nombre total de mailles matériaux.
+  // Updates the number of materials per mesh and the total number of material meshes.
   env->addToTotalNbCellMat(nb_to_add);
 
   const Int16 env_id = env->componentId();
@@ -314,10 +319,10 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   _addItemsToIndexer(var_indexer, local_ids);
 
   if (update_env_indexer) {
-    // Met aussi à jour les entités \a local_ids à l'indexeur du milieu.
-    // Cela n'est possible que si le nombre de matériaux du milieu
-    // est supérieur ou égal à 2 (car sinon le matériau et le milieu
-    // ont le même indexeur)
+    // Also updates the entities \a local_ids in the environment's indexer.
+    // This is only possible if the number of environment materials
+    // is greater than or equal to 2 (because otherwise the material and the environment
+    // have the same indexer)
     _addItemsToIndexer(env->variableIndexer(), local_ids);
   }
 }
@@ -329,7 +334,7 @@ void IncrementalComponentModifier::
 _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
                    SmallSpan<const Int32> local_ids)
 {
-  // TODO Conserver l'instance au cours de toutes modifications
+  // TODO Keep the instance during all modifications
   ComponentItemListBuilder& list_builder = m_work_info.list_builder;
   list_builder.setIndexer(var_indexer);
 
@@ -345,16 +350,16 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
            << "\n pure=(" << list_builder.pureIndexes() << ")"
            << "\n partial=(" << list_builder.partialIndexes() << ")";
 
-  // TODO: lors de cet appel, on connait le max de \a index_in_partial donc
-  // on peut éviter de faire une réduction pour le recalculer.
+  // TODO: during this call, we know the max of \a index_in_partial so
+  // we can avoid performing a reduction to recalculate it.
 
   var_indexer->endUpdateAdd(list_builder, m_queue);
 
-  // Redimensionne les variables
+  // Resizes the variables
   _resizeVariablesIndexer(var_indexer->index());
 
-  // Maintenant que les nouveaux MatVar sont créés, il faut les
-  // initialiser avec les bonnes valeurs.
+  // Now that the new MatVars are created, they must be
+  // initialized with the correct values.
   if (m_do_init_new_items) {
     IMeshMaterialMng* mm = m_material_mng;
     bool init_with_zero = mm->isDataInitialisationWithZero();
@@ -379,7 +384,7 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
       };
       functor::apply(mm, &IMeshMaterialMng::visitVariables, func_zero);
 
-      if (do_one_command){
+      if (do_one_command) {
         MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
         m_work_info.m_variables_copy_data.copy(x, &m_queue);
         _applyInitializeWithZero(init_args);
@@ -398,17 +403,18 @@ _addItemsToIndexer(MeshMaterialVariableIndexer* var_indexer,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Redimensionne l'index \a var_index des variables.
+ * \brief Resizes the variable index \a var_index.
  */
 void IncrementalComponentModifier::
 _resizeVariablesIndexer(Int32 var_index)
 {
   Accelerator::ProfileRegion ps(m_queue, "ResizeVariableIndexer", 0xFF00FF);
   ResizeVariableIndexerArgs resize_args(var_index, m_queue);
-  // Regarde si on n'utilise qu'une seule commande pour les copies des vues.
-  // Pour l'instant (novembre 2024) on ne l'utilise par défaut que si
-  // on est sur accélérateur.
+  // Checks if we are only using one command for view copies.
+  // For now (November 2024), we only use it by default if
+  // we are on an accelerator.
   bool do_one_command = (m_use_generic_copy_between_pure_and_partial == 2);
 
   if (m_force_multiple_command_for_resize)
@@ -422,11 +428,11 @@ _resizeVariablesIndexer(Int32 var_index)
   }
 
   if (m_force_multiple_command_for_resize) {
-    // Le mode de commandes multiples sert à identifier quelles variables
-    // sont encore sur CPU via le déclenchement de PageFault.
-    // C'est pour cela qu'on met le nom de la variable dans la région de profiling
-    // pour avoir les traces avec 'nsys' par exemple. Il faut aussi ajouter
-    // une barrière pour sérialiser les opérations.
+    // The multiple command mode is used to identify which variables
+    // are still on CPU via PageFault triggering.
+    // That is why we put the variable name in the profiling region
+    // to get traces with 'nsys', for example. We also need to add
+    // a barrier to serialize the operations.
     auto func2 = [&](IMeshMaterialVariable* mv) {
       Accelerator::ProfileRegion ps2(m_queue, String("Resize_") + mv->name());
       auto* mvi = mv->_internalApi();
@@ -445,7 +451,7 @@ _resizeVariablesIndexer(Int32 var_index)
   }
 
   if (do_one_command) {
-    // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+    // Copies 'copy_data' into the corresponding array for the eventual device.
     MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
     m_work_info.m_variables_copy_data.copy(x, &m_queue);
     _applyCopyVariableViews(m_queue);
@@ -456,12 +462,13 @@ _resizeVariablesIndexer(Int32 var_index)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie entre les valeurs partielles et les valeurs globales.
+ * \brief Copies between partial and global values.
  *
- * Si \a pure_to_partial est vrai, alors on copie les valeurs globales
- * vers les valeurs partielles, sinon on fait l'inverse.
- * de suppression d'un matériau)
+ * If \a pure_to_partial is true, then we copy the global values
+ * to the partial values; otherwise, we do the reverse.
+ * (of material deletion)
  */
 void IncrementalComponentModifier::
 _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
@@ -472,14 +479,14 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
   const bool is_add_operation = args.m_is_global_to_partial;
   RunQueue queue(args.m_queue);
   RunQueue::ScopedAsync sc(&queue);
-  // Comme on a modifié des mailles, il faut mettre à jour les valeurs
-  // correspondantes pour chaque variable.
+  // Since we modified meshes, we must update the corresponding values
+  // for each variable.
   //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
   //Integer indexer_index = indexer->index();
 
   Accelerator::RunQueuePool& queue_pool = m_material_mng->_internalApi()->asyncRunQueuePool();
 
-  // Redimensionne les variables si nécessaire
+  // Resizes the variables if necessary
   if (is_add_operation) {
     _resizeVariablesIndexer(args.m_var_index);
   }
@@ -504,7 +511,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
     };
     functor::apply(m_material_mng, &MeshMaterialMng::visitVariables, func2);
     if (do_one_command) {
-      // Copie 'copy_data' dans le tableau correspondant pour le device éventuel.
+      // Copies 'copy_data' into the corresponding array for the eventual device.
       MDSpan<CopyBetweenDataInfo, MDDim1> x(copy_data.data(), MDIndex<1>(copy_data.size()));
       m_work_info.m_variables_copy_data.copy(x, &queue);
       _applyCopyBetweenPartialsAndGlobals(args2, queue);

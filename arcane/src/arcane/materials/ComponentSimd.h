@@ -7,17 +7,18 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentSimd.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Support de la vectorisation pour les matériaux et milieux.                */
+/* Support for vectorization for materials and media.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_COMPONENTSIMD_H
 #define ARCANE_MATERIALS_COMPONENTSIMD_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ComponentSimd.h
  *
- * Ce fichier contient les différents types pour gérer la
- * vectorisation sur les composants (matériaux et milieux).
+ * This file contains the different types to manage
+ * vectorization on components (materials and media).
  */
 
 #include "arcane/core/ArcaneTypes.h"
@@ -31,9 +32,9 @@
 /*---------------------------------------------------------------------------*/
 
 #ifdef __INTEL_COMPILER
-#  define A_ALIGNED_64 __attribute__((align_value(64)))
+#define A_ALIGNED_64 __attribute__((align_value(64)))
 #else
-#  define A_ALIGNED_64
+#define A_ALIGNED_64
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -44,27 +45,31 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Indexeur SIMD sur un composant.
+ * \brief SIMD indexer on a component.
  */
 class ARCANE_MATERIALS_EXPORT ARCANE_ALIGNAS(64) SimdMatVarIndex
 {
  public:
+
   typedef SimdEnumeratorBase::SimdIndexType SimdIndexType;
+
  public:
 
-  SimdMatVarIndex(Int32 array_index,SimdIndexType value_index)
-  : m_value_index(value_index), m_array_index(array_index)
+  SimdMatVarIndex(Int32 array_index, SimdIndexType value_index)
+  : m_value_index(value_index)
+  , m_array_index(array_index)
   {
   }
-  SimdMatVarIndex(){}
+  SimdMatVarIndex() {}
 
  public:
 
-  //! Retourne l'indice du tableau de valeur dans la liste des variables.
+  //! Returns the index of the value array in the list of variables.
   Int32 arrayIndex() const { return m_array_index; }
 
-  //! Retourne l'indice dans le tableau de valeur
+  //! Returns the index in the value array
   const SimdIndexType& valueIndex() const { return m_value_index; }
 
  private:
@@ -75,27 +80,34 @@ class ARCANE_MATERIALS_EXPORT ARCANE_ALIGNAS(64) SimdMatVarIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur SIMD sur une sous-partie (pure ou partielle) d'un
- * sous-ensemble des mailles d'un composant (matériau ou milieu)
+ * \brief SIMD enumerator on a sub-part (pure or partial) of a
+ * subset of the meshes of a component (material or medium)
  */
 class ARCANE_MATERIALS_EXPORT ComponentPartSimdCellEnumerator
 : public SimdEnumeratorBase
 {
  protected:
-  ComponentPartSimdCellEnumerator(IMeshComponent* component,Int32 component_part_index,
+
+  ComponentPartSimdCellEnumerator(IMeshComponent* component, Int32 component_part_index,
                                   Int32ConstArrayView item_indexes)
-  : SimdEnumeratorBase(item_indexes), m_component_part_index(component_part_index), m_component(component)
+  : SimdEnumeratorBase(item_indexes)
+  , m_component_part_index(component_part_index)
+  , m_component(component)
   {
   }
- public:
-  static ComponentPartSimdCellEnumerator create(ComponentPartItemVectorView v)
-  {
-    return ComponentPartSimdCellEnumerator(v.component(),v.componentPartIndex(),v.valueIndexes());
-  }
+
  public:
 
-  SimdMatVarIndex _varIndex() const { return SimdMatVarIndex(m_component_part_index,*_currentSimdIndex()); }
+  static ComponentPartSimdCellEnumerator create(ComponentPartItemVectorView v)
+  {
+    return ComponentPartSimdCellEnumerator(v.component(), v.componentPartIndex(), v.valueIndexes());
+  }
+
+ public:
+
+  SimdMatVarIndex _varIndex() const { return SimdMatVarIndex(m_component_part_index, *_currentSimdIndex()); }
 
   operator SimdMatVarIndex() const
   {
@@ -103,6 +115,7 @@ class ARCANE_MATERIALS_EXPORT ComponentPartSimdCellEnumerator
   }
 
  protected:
+
   Integer m_component_part_index;
   IMeshComponent* m_component;
 };
@@ -116,21 +129,22 @@ arcaneImplCreateConstituentEnumerator(ComponentPartSimdCell, ComponentPartItemVe
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ENUMERATE_SIMD_COMPONENTCELL(iname,env) \
-  A_ENUMERATE_COMPONENTCELL(ComponentPartSimdCell,iname,env)
+#define ENUMERATE_SIMD_COMPONENTCELL(iname, env) \
+  A_ENUMERATE_COMPONENTCELL(ComponentPartSimdCell, iname, env)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Lambda> void
+template <typename Lambda> void
 simple_simd_env_loop(ComponentPartItemVectorView pure_items,
                      ComponentPartItemVectorView impure_items,
                      const Lambda& lambda)
 {
-  ENUMERATE_COMPONENTITEM(ComponentPartSimdCell,mvi,pure_items){
+  ENUMERATE_COMPONENTITEM (ComponentPartSimdCell, mvi, pure_items) {
     lambda(mvi);
   }
-  ENUMERATE_SIMD_COMPONENTCELL(mvi,impure_items){
+  ENUMERATE_SIMD_COMPONENTCELL(mvi, impure_items)
+  {
     lambda(mvi);
   }
 }
@@ -141,21 +155,32 @@ simple_simd_env_loop(ComponentPartItemVectorView pure_items,
 class ARCANE_MATERIALS_EXPORT LoopFunctorEnvPartSimdCell
 {
  public:
+
   typedef const SimdMatVarIndex& IterType;
+
  public:
+
   LoopFunctorEnvPartSimdCell(ComponentPartItemVectorView pure_items,
                              ComponentPartItemVectorView impure_items)
-  : m_pure_items(pure_items), m_impure_items(impure_items){}
+  : m_pure_items(pure_items)
+  , m_impure_items(impure_items)
+  {}
+
  public:
+
   static LoopFunctorEnvPartSimdCell create(const EnvCellVector& env);
   static LoopFunctorEnvPartSimdCell create(IMeshEnvironment* env);
+
  public:
-  template<typename Lambda>
+
+  template <typename Lambda>
   void operator<<(Lambda&& lambda)
   {
-    simple_simd_env_loop(m_pure_items,m_impure_items,lambda);
+    simple_simd_env_loop(m_pure_items, m_impure_items, lambda);
   }
+
  private:
+
   ComponentPartItemVectorView m_pure_items;
   ComponentPartItemVectorView m_impure_items;
 };
@@ -163,51 +188,59 @@ class ARCANE_MATERIALS_EXPORT LoopFunctorEnvPartSimdCell
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Macro pour itérer sur les entités d'un composant via une
- * fonction lambda du C++11.
+ * \brief Macro to iterate over the entities of a component via a
+ * C++11 lambda function.
  *
- * Les arguments sont les mêmes que pour la macro ENUMERATE_COMPONENTITEM().
+ * The arguments are the same as for the ENUMERATE_COMPONENTITEM() macro.
  *
- * Le code après la macro correspond au corps de la fonction lambda du C++11.
- * Il doit donc être compris entre deux accolades '{' '}' et se
- * terminer par un point-virgule ';'. Par exemple:
+ * The code after the macro corresponds to the body of the C++11 lambda function.
+ * It must therefore be enclosed between two curly braces '{' '}' and end with a
+ * semicolon ';'. For example:
  *
  \code
  * ENUMERATE_COMPONENTITEM_LAMBDA(){
  * };
  \endcode
  *
- * \note Même si le code est similaire à celui d'une boucle, il s'agit d'une
- * fonction lambda du C++11 et donc il n'est pas possible d'utiliser des
- * mots clés comme 'break' ou 'continue'. Si on souhaite arrêtre une itération
- * il faut utiliser le mot clé 'return'.
+ * \note Even if the code is similar to that of a loop, it is a
+ * C++11 lambda function and therefore it is not possible to use keywords like
+ * 'break' or 'continue'. If you want to stop an iteration
+ * you must use the keyword 'return'.
  */
-#define ENUMERATE_COMPONENTITEM_LAMBDA(iter_type,iter,container)\
-  Arcane::Materials:: LoopFunctor ## iter_type :: create ( (container) ) << [=]( Arcane::Materials:: LoopFunctor ## iter_type :: IterType iter)
+#define ENUMERATE_COMPONENTITEM_LAMBDA(iter_type, iter, container) \
+  Arcane::Materials::LoopFunctor##iter_type ::create((container)) << [=](Arcane::Materials::LoopFunctor##iter_type ::IterType iter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues sur les variables.
+ * \brief Base class for variable views.
  */
 class MatVariableViewBase
 {
  public:
-  MatVariableViewBase(IMeshMaterialVariable* var) : m_variable(var)
+
+  MatVariableViewBase(IMeshMaterialVariable* var)
+  : m_variable(var)
   {
   }
+
  public:
+
   IMeshMaterialVariable* variable() const { return m_variable; }
+
  private:
+
   IMeshMaterialVariable* m_variable;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
+ * \brief Read view on a scalar mesh variable.
  */
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class MatItemVariableScalarInViewT
 : public MatVariableViewBase
 {
@@ -218,36 +251,39 @@ class MatItemVariableScalarInViewT
 
  public:
 
-  MatItemVariableScalarInViewT(IMeshMaterialVariable* var,ArrayView<DataType>* v)
-  : MatVariableViewBase(var), m_value(v), m_value0(v[0].unguardedBasePointer()){}
+  MatItemVariableScalarInViewT(IMeshMaterialVariable* var, ArrayView<DataType>* v)
+  : MatVariableViewBase(var)
+  , m_value(v)
+  , m_value0(v[0].unguardedBasePointer())
+  {}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   typename SimdTypeTraits<DataType>::SimdType
   operator[](const SimdMatVarIndex& mvi) const
   {
     typedef typename SimdTypeTraits<DataType>::SimdType SimdType;
-    return SimdType(m_value[mvi.arrayIndex()].data(),mvi.valueIndex());
+    return SimdType(m_value[mvi.arrayIndex()].data(), mvi.valueIndex());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType operator[](ItemIndexType mvi) const
   {
     return this->m_value[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType operator[](ComponentItemLocalId lid) const
   {
     return this->m_value[lid.localId().arrayIndex()][lid.localId().valueIndex()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType operator[](PureMatVarIndex pmvi) const
   {
     return this->m_value0[pmvi.valueIndex()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType value(ItemIndexType mvi) const
   {
     return this->m_value[mvi.arrayIndex()][mvi.valueIndex()];
@@ -258,29 +294,31 @@ class MatItemVariableScalarInViewT
     return this->m_value0[idx.valueIndex()];
   }
 
-  //! Valeur partielle de la variable pour l'itérateur \a mc
+  //! Partial value of the variable for the \a mc iterator
   DataType operator[](CellComponentCellEnumerator mc) const
   {
     return this->operator[](mc._varIndex());
   }
 
-  //! Valeur partielle de la variable pour l'itérateur \a mc
+  //! Partial value of the variable for the \a mc iterator
   DataType operator[](EnvCellEnumerator mc) const
   {
     return this->operator[](mc._varIndex());
   }
 
  private:
+
   ArrayView<DataType>* m_value;
   DataTypeAlignedPtr m_value0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
+ * \brief Read view on a scalar mesh variable.
  */
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class MatItemVariableScalarOutViewT
 : public MatVariableViewBase
 {
@@ -291,22 +329,25 @@ class MatItemVariableScalarOutViewT
 
  public:
 
-  MatItemVariableScalarOutViewT(IMeshMaterialVariable* var,ArrayView<DataType>* v)
-  : MatVariableViewBase(var), m_value(v), m_value0(v[0].unguardedBasePointer()){}
+  MatItemVariableScalarOutViewT(IMeshMaterialVariable* var, ArrayView<DataType>* v)
+  : MatVariableViewBase(var)
+  , m_value(v)
+  , m_value0(v[0].unguardedBasePointer())
+  {}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](const SimdMatVarIndex& mvi) const
   {
-    return SimdSetter<DataType>(m_value[mvi.arrayIndex()].data(),mvi.valueIndex());
+    return SimdSetter<DataType>(m_value[mvi.arrayIndex()].data(), mvi.valueIndex());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType& operator[](ItemIndexType mvi) const
   {
     return this->m_value[mvi.arrayIndex()][mvi.valueIndex()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType& operator[](ComponentItemLocalId lid) const
   {
     return this->m_value[lid.localId().arrayIndex()][lid.localId().valueIndex()];
@@ -317,7 +358,7 @@ class MatItemVariableScalarOutViewT
     return this->m_value0[pmvi.valueIndex()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataType& value(ItemIndexType mvi) const
   {
     return this->m_value[mvi.arrayIndex()][mvi.valueIndex()];
@@ -328,53 +369,56 @@ class MatItemVariableScalarOutViewT
     return this->m_value0[idx.valueIndex()];
   }
 
-  //! Valeur partielle de la variable pour l'itérateur \a mc
+  //! Partial value of the variable for the \a mc iterator
   DataType& operator[](CellComponentCellEnumerator mc) const
   {
     return this->operator[](mc._varIndex());
   }
 
-  //! Valeur partielle de la variable pour l'itérateur \a mc
+  //! Partial value of the variable for the \a mc iterator
   DataType& operator[](EnvCellEnumerator mc) const
   {
     return this->operator[](mc._varIndex());
   }
 
  private:
+
   ArrayView<DataType>* m_value;
   DataTypeAlignedPtr m_value0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
-template<typename DataType>
-MatItemVariableScalarInViewT<Cell,DataType>
+template <typename DataType>
+MatItemVariableScalarInViewT<Cell, DataType>
 viewIn(const CellMaterialVariableScalarRef<DataType>& var)
 {
-  return MatItemVariableScalarInViewT<Cell,DataType>(var.materialVariable(),var._internalValue());
+  return MatItemVariableScalarInViewT<Cell, DataType>(var.materialVariable(), var._internalValue());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture
+ * \brief Write view
  */
-template<typename DataType>
-MatItemVariableScalarOutViewT<Cell,DataType>
+template <typename DataType>
+MatItemVariableScalarOutViewT<Cell, DataType>
 viewOut(CellMaterialVariableScalarRef<DataType>& var)
 {
-  return MatItemVariableScalarOutViewT<Cell,DataType>(var.materialVariable(),var._internalValue());
+  return MatItemVariableScalarOutViewT<Cell, DataType>(var.materialVariable(), var._internalValue());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

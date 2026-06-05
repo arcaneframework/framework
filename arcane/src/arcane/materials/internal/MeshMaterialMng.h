@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialMng.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la modification des matériaux et milieux.               */
+/* Implementation of material and environment modification.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALMNG_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIALMNG_H
@@ -55,8 +55,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'un gestion des matériaux.
+ * \brief Implementation of a material manager.
  */
 class MeshMaterialMng
 : public TraceAccessor
@@ -68,7 +69,7 @@ class MeshMaterialMng
 
  private:
 
-  //! Informations sur la file d'exécution utilisée
+  //! Information about the execution queue used
   class RunnerInfo
   {
    public:
@@ -173,7 +174,7 @@ class MeshMaterialMng
 
  public:
 
-  MeshMaterialMng(const MeshHandle& mesh_handle,const String& name);
+  MeshMaterialMng(const MeshHandle& mesh_handle, const String& name);
   ~MeshMaterialMng() override;
 
  public:
@@ -190,8 +191,8 @@ class MeshMaterialMng
   MeshMaterialInfo* registerMaterialInfo(const String& name) override;
   IMeshEnvironment* createEnvironment(const MeshEnvironmentBuildInfo& infos) override;
   IMeshBlock* createBlock(const MeshBlockBuildInfo& infos) override;
-  void addEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) override;
-  void removeEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) override;
+  void addEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) override;
+  void removeEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) override;
 
   void endCreate(bool is_continue) override;
 
@@ -224,8 +225,8 @@ class MeshMaterialMng
   ConstArrayView<IMeshComponent*> components() const override { return m_components; }
   ConstArrayView<IMeshBlock*> blocks() const override { return m_blocks; }
 
-  IMeshEnvironment* findEnvironment(const String& name,bool throw_exception=true) override;
-  IMeshBlock* findBlock(const String& name,bool throw_exception=true) override;
+  IMeshEnvironment* findEnvironment(const String& name, bool throw_exception = true) override;
+  IMeshBlock* findBlock(const String& name, bool throw_exception = true) override;
 
   void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) override;
 
@@ -233,7 +234,7 @@ class MeshMaterialMng
   IMeshMaterialVariable* checkVariable(IVariable* global_var) override;
 
   void dumpInfos(std::ostream& o) override;
-  void dumpCellInfos(Cell cell,std::ostream& o) override;
+  void dumpCellInfos(Cell cell, std::ostream& o) override;
 
   void checkValid() override;
 
@@ -315,7 +316,7 @@ class MeshMaterialMng
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
-  void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) override
+  void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create = false) override
   {
     m_is_use_accelerator_envcell_container = is_enable;
     if (force_create)
@@ -327,7 +328,7 @@ class MeshMaterialMng
 
  public:
 
-  //@{ Implémentation de IMeshMaterialMngInternal
+  //@{ Implementation of IMeshMaterialMngInternal
   Runner& runner() const { return m_runner_info->m_runner; }
   RunQueue& runQueue() const { return m_runner_info->m_run_queue; }
   Accelerator::RunQueuePool& asyncRunQueuePool() const { return m_runner_info->m_async_queue_pool; }
@@ -342,12 +343,12 @@ class MeshMaterialMng
 
  private:
 
-  //! Type de la liste des variables par nom complet
-  using FullNameVariableMap= std::map<String,IMeshMaterialVariable*>;
-  //! Paire de la liste des variables par nom complet
+  //! Type of the list of variables by full name
+  using FullNameVariableMap = std::map<String, IMeshMaterialVariable*>;
+  //! Pair of the list of variables by full name
   using FullNameVariablePair = FullNameVariableMap::value_type;
 
-  using VariableToMaterialVariableMap = std::map<IVariable*,IMeshMaterialVariable*>;
+  using VariableToMaterialVariableMap = std::map<IVariable*, IMeshMaterialVariable*>;
   using VariableToMaterialVariablePair = VariableToMaterialVariableMap::value_type;
 
  private:
@@ -387,7 +388,7 @@ class MeshMaterialMng
 
   std::unique_ptr<Properties> m_properties;
   std::unique_ptr<AllEnvData> m_all_env_data;
-  Int64 m_timestamp = 0; //!< Compteur du nombre de modifications des matériaux.
+  Int64 m_timestamp = 0; //!< Counter for the number of material modifications.
   std::unique_ptr<IMeshMaterialVariableSynchronizer> m_all_cells_mat_env_synchronizer;
   std::unique_ptr<IMeshMaterialVariableSynchronizer> m_all_cells_env_only_synchronizer;
   Integer m_synchronize_variable_version = 1;
@@ -399,13 +400,13 @@ class MeshMaterialMng
 
   std::unique_ptr<RunnerInfo> m_runner_info;
 
-  //! Conteneur pour AllEnvCellToAllEnvCell pour accélerateur
+  //! Container for AllEnvCellToAllEnvCell for accelerator
   std::unique_ptr<AllCellToAllEnvCellContainer> m_accelerator_envcell_container;
   bool m_is_use_accelerator_envcell_container = false;
 
   bool m_is_use_accelerator_for_constituent_item_vector = true;
 
-  //! Tableau identité pour la sélection
+  //! Identity array for selection
   UniqueArray<Int32> m_indexed_selection_identity;
   std::mutex m_indexed_selection_identity_mutex;
 
@@ -416,7 +417,7 @@ class MeshMaterialMng
   MeshMaterialInfo* _findMaterialInfo(const String& name);
   MeshEnvironment* _findEnvironment(const String& name);
   MeshBlock* _findBlock(const String& name);
-  MeshMaterial* _createMaterial(MeshEnvironment* env,MeshMaterialInfo* infos,const String& name);
+  MeshMaterial* _createMaterial(MeshEnvironment* env, MeshMaterialInfo* infos, const String& name);
   void _addVariableIndexer(MeshMaterialVariableIndexer* var_idx);
   void _checkEndCreate();
   void _addVariableUnlocked(IMeshMaterialVariable* var);

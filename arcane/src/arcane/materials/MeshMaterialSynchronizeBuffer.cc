@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialSynchronizeBuffer.cc                            (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des buffers pour la synchronisation de variables matériaux.       */
+/* Buffer management for synchronizing material variables.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,7 +63,7 @@ class MultiBufferMeshMaterialSynchronizeBuffer
   void setNbRank(Int32 nb_rank) override
   {
     m_nb_rank = nb_rank;
-    m_buffer_infos.resize(nb_rank,m_default_buffer_info);
+    m_buffer_infos.resize(nb_rank, m_default_buffer_info);
     for (auto& x : m_buffer_infos)
       x.reset();
   }
@@ -122,11 +122,11 @@ class OneBufferMeshMaterialSynchronizeBuffer
 
     Span<Byte> sendBuffer(Span<Byte> full_buffer) const
     {
-      return full_buffer.subspan(m_send_index,m_send_size);
+      return full_buffer.subspan(m_send_index, m_send_size);
     }
     Span<Byte> receiveBuffer(Span<Byte> full_buffer) const
     {
-      return full_buffer.subspan(m_receive_index,m_receive_size);
+      return full_buffer.subspan(m_receive_index, m_receive_size);
     }
 
     Int32 m_send_size = 0;
@@ -138,9 +138,11 @@ class OneBufferMeshMaterialSynchronizeBuffer
  public:
 
   explicit OneBufferMeshMaterialSynchronizeBuffer(IMemoryAllocator* allocator)
-  : m_buffer(allocator){}
+  : m_buffer(allocator)
+  {}
 
  public:
+
   Int32 nbRank() const override { return m_nb_rank; }
   void setNbRank(Int32 nb_rank) override
   {
@@ -173,7 +175,7 @@ class OneBufferMeshMaterialSynchronizeBuffer
       total_send_size += x.m_send_size;
       total_receive_size += x.m_receive_size;
     }
-    m_buffer.resize(total_send_size+total_receive_size);
+    m_buffer.resize(total_send_size + total_receive_size);
     Int64 send_index = 0;
     Int64 receive_index = total_send_size;
     for (auto& x : m_buffer_infos) {
@@ -197,28 +199,29 @@ class OneBufferMeshMaterialSynchronizeBuffer
 
 namespace impl
 {
-extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
-makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
-{
-  auto* a = MemoryUtils::getAllocator(memory_ressource);
-  auto* v = new MultiBufferMeshMaterialSynchronizeBuffer(a);
-  return makeRef<IMeshMaterialSynchronizeBuffer>(v);
-}
+  extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+  makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
+  {
+    auto* a = MemoryUtils::getAllocator(memory_ressource);
+    auto* v = new MultiBufferMeshMaterialSynchronizeBuffer(a);
+    return makeRef<IMeshMaterialSynchronizeBuffer>(v);
+  }
 
-extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
-makeMultiBufferMeshMaterialSynchronizeBufferRef()
-{
-  return makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource::Host);
-}
+  extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+  makeMultiBufferMeshMaterialSynchronizeBufferRef()
+  {
+    return makeMultiBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource::Host);
+  }
 
-extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
-makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
-{
-  auto* a = MemoryUtils::getAllocator(memory_ressource);
-  auto* v = new OneBufferMeshMaterialSynchronizeBuffer(a);
-  return makeRef<IMeshMaterialSynchronizeBuffer>(v);
-}
-}
+  extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+  makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource memory_ressource)
+  {
+    auto* a = MemoryUtils::getAllocator(memory_ressource);
+    auto* v = new OneBufferMeshMaterialSynchronizeBuffer(a);
+    return makeRef<IMeshMaterialSynchronizeBuffer>(v);
+  }
+} // namespace impl
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

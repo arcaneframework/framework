@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableIndexer.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Indexer pour les variables materiaux.                                     */
+/* Indexer for material variables.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEINDEXER_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEINDEXER_H
@@ -40,12 +40,13 @@ class ComponentItemListBuilderOld;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Indexer pour les variables materiaux.
+ * \brief Indexer for material variables.
  *
- * Cette classe contient les infos pour gérer la partie multi valeur d'une
- * variable matériau.
+ * This class contains the information to manage the multi-value part of a
+ * material variable.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 : public TraceAccessor
@@ -65,13 +66,13 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 
  public:
 
-  //! Nom de l'indexeur
+  //! Name of the indexer
   const String& name() const { return m_name; }
 
   /*!
-   * Taille nécessaire pour dimensionner les valeurs multiples pour les variables.
+   * Size needed to dimension the multiple values for the variables.
    *
-   * Il s'agit du maximum de l'indice maximal plus 1.
+   * This is the maximum of the maximum index plus 1.
    */
   Integer maxIndexInMultipleArray() const { return m_max_index_in_multiple_array + 1; }
 
@@ -79,20 +80,20 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes; }
   const CellGroup& cells() const { return m_cells; }
   void checkValid();
-  //! Vrai si cet indexeur est celui d'un milieu.
+  //! True if this indexer is for an environment.
   bool isEnvironment() const { return m_is_environment; }
   void dumpStats() const;
 
  public:
 
-  // Méthodes publiques car utilisées sur accélérateurs
+  // Public methods because they are used on accelerators
   void endUpdateAdd(const ComponentItemListBuilder& builder, RunQueue& queue);
   void endUpdateRemoveV2(ConstituentModifierWorkInfo& work_info, Integer nb_remove, RunQueue& queue);
   void transformCells(ConstituentModifierWorkInfo& args, RunQueue& queue, bool is_from_env);
 
  private:
 
-  //! Fonctions privées mais accessibles aux classes 'friend'.
+  //! Private functions but accessible to 'friend' classes.
   //@{
   void endUpdate(const ComponentItemListBuilderOld& builder);
   Array<MatVarIndex>& matvarIndexesArray() { return m_matvar_indexes; }
@@ -107,50 +108,49 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //@}
 
  private:
-
  private:
 
-  //! Index de cette instance dans la liste des indexeurs.
+  //! Index of this instance in the list of indexers.
   Integer m_index = -1;
 
-  //! Indice max plus 1 dans le tableau des valeurs multiples
+  //! Max index plus 1 in the multiple values array
   Integer m_max_index_in_multiple_array = -1;
 
-  //! Nom du matériau ou milieu
+  //! Name of the material or environment
   String m_name;
 
-  //! Liste des mailles de cet indexer
+  //! List of meshes for this indexer
   CellGroup m_cells;
 
-  //! Liste des indexs pour les variables matériaux.
+  //! List of indices for material variables.
   UniqueArray<MatVarIndex> m_matvar_indexes;
 
   /*!
-   * \brief Liste des localId() des entités correspondantes à m_matvar_indexes.
-   * NOTE: à terme, lorsque le parcours se fera dans le même ordre que
-   * les éléments du groupe, ce tableau correspondra à celui des localId()
-   * du groupe et il n'y aura donc pas besoin de le stocker.
-   * NOTE: à noter que ce tableau pourrait être utile en cas de modification
-   * du maillage (voir MeshEnvironment::_changeIds()).
+   * \brief List of localId() of entities corresponding to m_matvar_indexes.
+   * NOTE: eventually, when the traversal is done in the same order as
+   * the elements of the group, this array will correspond to that of the localId()
+   * of the group and therefore there will be no need to store it.
+   * NOTE: note that this array could be useful in case of modification
+   * of the mesh (see MeshEnvironment::_changeIds()).
    */
   UniqueArray<Int32> m_local_ids;
 
-  //! Vrai si l'indexeur est associé à un milieu.
+  //! True if the indexer is associated with an environment.
   bool m_is_environment = false;
 
-  //! Nombre d'appels aux méthodes de transformation
+  //! Number of calls to transformation methods
   Int32 m_nb_transform_called = 0;
 
   /*!
-   * \brief  Nombre d'appels inutiles aux méthodes de transformation.
+   * \brief Number of useless calls to transformation methods.
    *
-   * Un appel est inutile si la liste des entités modifiées en sortie
-   * est vide.
+   * A call is useless if the list of modified entities in the output
+   * is empty.
    */
   Int32 m_nb_useless_add_transform = 0;
   Int32 m_nb_useless_remove_transform = 0;
 
-  //! Indique si on affiche un message lors d'une transformation inutile
+  //! Indicates whether a message is displayed during a useless transformation
   bool m_is_print_useless_transform = false;
 
  private:
@@ -168,5 +168,4 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

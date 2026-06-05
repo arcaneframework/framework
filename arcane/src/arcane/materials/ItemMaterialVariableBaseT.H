@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemMaterialVariableBaseT.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de la classe de base des variables matériaux.              */
+/* Implementation of the base class for material variables.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,28 +45,28 @@ namespace Arcane::Materials
 namespace
 {
 
-// Allocateur utilisé pour les vues
-// On utilise la mémoire de l'accélérateur si l'exécution se fait sur accélérateur
-MemoryAllocationOptions
-_getViewAllocator(IMeshMaterialMng* mm)
-{
-  eMemoryRessource r = eMemoryRessource::Host;
-  if (mm->_internalApi()->runQueue().isAcceleratorPolicy())
-    r = eMemoryRessource::Device;
-  return MemoryUtils::getAllocationOptions(r);
-}
+  // Allocator used for views
+  // We use accelerator memory if the execution is done on an accelerator
+  MemoryAllocationOptions
+  _getViewAllocator(IMeshMaterialMng* mm)
+  {
+    eMemoryRessource r = eMemoryRessource::Host;
+    if (mm->_internalApi()->runQueue().isAcceleratorPolicy())
+      r = eMemoryRessource::Device;
+    return MemoryUtils::getAllocationOptions(r);
+  }
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits>
+template <typename Traits>
 ItemMaterialVariableBase<Traits>::
 ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
                          PrivatePartType* global_var,
-                         VariableRef* global_var_ref,MatVarSpace mvs)
-: MeshMaterialVariable(v,mvs)
+                         VariableRef* global_var_ref, MatVarSpace mvs)
+: MeshMaterialVariable(v, mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
 , m_device_views(_getViewAllocator(m_p->materialMng()))
@@ -75,17 +75,16 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
   m_device_views.setDebugName(String("ItemMaterialVariableViews") + v.name());
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits>
+template <typename Traits>
 ItemMaterialVariableBase<Traits>::
 ~ItemMaterialVariableBase()
 {
   Integer nb_var = m_p->m_refs.size();
   delete m_global_variable_ref;
-  for( Integer i=1; i<nb_var; ++i ){
+  for (Integer i = 1; i < nb_var; ++i) {
     delete m_p->m_refs[i];
   }
   m_p->m_refs.clear();
@@ -95,7 +94,7 @@ ItemMaterialVariableBase<Traits>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> IVariable*
+template <typename Traits> IVariable*
 ItemMaterialVariableBase<Traits>::
 globalVariable() const
 {
@@ -105,7 +104,7 @@ globalVariable() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _init(ArrayView<PrivatePartType*> vars)
 {
@@ -116,24 +115,24 @@ _init(ArrayView<PrivatePartType*> vars)
   m_device_views.resizeNoInit(nb_var);
   m_host_views.resize(nb_var);
   m_views_as_bytes.resize(nb_var);
-  // Il faut maintenir une référence sur les variables qu'on possède pour
-  // être sur qu'elles sont bien initialisées et qu'elles ne seront pas détruites
-  // tant que cette instance existe.
+  // We must maintain a reference to the variables we possess to
+  // ensure they are properly initialized and will not be destroyed
+  // as long as this instance exists.
   m_p->m_refs.resize(nb_var);
-  for( Integer i=0; i<nb_var; ++i ){
-    // m_vars[i] peut être nul si notre variable est une variable uniquement milieu.
+  for (Integer i = 0; i < nb_var; ++i) {
+    // m_vars[i] can be null if our variable is a medium-only variable.
     m_p->m_refs[i] = nullptr;
-    if (i==0){
-      // Pour la variable globale, il s'agit d'une variable maillage.
+    if (i == 0) {
+      // For the global variable, it is a mesh variable.
       m_p->m_refs[i] = m_global_variable_ref;
     }
-    else{
-      // Pour les autres, il s'agit d'une variable tableau.
+    else {
+      // For the others, it is an array variable.
       if (m_vars[i])
         m_p->m_refs[i] = new VariableRefType(m_vars[i]);
     }
-    // TODO: il faut pouvoir être notifié du changement de cette variable.
-    // pour ensuite mettre à jour les vues (peut-être aussi faire un MyVariableRef).
+    // TODO: we must be able to be notified of this variable's change.
+    // to then update the views (maybe also create a MyVariableRef).
     _setView(i);
     //std::cout << "INIT_VIEW: " << i << " v=" << m_views[i].size() << '\n';
   }
@@ -143,69 +142,69 @@ _init(ArrayView<PrivatePartType*> vars)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 buildFromManager(bool is_continue)
 {
   IMeshMaterialMng* mat_mng = m_p->materialMng();
 
-  // Il faut récupérer (ou créér) les autres variables.
+  // We must retrieve (or create) the other variables.
   //ConstArrayView<IMeshMaterial*> materials = mat_mng->materials();
   IMeshMaterialMngInternal* mm_api = mat_mng->_internalApi();
   const Real reserve_ratio = mm_api->additionalCapacityRatio();
   ConstArrayView<MeshMaterialVariableIndexer*> indexers = mm_api->variablesIndexer();
   Integer nb_indexer = indexers.size();
-  UniqueArray<PrivatePartType*> all_vars(nb_indexer+1);
+  UniqueArray<PrivatePartType*> all_vars(nb_indexer + 1);
   all_vars[0] = m_global_variable;
   IMesh* mesh = m_global_variable->mesh();
 
   if (!m_global_variable->isUsed())
     m_global_variable->setUsed(true);
 
-  // Il faut attacher un observer sur la variable globale pour savoir quand elle change.
-  // Pour les variables partielles, cela se fait automatiquement lorsque le matériau associé change.
-  m_p->m_global_variable_changed_observer = new ObserverT<ThatClass>(this,&ThatClass::_syncFromGlobalVariable);
+  // We must attach an observer on the global variable to know when it changes.
+  // For partial variables, this is done automatically when the associated material changes.
+  m_p->m_global_variable_changed_observer = new ObserverT<ThatClass>(this, &ThatClass::_syncFromGlobalVariable);
   m_global_variable->onSizeChangedObservable()->attachObserver(m_p->m_global_variable_changed_observer);
 
   m_p->m_modified_times.resize(nb_indexer);
   m_p->m_modified_times.fill(0);
 
-  bool is_env_only = m_p->space()==MatVarSpace::Environment;
-  //TODO: regarder s'il faut stocker les propriétés de cette variable
-  // avant sa création
+  bool is_env_only = m_p->space() == MatVarSpace::Environment;
+  //TODO: check if we need to store this variable's properties
+  // before its creation
   int property = m_global_variable->property();
-  for( Integer i=0; i<nb_indexer; ++i ){
+  for (Integer i = 0; i < nb_indexer; ++i) {
     MeshMaterialVariableIndexer* indexer = indexers[i];
-    // Ne fait rien si on est uniquement une variable milieu et que l'indexeur
-    // n'est pas associé à un milieu.
-    if (is_env_only && !indexer->isEnvironment()){
-      all_vars[i+1] = nullptr;
+    // Does nothing if we are only a medium variable and the indexer
+    // is not associated with a medium.
+    if (is_env_only && !indexer->isEnvironment()) {
+      all_vars[i + 1] = nullptr;
       continue;
     }
 
-    // Si un nom est spécifié, il s'agit du mode de compatibilité
-    // avec Troll et dans ce cas la variable n'est pas associée
-    // au maillage.
-    String var_name = String("Mat")+indexer->name()+"_"+this->name();
-    
-    // Note: Ces variables ne sont pas associées au maillage.
-    // Il s'agit juste de variables tableau.
+    // If a name is specified, it is the compatibility mode
+    // with Troll and in this case the variable is not associated
+    // with the mesh.
+    String var_name = String("Mat") + indexer->name() + "_" + this->name();
+
+    // Note: These variables are not associated with the mesh.
+    // They are just array variables.
     IVariable* var = nullptr;
     {
-      VariableBuildInfo vbi2(mesh,var_name,property);
+      VariableBuildInfo vbi2(mesh, var_name, property);
       VariableInfo vi = VariableRefType::_internalVariableInfo(vbi2);
-      var = PrivatePartType::getReference(vbi2,vi);
+      var = PrivatePartType::getReference(vbi2, vi);
     }
-    // Tag la variable pour les codes qui voudraient savoir qu'il
-    // s'agit d'une variable matériau.
-    var->addTag("Material","1");
+    // Tag the variable for codes that would want to know that it
+    // is a material variable.
+    var->addTag("Material", "1");
     PrivatePartType* true_ptr = dynamic_cast<PrivatePartType*>(var);
     ARCANE_CHECK_POINTER(true_ptr);
-    all_vars[i+1] = true_ptr;
-    if (!is_continue){
-      // TODO: regarder si setUsed() est nécessaire.
+    all_vars[i + 1] = true_ptr;
+    if (!is_continue) {
+      // TODO: check if setUsed() is necessary.
       true_ptr->setUsed(true);
-      // Dimensionne la variable à la taille du tableau des valeurs mixtes.
+      // Resize the variable to the size of the mixed values array.
       Traits::resizeWithReserve(true_ptr, indexer->maxIndexInMultipleArray(), reserve_ratio);
     }
   }
@@ -215,29 +214,29 @@ buildFromManager(bool is_continue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _syncFromGlobalVariable()
 {
-  // Cette méthode est appelée lorsque la variable globale voit sa taille
-  // modifiée. Dans ce cas seule la vue de la variable globale doit être modifiée.
-  // Mais cette méthode peut aussi être applelée lorsque la méthode setUsed()
-  // de la variable globale est appelée et dans ce cas il faut mettre à jour
-  // toutes les vues. Comme actuellement on ne peut pas distinguer les deux
-  // appels on fait la mise à jour complète dans tous les cas.
+  // This method is called when the global variable changes its size.
+  // In this case, only the global variable's view must be modified.
+  // But this method can also be called when the global variable's setUsed()
+  // method is called and in this case all views must be updated. Since currently
+  // we cannot distinguish the two
+  // calls, we perform a complete update in all cases.
   const bool do_complete_sync = true;
-  if (do_complete_sync){
+  if (do_complete_sync) {
     syncReferences();
     return;
   }
 
-  // Cette méthode est appelée lorsque la taille de la variable globale
-  // change. Cette variable est la première variable de la liste.
-  // Il faut ensuite notifier toutes les références de ce changement.
+  // This method is called when the global variable changes its size.
+  // This variable is the first variable in the list.
+  // We must then notify all references of this change.
   _setView(0);
   _copyHostViewsToViews(nullptr);
 
-  for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
+  for (MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i) {
     MeshMaterialVariableRef* ref = *i;
     ref->updateFromInternal();
   }
@@ -246,7 +245,7 @@ _syncFromGlobalVariable()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 syncReferences()
 {
@@ -277,7 +276,7 @@ _syncReferences(bool check_resize)
     _copyHostViewsToViews(nullptr);
   }
 
-  for( MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i ){
+  for (MeshMaterialVariableRef::Enumerator i(this); i.hasNext(); ++i) {
     MeshMaterialVariableRef* ref = *i;
     ref->updateFromInternal();
   }
@@ -286,7 +285,7 @@ _syncReferences(bool check_resize)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> Ref<IData>
+template <typename Traits> Ref<IData>
 ItemMaterialVariableBase<Traits>::
 _internalCreateSaveDataRef(Integer nb_value)
 {
@@ -300,24 +299,24 @@ _internalCreateSaveDataRef(Integer nb_value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_saveData(IMeshComponent* component,IData* data)
+_saveData(IMeshComponent* component, IData* data)
 {
-  if (m_p->space()==MatVarSpace::Environment && !component->isEnvironment())
+  if (m_p->space() == MatVarSpace::Environment && !component->isEnvironment())
     ARCANE_FATAL("Can not save data on material for environment only variable");
-  Traits::saveData(component,data,m_host_views);
+  Traits::saveData(component, data, m_host_views);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
-_restoreData(IMeshComponent* component,IData* data,Integer data_index,
-             Int32ConstArrayView ids,bool allow_null_id)
+_restoreData(IMeshComponent* component, IData* data, Integer data_index,
+             Int32ConstArrayView ids, bool allow_null_id)
 {
-  if (m_p->space()==MatVarSpace::Environment && !component->isEnvironment())
+  if (m_p->space() == MatVarSpace::Environment && !component->isEnvironment())
     ARCANE_FATAL("Can not restore data on material for environment only variable");
 
   auto* true_data = dynamic_cast<ValueDataType*>(data);
@@ -326,39 +325,39 @@ _restoreData(IMeshComponent* component,IData* data,Integer data_index,
 
   PrivatePartType* global_var = this->_trueGlobalVariable();
 
-  // Tableau pour initialiser les valeurs soit à zéro, soit avec
-  // la valeur de la variable globale.
+  // Array to initialize values either to zero or with
+  // the global variable's value.
   UniqueContainerType tmp_values;
-  if (component->materialMng()->isDataInitialisationWithZero()){
+  if (component->materialMng()->isDataInitialisationWithZero()) {
     Integer max_id = m_global_variable->itemFamily()->maxLocalId();
-    Traits::resizeAndFillWithDefault(true_data,tmp_values,max_id);
+    Traits::resizeAndFillWithDefault(true_data, tmp_values, max_id);
   }
   else
     tmp_values = global_var->constValueView();
 
-  if (allow_null_id){
-    for( Integer i=0, n=ids.size(); i<n; ++i ){
-      if (ids[i]!=NULL_ITEM_ID){
-         Traits::setValue(tmp_values[ids[i]],values[data_index+i]);
+  if (allow_null_id) {
+    for (Integer i = 0, n = ids.size(); i < n; ++i) {
+      if (ids[i] != NULL_ITEM_ID) {
+        Traits::setValue(tmp_values[ids[i]], values[data_index + i]);
       }
     }
   }
-  else{
-    for( Integer i=0, n=ids.size(); i<n; ++i ){
-      Traits::setValue(tmp_values[ids[i]] , values[data_index+i] );
+  else {
+    for (Integer i = 0, n = ids.size(); i < n; ++i) {
+      Traits::setValue(tmp_values[ids[i]], values[data_index + i]);
     }
   }
 
-  ENUMERATE_COMPONENTCELL(icell,component){
+  ENUMERATE_COMPONENTCELL (icell, component) {
     ComponentCell ec = *icell;
-    setValue(ec._varIndex(),tmp_values[ec.globalCell().localId()]);
+    setValue(ec._varIndex(), tmp_values[ec.globalCell().localId()]);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> bool
+template <typename Traits> bool
 ItemMaterialVariableBase<Traits>::
 _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var)
 {
@@ -381,11 +380,11 @@ _resizeForIndexer(ResizeVariableIndexerArgs& args)
   _setView(0);
   PrivatePartType* partial_var = m_vars[index + 1];
   if (_isValidAndUsedAndGlobalUsed(partial_var)) {
-    // Redimensionne le tableau des valeurs multiples si besoin.
-    // TODO: Faire sur le device pour la mise à jour de view
-    // TODO: Utiliser allocation asynchrone si possible (si pas d'initialisation)
-    // TODO: Pouvoir indiquer qu'on ne souhaite pas initialiser la variable
-    //       quelle que soit la valeur de eDataInitialisationPolicy
+    // Resizes the multiple values array if necessary.
+    // TODO: Perform on the device for view update
+    // TODO: Use asynchronous allocation if possible (if no initialization)
+    // TODO: Be able to indicate that we do not want to initialize the variable
+    //       regardless of the value of eDataInitialisationPolicy
     IMeshMaterialMngInternal* api = m_p->materialMng()->_internalApi();
     ConstArrayView<MeshMaterialVariableIndexer*> indexers = api->variablesIndexer();
     Real ratio = api->additionalCapacityRatio();
@@ -395,7 +394,7 @@ _resizeForIndexer(ResizeVariableIndexerArgs& args)
   if (args.isUseOneCommand()) {
     auto dest = asWritableBytes(m_device_views.view());
     auto source = asBytes(m_host_views.view());
-    args.addOneCopyData(source,dest,1);
+    args.addOneCopyData(source, dest, 1);
   }
   else
     _copyHostViewsToViews(&queue);
@@ -411,12 +410,12 @@ _copyHostViewsToViews(RunQueue* queue)
   auto dest = asWritableBytes(m_device_views);
   auto source = asBytes(m_host_views);
   if (queue) {
-    Accelerator::MemoryCopyArgs copy_args(dest,source);
+    Accelerator::MemoryCopyArgs copy_args(dest, source);
     copy_args.addAsync(true);
     queue->copyMemory(copy_args);
   }
   else
-    MemoryUtils::copy(dest,source);
+    MemoryUtils::copy(dest, source);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -473,16 +472,15 @@ _initializeNewItemsWithZero(InitializeWithZeroArgs& args)
 
   SmallSpan<const Int32> partial_indexes = args.m_indexes_in_multiple;
 
-
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, partial_indexes.data());
 
-  if (args.isUseOneCommand()){
+  if (args.isUseOneCommand()) {
     Int32 data_type_size = dataTypeSize();
     auto output = m_host_views[var_index];
     SmallSpan<std::byte> output_bytes(Traits::toBytes(output));
     args.addOneCopyData({}, output_bytes, data_type_size);
   }
-  else{
+  else {
     ContainerSpanType partial_view = m_host_views[var_index];
     Int32 nb_partial = partial_indexes.size();
     DataType zero = DataType();
@@ -499,7 +497,7 @@ _initializeNewItemsWithZero(InitializeWithZeroArgs& args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 fillPartialValuesWithGlobalValues()
 {
@@ -509,39 +507,39 @@ fillPartialValuesWithGlobalValues()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 fillPartialValuesWithSuperValues(Int32 level)
 {
   IMeshMaterialMng* mm = m_p->materialMng();
-  if (level==LEVEL_MATERIAL)
+  if (level == LEVEL_MATERIAL)
     _fillPartialValuesWithSuperValues(mm->materialsAsComponents());
-  else if (level==LEVEL_ENVIRONMENT){
+  else if (level == LEVEL_ENVIRONMENT) {
     _fillPartialValuesWithSuperValues(mm->environmentsAsComponents());
   }
-  else if (level==LEVEL_ALLENVIRONMENT){
+  else if (level == LEVEL_ALLENVIRONMENT) {
     _fillPartialValuesWithSuperValues(mm->environmentsAsComponents());
     _fillPartialValuesWithSuperValues(mm->materialsAsComponents());
   }
   else
-    throw ArgumentException(A_FUNCINFO,String::format("Invalid level={0}",level));
+    throw ArgumentException(A_FUNCINFO, String::format("Invalid level={0}", level));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Traits> void
+template <typename Traits> void
 ItemMaterialVariableBase<Traits>::
 _fillPartialValuesWithSuperValues(MeshComponentList components)
 {
   MatVarSpace s = this->space();
-  ENUMERATE_COMPONENT(ic,components){
+  ENUMERATE_COMPONENT (ic, components) {
     IMeshComponent* c = *ic;
     if (!c->hasSpace(s))
       continue;
-    ENUMERATE_COMPONENTCELL(iccell,c){
+    ENUMERATE_COMPONENTCELL (iccell, c) {
       ComponentCell c = (*iccell).superCell();
-      setValue(iccell._varIndex(),value(c._varIndex()));
+      setValue(iccell._varIndex(), value(c._varIndex()));
     }
   }
 }
@@ -551,15 +549,16 @@ _fillPartialValuesWithSuperValues(MeshComponentList components)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Récupère ou construit une variable.
+ * \brief Retrieves or constructs a variable.
  *
- * Récupère ou construit une variable de type \a VariableTrueType dont
- * les caractéristiques sont données dans \a v.
+ * Retrieves or constructs a variable of type \a VariableTrueType whose
+ * characteristics are given in \a v.
  */
-template<typename VariableTrueType> IMeshMaterialVariable*
+template <typename VariableTrueType> IMeshMaterialVariable*
 MeshMaterialVariableCommonStaticImpl<VariableTrueType>::
-getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+getReference(const MaterialVariableBuildInfo& v, MatVarSpace mvs)
 {
   typedef typename VariableTrueType::PrivatePartType PrivatePartType;
   typedef typename VariableTrueType::VariableRefType VariableRefType;
@@ -570,9 +569,9 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 
   IMeshMaterialMng* mat_mng = v.materialMng();
 
-  //TODO: regarder si verrou necessaire
+  //TODO: check if lock is necessary
   if (!mat_mng)
-    mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
+    mat_mng = IMeshMaterialMng::getReference(mesh_handle, true);
 
   if (!mat_mng)
     ARCANE_FATAL("No IMaterialMng for mesh");
@@ -586,7 +585,7 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
   // Regarde si l'option qui force la création des variables matériaux
   // même si on est une variable milieu est active.
 
-  if (VariableTrueType::TraitsType::dimension()==0)
+  if (VariableTrueType::TraitsType::dimension() == 0)
     if (mat_mng->isAllocateScalarEnvironmentVariableAsMaterial())
       mvs = MatVarSpace::MaterialAndEnvironment;
 
@@ -595,41 +594,41 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
   {
     Mutex::ScopedLock sl(mat_mng->variableLock());
 
-    //! Récupère (ou créé) la variable globale associée.
+    //! Retrieves (or creates) the associated global variable.
     VariableInfo gvar_vi = VariableRefType::_internalVariableInfo(gvar_bi);
-    IVariable* g_var = PrivatePartType::getReference(gvar_bi,gvar_vi);
+    IVariable* g_var = PrivatePartType::getReference(gvar_bi, gvar_vi);
 
     PrivatePartType* true_ptr = dynamic_cast<PrivatePartType*>(g_var);
 
-    // TODO: regarder s'il faut mettre aussi le nom du m_material_mng.
-    // Si on le fait, cela pose un problème avec la variable globale
-    // associée. Si on ne le fait pas, on ne peut à priori n'avoir
-    // qu'un seul IMeshMaterialMng.
+    // TODO: check if we should also include the name of m_material_mng.
+    // If we do, it poses a problem with the global variable
+    // associated. If we don't, we can only have
+    // a single IMeshMaterialMng.
     IMeshMaterialVariable* mat_var = mat_mng->checkVariable(g_var);
     VariableTrueType* true_mat_var = 0;
-    // \a mat_var est non nul si la variable associée existe déjà.
+    // \a mat_var is not null if the associated variable already exists.
     if (mat_var)
       true_mat_var = dynamic_cast<VariableTrueType*>(mat_var);
-    else{
+    else {
       VariableRefType* var_ref = new VariableRefType(gvar_bi);
-      MaterialVariableBuildInfo mvbi(mat_mng,v);
-      true_mat_var = new VariableTrueType(mvbi,true_ptr,var_ref,mvs);
+      MaterialVariableBuildInfo mvbi(mat_mng, v);
+      true_mat_var = new VariableTrueType(mvbi, true_ptr, var_ref, mvs);
       mat_mng->_internalApi()->addVariable(true_mat_var);
-      // Le gestionnaire est déjà créé, on peut allouer toutes les infos
+      // The manager is already created, we can allocate all info
       if (!mat_mng->_internalApi()->variablesIndexer().empty())
         true_mat_var->buildFromManager(false);
     }
     ARCANE_CHECK_POINTER(true_mat_var);
-    if (mvs!=true_mat_var->space())
+    if (mvs != true_mat_var->space())
       ARCANE_FATAL("Incoherent space for variable '{0}' wanted_space={1} existing_space={2}.\n"
                    " Check all instances of the variables are of the same space\n"
                    " (i.e. all variables are MaterialVariable or EnvironmentVariable)",
-                   true_mat_var->name(),(int)mvs,(int)true_mat_var->space());
-    // Incrémente le compteur de référence.
-    // Il faut le faire ici et pas dans addVariableRef() car en multithreading
-    // il est possible de créer plusieurs références sur la même variable en même
-    // temps et de détruire une des références avant que le addVariableRef() de l'autre
-    // référence ne soit appelé ce qui provoque la destruction de true_mat_var.
+                   true_mat_var->name(), (int)mvs, (int)true_mat_var->space());
+    // Increments the reference counter.
+    // It must be done here and not in addVariableRef() because in multithreading
+    // it is possible to create multiple references to the same variable at the same
+    // time and destroy one of the references before the addVariableRef() of the other
+    // reference is called, which causes the destruction of true_mat_var.
     ++true_mat_var->m_p->m_nb_reference;
     return true_mat_var;
   }
@@ -638,26 +637,26 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename TrueType> MeshMaterialVariableFactoryRegisterer
+template <typename TrueType> MeshMaterialVariableFactoryRegisterer
 MeshMaterialVariableCommonStaticImpl<TrueType>::
-m_auto_registerer1(_autoCreate1,TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::Environment));
+m_auto_registerer1(_autoCreate1, TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::Environment));
 
-template<typename TrueType> MeshMaterialVariableFactoryRegisterer
+template <typename TrueType> MeshMaterialVariableFactoryRegisterer
 MeshMaterialVariableCommonStaticImpl<TrueType>::
-m_auto_registerer2(_autoCreate2,TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
+m_auto_registerer2(_autoCreate2, TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
 
-template<typename TrueType> IMeshMaterialVariable*
+template <typename TrueType> IMeshMaterialVariable*
 MeshMaterialVariableCommonStaticImpl<TrueType>::
 _autoCreate1(const MaterialVariableBuildInfo& v)
 {
-  return getReference(v,MatVarSpace::Environment);
+  return getReference(v, MatVarSpace::Environment);
 }
 
-template<typename TrueType> IMeshMaterialVariable*
+template <typename TrueType> IMeshMaterialVariable*
 MeshMaterialVariableCommonStaticImpl<TrueType>::
 _autoCreate2(const MaterialVariableBuildInfo& v)
 {
-  return getReference(v,MatVarSpace::MaterialAndEnvironment);
+  return getReference(v, MatVarSpace::MaterialAndEnvironment);
 }
 
 /*---------------------------------------------------------------------------*/

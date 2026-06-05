@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemVectorImpl.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de 'IConstituentItemVectorImpl'.                           */
+/* Implementation of 'IConstituentItemVectorImpl'.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTITEMVECTORIMPL_H
 #define ARCANE_MATERIALS_INTERNAL_CONSTITUENTITEMVECTORIMPL_H
@@ -34,8 +34,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de ComponentItemVector.
+ * \brief Implementation of ComponentItemVector.
  */
 class ConstituentItemVectorImpl
 : public IConstituentItemVectorImpl
@@ -81,7 +82,7 @@ class ConstituentItemVectorImpl
  public:
 
   class SetItemHelper;
-  // Méthodes devant être publiques pour compilation avec NVCC.
+  // Methods that must be public for compilation with NVCC.
   void _setItems(SmallSpan<const Int32> local_ids) override;
   void _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue);
 
@@ -101,9 +102,9 @@ class ConstituentItemVectorImpl
   ComponentItemSharedInfo* m_component_shared_info = nullptr;
 
   FunctorT<ConstituentItemVectorImpl> m_recompute_part_data_functor;
-  // Seulement utile pour le re-calcul à la volée
+  // Only useful for on-the-fly recalculation
   Int32 m_nb_pure = 0;
-  // Seulement utile pour le re-calcul à la volée
+  // Only useful for on-the-fly recalculation
   Int32 m_nb_impure = 0;
 };
 
@@ -115,5 +116,4 @@ class ConstituentItemVectorImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

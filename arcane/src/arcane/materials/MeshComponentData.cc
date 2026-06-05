@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshComponentData.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Données d'un constituant (matériau ou milieu) d'un maillage.              */
+/* Data of a constituent (material or medium) of a mesh.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,7 +40,7 @@ MeshComponentData(IMeshComponent* component, const String& name,
 , m_component(component)
 , m_component_id(component_id)
 , m_name(name)
-, m_constituent_local_id_list(shared_info, String("MeshComponentDataIdList")+name)
+, m_constituent_local_id_list(shared_info, String("MeshComponentDataIdList") + name)
 , m_recompute_part_data_functor(this, &MeshComponentData::_rebuildPartDataDirect)
 {
   if (create_indexer) {
@@ -117,18 +117,18 @@ _buildPartData()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Met à jour les m_items_internal du constituant
- * après changement de la numérotation locale.
+ * \brief Updates the constituent's m_items_internal after a change in local numbering.
  *
- * \warning il faut appeler cette méthode avant de mettre à jour le
- * m_variable_indexer car on se sert de ses local_ids.
+ * \warning This method must be called before updating the
+ * m_variable_indexer because its local_ids are used.
  */
 void MeshComponentData::
 _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
-  // TODO: regarder s'il est possible de supprimer le tableau temporaire
-  // new_internals (c'est à peu près sur que c'est possible).
+  // TODO: check if it is possible to remove the temporary array
+  // new_internals (it is almost certain that it is possible).
   ConstArrayView<ConstituentItemIndex> current_internals(m_constituent_local_id_list.localIds());
   UniqueArray<ConstituentItemIndex> new_internals;
 
@@ -143,7 +143,7 @@ _changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
     }
   }
 
-  // TODO: regarder supprimer cette copie aussi.
+  // TODO: check to remove this copy as well.
   {
     _resizeItemsInternal(new_internals.size());
     m_constituent_local_id_list.copy(new_internals);
@@ -188,33 +188,33 @@ checkValid()
   info(4) << "Check valid component name=" << name();
   m_variable_indexer->checkValid();
 
-  // Vérifie que les groupes sont cohérents entre cette instance
-  // et le groupe dans m_variable_indexer
-  if (m_items!=m_variable_indexer->cells())
+  // Checks that the groups are consistent between this instance
+  // and the group in m_variable_indexer
+  if (m_items != m_variable_indexer->cells())
     ARCANE_FATAL("Incoherent group for component name={0} data={1} indexer={2}",
-                 name(),m_items.name(),m_variable_indexer->cells().name());
+                 name(), m_items.name(), m_variable_indexer->cells().name());
 
-  // Vérifie que la liste des indexer->localIds() et celle
-  // du groupe 'cells' est la meme. Pour cela, on déclare un tableau
-  // qu'on indexe par le localId() de la maille. Pour chaque élément on
-  // ajoute 1 si la maille est dans le groupe et 2 si elle est dans les
-  // structures internes du composant. Si la valeur finale n'est pas 3 il
-  // y a incohérence.
+  // Checks that the list of indexer->localIds() and the one
+  // from the 'cells' group is the same. To do this, an array
+  // is declared which is indexed by the mesh's localId(). For each element,
+  // 1 is added if the mesh is in the group and 2 if it is in the
+  // component's internal structures. If the final value is not 3,
+  // there is an incoherence.
   {
     IItemFamily* family = m_items.itemFamily();
     UniqueArray<Int32> presence(family->maxLocalId());
     presence.fill(0);
-    ENUMERATE_ITEM(iitem,m_items){
+    ENUMERATE_ITEM (iitem, m_items) {
       presence[iitem.itemLocalId()] = 1;
     }
     Int32ConstArrayView indexer_local_ids = m_variable_indexer->localIds();
-    for( Integer i=0, n=indexer_local_ids.size(); i<n; ++i )
+    for (Integer i = 0, n = indexer_local_ids.size(); i < n; ++i)
       presence[indexer_local_ids[i]] += 2;
     ItemInfoListView items_internal = family->itemInfoListView();
     Integer nb_error = 0;
-    for( Integer i=0, n=presence.size(); i<n; ++i ){
+    for (Integer i = 0, n = presence.size(); i < n; ++i) {
       Int32 v = presence[i];
-      if (v==3 || v==0)
+      if (v == 3 || v == 0)
         continue;
       Cell cell(items_internal[i]);
       ++nb_error;
@@ -222,25 +222,25 @@ checkValid()
               << " component=" << name() << " v=" << v
               << " cell=" << ItemPrinter(cell);
     }
-    if (nb_error!=0){
+    if (nb_error != 0) {
       warning() << "WARNING: Incoherence between group and internals "
                 << " component=" << name() << " nb_error=" << nb_error;
     }
   }
 
-  // Vérifie la cohérence des MatVarIndex entre le tableau direct
-  // et les valeurs dans les m_items_internal
+  // Checks the consistency of MatVarIndex between the direct array
+  // and the values in m_items_internal
   ConstArrayView<MatVarIndex> mat_var_indexes(m_variable_indexer->matvarIndexes());
   Integer nb_val = mat_var_indexes.size();
   info(4) << "CheckValid component_name=" << name()
-         << " matvar_indexes=" << mat_var_indexes;
+          << " matvar_indexes=" << mat_var_indexes;
   info(4) << "Cells=" << m_variable_indexer->cells().view().localIds();
-  for( Integer i=0; i<nb_val; ++ i){
+  for (Integer i = 0; i < nb_val; ++i) {
     MatVarIndex component_mvi = m_constituent_local_id_list.variableIndex(i);
     MatVarIndex mvi = mat_var_indexes[i];
-    if (component_mvi!=mvi)
+    if (component_mvi != mvi)
       ARCANE_FATAL("Bad 'var_index' environment={3} component='{0}' direct='{1}' i={2}",
-                   component_mvi,mvi,i,name());
+                   component_mvi, mvi, i, name());
   }
 
   if (m_part_data)
@@ -250,7 +250,7 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

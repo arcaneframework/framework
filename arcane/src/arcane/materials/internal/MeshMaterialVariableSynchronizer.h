@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableSynchronizer.h                          (C) 2000-2025 */
 /*                                                                           */
-/* Synchroniseur de variables matériaux.                                     */
+/* Material variable synchronizer.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLESYNCHRONIZER_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLESYNCHRONIZER_H
@@ -34,9 +34,10 @@ class AllEnvCellVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Synchroniseur de variables matériaux.
+ * \brief Material variable synchronizer.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
 : public TraceAccessor
@@ -68,12 +69,12 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
   MatVarSpace m_var_space;
   Ref<IMeshMaterialSynchronizeBuffer> m_common_buffer;
   eMemoryRessource m_buffer_memory_ressource = eMemoryRessource::UnifiedMemory;
-  // Permet de forcer l'utilisation ou non l'implémentation accélérateur
+  // Allows forcing the use or non-use of the accelerator implementation
   Int32 m_use_accelerator_mode = -1;
 
  public:
 
-  // Doit être publique pour CUDA.
+  // Must be public for CUDA.
   void _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue);
 
  private:
@@ -91,5 +92,4 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialModifierImpl.cc                                 (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de la modification des matériaux et milieux.               */
+/* Implementation of material and environment modification.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -41,9 +41,6 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 MeshMaterialModifierImpl::OperationList::
 ~OperationList()
 {
@@ -56,7 +53,7 @@ MeshMaterialModifierImpl::OperationList::
 void MeshMaterialModifierImpl::OperationList::
 add(Operation* o)
 {
- m_operations.add(o);
+  m_operations.add(o);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,7 +62,7 @@ add(Operation* o)
 void MeshMaterialModifierImpl::OperationList::
 clear()
 {
-  for( Operation* o : m_operations )
+  for (Operation* o : m_operations)
     delete o;
   m_operations.clear();
 }
@@ -109,15 +106,15 @@ initOptimizationFlags()
 
   info() << "OptimizationFlag = " << opt_flag_value;
 
-  if (opt_flag_value!=0){
+  if (opt_flag_value != 0) {
     info() << "Using optimization !";
     m_allow_optimization = true;
   }
 
-  m_allow_optimize_multiple_operation = (opt_flag_value & (int)eModificationFlags::OptimizeMultiAddRemove)!=0;
-  m_allow_optimize_multiple_material = (opt_flag_value & (int)eModificationFlags::OptimizeMultiMaterialPerEnvironment)!=0;
+  m_allow_optimize_multiple_operation = (opt_flag_value & (int)eModificationFlags::OptimizeMultiAddRemove) != 0;
+  m_allow_optimize_multiple_material = (opt_flag_value & (int)eModificationFlags::OptimizeMultiMaterialPerEnvironment) != 0;
   m_use_incremental_recompute = true;
-  if (m_use_incremental_recompute){
+  if (m_use_incremental_recompute) {
     m_allow_optimize_multiple_operation = true;
   }
 
@@ -154,11 +151,11 @@ removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_addCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
+_addCellsToGroupDirect(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "ADD_CELLS_TO_MATERIAL: mat=" << mat->name()
-         << " nb_item=" << ids.size();
+          << " nb_item=" << ids.size();
   cells.addItems(ids.smallView());
 }
 
@@ -166,11 +163,11 @@ _addCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialModifierImpl::
-_removeCellsToGroupDirect(IMeshMaterial* mat,SmallSpan<const Int32> ids)
+_removeCellsToGroupDirect(IMeshMaterial* mat, SmallSpan<const Int32> ids)
 {
   CellGroup cells = mat->cells();
   info(4) << "REMOVE_CELLS_TO_MATERIAL: mat=" << mat->name()
-         << " nb_item=" << ids.size();
+          << " nb_item=" << ids.size();
   cells.removeItems(ids.smallView());
 }
 
@@ -181,12 +178,12 @@ bool MeshMaterialModifierImpl::
 _checkMayOptimize()
 {
   Integer nb_operation = m_operations.values().size();
-  if (nb_operation>1 && !m_allow_optimize_multiple_operation)
+  if (nb_operation > 1 && !m_allow_optimize_multiple_operation)
     return false;
-  for( Integer i=0; i<nb_operation; ++i ){
+  for (Integer i = 0; i < nb_operation; ++i) {
     Operation* op = m_operations.values()[i];
     IMeshMaterial* mat = op->material();
-    if (mat->environment()->nbMaterial()!=1 && !m_allow_optimize_multiple_material){
+    if (mat->environment()->nbMaterial() != 1 && !m_allow_optimize_multiple_material) {
       linfo() << "_checkMayOptimize(): not allowing optimization because environment has several material";
       return false;
     }
@@ -196,20 +193,21 @@ _checkMayOptimize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique les opérations enregistrées.
+ * \brief Applies the recorded operations.
  */
 void MeshMaterialModifierImpl::
 endUpdate()
 {
   ConstituentListPrinter list_printer(m_material_mng);
-  if (m_print_component_list){
+  if (m_print_component_list) {
     info() << "MeshMaterialModifierImpl::endUpdate(): BEGIN"
            << " modification_id=" << m_modification_id;
     list_printer.print();
   }
   _endUpdate();
-  if (m_print_component_list){
+  if (m_print_component_list) {
     info() << "MeshMaterialModifierImpl::endUpdate(): END"
            << " modification_id=" << m_modification_id;
     list_printer.print();
@@ -223,7 +221,7 @@ endUpdate()
 void MeshMaterialModifierImpl::
 _endUpdate()
 {
-  Accelerator::ProfileRegion ps(m_queue,"ConstituentsEndUpdate", 0x97599A);
+  Accelerator::ProfileRegion ps(m_queue, "ConstituentsEndUpdate", 0x97599A);
 
   bool is_keep_value = m_material_mng->isKeepValuesAfterChange();
   Integer nb_operation = m_operations.values().size();
@@ -247,8 +245,8 @@ _endUpdate()
     IMeshMaterial* mat = op->material();
     const IMeshComponentInternal* mci = mat->_internalApi();
 
-    // N'appelle la méthode que si l'affichage sera réalisé pour éviter
-    // de recopier 'op->ids()' sur l'hôte.
+    // Only calls the method if display will be performed to avoid
+    // copying 'op->ids()' to the host.
     if (is_display)
       linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
               << " is_add=" << op->isAdd()
@@ -262,8 +260,8 @@ _endUpdate()
     is_optimization_active = _checkMayOptimize();
   linfo() << "Check optimize ? = " << is_optimization_active;
 
-  // Tableau de travail utilisé lors des modifications incrémentales
-  if (!m_incremental_modifier){
+  // Work table used during incremental modifications
+  if (!m_incremental_modifier) {
     linfo() << "Creating IncrementalComponentModifier";
     m_incremental_modifier = std::make_unique<IncrementalComponentModifier>(all_env_data, m_queue);
   }
@@ -288,8 +286,8 @@ _endUpdate()
 
       m_incremental_modifier->m_work_info.setCurrentOperation(op);
 
-      // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
-      // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
+      // Checks in the case of cells to be added if they are not already
+      // in the material and in the case of cells to be removed if they are.
       if (arcaneIsCheck())
         op->filterIds();
 
@@ -330,12 +328,12 @@ _endUpdate()
 void MeshMaterialModifierImpl::
 _applyOperationsNoOptimize()
 {
-  for( Operation* o : m_operations.values() ){
+  for (Operation* o : m_operations.values()) {
     IMeshMaterial* mat = o->material();
     if (o->isAdd())
-      _addCellsToGroupDirect(mat,o->ids());
+      _addCellsToGroupDirect(mat, o->ids());
     else
-      _removeCellsToGroupDirect(mat,o->ids());
+      _removeCellsToGroupDirect(mat, o->ids());
   }
   m_operations.clear();
 }
@@ -351,32 +349,32 @@ _updateEnvironmentsNoOptimize()
   Int32UniqueArray cells_to_remove;
   info(4) << "CHECK ENVIRONMENTS";
 
-  // Regarde s'il faut ajouter ou supprimer des mailles d'un milieu
-  // en fonction de celles qui ont été ajoutées ou supprimées dans les
-  // matériaux.
-  for( IMeshEnvironment* env : envs ){
-    
-    // Pour les milieux ne contenant qu'un seul materiau, il n'y a rien
-    // à faire car le groupe materiau est le meme que le groupe milieu
-    if (env->nbMaterial()==1)
+  // Checks if cells need to be added or removed from an environment
+  // based on those that were added or removed in the
+  // materials.
+  for (IMeshEnvironment* env : envs) {
+
+    // For environments containing only one material, there is nothing
+    // to do because the material group is the same as the environment group
+    if (env->nbMaterial() == 1)
       continue;
 
     CellGroup env_cells = env->cells();
     info(4) << "CHECK ENV name=" << env->name() << " nb_cell=" << env_cells.size();
     Integer max_id = env_cells.itemFamily()->maxLocalId();
-    Int32UniqueArray cells_marker(max_id,-1);
-    ENUMERATE_CELL(icell,env_cells){
+    Int32UniqueArray cells_marker(max_id, -1);
+    ENUMERATE_CELL (icell, env_cells) {
       cells_marker[icell.itemLocalId()] = 0;
     }
     cells_to_add.clear();
     cells_to_remove.clear();
     ConstArrayView<IMeshMaterial*> env_materials = env->materials();
-    for( IMeshMaterial* mat : env_materials ){
-      ENUMERATE_CELL(icell,mat->cells()){
+    for (IMeshMaterial* mat : env_materials) {
+      ENUMERATE_CELL (icell, mat->cells()) {
         Int32 mark = cells_marker[icell.itemLocalId()];
-        if (mark==(-1)){
+        if (mark == (-1)) {
           //mark = 0;
-          // Maille a ajouter.
+          // Cell to add.
           cells_to_add.add(icell.itemLocalId());
         }
         //++mark;
@@ -384,20 +382,19 @@ _updateEnvironmentsNoOptimize()
       }
     }
 
-    ENUMERATE_CELL(icell,env_cells){
+    ENUMERATE_CELL (icell, env_cells) {
       Int32 mark = cells_marker[icell.itemLocalId()];
-      if (mark==0)
+      if (mark == 0)
         cells_to_remove.add(icell.itemLocalId());
     }
-    if (!cells_to_add.empty()){
+    if (!cells_to_add.empty()) {
       info(4) << "ADD_CELLS to env " << env->name() << " n=" << cells_to_add.size();
       env_cells.addItems(cells_to_add);
     }
-    if (!cells_to_remove.empty()){
+    if (!cells_to_remove.empty()) {
       info(4) << "REMOVE_CELLS to env " << env->name() << " n=" << cells_to_remove.size();
       env_cells.removeItems(cells_to_remove);
     }
-      
   }
 }
 

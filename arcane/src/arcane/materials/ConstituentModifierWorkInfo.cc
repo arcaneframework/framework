@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ConstituentModifierWorkInfo.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Structure de travail utilisée lors de la modification des constituants.   */
+/* Work structure used when modifying constituents.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,7 +68,7 @@ initialize(Int32 max_local_id, Int32 nb_material, Int32 nb_environment, RunQueue
 void ConstituentModifierWorkInfo::
 setRemovedCells(ConstArrayView<Int32> local_ids, bool value)
 {
-  // Positionne le filtre des mailles supprimées.
+  // Positions the deleted cells filter.
   for (Int32 lid : local_ids)
     m_removed_local_ids_filter[lid] = value;
 }

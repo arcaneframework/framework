@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorMeshMaterialSynchronizerImpl.cc                          (C) 2000-2024 */
+/* AcceleratorMeshMaterialSynchronizerImpl.cc                  (C) 2000-2024 */
 /*                                                                           */
-/* Synchronisation des entités des matériaux.                                */
+/* Synchronization of material entities.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/materials/internal/AcceleratorMeshMaterialSynchronizerImpl.h"
 
-#include "arcane/VariableTypes.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ItemPrinter.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/MatItemEnumerator.h"
@@ -59,19 +59,19 @@ bool AcceleratorMeshMaterialSynchronizerImpl::
 synchronizeMaterialsInCells()
 {
   /*
-    L'algorithme utilisé est le suivant:
+    The algorithm used is as follows:
 
-    On utilise une variable aux mailles qui utilise un bit pour chaque
-    matériau pour indiquer sa présence: si ce bit est positionné, le matériau
-    est présent, sinon il est absent. La variable utilisée est donc de type
-    ArrayByte aux mailles. Les méthodes _hasBit() et _setBit() permettent
-    de positionner le bit d'un matériau donné.
+    We use a mesh variable that uses a bit for each
+    material to indicate its presence: if this bit is set, the material
+    is present, otherwise it is absent. The variable used is therefore of type
+    ArrayByte on the meshes. The _hasBit() and _setBit() methods allow
+    setting the bit of a given material.
 
-    1. Le sous-domaine remplit cette variables pour ces mailles.
-    2. La variable est synchronisée.
-    3. Le sous-domaine compare pour chacune de ses mailles fantômes
-    ce tableau de présence des matériaux et ajoute/supprime les matériaux en fonction
-    de ce tableau.
+    1. The subdomain fills this variable for these meshes.
+    2. The variable is synchronized.
+    3. The subdomain compares for each of its ghost meshes
+    this material presence array and adds/removes materials based on
+    this array.
   */
   IMesh* mesh = m_material_mng->mesh();
   if (!mesh->parallelMng()->isParallel())
@@ -149,8 +149,7 @@ synchronizeMaterialsInCells()
         }
         if (was_here)
           return false;
-        return _hasBit(out_after_presence[c][imat / 8], imat);
-      },
+        return _hasBit(out_after_presence[c][imat / 8], imat); },
                                                  /*host_view=*/false);
 
       if (!to_add[imat].empty()) {
@@ -182,8 +181,7 @@ synchronizeMaterialsInCells()
         }
         if (!was_here)
           return false;
-        return !_hasBit(out_after_presence[c][imat / 8], imat);
-      },
+        return !_hasBit(out_after_presence[c][imat / 8], imat); },
                                                     /*host_view=*/false);
 
       if (!to_remove[imat].empty()) {
@@ -201,6 +199,10 @@ synchronizeMaterialsInCells()
 
   return has_changed;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/

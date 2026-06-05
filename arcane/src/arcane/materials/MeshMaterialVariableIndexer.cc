@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableIndexer.cc                              (C) 2000-2024 */
 /*                                                                           */
-/* Indexer pour les variables materiaux.                                     */
+/* Indexer for material variables.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,8 +44,8 @@ MeshMaterialVariableIndexer(ITraceMng* tm, const String& name)
 , m_local_ids(MemoryUtils::getDefaultDataAllocator())
 {
   _init();
-  m_matvar_indexes.setDebugName(String("VariableIndexerMatVarIndexes")+name);
-  m_local_ids.setDebugName(String("VariableIndexerLocalIdsIndexes")+name);
+  m_matvar_indexes.setDebugName(String("VariableIndexerMatVarIndexes") + name);
+  m_local_ids.setDebugName(String("VariableIndexerLocalIdsIndexes") + name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -330,7 +330,7 @@ _changeLocalIdsV2(MeshMaterialVariableIndexer* var_indexer, Int32ConstArrayView 
  * n'est utile que pour le debug.
  */
 void MeshMaterialVariableIndexer::
-transformCells(ConstituentModifierWorkInfo& work_info, RunQueue& queue,bool is_from_env)
+transformCells(ConstituentModifierWorkInfo& work_info, RunQueue& queue, bool is_from_env)
 {
   bool is_pure_to_partial = work_info.isAdd();
   bool is_device = isAcceleratorPolicy(queue.executionPolicy());

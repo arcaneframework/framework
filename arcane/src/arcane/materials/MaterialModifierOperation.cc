@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MaterialModifierOperation.cc                                (C) 2000-2024 */
 /*                                                                           */
-/* Opération d'ajout/suppression de mailles d'un matériau.                   */
+/* Operation for adding/removing meshes from a material.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,16 +56,17 @@ MaterialModifierOperation(IMeshMaterial* mat, SmallSpan<const Int32> ids, bool i
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie si les mailles \a ids sont déjà dans le matériau \a mat.
+ * \brief Checks if the meshes \a ids are already in the material \a mat.
  *
- * Si \a operation==eOperation::Add, vérifie que les mailles de \a ids
- * ne sont pas déjà dans le matériau et si \a operation==eOperation::Remove, vérifie
- * que les mailles de \a ids sont dans le matériau.
+ * If \a operation==eOperation::Add, checks that the meshes of \a ids
+ * are not already in the material and if \a operation==eOperation::Remove, checks
+ * that the meshes of \a ids are in the material.
  *
- * Vérifie aussi qu'un élément n'est présent qu'une fois dans la liste \a ids.
+ * Also checks that an element is present only once in the list \a ids.
  *
- * Retourne le nombre d'erreurs.
+ * Returns the number of errors.
  */
 Int32 MaterialModifierOperation::
 _checkMaterialPresence(MaterialModifierOperation* operation)
@@ -120,15 +121,16 @@ _checkMaterialPresence(MaterialModifierOperation* operation)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Filtre le tableau des mailles \a ids pour qu'il soit valide.
+ * \brief Filters the array of meshes \a ids so that it is valid.
  *
- * Cette méthode permet de filtrer les valeurs de \a ids afin
- * qu'il ne reste que les valeurs valides pour qu'on puisse les ajouter
- * (si \a do_add est vrai) ou supprimer (si \a do_add est faux) du matériau
+ * This method allows filtering the values of \a ids so that
+ * only valid values remain so that they can be added
+ * (if \a do_add is true) or removed (if \a do_add is false) from the material
  * \a mat.
  *
- * Les valeurs valides sont stockées dans \a valid_ids.
+ * The valid values are stored in \a valid_ids.
  */
 void MaterialModifierOperation::
 _filterValidIds(MaterialModifierOperation* operation, Int32Array& valid_ids)
@@ -185,7 +187,7 @@ _filterValidIds(MaterialModifierOperation* operation, Int32Array& valid_ids)
 void MaterialModifierOperation::
 filterIds()
 {
-  // TODO: changer le défaut à 'false' et tester les deux configurations
+  // TODO: change the default to 'false' and test both configurations
   const bool filter_invalid = true;
   Integer nb_error = _checkMaterialPresence(this);
   if (nb_error != 0) {

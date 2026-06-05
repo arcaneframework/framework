@@ -1,4 +1,4 @@
 ﻿#include "arcane/materials/MaterialsGlobal.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
-// Ajoute pour compatibilité avec l'existant mais ce n'est pas utile normalement
+// Adds for compatibility with existing code, but it is not normally useful
 #include "arcane/materials/IMeshBlock.h"

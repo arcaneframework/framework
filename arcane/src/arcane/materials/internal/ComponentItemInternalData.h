@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ComponentItemInternalData.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des listes de 'ComponentItemInternal'.                            */
+/* Management of 'ComponentItemInternal' lists.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTITEMINTERNALDATA_H
 #define ARCANE_MATERIALS_INTERNAL_COMPONENTITEMINTERNALDATA_H
@@ -30,10 +30,10 @@ class MeshMaterialMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interval des identifiants des constituants dans la liste des
- * ComponentItemInternal.
+ * \brief Interval of constituent identifiers in the ComponentItemInternal list.
  */
 class ComponentItemInternalRange
 {
@@ -105,19 +105,20 @@ class ComponentItemInternalRange
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion des listes de 'ComponentItemInternal'.
+ * \brief Management of 'ComponentItemInternal' lists.
  *
- * Il faut appeler endCreate() avant de pouvoir utiliser les instances de
- * cette classe.
+ * endCreate() must be called before instances of
+ * this class can be used.
  */
 class ComponentItemInternalData
 : public TraceAccessor
 {
  public:
 
-  //! Conteneur pour les informations de ComponentItemSharedInfo
+  //! Container for ComponentItemSharedInfo information
   class Storage
   {
    public:
@@ -151,15 +152,15 @@ class ComponentItemInternalData
 
  public:
 
-  //! Notification de la fin de création des milieux/matériaux
+  //! Notification of the end of environment/material creation
   void endCreate();
 
  public:
 
-  //! Redimensionne les structures allouant les 'ComponentItemInternal'
+  //! Resizes the structures allocating 'ComponentItemInternal'
   void resizeComponentItemInternals(Int32 max_local_id, Int32 total_env_cell);
 
-  //! Instance partagée associée au niveau \a level
+  //! Shared instance associated with the \a level
   ComponentItemSharedInfo* sharedInfo(Int16 level) { return &m_shared_infos[level]; }
   ComponentItemSharedInfo* allEnvSharedInfo() { return sharedInfo(LEVEL_ALLENVIRONMENT); }
   ComponentItemSharedInfo* envSharedInfo() { return sharedInfo(LEVEL_ENVIRONMENT); }
@@ -169,7 +170,7 @@ class ComponentItemInternalData
 
   MeshMaterialMng* m_material_mng = nullptr;
 
-  //! Liste des informations partagées
+  //! List of shared information
   UniqueArray<ComponentItemSharedInfo> m_shared_infos;
 
   ComponentItemInternalRange m_all_env_items_internal_range;
@@ -186,7 +187,7 @@ class ComponentItemInternalData
 
  public:
 
-  //! Réinitialise les ComponentItemInternal associés aux EnvCell et AllEnvCell
+  //! Resets ComponentItemInternal associated with EnvCell and AllEnvCell
   void _resetItemsInternal();
 };
 

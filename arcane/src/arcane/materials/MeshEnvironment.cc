@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshEnvironment.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Milieu d'un maillage.                                                     */
+/* Mesh environment.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -165,11 +165,11 @@ setVariableIndexer(MeshMaterialVariableIndexer* idx)
   idx->setCells(m_data.items());
   idx->setIsEnvironment(true);
 
-  // S'il n'y qu'un matériau, le variable indexer de ce matériau est
-  // aussi 'idx' mais avec un autre groupe associé. Pour que tout soit
-  // cohérent, il faut être sur que ce matériau a aussi le même groupe.
-  // TODO: pour garantir la cohérence, il faudrait supprimer
-  // dans m_data le groupe d'entité.
+  // If there is only one material, that material's variable indexer is
+  // also 'idx' but with a different associated group. To ensure consistency,
+  // we must ensure that this material also has the same group.
+  // TODO: to guarantee consistency, the entity group should be removed
+  // from m_data.
   if (m_true_materials.size() == 1)
     m_true_materials[0]->componentData()->_setItems(m_data.items());
   m_data._buildPartData();
@@ -196,12 +196,13 @@ computeNbMatPerCell()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul les infos sur les matériaux.
+ * \brief Calculates material information.
  *
- * Cette méthode est appelée par le MeshMaterialMng et doit être appelée
- * une fois que les m_items_internal ont été mis à jour et
- * computeNbMatPerCell() et computeItemListForMaterials() ont été appelées
+ * This method is called by MeshMaterialMng and must be called
+ * once m_items_internal have been updated and
+ * computeNbMatPerCell() and computeItemListForMaterials() have been called
  */
 void MeshEnvironment::
 computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue& queue)
@@ -231,8 +232,8 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
   UniqueArray<Int32> cells_pos(platform::getDefaultDataAllocator());
   cells_pos.resize(max_local_id);
 
-  // TODO: regarder comment supprimer ce tableau cells_env qui n'est normalement pas utile
-  // car on doit pouvoir directement utiliser les m_items_internal
+  // TODO: look into how to remove this cells_env array which is normally not useful
+  // because we should be able to directly use m_items_internal
   UniqueArray<ConstituentItemIndex> cells_env(platform::getDefaultDataAllocator());
   cells_env.resize(max_local_id);
 
@@ -250,7 +251,7 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
     }
   }
   else {
-    // Calcul l'indice de la première MatCell pour chaque Cell.
+    // Calculate the index of the first MatCell for each Cell.
     Int32 nb_id = local_ids.size();
     {
       Accelerator::GenericScanner scanner(queue);
@@ -322,24 +323,25 @@ _computeMaterialIndexes(ComponentItemInternalData* item_internal_data, RunQueue&
         ref_ii._setSuperAndGlobalItem(cells_env_view[lid], ItemLocalId(lid));
         ref_ii._setComponent(mat_id);
         ref_ii._setVariableIndex(mvi);
-        // Le rang 0 met à jour le padding SIMD du groupe associé au matériau
+        // The 0th rank updates the SIMD padding of the group associated with the material
         if (z == 0)
           ArraySimdPadder::applySimdPaddingView(mat_cells_local_id);
       };
       mat_cells._internalApi()->notifySimdPaddingDone();
     }
   }
-  // La RunQueue est asynchrone. Cette barrière est nécessaire pour éviter une
-  // erreur si on utilise le pool mémoire.
+  // The RunQueue is asynchronous. This barrier is necessary to prevent a
+  // crash if the memory pool is used.
   queue.barrier();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul les infos sur les matériaux en mono-matériaux.
+ * \brief Calculates material information for mono-materials.
  *
- * Spécialisation pour le cas où le milieu n'a qu'un matériau.
+ * Specialization for the case where the environment has only one material.
  */
 void MeshEnvironment::
 _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, RunQueue& queue)
@@ -378,7 +380,7 @@ _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, Ru
     ref_ii._setSuperAndGlobalItem(env_item.constituentItemIndex(), ItemLocalId(lid));
     ref_ii._setComponent(mat_id);
     ref_ii._setVariableIndex(mvi);
-    // Le rang 0 met à jour le padding SIMD du groupe associé au matériau
+    // The range 0 updates the SIMD padding of the group associated with the material
     if (z == 0)
       ArraySimdPadder::applySimdPaddingView(mat_cells_local_id);
   };
@@ -387,9 +389,10 @@ _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, Ru
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul pour les mailles des matériaux du milieu leur emplacement
- * dans le tableau d'indexation des variables.
+ * \brief Calculation for the environment material meshes and their location
+ * in the variable indexing table.
  */
 void MeshEnvironment::
 computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list)
@@ -397,8 +400,8 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
   info(4) << "ComputeItemListForMaterials (V2)";
   ConstArrayView<Int16> nb_env_per_cell = connectivity_list.cellsNbEnvironment();
   const Int16 env_id = componentId();
-  // Calcul pour chaque matériau le nombre de mailles mixtes
-  // TODO: a faire dans MeshMaterialVariableIndexer
+  // Calculation for the number of mixed meshes per material
+  // TODO: to be done in MeshMaterialVariableIndexer
   for (MeshMaterial* mat : m_true_materials) {
     MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
     CellGroup cells = var_indexer->cells();
@@ -409,8 +412,8 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
     info(4) << "MAT_INDEXER mat=" << mat->name() << " NB_CELL=" << var_nb_cell << " name=" << cells.name();
     ENUMERATE_CELL (icell, cells) {
       Int32 lid = icell.itemLocalId();
-      // On ne prend l'indice global que si on est le seul matériau et le seul
-      // milieu de la maille. Sinon, on prend un indice multiple
+      // We only take the global index if we are the only material and the only
+      // environment of the mesh. Otherwise, we take a multiple index
       if (nb_env_per_cell[lid] > 1 || connectivity_list.cellNbMaterial(icell, env_id) > 1)
         list_builder.addPartialItem(lid);
       else
@@ -434,17 +437,17 @@ void MeshEnvironment::
 notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
 {
   // NOTE:
-  // Cette méthode est appelée lorsqu'il y a un compactage du maillage
-  // et le groupe d'entité associé à ce milieu vient d'être compacté.
-  // Comme actuellement il n'y a pas d'observeurs pour l'ajout
-  // ou la suppression de mailles du groupe, il est possible
-  // lorsque cette méthode est appelée que les infos des milieux et
-  // matériaux ne soient pas à jour (par exemple, la liste des local_ids
-  // du m_variable_indexer n'a pas les mêmes valeurs que cells().
-  // Pour l'instant ce n'est pas très grave car tout est écrasé après
-  // chaque modif sur un matériau ou un milieu.
-  // A terme, il faudra prendre cela en compte lorsque l'ajout
-  // où la suppression de mailles matériaux sera optimisée.
+  // This method is called when there is mesh compaction
+  // and the entity group associated with this environment has just been compacted.
+  // Since there are currently no observers for the addition
+  // or removal of group meshes, it is possible
+  // that when this method is called, the environment and material information
+  // is not up to date (for example, the list of local_ids
+  // in m_variable_indexer does not have the same values as cells().
+  // For now, this is not very serious because everything is overwritten after
+  // every modification to a material or an environment.
+  // In the future, this will need to be taken into account when the addition
+  // or removal of material meshes is optimized.
   info(4) << "Changing (V3) local ids references env=" << name();
   info(4) << "CurrentCells name=" << cells().name()
           << " n=" << cells().view().localIds().size();
@@ -454,14 +457,14 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
   info(4) << "NotifyLocalIdsChanged env=" << name() << " nb_mat=" << nb_mat
           << " old_to_new_ids.size=" << old_to_new_ids.size();
 
-  // Si le milieu n'a qu'un seul matériau, ils partagent le même variable_indexer
-  // donc il ne faut changer les ids qu'une seule fois. Par contre, le
-  // tableau m_items_internal n'est pas partagé entre le matériau
-  // et le milieu donc il faut recalculer les infos séparément.
-  // Il faut le faire pour le milieu avant de mettre à jour les infos du matériau car
-  // une fois ceci fait la valeur m_variable_indexer->m_local_ids_in_indexes_view
-  // aura changé et il ne sera plus possible de déterminer la correspondance
-  // entre les nouveaux et les anciens localId
+  // If the environment has only one material, they share the same variable_indexer
+  // so the IDs only need to be changed once. However, the
+  // m_items_internal array is not shared between the material
+  // and the environment, so the information must be recalculated separately.
+  // It must be done for the environment before updating the material information because
+  // once this is done, the value m_variable_indexer->m_local_ids_in_indexes_view
+  // will have changed, and it will no longer be possible to determine the correspondence
+  // between the new and old localId
 
   if (nb_mat == 1) {
     m_data._changeLocalIdsForInternalList(old_to_new_ids);
@@ -469,18 +472,18 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
     _changeIds(true_mat->componentData(), old_to_new_ids);
   }
   else {
-    // Change les infos des matériaux
+    // Change material information
     for (Integer i = 0; i < nb_mat; ++i) {
       MeshMaterial* true_mat = m_true_materials[i];
       info(4) << "ChangeIds MAT i=" << i << " MAT=" << true_mat->name();
       _changeIds(true_mat->componentData(), old_to_new_ids);
     }
-    // Change les infos du milieu
+    // Change environment information
     _changeIds(componentData(), old_to_new_ids);
   }
 
-  // Reconstruit les infos sur les mailles pures et mixtes.
-  // Il faut le faire une fois que tous les valeurs sont à jour.
+  // Rebuild information on pure and mixed meshes.
+  // This must be done once all values are updated.
   {
     RunQueue& queue = m_material_mng->_internalApi()->runQueue();
     for (Integer i = 0; i < nb_mat; ++i) {

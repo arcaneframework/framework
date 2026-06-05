@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshComponentPartData.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Données d'une partie (pure ou partielle) d'un constituant.                */
+/* Data of a part (pure or partial) of a constituent.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -65,11 +65,12 @@ MeshComponentPartData(IMeshComponent* component, const String& debug_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notification de changement des m_values_indexes.
+ * \brief Notification of changes to m_values_indexes.
  *
- * Applique le padding pour la vectorisation sur les valueIndex() si nécessaire.
- * \a queue peut-être nul.
+ * Applies padding for vectorization on valueIndex() if necessary.
+ * \a queue may be null.
  */
 void MeshComponentPartData::
 _notifyValueIndexesChanged(RunQueue* queue)
@@ -116,8 +117,8 @@ _setFromMatVarIndexes(ConstArrayView<MatVarIndex> matvar_indexes, RunQueue& queu
   pure_indexes.resize(nb_index);
   pure_internal_indexes.resize(nb_index);
 
-  // TODO: Faire une première passe pour calculer le nombre de valeurs pures
-  // et ainsi allouer directement à la bonne taille.
+  // TODO: Perform a first pass to calculate the number of pure values
+  // and thus allocate directly to the correct size.
   info(4) << "BEGIN_BUILD_PART_DATA_FOR_COMPONENT c=" << m_component->name();
   Accelerator::GenericFilterer filterer(queue);
 

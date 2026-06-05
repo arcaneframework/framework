@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* EnumeratorTracer.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Enumérateurs sur les mailles matériaux.                                   */
+/* Enumerators on material meshes.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,9 +21,6 @@
 #include "arcane/materials/MatItemEnumerator.h"
 
 #include <iostream>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,7 +101,7 @@ exitEnumerator(const ComponentEnumerator&, EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const MatEnumerator&,EnumeratorTraceInfo& eti)
+enterEnumerator(const MatEnumerator&, EnumeratorTraceInfo& eti)
 {
   _beginLoop(eti);
 }
@@ -113,7 +110,7 @@ enterEnumerator(const MatEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const MatEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const MatEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
 }
@@ -122,7 +119,7 @@ exitEnumerator(const MatEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const EnvEnumerator&,EnumeratorTraceInfo& eti)
+enterEnumerator(const EnvEnumerator&, EnumeratorTraceInfo& eti)
 {
   _beginLoop(eti);
 }
@@ -131,7 +128,7 @@ enterEnumerator(const EnvEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const EnvEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const EnvEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
 }
@@ -140,7 +137,7 @@ exitEnumerator(const EnvEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
+enterEnumerator(const ComponentCellEnumerator& e, EnumeratorTraceInfo& eti)
 {
   ++m_nb_call_component_cell;
   m_nb_loop_component_cell += e.m_size;
@@ -165,7 +162,7 @@ exitEnumerator(const ComponentCellEnumerator&, EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti)
+enterEnumerator(const AllEnvCellEnumerator& e, EnumeratorTraceInfo& eti)
 {
   ++m_nb_call_all_env_cell;
   m_nb_loop_all_env_cell += e.m_size;
@@ -180,7 +177,7 @@ enterEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const AllEnvCellEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const AllEnvCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
   if (m_is_verbose)
@@ -191,7 +188,7 @@ exitEnumerator(const AllEnvCellEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
+enterEnumerator(const CellComponentCellEnumerator& e, EnumeratorTraceInfo& eti)
 {
   ++m_nb_call_cell_component_cell;
   m_nb_loop_cell_component_cell += e.m_size;
@@ -202,7 +199,7 @@ enterEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const CellComponentCellEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const CellComponentCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
 }
@@ -211,7 +208,7 @@ exitEnumerator(const CellComponentCellEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentPartSimdCellEnumerator&,EnumeratorTraceInfo& eti)
+enterEnumerator(const ComponentPartSimdCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _beginLoop(eti);
 }
@@ -220,7 +217,7 @@ enterEnumerator(const ComponentPartSimdCellEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const ComponentPartSimdCellEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentPartSimdCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
 }
@@ -229,7 +226,7 @@ exitEnumerator(const ComponentPartSimdCellEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentPartCellEnumerator&,EnumeratorTraceInfo& eti)
+enterEnumerator(const ComponentPartCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _beginLoop(eti);
 }
@@ -238,7 +235,7 @@ enterEnumerator(const ComponentPartCellEnumerator&,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const ComponentPartCellEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentPartCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
 }
@@ -252,13 +249,13 @@ dumpStats()
   info() << "ENUMERATOR_TRACER_DUMP_STATS nb_call=" << m_nb_call;
   info() << " nb_call_all_env_cell=" << m_nb_call_all_env_cell
          << " nb_loop_all_env_cell=" << m_nb_loop_all_env_cell
-         << " ratio=" << (Real)m_nb_loop_all_env_cell / (Real)(m_nb_call_all_env_cell+1);
+         << " ratio=" << (Real)m_nb_loop_all_env_cell / (Real)(m_nb_call_all_env_cell + 1);
   info() << " nb_call_component_cell=" << m_nb_call_component_cell
          << " nb_loop_component_cell=" << m_nb_loop_component_cell
-         << " ratio=" << (Real)m_nb_loop_component_cell / (Real)(m_nb_call_component_cell+1);
+         << " ratio=" << (Real)m_nb_loop_component_cell / (Real)(m_nb_call_component_cell + 1);
   info() << " nb_call_cell_component_cell=" << m_nb_call_cell_component_cell
          << " nb_loop_cell_component_cell=" << m_nb_loop_cell_component_cell
-         << " ratio=" << (Real)m_nb_loop_cell_component_cell / (Real)(m_nb_call_cell_component_cell+1);
+         << " ratio=" << (Real)m_nb_loop_cell_component_cell / (Real)(m_nb_call_cell_component_cell + 1);
 }
 
 /*---------------------------------------------------------------------------*/

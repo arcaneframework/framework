@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshBlockBuildInfo.cc                                       (C) 2000-2016 */
 /*                                                                           */
-/* Informations pour la création d'un bloc.                                  */
+/* Information for creating a block.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,20 +18,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshBlockBuildInfo::
-MeshBlockBuildInfo(const String& name,const CellGroup& cells)
+MeshBlockBuildInfo(const String& name, const CellGroup& cells)
 : m_name(name)
 , m_cells(cells)
 {
@@ -54,15 +48,14 @@ addEnvironment(IMeshEnvironment* env)
   if (m_environments.contains(env))
     throw ArgumentException(A_FUNCINFO,
                             String::format("environment {0} already in block {1}",
-                                           env->name(),this->name()));
+                                           env->name(), this->name()));
   m_environments.add(env);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
