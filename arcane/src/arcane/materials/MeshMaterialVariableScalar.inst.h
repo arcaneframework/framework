@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableScalar.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Variable scalaire sur un matériau du maillage.                            */
+/* Scalar variable on a mesh material.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,7 +88,7 @@ copyTo(SmallSpan<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan<DataType> output, SmallSpan<const Int32> output_indexes,
        const RunQueue& queue)
 {
-  // TODO: vérifier tailles des indexes identiques
+  // TODO: check if index sizes are identical
   Integer nb_value = input_indexes.size();
   auto command = makeCommand(queue);
   ARCANE_CHECK_ACCESSIBLE_POINTER(queue, output.data());
@@ -110,8 +110,8 @@ MaterialVariableScalarTraits<DataType>::
 resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer dim1_size)
 {
  ARCANE_UNUSED(data);
- //TODO: faire une version de Array2 qui spécifie une valeur à donner
- // pour initialiser lors d'un resize() (comme pour Array::resize()).
+ //TODO: create an Array2 version that specifies a value to give
+ // for initialization during a resize() (like Array::resize()).
  container.resize(dim1_size,DataType());
 }
 
@@ -122,9 +122,9 @@ template<typename DataType> void
 MaterialVariableScalarTraits<DataType>::
 resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
-  // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
-  // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
-  // Par défaut, on alloue 5% de plus.
+  // To avoid reallocating every time there is an increase in
+  // the number of material meshes, allocate a little more than necessary.
+  // By default, we allocate 5% more.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
   var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
 }
@@ -145,10 +145,11 @@ ItemMaterialVariableScalar(const MaterialVariableBuildInfo& v,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de la variable pour un matériau à partir d'un tableau.
+ * \brief Fills the variable values for a material from an array.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -161,7 +162,7 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
 {
-  // TODO: faire une version avec IMeshComponent
+  // TODO: make a version with IMeshComponent
   Integer index = 0;
   ENUMERATE_COMPONENTITEM(MatCell,imatcell,mat){
     MatCell mc = *imatcell;
@@ -173,10 +174,11 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de la variable pour un matériau à partir d'un tableau.
+ * \brief Fills the variable values for a material from an array.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -200,10 +202,11 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit un tableau à partir des valeurs de la variable pour un matériau.
+ * \brief Fills an array from the variable values for a material.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -227,10 +230,11 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit un tableau à partir des valeurs de la variable pour un matériau.
+ * \brief Fills an array from the variable values for a material.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -253,15 +257,16 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView in
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs partielles avec la valeur \a value.
+ * \brief Fills partial values with the value \a value.
  */
 template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 fillPartialValues(const DataType& value)
 {
-  // La variable d'indice 0 correspondant à la variable globale.
-  // Il ne faut donc pas la prendre en compte.
+  // The index 0 variable corresponds to the global variable.
+  // It should therefore not be taken into account.
   Integer nb_var = m_vars.size();
   for( Integer i=1; i<nb_var; ++i ){
     if (m_vars[i])
@@ -286,8 +291,8 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> bytes) const
 {
-  // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
-  // l'alignement est correct.
+  // TODO: Check that the size is a multiple of sizeof(DataType) and that
+  // the alignment is correct.
   const Integer value_size = arcaneCheckArraySize(bytes.size() / sizeof(DataType));
   ArrayView<DataType> values(value_size,reinterpret_cast<DataType*>(bytes.data()));
   for( Integer z=0; z<value_size; ++z ){
@@ -313,8 +318,8 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std::byte> bytes)
 {
-  // TODO: Vérifier que la taille est un multiple de sizeof(DataType) et que
-  // l'alignement est correct.
+  // TODO: Check that the size is a multiple of sizeof(DataType) and that
+  // the alignment is correct.
   const Int32 value_size = CheckedConvert::toInt32(bytes.size() / sizeof(DataType));
   ConstArrayView<DataType> values(value_size,reinterpret_cast<const DataType*>(bytes.data()));
   for( Integer z=0; z<value_size; ++z ){
@@ -359,7 +364,7 @@ _synchronize2()
 {
   Int64 message_size = 0;
   Integer sync_version = m_p->materialMng()->synchronizeVariableVersion();
-  // Seules les versions 6 et ultérieures sont disponibles pour les variables milieux.
+  // Only versions 6 and later are available for medium variables.
   if (m_p->space()==MatVarSpace::Environment){
     if (sync_version<6)
       sync_version = 6;
@@ -403,27 +408,27 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _synchronizeV1()
 {
-  // Synchronisation:
-  // Pour l'instant, algorithme non optimisée qui effectue plusieurs
-  // synchros. On utilise la variable globale pour cela et il faut
-  // donc la sauvegarder en début de fonction et la restorer en fin.
-  // Le principe est simple: pour chaque materiau et milieu, on
-  // recopie dans la variable globale la valeur partielle correspondante
-  // et on fait une synchro de la variable globale. Il faut ensuite
-  // recopier depuis la valeur globale dans la valeur partielle.
-  // Cela signifie qu'on a autant de synchros que de matériaux et milieux
+  // Synchronization:
+  // For now, an unoptimized algorithm that performs multiple
+  // syncs. We use the global variable for this and must
+  // therefore save it at the beginning of the function and restore it at the end.
+  // The principle is simple: for each material and environment, we
+  // copy the corresponding partial value into the global variable
+  // and synchronize the global variable. Then we must
+  // copy from the global value into the partial value.
+  // This means we have as many synchronizations as there are materials and environments.
 
-  // TODO: vérifier que la liste des matériaux est cohérente entre
-  // les sous-domaines. Cela n'est pas nécessaire avec cet algo simplifié
-  // mais le sera avec l'algo final. Pour ce test, il suffit de mettre
-  // une valeur spéciale dans la variable globale pour chaque synchro
-  // (par exemple MIN_FLOAT) et apres synchro de regarder pour chaque
-  // maille dont la valeur est différente de MIN_FLOAT
-  // si elle est bien dans notre matériau
+  // TODO: check that the list of materials is consistent between
+  // subdomains. This is not necessary with this simplified algorithm
+  // but it will be with the final algorithm. For this test, it is enough to put
+  // a special value in the global variable for each synchronization
+  // (for example MIN_FLOAT) and after synchronization, check for each
+  // mesh whose value is different from MIN_FLOAT
+  // if it is indeed in our material
   IMeshMaterialMng* material_mng = m_p->materialMng();
   IMesh* mesh = material_mng->mesh();
-  //TODO: Utiliser autre type que cellFamily() pour permettre autre genre
-  // d'élément.
+  //TODO: Use a type other than cellFamily() to allow for other types
+  // of elements.
   IItemFamily* family = mesh->cellFamily();
   IParallelMng* pm = mesh->parallelMng();
   if (!pm->isParallel())
@@ -431,7 +436,7 @@ _synchronizeV1()
   ItemGroup all_items = family->allItems();
 
   UniqueArray<DataType> saved_values;
-  // Sauve les valeurs de la variable globale car on va les changer
+  // Save the global variable values because we are going to change them
   {
     ConstArrayView<DataType> var_values = m_global_variable->valueView();
     saved_values.resize(var_values.size());
@@ -445,7 +450,7 @@ _synchronizeV1()
       
       {
         ArrayView<DataType> var_values = m_global_variable->valueView();
-        // Copie valeurs du matériau dans la variable globale puis synchro
+        // Copy material values into the global variable then synchronize
         ENUMERATE_MATCELL(imatcell,mat){
           MatCell mc = *imatcell;
           Cell c = mc.globalCell();
@@ -456,7 +461,7 @@ _synchronizeV1()
       m_global_variable->synchronize();
       {
         ConstArrayView<DataType> var_values = m_global_variable->valueView();
-        // Copie valeurs depuis la variable globale vers la partie materiau
+        // Copy values from the global variable into the material part
         ENUMERATE_MATCELL(imatcell,mat){
           MatCell mc = *imatcell;
           Cell c = mc.globalCell();
@@ -467,10 +472,10 @@ _synchronizeV1()
 
     }
 
-    // Effectue la même chose pour le milieu
+    // Do the same for the environment
     {
       ArrayView<DataType> var_values = m_global_variable->valueView();
-      // Copie valeurs du milieu dans la variable globale puis synchro
+      // Copy environment values into the global variable then synchronize
       ENUMERATE_ENVCELL(ienvcell,env){
         EnvCell ec = *ienvcell;
         Cell c = ec.globalCell();
@@ -481,7 +486,7 @@ _synchronizeV1()
     m_global_variable->synchronize();
     {
       ConstArrayView<DataType> var_values = m_global_variable->valueView();
-      // Copie valeurs depuis la variable globale vers la partie milieu
+      // Copy values from the global variable into the environment part
       ENUMERATE_ENVCELL(ienvcell,env){
         EnvCell ec = *ienvcell;
         Cell c = ec.globalCell();
@@ -491,7 +496,7 @@ _synchronizeV1()
     }
   }
 
-  // Restore les valeurs de la variable globale.
+  // Restore the global variable values.
   {
     ArrayView<DataType> var_values = m_global_variable->valueView();
     var_values.copy(saved_values);
@@ -506,27 +511,27 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _synchronizeV2()
 {
-  // Synchronisation:
-  // Pour l'instant, algorithme non optimisée qui effectue plusieurs
-  // synchros. On utilise la variable globale pour cela et il faut
-  // donc la sauvegarder en début de fonction et la restorer en fin.
-  // Le principe est simple: pour chaque materiau et milieu, on
-  // recopie dans la variable globale la valeur partielle correspondante
-  // et on fait une synchro de la variable globale. Il faut ensuite
-  // recopier depuis la valeur globale dans la valeur partielle.
-  // Cela signifie qu'on a autant de synchros que de matériaux et milieux
+  // Synchronization:
+  // For now, non-optimized algorithm that performs several
+  // synchronizations. We use the global variable for this and must
+  // therefore save it at the beginning of the function and restore it at the end.
+  // The principle is simple: for each material and environment, we
+  // copy the corresponding partial value into the global variable
+  // and synchronize the global variable. Then we must
+  // copy from the global value into the partial value.
+  // This means we have as many synchronizations as there are materials and environments.
 
-  // TODO: vérifier que la liste des matériaux est cohérente entre
-  // les sous-domaines. Cela n'est pas nécessaire avec cet algo simplifié
-  // mais le sera avec l'algo final. Pour ce test, il suffit de mettre
-  // une valeur spéciale dans la variable globale pour chaque synchro
-  // (par exemple MIN_FLOAT) et apres synchro de regarder pour chaque
-  // maille dont la valeur est différente de MIN_FLOAT
-  // si elle est bien dans notre matériau
+  // TODO: check that the list of materials is consistent between
+  // subdomains. This is not necessary with this simplified algorithm
+  // but it will be with the final algorithm. For this test, it is enough to put
+  // a special value in the global variable for each synchronization
+  // (for example MIN_FLOAT) and after synchronization, check for each
+  // mesh whose value is different from MIN_FLOAT
+  // if it is indeed in our material
   IMeshMaterialMng* material_mng = m_p->materialMng();
   IMesh* mesh = material_mng->mesh();
-  //TODO: Utiliser autre type que cellFamily() pour permettre autre genre
-  // d'élément.
+  //TODO: Use a type other than cellFamily() to allow for other types
+  // of elements.
   IItemFamily* family = mesh->cellFamily();
   IParallelMng* pm = mesh->parallelMng();
   if (!pm->isParallel())
@@ -550,7 +555,7 @@ _synchronizeV2()
   data->_internal()->_internalDeprecatedValue().resize(family->maxLocalId(),nb_indexer+1);
   Array2View<DataType> values(data->view());
 
-  // Recopie les valeurs partielles dans le tableau.
+  // Copy partial values into the array.
   for( MeshMaterialVariableIndexer* indexer : indexers ){
     ConstArrayView<MatVarIndex> matvar_indexes = indexer->matvarIndexes();
     ConstArrayView<Int32> local_ids = indexer->localIds();
@@ -561,7 +566,7 @@ _synchronizeV2()
   }
   family->allItemsSynchronizer()->synchronizeData(data);
 
-  // Recopie du tableau synchronisé dans les valeurs partielles.
+  // Copy the synchronized array into the partial values.
   for( MeshMaterialVariableIndexer* indexer : indexers ){
     ConstArrayView<MatVarIndex> matvar_indexes = indexer->matvarIndexes();
     ConstArrayView<Int32> local_ids = indexer->localIds();
@@ -581,14 +586,13 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 _synchronizeV5()
 {
-  // Version de la synchronisation qui envoie uniquement
-  // les valeurs des matériaux et des milieux pour les mailles
-  // partagées.
-  // NOTE: Cette version nécessite que les matériaux soient correctement
-  // synchronisés entre les sous-domaines.
+  // Synchronization version that sends only
+  // the values of materials and environments for shared meshes.
+  // NOTE: This version requires that the materials are correctly
+  // synchronized between subdomains.
 
-  // Cette version est similaire à V4 dans son principe mais
-  // fait les send/receive directement sans utiliser de sérialiser.
+  // This version is similar to V4 in principle but
+  // performs send/receive directly without using serialization.
   IMeshMaterialMng* material_mng = m_p->materialMng();
 
   IMeshMaterialVariableSynchronizer* mmvs = material_mng->_internalApi()->allCellsMatEnvSynchronizer();
@@ -613,7 +617,7 @@ _synchronizeV5()
 
     UniqueArray<Parallel::Request> requests;
 
-    // Poste les receive.
+    // Post the receives.
     Int32UniqueArray recv_ranks(nb_rank);
     for( Integer i=0; i<nb_rank; ++i ){
       Int32 rank = ranks[i];
@@ -625,7 +629,7 @@ _synchronizeV5()
       requests.add(pm->recv(bytes,rank,false));
     }
 
-    // Poste les send
+    // Post the sends
     for( Integer i=0; i<nb_rank; ++i ){
       Int32 rank = ranks[i];
       ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
@@ -642,7 +646,7 @@ _synchronizeV5()
 
     pm->waitAllRequests(requests);
 
-    // Recopie les données recues dans les mailles fantomes.
+    // Copy the received data into the ghost meshes.
     for( Integer i=0; i<nb_rank; ++i ){
       ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
       Integer total = ghost_matcells.size();
@@ -715,14 +719,14 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
       ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
         ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
           EnvCell envcell = *ienvcell;
-          ++nb_val; // 1 valeur pour le milieu
+          ++nb_val; // 1 value for the environment
           if (has_mat)
-            nb_val += envcell.nbMaterial(); // 1 valeur par matériau du milieu.
+            nb_val += envcell.nbMaterial(); // 1 value per material in the environment.
         }
       }
       tm->info() << "RESERVE: nb_value=" << 1 << " size=" << (nb_val*nb_count);
-      sbuf->reserveInt64(1);  // Pour le nombre de valeurs.
-      sbuf->reserveSpan(data_type,nb_val*nb_count);  // Pour le nombre de valeurs.
+      sbuf->reserveInt64(1);  // For the number of values.
+      sbuf->reserveSpan(data_type,nb_val*nb_count);  // For the number of values.
     }
     break;
   case ISerializer::ModePut:
@@ -784,7 +788,7 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 MeshMaterialVariableScalar(const MaterialVariableBuildInfo& v,PrivatePartType* global_var,
                            VariableRefType* global_var_ref,MatVarSpace mvs)
 : ItemMaterialVariableScalar<DataType>(v,global_var,global_var_ref,mvs)
-, m_true_global_variable_ref(global_var_ref) // Sera détruit par la classe de base
+, m_true_global_variable_ref(global_var_ref) // Will be destroyed by the base class
 {
 }
 

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizerImpl.cc                                 (C) 2000-2024 */
+/* MeshMaterialSynchronizerImpl.cc                            (C) 2000-2024 */
 /*                                                                           */
-/* Synchronisation des entités des matériaux.                                */
+/* Synchronization of material entities.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,19 +88,18 @@ bool LegacyMeshMaterialSynchronizerImpl::
 synchronizeMaterialsInCells()
 {
   /*
-    L'algorithme utilisé est le suivant:
+    The algorithm used is as follows:
 
-    On utilise une variable aux mailles qui utilise un bit pour chaque
-    matériau pour indiquer sa présence: si ce bit est positionné, le matériau
-    est présent, sinon il est absent. La variable utilisée est donc de type
-    ArrayByte aux mailles. Les méthodes _hasBit() et _setBit() permettent
-    de positionner le bit d'un matériau donné.
+    We use a mesh variable that uses a bit for each material to indicate its
+    presence: if this bit is set, the material is present; otherwise, it is
+    absent. The variable used is therefore of type ArrayByte per mesh. The
+    _hasBit() and _setBit() methods allow positioning the bit for a given
+    material.
 
-    1. Le sous-domaine remplit cette variables pour ces mailles.
-    2. La variable est synchronisée.
-    3. Le sous-domaine compare pour chacune de ses mailles fantômes
-    ce tableau de présence des matériaux et ajoute/supprime les matériaux en fonction
-    de ce tableau.
+    1. The subdomain fills this variable for these meshes.
+    2. The variable is synchronized.
+    3. The subdomain compares this material presence table for each of its
+    ghost meshes and adds/removes materials based on this table.
   */
   IMesh* mesh = m_material_mng->mesh();
   if (!mesh->parallelMng()->isParallel())
@@ -131,7 +130,7 @@ synchronizeMaterialsInCells()
     UniqueArray<UniqueArray<Int32>> to_remove(nb_mat);
     ENUMERATE_CELL (icell, mesh->allCells()) {
       Cell cell = *icell;
-      // Ne traite que les mailles fantomes.
+      // Only processes ghost meshes.
       if (cell.isOwn())
         continue;
       Int32 cell_lid = cell.localId();
@@ -139,7 +138,7 @@ synchronizeMaterialsInCells()
       before_presence.fill(0);
       _fillPresence(all_env_cell, before_presence);
       ByteConstArrayView after_presence = mat_presence[cell];
-      // Ajoute/Supprime cette maille des matériaux si besoin.
+      // Adds/Removes this mesh from materials if necessary.
       for (Integer imat = 0; imat < nb_mat; ++imat) {
         bool has_before = _hasBit(before_presence, imat);
         bool has_after = _hasBit(after_presence, imat);

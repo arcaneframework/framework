@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariablePrivate.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Partie privée d'une variable sur un matériau du maillage.                 */
+/* Private section of a variable on a mesh material.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEPRIVATE_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIALVARIABLEPRIVATE_H
@@ -35,9 +35,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie privée d'une variable matériau.
+ * \brief Private section of a material variable.
  */
 class MeshMaterialVariablePrivate
 : public IMeshMaterialVariableInternal
@@ -86,7 +87,7 @@ class MeshMaterialVariablePrivate
  public:
 
   Int32 m_nb_reference = 0;
-  MeshMaterialVariableRef* m_first_reference = nullptr; //! Première référence sur la variable
+  MeshMaterialVariableRef* m_first_reference = nullptr; //! First reference on the variable
 
  private:
 
@@ -96,26 +97,26 @@ class MeshMaterialVariablePrivate
  public:
 
   /*!
-   * \brief Stocke les références sur les variables tableaux qui servent pour
-   * stocker les valeurs par matériau.
-   * Il faut garder une référence pour éviter que la variable ne soit détruite
-   * si elle n'est plus utilisée par ailleurs.
+   * \brief Stores references to array variables used to
+   * store values per material.
+   * A reference must be kept to prevent the variable from being destroyed
+   * if it is no longer used elsewhere.
    */
   UniqueArray<VariableRef*> m_refs;
 
   bool m_keep_on_change = true;
   IObserver* m_global_variable_changed_observer = nullptr;
 
-  //! Liste des dépendances de cette variable
+  //! List of dependencies for this variable
   UniqueArray<MeshMaterialVariableDependInfo> m_mat_depends;
 
-  //! Liste des dépendances de cette variable
+  //! List of dependencies for this variable
   UniqueArray<VariableDependInfo> m_depends;
 
-  //! Tag de la dernière modification par matériau
+  //! Tag of the last modification per material
   UniqueArray<Int64> m_modified_times;
 
-  //! Fonction de calcul
+  //! Calculation function
   ScopedPtrT<IMeshMaterialVariableComputeFunction> m_compute_function;
 
  private:
@@ -133,5 +134,4 @@ class MeshMaterialVariablePrivate
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

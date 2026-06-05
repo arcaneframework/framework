@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItemInternalData.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des listes de 'ComponentItemInternal'.                            */
+/* Management of 'ComponentItemInternal' lists.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,9 +61,9 @@ Storage(const MemoryAllocationOptions& alloc_info, const String& base_name)
 void ComponentItemInternalData::Storage::
 resize(Int32 new_size, ComponentItemSharedInfo* shared_info, RunQueue& queue)
 {
-  // On dimensionne au nombre d'éléments + 1.
-  // On décale de 1 la vue pour qu'elle puisse être indexée avec l'entité
-  // nulle (d'indice (-1)).
+  // We dimension it to the number of elements + 1.
+  // We shift the view by 1 so that it can be indexed with the
+  // null entity (at index -1).
   Int32 true_size = new_size + 1;
   m_size = new_size;
 
@@ -82,8 +82,8 @@ resize(Int32 new_size, ComponentItemSharedInfo* shared_info, RunQueue& queue)
   auto global_item_local_id_list = m_global_item_local_id_list.smallSpan();
   auto var_index_list = m_var_index_list.smallSpan();
 
-  // Met à jour les pointeurs.
-  // On le fait sur l'accélérateur pour éviter des recopies avec le CPU.
+  // Updates the pointers.
+  // We do this on the accelerator to avoid copies with the CPU.
   {
     auto command = makeCommand(queue);
     command << RUNCOMMAND_SINGLE()
@@ -121,13 +121,13 @@ ComponentItemInternalData(MeshMaterialMng* mmg)
 , m_env_storage(_allocOptions(), "EnvStorage")
 , m_mat_storage(_allocOptions(), "MatStorage")
 {
-  // Initialise l'instance nulle. Ce n'est pas grave si on le fait plusieurs fois
-  // car la valeur ne change pas.
+  // Initializes the null instance. It doesn't matter if we do it multiple times
+  // because the value does not change.
   ComponentItemSharedInfo::_setNullInstance();
 
-  // Il y a une instance pour les MatCell, les EnvCell et les AllEnvCell
-  // Il ne faut ensuite plus modifier ce tableau car on conserve des pointeurs
-  // vers les éléments de ce tableau.
+  // There is an instance for MatCell, EnvCell, and AllEnvCell
+  // This array must not be modified afterward because we keep pointers
+  // to the elements of this array.
   m_shared_infos.resize(3);
   m_shared_infos.setDebugName("ComponentItemInternalDataSharedInfo");
 }
@@ -152,8 +152,9 @@ endCreate()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Réinitialise les ComponentItemInternal.
+ * \brief Resets the ComponentItemInternal.
  */
 void ComponentItemInternalData::
 _resetItemsInternal()
@@ -199,12 +200,12 @@ resizeComponentItemInternals(Int32 max_local_id, Int32 total_nb_env_cell)
   const Int32 nb_env = environments.size();
   NumArray<ComponentItemInternalRange, MDDim1> host_mats_range(nb_env);
 
-  // Calcule le nombre total de ComponentItemInternal dont on a besoin
+  // Calculates the total number of ComponentItemInternal needed
   Int32 total_nb_mat_cell = 0;
   for (const MeshEnvironment* env : m_material_mng->trueEnvironments())
     total_nb_mat_cell += env->totalNbCellMat();
 
-  // Maintenant récupère les vues sur chaque partie du conteneur
+  // Now retrieves the views for each part of the container
   {
     m_all_env_items_internal_range.setRange(0, max_local_id);
     m_env_items_internal_range.setRange(0, total_nb_env_cell);
@@ -240,9 +241,9 @@ _initSharedInfos()
   IItemFamily* family = m_material_mng->mesh()->cellFamily();
   ItemSharedInfo* item_shared_info = family->_internalApi()->commonItemSharedInfo();
 
-  // NOTE : les champs 'm_components' sont des vues et donc il
-  // ne faut pas que conteneurs associés de \a m_materials_mng soient modifiées.
-  // Normalement ce n'est pas le cas, car la liste des constituants est fixe.
+  // NOTE: the 'm_components' fields are views and therefore
+  // the associated containers of \a m_materials_mng must not be modified.
+  // Normally this is not the case, because the list of constituents is fixed.
   ComponentItemSharedInfo* info_mat = sharedInfo(LEVEL_MATERIAL);
   ComponentItemSharedInfo* info_env = sharedInfo(LEVEL_ENVIRONMENT);
   ComponentItemSharedInfo* info_all_env = sharedInfo(LEVEL_ALLENVIRONMENT);

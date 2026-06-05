@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItemListBuilder.h                                  (C) 2000-2024 */
 /*                                                                           */
-/* Classe d'aide à la construction d'une liste de ComponentItem.             */
+/* Helper class for building a list of ComponentItems.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTITEMLISTBUILDER_H
 #define ARCANE_MATERIALS_INTERNAL_COMPONENTITEMLISTBUILDER_H
@@ -29,9 +29,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe d'aide à la construction d'une liste de ComponentItem
- * pour un MeshMaterialVariableIndexer.
+ * \brief Helper class for building a list of ComponentItems
+ * for a MeshMaterialVariableIndexer.
  */
 class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 {
@@ -79,9 +80,10 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe d'aide à la construction d'une liste de ComponentItem
- * pour un MeshMaterialVariableIndexer.
+ * \brief Helper class for building a list of ComponentItems
+ * for a MeshMaterialVariableIndexer.
  */
 class ARCANE_MATERIALS_EXPORT ComponentItemListBuilderOld
 {
@@ -92,17 +94,17 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilderOld
 
  public:
 
-  //! Ajoute l'entité de localId() \a local_id à la liste des entités pure
+  //! Adds the entity with localId() \a local_id to the list of pure entities
   void addPureItem(Int32 local_id)
   {
     m_pure_matvar_indexes.add(MatVarIndex(0, local_id));
   }
 
-  //! Ajoute l'entité de localId() \a local_id à la liste des entités partielles
+  //! Adds the entity with localId() \a local_id to the list of partial entities
   void addPartialItem(Int32 local_id)
   {
-    //TODO: lorsqu'il y aura la suppression incrémentalle, il faudra
-    // aller chercher le bon index dans la liste des index libres de l'indexeur.
+    //TODO: when incremental deletion is implemented, it will be necessary
+    // to retrieve the correct index from the indexer's free index list.
     m_partial_matvar_indexes.add(MatVarIndex(m_component_index, m_index_in_partial));
     m_partial_local_ids.add(local_id);
     ++m_index_in_partial;
@@ -136,5 +138,4 @@ class ARCANE_MATERIALS_EXPORT ComponentItemListBuilderOld
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

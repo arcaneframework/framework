@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialsGlobal.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Déclarations générales des matériaux de Arcane.                           */
+/* General declarations for Arcane materials.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MATERIALSGLOBAL_H
 #define ARCANE_MATERIALS_MATERIALSGLOBAL_H
@@ -81,26 +81,25 @@ using MeshMaterialVariableFactoryVariableRefCreateFunc = IMeshMaterialVariable* 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief flags pour paramétrer le comportement lors d'une modification
- * de matériaux ou milieux.
+ * \brief Flags to configure behavior during a modification of materials or environments.
  */
 enum class eModificationFlags
 {
-  //! Active les optimisations génériques
+  //! Activates generic optimizations
   GenericOptimize = 1,
-  //! Active les optimisations pour les ajouts/supressions multiples
+  //! Activates optimizations for multiple additions/removals
   OptimizeMultiAddRemove = 2,
   /*!
-   * \brief Active les optimisations lorsque plusieurs matériaux sont présents dans
-   * un milieu.
+   * \brief Activates optimizations when multiple materials are present in an environment.
    */
   OptimizeMultiMaterialPerEnvironment = 4,
   /*!
-   * \brief Indique qu'on utilise la version incrémentale de AllEnvData::forceRecompute().
+   * \brief Indicates that the incremental version of AllEnvData::forceRecompute() is used.
    *
-   * Ce mode n'est actif que si GenericOptimize, OptimizeMultiAddRemove et
-   * OptimizeMultiMaterialPerEnvironment sont actifs.
+   * This mode is only active if GenericOptimize, OptimizeMultiAddRemove, and
+   * OptimizeMultiMaterialPerEnvironment are active.
    */
   IncrementalRecompute = 8
 };
@@ -113,4 +112,4 @@ enum class eModificationFlags
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

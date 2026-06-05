@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableSynchronizerList.h                      (C) 2000-2023 */
 /*                                                                           */
-/* Liste de variables à synchroniser.                                        */
+/* List of variables to synchronize.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLESYNCHRONIZERLIST_H
 #define ARCANE_MATERIALS_MESHMATERIALVARIABLESYNCHRONIZERLIST_H
@@ -27,13 +27,14 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Synchronisation d'une liste de variables matériaux.
+ * \brief Synchronizing a list of material variables.
  *
- * La méthode add() permet d'ajouter des variables à synchroniser.
- * Il faut ensuite appeler apply() pour effectuer la synchronisation.
+ * The add() method allows adding variables to synchronize.
+ * You must then call apply() to perform the synchronization.
  *
- * Une instance de ce cette classe peut-être utilisée plusieurs fois.
+ * An instance of this class can be used multiple times.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 {
@@ -56,26 +57,26 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 
  public:
 
-  //! Effectue la synchronisation
+  //! Performs the synchronization
   void apply();
 
-  //! Ajoute la variable \a var à la liste des variables à synchroniser
+  //! Adds the variable \a var to the list of variables to synchronize
   void add(MeshMaterialVariable* var);
 
-  //! Après appel à apply(), contient la taille des messages envoyés
+  //! After calling apply(), contains the size of the messages sent
   Int64 totalMessageSize() const;
 
   /*!
-   * \brief Commence une synchronisation non bloquante.
+   * \brief Starts a non-blocking synchronization.
    *
-   * Cela est valide uniquement si IMeshMaterialMng::synchronizeVariableVersion() vaut 7.
+   * This is only valid if IMeshMaterialMng::synchronizeVariableVersion() equals 7.
    */
   void beginSynchronize();
 
   /*!
-   * \brief Bloque tant que la synchronisation en cours n'est pas terminé.
+   * \brief Blocks until the ongoing synchronization is finished.
    *
-   * Il faut appeler beginSynchronize() avant cet appel.
+   * You must call beginSynchronize() before this call.
    */
   void endSynchronize();
 
@@ -101,5 +102,4 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

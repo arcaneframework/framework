@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialInfo.h                                          (C) 2000-2022 */
 /*                                                                           */
-/* Informations d'un matériau d'un maillage.                                 */
+/* Information about a material of a mesh.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALINFO_H
 #define ARCANE_MATERIALS_MESHMATERIALINFO_H
@@ -26,12 +26,13 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos d'un matériau d'un maillage.
+ * \brief Info about a material of a mesh.
  *
- * Cette instance contient les infos d'un matériau.
- * Ces informations sont statiques. Les instances de cette classe ne
- * doivent pas être créées directement. Elles le sont via l'appel à
+ * This instance contains the information about a material.
+ * This information is static. Instances of this class should not
+ * be created directly. They are created via the call to
  * IMeshMaterialMng::registerMaterialInfo().
  */
 class MeshMaterialInfo
@@ -45,13 +46,13 @@ class MeshMaterialInfo
 
  public:
 
-  //! Gestionnaire associé.
+  //! Associated manager.
   IMeshMaterialMng* materialMng() { return m_material_mng; }
   
-  //! Nom du matériau.
+  //! Material name.
   String name() const { return m_name; }
 
-  //! Nom des milieux dans lequel ce matériau est présent
+  //! Names of the environments in which this material is present
   ConstArrayView<String> environmentsName() const { return m_environments_name; }
 
  protected:
@@ -65,7 +66,7 @@ class MeshMaterialInfo
 
   IMeshMaterialMng* m_material_mng;
   String m_name;
-  //! Liste des milieux auquel le matériau appartient
+  //! List of environments to which the material belongs
   UniqueArray<String> m_environments_name;
 };
 
@@ -77,5 +78,4 @@ class MeshMaterialInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

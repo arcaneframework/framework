@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemVectorImpl.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation de 'IConstituentItemVectorImpl'.                           */
+/* Implementation of 'IConstituentItemVectorImpl'.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,8 +76,9 @@ ConstituentItemVectorImpl(const ComponentItemVectorView& rhs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Helper pour positionner les entités du vecteur.
+ * \brief Helper for positioning vector entities.
  */
 class ConstituentItemVectorImpl::SetItemHelper
 {
@@ -121,8 +122,8 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
 
   const Int32 nb_id = local_ids.size();
 
-  // Pas besoin de conserver les informations pour les mailles pour lesquelles
-  // le constituant est absent.
+  // No need to keep information for meshes where
+  // the constituent is absent.
   auto setter_unselected = [=] ARCCORE_HOST_DEVICE(Int32, Int32) {
   };
   auto generic_setter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index, ComponentCell cc) {
@@ -133,16 +134,16 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
     items_local_id[index] = cc.globalCellId();
   };
 
-  // Implémentation utilisant l'API accélérateur
+  // Implementation using the accelerator API
   if (m_use_new_impl) {
-    // Lambda pour sélectionner les mailles pures
+    // Lambda to select pure meshes
     auto select_pure = [=] ARCCORE_HOST_DEVICE(Int32 index) {
       ComponentCell cc = constituent_getter_lambda(index);
       if (cc.null())
         return false;
       return (cc._varIndex().arrayIndex() == 0);
     };
-    // Lambda pour sélectionner les mailles impures
+    // Lambda to select impure meshes
     auto select_impure = [=] ARCCORE_HOST_DEVICE(Int32 index) {
       ComponentCell cc = constituent_getter_lambda(index);
       if (cc.null())
@@ -167,7 +168,7 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
     //std::cout << "NB_PART=" << nb_parts[0] << " " << nb_parts[1] << "\n";
   }
   else {
-    // Ancien mécanisme qui n'utilise pas l'API accélérateur
+    // Old mechanism that does not use the accelerator API
     if (is_env) {
       ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
         AllEnvCell all_env_cell = *iallenvcell;
@@ -185,7 +186,7 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
       }
     }
     else {
-      // Filtre les matériaux correspondants aux local_ids
+      // Filters materials corresponding to local_ids
       ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
         AllEnvCell all_env_cell = *iallenvcell;
         for (EnvCell env_cell : all_env_cell.subEnvItems()) {
@@ -208,11 +209,12 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne les entités du vecteur.
+ * \brief Positions the vector entities.
  *
- * Les entités du vecteur seront les entités de numéro locaux localId() et
- * qui appartiennent à notre matériau ou notre milieu.
+ * The vector entities will be the local ID entities localId() and
+ * that belong to our material or our environment.
  */
 void ConstituentItemVectorImpl::
 _setItems(SmallSpan<const Int32> local_ids)
@@ -231,16 +233,15 @@ _setItems(SmallSpan<const Int32> local_ids)
   const Int32 nb_impure = m_nb_impure;
   const Int32 total_nb_pure_and_impure = nb_pure + nb_impure;
 
-  // Tableau qui contiendra les indices des mailles pures et partielles.
-  // La première partie de 0 à nb_pure contiendra la partie pure.
-  // La seconde partie de nb_pure à (nb_pure+nb_impure) contiendra les mailles partielles.
-  // A noter que (nb_pure + nb_impure) peut être différent de local_ids.size()
-  // si certaines mailles de \a local_ids n'ont pas le constituant.
+  // Array that will contain the indices of pure and impure meshes.
+  // The first part from 0 to nb_pure will contain the pure part.
+  // The second part from nb_pure to (nb_pure+nb_impure) will contain the impure meshes.
+  // Note that (nb_pure + nb_impure) may be different from local_ids.size()
+  // if some meshes in local_ids do not have the constituent.
   m_constituent_list->resize(total_nb_pure_and_impure);
 
-  // TODO: Ne pas remettre à jour systématiquement les
-  // 'm_items_local_id' mais ne le faire qu'à la demande
-  // car ils ne sont pas utilisés souvent.
+  // TODO: Do not systematically update // 'm_items_local_id' but only
+  // upon request // because they are not often used.
 
   m_matvar_indexes.resize(total_nb_pure_and_impure);
   m_items_local_id.resize(total_nb_pure_and_impure);
@@ -249,7 +250,7 @@ _setItems(SmallSpan<const Int32> local_ids)
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
 
-  // Lambda pour récupérer le milieu associé à la maille
+  // Lambda to retrieve the environment associated with the mesh
   auto env_component_getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> ComponentCell {
     AllEnvCell all_env_cell = all_env_cell_view[index];
     for (EnvCell ec : all_env_cell.subEnvItems()) {
@@ -259,7 +260,7 @@ _setItems(SmallSpan<const Int32> local_ids)
     return {};
   };
 
-  // Lambda pour récupérer le matériau associé à la maille
+  // Lambda to retrieve the material associated with the mesh
   auto mat_component_getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> ComponentCell {
     AllEnvCell all_env_cell = all_env_cell_view[index];
     for (EnvCell ec : all_env_cell.subEnvItems()) {
@@ -278,7 +279,7 @@ _setItems(SmallSpan<const Int32> local_ids)
       helper.setItems(this, mat_component_getter_lambda, local_ids, queue);
   }
 
-  // Mise à jour de MeshComponentPartData
+  // Update MeshComponentPartData
   const bool do_lazy_evaluation = true;
   if (do_lazy_evaluation)
     m_part_data->setNeedRecompute();
@@ -301,7 +302,7 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
   Accelerator::ReducerSum2<Int32> nb_pure(command);
   Accelerator::ReducerSum2<Int32> nb_impure(command);
 
-  // Calcule le nombre de mailles pures et partielles
+  // Calculates the number of pure and impure meshes
   if (is_env) {
     command << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_cell_view, nb_pure, nb_impure)
     {
@@ -339,8 +340,9 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul du nombre de mailles pures et impures sans API accélérateur.
+ * \brief Calculates the number of pure and impure meshes without the accelerator API.
  */
 void ConstituentItemVectorImpl::
 _computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
@@ -353,7 +355,7 @@ _computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
   Int32 nb_pure = 0;
   Int32 nb_impure = 0;
 
-  // Calcule le nombre de mailles pures et partielles
+  // Calculates the number of pure and impure meshes
   if (is_env) {
     ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
       AllEnvCell all_env_cell = *iallenvcell;
@@ -395,7 +397,7 @@ _computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
 void ConstituentItemVectorImpl::
 _recomputePartData()
 {
-  // Mise à jour de MeshComponentPartData
+  // Update MeshComponentPartData
   auto mvi_pure_view = m_matvar_indexes.subView(0, m_nb_pure);
   auto mvi_impure_view = m_matvar_indexes.subView(m_nb_pure, m_nb_impure);
   m_part_data->_setFromMatVarIndexes(mvi_pure_view, mvi_impure_view);

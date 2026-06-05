@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EnumeratorTracer.h                                          (C) 2000-2022 */
 /*                                                                           */
-/* Tracage des énumérateurs sur les composants.                              */
+/* Tracing of enumerators on components.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_ENUMERATORTRACER_H
 #define ARCANE_MATERIALS_ENUMERATORTRACER_H

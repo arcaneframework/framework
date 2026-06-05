@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshBlock.cc                                                (C) 2000-2016 */
 /*                                                                           */
-/* Bloc d'un maillage.                                                       */
+/* Block of a mesh.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,11 +64,12 @@ view()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute le milieu \a env au bloc.
+ * \brief Adds the environment \a env to the block.
  *
- * Cela ne peut se faire que lors de la phase d'initialisation
- * (avant que IMeshMaterialMng::endCreate() ait été appelé).
+ * This can only be done during the initialization phase
+ * (before IMeshMaterialMng::endCreate() has been called).
  */
 void MeshBlock::
 addEnvironment(IMeshEnvironment* env)
@@ -82,11 +83,12 @@ addEnvironment(IMeshEnvironment* env)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Supprime le milieu \a env au bloc.
+ * \brief Removes the environment \a env from the block.
  *
- * Cela ne peut se faire que lors de la phase d'initialisation
- * (avant que IMeshMaterialMng::endCreate() ait été appelé).
+ * This can only be done during the initialization phase
+ * (before IMeshMaterialMng::endCreate() has been called).
  */
 void MeshBlock::
 removeEnvironment(IMeshEnvironment* env)

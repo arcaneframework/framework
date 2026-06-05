@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableArray.inst.h                            (C) 2000-2025 */
 /*                                                                           */
-/* Variable tableau sur un matériau du maillage.                             */
+/* Variable array on a mesh material.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,7 +49,7 @@ copyTo(SmallSpan2<const DataType> input, SmallSpan<const Int32> input_indexes,
        SmallSpan2<DataType> output, SmallSpan<const Int32> output_indexes,
        const RunQueue& queue)
 {
-  // TODO: vérifier tailles des indexes et des dim2Size() identiques
+  // TODO: check if indexes and dim2Size() are identical
   Integer nb_value = input_indexes.size();
   Integer dim2_size = input.dim2Size();
 
@@ -74,8 +74,8 @@ resizeAndFillWithDefault(ValueDataType* data,ContainerType& container,Integer di
   ContainerType& values = data->_internal()->_internalDeprecatedValue();
   Integer dim2_size = values.dim2Size();
 
-  //TODO: faire une version de Array2 qui spécifie une valeur à donner
-  // pour initialiser lors d'un resize() (comme pour Array::resize()).
+  //TODO: create an Array2 version that specifies a value to give
+  // for initialization during a resize() (like for Array::resize()).
   container.resize(dim1_size,dim2_size);
 }
 
@@ -86,9 +86,9 @@ template<typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
-  // Pour éviter de réallouer à chaque fois qu'il y a une augmentation du
-  // nombre de mailles matériaux, alloue un petit peu plus que nécessaire.
-  // Par défaut, on alloue 5% de plus.
+  // To avoid reallocating every time the number of material meshes increases,
+  // allocate a little more than necessary.
+  // By default, we allocate 5% more.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
   var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
 }
@@ -101,8 +101,8 @@ MaterialVariableArrayTraits<DataType>::
 saveData(IMeshComponent* component,IData* data,
          Array<ContainerViewType>& cviews)
 {
-  // Pour les tableaux 2D, on redimensionne directement
-  // \a values en ajoutant le nombre d'éléments pour notre
+  // For 2D arrays, we resize \a values directly
+  // by adding the number of elements for our
   // component.
   ConstArrayView<Array2View<DataType>> views = cviews;
   if (views.empty())
@@ -164,7 +164,7 @@ template<typename DataType> void
 ItemMaterialVariableArray<DataType>::
 serialize(ISerializer* sbuf,Int32ConstArrayView ids)
 {
-  // TODO: essayer de fusionner cette methode avec la variante scalaire.
+  // TODO: try to merge this method with the scalar variant.
   IItemFamily* family = m_global_variable->itemFamily();
   if (!family)
     return;
@@ -181,16 +181,16 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids)
       Int64 nb_val = 0;
       ENUMERATE_ALLENVCELL(iallenvcell,mat_mng,ids_view){
         ENUMERATE_CELL_ENVCELL(ienvcell,(*iallenvcell)){
-          ++nb_val; // 1 valeur pour le milieu
+          ++nb_val; // 1 value for the environment
           EnvCell envcell = *ienvcell;
           if (has_mat)
-            nb_val += envcell.nbMaterial(); // 1 valeur par matériau du milieu.
+            nb_val += envcell.nbMaterial(); // 1 value per environment material.
         }
       }
       sbuf->reserve(m_global_variable->fullName());
-      sbuf->reserveInt64(1);  // Pour le nombre de valeurs.
+      sbuf->reserveInt64(1);  // For the number of values.
       Int64 nb_basic_value = nb_val * nb_count * dim2_size;
-      sbuf->reserveSpan(data_type,nb_basic_value);  // Pour le nombre de valeurs.
+      sbuf->reserveSpan(data_type,nb_basic_value);  // For the number of values.
     }
     break;
   case ISerializer::ModePut:
@@ -314,8 +314,8 @@ _copyToBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<std::byte> 
   const Integer one_data_size = dataTypeSize();
   Integer dim2_size = m_vars[0]->valueView().dim2Size();
 
-  // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
-  // l'alignement est correct.
+  // TODO: Check that the size is a multiple of 'one_data_size' and that
+  // the alignment is correct.
   const Int32 value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
   Array2View<DataType> values(reinterpret_cast<DataType*>(bytes.data()),value_size,dim2_size);
   for( Integer z=0; z<value_size; ++z ){
@@ -344,8 +344,8 @@ _copyFromBufferLegacy(SmallSpan<const MatVarIndex> matvar_indexes,Span<const std
   const Integer one_data_size = dataTypeSize();
   Integer dim2_size = m_vars[0]->valueView().dim2Size();
 
-  // TODO: Vérifier que la taille est un multiple de 'one_data_size' et que
-  // l'alignement est correct.
+  // TODO: Check that the size is a multiple of 'one_data_size' and that
+  // the alignment is correct.
   const Integer value_size = CheckedConvert::toInt32(bytes.size() / one_data_size);
   ConstArray2View<DataType> values(reinterpret_cast<const DataType*>(bytes.data()),value_size,dim2_size);
   for( Integer z=0; z<value_size; ++z ){
@@ -375,7 +375,7 @@ MeshMaterialVariableArray<ItemType,DataType>::
 MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* global_var,
                           VariableRefType* global_var_ref,MatVarSpace mvs)
 : ItemMaterialVariableArray<DataType>(v,global_var,global_var_ref,mvs)
-, m_true_global_variable_ref(global_var_ref) // Sera détruit par la classe de base
+, m_true_global_variable_ref(global_var_ref) // Will be destroyed by the base class
 {
 }
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AllEnvData.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur les valeurs des milieux.                                 */
+/* Information on environment values.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_ALLENVDATA_H
 #define ARCANE_MATERIALS_INTERNAL_ALLENVDATA_H
@@ -35,9 +35,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations sur les valeurs des milieux.
+ * \brief Information on environment values.
  */
 class AllEnvData
 : public TraceAccessor
@@ -59,7 +60,7 @@ class AllEnvData
 
  public:
 
-  //! Notification de la fin de création des milieux/matériaux
+  //! Notification of the end of environment/material creation
   void endCreate(bool is_continue);
 
   ConstituentConnectivityList* componentConnectivityList()
@@ -77,7 +78,7 @@ class AllEnvData
   ConstituentConnectivityList* m_component_connectivity_list = nullptr;
   Ref<IIncrementalItemSourceConnectivity> m_component_connectivity_list_ref;
 
-  //! Niveau de verbosité
+  //! Verbosity level
   Int32 m_verbose_debug_level = 0;
 
   ComponentItemInternalData m_item_internal_data;
@@ -109,4 +110,4 @@ class AllEnvData
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

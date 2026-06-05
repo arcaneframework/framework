@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshComponentPartData.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Données séparées en parties pures et impures d'un constituant.            */
+/* Data separated into pure and impure parts of a constituent.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHCOMPONENTPARTDATA_H
 #define ARCANE_MATERIALS_INTERNAL_MESHCOMPONENTPARTDATA_H
@@ -29,11 +29,12 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Données d'une partie (pure ou partielle) d'un constituant.
+ * \brief Data of a part (pure or partial) of a constituent.
  *
- * Cette classe est interne à Arcane.
+ * This class is internal to Arcane.
  */
 class MeshComponentPartData
 : public TraceAccessor
@@ -50,21 +51,21 @@ class MeshComponentPartData
 
   void checkValid();
 
-  //! Vue sur la partie pure
+  //! View of the pure part
   ComponentPurePartItemVectorView pureView();
 
-  //! Vue sur la partie impure
+  //! View of the impure part
   ComponentImpurePartItemVectorView impureView();
 
-  //! Vue sur la partie \a part
+  //! View of the \a part
   ComponentPartItemVectorView partView(eMatPart part);
 
   /*
-   * \brief Fonctor pour recalculer les parties pures et impures suite à une modification.
+   * \brief Functor to recalculate the pure and impure parts following a modification.
    *
-   * Si ce fonctor n'est pas positionné, alors il faut mettre à jour manuellement
-   * l'instance via l'appel à _setFromMatVarIndexes(). \a func doit rester valide
-   * durant toute la durée de vie de cette instance
+   * If this functor is not set, then the instance must be updated manually
+   * via the call to _setFromMatVarIndexes(). \a func must remain valid
+   * during the entire lifetime of this instance
    */
   void setRecomputeFunctor(IFunctor* func) { m_compute_functor = func; }
 
@@ -79,19 +80,19 @@ class MeshComponentPartData
 
  private:
 
-  //! Gestionnaire de constituants
+  //! Constituent manager
   IMeshComponent* m_component = nullptr;
 
-  //! Indice du constituant pour l'accès aux valeurs partielles.
+  //! Index of the constituent for accessing partial values.
   Int32 m_impure_var_idx = -1;
 
-  //! Liste des valueIndex() de chaque partie
+  //! List of valueIndex() for each part
   FixedArray<UniqueArray<Int32>, 2> m_value_indexes;
 
-  //! Liste des indices dans \a m_items_internal de chaque maille matériau.
+  //! List of indices in \a m_items_internal for each material mesh.
   FixedArray<UniqueArray<Int32>, 2> m_items_internal_indexes;
 
-  //! Liste des ComponentItem pour ce constituant.
+  //! List of ComponentItems for this constituent.
   ConstituentItemLocalIdListView m_constituent_list_view;
 
   IFunctor* m_compute_functor = nullptr;
@@ -99,7 +100,7 @@ class MeshComponentPartData
 
  public:
 
-  // Cette fonction est privée mais doit être rendue publique pour compiler avec CUDA.
+  // This function is private but must be made public to compile with CUDA.
   void _notifyValueIndexesChanged(RunQueue* queue);
 
  private:
@@ -115,4 +116,4 @@ class MeshComponentPartData
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

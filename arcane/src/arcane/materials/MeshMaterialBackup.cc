@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialBackup.cc                                       (C) 2000-2023 */
 /*                                                                           */
-/* Sauvegarde/restauration des valeurs des matériaux et milieux.             */
+/* Backup/restoration of material and environment values.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -102,8 +102,9 @@ setCompressorServiceName(const String& name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Indique si la variable \a var est définie sur le composant \a component.
+ * \brief Indicates if the variable \a var is defined on the component \a component.
  */
 bool MeshMaterialBackup::
 _isValidComponent(IMeshMaterialVariable* var,IMeshComponent* component)
@@ -138,7 +139,7 @@ _save()
   if (!mm)
     ARCANE_FATAL("Can not cast to MeshMaterialMng");
 
-  // Stocke dans \a vars la liste des variables pour accès plus simple qu'avec la map
+  // Store in \a vars the list of variables for easier access than with the map
   Integer max_nb_var = arcaneCheckArraySize(mm->m_full_name_variable_map.size());
   m_vars.reserve(max_nb_var);
   for( const auto& i : mm->m_full_name_variable_map){
@@ -248,9 +249,9 @@ _restore()
   if (m_use_unique_ids){
     info(4) << "RESTORE using uniqueIds()";
     IItemFamily* cell_family = m_material_mng->mesh()->cellFamily();
-    // Si on utilise les uniqueId(), le tableau m_unique_ids_array
-    // contient les valeurs des uniqueId() des mailles. Il faut
-    // ensuite le convertir en localId().
+    // If uniqueIds() are used, the m_unique_ids_array
+    // contains the uniqueId() values of the meshes. It must
+    // then be converted to localId().
     for( const auto& iter : m_unique_ids_array ){
       IMeshComponent* component = iter.first;
       auto& unique_ids = m_unique_ids_array[component];
@@ -272,8 +273,8 @@ _restore()
 void MeshMaterialBackup::
 _restoreV1()
 {
-  // Si on utilise les uniqueId(), alors les localId() peuvent être nuls
-  // si on a supprimé des mailles.
+  // If uniqueIds() are used, then localIds() may be null
+  // if meshes have been deleted.
   bool allow_null_id = m_use_unique_ids;
 
   ENUMERATE_COMPONENT(ic,m_material_mng->components()){
@@ -296,15 +297,15 @@ _restoreV1()
 void MeshMaterialBackup::
 _restoreV2()
 {
-  // Si on utilise les uniqueId(), alors les localId() peuvent être nuls
-  // si on a supprimé des mailles.
+  // If uniqueIds() are used, then localIds() may be null
+  // if meshes have been deleted.
   bool allow_null_id = m_use_unique_ids;
 
   auto components = m_material_mng->components();
 
   for( IMeshMaterialVariable* var : m_vars ){
     VarData* vd = m_saved_data[var];
-    // Décompresse les données si nécessaire
+    // Decompress the data if necessary
     IDataCompressor* compressor = vd->m_data_buffer.m_compressor;
     if (compressor){
       info(5) << "RESTORE decompress variable name=" << var->name();

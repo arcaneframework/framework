@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentConnectivityList.h                               (C) 2000-2023 */
 /*                                                                           */
-/* Gestion des listes de connectivité des constituants.                      */
+/* Management of constituent connectivity lists.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_CONSTITUENTCONNECTIVITYLIST_H
 #define ARCANE_MATERIALS_INTERNAL_CONSTITUENTCONNECTIVITYLIST_H
@@ -31,9 +31,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion des listes de connectivité des constituants.
+ * \brief Management of constituent connectivity lists.
  */
 class ConstituentConnectivityList
 : public TraceAccessor
@@ -70,12 +71,12 @@ class ConstituentConnectivityList
   ConstArrayView<Int16> cellsNbEnvironment() const;
   ConstArrayView<Int16> cellsNbMaterial() const;
 
-  //! Nombre de matériaux de la maille \a cell_id pour le milieu d'indice \a env_id
+  //! Number of materials of the mesh \a cell_id for environment index \a env_id
   Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id);
 
  public:
 
-  // Implémentation de IIncrementalItemSourceConnectivity
+  // Implementation of IIncrementalItemSourceConnectivity
   //@{
   IItemFamily* sourceFamily() const override { return m_cell_family; }
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
@@ -91,7 +92,7 @@ class ConstituentConnectivityList
   IItemFamily* m_cell_family = nullptr;
   Container* m_container = nullptr;
 
-  //! Indice du milieu auquel appartient un matériau
+  //! Index of the environment to which a material belongs
   UniqueArray<Int16> m_environment_for_materials;
 
  private:
@@ -108,4 +109,4 @@ class ConstituentConnectivityList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

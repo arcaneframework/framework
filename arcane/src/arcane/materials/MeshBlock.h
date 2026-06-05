@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshBlock.h                                                 (C) 2000-2016 */
 /*                                                                           */
-/* Bloc d'un maillage.                                                       */
+/* Block of a mesh.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHBLOCK_H
 #define ARCANE_MATERIALS_MESHBLOCK_H
@@ -36,13 +36,14 @@ MATERIALS_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Bloc d'un maillage.
+ * \brief Block of a mesh.
  *
- * Cette classe est à usage interne à Arcane et ne doit pas être utilisée
- * explicitement. Il faut utiliser l'interface IMeshBlock pour accéder
- * aux milieux.
+ * This class is for internal use in Arcane and should not be used
+ * explicitly. The IMeshBlock interface must be used to access
+ * the materials.
  */
 class MeshBlock
 : public TraceAccessor
@@ -75,7 +76,7 @@ class MeshBlock
 
  public:
 
-  //! Fonctions publiques mais réservées au IMeshMaterialMng
+  //! Public functions but reserved for IMeshMaterialMng
   //@{
   void build();
   void addEnvironment(IMeshEnvironment* env);
@@ -84,19 +85,19 @@ class MeshBlock
 
  private:
 
-  //! Gestionnaire de matériaux
+  //! Material manager
   IMeshMaterialMng* m_material_mng;
   
-  //! Identifiant du milieu (indice de ce milieu dans la liste des milieux)
+  //! Material identifier (index of this material in the list of materials)
   Int32 m_block_id;
 
-  //! Nom du milieu
+  //! Material name
   String m_name;
 
-  //! Liste des mailles de ce milieu
+  //! List of meshes for this material
   CellGroup m_cells;
 
-  //! Liste des milieux de ce bloc.
+  //! List of materials/environments in this block.
   UniqueArray<IMeshEnvironment*> m_environments;
 };
 
@@ -112,5 +113,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AllCellToAllEnvCellConverter.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Conversion de 'Cell' en 'AllEnvCell'.                                     */
+/* Conversion of 'Cell' to 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_ALLCELLTOALLENVCELLCONVERTER_H
 #define ARCANE_MATERIALS_ALLCELLTOALLENVCELLCONVERTER_H
@@ -28,26 +28,26 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Table de connectivité des 'Cell' vers leur(s) 'AllEnvCell' destinée
- *        à une utilisation sur accélérateur.
+ * \brief Connectivity table from 'Cell' to its 'AllEnvCell' intended
+ *        for use on accelerator.
  *
- * Classe qui conserve la connectivité de toutes les mailles
- * \a Cell vers toutes leurs mailles \a AllEnvCell.
+ * Class that maintains the connectivity of all meshes
+ * \a Cell to all their meshes \a AllEnvCell.
  *
- * On crée une instance via la méthode create().
+ * An instance is created via the create() method.
  *
- * Le coût de l'initialisation est cher, il faut allouer la mémoire et remplir les
- * structures. On parcours toutes les mailles et pour chaque maille on fait
- * appel au CellToAllEnvCellConverter.
+ * The initialization cost is high; memory must be allocated and structures filled. We iterate through all meshes and for each mesh, we call
+ * the CellToAllEnvCellConverter.
  *
- * Une fois l'instance créée, elle doit être mise à jour à chaque fois que
- * la topologie des matériaux/environnements change (ce qui est également cher).
+ * Once the instance is created, it must be updated every time that
+ * the material/environment topology changes (which is also costly).
  *
- * Cette classe est une classe interne et ne doit pas être manipulée directement.
- * Il faut passer par les helpers associés dans le IMeshMaterialMng et
- * la classe CellToAllEnvCellAccessor.
+ * This class is an internal class and should not be manipulated directly.
+ * You must use the associated helpers in IMeshMaterialMng and
+ * the CellToAllEnvCellAccessor class.
  */
 class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 {
@@ -57,7 +57,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 
  private:
 
-  //! Méthode d'accès à la table de "connectivité" cell -> all env cells
+  //! Access method for the "connectivity" table cell -> all env cells
   ARCCORE_HOST_DEVICE Span<ComponentItemLocalId> operator[](Int32 cell_id) const
   {
     return m_allcell_allenvcell_ptr[cell_id];
@@ -70,15 +70,16 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCell
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Classe d'encapsulation pour accéder à la connectivité équivalente 
- *        cell -> allenvcell. Destinée à être utilisée avec l'API accélérateur
- *        via les RUNCOMMAND_...
- * \note Aucun interet en soit, mis à part le fait d'obliger l'utilisateur à créer
- * cet objet en amout de l'appel à un RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL et donc 
- * de garantir la copie du pointeur AllCellToAllEnvCell pour la lambda à executer sur
- * l'accélérateur
+ * \brief Encapsulation class to access the equivalent connectivity
+ *        cell -> allenvcell. Intended to be used with the accelerator API
+ *        via RUNCOMMAND_...
+ * \note It has no inherent interest, other than forcing the user to create
+ * this object in addition to calling a RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL and thus
+ * to guarantee the copy of the AllCellToAllEnvCell pointer for the lambda to execute on
+ * the accelerator
  */
 class ARCANE_MATERIALS_EXPORT CellToAllEnvCellAccessor
 {
@@ -124,7 +125,7 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 
  public:
 
-  // La version CPU permet de vérifier qu'on a bien fait l'init avant l'ENUMERATE
+  // The CPU version allows verification that initialization was done before ENUMERATE
   ARCCORE_HOST_DEVICE explicit CellToAllComponentCellEnumerator(Int32 cell_id, const CellToAllEnvCellAccessor& acc)
   {
     AllCellToAllEnvCell all_env_view = acc._getAllCellToAllEnvCell();
@@ -153,15 +154,16 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief  Macro pour itérer sur un groupe de mailles dans le but d'itérer
- * sur les allenvcell de chaque maille.
+ * \brief Macro to iterate over a group of meshes in order to iterate
+ * over the allenvcells of each mesh.
  *
- * \note En forçant l'utilisation du CellToAllEnvCellAccessor dans la macro,
- * on assure la capture par copie du pointeur de AllCellToAllEnvCell, permettant
- * l'utilisation du ENUMERATE_CELL_ALLENVCELL.
+ * \note By forcing the use of CellToAllEnvCellAccessor in the macro,
+ * we ensure the capture by copy of the AllCellToAllEnvCell pointer, allowing
+ * the use of ENUMERATE_CELL_ALLENVCELL.
  *
- * TODO Très certainement à déplacer ailleurs si on garde ce proto
+ * TODO Very likely to be moved elsewhere if this prototype is kept
  */
 #define RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(cell_to_allenvcellaccessor, iter_name, cell_group) \
   A_FUNCINFO << cell_group << [=] ARCCORE_HOST_DEVICE(CellLocalId iter_name)
@@ -169,23 +171,23 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Très certainement à déplacer ailleurs si on garde ce proto
+// TODO Very likely to be moved elsewhere if this prototype is kept
 #define A_ENUMERATE_CELL_ALLCOMPONENTCELL(_EnumeratorClassName, iname, cid, cell_to_allenvcellaccessor) \
   for (A_TRACE_COMPONENT(_EnumeratorClassName) iname(::Arcane::Materials::_EnumeratorClassName(cid, cell_to_allenvcellaccessor) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Macro pour itérer sur tous les milieux d'une maille à l'intérieur.
- *        Version "brute et légère" ENUMERATE_CELL_ENVCELL, destinée à un 
- *        emploi sur accélérateur, i.e. au sein d'un RUN_COMMAND...
+ * \brief Macro to iterate over all environments within a mesh.
+ *        "Raw and lightweight" ENUMERATE_CELL_ENVCELL version, intended for
+ *        use on accelerator, i.e. within a RUN_COMMAND...
  *
- * \param iname nom de la variable (type MatVarIndex) permettant l'accès aux 
- *              données.
- * \param cid identifiant de la maille (type Integer).
- * \param cell_to_allenvcellaccessor connectivité cell->allenvcell (type CellToAllEnvCellAccessor)
+ * \param iname variable name (type MatVarIndex) allowing access to
+ *              data.
+ * \param cid mesh identifier (type Integer).
+ * \param cell_to_allenvcellaccessor cell->allenvcell connectivity (type CellToAllEnvCellAccessor)
  */
-// TODO: Très certainement à déplacer ailleurs si on garde ce proto
+// TODO Very likely to be moved elsewhere if this prototype is kept
 #define ENUMERATE_CELL_ALLENVCELL(iname, cid, cell_to_allenvcellaccessor) \
   A_ENUMERATE_CELL_ALLCOMPONENTCELL(CellToAllComponentCellEnumerator, iname, cid, cell_to_allenvcellaccessor)
 
@@ -197,5 +199,4 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableSynchronizer.cc                         (C) 2000-2024 */
 /*                                                                           */
-/* Synchroniseur de variables matériaux.                                     */
+/* Material variable synchronizer.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,22 +88,22 @@ ghostItems(Int32 index)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit \a items avec la liste de tous les MatVarIndex des
- * mailles de \a view.
+ * \brief Fills \a items with the list of all MatVarIndex from the meshes of \a view.
  */
 void MeshMaterialVariableSynchronizer::
 _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue)
 {
   items.clear();
 
-  // NOTE: il est possible d'optimiser en regardant les milieux qui n'ont
-  // qu'un seul matériau car dans ce cas la valeur milieu et la valeur
-  // matériau est la même. De la même manière, s'il n'y a qu'un milieu
-  // alors la valeur globale et milieu est la même. Dans ces cas, il n'est
-  // pas nécessaire d'ajouter la deuxième MatCell dans la liste.
-  // So on fait cette optimisation, il faudra alors modifier la sérialisation
-  // correspondante pour les variables
+  // NOTE: It is possible to optimize by looking at elements that have
+  // only one material, because in that case the element value and the
+  // material value are the same. Similarly, if there is only one element,
+  // then the global value and the element value are the same. In these
+  // cases, it is not necessary to add the second MatCell to the list.
+  // If we implement this optimization, we will then need to modify the
+  // corresponding serialization for the variables
   if (view.size() == 0)
     return;
 
@@ -121,9 +121,9 @@ _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit \a items avec la liste de tous les MatVarIndex des
- * mailles de \a view.
+ * \brief Fills \a items with the list of all MatVarIndex from the meshes of \a view.
  */
 void MeshMaterialVariableSynchronizer::
 _fillCellsSequential(Array<MatVarIndex>& items, AllEnvCellVectorView view)
@@ -140,25 +140,25 @@ _fillCellsSequential(Array<MatVarIndex>& items, AllEnvCellVectorView view)
         }
       }
     }
-    // A priori ajouter cette information n'est pas nécessaire car il
-    // est possible de récupérer l'info de la variable globale.
+    // In principle, adding this information is not necessary because it
+    // is possible to retrieve the global variable info.
     items.add(MatVarIndex(0, view.localId(iallenvcell.index())));
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit \a items avec la liste de tous les MatVarIndex des
- * mailles de \a view.
+ * \brief Fills \a items with the list of all MatVarIndex from the meshes of \a view.
  */
 void MeshMaterialVariableSynchronizer::
 _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue)
 {
   bool has_mat = m_var_space == MatVarSpace::MaterialAndEnvironment;
-  // Fais un Scan pour connaitre l'index de chaque élément et le nombre total
-  // La tableau a (nb_item+1) éléments et la dernière valeur contiendra le
-  // nombre total d'éléments de la liste
+  // Perform a Scan to know the index of each element and the total number
+  // The array has (nb_item+1) elements and the last value will contain the
+  // total number of elements in the list
   Int32 nb_item = view.size();
   UniqueArray<Int32> indexes(queue.allocationOptions());
   indexes.resize(nb_item + 1);
@@ -181,7 +181,7 @@ _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQ
   };
 
   {
-    // Tableau pour conserver la somme finale
+    // Array to store the final sum
     NumArray<Int32, MDDim1> host_total_storage(1, eMemoryRessource::HostPinned);
     SmallSpan<Int32> in_host_total_storage(host_total_storage);
 
@@ -214,8 +214,8 @@ _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQ
           }
         }
       }
-      // A priori ajouter cette information n'est pas nécessaire car il
-      // est possible de récupérer l'info de la variable globale.
+      // In principle, adding this information is not necessary because it
+      // is possible to retrieve the global variable info.
       out_mat_var_indexes[pos] = MatVarIndex(0, view.localId(index));
     };
   }
@@ -241,9 +241,9 @@ recompute()
 {
   IVariableSynchronizer* var_syncer = m_variable_synchronizer;
 
-  // Calcul des informations de synchronisation pour les mailles matériaux.
-  // NOTE: Cette version nécessite que les matériaux soient correctement
-  // synchronisés entre les sous-domaines.
+  // Calculation of synchronization information for material meshes.
+  // NOTE: This version requires that the materials are correctly
+  // synchronized between sub-domains.
 
   IItemFamily* family = var_syncer->itemGroup().itemFamily();
   IParallelMng* pm = var_syncer->parallelMng();
@@ -262,9 +262,9 @@ recompute()
   RunQueue queue = m_material_mng->_internalApi()->runQueue();
 
   {
-    // Ces tableaux doivent être accessibles sur l'accélérateur
-    // TODO: à terme, n'utiliser un seul tableau pour les envois
-    // et un seul pour les réceptions.
+    // These arrays must be accessible on the accelerator
+    // TODO: eventually, use a single array for sends
+    // and a single one for receives.
     MemoryAllocationOptions a = queue.allocationOptions();
     for (Int32 i = 0; i < nb_rank; ++i) {
       m_shared_items[i] = UniqueArray<MatVarIndex>(a);
@@ -272,8 +272,8 @@ recompute()
     }
   }
 
-  // NOTE: les appels à _fillCells() sont indépendants. On pourrait
-  // donc les rendre asynchrones.
+  // NOTE: The calls to _fillCells() are independent. We could
+  // therefore make them asynchronous.
   for (Integer i = 0; i < nb_rank; ++i) {
 
     {

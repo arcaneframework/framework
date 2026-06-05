@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableFactoryMng.cc                           (C) 2000-2022 */
 /*                                                                           */
-/* Gestionnaire des fabriques de variables matériaux.                        */
+/* Material variable factory manager.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,7 +29,8 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: Utiliser Ref<>
+
+// TODO: Use Ref<>
 class MeshMaterialVariableFactoryMng
 : public TraceAccessor
 , public IMeshMaterialVariableFactoryMng

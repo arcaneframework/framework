@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialModifierImpl.h                                  (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de la modification des matériaux et milieux.               */
+/* Implementation of material and environment modification.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIALMODIFIERIMPL_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIALMODIFIERIMPL_H
@@ -122,5 +122,4 @@ class MeshMaterialModifierImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

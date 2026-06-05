@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableDependInfo.h                            (C) 2000-2014 */
 /*                                                                           */
-/* Informations sur une dépendance de variable.                              */
+/* Information about a variable dependency.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_VARIABLEDEPENDINFO_H
 #define ARCANE_MATERIALS_VARIABLEDEPENDINFO_H
@@ -32,8 +32,9 @@ MATERIALS_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une dépendance de variable.
+ * \brief Information about a variable dependency.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableDependInfo
 {
@@ -48,8 +49,8 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableDependInfo
   IMeshMaterialVariable* variable() const { return m_variable; }
 
   /*!
-   * Infos (si disponible) sur l'endroit dans le code source où la dépendance
-   * a été ajoutée.
+   * Info (if available) about the location in the source code where the dependency
+   * was added.
    */
   const TraceInfo& traceInfo() const { return m_trace_info; }
 
@@ -72,4 +73,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

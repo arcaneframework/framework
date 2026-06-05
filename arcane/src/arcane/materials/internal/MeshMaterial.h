@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterial.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Matériau d'un maillage.                                                   */
+/* Mesh material.                                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MESHMATERIAL_H
 #define ARCANE_MATERIALS_INTERNAL_MESHMATERIAL_H
@@ -39,13 +39,14 @@ class MatItemVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Matériau d'un maillage.
+ * \brief Mesh material.
  *
- * Les matériaux sont créés via IMeshMaterialMng::createMaterial().
- * Les matériaux ne peuvent pas être détruits et tous les matériaux doivent
- * être créés lors de l'initialisation. Un matériau peut n'avoir aucune
- * maille.
+ * Materials are created via IMeshMaterialMng::createMaterial().
+ * Materials cannot be destroyed and all materials must
+ * be created during initialization. A material may have no
+ * mesh.
  */
 class MeshMaterial
 : public TraceAccessor
@@ -153,7 +154,7 @@ class MeshMaterial
 
  public:
 
-  //! Fonctions publiques mais réservées au IMeshMaterialMng
+  //! Public functions but reserved for IMeshMaterialMng
   //@{
   void build();
   void resizeItemsInternal(Integer nb_item);
@@ -181,5 +182,4 @@ class MeshMaterial
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

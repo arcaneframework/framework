@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialModifier.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Objet permettant de modifier les matériaux.                               */
+/* Object allowing modification of materials.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -91,9 +91,9 @@ void MeshMaterialModifier::
 endUpdate()
 {
   if (m_has_update) {
-    // IMPORTANT: il faut mettre la m_has_update à \a false avant
-    // l'appel car si m_impl->endUpdate() lève une exception, on va rejouer
-    // la mise à jour dans le destructeur de cette classe.
+    // IMPORTANT: m_has_update must be set to false before
+    // the call because if m_impl->endUpdate() throws an exception, we will re-run
+    // the update in the destructor of this class.
     m_has_update = false;
     m_impl->endUpdate();
   }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2025 */
 /*                                                                           */
-/* Synchroniseur de variables matériaux.                                     */
+/* Material variable synchronizer.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,8 +68,8 @@ class MeshMaterialVariableSynchronizerList::Impl
   explicit Impl(IMeshMaterialMng* material_mng)
   : m_material_mng(material_mng)
   {
-    // Pour utiliser l'ancien (avant la version accélérateur) mécanisme de synchronisation.
-    // TEMPORAIRE: à supprimer fin 2023.
+    // To use the old (pre-accelerator version) synchronization mechanism.
+    // TEMPORARY: to be removed at the end of 2023.
     if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_LEGACY_SYNCHRONIZE", true))
       m_use_generic_version = (v.value() == 0);
   }
@@ -120,9 +120,8 @@ totalMessageSize() const
 void MeshMaterialVariableSynchronizerList::
 apply()
 {
-  // Avec la version 8 des synchronisations, il faut faire obligatoirement
-  // que chaque synchronisation soit bloquante car il n'y a qu'un seul
-  // buffer partagé.
+  // With synchronization version 8, it is mandatory that each synchronization
+  // is blocking because there is only one shared buffer.
   Int32 v = m_p->m_material_mng->synchronizeVariableVersion();
   bool is_blocking = (v == 8);
 
@@ -162,8 +161,8 @@ _beginSynchronize(bool is_blocking)
   m_p->m_is_in_sync = true;
 
   m_p->m_total_size = 0;
-  // TODO: modifier le synchroniser pour faire cela en une passe
-  // de send/recv/wait.
+  // TODO: modify the synchronizer to do this in a single pass
+  // of send/recv/wait.
   IMeshMaterialMng* mm = m_p->m_material_mng;
   m_p->m_mat_env_sync_info = SyncInfo();
   m_p->m_env_only_sync_info = SyncInfo();
@@ -256,15 +255,15 @@ _beginSynchronizeMultiple(SyncInfo& sync_info)
   const Int32 sync_version = sync_info.sync_version;
 
   if (sync_version == 8) {
-    // Version 8. Utilise le buffer commun pour éviter les multiples allocations
+    // Version 8. Use the common buffer to avoid multiple allocations
     sync_info.buf_list = mmvs->commonBuffer();
   }
   else if (sync_version == 7) {
-    // Version 7. Utilise un buffer unique, mais réalloué à chaque fois.
+    // Version 7. Uses a single buffer, but reallocated each time.
     sync_info.buf_list = impl::makeOneBufferMeshMaterialSynchronizeBufferRef(mem);
   }
   else {
-    // Version 6. Version historique avec plusieurs buffers recréés à chaque fois.
+    // Version 6. Historical version with multiple buffers recreated each time.
     sync_info.buf_list = impl::makeMultiBufferMeshMaterialSynchronizeBufferRef(mem);
   }
   if (sync_version < 8) {
@@ -285,20 +284,18 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
   ConstArrayView<MeshMaterialVariable*> vars = sync_info.variables;
   IMeshMaterialSynchronizeBuffer* buf_list = sync_info.buf_list.get();
   IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
-  // Version de la synchronisation qui envoie uniquement
-  // les valeurs des matériaux et des milieux pour les mailles
-  // partagées.
-  // NOTE: Cette version nécessite que les matériaux soient correctement
-  // synchronisés entre les sous-domaines.
+  // Synchronization version that only sends material and environment values
+  // for shared meshes.
+  // NOTE: This version requires that materials are correctly synchronized
+  // between sub-domains.
 
   IVariableSynchronizer* var_syncer = mmvs->variableSynchronizer();
   IParallelMng* pm = var_syncer->parallelMng();
   IMessagePassingMng* mpm = pm->messagePassingMng();
 
-  // TODO: gérer l'alignement des multiples buffer.
+  // TODO: handle the alignment of multiple buffers.
 
-  // TODO: ajouter un tag pour garantir que les synchros sont sur les
-  // memes variables.
+  // TODO: add a tag to ensure that the synchs are on the same variables.
 
   if (!pm->isParallel())
     return;
@@ -324,7 +321,7 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
   Int32ConstArrayView ranks = var_syncer->communicatingRanks();
   Int32 nb_rank = ranks.size();
 
-  // Calcul la taille des buffers et réalloue si nécessaire
+  // Calculate buffer sizes and reallocate if necessary
   for (Integer i = 0; i < nb_rank; ++i) {
     ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
     Integer total_ghost = ghost_matcells.size();
@@ -335,14 +332,14 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
   }
   buf_list->allocate();
 
-  // Poste les receive.
+  // Post the receives.
   for (Integer i = 0; i < nb_rank; ++i) {
     Int32 rank = ranks[i];
     MP::PointToPointMessageInfo msg_info(MP::MessageRank(rank), sync_info.message_tag, MP::eBlockingType::NonBlocking);
     sync_info.requests.add(mpReceive(mpm, buf_list->receiveBuffer(i), msg_info));
   }
 
-  // Copie les valeurs dans les buffers
+  // Copy values into the buffers
   for (Integer i = 0; i < nb_rank; ++i) {
     ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
     Integer total_shared = shared_matcells.size();
@@ -361,10 +358,10 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
     }
   }
 
-  // Attend que les copies soient terminées
+  // Wait for copies to finish
   queue.barrier();
 
-  // Poste les sends
+  // Post the sends
   for (Integer i = 0; i < nb_rank; ++i) {
     Int32 rank = ranks[i];
     MP::PointToPointMessageInfo msg_info(MP::MessageRank(rank), sync_info.message_tag, MP::eBlockingType::NonBlocking);
@@ -395,7 +392,7 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
 
   pm->waitAllRequests(sync_info.requests);
 
-  // Recopie les données recues dans les mailles fantomes.
+  // Recopy the received data into the ghost meshes.
   for (Integer i = 0; i < nb_rank; ++i) {
     ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
     Integer total_ghost = ghost_matcells.size();
@@ -416,7 +413,7 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
   }
   sync_info.message_total_size += buf_list->totalSize();
 
-  // Attend que les copies soient terminées
+  // Wait for copies to finish
   queue.barrier();
 }
 

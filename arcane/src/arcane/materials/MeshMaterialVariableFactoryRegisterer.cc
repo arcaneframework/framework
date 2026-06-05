@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialFactoryRegisterer.cc                            (C) 2000-2022 */
 /*                                                                           */
-/* Singleton permettant d'enregister une fabrique de variable matériaux.     */
+/* Singleton allowing the registration of a material variable factory.       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

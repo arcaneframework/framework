@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AllCellToAllEnvCellConverter.cc                             (C) 2000-2024 */
 /*                                                                           */
-/* Conversion de 'Cell' en 'AllEnvCell'.                                     */
+/* Conversion of 'Cell' to 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -104,7 +104,7 @@ updateValues(IMeshMaterialMng* material_mng,
              Span<Span<ComponentItemLocalId>> allcell_allenvcell,
              Int32 max_nb_env)
 {
-  // mise a jour des valeurs
+  // update values
   CellToAllEnvCellConverter all_env_cell_converter(material_mng);
   RunQueue& queue = material_mng->_internalApi()->runQueue();
   auto command = makeCommand(queue);
@@ -113,7 +113,7 @@ updateValues(IMeshMaterialMng* material_mng,
     AllEnvCell all_env_cell = all_env_cell_converter[cid];
     Integer offset = cid * max_nb_env;
     Int32 nb_env = all_env_cell.nbEnvironment();
-    // Initialize à zéro les indices de 'mem_pools' de ma maille.
+    // Initialize the indices of my mesh's 'mem_pools' to zero.
     for (Int32 x = 0; x < max_nb_env; ++x)
       mem_pool[offset + x] = ComponentItemLocalId();
     if (nb_env != 0) {
@@ -143,12 +143,12 @@ initialize()
   m_envcell_container.resize(m_size);
   m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr = m_envcell_container.to1DSpan();
 
-  // On force la valeur initiale sur tous les éléments car dans le ENUMERATE_CELL ci-dessous
-  // il se peut que m_size (qui vaut maxLocalId()+1) soit different de allCells().size()
+  // We force the initial value on all elements because in the ENUMERATE_CELL below
+  // m_size (which equals maxLocalId()+1) might be different from allCells().size()
   m_envcell_container.fill(Span<ComponentItemLocalId>(), &queue);
 
   m_current_max_nb_env = computeMaxNbEnvPerCell();
-  // TODO: vérifier débordement
+  // TODO: check for overflow
   Int32 pool_size = m_current_max_nb_env * m_size;
   m_mem_pool.resize(pool_size);
   m_mem_pool.fill(ComponentItemLocalId(), &queue);
@@ -182,23 +182,23 @@ initialize()
 void AllCellToAllEnvCellContainer::Impl::
 bruteForceUpdate()
 {
-  // Si les ids ont changé, on doit tout refaire
+  // If the IDs have changed, we must redo everything
   if (m_size != m_material_mng->mesh()->allCells().itemFamily()->maxLocalId() + 1) {
     initialize();
     return;
   }
 
   Int32 current_max_nb_env(computeMaxNbEnvPerCell());
-  // Si les ids n'ont pas changé, on regarde si à cet instant, le nb max d'env par maille a changé
-  // Si ca a changé, refaire le mem pool, sinon, juste update les valeurs
+  // If the IDs have not changed, we check if the maximum number of environments per cell has changed at this moment
+  // If it has changed, recreate the mem pool; otherwise, just update the values
   if (current_max_nb_env != m_current_max_nb_env) {
-    // On n'oublie pas de mettre a jour la nouvelle valeur !
+    // Don't forget to update the new value!
     m_current_max_nb_env = current_max_nb_env;
-    // on recrée le pool
+    // we recreate the pool
     Int32 pool_size = CheckedConvert::multiply(m_current_max_nb_env, m_size);
     m_mem_pool.resize(pool_size);
   }
-  // Mise a jour des valeurs
+  // Update values
   updateValues(m_material_mng, m_mem_pool.to1DSpan(), m_all_cell_to_all_env_cell.m_allcell_allenvcell_ptr, m_current_max_nb_env);
 }
 

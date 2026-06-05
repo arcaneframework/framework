@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialIndirectModifier.cc                             (C) 2000-2023 */
 /*                                                                           */
-/* Objet permettant de modifier indirectement les matériaux.                 */
+/* Object allowing indirect modification of materials.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

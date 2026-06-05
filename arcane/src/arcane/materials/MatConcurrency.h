@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatConcurrency.h                                            (C) 2000-2021 */
 /*                                                                           */
-/* Classes gérant la concurrence pour les matériaux.                         */
+/* Classes managing concurrency for materials.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MATCONCURRENCY_H
 #define ARCANE_MATERIALS_MATCONCURRENCY_H
@@ -31,11 +31,12 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctor sur un interval d'itération instancié via une lambda fonction.
+ * \brief Functor over an iteration interval instantiated via a lambda function.
  *
- * Le type \a ViewType doit être choisi parmi ComponentItemVectorView,
- * MatItemVectorView ou EnvItemVectorView.
+ * The type \a ViewType must be chosen from ComponentItemVectorView,
+ * MatItemVectorView or EnvItemVectorView.
  */
 template<typename ViewType,typename LambdaType>
 class LambdaMatItemRangeFunctorT
@@ -72,8 +73,8 @@ namespace Arcane
 {
   using namespace Materials;
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue du composant \a items_view.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the component view \a items_view.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -84,8 +85,8 @@ namespace Arcane
   }
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue du composant \a items_view avec les options \a options.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the component view \a items_view with the options \a options.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -97,8 +98,8 @@ namespace Arcane
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue milieux \a items_view.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the environment view \a items_view.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -109,8 +110,8 @@ namespace Arcane
   }
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue milieux \a items_view avec les options \a options.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the environment view \a items_view with the options \a options.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -122,8 +123,8 @@ namespace Arcane
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue matériaux \a items_view.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the material view \a items_view.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -134,8 +135,8 @@ namespace Arcane
   }
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue matériaux \a items_view avec les options \a options.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the material view \a items_view with the options \a options.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -156,8 +157,8 @@ namespace Arcane::Parallel
   using namespace Arcane;
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue du composant \a items_view.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the component view \a items_view.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -167,8 +168,8 @@ namespace Arcane::Parallel
   }
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue du composant \a items_view avec les options \a options.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the component view \a items_view with the options \a options.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -179,8 +180,8 @@ namespace Arcane::Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue milieux \a items_view.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the environment view \a items_view.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -190,8 +191,8 @@ namespace Arcane::Parallel
   }
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue milieux \a items_view avec les options \a options.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the environment view \a items_view with the options \a options.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -202,8 +203,8 @@ namespace Arcane::Parallel
   }
 
   /*!
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue matériaux \a items_view.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the material view \a items_view.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -213,8 +214,8 @@ namespace Arcane::Parallel
   }
 
   /*! 
-   * \brief Applique en concurrence la fonction lambda \a lambda_function
-   * \a instance sur la vue matériaux \a items_view avec les options \a options.
+   * \brief Applies the lambda function \a lambda_function
+   * \a instance concurrently on the material view \a items_view with the options \a options.
    * \ingroup Concurrency
    */
   template<typename LambdaType> inline void
@@ -229,5 +230,4 @@ namespace Arcane::Parallel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialExchangeMng.h                                   (C) 2000-2016 */
 /*                                                                           */
-/* Gestion de l'échange des matériaux entre sous-domaines.                   */
+/* Management of material exchange between subdomains.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALEXCHANGEMNG_H
 #define ARCANE_MATERIALS_MESHMATERIALEXCHANGEMNG_H
@@ -31,9 +31,10 @@ class MeshMaterialMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion de l'échange des matériaux entre sous-domaines.
+ * \brief Management of material exchange between subdomains.
  */
 class MeshMaterialExchangeMng
 : public TraceAccessor
@@ -75,4 +76,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

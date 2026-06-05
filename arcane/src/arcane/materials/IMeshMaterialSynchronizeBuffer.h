@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialSynchronizeBuffer.h                            (C) 2000-2023 */
 /*                                                                           */
-/* Interface des buffers pour la synchronisation de variables matériaux.     */
+/* Interface for buffers for material variable synchronization.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_IMESHMATERIALSYNCHRONIZEBUFFER_H
 #define ARCANE_MATERIALS_IMESHMATERIALSYNCHRONIZEBUFFER_H
@@ -25,21 +25,22 @@
 namespace Arcane::Materials
 {
 /*
- * TODO: Cette interface pourrait être utilisée en dehors des matériaux.
- *       Regarder comment la rendre générique.
+ * TODO: This interface could be used outside of materials.
+ *       Look into how to make it generic.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface des buffers pour la synchronisation de variables matériaux.
+ * \brief Interface for buffers for material variable synchronization.
  *
- * Pour utiliser les instances de cette interface, il faut procéder comme suit:
- * 1. Positionner le nombre de rangs via setNbRank().
- * 2. Pour chaque buffer, appeler setSendBufferSize() et setReceiveBufferSize()
- *    pour indiquer le nombre d'éléments de chaque buffer.
- * 3. Appeler allocate() pour allouer les buffers.
- * 4. Récupérer les vues sur les buffers via sendBuffer() ou receiveBuffer().
+ * To use instances of this interface, proceed as follows:
+ * 1. Set the number of ranks via setNbRank().
+ * 2. For each buffer, call setSendBufferSize() and setReceiveBufferSize()
+ *    to indicate the number of elements in each buffer.
+ * 3. Call allocate() to allocate the buffers.
+ * 4. Retrieve views on the buffers via sendBuffer() or receiveBuffer().
  */
 class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
 {
@@ -49,28 +50,28 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
 
  public:
 
-  //! Nombre de rangs
+  //! Number of ranks
   virtual Int32 nbRank() const = 0;
 
-  //! Positionne le nombre de rangs. Cela invalide les buffers d'envoi et de réception
+  //! Sets the number of ranks. This invalidates the send and receive buffers
   virtual void setNbRank(Int32 nb_rank) = 0;
 
-  //! Buffer d'envoi pour le \a i-ème buffer
+  //! Send buffer for the i-th buffer
   virtual Span<Byte> sendBuffer(Int32 i) = 0;
 
-  //! Positionne le nombre d'éléments pour le \a i-ème buffer d'envoi
+  //! Sets the number of elements for the i-th send buffer
   virtual void setSendBufferSize(Int32 i, Int32 new_size) = 0;
 
-  //! Buffer d'envoi pour le \a i-\ème buffer
+  //! Send buffer for the i-th buffer
   virtual Span<Byte> receiveBuffer(Int32 i) = 0;
 
-  //! Positionne le nombre d'éléments pour le \a i-ème buffer de réception
+  //! Sets the number of elements for the i-th receive buffer
   virtual void setReceiveBufferSize(Int32 i, Int32 new_size) = 0;
 
-  //! Alloue la mémoire pour les buffers
+  //! Allocates memory for the buffers
   virtual void allocate() = 0;
 
-  //! Taille totale allouée pour les buffers
+  //! Total size allocated for the buffers
   virtual Int64 totalSize() const = 0;
 };
 
@@ -95,5 +96,4 @@ makeOneBufferMeshMaterialSynchronizeBufferRef(eMemoryRessource mem);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

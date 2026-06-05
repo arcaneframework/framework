@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentConnectivityList.cc                              (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des listes de connectivité des constituants.                      */
+/* Management of constituent connectivity lists.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,10 +37,10 @@ namespace Arcane::Materials
 
 namespace
 {
-  // Cette méthode est la même que MeshUtils::removeItemAndKeepOrder().
-  // Il faudrait pouvoir fusionner les deux.
-  // NOTE: Avec le C++20, on devrait pouvoir supprimer cette méthode et
-  // utiliser std::erase()
+  // This method is the same as MeshUtils::removeItemAndKeepOrder().
+  // It would be necessary to merge the two.
+  // NOTE: With C++20, we should be able to remove this method and
+  // use std::erase()
 
   template <typename DataType>
   ARCCORE_HOST_DEVICE void _removeValueAndKeepOrder(ArrayView<DataType> values, DataType value_to_remove)
@@ -56,7 +56,7 @@ namespace
         return;
     }
     else {
-      // Si l'élément est le dernier, ne fait rien.
+      // If the element is the last one, do nothing.
       if (values[n] == value_to_remove)
         return;
       for (Integer i = 0; i < n; ++i) {
@@ -68,8 +68,8 @@ namespace
       }
     }
 #if defined(ARCCORE_DEVICE_CODE)
-    // Avec Intel DPC++ 2024.1 l'utilisation de cette fonction avec le
-    // backend CUDA provoque une erreur dans l'assembleur généré.
+    // With Intel DPC++ 2024.1, using this function with the
+    // CUDA backend causes an error in the generated assembly.
 #  if !defined(__INTEL_LLVM_COMPILER)
     assert(false);
 #  endif
@@ -82,15 +82,16 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur des données de connectivité pour un type de constituant.
+ * \brief Container for connectivity data for a constituent type.
  */
 class ConstituentConnectivityList::ConstituentContainer
 {
  public:
 
   /*!
-   * \brief Vue sur une liste de constituants des mailles.
+   * \brief View onto a list of mesh constituents.
    */
   class View
   {
@@ -181,11 +182,11 @@ class ConstituentConnectivityList::ConstituentContainer
 
  private:
 
-  //! Nombre de milieux par maille (dimensionné au nombre de mailles)
+  //! Number of environments per cell (sized according to the number of cells)
   VariableArrayInt16 m_nb_component;
-  //! Indice dans \a m_component_list (Dimensionné au nombre de mailles)
+  //! Index in \a m_component_list (Sized according to the number of cells)
   VariableArrayInt32 m_component_index;
-  //! Liste des constituants
+  //! List of constituents
   VariableArrayInt16 m_component_list;
 
  public:
@@ -200,7 +201,7 @@ class ConstituentConnectivityList::ConstituentContainer
   {
     m_nb_component.fill(0);
     m_component_index.fill(0);
-    // Le premier élément de la liste est utilisé pour les constituants vides
+    // The first element of the list is used for empty constituents
     m_component_list.resize(1);
     m_component_list[0] = 0;
   }
@@ -208,8 +209,9 @@ class ConstituentConnectivityList::ConstituentContainer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour calculer le nombre de matériaux d'un milieu.
+ * \brief Class for calculating the number of materials in an environment.
  */
 class ConstituentConnectivityList::NumberOfMaterialComputer
 {
@@ -239,7 +241,7 @@ class ConstituentConnectivityList::NumberOfMaterialComputer
  private:
 
   ConstituentContainer::View m_view;
-  //! Vue indiquant le milieu associé aux matériaux
+  //! View indicating the environment associated with the materials
   SmallSpan<const Int16> m_environment_for_materials;
 };
 
@@ -292,7 +294,7 @@ ConstituentConnectivityList(MeshMaterialMng* mm)
 , m_material_mng(mm)
 , m_container(new Container(mm->meshHandle(), String("ComponentEnviroment") + mm->name()))
 {
-  // Indique si on force la modification dans fillModifiedConstituents()
+  // Indicates if modification is forced in fillModifiedConstituents()
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_MATERIAL_FORCE_TRANSFORM", true)) {
     m_is_force_transform_all_constituants = (v.value() != 0);
     info() << "Force transformation in 'ConstituentConnectivityList' v=" << m_is_force_transform_all_constituants;
@@ -314,13 +316,13 @@ ConstituentConnectivityList::
 void ConstituentConnectivityList::
 endCreate(bool is_continue)
 {
-  // Maintenant (février 2024) on construit toujours les connectivités incrémentales
+  // Now (February 2024) we always build incremental connectivities
   const bool always_build_connectivity = true;
 
-  // S'enregistre auprès la famille pour être notifié des évolutions
-  // mais uniquement si on a demandé le support des modifications incrémentales
-  // pour éviter de consommer inutilement de la mémoire.
-  // A terme on le fera tout le temps
+  // Registers with the family to be notified of changes
+  // but only if incremental modification support was requested
+  // to avoid unnecessarily consuming memory.
+  // Eventually, we will do it all the time
   m_cell_family = m_material_mng->mesh()->cellFamily();
   {
     int opt_flag_value = m_material_mng->modificationFlags();
@@ -338,8 +340,8 @@ endCreate(bool is_continue)
     m_container->m_material.endCreate(is_continue);
   }
 
-  // Remplit un tableau indiquant pour chaque index de matériau l'index
-  // du milieu correspondant.
+  // Fills an array indicating the index
+  // of the corresponding environment for each material index.
   {
     ConstArrayView<MeshMaterial*> materials = m_material_mng->trueMaterials();
     const Int32 nb_mat = materials.size();
@@ -367,12 +369,12 @@ _addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
 
   SmallSpan<Int16> nb_component_view = component.m_nb_component_as_array.view();
 
-  // TODO: Utiliser des tableaux de travail à conserver.
+  // TODO: Use persistent working arrays.
   NumArray<Int32, MDDim1> new_indexes(nb_item, queue.memoryRessource());
-  // Pour recopier le nombre d'éléments à ajouter du device vers le CPU
+  // To copy the number of elements to add from the device to the CPU
   NumArray<Int32, MDDim1> new_indexes_to_add(1, eMemoryRessource::HostPinned);
 
-  // Calcul l'index des nouveaux éléments
+  // Calculates the index of the new elements
   {
     Accelerator::GenericScanner scanner(queue);
     SmallSpan<Int32> new_indexes_view = new_indexes;
@@ -408,9 +410,9 @@ _addCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
       const Int16 n = nb_component_view[cell_id];
       Int32 new_pos = current_list_index + new_indexes_view[i];
       if (n != 0) {
-        // Recopie les anciennes valeurs.
-        // TODO: cela laisse des trous dans la liste qu'il faudra supprimer
-        // via un compactage.
+        // Copies the old values.
+        // TODO: This leaves holes in the list that must be removed
+        // via compaction.
         Int32 current_pos = component_index_view[cell_id];
         SmallSpan<const Int16> current_values(&component_list_view[current_pos], n);
         SmallSpan<Int16> new_values(&component_list_view[new_pos], n);
@@ -447,9 +449,9 @@ _removeCells(Int16 component_id, SmallSpan<const Int32> cells_local_id,
     const Int32 current_pos = component_index[cell_id];
     const Int32 n = nb_component[cell_id];
     ArrayView<Int16> current_values(n, &component_list[current_pos]);
-    // Enlève de la liste le milieu supprimé
+    // Removes the deleted middle element from the list
     _removeValueAndKeepOrder(current_values, component_id);
-    // Met une valeur invalide pour indiquer que l'emplacement est libre
+    // Sets an invalid value to indicate that the location is free
     current_values[n - 1] = (-1);
     --nb_component[cell_id];
   };
@@ -577,10 +579,10 @@ fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
     auto [i] = iter();
     Int32 local_id = cells_local_id[i];
     bool do_transform = false;
-    // En cas d'ajout on passe de pure à partiel s'il y a plusieurs milieux ou
-    // plusieurs matériaux dans le milieu.
-    // En cas de suppression, on passe de partiel à pure si on est le seul matériau
-    // et le seul milieu.
+    // In case of addition, we switch from pure to partial if there are multiple environments or
+    // multiple materials in the environment.
+    // In case of removal, we switch from partial to pure if we are the only material
+    // and the only environment.
     const Int16 nb_env = cells_nb_env[local_id];
     if (is_add) {
       do_transform = (nb_env > 1);
@@ -619,8 +621,8 @@ fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
   {
     auto [i] = iter();
     Int32 local_id = cells_local_id[i];
-    // On ne prend l'indice global que si on est le seul matériau et le seul
-    // milieu de la maille. Sinon, on prend un indice multiple
+    // We only take the global index if we are the only material and the only
+    // environment in the mesh. Otherwise, we take a multiple index
     bool is_partial = (cells_nb_env[local_id] > 1 || nb_mat_computer.cellNbMaterial(local_id, env_id) > 1);
     cells_is_partial[i] = is_partial;
   };
@@ -628,9 +630,10 @@ fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Affiche les constituants d'une liste d'entités
- * @param cells_local_id Liste des numéros locaux des entitiés
+ * \brief Displays the constituents of a list of entities
+ * @param cells_local_id List of local IDs of the entities
  */
 void ConstituentConnectivityList::
 printConstituents(SmallSpan<const Int32> cells_local_id) const
@@ -649,29 +652,29 @@ printConstituents(SmallSpan<const Int32> cells_local_id) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Remplit les constituants concernés par une modification.
+ * \brief Fills the constituents affected by a modification.
  *
- * Les mailles concernées par la modification sont données \a cells_local_id.
- * \a modified_mat_id est le numéro du matériau ajouté (si \a is_add est vrai)
- * ou supprimé (si \a is_add est faux).
+ * The meshes affected by the modification are given by \a cells_local_id.
+ * \a modified_mat_id is the ID of the material added (if \a is_add is true)
+ * or removed (if \a is_add is false).
  *
- * Met à \a true les valeurs de \a is_modified_materials et \a is_modified_environments
- * s'ils sont dans une des mailles de \a cells_local_id.
+ * Sets \a is_modified_materials and \a is_modified_environments to true
+ * if they are in one of the meshes in \a cells_local_id.
  *
- * Cette méthode permet d'optimiser le calcul des constituants qui seront impactés
- * par une modification en tentant de déterminer à l'avance ceux qui seront
- * impactés. Cela permet d'éviter d'appeler des noyaux de calcul (par exemple calculer la liste
- * de mailles à transformer d'un constituant) si on sait que le constituant n'est pas impacté.
+ * This method allows optimizing the calculation of constituents that will be impacted
+ * by a modification by trying to determine in advance which ones will be
+ * impacted. This avoids calling calculation kernels (for example, calculating the list
+ * of meshes to transform for a constituent) if we know the constituent is not impacted.
  *
- * Il est possible de revenir à l'ancien mécanisme et de supprimer cette optimisation
- * en remplissant \a is_modified_materials et \a is_modified_environments à \a true pour tout
- * le monde. Cela est le cas si m_is_force_transform_all_constituants est vrai.
+ * It is possible to revert to the old mechanism and remove this optimization
+ * by filling \a is_modified_materials and \a is_modified_environments with \a true for all
+ * constituents. This is the case if m_is_force_transform_all_constituants is true.
  *
- * \note il est important que \a is_modified_materials et \a is_modified_environments soit
- * vrai si le constituant correspondant est modifié. Sans cela, il y aura une incohérence
- * dans les constituants. Par contre, ce n'est pas grave si on marque un constituant modifié
- * et qu'il s'avère que ce n'est pas le cas. Cela signifie juste qu'on va faire des
- * opérations inutiles (dans MeshMaterialVariableIndexer::transformCells()).
+ * \note it is important that \a is_modified_materials and \a is_modified_environments is
+ * true if the corresponding constituent is modified. Otherwise, there will be an inconsistency
+ * in the constituents. However, it is not serious if we mark a constituent as modified
+ * and it turns out not to be the case. This just means we will perform unnecessary
+ * operations (in MeshMaterialVariableIndexer::transformCells()).
  */
 void ConstituentConnectivityList::
 fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
@@ -698,8 +701,8 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
   const bool force_transform = m_is_force_transform_all_constituants;
 
   if (force_transform) {
-    // Si on force la modification pour tout le monde,
-    // remplit directement le tableau des milieux et matériaux modifiés
+    // If we force the modification for everyone,
+    // directly fill the array of modified environments and materials
     command << RUNCOMMAND_LOOP1(iter, n)
     {
       auto [i] = iter();
@@ -720,25 +723,25 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
     const Int32 local_id = cells_local_id[i];
     const Int16 nb_mat_in_modified_env = nb_mat_computer.cellNbMaterial(local_id, modified_env_id);
     const Int16 nb_env = cells_nb_environment[local_id];
-    // Pas de milieux dans la maille. Il s'agit de l'initialisation.
-    // Aucun matériau ni milieu autre que celui ajouté n'est concerné.
+    // No environments in the mesh. This is initialization.
+    // No material or environment other than the added one is affected.
     if (nb_env == 0)
       return;
     //tm->info() << "FillModified: Cell lid=" << local_id << " nb_mat_in_modified_env=" << nb_mat_in_modified_env << " nb_env=" << nb_env;
     SmallSpan<const Int16> cell_envs(environments_view.components(local_id));
     for (Int16 x : cell_envs) {
-      // Ne traite pas le milieu en cours de modification
+      // Do not process the environment currently being modified
       if (x == modified_env_id)
         continue;
       bool do_transform = false;
       if (is_add) {
-        // En cas d'ajout, on se transforme s'il n'y a qu'un milieu et que c'est nous
-        // (c'est forcément le cas, car on est dans la boucle des milieux de la maille)
+        // In case of addition, we transform if there is only one environment and it is us
+        // (this is necessarily the case, as we are in the loop of the mesh environments)
         do_transform = nb_env == 1;
       }
       else {
-        // Je me transforme si on passe de 2 milieux à 1 seul (je suis forcément ce milieu
-        // si je suis dans la boucle)
+        // I transform if we go from 2 environments to only 1 (I am necessarily this environment
+        // if I am in the loop)
         do_transform = nb_env == 2;
       }
       if (do_transform) {
@@ -749,12 +752,12 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
 
     SmallSpan<const Int16> cell_mats(materials_view.components(local_id));
     for (Int16 x : cell_mats) {
-      // Ne traite pas le matériau en cours de modification
+      // Do not process the material currently being modified
       if (x == modified_mat_id)
         continue;
       bool do_transform = false;
       Int16 my_env_id = env_for_mat[x];
-      // TODO: ne calculer que si nécessaire.
+      // TODO: calculate only if necessary.
       Int16 my_mat_nb_env = nb_mat_computer.cellNbMaterial(local_id, my_env_id);
       //tm->info() << "FillModified:   CheckMat lid=" << local_id
       //           << " mat_id=" << x << " mat_env=" << my_env_id
@@ -765,12 +768,11 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
         do_transform = (nb_env == 1) && (my_mat_nb_env == 1);
       }
       else {
-        // Je me transforme si je suis le matériau du milieu modifié et qu'il n'y
-        // a que deux matériaux dans le milieu (car je vais me retrouver le seul matériau
-        // du milieu)
-        // NOTE: cette condition est nécessaire mais ne garantit par que je vais
-        // forcément me transformer. Pour l'instant on laisse cela pour ne pas être trop
-        // restrictif.
+        // I transform if I am the material of the modified environment and there are only two materials in the environment (because I will become the only material
+        // of the environment)
+        // NOTE: this condition is necessary but does not guarantee that I will
+        // necessarily transform. For now, we leave it this way to not be too
+        // restrictive.
         do_transform = true;
         if (nb_env == 1)
           do_transform = (my_env_id == modified_env_id) && (my_mat_nb_env == 2);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IncrementalComponentModifier.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Modification incrémentale des constituants.                               */
+/* Incremental modification of constituents.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_INCREMENTALCOMPONENTMODIFIER_H
 #define ARCANE_MATERIALS_INTERNAL_INCREMENTALCOMPONENTMODIFIER_H
@@ -31,11 +31,12 @@ class CopyBetweenPartialAndGlobalArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Modification incrémentale des matériaux.
+ * \brief Incremental modification of materials.
  *
- * Il faut appeler initialize() pour initialiser l'instance puis appeler
- * apply() pour chaque opération.
+ * You must call initialize() to initialize the instance, then call
+ * apply() for each operation.
  */
 class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 : public TraceAccessor
@@ -63,9 +64,9 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
   bool m_do_copy_between_partial_and_pure = true;
   bool m_do_init_new_items = true;
   bool m_is_debug = false;
-  //! 1 ou 2 si on utilise une version générique pour les copies entre pure et partiel
+  //! 1 or 2 if we use a generic version for copies between pure and partial
   Int32 m_use_generic_copy_between_pure_and_partial = 0;
-  //! Vrai si on force à utiliser une seule commande pour le redimensionnement.
+  //! True if we force the use of a single command for resizing.
   bool m_force_multiple_command_for_resize = false;
 
  public:
@@ -107,4 +108,4 @@ class ARCANE_MATERIALS_EXPORT IncrementalComponentModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

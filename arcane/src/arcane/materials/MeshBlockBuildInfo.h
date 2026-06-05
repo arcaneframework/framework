@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshBlockBuildInfo.h                                        (C) 2000-2013 */
 /*                                                                           */
-/* Informations pour la création d'un bloc.                                  */
+/* Information for the creation of a block.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHBLOCKBUILDINFO_H
 #define ARCANE_MATERIALS_MESHBLOCKBUILDINFO_H
@@ -37,45 +37,46 @@ class IMeshEnvironment;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Informations pour la création d'un bloc.
+ * \brief Brief: Information for the creation of a block.
  *
- * Cette instance contient les infos nécessaire à la création d'un bloc.
+ * This instance contains the necessary information for the creation of a block.
  *
- * Pour plus d'infos, se reporter à IMeshBlock.
+ * For more information, refer to IMeshBlock.
  *
 
- * Une fois les informations spécifiées de création spécifiées, il faut créer le bloc
+ * Once the specified creation information is provided, the block must be created
  * via IMeshMaterialMng::createBlock().
  */
 class ARCANE_MATERIALS_EXPORT MeshBlockBuildInfo
 {
  public:
 
-  //! Créé les informations pour un bloc de nom \a name sur les mailles \a cells.
+  //! Creates the information for a block named \a name on the meshes \a cells.
   MeshBlockBuildInfo(const String& name,const CellGroup& cells);
   ~MeshBlockBuildInfo();
 
  public:
 
-  //! Nom du bloc
+  //! Block name
   const String& name() const { return m_name; }
 
-  //! Liste des entités du bloc
+  //! List of block entities
   const CellGroup& cells() const { return m_cells; }
 
   /*!
-   * \brief Ajoute le milieu \a env au bloc
+   * \brief Brief: Adds the environment \a env to the block
    *
-   * Le milieu doit déjà avoir été créé via
+   * The environment must already have been created via
    * IMeshMaterialMng::createEnvironment().
    */
   void addEnvironment(IMeshEnvironment* env);
 
  public:
 
-  //! Liste des milieux du bloc.
+  //! List of environments in the block.
   ConstArrayView<IMeshEnvironment*> environments() const
   {
     return m_environments;
@@ -100,5 +101,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialModifier.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Objet permettant de modifier les matériaux.                               */
+/* Object allowing material modification.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALMODIFIER_H
 #define ARCANE_MATERIALS_MESHMATERIALMODIFIER_H
@@ -25,21 +25,22 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Objet permettant de modifier les matériaux ou les milieux.
+ * \brief Object allowing modification of materials or media.
  *
- * Cette classe fournit les méthodes pour modifier la liste des
- * mailles composant un matériaux ou un milieu.
+ * This class provides methods to modify the list of
+ * meshes composing a material or a medium.
  *
- * Les modifications se font directement sur les matériaux. Les milieux
- * correspondants sont automatiquement mis à jour. Il est possible
- * soit d'ajouter des mailles dans un matériaux (addCells())
- * soit d'en supprimer (removeCells()). Les modifications ne sont
- * prise en compte que lors de l'appel à endUpdate(). Cette dernière méthode
- * n'a pas besoin d'être appelée explicitement: elle l'est automatiquement
- * lors de l'appel au destructeur.
- * \todo ajouter exemple.
+ * Modifications are made directly on the materials. The corresponding media
+ * are automatically updated. It is possible
+ * either to add meshes to a material (addCells())
+ * or to remove them (removeCells()). The modifications are not
+ * taken into account until endUpdate() is called. This last method
+ * does not need to be called explicitly: it is called automatically
+ * when the destructor is called.
+ * \todo add example.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
 {
@@ -51,49 +52,47 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
  public:
 
   /*!
-   * \brief Ajoute les mailles d'indices locaux \a ids au matériau \a mat.
+   * \brief Adds the meshes with local indices \a ids to the material \a mat.
    */
   void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
   /*!
-   * \brief Supprime les mailles d'indices locaux \a ids au matériau \a mat.
+   * \brief Removes the meshes with local indices \a ids from the material \a mat.
    */
   void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
   /*!
-   * \brief Met à jour les structures après une modification.
+   * \brief Updates the structures after a modification.
    *
-   * Cette méthode est automatiquement appelée dans le destructeur de
-   * l'instance si nécessaire.
+   * This method is automatically called in the instance's destructor if necessary.
    */
   void endUpdate();
 
   /*!
-   * \brief Indique si on copie les valeurs entre pure et partiel lors
-   * d'un changement d'état de la maille.
+   * \brief Indicates whether values are copied between pure and partial states when
+   * a change in the mesh state occurs.
    *
-   * Si vrai (le défaut), alors on recopie la valeur partielle
-   * d'une maille dans la valeur pure lors du passage de la maille partielle
-   * en maille pure.
+   * If true (the default), the partial value
+   * of a mesh is copied into the pure value when the partial mesh
+   * transitions to a pure mesh.
    */
   void setDoCopyBetweenPartialAndPure(bool v);
 
   /*!
-   * \brief Indique si on initialise les nouvelles mailles matériaux ou milieux créées
+   * \brief Indicates whether newly created material or media meshes are initialized.
    *
-   * Si vrai (le défaut), alors les mailles constituants nouvellement créées
-   * sont initialisées. La valeur utilisée pour l'initialisation dépend de
+   * If true (the default), the newly created constituent meshes
+   * are initialized. The value used for initialization depends on
    * IMeshMaterialMng::isDataInitialisationWithZero().
    */
   void setDoInitNewItems(bool v);
 
   /*!
-   * \brief Indique si on conserve les tableaux de travail entre les modifications
+   * \brief Indicates whether work buffers are preserved between modifications.
    *
-   * Si vrai (le défaut), les tableaux de travail sont conservés entres les
-   * instances de cette classe. Cela permet d'éviter de réallouer ces tableaux entre
-   * chaque utilisation de cette classe mais en contrepartie la consommation
-   * mémoire peut augmenter.
+   * If true (the default), the work buffers are preserved between
+   * instances of this class. This prevents these buffers from being reallocated between
+   * each use of this class, but consequently, memory consumption may increase.
    */
   void setPersistantWorkBuffer(bool v);
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialSynchronizeBuffer.cc                            (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des buffers pour la synchronisation de variables matériaux.       */
+/* Buffer management for synchronizing material variables.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

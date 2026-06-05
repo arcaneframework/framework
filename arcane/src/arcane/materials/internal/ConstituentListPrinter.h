@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentListPrinter.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Fonctions utilitaires d'affichage des constituants.                       */
+/* Utility functions for displaying constituents.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_COMPONENTLISTPRINTER_H
 #define ARCANE_MATERIALS_INTERNAL_COMPONENTLISTPRINTER_H
@@ -29,8 +29,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions utilitaires d'affichage des constituants.
+ * \brief Utility functions for displaying constituents.
  */
 class ARCANE_MATERIALS_EXPORT ConstituentListPrinter
 : public TraceAccessor

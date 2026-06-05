@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialModifierImpl.cc                                 (C) 2000-2024 */
 /*                                                                           */
-/* Implémentation de la modification des matériaux et milieux.               */
+/* Implementation of material and environment modification.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -196,8 +196,9 @@ _checkMayOptimize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique les opérations enregistrées.
+ * \brief Applies the recorded operations.
  */
 void MeshMaterialModifierImpl::
 endUpdate()
@@ -247,8 +248,8 @@ _endUpdate()
     IMeshMaterial* mat = op->material();
     const IMeshComponentInternal* mci = mat->_internalApi();
 
-    // N'appelle la méthode que si l'affichage sera réalisé pour éviter
-    // de recopier 'op->ids()' sur l'hôte.
+    // Only calls the method if display will be performed to avoid
+    // copying 'op->ids()' to the host.
     if (is_display)
       linfo() << "MODIFIER_CELLS_TO_MATERIAL: mat=" << mat->name()
               << " is_add=" << op->isAdd()
@@ -262,7 +263,7 @@ _endUpdate()
     is_optimization_active = _checkMayOptimize();
   linfo() << "Check optimize ? = " << is_optimization_active;
 
-  // Tableau de travail utilisé lors des modifications incrémentales
+  // Work table used during incremental modifications
   if (!m_incremental_modifier){
     linfo() << "Creating IncrementalComponentModifier";
     m_incremental_modifier = std::make_unique<IncrementalComponentModifier>(all_env_data, m_queue);
@@ -288,8 +289,8 @@ _endUpdate()
 
       m_incremental_modifier->m_work_info.setCurrentOperation(op);
 
-      // Vérifie dans le cas des mailles à ajouter si elles ne sont pas déjà
-      // dans le matériau et dans le cas des mailles à supprimer si elles y sont.
+      // Checks in the case of cells to be added if they are not already
+      // in the material and in the case of cells to be removed if they are.
       if (arcaneIsCheck())
         op->filterIds();
 
@@ -351,13 +352,13 @@ _updateEnvironmentsNoOptimize()
   Int32UniqueArray cells_to_remove;
   info(4) << "CHECK ENVIRONMENTS";
 
-  // Regarde s'il faut ajouter ou supprimer des mailles d'un milieu
-  // en fonction de celles qui ont été ajoutées ou supprimées dans les
-  // matériaux.
+  // Checks if cells need to be added or removed from an environment
+  // based on those that were added or removed in the
+  // materials.
   for( IMeshEnvironment* env : envs ){
     
-    // Pour les milieux ne contenant qu'un seul materiau, il n'y a rien
-    // à faire car le groupe materiau est le meme que le groupe milieu
+    // For environments containing only one material, there is nothing
+    // to do because the material group is the same as the environment group
     if (env->nbMaterial()==1)
       continue;
 
@@ -376,7 +377,7 @@ _updateEnvironmentsNoOptimize()
         Int32 mark = cells_marker[icell.itemLocalId()];
         if (mark==(-1)){
           //mark = 0;
-          // Maille a ajouter.
+          // Cell to add.
           cells_to_add.add(icell.itemLocalId());
         }
         //++mark;

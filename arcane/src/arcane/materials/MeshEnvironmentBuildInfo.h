@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshEnvironmentBuildInfo.h                                  (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour la création d'un milieu.                                */
+/* Information for creating an environment.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHENVIRONMENTBUILDINFO_H
 #define ARCANE_MATERIALS_MESHENVIRONMENTBUILDINFO_H
@@ -26,16 +26,17 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Informations pour la création d'un milieu.
+ * \brief Information for creating an environment.
  *
- * Cette instance contient les infos nécessaire à la création d'un milieu.
- * Une fois les informations spécifiées, il faut créer le milieu
+ * This instance contains the necessary information to create an environment.
+ * Once the information is specified, the environment must be created
  * via IMeshMaterialMng::createEnvironment().
  *
- * Pour l'instant, la seule information pertinante sur un milieu est son
- * nom et la liste des matériaux le composant.
+ * For now, the only relevant information about an environment is its
+ * name and the list of materials composing it.
  */
 class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
 {
@@ -47,8 +48,8 @@ class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
    public:
     String m_name;
    public:
-    // Le constructeur vide ne doit pas être dispo mais ca plante à
-    // la compilation avec VS2010 s'il est absent
+    // The default constructor should not be available but it crashes at
+    // compilation with VS2010 if it is absent
     MatInfo() {}
   };
  public:
@@ -58,13 +59,13 @@ class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
 
  public:
 
-  //! Nom du milieu
+  //! Name of the environment
   const String& name() const { return m_name; }
 
   /*!
-   * \brief Ajoute le matériau de nom \a name au milieu
+   * \brief Adds the material named \a name to the environment
    *
-   * Le matériau doit déjà avoir été enregistré via
+   * The material must already have been registered via
    * IMeshMaterialMng::registerMaterialInfo().
    */
   void addMaterial(const String& name);
@@ -73,7 +74,7 @@ class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
 
   /*!
    * \internal
-   * Liste des matériaux.
+   * List of materials.
    */
   ConstArrayView<MatInfo> materials() const
   {
@@ -96,5 +97,4 @@ class ARCANE_MATERIALS_EXPORT MeshEnvironmentBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

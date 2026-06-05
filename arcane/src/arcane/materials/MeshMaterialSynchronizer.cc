@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialSynchronizer.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Synchronisation des entités des matériaux.                                */
+/* Material entity synchronization.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,23 +68,23 @@ synchronizeMaterialsInCells()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que les mailles des matériaux sont bien cohérentes entre les
- * sous-domaines.
- * Cette méthode est collective
+ * \brief Checks that material meshes are consistent between subdomains.
+ * This method is collective
  */
 void MeshMaterialSynchronizer::
 checkMaterialsInCells(Integer max_print)
 {
   /*
-    Pour cela, on utilise une variable aux mailles et on applique
-    l'algorithme suivant pour chaque matériau:
-    - le sous-domaine propriétaire remplit cette variable
-    avec l'indice du matériau
-    - la variable est synchronisée.
-    - chaque sous-domaine vérifie ensuite pour chaque maille
-    que si la variable a pour valeur l'indice du matériau, alors
-    ce matériau est présent.
+    To do this, we use a mesh variable and apply
+    the following algorithm for each material:
+    - the owning subdomain fills this variable
+    with the material index
+    - the variable is synchronized.
+    - each subdomain then checks for every mesh
+    that if the variable has the material index, then
+    this material is present.
   */
 
   IMesh* mesh = m_material_mng->mesh();

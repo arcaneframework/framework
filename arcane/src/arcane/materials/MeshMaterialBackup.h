@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialBackup.h                                        (C) 2000-2023 */
 /*                                                                           */
-/* Sauvegarde/restauration des valeurs des matériaux et milieux.             */
+/* Saving/restoring material and medium values.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALBACKUP_H
 #define ARCANE_MATERIALS_MESHMATERIALBACKUP_H
@@ -34,16 +34,16 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Sauvegarde/restoration des valeurs des matériaux et milieux.
+ * \brief Saving/restoring material and medium values.
  *
- * Les instances de cette classe ne peuvent être utilisées que pour une
- * seule sauvegarde et une seule restauration.
+ * Instances of this class can only be used for a single save and a single restore.
  *
- * Il est possible de spécifier le nom d'un service de compression
- * pour les données avant les sauvegardes via la méthode setCompressorServiceName().
- * Si cette méthode n'est pas appelée, la valeur par défaut est celle de
+ * It is possible to specify the name of a compression service
+ * for the data before saving via the setCompressorServiceName() method.
+ * If this method is not called, the default value is that of
  * IMeshMaterialMng::dataCompressorServiceName().
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialBackup
@@ -58,7 +58,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialBackup
 
  public:
 
-  //! Nom du service utilisé pour compresser les données.
+  //! Name of the service used to compress the data.
   void setCompressorServiceName(const String& name);
   const String& compressorServiceName() const { return m_compressor_service_name; }
 
@@ -98,5 +98,4 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialBackup
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

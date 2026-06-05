@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentModifierWorkInfo.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Structure de travail utilisée lors de la modification des constituants.   */
+/* Work structure used when modifying constituents.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,7 +68,7 @@ initialize(Int32 max_local_id, Int32 nb_material, Int32 nb_environment, RunQueue
 void ConstituentModifierWorkInfo::
 setRemovedCells(ConstArrayView<Int32> local_ids, bool value)
 {
-  // Positionne le filtre des mailles supprimées.
+  // Positions the deleted cells filter.
   for (Int32 lid : local_ids)
     m_removed_local_ids_filter[lid] = value;
 }

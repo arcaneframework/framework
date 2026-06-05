@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorMeshMaterialSynchronizerImpl.cc                          (C) 2000-2024 */
+/* AcceleratorMeshMaterialSynchronizerImpl.cc                  (C) 2000-2024 */
 /*                                                                           */
-/* Synchronisation des entités des matériaux.                                */
+/* Synchronization of material entities.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,19 +59,19 @@ bool AcceleratorMeshMaterialSynchronizerImpl::
 synchronizeMaterialsInCells()
 {
   /*
-    L'algorithme utilisé est le suivant:
+    The algorithm used is as follows:
 
-    On utilise une variable aux mailles qui utilise un bit pour chaque
-    matériau pour indiquer sa présence: si ce bit est positionné, le matériau
-    est présent, sinon il est absent. La variable utilisée est donc de type
-    ArrayByte aux mailles. Les méthodes _hasBit() et _setBit() permettent
-    de positionner le bit d'un matériau donné.
+    We use a mesh variable that uses a bit for each
+    material to indicate its presence: if this bit is set, the material
+    is present, otherwise it is absent. The variable used is therefore of type
+    ArrayByte on the meshes. The _hasBit() and _setBit() methods allow
+    setting the bit of a given material.
 
-    1. Le sous-domaine remplit cette variables pour ces mailles.
-    2. La variable est synchronisée.
-    3. Le sous-domaine compare pour chacune de ses mailles fantômes
-    ce tableau de présence des matériaux et ajoute/supprime les matériaux en fonction
-    de ce tableau.
+    1. The subdomain fills this variable for these meshes.
+    2. The variable is synchronized.
+    3. The subdomain compares for each of its ghost meshes
+    this material presence array and adds/removes materials based on
+    this array.
   */
   IMesh* mesh = m_material_mng->mesh();
   if (!mesh->parallelMng()->isParallel())

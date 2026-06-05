@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariable.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Variable sur un matériau du maillage.                                     */
+/* Variable on a mesh material.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLE_H
 #define ARCANE_MATERIALS_MESHMATERIALVARIABLE_H
@@ -57,20 +57,20 @@ class InitializeWithZeroArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \ingroup ArcaneMaterials
- * \brief Classe de base des variables matériaux.
+ * \brief Base class for material variables.
  *
- * Cette classe contient l'implémentation des variables matériaux. Elle
- * est interne à Arcane. En général, c'est IMeshMaterialVariable qu'il
- * faut utiliser.
+ * This class contains the implementation of material variables. It
+ * is internal to Arcane. Generally, IMeshMaterialVariable should be used.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 : public IMeshMaterialVariable
 {
   friend MeshMaterialVariablePrivate;
-  // Pour accès à 'copyToBuffer', 'copyFromBuffer'. A supprimer ensuite
+  // For access to 'copyToBuffer', 'copyFromBuffer'. To be removed later
   friend MeshMaterialVariableSynchronizerList;
 
  public:
@@ -93,7 +93,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  public:
 
-  //! @name Gestion des dépendances
+  //! @name Dependency Management
   //@{
   void update(IMeshMaterial* mat) override;
   void setUpToDate(IMeshMaterial* mat) override;
@@ -114,15 +114,15 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  public:
 
-  //! @name Fonctions publiques mais réservées à Arcane pour gérer les synchronisations
+  //! @name Public functions reserved for Arcane to manage synchronizations
   //@{
   virtual Int32 dataTypeSize() const =0;
 
  protected:
 
-  // TODO: interface obsolète à supprimer
+  // TODO: obsolete interface to remove
   virtual void copyToBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteArrayView bytes) const =0;
-  // TODO: interface obsolète à supprimer
+  // TODO: obsolete interface to remove
   virtual void copyFromBuffer(ConstArrayView<MatVarIndex> matvar_indexes,ByteConstArrayView bytes) =0;
   //@}
 
@@ -130,7 +130,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
   /*!
    * \internal
-   * Incrémente le compteur de référence.
+   * Increments the reference counter.
    */
   void incrementReference();
 
@@ -173,7 +173,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Caractéristiques pour une variable matériaux scalaire.
+//! Characteristics for a scalar material variable.
 template<typename DataType>
 class MaterialVariableScalarTraits
 {
@@ -221,7 +221,8 @@ class MaterialVariableScalarTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Caractéristiques pour une variable matériaux tableau.
+
+//! Characteristics for an array material variable.
 template<typename DataType>
 class MaterialVariableArrayTraits
 {
@@ -274,10 +275,10 @@ class MaterialVariableArrayTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base des variables matériaux de avec les
- * caractéristiques spécifiées par \a Traits.
+ * \brief Base class for material variables with the characteristics specified by \a Traits.
  */
 template<typename Traits>
 class ItemMaterialVariableBase
@@ -369,20 +370,20 @@ class ItemMaterialVariableBase
 
   PrivatePartType* m_global_variable = nullptr;
   VariableRef* m_global_variable_ref = nullptr;
-  //! Variables pour les différents matériaux.
+  //! Variables for different materials.
   UniqueArray<PrivatePartType*> m_vars;
-  //! Liste des vues visibles uniquement depuis l'accélérateur
+  //! List of views visible only from the accelerator
   UniqueArray<ContainerViewType> m_device_views;
-  //! Liste des vues visibles uniquement depuis l'ĥote
+  //! List of views visible only from the host
   UniqueArray<ContainerViewType> m_host_views;
 
  protected:
 
   /*!
-   * \brief Positionne les vues à partir du conteneur
+   * \brief Positions the views from the container
    *
-   * La vue accélérateur n'est pas mise à jour ici mais lors de l'appel
-   * à _copyHostViewsToViews().
+   * The accelerator view is not updated here but when calling
+   * _copyHostViewsToViews().
    */
   void _setView(Int32 index)
   {
@@ -416,10 +417,11 @@ class MeshMaterialVariableCommonStaticImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \ingroup ArcaneMaterials
- * \brief Variable scalaire sur un matériau du maillage.
+ * \brief Scalar variable on a mesh material.
  */
 template<typename DataType>
 class ItemMaterialVariableScalar
@@ -518,10 +520,11 @@ class ItemMaterialVariableScalar
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \ingroup ArcaneMaterials
- * \brief Variable scalaire sur un matériau du maillage.
+ * \brief Scalar variable on a mesh material.
  */
 template<typename ItemType,typename DataType>
 class MeshMaterialVariableScalar
@@ -582,10 +585,11 @@ class MeshMaterialVariableScalar
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \ingroup ArcaneMaterials
- * \brief Variable tableau sur un matériau du maillage.
+ * \brief Array variable on a mesh material.
  */
 template<typename DataType>
 class ItemMaterialVariableArray
@@ -670,10 +674,11 @@ class ItemMaterialVariableArray
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \ingroup ArcaneMaterials
- * \brief Variable tableau sur un matériau du maillage.
+ * \brief Array variable on a mesh material.
  */
 template<typename ItemType,typename DataType>
 class MeshMaterialVariableArray
@@ -723,4 +728,4 @@ class MeshMaterialVariableArray
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

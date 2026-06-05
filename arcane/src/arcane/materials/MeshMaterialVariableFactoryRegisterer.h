@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableFactoryRegisterer.h                     (C) 2000-2022 */
 /*                                                                           */
-/* Singleton permettant d'enregister une fabrique de variable matériaux.     */
+/* Singleton allowing registration of a material variable factory.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLEFACTORYREGISTERER_H
 #define ARCANE_MATERIALS_MESHMATERIALVARIABLEFACTORYREGISTERER_H
@@ -28,9 +28,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Enregistreur d'une fabrique de variables matériaux..
+ * \brief Registerer for a material variable factory..
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer
 : public GenericRegisterer<MeshMaterialVariableFactoryRegisterer>
@@ -44,7 +45,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer
 
  public:
 
- //! Crée un enregistreur pour une MeshMaterialVariableFactory pour le type \a var_type_info et pour fonction de création \a func
+ //! Creates a registerer for a MeshMaterialVariableFactory for the type \a var_type_info and for the creation function \a func
   MeshMaterialVariableFactoryRegisterer(MeshMaterialVariableFactoryFunc func,
                                         const MaterialVariableTypeInfo& var_type_info)
   : m_function(func)
@@ -53,18 +54,18 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer
 
  public:
 
-  //! Créé une fabrique pour ce type de variable.
+  //! Creates a factory for this variable type.
   Ref<IMeshMaterialVariableFactory> createFactory();
 
-  //! Informations sur le type de la variable
+  //! Information about the variable type
   const MaterialVariableTypeInfo& variableTypeInfo() const { return m_variable_type_info; }
 
  private:
 
-  //! Fonction de création du IMeshMaterialVariableFactoryFactory
+  //! Creation function of the IMeshMaterialVariableFactoryFactory
   MeshMaterialVariableFactoryFunc m_function;
 
-  //! Informations sur le type de la variable
+  //! Information about the variable type
   MaterialVariableTypeInfo m_variable_type_info;
 
  private:
@@ -81,4 +82,3 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer
 /*---------------------------------------------------------------------------*/
 
 #endif
-
