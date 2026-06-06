@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableViews.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des vues sur les variables pour les accélérateurs.                */
+/* Variable view management for accelerators.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_VARIABLEVIEWS_H
 #define ARCANE_ACCELERATOR_VARIABLEVIEWS_H
@@ -30,7 +30,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Faire les vues en ReadWrite pour les accesseurs SIMD
+// TODO: Make the views ReadWrite for SIMD accessors
 
 namespace Arcane::Accelerator
 {
@@ -38,8 +38,9 @@ template <typename DataType> class View1DGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues sur les variables.
+ * \brief Base class for variable views.
  */
 class ARCANE_ACCELERATOR_EXPORT VariableViewBase
 {
@@ -50,13 +51,14 @@ class ARCANE_ACCELERATOR_EXPORT VariableViewBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
+ * \brief Class to access a 1D array of a read/write view.
  */
 template <typename DataType>
 class View1DSetter
 {
-  // Pour accéder à m_data;
+  // For accessing m_data;
   friend class View1DGetterSetter<DataType>;
 
  public:
@@ -90,8 +92,9 @@ class View1DSetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
+ * \brief Class to access a 1D array of a read/write view.
  */
 template <typename DataType>
 class View1DGetterSetter
@@ -129,8 +132,9 @@ class View1DGetterSetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable scalaire du maillage.
+ * \brief Write view on a scalar variable of the mesh.
  */
 template <typename _ItemType, typename _Accessor, typename _IndexerType, bool _HasSimd>
 class ItemVariableScalarOutViewBaseT
@@ -153,40 +157,40 @@ class ItemVariableScalarOutViewBaseT
   , m_size(v.size())
   {}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const requires(_HasSimd)
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel sans indirection.
+  //! Vector access operator without indirection.
   SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const requires(_HasSimd)
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Positions the value for the entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
@@ -201,8 +205,9 @@ class ItemVariableScalarOutViewBaseT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable scalaire du maillage.
+ * \brief Write view on a scalar variable of the mesh.
  */
 template <typename _ItemType, typename _Accessor>
 class ItemVariableScalarOutViewT
@@ -224,40 +229,40 @@ class ItemVariableScalarOutViewT
   , m_size(v.size())
   {}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel sans indirection.
+  //! Vector access operator without indirection.
   SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Positions the value for the entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
@@ -272,8 +277,9 @@ class ItemVariableScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable partielle scalaire du maillage.
+ * \brief Write view on a partial scalar variable of the mesh.
  */
 template <typename _ItemType, typename _Accessor>
 class ItemPartialVariableScalarOutViewT
@@ -298,28 +304,28 @@ class ItemPartialVariableScalarOutViewT
   , m_table_view(table_view)
   {}
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Positions the value for the entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
@@ -328,7 +334,7 @@ class ItemPartialVariableScalarOutViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  //! Access operator for the local ID entity \a lid
   ARCCORE_HOST_DEVICE Accessor operator[](ItemLocalIdType lid) const
   {
     Int32 index = _toIndex(lid);
@@ -336,7 +342,7 @@ class ItemPartialVariableScalarOutViewT
     return Accessor(m_values + index);
   }
 
-  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  //! Access operator for the local ID entity \a lid
   ARCCORE_HOST_DEVICE Accessor operator()(ItemLocalIdType lid) const
   {
     Int32 index = _toIndex(lid);
@@ -344,7 +350,7 @@ class ItemPartialVariableScalarOutViewT
     return Accessor(m_values + index);
   }
 
-  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  //! Access operator for the local ID entity \a lid
   ARCCORE_HOST_DEVICE Accessor value(ItemLocalIdType lid) const
   {
     Int32 index = _toIndex(lid);
@@ -352,7 +358,7 @@ class ItemPartialVariableScalarOutViewT
     return Accessor(m_values + index);
   }
 
-  //! Positionne la valeur pour l'entité de numéro local \a lid à \a v
+  //! Positions the value for the local ID entity \a lid at \a v
   ARCCORE_HOST_DEVICE void setValue(ItemLocalIdType lid, const DataType& v) const
   {
     Int32 index = _toIndex(lid);
@@ -379,8 +385,9 @@ class ItemPartialVariableScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
+ * \brief Read view on a scalar variable of the mesh.
  */
 template <typename _ItemType, typename _DataType>
 class ItemVariableScalarInViewT
@@ -402,7 +409,7 @@ class ItemVariableScalarInViewT
 
  public:
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   typename SimdTypeTraits<DataType>::SimdType
   operator[](SimdItemIndexT<ItemType> simd_item) const
   {
@@ -410,7 +417,7 @@ class ItemVariableScalarInViewT
     return SimdType(m_values.data(), simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   typename SimdTypeTraits<DataType>::SimdType
   operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
@@ -418,19 +425,19 @@ class ItemVariableScalarInViewT
     return SimdType(m_values.data() + simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](IndexerType item) const
   {
     return this->m_values[item.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator()(IndexerType item) const
   {
     return this->m_values[item.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the entity \a item
   ARCCORE_HOST_DEVICE const DataType& value(IndexerType item) const
   {
     return this->m_values[item.asInt32()];
@@ -443,8 +450,9 @@ class ItemVariableScalarInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable partielle scalaire du maillage.
+ * \brief Read view on a partial scalar variable of the mesh.
  */
 template <typename _ItemType, typename _DataType>
 class ItemPartialVariableScalarInViewT
@@ -468,37 +476,37 @@ class ItemPartialVariableScalarInViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](IndexerType item) const
   {
     return m_values[item.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator()(IndexerType item) const
   {
     return m_values[item.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& value(IndexerType item) const
   {
     return m_values[item.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](ItemLocalIdType lid) const
   {
     return m_values[_toIndex(lid)];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType lid) const
   {
     return m_values[_toIndex(lid)];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& value(ItemLocalIdType lid) const
   {
     return m_values[_toIndex(lid)];
@@ -522,8 +530,9 @@ class ItemPartialVariableScalarInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable partielle tableau du maillage.
+ * \brief Read-only view on a partial array variable of the mesh.
  */
 template <typename _ItemType, typename _DataType>
 class ItemPartialVariableArrayInViewT
@@ -545,37 +554,37 @@ class ItemPartialVariableArrayInViewT
   , m_table_view(table_view)
   {}
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](IndexerType i) const
   {
     return this->m_values[i.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](ItemLocalIdType lid) const
   {
     return m_values[_toIndex(lid)];
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator()(IndexerType item, Int32 i) const
   {
     return m_values[item.asInt32()][i];
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType lid, Int32 i) const
   {
     return m_values[_toIndex(lid)][i];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> value(IndexerType i) const
   {
     return m_values[i.asInt32()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> value(ItemLocalIdType lid) const
   {
     return m_values[_toIndex(lid)];
@@ -596,8 +605,9 @@ class ItemPartialVariableArrayInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable tableau du maillage.
+ * \brief Read-only view on a mesh array variable.
  */
 template <typename _ItemType, typename _DataType>
 class ItemVariableArrayInViewT
@@ -620,19 +630,19 @@ class ItemVariableArrayInViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](IndexerType i) const
   {
     return this->m_values[i.asInt32()];
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator()(IndexerType item, Int32 i) const
   {
     return this->m_values[item.asInt32()][i];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const SmallSpan<const DataType> value(IndexerType i) const
   {
     return this->m_values[i.asInt32()];
@@ -648,8 +658,9 @@ class ItemVariableArrayInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable tableau du maillage.
+ * \brief Write-only view on a mesh array variable.
  */
 template <typename _ItemType, typename _Accessor, typename _Indexer>
 class ItemVariableArrayOutViewBaseT
@@ -670,19 +681,19 @@ class ItemVariableArrayOutViewBaseT
   , m_values(v)
   {}
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE DataTypeReturnType operator[](IndexerType item) const
   {
     return DataTypeReturnType(this->m_values[item.asInt32()]);
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE DataType& operator()(IndexerType item, Int32 i) const
   {
     return this->m_values[item.asInt32()][i];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE SmallSpan<DataType> value(IndexerType item) const
   {
     return DataTypeReturnType(this->m_values[item.asInt32()]);
@@ -695,8 +706,9 @@ class ItemVariableArrayOutViewBaseT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable tableau du maillage.
+ * \brief Write-only view on a mesh array variable.
  */
 template <typename _ItemType, typename _Accessor>
 class ItemVariableArrayOutViewT
@@ -717,19 +729,19 @@ class ItemVariableArrayOutViewT
   , m_values(v)
   {}
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE DataTypeReturnType operator[](IndexerType item) const
   {
     return DataTypeReturnType(this->m_values[item.asInt32()]);
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE DataType& operator()(IndexerType item, Int32 i) const
   {
     return this->m_values[item.asInt32()][i];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE SmallSpan<DataType> value(IndexerType item) const
   {
     return DataTypeReturnType(this->m_values[item.asInt32()]);
@@ -742,8 +754,9 @@ class ItemVariableArrayOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable partielle tableau du maillage.
+ * \brief Write-only view on a partial array variable of the mesh.
  */
 template <typename _ItemType, typename _Accessor>
 class ItemPartialVariableArrayOutViewT
@@ -769,19 +782,19 @@ class ItemPartialVariableArrayOutViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE DataTypeReturnType operator[](IndexerType item) const
   {
     return DataTypeReturnType(m_values[item.asInt32()]);
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE DataType& operator()(IndexerType item, Int32 i) const
   {
     return m_values[item.asInt32()][i];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE SmallSpan<DataType> value(IndexerType item) const
   {
     return DataTypeReturnType(m_values[item.asInt32()]);
@@ -789,19 +802,19 @@ class ItemPartialVariableArrayOutViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  //! Access operator for local ID entity \a lid
   ARCCORE_HOST_DEVICE DataTypeReturnType operator[](ItemLocalIdType lid) const
   {
     return DataTypeReturnType(m_values[_toIndex(lid)]);
   }
 
-  //! Opérateur d'accès pour l'entité de numéro local \a lid
+  //! Access operator for local ID entity \a lid
   ARCCORE_HOST_DEVICE DataType& operator()(ItemLocalIdType lid, Int32 i) const
   {
     return m_values[_toIndex(lid)][i];
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Access operator for the \a i-th value of entity \a item
   ARCCORE_HOST_DEVICE SmallSpan<DataType> value(ItemLocalIdType lid) const
   {
     return DataTypeReturnType(m_values[_toIndex(lid)]);
@@ -822,12 +835,13 @@ class ItemPartialVariableArrayOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable scalaire de type 'RealN' du maillage.
+ * \brief Write-only view on a scalar variable of type 'RealN' of the mesh.
  *
- * Cette classe spécialise les vues modifiable pour les réels 'Real2', 'Real3',
- * 'Real2x2' et 'Real3x3'. La spécialisation s'assure qu'on ne puisse pas
- * modifier uniquement une composante de ces vecteurs de réels. Par exemple:
+ * This class specializes mutable views for 'Real2', 'Real3',
+ * 'Real2x2' and 'Real3x3' reals. The specialization ensures that only the
+ * entire vector of reals can be modified. For example:
  *
  * \code
  * VariableNodeReal3View force_view = ...;
@@ -836,7 +850,7 @@ class ItemPartialVariableArrayOutViewT
  * // OK:
  * force_view[node] = Real3(x,y,z);
  *
- * // Interdit:
+ * // Forbidden:
  * // force_view[node].x = ...;
  *
  * \endcode
@@ -855,59 +869,59 @@ class ItemVariableRealNScalarOutViewT
 
  public:
 
-  //! Construit la vue
+  //! Constructs the view
   ItemVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var, SmallSpan<DataType> v)
   : VariableViewBase(command, var)
   , m_values(v.data())
   , m_size(v.size())
   {}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator()(SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel sans indirection.
+  //! Vector access operator without indirection.
   SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès vectoriel sans indirection.
+  //! Vector access operator without indirection.
   SimdDirectSetter<DataType> operator()(SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(m_values + item.asInt32());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Positions the value for entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
@@ -938,7 +952,7 @@ class ItemPartialVariableRealNScalarOutViewT
 
  public:
 
-  //! Construit la vue
+  //! Constructs the view
   ItemPartialVariableRealNScalarOutViewT(const ViewBuildInfo& command, IVariable* var,
                                          SmallSpan<DataType> v, GroupIndexTableView table_view)
   : VariableViewBase(command, var)
@@ -949,28 +963,28 @@ class ItemPartialVariableRealNScalarOutViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator()(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor value(IndexerType item) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
     return Accessor(this->m_values + item.asInt32());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Sets the value for entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(IndexerType item, const DataType& v) const
   {
     ARCANE_CHECK_AT(item.asInt32(), m_size);
@@ -979,7 +993,7 @@ class ItemPartialVariableRealNScalarOutViewT
 
  public:
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](ItemLocalIdType lid) const
   {
     Int32 index = _toIndex(lid);
@@ -987,7 +1001,7 @@ class ItemPartialVariableRealNScalarOutViewT
     return Accessor(m_values + index);
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator()(ItemLocalIdType lid) const
   {
     Int32 index = _toIndex(lid);
@@ -995,7 +1009,7 @@ class ItemPartialVariableRealNScalarOutViewT
     return Accessor(m_values + index);
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor value(ItemLocalIdType lid) const
   {
     Int32 index = _toIndex(lid);
@@ -1003,7 +1017,7 @@ class ItemPartialVariableRealNScalarOutViewT
     return Accessor(m_values + index);
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Sets the value for entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(ItemLocalIdType lid, const DataType& v) const
   {
     Int32 index = _toIndex(lid);
@@ -1030,8 +1044,9 @@ class ItemPartialVariableRealNScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& command, ItemVariableScalarRefT<DataType>& var)
@@ -1041,7 +1056,7 @@ viewOut(const ViewBuildInfo& command, ItemVariableScalarRefT<DataType>& var)
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, DataType>& var)
@@ -1051,7 +1066,7 @@ viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, DataType>
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, DataType>& var)
@@ -1062,7 +1077,7 @@ viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Da
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType> auto
 viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real3>& var)
@@ -1072,7 +1087,7 @@ viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real3>& v
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real3>& var)
@@ -1083,7 +1098,7 @@ viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Re
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType> auto
 viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real2>& var)
@@ -1093,7 +1108,7 @@ viewOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real2>& v
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real2>& var)
@@ -1104,7 +1119,7 @@ viewOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Re
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshVariableArrayRefT<ItemType, DataType>& var)
@@ -1114,7 +1129,7 @@ viewOut(const ViewBuildInfo& command, MeshVariableArrayRefT<ItemType, DataType>&
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename ItemType, typename DataType> auto
 viewOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, DataType>& var)
@@ -1126,8 +1141,9 @@ viewOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, Dat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& command, ItemVariableScalarRefT<DataType>& var)
@@ -1137,7 +1153,7 @@ viewInOut(const ViewBuildInfo& command, ItemVariableScalarRefT<DataType>& var)
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType, typename DataType> auto
 viewInOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, DataType>& var)
@@ -1147,7 +1163,7 @@ viewInOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, DataTyp
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType, typename DataType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, DataType>& var)
@@ -1157,7 +1173,7 @@ viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, 
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType> auto
 viewInOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real3>& var)
@@ -1167,7 +1183,7 @@ viewInOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real3>&
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real3>& var)
@@ -1178,7 +1194,7 @@ viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, 
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType> auto
 viewInOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real2>& var)
@@ -1188,7 +1204,7 @@ viewInOut(const ViewBuildInfo& command, MeshVariableScalarRefT<ItemType, Real2>&
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, Real2>& var)
@@ -1199,7 +1215,7 @@ viewInOut(const ViewBuildInfo& command, MeshPartialVariableScalarRefT<ItemType, 
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType, typename DataType> auto
 viewInOut(const ViewBuildInfo& command, MeshVariableArrayRefT<ItemType, DataType>& var)
@@ -1209,7 +1225,7 @@ viewInOut(const ViewBuildInfo& command, MeshVariableArrayRefT<ItemType, DataType
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename ItemType, typename DataType> auto
 viewInOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, DataType>& var)
@@ -1221,8 +1237,9 @@ viewInOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, D
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshPartialVariableScalarRefT<ItemType, DataType>& var)
@@ -1231,7 +1248,7 @@ viewIn(const ViewBuildInfo& command, const MeshPartialVariableScalarRefT<ItemTyp
 }
 
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshVariableScalarRefT<ItemType, DataType>& var)
@@ -1240,7 +1257,7 @@ viewIn(const ViewBuildInfo& command, const MeshVariableScalarRefT<ItemType, Data
 }
 
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& command, const ItemVariableScalarRefT<DataType>& var)
@@ -1249,7 +1266,7 @@ viewIn(const ViewBuildInfo& command, const ItemVariableScalarRefT<DataType>& var
 }
 
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshPartialVariableArrayRefT<ItemType, DataType>& var)
@@ -1258,7 +1275,7 @@ viewIn(const ViewBuildInfo& command, const MeshPartialVariableArrayRefT<ItemType
 }
 
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename ItemType, typename DataType> auto
 viewIn(const ViewBuildInfo& command, const MeshVariableArrayRefT<ItemType, DataType>& var)

@@ -7,29 +7,21 @@
 /*---------------------------------------------------------------------------*/
 /* TestCpp.cc                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Fichier de tests pour CUDA.                                               */
+/* Test file for CUDA.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
 
-extern "C"
-int arcaneTestCuda1();
-extern "C"
-int arcaneTestCuda2();
-extern "C"
-int arcaneTestCuda3();
-extern "C"
-int arcaneTestCuda4();
-extern "C"
-int arcaneTestCudaNumArray();
-extern "C"
-int arcaneTestCudaReduction();
-extern "C"
-void arcaneTestCooperativeLaunch();
+extern "C" int arcaneTestCuda1();
+extern "C" int arcaneTestCuda2();
+extern "C" int arcaneTestCuda3();
+extern "C" int arcaneTestCuda4();
+extern "C" int arcaneTestCudaNumArray();
+extern "C" int arcaneTestCudaReduction();
+extern "C" void arcaneTestCooperativeLaunch();
 
-extern "C" ARCANE_EXPORT
-int func0()
+extern "C" ARCANE_EXPORT int func0()
 {
   arcaneTestCuda3();
   arcaneTestCudaNumArray();

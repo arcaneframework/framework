@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Test.cu.cc                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Fichier contenant les tests pour l'implémentation HIP.                    */
+/* File containing tests for the HIP implementation.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,77 +48,78 @@ struct Privatizer
   using reference_type = value_type&;
   value_type priv;
 
-  ARCCORE_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+  ARCCORE_HOST_DEVICE Privatizer(const T& o)
+  : priv{ o }
+  {}
   ARCCORE_HOST_DEVICE reference_type get_priv() { return priv; }
 };
 
 template <typename T>
 ARCCORE_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
 {
-  return Privatizer<T>{item};
+  return Privatizer<T>{ item };
 }
 
-__global__ void MyVecAdd(double* a,double* b,double* out)
+__global__ void MyVecAdd(double* a, double* b, double* out)
 {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
   out[i] = a[i] + b[i];
-  if (i<10){
+  if (i < 10) {
     //    printf("A=%d %lf %lf %lf %d\n",i,a[i],b[i],out[i],3);
   }
 }
 
-__global__ void MyVecAdd2(Span<const double> a,Span<const double>b,Span<double> out)
+__global__ void MyVecAdd2(Span<const double> a, Span<const double> b, Span<double> out)
 {
   Int64 size = a.size();
   Int64 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i>=size)
+  if (i >= size)
     return;
   out[i] = a[i] + b[i];
-  if (i<10){
+  if (i < 10) {
     //printf("A=%d %lf %lf %lf %d\n",i,a[i],b[i],out[i],i);
   }
 }
 
-__global__ void MyVecAdd3(MDSpan<const double,MDDim1> a,MDSpan<const double,MDDim1> b,MDSpan<double,MDDim1> out)
+__global__ void MyVecAdd3(MDSpan<const double, MDDim1> a, MDSpan<const double, MDDim1> b, MDSpan<double, MDDim1> out)
 {
   Int32 size = static_cast<Int32>(a.extent0());
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i>=size)
+  if (i >= size)
     return;
   out(i) = a(i) + b(i);
-  if (i<10){
+  if (i < 10) {
     //printf("A=%d %lf %lf %lf %d\n",i,a(i),b(i),out(i),i);
   }
 }
 
-void _initArrays(Span<double> a,Span<double> b,Span<double> c,int base)
+void _initArrays(Span<double> a, Span<double> b, Span<double> c, int base)
 {
   Int64 vsize = a.size();
-  for( Int64 i = 0; i<vsize; ++i ){
-    a[i] = (double)(i+base);
-    b[i] = (double)(i*i+base);
+  for (Int64 i = 0; i < vsize; ++i) {
+    a[i] = (double)(i + base);
+    b[i] = (double)(i * i + base);
     c[i] = 0.0;
   }
 }
 
-void _initArrays(MDSpan<double,MDDim1> a,MDSpan<double,MDDim1> b,MDSpan<double,MDDim1> c,int base)
+void _initArrays(MDSpan<double, MDDim1> a, MDSpan<double, MDDim1> b, MDSpan<double, MDDim1> c, int base)
 {
   Int32 vsize = static_cast<Int32>(a.extent0());
-  for( Int32 i = 0; i<vsize; ++i ){
-    a(i) = (double)(i+base);
-    b(i) = (double)(i*i+base);
+  for (Int32 i = 0; i < vsize; ++i) {
+    a(i) = (double)(i + base);
+    b(i) = (double)(i * i + base);
     c(i) = 0.0;
   }
 }
 
-template<typename F> __global__ 
-void MyVecLambda(int size,F func)
+template <typename F> __global__ void MyVecLambda(int size, F func)
 {
   auto privatizer = thread_privatize(func);
   auto& body = privatizer.get_priv();
 
   int i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i<size)
+  if (i < size)
     body(i);
 }
 
@@ -126,17 +127,18 @@ namespace TestCuda
 {
 class IA
 {
-  virtual __device__ __host__ void DoIt2() =0;
+  virtual __device__ __host__ void DoIt2() = 0;
 };
 
 class A
 : public IA
 {
  public:
+
   //__global__ void DoIt(){}
   virtual __device__ __host__ void DoIt2() override {}
 };
-}
+} // namespace TestCuda
 
 void MyTestFunc1()
 {
@@ -144,75 +146,72 @@ void MyTestFunc1()
   {
     int a;
   };
-  auto k = [=](Context1& ctx){ std::cout << "A=" << ctx.a << "\n"; };
+  auto k = [=](Context1& ctx) { std::cout << "A=" << ctx.a << "\n"; };
   Context1 my_ctx;
   my_ctx.a = 3;
   k(my_ctx);
 }
 
-extern "C"
-int arcaneTestHip1()
+extern "C" int arcaneTestHip1()
 {
   constexpr int vsize = 2000;
   std::vector<double> a(vsize);
   std::vector<double> b(vsize);
   std::vector<double> out(vsize);
-  for( size_t i = 0; i<vsize; ++i ){
-    a[i] = (double)(i+1);
-    b[i] = (double)(i*i+1);
+  for (size_t i = 0; i < vsize; ++i) {
+    a[i] = (double)(i + 1);
+    b[i] = (double)(i * i + 1);
     out[i] = 0.0; //a[i] + b[i];
   }
-  size_t mem_size = vsize*sizeof(double);
+  size_t mem_size = vsize * sizeof(double);
   double* d_a = nullptr;
-  ARCANE_CHECK_HIP(hipMalloc(&d_a,mem_size));
+  ARCANE_CHECK_HIP(hipMalloc(&d_a, mem_size));
   double* d_b = nullptr;
-  ARCANE_CHECK_HIP(hipMalloc(&d_b,mem_size));
+  ARCANE_CHECK_HIP(hipMalloc(&d_b, mem_size));
   double* d_out = nullptr;
-  ARCANE_CHECK_HIP(hipMalloc(&d_out,mem_size));
+  ARCANE_CHECK_HIP(hipMalloc(&d_out, mem_size));
 
   ARCANE_CHECK_HIP(hipMemcpy(d_a, a.data(), mem_size, hipMemcpyHostToDevice));
   ARCANE_CHECK_HIP(hipMemcpy(d_b, b.data(), mem_size, hipMemcpyHostToDevice));
   int threadsPerBlock = 256;
   int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
   std::cout << "CALLING kernel tpb=" << threadsPerBlock << " bpg=" << blocksPerGrid << "\n";
-  hipLaunchKernelGGL(MyVecAdd, blocksPerGrid, threadsPerBlock , 0, 0, d_a,d_b,d_out);
+  hipLaunchKernelGGL(MyVecAdd, blocksPerGrid, threadsPerBlock, 0, 0, d_a, d_b, d_out);
   ARCANE_CHECK_HIP(hipDeviceSynchronize());
   ARCANE_CHECK_HIP(hipMemcpy(out.data(), d_out, mem_size, hipMemcpyDeviceToHost));
-  for( size_t i=0; i<10; ++i )
+  for (size_t i = 0; i < 10; ++i)
     std::cout << "V=" << out[i] << "\n";
   return 0;
 }
 
-extern "C"
-int arcaneTestHip2()
+extern "C" int arcaneTestHip2()
 {
   MyTestFunc1();
   constexpr int vsize = 2000;
-  size_t mem_size = vsize*sizeof(double);
+  size_t mem_size = vsize * sizeof(double);
   double* d_a = nullptr;
-  ARCANE_CHECK_HIP(hipMallocManaged(&d_a,mem_size,hipMemAttachGlobal));
+  ARCANE_CHECK_HIP(hipMallocManaged(&d_a, mem_size, hipMemAttachGlobal));
   double* d_b = nullptr;
-  ARCANE_CHECK_HIP(hipMallocManaged(&d_b,mem_size,hipMemAttachGlobal));
+  ARCANE_CHECK_HIP(hipMallocManaged(&d_b, mem_size, hipMemAttachGlobal));
   double* d_out = nullptr;
-  ARCANE_CHECK_HIP(hipMallocManaged(&d_out,mem_size,hipMemAttachGlobal));
+  ARCANE_CHECK_HIP(hipMallocManaged(&d_out, mem_size, hipMemAttachGlobal));
 
   //d_a = new double[vsize];
   //d_b = new double[vsize];
   //d_out = new double[vsize];
 
-  for( size_t i = 0; i<vsize; ++i ){
-    d_a[i] = (double)(i+1);
-    d_b[i] = (double)(i*i+1);
+  for (size_t i = 0; i < vsize; ++i) {
+    d_a[i] = (double)(i + 1);
+    d_b[i] = (double)(i * i + 1);
     d_out[i] = 0.0; //a[i] + b[i];
   }
-
 
   //hipMemcpy(d_a, a.data(), mem_size, hipMemcpyHostToDevice);
   //hipMemcpy(d_b, b.data(), mem_size, hipMemcpyHostToDevice);
   int threadsPerBlock = 256;
   int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
   std::cout << "CALLING kernel2 tpb=" << threadsPerBlock << " bpg=" << blocksPerGrid << "\n";
-  hipLaunchKernelGGL(MyVecAdd, blocksPerGrid, threadsPerBlock, 0, 0, d_a,d_b,d_out);
+  hipLaunchKernelGGL(MyVecAdd, blocksPerGrid, threadsPerBlock, 0, 0, d_a, d_b, d_out);
   ARCANE_CHECK_HIP(hipDeviceSynchronize());
   hipError_t e = hipGetLastError();
   std::cout << "END OF MYVEC1 e=" << e << " v=" << hipGetErrorString(e) << "\n";
@@ -222,7 +221,7 @@ int arcaneTestHip2()
   //hipMemcpy(out.data(), d_out, mem_size, hipMemcpyDeviceToHost);
   //e = hipGetLastError();
   //std::cout << "END OF MYVEC3 e=" << e << " v=" << hipGetErrorString(e) << "\n";
-  for( size_t i=0; i<10; ++i )
+  for (size_t i = 0; i < 10; ++i)
     std::cout << "V=" << d_out[i] << "\n";
 
   return 0;
@@ -260,7 +259,7 @@ extern "C" int arcaneTestHip3()
   for (size_t i = 0; i < 10; ++i)
     std::cout << "V=" << d_out[i] << "\n";
 
-  // Lance un noyau dynamiquement
+  // Launch a kernel dynamically
   {
     _initArrays(d_a, d_b, d_out, 2);
 
@@ -284,7 +283,7 @@ extern "C" int arcaneTestHip3()
       std::cout << "V2=" << d_out[i] << "\n";
   }
 
-  // Lance une lambda
+  // Launch a lambda
   {
     _initArrays(d_a, d_b, d_out, 3);
     Span<const double> d_a_span = d_a.span();
@@ -303,14 +302,14 @@ extern "C" int arcaneTestHip3()
 
     _initArrays(d_a, d_b, d_out, 4);
 
-    // Appelle la version 'hote' de la lambda
+    // Calls the 'host' version of the lambda
     for (int i = 0; i < vsize; ++i)
       func(i);
     for (size_t i = 0; i < 10; ++i)
       std::cout << "V4=" << d_out[i] << "\n";
   }
 
-  // Utilise les Real3
+  // Use Real3
   {
     UniqueArray<Real3> d_a3(hip_allocator, vsize);
     UniqueArray<Real3> d_b3(hip_allocator, vsize);
@@ -373,7 +372,7 @@ extern "C" int arcaneTestHipNumArray()
   for (int i = 0; i < 10; ++i)
     std::cout << "V=" << d_out(i) << "\n";
 
-  // Lance un noyau dynamiquement
+  // Launch a kernel dynamically
   {
     _initArrays(d_a, d_b, d_out, 2);
 
@@ -397,7 +396,7 @@ extern "C" int arcaneTestHipNumArray()
       std::cout << "V2=" << d_out(i) << "\n";
   }
 
-  // Lance une lambda
+  // Launch a lambda
   {
     _initArrays(d_a, d_b, d_out, 3);
     MDSpan<const double, MDDim1> d_a_span = d_a.constMDSpan();
@@ -416,14 +415,14 @@ extern "C" int arcaneTestHipNumArray()
 
     _initArrays(d_a, d_b, d_out, 4);
 
-    // Appelle la version 'hote' de la lambda
+    // Calls the 'host' version of the lambda
     for (int i = 0; i < vsize; ++i)
       func(i);
     for (int i = 0; i < 10; ++i)
       std::cout << "V4=" << d_out(i) << "\n";
   }
 
-  // Utilise les Real3 avec un tableau multi-dimensionel
+  // Uses Real3 with a multi-dimensional array
   {
     NumArray<Real, MDDim2> d_a3(vsize, 3);
     NumArray<Real, MDDim2> d_b3(vsize, 3);
@@ -523,18 +522,21 @@ void arcaneTestHipReductionX(int vsize, ax::RunQueue& queue, const String& name)
 
 #include <stdio.h>
 
-__device__ int my_add(int a, int b) {
-    return a + b;
+__device__ int my_add(int a, int b)
+{
+  return a + b;
 }
 
-__device__ int mul(int a, int b) {
-    return a * b;
+__device__ int mul(int a, int b)
+{
+  return a * b;
 }
 
 // Pointeur de fonction sur le device
 //__device__ int (*op)(int, int) = &add;
 
-__global__ void compute(int *d_result, int N, int (*op_func)(int, int)) {
+__global__ void compute(int* d_result, int N, int (*op_func)(int, int))
+{
   int idx = threadIdx.x + blockIdx.x * blockDim.x;
   //if (idx == 0)
   //printf("MyFuncDevice=%p\n",op_func);
@@ -557,7 +559,7 @@ class LambaDeviceFunc
 {
   static __device__ int doFunc(int a, int b)
   {
-    return a+b;
+    return a + b;
   }
 };
 
@@ -566,14 +568,15 @@ class FooBase
  public:
 
   //virtual ARCCORE_HOST_DEVICE ~FooBase() {}
-  virtual ARCCORE_HOST_DEVICE int apply(int a,int b) =0;
+  virtual ARCCORE_HOST_DEVICE int apply(int a, int b) = 0;
 };
 
 class FooDerived
 : public FooBase
 {
  public:
-  ARCCORE_HOST_DEVICE int apply(int a,int b) override { return a+b;}
+
+  ARCCORE_HOST_DEVICE int apply(int a, int b) override { return a + b; }
 };
 
 __global__ void compute_virtual(int* d_result, int N, FooBase* ptr)
@@ -593,13 +596,12 @@ __global__ void compute_virtual(int* d_result, int N, FooBase* ptr)
 __global__ void createFooDerived(FooDerived* ptr)
 {
   int idx = threadIdx.x + blockIdx.x * blockDim.x;
-  if (idx==0) {
+  if (idx == 0) {
     new (ptr) FooDerived();
   }
 }
 
-extern "C"
-int arcaneTestVirtualFunction()
+extern "C" int arcaneTestVirtualFunction()
 {
   std::cout << "Test function pointer\n";
   //std::cout << "FuncPtr direct=" << my_func_ptr << "\n";
@@ -630,7 +632,7 @@ int arcaneTestVirtualFunction()
   std::cout << "Calling compute\n";
   std::cout.flush();
 
-  // Appel du kernel
+  // Call the kernel
   //compute<<<1, N>>>(d_result, N, host_func);
   //compute<<<1, N>>>(d_result, N, my_func_ptr);
   compute_virtual<<<1, N>>>(d_result, N, foo_derived);
@@ -653,7 +655,7 @@ int arcaneTestVirtualFunction()
 
 extern "C" int arcaneTestHipReduction()
 {
-  // TODO: tester en ne commancant pas par 0.
+  // TODO: tester does not start from 0.
   std::cout << "Test Reductions\n";
   ax::Runner runner_seq(ax::eExecutionPolicy::Sequential);
   ax::Runner runner_thread(ax::eExecutionPolicy::Thread);

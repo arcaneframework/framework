@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ using namespace Arcane::Accelerator;
 extern "C++" void
 _doCallTestVirtualMethod1(RunQueue& queue, NumArray<Int32, MDDim1>& compute_array, BaseTestClass* base_instance)
 {
-  // Applique une commande prenant en argument le pointeur sur la classe de base.
+  // Applies a command taking the base class pointer as an argument.
   const Int32 nb_item = compute_array.dim1Size();
   {
     RunCommand command(makeCommand(queue));

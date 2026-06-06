@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MaterialVariableViews.h                                     (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des vues sur les variables matériaux pour les accélérateurs.      */
+/* Management of views on material variables for accelerators.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_MATERIALVARIABLEVIEWS_H
 #define ARCANE_ACCELERATOR_MATERIALVARIABLEVIEWS_H
@@ -35,29 +35,32 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues sur les variables matériaux.
+ * \brief Base class for views on material variables.
  */
 class ARCANE_ACCELERATOR_EXPORT MatVariableViewBase
 {
  public:
 
-  // Pour l'instant n'utilise pas encore les paramètres
+  // Currently does not use parameters yet
   MatVariableViewBase(const ViewBuildInfo&, IMeshMaterialVariable*);
-  // Pour l'instant n'utilise pas encore les paramètres
+
+  // Currently does not use parameters yet
   MatVariableViewBase() = default;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
+ * \brief Read view on a scalar mesh variable.
  */
 template <typename ItemType, typename DataType>
 class MatItemVariableScalarInViewT
 : public MatVariableViewBase
 {
-  // TODO: Faut-il rajouter la gestion des SIMD comme dans ItemVariableScalarInViewT ?
+  // TODO: Should SIMD handling be added like in ItemVariableScalarInViewT?
 
  private:
 
@@ -71,25 +74,25 @@ class MatItemVariableScalarInViewT
   {}
   MatItemVariableScalarInViewT() = default;
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](ComponentItemLocalId lid) const
   {
     return this->m_value[lid.localId().arrayIndex()][lid.localId().valueIndex()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](PureMatVarIndex pmvi) const
   {
     return this->m_value[0][pmvi.valueIndex()];
   }
 
-  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  //! Override to access the global value from the cell id
   ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
   {
     return this->m_value[0][item.localId()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE const DataType& value(ComponentItemLocalId mvi) const
   {
     return this->m_value[mvi.localId().arrayIndex()][mvi.localId().valueIndex()];
@@ -107,8 +110,9 @@ class MatItemVariableScalarInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable scalaire du maillage.
+ * \brief Write view on a scalar mesh variable.
  */
 template <typename ItemType, typename Accessor>
 class MatItemVariableScalarOutViewT
@@ -120,9 +124,9 @@ class MatItemVariableScalarOutViewT
   using DataTypeReturnType = DataType&;
   using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
 
-  // TODO: faut il rajouter des ARCANE_CHECK_AT(mvi.arrayIndex(), m_value.size());
-  // il manquera tjrs le check sur l'autre dimension
-  // TODO: Faut il rajouter la gestion des types SIMD comme dans ItemVariableScalarOutViewT ?
+  // TODO: Should ARCANE_CHECK_AT(mvi.arrayIndex(), m_value.size()); be added?
+  // The check on the other dimension will still be missing.
+  // TODO: Should SIMD type handling be added like in ItemVariableScalarOutViewT?
 
  public:
 
@@ -132,7 +136,7 @@ class MatItemVariableScalarOutViewT
   {}
   MatItemVariableScalarOutViewT() = default;
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor operator[](ComponentItemLocalId lid) const
   {
     return Accessor(this->m_value[lid.localId().arrayIndex()].data() + lid.localId().valueIndex());
@@ -143,20 +147,20 @@ class MatItemVariableScalarOutViewT
     return Accessor(this->m_value[0][pmvi.valueIndex()]);
   }
 
-  //! Surcharge pour accéder à la valeure globale à partir du cell id
+  //! Override to access the global value from the cell id
   ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType item) const
   {
     ARCANE_CHECK_AT(item.localId(), this->m_value[0].size());
     return Accessor(this->m_value[0].data() + item.localId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for entity \a item
   ARCCORE_HOST_DEVICE Accessor value(ComponentItemLocalId lid) const
   {
     return Accessor(this->m_value[lid.localId().arrayIndex()].data() + lid.localId().valueIndex());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Positions the value for entity \a item at \a v
   ARCCORE_HOST_DEVICE void setValue(ComponentItemLocalId lid, const DataType& v) const
   {
     this->m_value[lid.localId().arrayIndex()][lid.localId().valueIndex()] = v;
@@ -174,8 +178,9 @@ class MatItemVariableScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture pour les variables materiaux scalaire.
+ * \brief Write view for scalar material variables.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& vbi, CellMaterialVariableScalarRef<DataType>& var)
@@ -186,8 +191,9 @@ viewOut(const ViewBuildInfo& vbi, CellMaterialVariableScalarRef<DataType>& var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture pour les variables materiaux scalaire
+ * \brief Write view for scalar material variables
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& vbi, CellEnvironmentVariableScalarRef<DataType>& var)
@@ -198,8 +204,9 @@ viewOut(const ViewBuildInfo& vbi, CellEnvironmentVariableScalarRef<DataType>& va
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture pour les variables materiaux scalaire
+ * \brief Read/write view for scalar material variables
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& vbi, CellMaterialVariableScalarRef<DataType>& var)
@@ -210,8 +217,9 @@ viewInOut(const ViewBuildInfo& vbi, CellMaterialVariableScalarRef<DataType>& var
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture pour les variables materiaux scalaire
+ * \brief Read/write view for scalar material variables
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& vbi, CellEnvironmentVariableScalarRef<DataType>& var)
@@ -224,7 +232,7 @@ viewInOut(const ViewBuildInfo& vbi, CellEnvironmentVariableScalarRef<DataType>& 
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Vue en lecture pour les variables materiaux scalaire
+ * \brief Read view for scalar material variables
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& vbi, const CellMaterialVariableScalarRef<DataType>& var)
@@ -236,7 +244,7 @@ viewIn(const ViewBuildInfo& vbi, const CellMaterialVariableScalarRef<DataType>& 
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Vue en lecture pour les variables materiaux scalaire
+ * \brief Read view for scalar material variables
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& vbi, const CellEnvironmentVariableScalarRef<DataType>& var)

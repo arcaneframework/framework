@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,16 +54,16 @@ void _doTestVirtualMethod1(eExecutionPolicy exec_policy)
 {
   std::cout << "Test Virtual Method 1. Execution policy=" << exec_policy << "\n";
   Runner runner(exec_policy);
-  
+
   RunQueue queue(makeQueue(runner));
   eMemoryResource mem_resource = eMemoryResource::Host;
   if (queue.isAcceleratorPolicy())
     mem_resource = eMemoryResource::Device;
 
-  // Créé une instance de 'DerivedTestClass' dans la mémoire accélérateur.
-  // Il faut pour cela allouer de la mémoire sur l'accélérateur et appeler
-  // le constructeur de 'DerivedTestClass' sur l'accélérateur pour
-  // que la table des méthodes virtuelles soit correctement initialisée.
+  // Create an instance of 'DerivedTestClass' in the accelerator memory.
+  // To do this, you must allocate memory on the accelerator and call
+  // the constructor of 'DerivedTestClass' on the accelerator so that
+  // the virtual method table is correctly initialized.
   NumArray<Byte, MDDim1> instance_memory(mem_resource);
   instance_memory.resize(sizeof(DerivedTestClass));
 
@@ -79,34 +79,32 @@ void _doTestVirtualMethod1(eExecutionPolicy exec_policy)
     };
   }
 
-  // Applique une commande prenant en argument le pointeur sur la classe de base.
+  // Applies a command that takes the base class pointer as an argument.
   const Int32 nb_item = 12;
   NumArray<Int32, MDDim1> compute_array(mem_resource);
   compute_array.resize(nb_item);
   std::cout << "Test Virtual Method 1. Do computation\n";
   std::cout.flush();
-  _doCallTestVirtualMethod1(queue,compute_array,base_instance);
+  _doCallTestVirtualMethod1(queue, compute_array, base_instance);
 
   NumArray<Int32, MDDim1> host_array;
   host_array.copy(compute_array);
-  
+
   for (Int32 i = 0; i < nb_item; ++i)
     std::cout << "I=" << i << " R=" << host_array[i] << "\n";
   for (Int32 i = 0; i < nb_item; ++i)
-    ASSERT_EQ(i*2, host_array[i]);
-
+    ASSERT_EQ(i * 2, host_array[i]);
 }
 
 TEST(ArcaneAccelerator, VirtualMethod)
 {
   _doInit();
 
-  auto f = []
-  {
+  auto f = [] {
     _doTestVirtualMethod1(_defaultExecutionPolicy());
     _doTestVirtualMethod1(eExecutionPolicy::Sequential);
   };
-  return arcaneCallFunctionAndTerminateIfThrow(f);  
+  return arcaneCallFunctionAndTerminateIfThrow(f);
 }
 
 /*---------------------------------------------------------------------------*/
