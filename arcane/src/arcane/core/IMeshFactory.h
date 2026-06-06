@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshFactory.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service de de fabrique de maillage.                        */
+/* Interface of a mesh factory service.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHFACTORY_H
 #define ARCANE_CORE_IMESHFACTORY_H
@@ -24,19 +24,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du service gérant la lecture d'un maillage.
+ * \brief Interface of the service managing mesh reading.
  */
 class ARCANE_CORE_EXPORT IMeshFactory
 {
  public:
 
-  virtual ~IMeshFactory() {} //<! Libère les ressources
+  virtual ~IMeshFactory() {} //<! Releases resources
 
  public:
 
-  //! Créé un maillage avec les informations de \a build_info
+  //! Creates a mesh with the information from \a build_info
   virtual IPrimaryMesh* createMesh(IMeshMng* mm,const MeshBuildInfo& build_info) =0;
 };
 
@@ -48,5 +49,4 @@ class ARCANE_CORE_EXPORT IMeshFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

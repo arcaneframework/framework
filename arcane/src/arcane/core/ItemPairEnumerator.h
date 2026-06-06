@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemPairEnumerator.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Enumérateur sur un tableau de tableau d'entités du maillage.              */
+/* Enumerator over an array of arrays of mesh entities.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMPAIRENUMERATOR_H
 #define ARCANE_CORE_ITEMPAIRENUMERATOR_H
@@ -31,8 +31,9 @@ class ItemItemArray;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur un tableau de tableaux d'entités du maillage.
+ * \brief Enumerator over an array of arrays of mesh entities.
  */
 class ARCANE_CORE_EXPORT ItemPairEnumerator
 {
@@ -76,7 +77,7 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
     return static_cast<Int32>(m_indexes[m_current + 1] - m_indexes[m_current]);
   }
 
-  //! Conversion vers un ItemLocalIdT<ItemType>
+  //! Conversion to ItemLocalIdT<ItemType>
   operator ItemLocalId() const { return ItemLocalId{ itemLocalId() }; }
 
  protected:
@@ -103,9 +104,10 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur un tableau de tableaux d'entités
- * du maillage de genre \a ItemType et \a SubItemType.
+ * \brief Enumerator over an array of arrays of mesh entities of type
+ * \a ItemType and \a SubItemType.
  */
 template <typename ItemType>
 class ItemPairEnumeratorSubT
@@ -124,15 +126,16 @@ class ItemPairEnumeratorSubT
   {
     return ItemType(this->_currentItem());
   }
-  //! Conversion vers un ItemLocalIdT<ItemType>
+  //! Conversion to ItemLocalIdT<ItemType>
   operator ItemLocalIdT<ItemType>() const { return ItemLocalIdT<ItemType>{ this->itemLocalId() }; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur un tableau de tableaux d'entités
- * du maillage de genre \a ItemType et \a SubItemType.
+ * \brief Enumerator over an array of arrays of mesh entities of type
+ * \a ItemType and \a SubItemType.
  */
 template <typename ItemType, typename SubItemType>
 class ItemPairEnumeratorT
@@ -161,4 +164,4 @@ class ItemPairEnumeratorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

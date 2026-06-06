@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicModule.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Module basique avec informations de maillage.                             */
+/* Basic module with mesh information.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_BASICMODULE_H
 #define ARCANE_CORE_BASICMODULE_H
@@ -26,13 +26,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Module
  *
- * \brief Module basique.
+ * \brief Basic module.
  *
- * Classe de base d'un module permettant de récupérer aisément les informations
- * de maillages (IMesh) et les variables standards (CommonVariables).
+ * Base class of a module allowing easy retrieval of
+ * mesh information (IMesh) and standard variables (CommonVariables).
  */
 class ARCANE_CORE_EXPORT BasicModule
 : public AbstractModule
@@ -41,12 +42,12 @@ class ARCANE_CORE_EXPORT BasicModule
 {
  protected:
 
-  //! Constructeur à partir d'un \a ModuleBuildInfo
+  //! Constructor from a \a ModuleBuildInfo
   explicit BasicModule(const ModuleBuildInfo&);
 
  public:
 
-  //! Destructeur
+  //! Destructor
   ~BasicModule() override;
 };
 

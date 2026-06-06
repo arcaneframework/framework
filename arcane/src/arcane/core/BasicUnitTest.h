@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicUnitTest.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Service basique de test unitaire.                                         */
+/* Basic unit test service.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_BASICUNITTEST_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Service basique de test unitaire.
+ * \brief Basic unit test service.
  */
 class ARCANE_CORE_EXPORT BasicUnitTest
 : public BasicService

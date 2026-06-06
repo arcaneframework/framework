@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemLocalIdList.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des listes d'identifiants locaux de 'ComponentItemInternal'.      */
+/* Management of local identifier lists for 'ComponentItemInternal'.         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

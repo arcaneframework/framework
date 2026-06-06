@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OperatorMng.h                                               (C) 2000-2004 */
 /*                                                                           */
-/* Stocke tous les types d'opérateur possibles sur les expressions.          */
+/* Stores all possible operator types on expressions.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_OPERATORMNG_H
 #define ARCANE_UTILS_OPERATORMNG_H
@@ -34,7 +34,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Stocke tous les types d'operateur possibles sur les expressions.
+ * \brief Stores all possible operator types on expressions.
  */
 class ARCANE_EXPR_EXPORT OperatorMng
 {

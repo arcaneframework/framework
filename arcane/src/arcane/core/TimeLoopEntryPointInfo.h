@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeLoopEntryPointInfo.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Informations sur un point d'entrée de la boucle en temps.                 */
+/* Information about a time loop entry point.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TIMELOOPENTRYPOINTINFO_H
 #define ARCANE_TIMELOOPENTRYPOINTINFO_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Infos d'un point d'entrée d'une boucle en temps.
+ * \brief Info about a time loop entry point.
  */
 class TimeLoopEntryPointInfo
 {
@@ -71,5 +72,4 @@ class TimeLoopEntryPointInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

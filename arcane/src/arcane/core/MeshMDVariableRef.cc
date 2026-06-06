@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMDVariableRef.cc                                        (C) 2000-2022 */
 /*                                                                           */
-/* Classe gérant une variable multi-dimension sur une entité du maillage.    */
+/* Class managing a multi-dimensional variable on a mesh entity.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,7 +24,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Instantie explicitement pour vérifier la compilation
+
+// Explicit instantiation to check compilation
 
 template class MeshMDVariableRefT<Cell, Real, MDDim2>;
 template class MeshMDVariableRefT<Cell, Real, MDDim3>;

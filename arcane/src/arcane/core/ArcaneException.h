@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneException.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Exceptions lancées par Arcane.                                            */
+/* Exceptions thrown by Arcane.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ARCANEEXCEPTION_H
 #define ARCANE_CORE_ARCANEEXCEPTION_H
@@ -27,20 +27,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception sur un identifiant non valide.
+ * \brief Exception for an invalid identifier.
  *
- * Cette exception est envoyée à chaque fois qu'un identifiant non valide
- * est utilisé dans l'architecture.
+ * This exception is thrown whenever an invalid identifier
+ * is used in the architecture.
 
- Les règles suivantes doivent être respectées pour qu'un identifiant soit
- valide:
+ The following rules must be respected for an identifier to be
+ valid:
  
- \arg il doit comporter au moins un caractère.
- \arg il doit commencer par un caractère alphabétique (a-zA-Z),
- \arg il doit se poursuivre par une suite de caractère alphabétique, de chiffre
- ou le caractère souligné '_'.
+ \arg it must contain at least one character.
+ \arg it must start with an alphabetic character (a-zA-Z),
+ \arg it must be followed by a sequence of alphabetic characters, digits,
+ or the underscore character '_'.
  */
 class ARCANE_CORE_EXPORT BadIDException
 : public Exception
@@ -48,8 +49,8 @@ class ARCANE_CORE_EXPORT BadIDException
  public:
 
   /*!
-   * Construit une exception liée au gestionnaire \a m, issue de la fonction
-   * \a where et avec le nom invalide \a invalid_name.
+   * Constructs an exception related to the manager \a m, originating from the function
+   * \a where and with the invalid name \a invalid_name.
    */
   BadIDException(const String& where,const String& invalid_name);
   ~BadIDException() ARCANE_NOEXCEPT override {}
@@ -60,17 +61,18 @@ class ARCANE_CORE_EXPORT BadIDException
 
  private:
 
-  String m_invalid_name; //!< Identifiant invalide.
+  String m_invalid_name; //!< Invalid identifier.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception sur un numéro d'entité non valide.
+ * \brief Exception for an invalid entity ID.
  *
- Cette exception est envoyée à chaque fois qu'un numéro d'entité (qu'il soit
- local ou global) est non valide.
+ * This exception is thrown whenever an entity ID (whether local or global)
+ * is invalid.
  */
 class ARCANE_CORE_EXPORT BadItemIdException
 : public Exception
@@ -78,10 +80,10 @@ class ARCANE_CORE_EXPORT BadItemIdException
  public:
 
   /*!
-   * \brief Construit une exception.
+   * \brief Constructs an exception.
    
-   Construit une exception liée au gestionnaire de message \a m,
-   issue de la fonction \a where et avec le numéro invalide \a id.
+   Constructs an exception related to the message manager \a m,
+   originating from the function \a where and with the invalid ID \a id.
    */
   BadItemIdException(const String& where,Integer bad_id);
   ~BadItemIdException() ARCANE_NOEXCEPT override {}
@@ -92,14 +94,15 @@ class ARCANE_CORE_EXPORT BadItemIdException
 
  private:
 
-  Integer m_bad_id; //!< Numéro invalide.
+  Integer m_bad_id; //!< Invalid ID.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'une erreur interne survient.
+ * \brief Exception when an internal error occurs.
  */
 class ARCANE_CORE_EXPORT InternalErrorException
 : public Exception
@@ -122,13 +125,13 @@ class ARCANE_CORE_EXPORT InternalErrorException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception sur un genre/type de variable non valide.
+ * \brief Exception for an invalid variable kind/type.
  *
- * Cette exception est envoyée lorsqu'on essaye de référencer une variable
- * qui existe déjà dans un autre module avec un genre ou un type
- * différent.
+ * This exception is thrown when attempting to reference a variable
+ * that already exists in another module with a different kind or type.
  */
 class ARCANE_CORE_EXPORT BadVariableKindTypeException
 : public Exception
@@ -153,13 +156,13 @@ class ARCANE_CORE_EXPORT BadVariableKindTypeException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception sur un nom de groupe d'items de variable partielle non valide.
+ * \brief Exception for an invalid partial variable item group name.
  *
- * Cette exception est envoyée lorsqu'on essaye de référencer une variable partielle
- * qui existe déjà dans un autre module avec un nom de groupe d'items
- * différent.
+ * This exception is thrown when attempting to reference a partial variable
+ * that already exists in another module with a different item group name.
  */
 class ARCANE_CORE_EXPORT BadPartialVariableItemGroupNameException
 : public Exception
@@ -183,10 +186,10 @@ class ARCANE_CORE_EXPORT BadPartialVariableItemGroupNameException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'une entité du maillage n'est pas d'un type
- * connu.
+ * \brief Exception when a mesh entity is not of a known type.
  */
 class ARCANE_CORE_EXPORT UnknownItemTypeException
 : public Exception
@@ -209,9 +212,10 @@ class ARCANE_CORE_EXPORT UnknownItemTypeException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'on essaie de déréférencer un pointer nul.
+ * \brief Exception when trying to dereference a null pointer.
  */
 class ARCANE_CORE_EXPORT BadReferenceException
 : public Exception
@@ -230,9 +234,10 @@ class ARCANE_CORE_EXPORT BadReferenceException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception dans un lecteur ou écrivain.
+ * \brief Exception in a reader or writer.
  */
 class ARCANE_CORE_EXPORT ReaderWriterException
 : public Exception
@@ -251,31 +256,35 @@ class ARCANE_CORE_EXPORT ReaderWriterException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception dans une assertion.
+ * \brief Exception in an assertion.
  */
 class ARCANE_CORE_EXPORT AssertionException
 : public Exception
 {
  public:
+
   /*!
-   * Construit une exception issue de la fonction \a where.
+   * Constructs an exception originating from the function \a where.
    */
   explicit AssertionException(const TraceInfo& where);
 
   /*!
-   * Construit une exception issue de la fonction \a where.
-   * La valeur attendue dans l'assertion était \a expected, le résultat obtenu \a actual.
+   * Constructs an exception originating from the function \a where.
+   * The expected value in the assertion was \a expected, the obtained result was \a actual.
    */
   AssertionException(const TraceInfo& where, const String& expected, const String& actual);
 
  public:
 
   void explain(std::ostream& m) const override;
-  //! Fichier de l'exception
+
+  //! File of the exception
   const char* file() const { return m_file; }
-  //! Ligne de l'exception
+
+  //! Line of the exception
   int line() const { return m_line; }
 
  public:
@@ -297,4 +306,4 @@ class ARCANE_CORE_EXPORT AssertionException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BitonicSortT.H                                              (C) 2000-2025 */
 /*                                                                           */
-/* Algorithme de tri bi-tonique parallèle.                                   */
+/* Parallel bitonic sort algorithm.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLEL_BITONICSORT_IMPL_H
 #define ARCANE_CORE_PARALLEL_BITONICSORT_IMPL_H
@@ -52,8 +52,8 @@ _init(ConstArrayView<KeyType> keys)
 {
   m_init_size = keys.size();
 
-  // Il est indispensable que tous les rangs aient la même valeur
-  // de m_size
+  // It is essential that all ranks have the same value
+  // of m_size
   m_size = m_parallel_mng->reduce(Parallel::ReduceMax, m_init_size);
 
   m_keys.resize(m_size);
@@ -62,16 +62,16 @@ _init(ConstArrayView<KeyType> keys)
 
   Int32 rank = m_parallel_mng->commRank();
 
-  // Les valeurs de la variable aux mailles tab sont stockées
-  // dans le tableau m_key
+  // The values of the tab grid variable are stored
+  // in the m_key array
   for (Integer i = 0; i < m_init_size; ++i) {
     m_keys[i] = keys[i];
     m_key_indexes[i] = i;
     m_key_ranks[i] = rank;
   }
 
-  // Remplit la fin du tableau avec des valeurs non significatives
-  // Afin que chaque processeur ait le meme nombre d'elements
+  // Fills the end of the array with non-significant values
+  // So that each processor has the same number of elements
   KeyType max_value = m_traits.maxValue();
   for (Int64 i = m_init_size; i < m_size; i++) {
     m_keys[i] = max_value;
@@ -82,15 +82,16 @@ _init(ConstArrayView<KeyType> keys)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
-  \brief Tri bi-tonique de la variable \a m_key
 
-  En sortie de l'appel, la variable key est entièrement classée
-  par ordre croissant : les premiers éléments sont situés
-  par ordre croissant sur le processeur 0, les suivants sur 
-  le processeur 1, etc...
-  Le rangement se fait 'en place', de sorte que la taille
-  des tableaux sur les différents processeurs n'est pas modifiée.
+/*!
+  \brief Bitonic sort of the variable \a m_key
+
+  Upon exiting the call, the key variable is entirely sorted
+  in ascending order: the first elements are located
+  in ascending order on processor 0, the following on 
+  processor 1, etc...
+  The sorting is done 'in place', so that the size
+  of the arrays on the different processors is not modified.
 
 */
 template <typename KeyType, typename KeyTypeTraits> void
@@ -106,10 +107,10 @@ sort(ConstArrayView<KeyType> keys)
          << " memsize=" << sizeof(KeyType) * m_size
          << " structsize=" << sizeof(KeyType);
 
-  // Appel au tri local des cles
+  // Call to local key sort
   _localHeapSort();
 
-  // Définition du nombre de niveaux pour l'algorithme
+  // Definition of the number of levels for the algorithm
   Int32 nb_level = 0;
   Int32 test = 1;
   Int32 nb_rank = m_parallel_mng->commSize();
@@ -119,20 +120,20 @@ sort(ConstArrayView<KeyType> keys)
   }
   Int32 size = 1;
 
-  // Boucle sur les niveaux de profondeurs de l'algorithme
+  // Loop over the depth levels of the algorithm
   for (Int32 ilevel = 0; ilevel < nb_level; ++ilevel) {
     size *= 2;
 
-    // Boucle sur les groupes de processeurs à traiter
+    // Loop over the groups of processors to be processed
     for (Int32 jproc = 0; jproc < nb_rank; jproc += size) {
       _mergeLevels(jproc, size);
     }
   }
 
-  // Le nombre d'éléments valides de la liste peut-être inférieur
-  // au nombre d'éléments alloués. Dès qu'une valeur est invalide,
-  // on arrête la liste.
-  // TODO: partir de la fin
+  // The number of valid elements in the list may be less
+  // than the number of allocated elements. As soon as a value is invalid,
+  // we stop the list.
+  // TODO: start from the end
   for (Integer i = 0; i < m_size; ++i) {
     if (!m_traits.isValid(m_keys[i])) {
       m_size = i;
@@ -149,28 +150,29 @@ sort(ConstArrayView<KeyType> keys)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
-  \brief Tri bi-tonique de la variable \a key.
 
-  En sortie de l'appel, la variable key est entièrement classée
-  par ordre croissant : les premiers éléments sont situés
-  par ordre croissant sur le processeur 0, les suivants sur 
-  le processeur 1, etc...
-  Le rangement se fait 'en place', de sorte que la taille
-  des tableaux sur les différents processeurs n'est pas modifiée.
+/*!
+  \brief Bitonic sort of the variable \a key.
+
+  Upon exiting the call, the key variable is entirely sorted
+  in ascending order: the first elements are located
+  in ascending order on processor 0, the following on 
+  processor 1, etc...
+  The sorting is done 'in place', so that the size
+  of the arrays on the different processors is not modified.
 */
 template <typename KeyType, typename KeyTypeTraits> void
 BitonicSort<KeyType, KeyTypeTraits>::
 _mergeLevels(Int32 begin, Int32 size)
 {
-  //etage separateur
+  // Separator stage
   for (Int32 i = 0; i < size / 2; ++i)
     _mergeProcessors(begin + i, begin + size - 1 - i);
 
   if (size <= 2)
     return;
 
-  // Application de la trieuse bitonique de niveau n/2
+  // Application of the bitonic sorter of level n/2
   Int32 div_size = size;
   while (div_size > 1) {
     div_size /= 2;
@@ -181,8 +183,9 @@ _mergeLevels(Int32 begin, Int32 size)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Etage séparateur de l'algorithme de tri bi-tonique
+ * \brief Bitonic sort algorithm separator stage
  */
 template <typename KeyType, typename KeyTypeTraits> void BitonicSort<KeyType, KeyTypeTraits>::
 _separator(Int32 begin, Int32 size)
@@ -193,19 +196,20 @@ _separator(Int32 begin, Int32 size)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Fusion des listes de deux processeurs.
- *
- \param iproc1 processeur de plus faible Id dont on fusionne la liste
- \param iproc2 processeur de plus fort Id dont on fusionne la liste
 
- * Cette opération est la brique élémentaire de 
- * l'algorithme de tri fusion bi-tonique. En entrée, elle
- * prend les numéros de deux processeurs avec iproc1<iproc2.
- * En sortie, les  tableaux m_key de ces deux processeurs
- * sont triés : les plus petits éléments sont triés par ordre croissant
- * sur iproc1, les plus grands éléments sont triés par ordre croissant
- * sur iproc2.
+/*!
+ * \brief Merging lists from two processors.
+ *
+ \param iproc1 processor with lower ID whose list is merged
+ \param iproc2 processor with higher ID whose list is merged
+
+ * This operation is the elementary building block of 
+ * the bitonic merge sort algorithm. On input, it
+ * takes the numbers of two processors with iproc1<iproc2.
+ * On output, the m_key arrays of these two processors
+ * are sorted: the smallest elements are sorted in ascending order
+ * on iproc1, the largest elements are sorted in ascending order
+ * on iproc2.
  */
 template <typename KeyType, typename KeyTypeTraits> void BitonicSort<KeyType, KeyTypeTraits>::
 _mergeProcessors(Int32 iproc1, Int32 iproc2)
@@ -230,11 +234,11 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
   const Int64 buf_size = m_size;
   const bool is_want_index_rank = m_want_index_and_rank;
   ////////////////////////////////////////////
-  //traitement du processeur 2
+  //Processor 2 processing
   ////////////////////////////////////////////
 
   if (is_proc2) {
-    //envoi de la liste au proc 1
+    // Send the list to proc 1
     UniqueArray<KeyType> send_keys(m_keys);
     UniqueArray<Request> requests;
     requests.add(m_traits.send(m_parallel_mng, iproc1, send_keys));
@@ -242,7 +246,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
       requests.add(m_parallel_mng->send(m_key_indexes, iproc1, false));
       requests.add(m_parallel_mng->send(m_key_ranks, iproc1, false));
     }
-    //reception de la fin de la liste fusionnee par le proc1
+    // Receive the end of the merged list by proc1
     requests.add(m_traits.recv(m_parallel_mng, iproc1, m_keys));
     if (is_want_index_rank) {
       requests.add(m_parallel_mng->recv(m_key_indexes, iproc1, false));
@@ -252,16 +256,16 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
   }
 
   //////////////////////////////////////
-  //traitement du processeur 1
+  //Processor 1 processing
   //////////////////////////////////////
   if (is_proc1) {
-    //reception de la liste du proc2
+    // Receive the list from proc2
 
     UniqueArray<KeyType> buf2(buf_size);
     Int32UniqueArray buf2_proc;
     Int32UniqueArray buf2_local_id;
-    //on alloue buf2 a la taille+1 afin de placer une sentinelle en
-    //buf2[size]
+    // We allocate buf2 to size+1 in order to place a sentinel in
+    // buf2[size]
     buf2.resize(buf_size);
     if (is_want_index_rank) {
       buf2_proc.resize(buf_size);
@@ -275,10 +279,10 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
       m_parallel_mng->recv(buf2_proc, iproc2);
     }
 
-    //à remplacer par le plus grand nombre representable par un Integer
+    // to be replaced by the largest number representable by an Integer
     buf2.add(m_traits.maxValue());
 
-    // allocation d'un buffer de travail pour la fusion des deux listes
+    // allocation of a working buffer for merging the two lists
     Int64 total_size = m_size + buf_size;
     UniqueArray<KeyType> buf_merge(total_size);
     UniqueArray<Int32> buf_proc_merge;
@@ -293,8 +297,8 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
            << " proc2=" << iproc2 << " init-size=" << m_init_size;
 #endif
 
-    // Fusion des deux listes en partant du principe que chacune est
-    // déjà triée.
+    // Merging the two lists based on the assumption that each one is
+    // already sorted.
     Int64 cursor1 = 0;
     Int64 cursor2 = 0;
     for (Int64 i = 0; i < total_size; ++i) {
@@ -317,7 +321,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
     }
     buf2.resize(buf_size);
 
-    // Recopie et envoi de la fin de la liste vers le proc2
+    // Copy and send the end of the list to proc2
     for (Integer ii = 0; ii < buf_size; ii++) {
       buf2[ii] = buf_merge[m_size + ii];
       if (is_want_index_rank) {
@@ -332,7 +336,7 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
       m_parallel_mng->send(buf2_proc, iproc2);
     }
 
-    // recopie du debut de la liste dans la variable m_work_unique_id
+    // Copy from the beginning of the list into the m_work_unique_id variable
     for (Integer i = 0; i < buf_size; i++) {
       m_keys[i] = buf_merge[i];
       if (is_want_index_rank) {
@@ -345,21 +349,22 @@ _mergeProcessors(Int32 iproc1, Int32 iproc2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Tri par tas en local de la variable \a m_key.
+ * \brief Local heap sort of the variable \a m_key.
  *
- * En sortie de l'appel, la variable est classée
- * par ordre croissant à l'intérieur de chaque processeur.
+ * Upon exiting the call, the variable is sorted
+ * in ascending order within each processor.
  */
 template <typename KeyType, typename KeyTypeTraits>
 void BitonicSort<KeyType, KeyTypeTraits>::
 _localHeapSort()
 {
-  // Cas particulier d'une liste réduite à zero ou un element
+  // Special case of a list reduced to zero or one element
   if (m_size < 2)
     return;
 
-  // Suivant du parent du dernier element
+  // Following the parent of the last element
   Int64 l = m_size / 2;
   Int64 ir = m_size - 1;
   KeyType rra;
@@ -401,7 +406,7 @@ _localHeapSort()
         m_key_indexes[i] = m_key_indexes[j];
         m_key_ranks[i] = m_key_ranks[j];
         i = j;
-        //enfant a gauche
+        // left child
         j = j * 2 + 1;
       }
       else

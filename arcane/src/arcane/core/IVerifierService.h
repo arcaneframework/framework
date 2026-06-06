@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVerifierService.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Interface du service de vérification des données entre deux exécutions.   */
+/* Interface of the data verification service between two executions.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVERIFIERSERVICE_H
 #define ARCANE_CORE_IVERIFIERSERVICE_H
@@ -24,86 +24,87 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface du service de vérification des données
- * entre deux exécutions.
+ * \brief Interface of the data verification service
+ * between two executions.
  */
 class IVerifierService
 {
  public:
 
   /*!
-   * \brief Mode de comparaison
+   * \brief Comparison mode
    */
   enum class eCompareMode
   {
-    //! Compare toutes les valeurs
+    //! Compare all values
     Values,
     /*!
-     * \brief Compare uniquement les hash des valeurs.
+     * \brief Compares only the hashes of the values.
      *
-     * Ce mode permet uniquement de détecter si deux valeurs sont différentes
-     * sans pouvoir connaitre cette différence. Il est cependant plus rapide
-     * que le mode \a Values et permet de limiter la taille des fichiers
-     * de comparaison.
+     * This mode only allows detecting if two values are different
+     * without knowing this difference. However, it is faster
+     * than the \a Values mode and allows limiting the size of the comparison
+     * files.
      */
     HashOnly
   };
 
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IVerifierService() = default;
 
  public:
 
-  //! Ecrit le fichier référence
+  //! Writes the reference file
   virtual void writeReferenceFile() = 0;
 
   /*!
-   * \brief Effectue la vérification à partir du fichier référence.
+   * \brief Performs the verification from the reference file.
    *
-   * \param parallel_sequential si vrai, indique qu'on compare le résultat
-   * d'une exécution parallèle avec celui d'une exécution séquentielle. Cette
-   * option est inactive si l'exécution est séquentielle.
+   * \param parallel_sequential if true, indicates that the result
+   * of a parallel execution is compared with that of a sequential execution. This
+   * option is inactive if the execution is sequential.
    *
-   * \param compare_ghost si vrai, indique qu'on compare les résultats aussi
-   * sur les entités fantômes. Il est en général normal que les résultats soient
-   * différents sur les entités fantômes, car il n'est pas nécessaire que
-   * toutes les variables soient synchronisées. C'est pourquoi il vaut mieux
-   * en général ne pas faire de vérification sur les entités fantômes. Cette
-   * option est inactive si l'exécution est séquentielle.
+   * \param compare_ghost if true, indicates that the results are also compared
+   * on ghost entities. It is generally normal for the results to be
+   * different on ghost entities, because it is not necessary that
+   * all variables are synchronized. This is why it is better
+   * generally not to perform verification on ghost entities. This
+   * option is inactive if the execution is sequential.
    */
   virtual void doVerifFromReferenceFile(bool parallel_sequential, bool compare_ghost) = 0;
 
  public:
 
-  //! Positionne le nom du fichier contenant les valeurs de référence
+  //! Sets the name of the file containing the reference values
   virtual void setFileName(const String& file_name) = 0;
-  //! Nom du fichier contenant les valeurs de référence
+  //! Name of the file containing the reference values
   virtual String fileName() const = 0;
 
  public:
 
-  //! Nom du fichier contenant les résultats
+  //! Name of the file containing the results
   virtual void setResultFileName(const String& file_name) = 0;
   virtual String resultfileName() const = 0;
 
-  //! Type de comparaison souhaité
+  //! Desired comparison type
   virtual void setCompareMode(eCompareMode v) = 0;
   virtual eCompareMode compareMode() const = 0;
 
  public:
 
-  //! Positionne le nom du sous répertoire contenant les valeurs de référence
+  //! Sets the name of the subdirectory containing the reference values
   virtual void setSubDir(const String& sub_dir) = 0;
-  //! Nom du fichier contenant les valeurs de référence
+  //! Name of the file containing the reference values
   virtual String subDir() const = 0;
 
  public:
 
-  //! Méthode à utiliser pour calculer la différence entre deux valeurs
+  //! Method to use for calculating the difference between two values
   virtual void setComputeDifferenceMethod(eVariableComparerComputeDifferenceMethod v) = 0;
   virtual eVariableComparerComputeDifferenceMethod computeDifferenceMethod() const = 0;
 };
@@ -116,5 +117,4 @@ class IVerifierService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

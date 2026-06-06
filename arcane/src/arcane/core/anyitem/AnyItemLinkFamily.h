@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemLinkFamily.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Famille de liens entre any items.                                         */
+/* Link family between any items.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMLINKFAMILY_H
 #define ARCANE_CORE_ANYITEM_ANYITEMLINKFAMILY_H
@@ -30,7 +30,7 @@ ANYITEM_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Outil pour créer une pair d'items
+ * \brief Tool to create a pair of items
  */
 template<typename U, typename V>
 class PairT
@@ -48,10 +48,10 @@ inline PairT<U,V> Pair(U u, V v) { return PairT<U,V>(u,v); }
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Famille de liens AnyItem partie interne
- * les données stockées sont les localid des items et l'offset du groupe dans la famille
+ * \brief Internal AnyItem Link Family
+ * The stored data are the local IDs of the items and the group offset within the family
  *
- * Par exemple :
+ * For example:
  *
  * AnyItem::LinkFamily link_family(family);
  * link_family.reserve(allFaces.size());
@@ -67,7 +67,7 @@ class LinkFamilyInternal : public IFamilyObserver
 public:
   
   /*!
-   * \brief Données par liaisons
+   * \brief Data per link
    */
   class LinkData
   {
@@ -76,13 +76,13 @@ public:
 #ifdef ARCANE_ANYITEM_USEPACKEDDATA
   public:
     LinkData() : m_packed_data(0) {}
-    //! Identifiant du groupe auquel est associé l'item référencé par ce LinkData
+    //! Identifier of the group associated with the item referenced by this LinkData
     Integer groupIndex() const { return m_packed_data >> m_group_shift; }
-    //! Identifiant localId de l'item référencé dans sa famille IItemFamily d'origine
+    //! LocalId identifier of the item referenced in its original IItemFamily
     Integer varIndex() const { return m_packed_data & m_integer_mask; }
-    //! Identifiant localId de l'item référencé dans sa famille AnyItemFamily
+    //! LocalId identifier of the item referenced in its AnyItemFamily
     Integer localId() const { return (m_packed_data >> m_local_id_shift) & m_integer_mask; }
-    //! Opérateur de comparaison
+    //! Comparison operator
     bool operator==(const LinkData& data) const { return m_packed_data == data.m_packed_data; }
 private:
     static const Integer m_integer_size   = 26;
@@ -114,13 +114,13 @@ private:
 #else /* ARCANE_ANYITEM_USEPACKEDDATA */
   public:
     LinkData() : m_group_index(0), m_local_id(0), m_var_index(0) {}
-    //! Identifiant du groupe auquel est associé l'item référencé par ce LinkData
+    //! Identifier of the group associated with the item referenced by this LinkData
     Integer groupIndex() const { return m_group_index; }
-    //! Identifiant localId de l'item référencé dans sa famille IItemFamily d'origine
+    //! LocalId identifier of the item referenced in its original IItemFamily
     Integer varIndex() const { return m_var_index; }
-    //! Identifiant localId de l'item référencé dans sa famille AnyItemFamily
+    //! LocalId identifier of the item referenced in its AnyItemFamily
     Integer localId() const { return m_local_id; }
-    //! Opérateur de comparaison
+    //! Comparison operator
     bool operator==(const LinkData& data) const { 
       return m_group_index == data.m_group_index
         && m_local_id == data.m_local_id 
@@ -131,14 +131,14 @@ private:
     inline void setLocalId(Integer local_id) { m_local_id = local_id; }
     inline void setVarIndex(Integer item_local_id) { m_var_index = item_local_id; }
   private:
-    unsigned m_group_index; //!< Index du groupe d'où vient cet item
-    unsigned m_local_id; //!< Identifiant dans l(indexation globale de AnyItem::Family
-    Integer m_var_index; //!< Index pour les partiels, localId sinon
+    unsigned m_group_index; //!< Index of the group from which this item comes
+    unsigned m_local_id; //!< Identifier in the global indexing of AnyItem::Family
+    Integer m_var_index; //!< Index for partials, localId otherwise
 #endif /* ARCANE_ANYITEM_USEPACKEDDATA */
   };
   
   /*!
-   * \brief Indice par liaison
+   * \brief Link index
    * 
    */
   class LinkIndex 
@@ -154,7 +154,7 @@ private:
   };
   
   /*!
-   * \brief Enumérateur de liens
+   * \brief Link enumerator
    */
   class Enumerator 
   : public LinkIndex
@@ -167,23 +167,23 @@ private:
     : LinkIndex(), m_sources(e.m_sources), m_targets(e.m_targets) {}
     inline bool hasNext() const { return m_sources.size() != m_index; }
     inline void operator++() { m_index++; }
-    //! Données du lien back
+    //! Back link data
     inline const LinkData& back() const { 
       return m_sources[m_index];
     }
-    //! Données du lien front
+    //! Front link data
     inline const LinkData& front() const { 
       return m_targets[m_index];
     }
   private:
-    //! Toutes les données back
+    //! All back data
     const Arcane::Array<LinkData>& m_sources;
-    //! Toutes les données front
+    //! All front data
     const Arcane::Array<LinkData>& m_targets;
   };
    
   /*!
-   * \brief Lien
+   * \brief Link
    */
   class Link 
     : public LinkIndex
@@ -191,12 +191,12 @@ private:
   public:
     
     /*!
-     * \brief Outil pour l'ajout de lien
+     * \brief Tool for link addition
      */
     template<typename U, typename V>
     struct LinkAdder
     {
-      // Adder pour une pair de groupe
+      // Adder for a group pair
       LinkAdder(LinkFamilyInternal& family, ItemGroupT<U> a, ItemGroupT<V> b)
         : m_family(family), m_a(a), m_b(b), m_used(false) {}
       ~LinkAdder() 
@@ -204,7 +204,7 @@ private:
         ARCANE_ASSERT((m_used == true),("LinkAdder never used"));
       }
     
-      //! Ajout d'une pair d'item
+      //! Addition of an item pair
       template<typename R, typename S>
       inline void operator<<(const PairT<R,S>& p) 
       {
@@ -215,16 +215,16 @@ private:
       }
       
     private:
-      //! Famille de liens
+      //! Link family
       LinkFamilyInternal& m_family;
       
-      //! Groupe back
+      //! Back group
       ItemGroupT<U> m_a;
 
-      //! groupe front
+      //! Front group
       ItemGroupT<V> m_b;
       
-      //! Indicateur si le adder est utilisé
+      //! Indicator if the adder is used
       bool m_used;
     };
     
@@ -237,7 +237,7 @@ private:
       ARCANE_ASSERT((m_used == true),("Link never used"));
     }
     
-    //! Ajout de liens pour les groupes a et b
+    //! Addition of links for groups a and b
     template<typename U, typename V>
     inline LinkAdder<U,V> operator()(const ItemGroupT<U>& a, const ItemGroupT<V>& b) 
     {
@@ -247,10 +247,10 @@ private:
 
   private:
     
-    //! Famille de liens
+    //! Link family
     LinkFamilyInternal& m_family;
     
-    //! Indicateur si le lien est utilisé
+    //! Indicator if the link is used
     bool m_used;
   };
 
@@ -260,7 +260,7 @@ private:
   
 public:
   
-  //! Famille de liens pour une famille anyitem
+  //! Link family for an anyitem family
   LinkFamilyInternal(const Family& family)
     : m_family(family)
     , m_nb_link(0) 
@@ -273,7 +273,7 @@ public:
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this);});
   }
   
-  //! Création d'un nouveau lien vide
+  //! Creation of a new empty link
   inline Link newLink() 
   {
     if(m_nb_link >= capacity()) {
@@ -287,22 +287,22 @@ public:
     return Link(*this,m_nb_link-1);
   }
  
-  //! Réserve une capacité de liens
+  //! Reserves a capacity of links
   inline void reserve(Integer size) {
     m_source_nodes.reserve(size);
     m_target_nodes.reserve(size);
     _notifyFamilyIsReserved();
   }
 
-  //! Enumérateurs des liens
+  //! Link enumerators
   inline Enumerator enumerator() const { return Enumerator(m_source_nodes, m_target_nodes); }
 
-  //! retourne la capacité
+  //! returns the capacity
   inline Integer capacity() const { 
     return m_source_nodes.capacity();
   }
 
-  //! Vide la famille
+  //! Clears the family
   void clear() {
     m_nb_link = 0;
     m_source_nodes.clear();
@@ -310,7 +310,7 @@ public:
     _notifyFamilyIsInvalidate();
   }
   
-  //! Enrgistre un observeur de la famille
+  //! Registers a family observer
   void registerObserver(ILinkFamilyObserver& observer) const
   {
     LinkFamilyObservers::const_iterator it = m_observers.find(&observer);
@@ -319,7 +319,7 @@ public:
     m_observers.insert(&observer);
   }
   
-  //! Détruit un observeur de la famille
+  //! Removes a family observer
   void removeObserver(ILinkFamilyObserver& observer) const
   {
     LinkFamilyObservers::const_iterator it = m_observers.find(&observer);
@@ -328,16 +328,16 @@ public:
     m_observers.erase(it);
   }
   
-  //! Notifie que la famille est invalidée
+  //! Notifies that the family is invalidated
   inline void notifyFamilyIsInvalidate() {
-    // Si la famille change, on invalide la famille des liaisons
+    // If the family changes, the link family is invalidated
     clear();
     _notifyFamilyIsInvalidate();
   }
   
-  // Notifie que la famille est agrandie
+  // Notifies that the family is increased
   inline void notifyFamilyIsIncreased() {
-    // On ne fait rien dans ce cas
+    // Do nothing in this case
   }
 
 public:
@@ -370,9 +370,9 @@ public:
 
 private:
   
-  // //! Ajout des noeuds des liaisons par type d'item
-  // // non optimal pour les variables partielles, il faut aller checher la
-  // // position de l'item dans le groupe
+  // //! Adding link nodes by item type
+  // // not optimal for partial variables, one must go look up the
+  // // position of the item in the group
   // template<typename T>
   // inline void _addNode(const T& t, ItemGroupT<T> group, Arcane::Array<LinkData>& nodes) {
   //   LinkData& data = nodes.back();
@@ -389,8 +389,8 @@ private:
   //   }
   // }
   
-  // //! Ajout des noeuds des liaisons par énumerateurs
-  // // optimal pour les variables partielles 
+  // //! Adding link nodes by enumerators
+  // // optimal for partial variables 
   // template<typename T>
   // inline void _addNode(const ItemEnumeratorT<T>& t, ItemGroupT<T> group, Arcane::Array<LinkData>& nodes) {
   //   LinkData& data = nodes.back();
@@ -408,9 +408,9 @@ private:
   
 public:
 
-  //! Ajout des noeuds des liaisons par type d'item
-  // non optimal pour les variables partielles, il faut aller checher la
-  // position de l'item dans le groupe
+  //! Adding link nodes by item type
+  // not optimal for partial variables, one must go look up the
+  // position of the item in the group
   template<typename T>
   void initLinkData(LinkData& data, const T& t, ItemGroupT<T> group) const
   {
@@ -427,8 +427,8 @@ public:
     }
   }
 
-  //! Ajout des noeuds des liaisons par énumerateurs
-  // optimal pour les variables partielles 
+  //! Adding link nodes by enumerators
+  // optimal for partial variables 
   template<typename T>
   void initLinkData(LinkData& data, const ItemEnumeratorT<T>& t, ItemGroupT<T> group) const
   {
@@ -444,7 +444,7 @@ public:
     }
   }
   
-  //! Retoune l'item concret associé à ce AnyItem
+  //! Returns the concrete item associated with this AnyItem
   Item item(const LinkData& link_data) const {
     return m_family.item(link_data);
   }
@@ -463,20 +463,20 @@ private:
   
 private:
   
-  //! Famille AnyItem
+  //! AnyItem family
   const Family m_family;
 
-  //! Données back
+  //! Back data
   Arcane::UniqueArray<LinkData> m_source_nodes;
   
-  //! Données front
+  //! Front data
   Arcane::UniqueArray<LinkData> m_target_nodes;
   
-  //! Nombre de liens
+  //! Number of links
   Integer m_nb_link;
   
-  //! Observeurs de la famille
-  // Pour que les objets construits sur la famille ne puissent pas la modifier
+  //! Family observers
+  // So that objects built on the family cannot modify it
   mutable LinkFamilyObservers m_observers;
 };
 
@@ -484,7 +484,7 @@ private:
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Famille de liens AnyItem (pattern flyweight)
+ * \brief AnyItem link family (flyweight pattern)
  */
 class LinkFamily 
   : public IFamilyObserver
@@ -506,48 +506,48 @@ public:
 
   ~LinkFamily() {}
   
-  //! Création d'un nouveau lien vide
+  //! Creation of a new empty link
   inline Link newLink() 
   {
     return m_internal->newLink();
   }
  
-  //! Réserve une capacité de liens
+  //! Reserves a capacity of links
   inline void reserve(Integer size) {
     m_internal->reserve(size);
   }
 
-  //! Enumérateurs des liens
+  //! Link enumerators
   inline Enumerator enumerator() const { return m_internal->enumerator(); }
 
-  //! retourne la capacité
+  //! returns the capacity
   inline Integer capacity() const { 
     return m_internal->capacity();
   }
 
-  //! Vide la famille
+  //! Clears the family
   void clear() {
     m_internal->clear();
   }
   
-  //! Enrgistre un observeur de la famille
+  //! Registers a family observer
   void registerObserver(ILinkFamilyObserver& observer) const
   {
     m_internal->registerObserver(observer);
   }
   
-  //! Detruit un observeur de la famille
+  //! Removes a family observer
   void removeObserver(ILinkFamilyObserver& observer) const
   {
     m_internal->removeObserver(observer);
   }
   
-  //! Notifie que la famille est invalidée
+  //! Notifies that the family is invalidated
   inline void notifyFamilyIsInvalidate() {
     m_internal->notifyFamilyIsInvalidate();
   }
   
-  //! Notifie que la famille est agrandie
+  //! Notifies that the family is increased
   inline void notifyFamilyIsIncreased() {
     m_internal->notifyFamilyIsIncreased();
   }
@@ -572,7 +572,7 @@ public:
 
 private:
   
-  //! Famille de liens interne
+  //! Internal link family
   SharedPtrT<LinkFamilyInternal> m_internal;
 };
 

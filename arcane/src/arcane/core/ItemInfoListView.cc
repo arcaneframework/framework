@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInfoListView.cc                                         (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur une liste pour obtenir des informations sur les entités.          */
+/* View on a list to obtain information about entities.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,8 +34,9 @@ ItemInfoListView(IItemFamily* family)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que le genre d'entité correspond à celui attendu.
+ * \brief Checks that the entity kind matches the expected one.
  */
 void ItemInfoListView::
 _checkValid(eItemKind expected_kind)

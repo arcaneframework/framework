@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceInfo.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Informations d'un service.                                                */
+/* Information about a service.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICEINFO_H
 #define ARCANE_CORE_SERVICEINFO_H
@@ -23,7 +23,7 @@
 
 namespace Arcane
 {
-//TODO: a supprimer. cela est conservé pour compatibilité avec le générateur des axl.
+//TODO: to be removed. This is kept for compatibility with the axl generator.
 using Internal::ServiceInfo;
 using Internal::ServiceAllInterfaceRegisterer;
 
@@ -37,25 +37,26 @@ class ServiceInfoPrivate;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \internal
- * \brief Informations d'un service.
+ * \brief Information about a service.
  */
 class ARCANE_CORE_EXPORT ServiceInfo
 : public IServiceInfo
 {
  public:
 
-  //! Constructeur
+  //! Constructor
   ServiceInfo(const String& local_name,const VersionInfo& version,
               Integer valid_dimension);
 
-  //! Destructeur
+  //! Destructor
   ~ServiceInfo() override;
 
  public:
 
-  //!@{ @name Méthodes d'accès héritées de IServiceInfo
+  //!@{ @name Methods inherited from IServiceInfo
   String localName() const override;
   String namespaceURI() const override;
   VersionInfo version() const override;
@@ -70,7 +71,7 @@ class ARCANE_CORE_EXPORT ServiceInfo
   const FileContent& axlContent() const override;
   //!@}
 
-  //!@{ @name Méthodes de construction spécifiques
+  //!@{ @name Specific construction methods
   virtual void setAxlVersion(Real v) const;
   virtual void setCaseOptionsFileName(const String& fn);
   virtual void addFactory(IServiceFactory2* factory);
@@ -79,7 +80,7 @@ class ARCANE_CORE_EXPORT ServiceInfo
   virtual void setSingletonFactory(Internal::ISingletonServiceFactory* f);
   //!@}
 
-  //! Infos sur les fabriques disponibles pour ce service
+  //! Info on the factories available for this service
   IServiceFactoryInfo* factoryInfo() const override;
   void setFactoryInfo(IServiceFactoryInfo* sfi);
 
@@ -89,12 +90,12 @@ class ARCANE_CORE_EXPORT ServiceInfo
 
  public:
   
-  // Fonction de création utilisée par les macros C++.
+  // Creation function used by C++ macros.
   static ServiceInfo* create(const ServiceProperty& sp,const char* filename,int lineno);
   
-  // Fonction de création utilisée par le C#.
-  // (le C# ne peut pas utiliser la méthode C++ à cause de ServiceProperty
-  // qui contient un const char* qui sera collecté par le garbage collector)
+  // Creation function used by C#.
+  // (C# cannot use the C++ method because of ServiceProperty
+  // which contains a const char* that will be collected by the garbage collector)
   static ServiceInfo* create(const String& name,int service_type);
 
  private:
@@ -111,5 +112,4 @@ class ARCANE_CORE_EXPORT ServiceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

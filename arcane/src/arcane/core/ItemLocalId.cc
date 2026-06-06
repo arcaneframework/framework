@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemLocalId.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Numéro local d'une entité du maillage.                                    */
+/* Local ID of a mesh entity.                                                */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ItemLocalId.h"

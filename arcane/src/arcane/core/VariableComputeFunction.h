@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableComputeFunction.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Classe functor de re-calcul d'une variable.                               */
+/* Functor class for variable recalculation.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLECOMPUTEFUNCTION_H
 #define ARCANE_CORE_VARIABLECOMPUTEFUNCTION_H
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de la classe functor de re-calcul d'une variable.
+ * \brief Interface of the variable recalculation functor class.
  */
 class VariableComputeFunction
 : public IVariableComputeFunction
@@ -47,7 +48,7 @@ class VariableComputeFunction
   {
   }
 
-  //! Libère les ressources
+  //! Releases resources
   ~VariableComputeFunction() override
   {
     delete m_functor;
@@ -55,7 +56,7 @@ class VariableComputeFunction
 
  public:
 
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   void execute() override { m_functor->executeFunctor(); }
 
   const TraceInfo& traceInfo() const override { return m_trace_info; }
@@ -74,5 +75,4 @@ class VariableComputeFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

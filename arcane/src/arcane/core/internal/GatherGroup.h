@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* GatherGroup.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de gérer les regroupements de données sur le ou les     */
-/* sous-domaines écrivains.                                                  */
+/* Class allowing the management of data groupings across the writer         */
+/* sub-domains.                                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,11 +37,11 @@ class GatherGroupInfo;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de regrouper les données de certains
- * sous-domaines sur d'autres sous-domaines.
+ * \brief Class allowing the grouping of data from certain
+ * sub-domains onto other sub-domains.
  *
- * Les écrivains seront les masterIO ou les masterParallelIO si
- * \a m_use_collective_io est vrai.
+ * The writers will be the masterIO or the masterParallelIO if
+ * \a m_use_collective_io is true.
  */
 class ARCANE_CORE_EXPORT GatherGroup
 : public IGatherGroup
@@ -50,15 +50,15 @@ class ARCANE_CORE_EXPORT GatherGroup
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param gather_group_info Les informations de regroupement. \a isComputed() devra être
-   * vrai.
+   * \brief Constructor.
+   * \param gather_group_info The grouping information. \a isComputed() must be
+   * true.
    */
   explicit GatherGroup(GatherGroupInfo* gather_group_info);
 
   /*!
-   * \brief Constructeur.
-   * Pour que l'objet soit utilisable, il est nécessaire d'appeler
+   * \brief Constructor.
+   * For the object to be usable, it is necessary to call
    * \a setGatherGroupInfo().
    */
   GatherGroup();
@@ -73,37 +73,37 @@ class ARCANE_CORE_EXPORT GatherGroup
  public:
 
   /*!
-   * \brief Méthode permettant de définir les informations de regroupement.
+   * \brief Method allowing the definition of grouping information.
    *
-   * Cette méthode peut être utilisée pour remplacer les informations déjà
-   * enregistrées dans l'objet.
+   * This method can be used to replace the information already
+   * stored in the object.
    */
   void setGatherGroupInfo(GatherGroupInfo* gather_group_info);
 
   /*!
-   * \brief Méthode permettant de regrouper les données de plusieurs
-   * sous-domaines sur un ou plusieurs sous-domaines.
+   * \brief Method allowing the grouping of data from several
+   * sub-domains onto one or more sub-domains.
    *
-   * Il est recommandé d'utiliser cette méthode plutôt que directement
+   * It is recommended to use this method rather than directly
    * \a gatherToMasterIO().
    *
-   * \param in Notre tableau que l'on souhaite regrouper.
-   * \param out Le tableau regroupé. Si l'on n'est pas écrivain, il n'y aura
-   * aucune modification.
+   * \param in Our array that we wish to group.
+   * \param out The grouped array. If we are not the writer, there will
+   * be no modification.
    */
   template <class T>
   void gatherToMasterIOT(Span<const T> in, Array<T>& out);
 
   /*!
-   * \brief Méthode permettant de regrouper les données de plusieurs
-   * sous-domaines sur un ou plusieurs sous-domaines.
+   * \brief Method allowing the grouping of data from several
+   * sub-domains onto one or more sub-domains.
    *
-   * Il est recommandé d'utiliser cette méthode plutôt que directement
+   * It is recommended to use this method rather than directly
    * \a gatherToMasterIO().
    *
-   * \param in Notre tableau que l'on souhaite regrouper.
-   * \param out Le tableau regroupé. Si l'on n'est pas écrivain, il n'y aura
-   * aucune modification.
+   * \param in Our array that we wish to group.
+   * \param out The grouped array. If we are not the writer, there will
+   * be no modification.
    */
   template <class T>
   void gatherToMasterIOT(Span2<const T> in, Array2<T>& out);
@@ -117,11 +117,10 @@ class ARCANE_CORE_EXPORT GatherGroup
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de calculer et de conserver les informations de
- * regroupements.
+ * \brief Class allowing the calculation and storage of grouping information.
  *
- * Les écrivains seront les masterIO ou les masterParallelIO si
- * \a m_use_collective_io est vrai.
+ * The writers will be the masterIO or the masterParallelIO if
+ * \a m_use_collective_io is true.
  */
 class ARCANE_CORE_EXPORT GatherGroupInfo
 : public IGatherGroupInfo
@@ -131,12 +130,12 @@ class ARCANE_CORE_EXPORT GatherGroupInfo
  public:
 
   /*!
-   * \brief Constructeur.
+   * \brief Constructor.
    *
-   * \param parallel_mng Le parallelMng qui contient les masterIO.
-   * \param use_collective_io True si l'on souhaite que tous les processus
-   * écrivent (avec MPI-IO par exemple). Les écrivains seront donc les
-   * masterParallelIO. Si False, l'écrivain sera masterIO.
+   * \param parallel_mng The parallelMng containing the masterIO.
+   * \param use_collective_io True if we want all processes
+   * to write (with MPI-IO for example). The writers will therefore be the
+   * masterParallelIO. If False, the writer will be masterIO.
    */
   GatherGroupInfo(IParallelMng* parallel_mng, bool use_collective_io);
 
@@ -157,27 +156,27 @@ class ARCANE_CORE_EXPORT GatherGroupInfo
   void setCollectiveIO(bool enable) { m_use_collective_io = enable; }
 
   /*!
-   * \brief Méthode permettant de calculer les informations de regroupements.
+   * \brief Method allowing the calculation of grouping information.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
-   * la méthode \a needRecompute() avant.
+   * A second call to this method will have no effect, unless \a needRecompute()
+   * is called beforehand.
    *
-   * \param in La vue qui sera partagée.
+   * \param in The view that will be shared.
    */
   template <class T>
   void computeSizeT(Span<const T> in);
 
   /*!
-   * \brief Méthode permettant de calculer les informations de regroupements.
+   * \brief Method allowing the calculation of grouping information.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
-   * la méthode \a needRecompute() avant.
+   * A second call to this method will have no effect, unless \a needRecompute()
+   * is called beforehand.
    *
-   * \param in La vue qui sera partagée.
+   * \param in The view that will be shared.
    */
   template <class T>
   void computeSizeT(Span2<const T> in);

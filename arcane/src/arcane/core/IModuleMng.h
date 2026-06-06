@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IModuleMng.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des modules.                                    */
+/* Module manager interface.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMODULEMNG_H
 #define ARCANE_CORE_IMODULEMNG_H
@@ -31,44 +31,45 @@ class Msg;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de modules.
+ * \brief Module manager interface.
  * \ingroup Module
  */
 class IModuleMng
 {
  public:
 
-  //! Destructeur
-  /*! Libère les ressources */
+  //! Destructor
+  /*! Frees resources */
   virtual ~IModuleMng() {}
 
  public:
 
-  //! Ajoute le module \a m au gestionnaire
+  //! Adds module \a m to the manager
   virtual void addModule(Ref<IModule> m) =0;
 
-  //! Supprime le module \a m
+  //! Removes module \a m
   virtual void removeModule(Ref<IModule> m) =0;
 
-  //! Affiche la liste des modules du gestionnaire sur un flux \a o
+  //! Prints the list of modules in the manager to a stream \a o
   virtual void dumpList(std::ostream& o)   =0;
 
-  //! Liste des modules
+  //! List of modules
   virtual ModuleCollection modules() const =0;
 
-  //! Supprime et détruit les modules gérés par ce gestionnaire
+  //! Removes and destroys modules managed by this manager
   virtual void removeAllModules() =0;
 
-  //! Indique si le module de nom \a name est actif
+  //! Indicates if the module named \a name is active
   /*!
-   * Si aucune module de nom \a name n'existe, retourne false.
+   * If no module named \a name exists, returns false.
    */  
   virtual bool isModuleActive(const String& name) =0;
 
-  //! Retourne l'instance du module de nom \a name.
+  //! Returns the instance of the module named \a name.
   /*!
-   * Si aucune module de nom \a name n'existe, retourne 0.
+   * If no module named \a name exists, returns 0.
    */  
   virtual IModule* findModule(const String& name) =0;
 };
@@ -81,5 +82,4 @@ class IModuleMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDirectExecution.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service d'exécution direct.                                */
+/* Interface of a direct execution service.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDIRECTEXECUTION_H
 #define ARCANE_CORE_IDIRECTEXECUTION_H
@@ -30,24 +30,24 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service d'exécution direct.
+ * \brief Interface of a direct execution service.
  *
- * Un service d'exécution direct est un service qui exécute une opération
- * unique en remplacement de la boucle en temps, en général pour effectuer
- * des tests internes à Arcane.
+ * A direct execution service is a service that executes a single operation
+ * instead of a time loop, generally to perform internal tests within Arcane.
  *
- * Une fois l'opération terminée, le code s'arrête.
+ * Once the operation is finished, the code stops.
  *
- * Ce service peut être associé à une application et dans ce
- * case il n'a pas de sous-domaine ou de maillage et il faut positionner
- * le gestionnaire de parallèlisme avant l'exécution.
+ * This service can be associated with an application, and in this
+ * case it does not have a subdomain or a mesh, and the parallelism manager must be positioned
+ * before execution.
  */
 class ARCANE_CORE_EXPORT IDirectExecution
 {
  public:
 
-  virtual ~IDirectExecution() {} //!< Libère les ressources.
+  virtual ~IDirectExecution() {} //!< Frees resources.
 
  public:
 
@@ -55,16 +55,16 @@ class ARCANE_CORE_EXPORT IDirectExecution
 
  public:
 
-  //! Exécute l'opération du service
+  //! Executes the service operation
   virtual void execute() =0;
 
-  //! Vrai si le service est actif
+  //! True if the service is active
   virtual bool isActive() const =0;
 
   /*!
    * \internal.
-   * \brief Positionne le gestionnaire de parallèlisme associé.
-   * Cette méthode doit être appelée avant execute()
+   * \brief Positions the associated parallelism manager.
+   * This method must be called before execute()
    */
   virtual void setParallelMng(IParallelMng* pm) =0;
 };
@@ -77,4 +77,4 @@ class ARCANE_CORE_EXPORT IDirectExecution
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

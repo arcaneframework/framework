@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypeMng.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire des types d'entite du maillage.                              */
+/* Mesh entity type manager.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,8 +44,8 @@ namespace Arcane
 {
 namespace
 {
-  // Nombre de noeuds pour les types polygones additionnels.
-  // Les types jusqu'à ITI_Octogon8 existent toujours.
+  // Number of nodes for additional polygon types.
+  // Types up to ITI_Octogon8 still exist.
   Int16 global_polygon_begin_nb_node = 9;
 }
 
@@ -79,9 +79,9 @@ build(IMesh* mesh)
 {
   if (m_initialized)
     ARCANE_FATAL("ItemTypeMng instance is already initialized");
-  // Récupère le IParallelSuperMng via l'application.
-  // Une fois qu'on aura supprimé l'instance singleton, on pourra
-  // simplement utiliser le IParallelMng.
+  // Retrieves the IParallelSuperMng via the application.
+  // Once the singleton instance is removed, we can
+  // simply use the IParallelMng.
   IParallelSuperMng* super_pm = mesh->subDomain()->application()->parallelSuperMng();
   _buildTypes(mesh, super_pm, mesh->traceMng());
   m_initialized = true;
@@ -102,11 +102,11 @@ build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 void ItemTypeMng::
 _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
-  // Avec MPC, cette fonction peut être appelée plusieurs fois
-  // dans des threads différents. Comme tous les threads partagent
-  // le même singleton, seul le premier thread fait réellement l'initialisation.
-  // ATTENTION: Cela est incompatible avec le mode readTypes()
-  // ou on lit les connectivités dans un fichier ARCANE_ITEM_TYPE_FILE.
+  // With MPC, this function can be called multiple times
+  // in different threads. Since all threads share
+  // the same singleton, only the first thread actually performs the initialization.
+  // WARNING: This is incompatible with the readTypes() mode
+  // or reading connectivities from an ARCANE_ITEM_TYPE_FILE.
   Int32 max_rank = parallel_mng->commSize() + 1;
   Int32 init_counter = ++m_initialized_counter;
   if (init_counter == 1) {
@@ -115,25 +115,26 @@ _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_initialized_counter = max_rank;
   }
   else
-    // Ceux qui ne font pas l'initialisation doivent attendre que cette dernière
-    // soit faite.
+    // Those that do not perform the initialization must wait until this
+    // is done.
     while (init_counter < max_rank)
       init_counter = m_initialized_counter.load();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construit les types des entités.
+ * \brief Constructs the entity types.
  *
- * \note Pour l'instance singleton, \a mesh est nul.
+ * \note For the singleton instance, \a mesh is null.
  */
 void ItemTypeMng::
 _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
-  // Construit la connectivité des éléments.
-  // Pour les éléments classiques, la connectivité est la même que
-  // celle de VTK, disponible dans le document:
+  // Constructs the element connectivity.
+  // For classical elements, the connectivity is the same as
+  // that of VTK, available in the document:
   //
   // https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 
@@ -160,12 +161,12 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Vertex] = type;
 
     type->setInfos(this, IT_Vertex, "Vertex", Dimension::Dim0, 0, 0, 0);
-    // TODO regarder si ce type est autorisé pour les mailles.
-    // Si ce n'est pas le cas, il faudrait définir un type
-    // pour les mailles 0D qui sont assimilables à des points.
+    // TODO check if this type is allowed for meshes.
+    // If not, a type should be defined
+    // for 0D meshes that are equivalent to points.
   }
 
-  // FaceVertex (face pour les maillages 1D)
+  // FaceVertex (face for 1D meshes)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_FaceVertex] = type;
@@ -203,7 +204,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->setIsValidForCell(false);
   }
 
-  // CellLine2 (mailles pour les maillages 1D)
+  // CellLine2 (meshes for 1D meshes)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_CellLine2] = type;
@@ -215,10 +216,10 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
   }
 
   /*
-   * Pour les polygones les faces et les arêtes sont identiques.
+   * For polygons, faces and edges are identical.
    *
-   * \note lors des declarations des arêtes, on donne pour faces les
-   * arêtes qui sont jointes a l'arête courante
+   * \note When declaring edges, we provide the faces that are
+   * joined to the current edge
    */
 
   // Triangle3
@@ -235,7 +236,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Triangle6
   {
-    // TODO: Pour l'instant comme triangle3
+    // TODO: For now, like triangle3
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Triangle6] = type;
 
@@ -253,7 +254,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Triangle10
   {
-    // TODO: Pour l'instant comme triangle3
+    // TODO: For now, like triangle3
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Triangle10] = type;
 
@@ -320,7 +321,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Quad9
   {
-    // Comme Quad8 mais avec un noeud en plus au milieu du quadrangle
+    // Like Quad8 but with an extra node in the middle of the quadrangle
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Quad9] = type;
 
@@ -379,7 +380,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Hexaedron20
   {
-    // Pour l'instant comme Hexaedron8
+    // For now, like Hexaedron8
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Hexaedron20] = type;
 
@@ -409,7 +410,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Hexaedron27
   {
-    // Pour l'instant comme Hexaedron8
+    // For now, like Hexaedron8
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Hexaedron27] = type;
 
@@ -555,7 +556,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
   // Tetraedron10
   {
-    // Pour l'instant comme Tetraedron4
+    // For now, like Tetraedron4
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_Tetraedron10] = type;
 
@@ -938,7 +939,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->setInfos(this, IT_Cell3D_Line2, "Cell3D_Line2", Dimension::Dim1, 2, 0, 0);
   }
 
-  // CellLine3 (maille d'ordre 2 pour les maillages 1D)
+  // CellLine3 (order 2 mesh for 1D meshes)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_CellLine3] = type;
@@ -950,7 +951,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->addFaceVertex(1, 1);
   }
 
-  // CellLine4 (maille d'ordre 3 pour les maillages 1D)
+  // CellLine4 (order 3 mesh for 1D meshes)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_CellLine4] = type;
@@ -1113,8 +1114,8 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     }
   }
 
-  // Calcul les relations face->arêtes
-  // Cette opération doit être appelé en fin phase build
+  // Calculate face->edge relationships
+  // This operation must be called at the end of the build phase
   for (Integer i = 0; i < m_types.size(); ++i) {
     ItemTypeInfoBuilder* type = static_cast<ItemTypeInfoBuilder*>(m_types[i]);
     if (!type)
@@ -1132,14 +1133,14 @@ buildPolygonTypes()
   if (m_has_polygon_type)
     return;
   m_has_polygon_type = true;
-  // Ajoute les types polygones génériques
-  // Ils commencent à 9 noeuds.
+  // Adds generic polygon types
+  // They start at 9 nodes.
   const Int16 begin_nb_node = global_polygon_begin_nb_node;
   Int16 max_nb_node = 21;
   Int16 max_type = IT_GenericPolygon + max_nb_node - begin_nb_node;
   ItemTypeInfo* null_type = typeFromId(IT_NullType);
   if (m_types.size() <= max_type)
-    // Remplit les types vides par le type correspondant à l'entité nulle.
+    // Fill empty types with the null entity type.
     m_types.resize(max_type, null_type);
   for (Int16 i = begin_nb_node; i < max_nb_node; ++i) {
     String name = String::format("Polygon{0}", i);
@@ -1149,11 +1150,12 @@ buildPolygonTypes()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute un type polygone générique
+ * \brief Adds a generic polygon type
  *
- * Ajoute un type polygone d'ordre 1 avec \a nb_node noeuds.
- * Le type aura comme index \a type_id et comme nom \a type_name.
+ * Adds a degree 1 polygon type with \a nb_node nodes.
+ * The type will have index \a type_id and name \a type_name.
  */
 void ItemTypeMng::
 _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name)
@@ -1201,15 +1203,16 @@ printTypes(std::ostream& ostr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Lecture d'un fichier de types voronoi.
+ * \brief Reading a Voronoi type file.
  *
- *  Une cellule voronoi est un polytope dont le nombre de faces et de noeuds
- *  varie d'une cellule a l'autre. Ici, le type de chaque cellule est lu dans
- *  un fichier de types associe a un maillage d'entree donne.
- *  Ce fichier est passe dans la variable d'environnement: ARCANE_ITEM_TYPE_FILE
+ *  A Voronoi cell is a polytope whose number of faces and nodes
+ *  varies from one cell to another. Here, the type of each cell is read from
+ *  a type file associated with a given input mesh.
+ *  This file is passed via the environment variable: ARCANE_ITEM_TYPE_FILE
  *  Ex: setenv ARCANE_ITEM_TYPE_FILE PATH_TO_FILE/item_file
- *  Le format du fichier est la suivante:
+ *  The file format is as follows:
  *
  *  nb_type
  *  type_id nb_faces nb_edges
@@ -1233,7 +1236,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
   UniqueArray<Byte> bytes;
   Integer size = 0;
 
-  // Lecture parallèle
+  // Parallel reading
   if (pm->commRank() == 0) {
     long unsigned int file_length = platform::getFileLength(filename);
     if (file_length == 0)
@@ -1277,7 +1280,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
   if (ItemTypeMng::nbBuiltInItemType() != m_types.size())
     ARCANE_FATAL("Invalid initialization of built-in item types");
 
-  // Analyse du fichier de types
+  // Analyze the type file
   std::istringstream ifile((char*)bytes.unguardedBasePointer(), std::istringstream::in);
   Integer nb_type = 0;
   ifile >> nb_type;
@@ -1289,7 +1292,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
     ifile >> typeId >> nbF >> nbE;
     if (typeId >= nb_type || typeId < 0)
       ARCANE_THROW(IOException,"Polyhedron reader cannot allow typeId {0}", typeId);
-    typeId += ItemTypeMng::nbBuiltInItemType(); // translation d'indexation
+    typeId += ItemTypeMng::nbBuiltInItemType(); // index translation
     if (known_types.find(typeId) != known_types.end())
       ARCANE_FATAL("Already existing typeId {0}", typeId);
     known_types.insert(typeId);
@@ -1298,7 +1301,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
       nbN = nbE;
     }
     else
-      nbN = nbE - nbF + 2; // Calcul du nb de noeuds nbN a partir de nbE et nbF (formule d'Euler)
+      nbN = nbE - nbF + 2; // Calculation of the number of nodes nbN from nbE and nbF (Euler's formula)
 
     type->setInfos(this, typeId, String::format("Polyhedron{0}_{1}-{2}-{3}", typeId, nbN, nbE, nbF), nbN, nbE, nbF);
     m_trace->debug(Trace::High) << "Adding " << type->typeName() << " type #"
@@ -1416,7 +1419,7 @@ _singleton()
 void ItemTypeMng::
 _destroySingleton()
 {
-  //GG: Ca plante avec Windows. Regarder pourquoi.
+  //GG: It crashes on Windows. Check why.
 #ifndef ARCANE_OS_WIN32
   delete singleton_instance;
 #endif
@@ -1473,8 +1476,9 @@ typeName(ItemTypeId id) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Recopie de la fonction obsolète Item::typeName().
-// TODO: voir pourquoi il y a un test sur nBasicItemType().
+
+// Copy of the obsolete function Item::typeName().
+// TODO: see why there is a test on nBasicItemType().
 String ItemTypeMng::
 _legacyTypeName(Integer t)
 {

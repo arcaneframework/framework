@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngInternal.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
+/* Implementation of the internal Arcane part of IParallelMng.               */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/ParallelMngInternal.h"
@@ -84,10 +84,10 @@ setDefaultRunner(const Runner& runner)
   if (!m_runner.isInitialized())
     ARCANE_FATAL("Can not set an unitialized Runner");
 
-  // Attention à bien supprimer la référence sur la RunQueue
-  // avant de détruire le Runner car s'il n'y a pas d'autres
-  // références sur \a m_runner il sera détruit avec \a m_queue
-  // et ce dernier aura un \a m_runner détruit.
+  // Be careful to delete the reference on the RunQueue
+  // before destroying the Runner because if there are no other
+  // references on m_runner it will be destroyed with m_queue
+  // and the latter will have a destroyed m_runner.
   m_queue = RunQueue{};
   m_runner = runner;
   Accelerator::RunQueueBuildInfo build_info(-5);

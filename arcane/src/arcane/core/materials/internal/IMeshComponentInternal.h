@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshComponentInternal.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* API interne Arcane de 'IMeshComponent'.                                   */
+/* Arcane internal API for 'IMeshComponent'.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_INTERNAL_IMESHCOMPONENTINTERNAL_H
 #define ARCANE_CORE_MATERIALS_INTERNAL_IMESHCOMPONENTINTERNAL_H
@@ -25,8 +25,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API interne Arcane de 'IMeshComponent'.
+ * \brief Arcane internal API for 'IMeshComponent'.
  */
 class ARCANE_CORE_EXPORT IMeshComponentInternal
 {
@@ -36,19 +37,19 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
 
  public:
 
-  //! Indexeur pour accéder aux variables partielles.
+  //! Indexer to access partial variables.
   virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
 
-  //! Vue sur les mailles du constituant.
+  //! View of the constituent meshes.
   virtual ConstituentItemLocalIdListView constituentItemListView() const =0;
 
-  //! Index pour accéder aux variables partielles.
+  //! Index to access partial variables.
   virtual Int32 variableIndexerIndex() const =0;
 
-  //! Créé une instance de l'implémentation de 'ConstituentItemVectorImpl'
+  //! Create an instance of the 'ConstituentItemVectorImpl' implementation
   virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl() const =0;
 
-  //! Créé une instance de l'implémentation de 'ConstituentItemVectorImpl'
+  //! Create an instance of the 'ConstituentItemVectorImpl' implementation
   virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const =0;
 };
 

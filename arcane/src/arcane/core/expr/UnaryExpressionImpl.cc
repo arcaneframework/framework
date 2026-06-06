@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnaryExpressionImpl.cc                                      (C) 2000-2007 */
 /*                                                                           */
-/* Implémentation d'une expression unaire.                                   */
+/* Implementation of a unary expression.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -74,11 +74,11 @@ apply(ExpressionResult* result)
     << operationName() << " [" << *result << "]\n";
   */
 
-  // calcul des expressions gauche et droite
+  // calculate the expression
   ExpressionResult first_op(result->indices());
   m_first->apply(&first_op);
 
-  // recherche de l'operateur en fonction du type attendu en resultat
+  // search for the operator based on the expected type in the result
   VariantBase::eType type = first_op.data()->type();
   UnaryOperator* op = m_op_mng->find(this, type, m_operation);
   if (!op)

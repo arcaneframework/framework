@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemArray.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Tableau d'items de types quelconques.                                     */
+/* Array of items of arbitrary types.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMARRAY_H 
 #define ARCANE_CORE_ANYITEM_ANYITEMARRAY_H
@@ -33,11 +33,11 @@ ANYITEM_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Tableau d'items de types quelconques.
+ * \brief Array of items of arbitrary types.
  * 
- * Similaire aux variables mais sans les définir
+ * Similar to variables but without defining them
  * 
- * Par exemle :
+ * For example:
  *
  * AnyItem::UniqueArray<Real> array(family.allItems());
  * array.fill(0.);
@@ -46,7 +46,8 @@ ANYITEM_BEGIN_NAMESPACE
  *   array[iitem] += variable[iitem];
  * }
  *
- * \TODO : on pourrait améliorer l'implémentation en utilisant le localId dans la AnyItem::Family avec un tableau unique alloué à maxLocalId
+ * \TODO : We could improve the implementation by using the localId in
+ * AnyItem::Family with a unique array allocated to maxLocalId
  */
 template<typename DataType>
 class Array
@@ -64,7 +65,7 @@ public:
     }
   }
   
-  //! Remplissage du tableau 
+  //! Filling the array 
   void fill(const DataType& data) 
   {
     for(Integer i = 0; i < m_values.size(); ++i) {
@@ -72,13 +73,13 @@ public:
     }
   }
   
-  //! Accesseur
+  //! Accessor
   template<typename T>
   inline DataType& operator[](const T& item) { 
     return m_values[item.groupIndex()][item.varIndex()];
   }
   
-  // Acceseur
+  // Accessor
   template<typename T>
   inline typename Arcane::UniqueArray<DataType>::ConstReferenceType operator[](const T& item) const { 
     return m_values[item.groupIndex()][item.varIndex()];
@@ -86,7 +87,7 @@ public:
   
 private:
   
-  //! Conteneur des variables génériques
+  //! Container of generic variables
   Arcane::UniqueArray< Arcane::UniqueArray<DataType> > m_values;
 };
 

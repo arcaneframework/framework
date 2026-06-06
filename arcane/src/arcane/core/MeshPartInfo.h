@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartInfo.h                                              (C) 2000-2018 */
 /*                                                                           */
-/* Informations sur la partie d'un maillage.                                 */
+/* Mesh part information.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESHPARTINFO_H
 #define ARCANE_MESHPARTINFO_H
@@ -26,8 +26,9 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations un maillage partitionné.
+ * \brief Information about a partitioned mesh.
  */
 class ARCANE_CORE_EXPORT MeshPartInfo
 {
@@ -70,4 +71,3 @@ MeshPartInfo makeMeshPartInfoFromParallelMng(IParallelMng* pm);
 /*---------------------------------------------------------------------------*/
 
 #endif
-

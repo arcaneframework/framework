@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataTypeTraits.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Caractéristiques d'un type de donnée.                                     */
+/* Data type characteristics.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DATATYPE_DATATYPETRAITS_H
 #define ARCANE_DATATYPE_DATATYPETRAITS_H
@@ -21,14 +21,15 @@
 #include "arcane/utils/Int128.h"
 
 #include "arcane/core/ArcaneTypes.h"
+
 /*
- * NOTE: Les fonctions telles que HasSubscriptOperator(), HasComponent*()
- * ne sont plus utilisées depuis décembre 2025. Avant elles étaient utilisées
- * par DataViewSetter et DataViewGetterSetter mais avec le passage au C++20
- * ce n'est plus le cas. Il en est de même avec les types ComponentType,
- * SubscriptType, FunctionCall1ReturnType ou FunctionCall2ReturnType.
- * On pourra donc à terme rendre ces types obsolètes puis les supprimer.
+ * NOTE: Functions such as HasSubscriptOperator(), HasComponent*()
+ * have not been used since December 2025. Previously, they were used
+ * by DataViewSetter and DataViewGetterSetter, but this is no longer the case with the transition to C++20.
+ * The same applies to the types ComponentType, SubscriptType, FunctionCall1ReturnType, or FunctionCall2ReturnType.
+ * We can therefore eventually deprecate these types and then remove them.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,560 +55,574 @@ class BuiltInProxy;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c bool.
+ * \brief Specialization of DataTypeTraitsT for the type \c bool.
  */
 template<>
 class DataTypeTraitsT<bool>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef bool Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef bool BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Bool"; }
 
-  /*! Type de donnée
-   * \todo: creer type DT_Bool a la place.
+  /*! Data type
+   * \todo: create DT_Bool type instead.
    */
   static constexpr eDataType type() { return DT_Byte; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Byte; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<bool> ProxyType;
 
-  //! Elément initialisé à NAN
+  //! Element initialized to NAN
   static Type nanValue() { return 0; }
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return false; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c Byte.
+ * \brief Specialization of DataTypeTraitsT for the type \c Byte.
  */
 template<>
 class DataTypeTraitsT<Byte>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Byte Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Byte BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Byte"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Byte; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Byte; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Byte> ProxyType;
 
-  //! Elément initialisé à NAN
+  //! Element initialized to NAN
   static constexpr Type nanValue() { return 0; }
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c Real.
+ * \brief Specialization of DataTypeTraitsT for the type \c Real.
  */
 template<>
 class DataTypeTraitsT<Real>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Real"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Real; }
 
-  //! Type de donnée de base.
-  // TODO: calculer automatiquement la taille
+  //! Base data type.
+  // TODO: automatically calculate the size
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float64; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Real> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0.0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c Float128
+ * \brief Specialization of DataTypeTraitsT for the type \c Float128
  */
 template<>
 class DataTypeTraitsT<Float128>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Float128 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Float128 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Float128"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Float128; }
 
-  //! Type de donnée de base.
-  // TODO: calculer automatiquement la taille
+  //! Base data type.
+  // TODO: automatically calculate the size
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float128; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Float128> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return Float128(0.0l); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c Float32.
+ * \brief Specialization of DataTypeTraitsT for the type \c Float32.
  */
 template<>
 class DataTypeTraitsT<Float32>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Float32 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Float32 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Float32"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Float32; }
 
-  //! Type de donnée de base.
-  // TODO: calculer automatiquement la taille
+  //! Base data type.
+  // TODO: automatically calculate the size
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float32; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Float32> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0.0f; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c BFloat16.
+ * \brief Specialization of DataTypeTraitsT for the type \c BFloat16.
  */
 template<>
 class DataTypeTraitsT<BFloat16>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef BFloat16 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef BFloat16 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "BFloat16"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_BFloat16; }
 
-  //! Type de donnée de base.
-  // TODO: calculer automatiquement la taille
+  //! Base data type.
+  // TODO: automatically calculate the size
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::BFloat16; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<BFloat16> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return {}; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type \c Float16.
+ * \brief Specialization of DataTypeTraitsT for the type \c Float16.
  */
 template<>
 class DataTypeTraitsT<Float16>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Float16 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Float16 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Float16"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Float16; }
 
-  //! Type de donnée de base.
-  // TODO: calculer automatiquement la taille
+  //! Base data type.
+  // TODO: automatically calculate the size
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Float16; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Float16> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return {}; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Integer</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Integer</tt>.
  */
 template<>
 class DataTypeTraitsT<Int8>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Int8 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Int8 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Int8"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Int8; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int8; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Int8> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Integer</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Integer</tt>.
  */
 template<>
 class DataTypeTraitsT<Int16>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Int16 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Int16 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of elements of the base type
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Data type name
   static constexpr const char* name() { return "Int16"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Int16; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int16; }
 
-  //! Type du proxy associé
+  //! Associated proxy type
   typedef BuiltInProxy<Int32> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Int32</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Int32</tt>.
  */
 template<>
 class DataTypeTraitsT<Int32>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Int32 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Int32 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Int32"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Int32; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int32; }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef BuiltInProxy<Int32> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Int64</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Int64</tt>.
  */
 template<>
 class DataTypeTraitsT<Int64>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Int64 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Int64 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Int64"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Int64; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int64; }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef BuiltInProxy<Int64> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Int128</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Int128</tt>.
  */
 template<>
 class DataTypeTraitsT<Int128>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Int128 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Int128 BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Int128"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Int128; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return eBasicDataType::Int128; }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef BuiltInProxy<Int128> ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static constexpr Type defaultValue() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>String</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>String</tt>.
  */
 template<>
 class DataTypeTraitsT<String>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef String Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef String BasicType;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 1; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "String"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_String; }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef String ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static ARCANE_CORE_EXPORT Type defaultValue();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Real2</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Real2</tt>.
  */
 template<>
 class DataTypeTraitsT<Real2>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real2 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Type de retour de operator[] pour ce type
+  //! Return type of operator[] for this type
   using SubscriptType = Real;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 2; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Real2"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Real2; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef Real2Proxy ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static ARCANE_CORE_EXPORT Type defaultValue();
 
  public:
@@ -621,43 +636,44 @@ class DataTypeTraitsT<Real2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Real3</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Real3</tt>.
  */
 template<>
 class DataTypeTraitsT<Real3>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real3 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Type de retour de operator[] pour ce type
+  //! Return type of operator[] for this type
   using SubscriptType = Real;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 3; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Real3"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Real3; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef Real3Proxy ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static ARCANE_CORE_EXPORT Type defaultValue();
 
   static constexpr bool HasSubscriptOperator() { return true; }
@@ -670,43 +686,44 @@ class DataTypeTraitsT<Real3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Real2x2</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Real2x2</tt>.
  */
 template<>
 class DataTypeTraitsT<Real2x2>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real2x2 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Type de retour de operator[] pour ce type
+  //! Return type of operator[] for this type
   using SubscriptType = Real2;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 4; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Real2x2"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Real2x2; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef Real2x2Proxy ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static ARCANE_CORE_EXPORT Type defaultValue();
 
   static constexpr bool HasSubscriptOperator() { return true; }
@@ -724,43 +741,44 @@ class DataTypeTraitsT<Real2x2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>Real3x3</tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>Real3x3</tt>.
  */
 template<>
 class DataTypeTraitsT<Real3x3>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real3x3 Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Type de retour de operator[] pour ce type
+  //! Return type of operator[] for this type
   using SubscriptType = Real3;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return 9; }
 
-  //! Nom du type de donnée
+  //! Name of the data type
   static constexpr const char* name() { return "Real3x3"; }
 
-  //! Type de donnée
+  //! Data type
   static constexpr eDataType type() { return DT_Real3x3; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
 
-  //! Type du proxy associé
+  //! Type of associated proxy
   typedef Real3x3Proxy ProxyType;
 
-  //! Remplit les éléments de \a values avec des Nan.
+  //! Fills the elements of \a values with Nan.
   static void fillNan(ArrayView<Type> values);
 
-  //! Valeur par défaut.
+  //! Default value.
   static ARCANE_CORE_EXPORT Type defaultValue();
 
   static constexpr bool HasSubscriptOperator() { return true; }
@@ -784,55 +802,57 @@ class DataTypeTraitsT<Real3x3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>NumVector<Real,Size></tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>NumVector<Real,Size></tt>.
  */
 template<int Size>
 class DataTypeTraitsT<NumVector<Real,Size>>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Type de retour de operator()(Int32) pour ce type
+  //! Return type of operator()(Int32) for this type
   using FunctionCall1ReturnType = Real;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return Size; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de DataTypeTraitsT pour le type <tt>NumMatrix<Real,RowSize,ColumnSize></tt>.
+ * \brief Specialization of DataTypeTraitsT for the type <tt>NumMatrix<Real,RowSize,ColumnSize></tt>.
  */
 template<int RowSize,int ColumnSize>
 class DataTypeTraitsT<NumMatrix<Real,RowSize,ColumnSize>>
 {
  public:
 
-  //! Type de donnée
+  //! Data type
   typedef Real Type;
 
-  //! Type de donnée de base de ce type de donnée
+  //! Base data type of this data type
   typedef Real BasicType;
 
-  //! Type de retour de operator()(Int32,Int32) pour ce type
+  //! Return type of operator()(Int32,Int32) for this type
   using FunctionCall2ReturnType = Real;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base type elements
   static constexpr int nbBasicType() { return RowSize * ColumnSize; }
 
-  //! Type de donnée de base.
+  //! Base data type.
   static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
 };
 
@@ -844,5 +864,4 @@ class DataTypeTraitsT<NumMatrix<Real,RowSize,ColumnSize>>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

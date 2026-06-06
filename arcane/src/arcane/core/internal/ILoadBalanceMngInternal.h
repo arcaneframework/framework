@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ILoadBalanceMngInternal.h                                   (C) 2000-2024 */
 /*                                                                           */
-/* Interface de classe interne gérant l'équilibre de charge des maillages.   */
+/* Internal class interface managing the mesh load balance.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,16 +29,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief API interne à %Arcane de ILoadBalanceMng.
+ * \brief Internal API of ILoadBalanceMng to %Arcane.
  *
- * Elle permet de conserver des critères d'équilibrage en fonction du maillage
- * ce qui est nécessaire pour les cas avec plusieurs maillages.
+ * It allows preserving balancing criteria based on the mesh
+ * which is necessary for cases with multiple meshes.
  */
 class ARCANE_CORE_EXPORT ILoadBalanceMngInternal
 {
  public:
 
-  virtual ~ILoadBalanceMngInternal() = default; //!< Libère les ressources
+  virtual ~ILoadBalanceMngInternal() = default; //!< Frees resources
 
  public:
 

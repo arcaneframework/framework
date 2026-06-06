@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedVariable.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une vue partagée d'une variable.                            */
+/* Class managing a shared view of a variable.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SHAREDVARIABLE_H
 #define ARCANE_CORE_SHAREDVARIABLE_H
@@ -32,9 +32,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*! Variable partagée à partir d'une variable Arcane 
- *  L'implémentation préliminaire suppose que le uniqueId des items 
- *  est le même entre sous-maillage et maillage support.
+/*! Shared variable based on an Arcane variable
+ *  The preliminary implementation assumes that the uniqueId of the items
+ *  is the same between sub-mesh and support mesh.
  */
 template<typename ItemTypeT, typename DataTypeT>
 class SharedMeshVariableScalarRefT {
@@ -75,9 +75,9 @@ public:
  {
    IItemFamily * variable_family = v.itemGroup().itemFamily();
 
-   // Ne gère actuellement qu'au plus un niveau d'imbrication
-   // Si parent_family == family, n'utilise pas l'imbrication
-   //   Attn alors si item.parent()!=item
+   // Currently only handles up to one level of nesting
+   // If parent_family == family, do not use nesting
+   //   Note then if item.parent()!=item
    if (variable_family == m_family)
      m_direct_access = true;
    else if (m_parent_family == variable_family)
@@ -136,7 +136,7 @@ public:
     return m_true_variable;
   }
  public:
-  //! TODO GG: il faudra supprimer l'opérateur d'assignement.
+  //! TODO GG: the assignment operator will need to be removed.
   ARCANE_DEPRECATED_240 void operator=(const ThisVariable & v)
   {
     m_true_variable.refersTo(v.m_true_variable);
@@ -185,9 +185,9 @@ public:
  {
    IItemFamily * variable_family = v.itemGroup().itemFamily();
 
-   // Ne gère actuellement qu'au plus un niveau d'imbrication
-   // Si parent_family == family, n'utilise pas l'imbrication
-   //   Attn alors si item.parent()!=item
+   // Currently only handles up to one level of nesting
+   // If parent_family == family, do not use nesting
+   //   Note then if item.parent()!=item
    if (variable_family == m_family)
      m_direct_access = true;
    else if (m_parent_family == variable_family)
@@ -246,7 +246,7 @@ public:
     return m_true_variable;
   }
  public:
-  //! TODO GG: il faudra supprimer l'opérateur d'assignement.
+  //! TODO GG: the assignment operator will need to be removed.
   ARCANE_DEPRECATED_240 void operator=(const ThisVariable & v)
   {
     m_true_variable.refersTo(v.m_true_variable);
@@ -272,4 +272,3 @@ protected:
 /*---------------------------------------------------------------------------*/
 
 #endif /* ARCANE_SHARED_VARIABLE_H */
-

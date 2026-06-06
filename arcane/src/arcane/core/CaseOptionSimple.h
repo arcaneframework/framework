@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionSimple.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Option simple du jeu de données.                                          */
+/* Simple data set option.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASEOPTIONSIMPLE_H
 #define ARCANE_CASEOPTIONSIMPLE_H
@@ -52,12 +52,13 @@ class CaseOptionTraitsT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour les options 'Array'.
+ * \brief Specialization for 'Array' options.
  *
- * Cela est nécessaire car on ne peut pas instancier la classe 'Array'. Pour
- * ce type d'options, il est interdit de modifier les valeurs de l'option donc
- * les vues sont forcément constantes.
+ * This is necessary because the 'Array' class cannot be instantiated. For
+ * this type of option, it is forbidden to modify the option values, so
+ * the views must necessarily be constant.
  */
 template<typename Type>
 class CaseOptionTraitsT< Array<Type> >
@@ -72,8 +73,9 @@ class CaseOptionTraitsT< Array<Type> >
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des options simples (uniquement une valeur).
+ * \brief Base class for simple options (single value).
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseOptionSimple
@@ -87,70 +89,70 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
 
  public:
 
-  //! Retourne \a true si l'option est présente
+  //! Returns \a true if the option is present
   bool isPresent() const { return !m_element.null(); }
 
   /*!
-   * \brief Retourne l'élément de l'option.
+   * \brief Returns the element of the option.
    *
-   * \deprecated L'implémentation interne ne doit pas être utilisée pour permettre
-   * à terme d'utiliser un autre format que le XML.
+   * \deprecated The internal implementation should not be used to allow
+   * for the use of a format other than XML in the future.
    */
   ARCANE_DEPRECATED_LONG_TERM("Y2022: Do not access XML item from option")
   XmlNode element() const { return m_element; }
 
   /*!
-   * \brief Fonction associée à cette option (0 si aucune).
+   * \brief Function associated with this option (0 if none).
    *
-   * Si une fonction est associée à l'option, les valeurs de cette
-   * dernière sont recalculées automatiquement à chaque itération.
+   * If a function is associated with the option, the values of this
+   * latter are recalculated automatically at each iteration.
    */
   ICaseFunction* function() const override { return m_function; }
   /*!
-   * \brief Fonction standard associée à cette option (0 si aucune).
+   * \brief Standard function associated with this option (0 if none).
    *
-   * Une fonction standard a un prototype spécifique et peut être appelée
-   * directement. Contrairement à function(), la présence d'une fonction
-   * standard ne change pas la valeur de l'option.
+   * A standard function has a specific prototype and can be called
+   * directly. Unlike function(), the presence of a standard function
+   * does not change the value of the option.
    */
   virtual IStandardFunction* standardFunction() const { return m_standard_function; }
   /*!
-   * \brief Indique si la valeur a changée depuis la dernière itération.
+   * \brief Indicates if the value has changed since the last iteration.
    *
-   * La valeur ne peut changée que si une fonction est associée à l'option.
-   * La méthode retourne vrai si la valeur de l'option est différente de l'itération
-   * précédente. Cette méthode fonctionne aussi en cas de retour arrière.
+   * The value can only change if a function is associated with the option.
+   * The method returns true if the option's value is different from the
+   * previous iteration. This method also works in case of rollback.
    */
   bool hasChangedSinceLastIteration() const;
-  //! Nom complet au format donné par la norme XPath.
+  //! Full name in the format provided by the XPath standard.
   String xpathFullName() const;
   /*!
-   * \brief Unité physique par défaut de cette option (null si aucune unité),
-   * spécifiée dans le fichier .axl.
+   * \brief Default physical unit for this option (null if no unit),
+   * specified in the .axl file.
    */
   String defaultPhysicalUnit() const;
-  //! unité physique spécifiée dans le jeu de données (null si aucune unité)
+  //! Physical unit specified in the data set (null if no unit)
   String physicalUnit() const;
   /*!
-   * \brief Convertisseur d'unité physique.
+   * \brief Physical unit converter.
    *
-   * Ce convertisseur n'existe que pour les options de type 'Real'ou 'RealArray'.
-   * Il est nul si l'option ne possède pas d'unité.
+   * This converter only exists for 'Real' or 'RealArray' type options.
+   * It is null if the option does not have a unit.
    */
   IPhysicalUnitConverter* physicalUnitConverter() const { return m_unit_converter; }
   /*!
-   * \brief Indique si l'option est facultative.
+   * \brief Indicates if the option is optional.
    *
-   * Si une option facultative n'est pas renseignée,
-   * sa valeur est indéfinie et ne doit donc pas être utilisée.
+   * If an optional option is not provided,
+   * its value is undefined and should therefore not be used.
    */
   bool isOptional() const { return m_is_optional; }
 
   /*!
-   * \brief Indique si l'option a une valeur invalide.
+   * \brief Indicates if the option has an invalid value.
    *
-   * C'est apriori toujours le cas, sauf si l'option est facultative
-   * (isOptional()==true) et non renseignée.
+   * This is always the case, unless the option is optional
+   * (isOptional()==true) and not provided.
    */
   bool hasValidValue() const { return m_has_valid_value; }
 
@@ -171,10 +173,10 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
 
  private:
 
-  XmlNode m_element; //!< Element de l'option
-  ICaseFunction* m_function = nullptr; //!< Fonction associée (ou nullptr)
-  IStandardFunction* m_standard_function = nullptr; //!< Fonction standard associée (ou nullpt)
-  //! Convertisseur d'unité (nullptr si pas besoin). Valide uniquement pour les options 'Real'
+  XmlNode m_element; //!< Option element
+  ICaseFunction* m_function = nullptr; //!< Associated function (or nullptr)
+  IStandardFunction* m_standard_function = nullptr; //!< Associated standard function (or nullpt)
+  //! Unit converter (nullptr if not needed). Valid only for 'Real' options
   IPhysicalUnitConverter* m_unit_converter = nullptr;
   bool m_changed_since_last_iteration = false;
   bool m_is_optional = false;
@@ -185,20 +187,21 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Option du jeu de données de type simple (réel, entier, booléen, ...)
+ * \brief Simple data set option (real, integer, boolean, ...).
  *
- * La méthode la plus utilisée de cette classe est l'opérateur operator()()
- * qui permet de récupérer la valeur de l'option. Si une fonction (ICaseFunction)
- * est associée à l'option, il est possible de récupérer la valeur de l'option
- * au temps physique ou à l'itération passé en paramètre de la méthode
+ * The most used method of this class is the operator()()
+ * which allows retrieving the option's value. If a function (ICaseFunction)
+ * is associated with the option, it is possible to retrieve the option's value
+ * at the physical time or at the iteration passed as a parameter to the method
  * valueAtParameter().
  * \code
  * CaseOptionSimpleT<Real> real_option;
- * Real v = real_option(); // utilise operator()
- * Real v = real_option; // utilise opérateur de cast implicite
- * Real v = real_option.valueAtParameter(0.3); // valeur au temps physique 0.3
+ * Real v = real_option(); // uses operator()
+ * Real v = real_option; // uses implicit cast operator
+ * Real v = real_option.valueAtParameter(0.3); // value at physical time 0.3
  * \endcode
  */
 template<class T>
@@ -209,9 +212,9 @@ class CaseOptionSimpleT
 
   typedef CaseOptionSimpleT<T> ThatClass;
 #ifndef SWIG
-  typedef typename CaseOptionTraitsT<T>::ContainerType Type; //!< Type de l'option
+  typedef typename CaseOptionTraitsT<T>::ContainerType Type; //!< Option type
 #else
-  typedef T Type; //!< Type de l'option
+  typedef T Type; //!< Option type
 #endif
  public:
 
@@ -222,23 +225,23 @@ class CaseOptionSimpleT
 
   ARCANE_CORE_EXPORT virtual void print(const String& lang,std::ostream& o) const;
 
-  //! Retourne la valeur de l'option
+  //! Returns the value of the option
   const Type& value() const
   {
     ARCANE_CASEOPTION_CHECK_IS_INITIALIZED;
     return m_value;
   }
 
-  //! Valeur de l'option
+  //! Value of the option
   operator const Type&() const { return value(); }
 
-  //! Retourne la valeur de l'option pour le paramètre réel t.
+  //! Returns the value of the option for the real parameter t.
   ARCANE_CORE_EXPORT Type valueAtParameter(Real t) const;
 
-  //! Retourne la valeur de l'option pour le paramètre entier t.
+  //! Returns the value of the option for the integer parameter t.
   ARCANE_CORE_EXPORT Type valueAtParameter(Integer t) const;
 
-  //! Retourne la valeur de l'option
+  //! Returns the value of the option
   //const Type& operator()() const { return value(); }
   const Type& operator()() const { return value(); }
 
@@ -252,11 +255,11 @@ class CaseOptionSimpleT
   }
 #endif
 
-  //! Retourne la valeur de l'option pour le paramètre réel t.
+  //! Returns the value of the option for the real parameter t.
   ARCANE_DEPRECATED Type operator()(Real t) const
   { return valueAtParameter(t); }
 
-  //! Retourne la valeur de l'option pour le paramètre entier t.
+  //! Returns the value of the option for the integer parameter t.
   ARCANE_DEPRECATED Type operator()(Integer t) const
   { return valueAtParameter(t); }
 
@@ -267,14 +270,15 @@ class CaseOptionSimpleT
   ARCANE_CORE_EXPORT virtual void updateFromFunction(Real current_time,Integer current_iteration);
 
   /*!
-   * \brief Positionne la valeur par défaut de l'option.
+   * \brief Sets the default value of the option.
    *
-   * Si l'option n'est pas pas présente dans le jeu de données, alors sa valeur sera
-   * celle spécifiée par l'argument \a def_value, sinon l'appel de cette méthode est sans effet.
+   * If the option is not present in the data set, its value will be
+   * that specified by the argument \a def_value; otherwise, calling this
+   * method has no effect.
    */
   ARCANE_CORE_EXPORT void setDefaultValue(const Type& def_value);
 
-  //! Retourne la valeur de l'option si isPresent()==true ou sinon \a arg_value
+  //! Returns the value of the option if isPresent()==true or otherwise \a arg_value
   const Type& valueIfPresentOrArgument(const Type& arg_value)
   {
     ARCANE_CASEOPTION_CHECK_IS_INITIALIZED;
@@ -288,7 +292,7 @@ class CaseOptionSimpleT
 
  private:
 	
-  Type m_value; //!< Valeur de l'option
+  Type m_value; //!< Option value
 
 };
 
@@ -305,13 +309,14 @@ class ARCANE_CORE_EXPORT CaseOptionMultiSimple
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Option du jeu de données de type liste de types simples (réel, entier, booléen, ...).
+ * \brief Data set option of simple type list (real, integer, boolean, ...).
  *
- * \warning L'utilisation de la classe de base `ArrayView<T>` est obsolète et
- * ne doit plus être utilisée. La méthode view() permet de récupérer une vue sur les
- * valeurs de l'option.
+ * \warning Using the base class `ArrayView<T>` is obsolete and
+ * should no longer be used. The view() method allows retrieving a view on the
+ * option values.
  */
 #ifndef SWIG
 template<class T>
@@ -325,13 +330,13 @@ class CaseOptionMultiSimpleT
 {
  public:
 
-  //! Type de la valeur de l'option
+  //! Type of the option value
   using Type = typename CaseOptionTraitsT<T>::ContainerType;
   using ReferenceType = typename CaseOptionTraitsT<T>::ReferenceType;
   using ConstReferenceType = typename CaseOptionTraitsT<T>::ConstReferenceType;
-  //! Type de la vue sur les valeurs de l'option
+  //! Type of the view on the option values
   using ArrayViewType = typename CaseOptionTraitsT<T>::ArrayViewType;
-  //! Type de la vue constante sur les valeurs de l'option
+  //! Type of the constant view on the option values
   using ConstArrayViewType = typename CaseOptionTraitsT<T>::ConstArrayViewType;
 
  public:
@@ -353,20 +358,20 @@ class CaseOptionMultiSimpleT
     return *this;
   }
 
-  //! Conversion vers la vue constante
+  //! Conversion to the constant view
   ARCCORE_DEPRECATED_2021("Use view() instead")
   operator ArrayView<T>() { ArrayView<T>* v = this; return *v; }
 
-  //! Conversion vers la vue constante
+  //! Conversion to the constant view
   ARCCORE_DEPRECATED_2021("Use view() instead")
   operator ConstArrayView<T>() const { const ArrayView<T>* v = this; return *v; }
 
-  //! Vue constante sur les éléments de l'option
+  //! Constant view on the option elements
   ConstArrayViewType view() const
   {
     return m_view;
   }
-  //! Vue sur les éléments de l'option
+  //! View on the option elements
   ArrayViewType view()
   {
     return m_view;
@@ -430,4 +435,4 @@ typedef CaseOptionSimpleT<StringArray> CaseOptionStringArray;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

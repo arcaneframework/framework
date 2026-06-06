@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelSuperMngDispatcher.cc                               (C) 2000-2005 */
 /*                                                                           */
-/* Redirection de la gestion des messages suivant le type des arguments.     */
+/* Redirection of message handling according to the type of arguments.       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -65,7 +65,7 @@ _setDispatchers(IParallelDispatchT<Byte>* c,IParallelDispatchT<Int32>* i32,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void  ParallelSuperMngDispatcher::
+void ParallelSuperMngDispatcher::
 _finalize()
 {
   if (m_byte)
@@ -232,4 +232,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

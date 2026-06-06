@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IvariableInternal.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IVariable.                                     */
+/* Internal part of IVariable in Arcane.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IVARIABLEINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IVARIABLEINTERNAL_H
@@ -23,8 +23,9 @@ namespace Arcane
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour redimensionner une variable.
+ * \brief Arguments for resizing a variable.
  */
 class VariableResizeArgs
 {
@@ -61,9 +62,10 @@ class VariableResizeArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de Ivariable.
+ * \brief Internal part of Ivariable.
  */
 class ARCANE_CORE_EXPORT IVariableInternal
 {
@@ -74,42 +76,41 @@ class ARCANE_CORE_EXPORT IVariableInternal
  public:
 
   /*!
-   * \brief Calcule de Hash de comparaison pour la variable.
+   * \brief Calculates the comparison hash for the variable.
    *
-   * \a sorted_data doit être trié en fonction des uniqueId() et aussi
-   * par rang du IParallelMng associé à la variable.
+   * \a sorted_data must be sorted according to uniqueId() and also
+   * by rank of the IParallelMng associated with the variable.
    *
-   * Cette méthode est collective mais seul le rang maitre (celui pour lequel
-   * IParallelMng::isMasterIO() est vrai) retourne un hash valide. Les autres
-   * retournent une chaîne nulle.
+   * This method is collective, but only the master rank (the one for which
+   * IParallelMng::isMasterIO() is true) returns a valid hash. The others
+   * return a null string.
    *
-   * Retourn aussi une chaîne nulle si la donnée n'est pas numérique
-   * (si sorted_data->_commonInternal()->numericData()==nullptr) ou si
-   * la variable n'est pas associée à une entité du maillage.
+   * It also returns a null string if the data is not numeric
+   * (if sorted_data->_commonInternal()->numericData()==nullptr) or if
+   * the variable is not associated with a mesh entity.
    */
   virtual String computeComparisonHashCollective(IHashAlgorithm* hash_algo,
                                                  IData* sorted_data) = 0;
 
   /*!
-   * \brief Change l'allocateur de la variable.
+   * \brief Changes the variable's allocator.
    *
-   * Actuellemt valide uniquement pour les variables 1D. Ne fait rien pour
-   * les autres.
+   * Currently valid only for 1D variables. Does nothing for others.
    *
    * \warning For experimental use only.
    */
   virtual void changeAllocator(const MemoryAllocationOptions& alloc_info) = 0;
 
-  //! Redimensionne la variable en ajoutant une capacité additionnelle
+  //! Resizes the variable by adding additional capacity
   virtual void resize(const VariableResizeArgs& resize_args) = 0;
 
-  //! Applique la méthode de comparaison spécifiée par \a compare_args
+  //! Applies the comparison method specified by \a compare_args
   virtual VariableComparerResults compareVariable(const VariableComparerArgs& compare_args) =0;
 
   /*!
-   * \brief Retourne le IParallelMng du replica du maillage associé à la variable.
+   * \brief Returns the IParallelMng of the mesh replica associated with the variable.
    *
-   * Retourne nullptr s'y a pas de réplication.
+   * Returns nullptr if there is no replication.
    */
   virtual IParallelMng* replicaParallelMng() const= 0;
 };

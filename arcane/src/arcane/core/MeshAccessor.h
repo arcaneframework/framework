@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshAccessor.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Accès aux informations d'un maillage.                                     */
+/* Access to mesh information.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHACCESSOR_H
 #define ARCANE_CORE_MESHACCESSOR_H
@@ -32,8 +32,9 @@ class IMesh;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Accès aux informations d'un maillage.
+ * \brief Access to mesh information.
  * \ingroup Mesh
  */
 class ARCANE_CORE_EXPORT MeshAccessor
@@ -47,58 +48,54 @@ class ARCANE_CORE_EXPORT MeshAccessor
 
  public:
 
-  //! Retourne le nombre de mailles du maillage
+  //! Returns the number of cells in the mesh
   Integer nbCell() const;
-  //! Retourne le nombre de faces du maillage
+  //! Returns the number of faces in the mesh
   Integer nbFace() const;
-  //! Retourne le nombre d'arêtes du maillage
+  //! Returns the number of edges in the mesh
   Integer nbEdge() const;
-  //! Retourne le nombre de noeuds du maillage
+  //! Returns the number of nodes in the mesh
   Integer nbNode() const;
 
-  //! Retourne les coordonnées des noeuds du maillage
+  //! Returns the coordinates of the mesh nodes
   VariableNodeReal3& nodesCoordinates() const;
 
-  //! Retourne le groupe contenant tous les noeuds
+  //! Returns the group containing all nodes
   NodeGroup allNodes() const;
-  //! Retourne le groupe contenant toutes les arêtes
+  //! Returns the group containing all edges
   EdgeGroup allEdges() const;
-  //! Retourne le groupe contenant toutes les faces
+  //! Returns the group containing all faces
   FaceGroup allFaces() const;
-  //! Retourne le groupe contenant toutes les mailles
+  //! Returns the group containing all cells
   CellGroup allCells() const;
-  //! Retourne le groupe contenant toutes les faces de le frontière.
+  //! Returns the group containing all boundary faces.
   FaceGroup outerFaces() const;
-  /*! \brief Retourne le groupe contenant tous les noeuds propres à ce domaine.
+  /*! \brief Returns the group containing all nodes specific to this domain.
    *
-   * En mode séquentiel, il s'agit de allNodes(). En mode parallèle, il s'agit de
-   * tous les noeuds qui ne sont pas des noeuds fantômes. L'ensemble des
-   * groupes ownNodes() de tous les sous-domaines forment une partition
-   * du maillage global.
+   * In sequential mode, this is allNodes(). In parallel mode, it is
+   * all nodes that are not ghost nodes. The set of ownNodes() groups from all
+   * sub-domains forms a partition of the global mesh.
    */
   NodeGroup ownNodes() const;
-  /*! \brief Retourne le groupe contenant toutes les mailles propres à ce domaine.
+  /*! \brief Returns the group containing all cells specific to this domain.
    *
-   * En mode séquentiel, il s'agit de allCells(). En mode parallèle, il s'agit de
-   * toutes les mailles qui ne sont pas des mailles fantômes. L'ensemble des
-   * groupes ownCells() de tous les sous-domaines forment une partition
-   * du maillage global.
+   * In sequential mode, this is allCells(). In parallel mode, it is
+   * all cells that are not ghost cells. The set of ownCells() groups from all
+   * sub-domains forms a partition of the global mesh.
    */
   CellGroup ownCells() const;
-  /*! \brief Groupe contenant toutes les faces propres à ce domaine.
+  /*! \brief Group containing all faces specific to this domain.
    *
-   * En mode séquentiel, il s'agit de allFaces(). En mode parallèle, il s'agit de
-   * toutes les faces qui ne sont pas des faces fantômes. L'ensemble des
-   * groupes ownFaces() de tous les sous-domaines forment une partition
-   * du maillage global.
+   * In sequential mode, this is allFaces(). In parallel mode, it is
+   * all faces that are not ghost faces. The set of ownFaces() groups from all
+   * sub-domains forms a partition of the global mesh.
    */
   FaceGroup ownFaces() const;
-  /*! \brief Groupe contenant toutes les arêtes propres à ce domaine.
+  /*! \brief Group containing all edges specific to this domain.
    *
-   * En mode séquentiel, il s'agit de allEdges(). En mode parallèle, il s'agit de
-   * toutes les arêtes qui ne sont pas des arêtes fantômes. L'ensemble des
-   * groupes ownEdges() de tous les sous-domaines forment une partition
-   * du maillage global.
+   * In sequential mode, this is allEdges(). In parallel mode, it is
+   * all edges that are not ghost edges. The set of ownEdges() groups from all
+   * sub-domains forms a partition of the global mesh.
    */
   EdgeGroup ownEdges() const;
 
@@ -121,4 +118,4 @@ class ARCANE_CORE_EXPORT MeshAccessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

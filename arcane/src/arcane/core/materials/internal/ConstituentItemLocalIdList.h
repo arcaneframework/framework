@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemLocalIdList.h                                (C) 2000-2024 */
 /*                                                                           */
-/* Gestion des listes d'identifiants locaux de 'ComponentItemInternal'.      */
+/* Management of local identifier lists for 'ComponentItemInternal'.         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_INTERNAL_CONSTITUENTITEMLOCALIDLIST_H
 #define ARCANE_CORE_MATERIALS_INTERNAL_CONSTITUENTITEMLOCALIDLIST_H
@@ -28,13 +28,14 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Liste d'indices locaux pour les 'ComponentItemInternal'.
+ * \brief List of local indices for 'ComponentItemInternal'.
  */
 class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 {
-  // Pour accéder en écriture à m_constituent_item_index_list
+  // For write access to m_constituent_item_index_list
   friend class ConstituentItemVectorImpl;
 
  public:
@@ -100,7 +101,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdList
 
   SmallSpan<ConstituentItemIndex> _mutableItemIndexList() { return m_constituent_item_index_list.smallSpan(); }
 
-  //! Liste des ConstituentItemIndex pour ce constituant.
+  //! List of ConstituentItemIndex for this constituent.
   UniqueArray<ConstituentItemIndex> m_constituent_item_index_list;
 
   ComponentItemSharedInfo* m_shared_info = nullptr;

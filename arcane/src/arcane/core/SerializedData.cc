@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializedData.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Donnée sérialisée.                                                        */
+/* Serialized data.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,9 +39,10 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une donnée sérialisée.
+ * \brief Interface for serialized data.
  */
 class SerializedData
 : public ReferenceCounterImpl
@@ -97,9 +98,9 @@ class SerializedData
   Int64 m_nb_element;
   Int64 m_nb_base_element;
   bool m_is_multi_size;
-  // TODO: supprimer le champs 'm_dimensions' mais cela implique de
-  // changer la valeur de computeHash() donc à voir le meilleur moment
-  // pour le faire.
+  // TODO: remove the 'm_dimensions' field, but this implies changing
+  // the value of computeHash(), so we need to determine the best time
+  // to do it.
   UniqueArray<Int32> m_dimensions;
   UniqueArray<Int64> m_extents;
   Int64 m_element_size;
@@ -169,11 +170,11 @@ _copyExtentsToDimensions()
 {
   Integer n = m_extents.size();
   m_dimensions.resize(n);
-  // Il ne faut pas lever d'exceptions si on dépasse les bornes sinon
-  // le code lèvera une exception dès que le nombre d'éléments du tableau
-  // dépasse 32 bits. Cela n'est pas très grave si les valeurs de 'm_dimensions'
-  // ne sont pas valide car ce n'est plus utilisé que dans computeHash() pour
-  // garder la valeur compatible.
+  // Exceptions should not be thrown if bounds are exceeded, otherwise
+  // the code will throw an exception as soon as the number of array elements
+  // exceeds 32 bits. This is not very serious if the values of 'm_dimensions'
+  // are invalid because they are only used in computeHash() to
+  // maintain compatibility.
   for (Integer i = 0; i < n; ++i)
     m_dimensions[i] = static_cast<Int32>(m_extents[i]);
 }
@@ -238,7 +239,7 @@ allocateMemory(Int64 size)
 void SerializedData::
 computeHash(IHashAlgorithm* algo, ByteArray& output) const
 {
-  // TODO: faire avec le support 64 bits mais cela change le hash.
+  // TODO: implement 64-bit support, but this changes the hash.
   algo->computeHash64(m_const_buffer, output);
   const Byte* ptr = reinterpret_cast<const Byte*>(m_dimensions.data());
   Integer msize = CheckedConvert::multiply(m_dimensions.size(), (Integer)sizeof(Integer));
@@ -249,10 +250,10 @@ computeHash(IHashAlgorithm* algo, ByteArray& output) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \todo ne pas utiliser le type DT_Byte pour la serialisation mais
- * le vrai type de base: ce type peut etre utiliser avec MPI et dans ce
- * cas, si les machines sont heterogenes, on perd l'information du type
- * et le put peut ne pas correspondre.
+ * \todo Do not use the DT_Byte type for serialization, but * the true base
+ * type: this type can be used with MPI, and in this * case, if the machines
+ * are heterogeneous, the type information is lost * and the put operation
+ * may not match.
  */
 void SerializedData::
 serialize(ISerializer* sbuf) const
@@ -294,38 +295,38 @@ serialize(ISerializer* sbuf)
 void SerializedData::
 _serializeRead(ISerializer* sbuf)
 {
-  Int64 magic_number = sbuf->getInt64(); // Valeur magique pour vérification
+  Int64 magic_number = sbuf->getInt64(); // Magic number for verification
   if (magic_number != SERIALIZE_MAGIC_NUMBER)
     ARCANE_FATAL("Bad magic number for SerializedData '{0}", magic_number);
 
-  Int32 version = sbuf->getInt32(); // Pour le numéro de version
+  Int32 version = sbuf->getInt32(); // For the version number
   if (version != 1)
     ARCANE_FATAL("Bad magic number for SerializedData '{0}", magic_number);
 
-  m_base_data_type = (eDataType)sbuf->getInteger(); // Pour le m_base_data_type
-  m_memory_size = sbuf->getInt64(); // Pour le m_memory_size
-  m_nb_dimension = sbuf->getInteger(); // Pour le m_nb_dimension
-  m_nb_element = sbuf->getInt64(); // Pour le m_nb_element
-  m_nb_base_element = sbuf->getInt64(); // Pour le m_nb_base_element
-  m_is_multi_size = sbuf->getInteger(); // Pour le m_is_multi_size
-  m_element_size = sbuf->getInt64(); // Pour le m_element_size
+  m_base_data_type = (eDataType)sbuf->getInteger(); // For m_base_data_type
+  m_memory_size = sbuf->getInt64(); // For m_memory_size
+  m_nb_dimension = sbuf->getInteger(); // For m_nb_dimension
+  m_nb_element = sbuf->getInt64(); // For m_nb_element
+  m_nb_base_element = sbuf->getInt64(); // For m_nb_base_element
+  m_is_multi_size = sbuf->getInteger(); // For m_is_multi_size
+  m_element_size = sbuf->getInt64(); // For m_element_size
 
-  // Lecture des dimensions
+  // Reading dimensions
   Int64 dimensions_size = sbuf->getInt64();
   m_extents.resize(dimensions_size);
   sbuf->getSpan(m_extents);
   _copyExtentsToDimensions();
 
-  // Lecture de 'm_shape'
-  Int32 shape_nb_dim = sbuf->getInt32(); // Pour m_shape.nbDimension()
+  // Reading 'm_shape'
+  Int32 shape_nb_dim = sbuf->getInt32(); // For m_shape.nbDimension()
   std::array<Int32,ArrayShape::MAX_NB_DIMENSION> shape_dims_buf;
   Span<Int32> shape_dims(shape_dims_buf.data(),shape_nb_dim);
-  sbuf->getSpan(shape_dims); // Pour les dimensions
+  sbuf->getSpan(shape_dims); // For the dimensions
   m_shape.setDimensions(shape_dims);
 
   Int64 buffer_size = sbuf->getInt64();
   m_stored_buffer.resize(buffer_size);
-  sbuf->getSpan(m_stored_buffer); // Pour les données
+  sbuf->getSpan(m_stored_buffer); // For the data
   m_buffer = m_stored_buffer;
   m_const_buffer = m_buffer;
 }
@@ -333,10 +334,10 @@ _serializeRead(ISerializer* sbuf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \todo ne pas utiliser le type DT_Byte pour la serialisation mais
- * le vrai type de base: ce type peut etre utiliser avec MPI et dans ce
- * cas, si les machines sont heterogenes, on perd l'information du type
- * et le put peut ne pas correspondre.
+ * \todo Do not use the DT_Byte type for serialization, but the true base
+ * type: this type can be used with MPI, and in this case, if the machines
+ * are heterogeneous, the type information is lost and the put operation may
+ * not match.
  */
 void SerializedData::
 _serialize(ISerializer* sbuf) const
@@ -348,44 +349,44 @@ _serialize(ISerializer* sbuf) const
 
   switch (mode) {
   case ISerializer::ModeReserve:
-    sbuf->reserveInt64(1); // Valeur magique pour vérification
-    sbuf->reserveInt32(1); // Numéro de version
-    sbuf->reserveInteger(1); // Pour le m_base_data_type
-    sbuf->reserveInt64(1); // Pour le m_memory_size
-    sbuf->reserveInteger(1); // Pour le m_nb_dimension
-    sbuf->reserveInt64(1); // Pour le m_nb_element
-    sbuf->reserveInt64(1); // Pour le m_nb_base_element
-    sbuf->reserveInteger(1); // Pour le m_is_multi_size
-    sbuf->reserveInt64(1); // Pour le m_element_size
+    sbuf->reserveInt64(1); // Magic number for verification
+    sbuf->reserveInt32(1); // Version number
+    sbuf->reserveInteger(1); // For m_base_data_type
+    sbuf->reserveInt64(1); // For m_memory_size
+    sbuf->reserveInteger(1); // For m_nb_dimension
+    sbuf->reserveInt64(1); // For m_nb_element
+    sbuf->reserveInt64(1); // For m_nb_base_element
+    sbuf->reserveInteger(1); // For m_is_multi_size
+    sbuf->reserveInt64(1); // For m_element_size
 
-    sbuf->reserveInt64(1); // Pour le m_extents.size()
-    sbuf->reserveSpan(eBasicDataType::Int64, m_extents.size()); // Pour les dimensions
+    sbuf->reserveInt64(1); // For m_extents.size()
+    sbuf->reserveSpan(eBasicDataType::Int64, m_extents.size()); // For the dimensions
 
-    sbuf->reserveInt32(1); // Pour le nombre de valeur de 'm_shape'
-    sbuf->reserveSpan(eBasicDataType::Int32, m_shape.nbDimension()); // Pour les données de 'm_shape'
+    sbuf->reserveInt32(1); // For the number of values in 'm_shape'
+    sbuf->reserveSpan(eBasicDataType::Int32, m_shape.nbDimension()); // For 'm_shape' data
 
-    sbuf->reserveInt64(1); // Pour le m_const_buffer.size()
-    sbuf->reserveSpan(eBasicDataType::Byte, m_const_buffer.size()); // Pour les données
+    sbuf->reserveInt64(1); // For m_const_buffer.size()
+    sbuf->reserveSpan(eBasicDataType::Byte, m_const_buffer.size()); // For the data
     break;
   case ISerializer::ModePut:
-    sbuf->putInt64(SERIALIZE_MAGIC_NUMBER); // Valeur magique pour vérification
-    sbuf->putInt32(1); // Numéro de version
-    sbuf->putInteger(m_base_data_type); // Pour le m_base_data_type
-    sbuf->putInt64(m_memory_size); // Pour le m_memory_size
-    sbuf->putInteger(m_nb_dimension); // Pour le m_nb_dimension
-    sbuf->putInt64(m_nb_element); // Pour le m_nb_element
-    sbuf->putInt64(m_nb_base_element); // Pour le m_nb_base_element
-    sbuf->putInteger(m_is_multi_size); // Pour le m_is_multi_size
-    sbuf->putInt64(m_element_size); // Pour le m_element_size
+    sbuf->putInt64(SERIALIZE_MAGIC_NUMBER); // Magic number for verification
+    sbuf->putInt32(1); // Version number
+    sbuf->putInteger(m_base_data_type); // For m_base_data_type
+    sbuf->putInt64(m_memory_size); // For m_memory_size
+    sbuf->putInteger(m_nb_dimension); // For m_nb_dimension
+    sbuf->putInt64(m_nb_element); // For m_nb_element
+    sbuf->putInt64(m_nb_base_element); // For m_nb_base_element
+    sbuf->putInteger(m_is_multi_size); // For m_is_multi_size
+    sbuf->putInt64(m_element_size); // For m_element_size
 
-    sbuf->putInt64(m_extents.size()); // Pour le m_extents.size()
-    sbuf->putSpan(m_extents); // Pour les dimensions
+    sbuf->putInt64(m_extents.size()); // For m_extents.size()
+    sbuf->putSpan(m_extents); // For the dimensions
 
-    sbuf->putInt32(m_shape.nbDimension()); // Pour m_shape.nbDimension()
-    sbuf->putSpan(m_shape.dimensions()); // Pour les dimensions
+    sbuf->putInt32(m_shape.nbDimension()); // For m_shape.nbDimension()
+    sbuf->putSpan(m_shape.dimensions()); // For the dimensions
 
-    sbuf->putInt64(m_const_buffer.size()); // Pour le m_const_buffer.size()
-    sbuf->putSpan(m_const_buffer); // Pour les données
+    sbuf->putInt64(m_const_buffer.size()); // For m_const_buffer.size()
+    sbuf->putSpan(m_const_buffer); // For the data
     break;
   case ISerializer::ModeGet:
     ARCANE_THROW(NotSupportedException, "ModeGet in const method");

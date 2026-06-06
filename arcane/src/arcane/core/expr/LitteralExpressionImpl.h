@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LitteralExpressionImpl.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une expression littérale contenant un scalaire.          */
+/* Implementation of a literal expression containing a scalar.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_LITTERALEXPRESSIONIMPL_H
 #define ARCANE_CORE_EXPR_LITTERALEXPRESSIONIMPL_H
@@ -33,8 +33,9 @@ class LitteralOperator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implementation d'une expression litterale contenant un scalaire.
+ * \brief Implementation of a literal expression containing a scalar.
  */
 class LitteralExpressionImpl
 : public ExpressionImpl
@@ -57,8 +58,9 @@ class LitteralExpressionImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Operateur de cast generique pour les litteraux.
+ * \brief Generic cast operator for literals.
  */
 class LitteralOperator
 {
@@ -82,10 +84,10 @@ class LitteralOperatorT
 
   void evaluate(ExpressionResult* res, ScalarVariant& a) override
   {
-    // allocation du résultat en fonction du type du variant
+    // Allocate the result based on the variant type
     res->allocate(a.type());
 
-    // recuperation des valeurs des operandes
+    // Retrieve the operand values
     ArrayView<T> res_val;
     res->data()->value(res_val);
     T a_val;

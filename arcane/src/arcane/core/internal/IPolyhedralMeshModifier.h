@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshInternal.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IMesh.                                         */
+/* Internal part of IMesh in Arcane.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IPOLYHEDRALMESHMODIFIER_H
 #define ARCANE_CORE_INTERNAL_IPOLYHEDRALMESHMODIFIER_H
@@ -27,9 +27,10 @@ class IPolyhedralMeshModifier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de IMesh.
+ * \brief Internal part of IMesh.
  */
 class ARCANE_CORE_EXPORT IPolyhedralMeshModifier
 {

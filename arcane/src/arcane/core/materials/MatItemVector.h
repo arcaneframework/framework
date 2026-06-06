@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatItemVector.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Vecteur sur les entités d'un matériau.                                    */
+/* Vector over the entities of a material.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATITEMVECTOR_H
 #define ARCANE_CORE_MATERIALS_MATITEMVECTOR_H
@@ -24,10 +24,11 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vecteur sur les entités d'un matériau.
+ * \brief Vector over the entities of a material.
  *
- * \warning Ce vecteur n'est valide que tant que le matériau ne change pas.
+ * \warning This vector is only valid as long as the material does not change.
  */
 class ARCANE_CORE_EXPORT MatCellVector
 : public ComponentItemVector
@@ -38,39 +39,39 @@ class ARCANE_CORE_EXPORT MatCellVector
 
  public:
 
-  //! Construit un vecteur contenant les entités de \a group pour le matériau \a material.
+  //! Constructs a vector containing the entities of \a group for the material \a material.
   MatCellVector(const CellGroup& group, IMeshMaterial* material);
-  //! Construit un vecteur contenant les entités de \a view pour le matériau \a material.
+  //! Constructs a vector containing the entities of \a view for the material \a material.
   MatCellVector(CellVectorView view, IMeshMaterial* material);
-  //! Construit un vecteur contenant les entités \a local_ids pour le matériau \a material.
+  //! Constructs a vector containing the entities \a local_ids for the material \a material.
   MatCellVector(SmallSpan<const Int32> local_ids, IMeshMaterial* material);
-  //! Construit un vecteur sur les entités du matériau \a material.
+  //! Constructs a vector over the entities of the material \a material.
   MatCellVector(const ConstituentItemVectorBuildInfo& build_info, IMeshMaterial* material);
-  //! Constructeur par recopie. L'instance fera référence à \a rhs
+  //! Copy constructor. The instance will reference \a rhs
   MatCellVector(const MatCellVector& rhs) = default;
-  //! Constructeur de recopie. Cette instance est une copie de \a rhs.
+  //! Copy constructor. This instance is a copy of \a rhs.
   MatCellVector(MatItemVectorView rhs)
   : ComponentItemVector(rhs)
   {}
 
  public:
 
-  //! Conversion vers une vue sur ce vecteur
+  //! Conversion to a view of this vector
   operator MatCellVectorView() const
   {
     return view();
   }
 
-  //! Vue sur ce vecteur
+  //! View of this vector
   MatCellVectorView view() const
   {
     return { _component(), _matvarIndexes(), _constituentItemListView(), _localIds() };
   }
 
-  //! Matériau associé
+  //! Associated material
   IMeshMaterial* material() const;
 
-  //! Clone ce vecteur
+  //! Clones this vector
   MatCellVector clone() const { return { view() }; }
 
  private:
@@ -86,5 +87,4 @@ class ARCANE_CORE_EXPORT MatCellVector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

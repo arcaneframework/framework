@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlProperty.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Propriétés liée à un noeud XML.                                           */
+/* Properties linked to an XML node.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLPROPERTY_H
 #define ARCANE_CORE_XMLPROPERTY_H
@@ -25,16 +25,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une valeur propriété.
+ * \brief Interface of a property value.
  */
 class XmlPropertyValue
 : public IPropertyValue
 {
  public:
 
-  XmlPropertyValue(const XmlNode& node,IPropertyType* type,
-		   IPropertyTypeInstance* type_instance);
+  XmlPropertyValue(const XmlNode& node, IPropertyType* type,
+                   IPropertyTypeInstance* type_instance);
   XmlPropertyValue();
 
  public:
@@ -71,4 +72,4 @@ class XmlPropertyValue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

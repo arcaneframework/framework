@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AbstractModule.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe abstraite de base d'un module.                                     */
+/* Abstract base class of a module.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ABSTRACTMODULE_H
 #define ARCANE_CORE_ABSTRACTMODULE_H
@@ -36,10 +36,11 @@ typedef ModuleBuildInfo ModuleBuilder;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe représentant un module.
+ * \brief Class representing a module.
  *
- * Cette classe est LA classe d'implémentation bas niveau de l'interface \a IModule.
+ * This class is THE low-level implementation class of the \a IModule interface.
  *
  * \ingroup Module
  */
@@ -49,75 +50,75 @@ class ARCANE_CORE_EXPORT AbstractModule
 {
  public:
 
-  //! Constructeur à partir d'un \a ModuleBuildInfo
+  //! Constructor from a \a ModuleBuildInfo
   AbstractModule(const ModuleBuildInfo&);
 
  public:
 	
-  //! Destructeur
+  //! Destructor
   virtual ~AbstractModule();
   
  public:
 
-  //! Version du module
+  //! Module version
   VersionInfo versionInfo() const override { return m_version_info; }
 
  public:
 
-  /*! \brief Initialisation du module pour le sous-domaine \a sd.
+  /*! \brief Initialization of the module for the sub-domain \a sd.
    *
-   * Cette méthode statique peut être redéfinie dans une classe dérivée
-   * pour effectuer des initialisations pour le sous-domaine \a sd
-   * même si le module n'est pas utilisé.
+   * This static method can be redefined in a derived class
+   * to perform initializations for the sub-domain \a sd
+   * even if the module is not used.
    *
-   * Une utilisation classique est l'enregistrement de points d'entrée
-   * pour des modules sans .axl
+   * A common use is registering entry points
+   * for modules without .axl
    *
-   * Cette méthode sera appelé pendant la phase de création du
-   * sous-domaine sur tous les Modules (même non utilisés).
+   * This method will be called during the sub-domain creation phase
+   * on all Modules (even unused ones).
    */
   static void staticInitialize(ISubDomain* sd) { ARCANE_UNUSED(sd); }
 
  public:
 
-  //! Nom du module
+  //! Module name
   String name() const override { return m_name; }
-  //! Session associé au module
+  //! Session associated with the module
   ISession* session() const override { return m_session; }
-  //! Sous-domaine associé au module
+  //! Sub-domain associated with the module
   ISubDomain* subDomain() const override { return m_sub_domain; }
-  //! Maillage par défaut pour ce module
+  //! Default mesh for this module
   IMesh* defaultMesh() const override { return m_default_mesh_handle.mesh(); }
-  //! Maillage par défaut pour ce module
+  //! Default mesh for this module
   MeshHandle defaultMeshHandle() const override { return m_default_mesh_handle; }
-  //! Gestionnaire du parallélisme par échange de message
+  //! Message passing parallelism manager
   IParallelMng* parallelMng() const override;
-  //! Gestionnaire des accélérateurs.
+  //! Accelerator manager.
   IAcceleratorMng* acceleratorMng() const override;
-  //! Gestionnaire de traces
+  //! Trace manager
   ITraceMng* traceMng() const override;
-  //! Positionne le flag d'utilisation du module
+  //! Sets the module usage flag
   void setUsed(bool v) override { m_used = v; }
-  //! Retourne l'état d'utilisation du module
+  //! Returns the module usage status
   bool used() const override { return m_used; }
-  //! Positionne le flag d'activation du module
+  //! Sets the module activation flag
   void setDisabled(bool v) override { m_disabled = v; }
-  //! Retourne l'état d'activation du module
+  //! Returns the module activation status
   bool disabled() const override { return m_disabled; }
-  //! Indique si le module utilise un système de Garbage collection
+  //! Indicates if the module uses a Garbage collection system
   /*! 
-   *  <ul>
-   *  <li>si \a true, indique une destruction par un Garbage collecteur et non une destruction explicite</li>
-   *  <li>si \a false, ce module sera détruit explicitement par un appel à son destructeur</li>
-   *  </ul>
+   *  <ul >
+   *  <li >if \a true, indicates destruction by a Garbage collector and not explicit destruction</li>
+   *  <li >if \a false, this module will be destroyed explicitly by calling its destructor</li>
+   *  </ul >
    *
-   * Le système de Garbage collection est usuellement activé pour les
-   * modules issus d'une implémentation en C#. Les modules classiques
-   * en C++ n'ont pas se mécanisme.
+   * The Garbage collection system is usually activated for
+   * modules resulting from a C# implementation. Classic modules
+   * in C++ do not have this mechanism.
    *
-   * \todo Vérifier dans ModuleMng::removeModule l'utilisation de
-   * cette indication. Un appel au Deleter comme dans
-   * ModuleMng::removeAllModules est peut-être nécessaire.
+   * \todo Check in ModuleMng::removeModule the use of
+   * this indication. A call to the Deleter as in
+   * ModuleMng::removeAllModules might be necessary.
    */
   bool isGarbageCollected() const override { return false; }
 
@@ -130,14 +131,14 @@ class ARCANE_CORE_EXPORT AbstractModule
 
  private:
 
-  ISession* m_session; //!< Sesion
-  ISubDomain* m_sub_domain; //!< sous-domaine
-  MeshHandle m_default_mesh_handle; //!< Maillage par défaut du module
-  String m_name; //!< Nom du module
-  bool m_used; //!< \a true si le module est utilisé
-  bool m_disabled; //!< Etat d'activation du module
-  VersionInfo m_version_info; //!< Version du module
-  IAcceleratorMng* m_accelerator_mng; //!< Gestionnaire des accélérateurs
+  ISession* m_session; //!< Session
+  ISubDomain* m_sub_domain; //!< sub-domain
+  MeshHandle m_default_mesh_handle; //!< Default mesh of the module
+  String m_name; //!< Module name
+  bool m_used; //!< \a true if the module is used
+  bool m_disabled; //!< Module activation status
+  VersionInfo m_version_info; //!< Module version
+  IAcceleratorMng* m_accelerator_mng; //!< Accelerator manager
 };
 
 /*---------------------------------------------------------------------------*/
@@ -148,5 +149,4 @@ class ARCANE_CORE_EXPORT AbstractModule
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

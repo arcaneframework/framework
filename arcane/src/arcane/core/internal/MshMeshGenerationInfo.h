@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MshMeshGenerationInfo.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Informations d'un maillage issu du format 'msh'.                          */
+/* Information about a mesh derived from the 'msh' format.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_MSHMESHGENERATIONINFO_H
 #define ARCANE_CORE_INTERNAL_MSHMESHGENERATIONINFO_H
@@ -28,16 +28,17 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations d'un maillage issu du format 'msh'. 
+ * \brief Brief information about a mesh derived from the 'msh' format. 
  */
 class ARCANE_CORE_EXPORT MshMeshGenerationInfo
 {
  public:
 
   /*!
-   * \brief Infos sur un nom physique.
+   * \brief Brief information about a physical name.
    */
   class MshPhysicalName
   {
@@ -48,12 +49,13 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
     , m_tag(tag)
     , m_name(name)
     {}
-    //! Construit un nom physique nul.
+
+    //! Constructs a null physical name.
     MshPhysicalName() = default;
 
    public:
 
-    //! Indique si le nom physique n'est pas défini.
+    //! Indicates if the physical name is not defined.
     bool isNull() const { return m_dimension == (-1); }
     Int32 dimension() const { return m_dimension; }
     Int64 tag() const { return m_tag; }
@@ -67,10 +69,10 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
   };
 
   /*!
-   * \brief Infos du bloc '$PhysicalNames'.
+   * \brief Brief information about the '$PhysicalNames' block.
    *
-   * Ce bloc est optionnel dans le format MSH. Il n'y a donc
-   * pas forcément un nom physique associé à un tag.
+   * This block is optional in the MSH format. Therefore,
+   * there is not necessarily a physical name associated with a tag.
    */
   class MshPhysicalNameList
   {
@@ -81,10 +83,10 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
       m_physical_names[dimension].add(MshPhysicalName{ dimension, tag, name });
     }
     /*!
-     * \brief Récupère le nom physique associé au tag \a tag
+     * \brief Retrieves the physical name associated with tag \a tag
      *
-     * Ce nom peut-être nul si le tag \a tag n'est pas associé
-     * à un nom physique ou s'il n'y a pas de nom physique.
+     * This name may be null if tag \a tag is not associated
+     * with a physical name or if there is no physical name.
      */
     MshPhysicalName find(Int32 dimension, Int64 tag) const
     {
@@ -96,11 +98,11 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
 
    private:
 
-    //! Liste par dimension des éléments du bloc $PhysicalNames
+    //! List by dimension of the elements of the $PhysicalNames block
     FixedArray<UniqueArray<MshPhysicalName>, 4> m_physical_names;
   };
 
-  //! Infos pour les entités 0D
+  //! Info for 0D entities
   class MshEntitiesNodes
   {
    public:
@@ -121,7 +123,7 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
     Int64 m_physical_tag = -1;
   };
 
-  //! Infos pour les entités 1D, 2D et 3D
+  //! Info for 1D, 2D, and 3D entities
   class MshEntitiesWithNodes
   {
    public:
@@ -152,15 +154,15 @@ class ARCANE_CORE_EXPORT MshMeshGenerationInfo
     Int32 m_entity_dim = -1;
     Int32 m_entity_tag = -1;
     Int32 m_entity_tag_master = -1;
-    //! Liste des valeurs affines
+    //! List of affine values
     UniqueArray<double> m_affine_values;
-    // Nombre de couples (esclave, maîtres)
+    // Number of pairs (slave, master)
     Int32 m_nb_corresponding_node = 0;
-    //! Liste de couples (uniqueId noeud esclave, unique() noeud maître)
+    //! List of pairs (slave node uniqueId, master node unique())
     UniqueArray<Int64> m_corresponding_nodes;
   };
 
-  //! Informations sur la périodicité
+  //! Information on periodicity
   class MshPeriodicInfo
   {
    public:

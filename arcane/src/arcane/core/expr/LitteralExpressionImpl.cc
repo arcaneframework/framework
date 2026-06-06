@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LitteralExpressionImpl.cc                                   (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'une expression littérale contenant un scalaire.          */
+/* Implementation of a literal expression containing a scalar.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ apply(ExpressionResult* result)
 {
   // cerr << ">> BEGIN LITTERAL EXPRESSION [" << *result << "]\n";
 
-  // recherche de l'operateur en fonction du type attendu en resultat
+  // search for the operator based on the expected result type
   ScalarVariant::eType type = m_value.type();
   LitteralOperator* op = m_op_mng->find(this, type);
   if (!op)

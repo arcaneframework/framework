@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IPrimaryMesh.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la géométrie d'un maillage.                                  */
+/* Interface for the geometry of a mesh.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPRIMARYMESH_H
 #define ARCANE_CORE_IPRIMARYMESH_H
@@ -37,108 +37,108 @@ class Properties;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//INFO: La doc complete est dans Mesh.dox
+
+//INFO: The complete documentation is in Mesh.dox
 class IPrimaryMesh
 : public IMesh
 {
  public:
 
-  virtual ~IPrimaryMesh() {} //<! Libère les ressources
+  virtual ~IPrimaryMesh() {} //<! Releases resources
 
  public:
 
-  //! Coordonnées des noeuds
+  //! Node coordinates
   virtual VariableNodeReal3& nodesCoordinates() =0;
 
   /*!
-   * \brief Positionne la dimension du maillage (1D, 2D ou 3D).
+   * \brief Positions the mesh dimension (1D, 2D, or 3D).
    *
-   * La dimension correspond à la dimension des éléments mailles (Cell).
-   * Si des mailles de plusieurs dimensions sont présentes, il faut indiquer
-   * la dimension la plus importante.
+   * The dimension corresponds to the dimension of the mesh elements (Cell).
+   * If meshes of multiple dimensions are present, the highest dimension must be indicated.
    *
-   * La dimension doit être positionnée avant d'allouer des mailles si on
-   * utilise allocateCells(), et ne doit plus être modifiée ensuite.
+   * The dimension must be set before allocating meshes if one
+   * uses allocateCells(), and must not be modified afterward.
    */
   virtual void setDimension(Integer dim) =0;  
 
-  /*! \brief Recharge le maillage à partir des variables protégées
+  /*! \brief Reloads the mesh from protected variables
    */
   virtual void reloadMesh() =0;
 
-  //NOTE: Documentation complète de cette méthode dans Mesh.dox
-  //!Allocation d'un maillage.
+  //NOTE: Complete documentation for this method is in Mesh.dox
+  //! Allocation of a mesh.
   virtual void allocateCells(Integer nb_cell,Int64ConstArrayView cells_infos,bool one_alloc=true) =0;
 
   /*!
-   * \brief Indique une fin d'allocation de mailles.
+   * \brief Indicates the end of mesh allocation.
    *
-   * Tant que cette méthode n'a pas été appelée, il n'est pas valide d'utiliser cette
-   * instance, sauf pour allouer le maillage (allocateCells()).
+   * As long as this method has not been called, it is not valid to use this
+   * instance, except for allocating the mesh (allocateCells()).
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   virtual void endAllocate() =0;
 
   /*!
-   * \brief Désalloue le maillage.
+   * \brief Deallocates the mesh.
    *
-   * Cela supprime toutes les entités et tous les groupes d'entités.
-   * Le maillage devra ensuite être alloué à nouveau via l'appel à allocateCells().
-   * Cet appel supprime aussi la dimension du maillage qui devra
-   * être repositionné par setDimension(). Il est donc possible de changer la
-   * dimension du maillage par la suite.
+   * This deletes all entities and all entity groups.
+   * The mesh must then be reallocated via the call to allocateCells().
+   * This call also deletes the mesh dimension, which must
+   * be reset by setDimension(). It is therefore possible to change the
+   * mesh dimension afterward.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    *
-   * \warning Cette méthode est expérimentale et de nombreux effets de bords sont
-   * possibles. Notamment, l'implémentation actuelle ne supporte pas la désallocation
-   * lorsqu'il y a des variables partielles sur le maillage.
+   * \warning This method is experimental and many edge effects are
+   * possible. Notably, the current implementation does not support deallocation
+   * when there are partial variables on the mesh.
    */
   virtual void deallocate() =0;
 
   /*!
-   * \brief Allocateur initial spécifique.
+   * \brief Specific initial allocator.
    *
-   * Si nul, il faut utiliser allocateCells().
+   * If null, allocateCells() must be used.
    */
   virtual IMeshInitialAllocator* initialAllocator() { return nullptr; }
 
  public:
 
   /*!
-   * \brief Variable contenant l'identifiant du sous-domaine propriétaire.
+   * \brief Variable containing the identifier of the owning subdomain.
    *
-   Retourne la variable contenant l'identifiant du sous-domaine propriétaire
-   des entités du genre \a kind.
+   Returns the variable containing the identifier of the owning subdomain
+   of entities of the given kind.
    
-   \warning Cette variable est utilisée pour la fabrication des messages
-   de synchronisation entre sous-domaines et ne doit pas
-   être modifiée.
+   \warning This variable is used for generating synchronization messages
+   between subdomains and must not
+   be modified.
    */
   virtual VariableItemInt32& itemsNewOwner(eItemKind kind) =0;
 
-  //! Change les sous-domaines propriétaires des entités
+  //! Changes the owning subdomains of entities
   virtual void exchangeItems() =0;
 
  public:
 
   /*!
    * \internal
-   * \brief Positionne les propriétaires des entités à partir du propriétaire des mailles.
+   * \brief Positions entity owners based on the mesh owner.
    *
-   * Positionne les propriétaires des entités autres que les mailles (Node,Edge et Face)
-   * en se basant sur le propriétaire aux mailles. Cette opération n'a d'intéret
-   * qu'en parallèle et ne doit être appelée que lors de l'initialisation après
-   * la méthode endAllocate().
+   Positions the owners of entities other than meshes (Node, Edge, and Face)
+   based on the mesh owner. This operation is only useful
+   in parallel and must only be called during initialization after
+   the endAllocate() method.
    *
-   * Cette opération est collective.
+   This operation is collective.
    */
   virtual void setOwnersFromCells() =0;
 
   /*!
    * \internal
-   * \brief Positionne les informations de partitionnement.
+   * \brief Positions partitioning information.
    */
   virtual void setMeshPartInfo(const MeshPartInfo& mpi) =0;
 };
@@ -151,4 +151,4 @@ class IPrimaryMesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

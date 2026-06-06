@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupImpl.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un groupe d'entités de maillage.                         */
+/* Implementation of a mesh entity group.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,9 +38,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'un groupe nul.
+ * \brief Null group class.
  */
 class ItemGroupImplNull
 : public ItemGroupImpl
@@ -51,7 +52,7 @@ class ItemGroupImplNull
 
  public:
 
-  //! Retourne le nom du groupe
+  //! Returns the group name
   const String& name() const { return m_name; }
   const String& fullName() const { return m_name; }
 
@@ -108,9 +109,9 @@ class ItemGroupImplItemGroupComputeFunctor
 ItemGroupImpl* ItemGroupImpl::
 checkSharedNull()
 {
-  // Normalement ce test n'est vrai que si on a une instance globale
-  // de 'ItemGroup' ce qui est déconseillé. Sinon, _buildSharedNull() a été
-  // automatiquement appelé lors de l'initialisation (dans arcaneInitialize()).
+  // Normally this test is only true if we have a global instance
+  // of 'ItemGroup' which is discouraged. Otherwise, _buildSharedNull() was
+  // automatically called during initialization (in arcaneInitialize()).
   if (!shared_null)
     _buildSharedNull();
   return shared_null;
@@ -303,14 +304,14 @@ setOwn(bool v)
       ARCANE_THROW(NotSupportedException,"Setting Own with 'Own' sub-group already defined");
   }
   else {
-    // On a le droit de remettre setOwn() à 'false' pour le groupe de toutes
-    // les entités. Cela est nécessaire en reprise si le nombre de parties
-    // du maillage est différent du IParallelMng associé à la famille
+    // We are allowed to reset setOwn() to 'false' for the group of all
+    // entities. This is necessary during recovery if the number of mesh parts
+    // is different from the IParallelMng associated with the family
     if (!isAllItems())
       ARCANE_THROW(NotSupportedException,"Un-setting Own on a own group");
   }
   m_p->m_is_own = v;
-  // (HP) TODO: Faut il notifier des observers ?
+  // (HP) TODO: Should we notify observers?
 }
 
 /*---------------------------------------------------------------------------*/
@@ -329,7 +330,7 @@ ItemGroupImpl* ItemGroupImpl::
 ownGroup()
 {
 	ItemGroupImpl* ii = m_p->m_own_group;
-	// Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
+	// The flag is already set in ItemGroupInternal::_init or ItemGroupImpl::setOwn
 	if (!ii) {
 		if (m_p->m_is_own){
 			ii = this;
@@ -501,7 +502,7 @@ ownActiveCellGroup()
   if (itemKind()!=IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_active_cell_group;
-  // Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
+  // The flag is already set in ItemGroupInternal::_init or ItemGroupImpl::setOwn
   if (!ii) {
     ii = createSubGroup("OwnActiveCells",m_p->m_mesh->cellFamily(),
                         new OwnActiveCellGroupComputeFunctor());
@@ -537,7 +538,7 @@ ownLevelCellGroup(const Integer& level)
   if (itemKind()!=IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_level_cell_group[level];
-  // Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
+  // The flag is already set in ItemGroupInternal::_init or ItemGroupImpl::setOwn
   if (!ii) {
     ii = createSubGroup(String::format("OwnLevelCells{0}",level),
                         m_p->m_mesh->cellFamily(),
@@ -629,7 +630,7 @@ createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFuncto
   ItemGroupImpl* ii = ig.internal();
   ii->setComputeFunctor(functor);
   functor->setGroup(ii);
-  // Observer par défaut : le sous groupe n'est pas intéressé par les infos détaillées de transition
+  // Default observer: the subgroup is not interested in detailed transition information
   attachObserver(ii,newItemGroupObserverT(ii,
                                           &ItemGroupImpl::_executeInvalidate));
   m_p->m_sub_groups[sub_name] = ii;
@@ -649,7 +650,7 @@ findSubGroup(const String& suffix)
     return finder->second.get();
   }
   else {
-    // ou bien erreur ?
+    // or an error?
     return checkSharedNull();
   }
 }
@@ -667,7 +668,7 @@ changeIds(Int32ConstArrayView old_to_new_ids)
     return;
   }
 
-  // ItemGroupImpl ne fait d'habitude pas le checkNeedUpdate lui meme, plutot le ItemGroup
+  // ItemGroupImpl usually does not perform the checkNeedUpdate itself, rather the ItemGroup
   checkNeedUpdate();
   if (isAllItems()) {
     // Int32ArrayView items_lid = m_p->itemsLocalId();
@@ -687,17 +688,17 @@ changeIds(Int32ConstArrayView old_to_new_ids)
   }
 
   m_p->updateTimestamp();
-  // Pour l'instant, il ne faut pas trier les entités des variables
-  // partielles car les valeurs correspondantes des variables ne sont
-  // pas mises à jour (il faut implémenter changeGroupIds pour cela)
-  // NOTE: est-ce utile de le faire ?
-  // NOTE: faut-il le faire pour les autre aussi ? A priori, cela n'est
-  // utile que pour garantir le meme resultat parallele/sequentiel
+  // For now, the entities of the variables should not be sorted
+  // partial because the corresponding values of the variables are not
+  // updated (changeGroupIds must be implemented for this)
+  // NOTE: is it useful to do this?
+  // NOTE: should it be done for others too? As far as I know, this is
+  // only useful to guarantee the same parallel/sequential result
   if (m_p->m_observer_need_info) {
     m_p->notifyCompactObservers(&old_to_new_ids);
   } else {
-    // Pas besoin d'infos, on peut changer arbitrairement leur ordre
-    // TODO: #warning "(HP) Connexion de ce triage d'item avec la famille ?"
+    // No need for info, we can change their order arbitrarily
+    // TODO: #warning "(HP) Connection of this item sorting with the family?"
     std::sort(std::begin(items_lid),std::end(items_lid));
     m_p->notifyCompactObservers(nullptr);
   }
@@ -784,7 +785,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
   Integer nb_added = 0;
 
   if(isAllItems()) {
-    // Ajoute les nouveaux items à la fin
+    // Adds the new items to the end.
     Integer nb_items_id = current_size;
     m_p->m_items_index_in_all_group.resize(m_p->maxLocalId());
     for( Integer i=0, is=nb_item_to_add; i<is; ++i ){
@@ -795,7 +796,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
     nb_added = nb_item_to_add;
   }
   else if (check_if_present) {
-    // Vérifie que les entités à ajouter ne sont pas déjà présentes
+    // Checks that the entities to be added are not already present
     UniqueArray<bool> presence_checks(m_p->maxLocalId());
     presence_checks.fill(false);
     for( Integer i=0, is=items_lid.size(); i<is; ++i ){
@@ -806,8 +807,8 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
       const Integer lid = items_local_id[i];
       if (!presence_checks[lid]){
         items_lid.add(lid);
-        // Met à \a true comme cela si l'entité est présente plusieurs fois
-        // dans \a items_local_id cela fonctionne quand même.
+        // Sets to true like this if the entity is present multiple times
+        // in \a items_local_id it still works.
         presence_checks[lid] = true;
         ++nb_added;
       }
@@ -874,7 +875,7 @@ removeAddItems(Int32ConstArrayView removed_items_lids,
     items_lid.resize(new_size);
     m_p->m_items_index_in_all_group.resize(m_p->maxLocalId());
     if (new_size==internal_size){
-      // Il n'y a pas de trous dans la numérotation
+      // There are no gaps in the numbering
       for( Integer i=0; i<internal_size; ++i ){
         Int32 local_id = internals[i]->localId();
         items_lid[i] = local_id;
@@ -897,8 +898,8 @@ removeAddItems(Int32ConstArrayView removed_items_lids,
                      name(), new_size, index);
     }
 
-    // On ne peut pas savoir ce qui a changé donc dans le doute on
-    // incrémente le timestamp.
+    // We cannot know what has changed, so out of doubt we
+    // increment the timestamp.
     m_p->updateTimestamp();
   }
   else {
@@ -938,7 +939,7 @@ setItems(Int32ConstArrayView items_local_id)
     checkValid();
   }
 
-  // On tolére encore le setItems initial en le convertissant en un addItems
+  // We still tolerate the initial setItems by converting it to an addItems
   if (size() != 0)
     m_p->notifyInvalidateObservers();
   else
@@ -1051,9 +1052,9 @@ removeSuppressedItems()
   Int32ConstArrayView * observation_info  = NULL;
   Int32ConstArrayView * observation_info2 = NULL;
   Integer new_size;
-  // Si le groupe posséde des observers ayant besoin d'info, il faut les calculer
+  // If the group has observers needing information, they must be calculated
   if (m_p->m_observer_need_info){
-    removed_ids.reserve(current_size); // préparation à taille max
+    removed_ids.reserve(current_size); // preparation for max size
     Integer index = 0;
     for( Integer i=0; i<current_size; ++i ){
       if (!items[items_lid[i]]->isSuppressed()){
@@ -1084,7 +1085,7 @@ removeSuppressedItems()
     checkValid();
   }
 
-  // Ne met à jour que si le groupe a été modifié
+  // Only update if the group has been modified
   if (current_size != new_size) {
     m_p->updateTimestamp();
     m_p->notifyReduceObservers(observation_info);
@@ -1108,14 +1109,14 @@ checkValid()
 bool ItemGroupImpl::
 _checkNeedUpdate(bool do_padding)
 {
-  // NOTE: l'utilisation de verrou est pour l'instant expérimentale (juin 2025)
-  // On met le verrou sur toute la méthode pour que ce soit plus simple, mais
-  // on pourrait ne le faire qu'après vérification que la mise à jour
-  // est vraiment utile.
+  // NOTE: the use of locks is currently experimental (June 2025)
+  // We put the lock on the entire method to keep it simpler, but
+  // we could only do it after checking that the update
+  // is truly useful.
   ItemGroupInternal::CheckNeedUpdateMutex::ScopedLock lock(m_p->m_check_need_update_mutex);
 
-  // En cas de problème sur des re-calculs très imbriqués, une proposition est
-  // de désactiver les lignes #A pour activer les lignes #B
+  // In case of problems with very nested recalculations, a proposal is
+  // to disable lines #A to enable lines #B
   bool has_recompute = false;
   if (m_p->m_need_recompute) {
     m_p->m_need_recompute = false;
@@ -1183,7 +1184,7 @@ clear()
 {
   Int32Array& items_lid = m_p->mutableItemsLocalId();
   if (!items_lid.empty())
-    // Incrémente uniquement si le groupe n'est pas déjà vide
+    // Increment only if the group is not already empty
     m_p->updateTimestamp();
   items_lid.clear();
   m_p->m_need_recompute = false;
@@ -1241,7 +1242,7 @@ applyOperation(IItemOperationByBasicType* operation)
   const bool has_only_one_type = (m_unique_children_type != IT_NullType);
   if (is_verbose)
     tm->info() << "applyOperation has_only_one_type=" << has_only_one_type << " value=" << m_unique_children_type;
-  // TODO: Supprimer la macro et la remplacer par une fonction.
+  // TODO: Remove the macro and replace it with a function.
 
 #define APPLY_OPERATION_ON_TYPE(ITEM_TYPE) \
   if (isUseV2ForApplyOperation()) { \
@@ -1326,7 +1327,7 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
     m_p->m_observers[ref] = obs;
   }
 
-  // Mise à jour du flag de demande d'info
+  // Update the info request flag
   _updateNeedInfoFlag(m_p->m_observer_need_info | obs->needInfo());
 }
 
@@ -1345,7 +1346,7 @@ detachObserver(const void * ref)
   IItemGroupObserver * obs = finder->second;
   delete obs;
   m_p->m_observers.erase(finder);
-  // Mise à jour du flag de demande d'info
+  // Update the info request flag
   bool new_observer_need_info = false;
   auto i = m_p->m_observers.begin();
   for( ; i != end ; ++i ) {
@@ -1354,9 +1355,8 @@ detachObserver(const void * ref)
   }
   _updateNeedInfoFlag(new_observer_need_info);
 
-  // On invalide la table de hachage éventuelle
-  // des variables partielles si il n'y a plus
-  // de référence. 
+  // We invalidate the potential hash table of partial variables
+  // if there are no references left.
   if(m_p->m_group_index_table.isUsed() && m_p->m_group_index_table.isUnique()) {
     m_p->m_group_index_table.reset();
     m_p->m_synchronizer.reset();
@@ -1443,8 +1443,8 @@ void ItemGroupImpl::
 _executeExtend(const Int32ConstArrayView* info)
 {
   ARCANE_UNUSED(info);
-  // On ne sait encore calculer appliquer des transformations à des groupes calculés
-  // On choisit l'invalidation systématique
+  // We do not yet know how to calculate/apply transformations to computed groups.
+  // We choose systematic invalidation.
   m_p->notifyInvalidateObservers();
 }
 
@@ -1455,8 +1455,8 @@ void ItemGroupImpl::
 _executeReduce(const Int32ConstArrayView* info)
 {
   ARCANE_UNUSED(info);
-  // On ne sait encore calculer appliquer des transformations à des groupes calculés
-  // On choisit l'invalidation systématique
+  // We do not yet know how to calculate/apply transformations to computed groups.
+  // We choose systematic invalidation.
   m_p->notifyInvalidateObservers();
 }
 
@@ -1467,8 +1467,8 @@ void ItemGroupImpl::
 _executeCompact(const Int32ConstArrayView* info)
 {
   ARCANE_UNUSED(info);
-  // On ne sait encore calculer appliquer des transformations à des groupes calculés
-  // On choisit l'invalidation systématique en différé (évaluée lors du prochain checkNeedUpdate)
+  // We do not yet know how to calculate/apply transformations to computed groups.
+  // We choose deferred systematic invalidation (evaluated during the next checkNeedUpdate).
   m_p->notifyInvalidateObservers();
 }
 
@@ -1491,7 +1491,7 @@ _updateNeedInfoFlag(const bool flag)
   if (m_p->m_observer_need_info == flag)
     return;
   m_p->m_observer_need_info = flag;
-  // Si change, change aussi l'observer du parent pour qu'il adapte les besoins en info de transition
+  // If changed, also change the parent observer so it adapts the transition info needs
   ItemGroupImpl * parent = m_p->m_parent;
   if (parent) {
     parent->detachObserver(this);
@@ -1514,8 +1514,8 @@ _updateNeedInfoFlag(const bool flag)
 void ItemGroupImpl::
 _forceInvalidate(const bool self_invalidate)
 {
-  // (HP) TODO: Mettre un observer forceInvalidate pour prévenir tout le monde ?
-  // avec forceInvalidate on doit invalider mais ne rien calculer
+  // (HP) TODO: Should we put a forceInvalidate observer to warn everyone?
+  // With forceInvalidate, we must invalidate but calculate nothing
   if (self_invalidate) {
     m_p->setNeedRecompute();
     m_p->m_need_invalidate_on_recompute = true;
@@ -1531,8 +1531,7 @@ _forceInvalidate(const bool self_invalidate)
 void ItemGroupImpl::
 destroy()
 {
-  // Détache les observateurs. Cela modifie \a m_observers donc il faut
-  // en faire une copie
+  // Detach the observers. This modifies m_observers so we must make a copy
   {
     std::vector<const void*> ptrs;
     for( const auto& i : m_p->m_observers )
@@ -1541,8 +1540,7 @@ destroy()
       detachObserver(i);
   }
 
-  // Le groupe de toutes les entités est spécial. Il ne faut jamais le détruire
-  // vraiement.
+  // The group of all entities is special. It must never be truly destroyed.
   if (m_p->m_is_all_items)
     m_p->resetSubGroups();
   else{
@@ -1601,16 +1599,16 @@ checkIsSorted() const
   if (null())
     return true;
 
-  // TODO: stocker l'info dans un flag et ne refaire le test que si
-  // la liste des entités a changer (utiliser timestamp()).
+  // TODO: store the info in a flag and only re-run the test if
+  // the list of entities has changed (use timestamp()).
   ItemInternalList items(m_p->items());
   Int32ConstArrayView items_lid(m_p->itemsLocalId());
   Integer nb_item = items_lid.size();
-  // On est toujours trié si une seule entité ou moins.
+  // We are always sorted if there is only one entity or less.
   if (nb_item<=1)
     return true;
-  // Compare chaque uniqueId() avec le précédent et vérifie qu'il est
-  // supérieur.
+  // Compare each uniqueId() with the previous one and verify that it is
+  // greater.
   ItemUniqueId last_uid = items[items_lid[0]]->uniqueId();
   for( Integer i=1; i<nb_item; ++i ){
     ItemUniqueId uid = items[items_lid[i]]->uniqueId();
@@ -1627,8 +1625,8 @@ checkIsSorted() const
 void ItemGroupImpl::
 deleteMe()
 {
-  // S'il s'agit de 'shared_null'. Il faut le positionner à nullptr pour qu'il
-  // soit réalloué éventuellement par _buildSharedNull().
+  // If it is 'shared_null'. It must be set to nullptr so that it
+  // can potentially be reallocated by _buildSharedNull().
   if (this==shared_null){
     shared_null = nullptr;
   }
@@ -1653,8 +1651,8 @@ _buildSharedNull()
 void ItemGroupImpl::
 _destroySharedNull()
 {
-  // Supprime une référence à 'shared_null'. Si le nombre de référence
-  // devient égal à 0, alors l'instance 'shared_null' est détruite.
+  // Decrements a reference to 'shared_null'. If the reference count
+  // becomes 0, the 'shared_null' instance is destroyed.
   if (shared_null)
     shared_null->removeRef();
 }
@@ -1694,7 +1692,7 @@ void ItemGroupImpl::
 shrinkMemory()
 {
   if (hasComputeFunctor()){
-    // Groupe calculé. On l'invalide et on supprime ses éléments
+    // Computed group. We invalidate it and remove its elements
     invalidate(false);
     m_p->mutableItemsLocalId().clear();
   }
@@ -1720,7 +1718,7 @@ _internalApi() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO a supprimer lorsque la V1 ne sera plus disponible
+//TODO to be removed when V1 is no longer available
 void ItemGroupSubPartsByType::
 _initChildrenByTypeV1()
 {

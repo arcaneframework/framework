@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ObserverPool.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Liste d'observateurs.                                                     */
+/* List of observers.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_OBSERVERPOOL_H
 #define ARCANE_CORE_OBSERVERPOOL_H
@@ -27,11 +27,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste d'observateurs
+ * \brief List of observers
  *
- * Cette classe permet de gérer une liste d'observateurs et d'assurer
- * leur destruction lorsque l'objet cible de l'observateur est détruit.
+ * This class allows managing a list of observers and ensuring
+ * their destruction when the observer's target object is destroyed.
  */
 class ARCANE_CORE_EXPORT ObserverPool
 {
@@ -41,13 +42,13 @@ class ARCANE_CORE_EXPORT ObserverPool
 
  public:
 
-  //! Constructeur
+  //! Constructor
   ObserverPool() {}
-  ~ObserverPool(); //!< Libère les ressources
+  ~ObserverPool(); //!< Frees resources
 
  public:
 
-  //! Ajoute un observateur
+  //! Adds an observer
   template <class T> inline void
   addObserver(T* obj, void (T::*func)(const IObservable&), IObservable* oba)
   {
@@ -56,7 +57,7 @@ class ARCANE_CORE_EXPORT ObserverPool
     m_observers.add(obs);
   }
 
-  //! Ajoute un observateur
+  //! Adds an observer
   template <class T> inline void
   addObserver(T* obj, void (T::*func)(), IObservable* oba)
   {
@@ -65,15 +66,15 @@ class ARCANE_CORE_EXPORT ObserverPool
     m_observers.add(obs);
   }
 
-  //! Liste des observateurs
+  //! List of observers
   ObserverCollection observers() { return m_observers; }
 
-  //! Suppression des observateurs (detache aussi par la meme occasion)
+  //! Detaches all observers (also detaches them in the process)
   void detachAll();
 
  private:
 
-  List<IObserver*> m_observers; //!< Liste des observateurs
+  List<IObserver*> m_observers; //!< List of observers
 };
 
 /*---------------------------------------------------------------------------*/
@@ -84,5 +85,4 @@ class ARCANE_CORE_EXPORT ObserverPool
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

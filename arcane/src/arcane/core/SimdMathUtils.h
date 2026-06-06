@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimdMathUtils.h                                             (C) 2000-2022 */
 /*                                                                           */
-/* Fonctions mathématiques diverses pour les classes SIMD.                   */
+/* Diverse mathematical functions for SIMD classes.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_SIMDMATHUTILS_H
 #define ARCANE_SIMDMATHUTILS_H
@@ -26,7 +26,7 @@ namespace Arcane::math
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Produit vectoriel de \a u par \a v dans \f$R^3\f$.
+ * \brief Vector product of u by v in R^3.
  */
 inline SimdReal3
 cross(const SimdReal3& u,const SimdReal3& v)
@@ -39,7 +39,7 @@ cross(const SimdReal3& u,const SimdReal3& v)
 }
 
 /*!
- * \brief Produit vectoriel de \a u par \a v dans \f$R^2\f$.
+ * \brief Vector product of u by v in R^2.
  */
 inline SimdReal
 cross2D(const SimdReal3& u,const SimdReal3& v)
@@ -106,7 +106,7 @@ normL2(const SimdReal2& sr)
 }
 
 /*!
- * \brief Produit mixte de \a u, \a v et \a w
+ * \brief Mixed product of u, v and w
  */
 inline SimdReal
 mixteMul(const SimdReal3& u,const SimdReal3& v,const SimdReal3& w)
@@ -125,9 +125,10 @@ prodTens(const SimdReal3& u,const SimdReal3& v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup GroupMathUtils
- * \brief Produit matrice matrice entre deux tenseurs.
+ * \brief Matrix-matrix product between two tensors.
  */
 inline SimdReal3x3
 matrixProduct(const SimdReal3x3& t,const SimdReal3x3& v)
@@ -145,9 +146,10 @@ matrixProduct(const SimdReal3x3& t,const SimdReal3x3& v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup GroupMathUtils
- * \brief Transpose la matrice.
+ * \brief Transpose the matrix.
  */
 inline SimdReal3x3
 matrixTranspose(const SimdReal3x3& t)
@@ -161,7 +163,7 @@ matrixTranspose(const SimdReal3x3& t)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne le minimum de deux SimdReal2
+ * \brief Returns the minimum of two SimdReal2
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal2
@@ -169,8 +171,9 @@ min(const SimdReal2& a,const SimdReal2& b)
 {
   return SimdReal2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
+
 /*!
- * \brief Retourne le minimum de deux SimdReal3
+ * \brief Returns the minimum of two SimdReal3
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal3
@@ -178,8 +181,9 @@ min(const SimdReal3& a,const SimdReal3& b)
 {
   return SimdReal3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
 }
+
 /*!
- * \brief Retourne le minimum de deux SimdReal2x2
+ * \brief Returns the minimum of two SimdReal2x2
  * \ingroup GroupMathUtils
  */
 inline SimdReal2x2
@@ -187,8 +191,9 @@ min(const SimdReal2x2& a,const SimdReal2x2& b)
 {
   return SimdReal2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
+
 /*!
- * \brief Retourne le minimum de deux SimdReal3x3
+ * \brief Returns the minimum of two SimdReal3x3
  * \ingroup GroupMathUtils
  */
 inline SimdReal3x3
@@ -201,7 +206,7 @@ min(const SimdReal3x3& a,const SimdReal3x3& b)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne le maximum de deux SimdReal2
+ * \brief Returns the maximum of two SimdReal2
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal2
@@ -209,8 +214,9 @@ max(const SimdReal2& a,const SimdReal2& b)
 {
   return SimdReal2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
+
 /*!
- * \brief Retourne le maximum de deux SimdReal3
+ * \brief Returns the maximum of two SimdReal3
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal3
@@ -218,8 +224,9 @@ max(const SimdReal3& a,const SimdReal3& b)
 {
   return SimdReal3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
 }
+
 /*!
- * \brief Retourne le maximum de deux SimdReal2x2
+ * \brief Returns the maximum of two SimdReal2x2
  * \ingroup GroupMathUtils
  */
 inline SimdReal2x2
@@ -227,8 +234,9 @@ max(const SimdReal2x2& a,const SimdReal2x2& b)
 {
   return SimdReal2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
+
 /*!
- * \brief Retourne le maximum de deux SimdReal3x3
+ * \brief Returns the maximum of two SimdReal3x3
  * \ingroup GroupMathUtils
  */
 inline SimdReal3x3
@@ -245,4 +253,4 @@ max(const SimdReal3x3& a,const SimdReal3x3& b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

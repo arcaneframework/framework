@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExpressionImpl.h                                            (C) 2000-2014 */
 /*                                                                           */
-/* Implémentation d'une expression.                                          */
+/* Implementation of an expression.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_EXPRESSIONIMPL_H
 #define ARCANE_EXPR_EXPRESSIONIMPL_H
@@ -32,8 +32,9 @@ class OperatorMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base de l'implémentation d'une expression.
+ * \brief Base class for the expression implementation.
  */
 class ARCANE_EXPR_EXPORT ExpressionImpl
 : public IExpressionImpl
@@ -55,7 +56,7 @@ class ARCANE_EXPR_EXPORT ExpressionImpl
 
  private:
 
-  Integer m_nb_reference; //!< Nombre de références
+  Integer m_nb_reference; //!< Number of references
   bool m_do_trace;
 };
 

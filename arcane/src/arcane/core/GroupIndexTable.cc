@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GroupIndexTable.cc                                          (C) 2000-2024 */
 /*                                                                           */
-/* Table de hachage entre un item et sa position dans la table.              */
+/* Hash table mapping an item to its position in the table.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -20,8 +20,8 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/GroupIndexTable.h"
 
-// TODO: Utiliser un même conteneur pour les 3 span 'm_key_buffer',
-// 'm_next_buffer' et 'm_buckets'
+// TODO: Use a single container for the 3 spans 'm_key_buffer',
+// 'm_next_buffer' and 'm_buckets'
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,14 +95,14 @@ void GroupIndexTable::
 compact(const Int32ConstArrayView* infos)
 {
   ARCANE_UNUSED(infos);
-  // Avec cette version, on suppose que l'ordre relatif des ids n'a pas changé
-  // La taille du groupe n'a pas changé mais on réordonne les données
+  // With this version, we assume that the relative order of IDs has not changed
+  // The group size has not changed, but we reorder the data
   ARCANE_ASSERT((m_group_impl->size() == m_key_buffer.size()), ("Inconsistent sizes"));
 
 #ifdef NDEBUG
   update();
 #else /* NDEBUG */
-  // identique à update() mais peut faire quelque contrôle si infos!=NULL
+  // identical to update() but can perform some checks if infos!=NULL
   m_buckets.fill(-1);
   ItemGroup group(m_group_impl);
   _updateSpan();

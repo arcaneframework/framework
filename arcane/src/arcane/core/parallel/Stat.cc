@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Stat.cc                                                     (C) 2000-2023 */
 /*                                                                           */
-/* Statistiques sur le parallélisme.                                         */
+/* Statistics on parallelism.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,9 @@ using MP::OneStat;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques sur le parallélisme.
+ * \brief Statistics on parallelism.
  */
 class Stat
 : public MP::Stat
@@ -61,7 +62,7 @@ class Stat
 
   using CumulativeStatMap = std::map<String,CumulativeStat>;
 
-  //! Infos de sérialisation
+  //! Serialization info
   class SerializedStats
   {
    public:
@@ -221,7 +222,7 @@ mergeValues(ITraceMng* tm, Properties* p)
   SerializedStats save_info;
 
   Int32 v = p->getInt32WithDefault("Version", 0);
-  // Ne fait rien si aucune info dans la protection
+  // Does nothing if no info in the protection
   if (v == 0)
     return;
   if (v != 1) {
@@ -242,7 +243,7 @@ mergeValues(ITraceMng* tm, Properties* p)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Fusionne les valeurs de l'instance avec celles contenues dans l'instance.
+ * \brief Merges the instance's values with those contained within the instance.
  */
 void Stat::
 _mergeStats(CumulativeStatMap& stat_map)
@@ -282,9 +283,9 @@ printCollective(IParallelMng* pm)
 {
   ITraceMng* tm = pm->traceMng();
 
-  // Il faut bien fusionner toutes les statistiques avant
-  // d'appeler _printCollective() car cette méthode effectue des appels
-  // collectives (allgather par exemple) qui vont modifier les statistiques.
+  // We must merge all statistics before
+  // calling _printCollective() because this method performs
+  // collective calls (allgather for example) which will modify the statistics.
 
   CumulativeStatMap stat_map;
   CumulativeStatMap cumulative_stat_map(m_previous_stat_map);
@@ -303,9 +304,9 @@ printCollective(IParallelMng* pm)
 void Stat::
 _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
 {
-  // Les instances \a s de tous les rangs peuvent ne pas avoir les mêmes
-  // statistiques. Pour éviter des blocages, on ne garde que les statistiques
-  // communes à tout le monde.
+  // The instances \a s of all ranks may not have the same
+  // statistics. To avoid blocking, we only keep the statistics
+  // common to everyone.
 
   UniqueArray<String> input_strings;
 

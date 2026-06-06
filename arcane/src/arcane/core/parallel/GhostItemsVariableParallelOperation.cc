@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostItemsVariableParallelOperation.cc                      (C) 2000-2023 */
 /*                                                                           */
-/* Opérations parallèles sur les entités fantômes.                           */
+/* Parallel operations on ghost entities.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,10 +38,11 @@ GhostItemsVariableParallelOperation(IItemFamily* family)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construit la liste des entités à envoyer.
+ * \brief Builds the list of entities to send.
  *
- Il s'agit des entités fantômes.
+ * These are the ghost entities.
 */
 void GhostItemsVariableParallelOperation::
 _buildItemsToSend()

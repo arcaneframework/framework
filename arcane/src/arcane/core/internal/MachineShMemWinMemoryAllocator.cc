@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinMemoryAllocator.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
+/* Memory allocator using the MachineShMemWinBase class.                     */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
@@ -42,8 +42,8 @@ MachineShMemWinMemoryAllocator(IParallelMng* pm)
 AllocatedMemoryInfo MachineShMemWinMemoryAllocator::
 allocate(MemoryAllocationArgs, Int64 new_size)
 {
-  // Si la taille est égal à zéro, comme on a une création collective, on doit
-  // vérifier si la taille est égal à zéro pour tous.
+  // If the size is zero, since we have a collective creation, we must
+  // check if the size is zero for everyone.
   if (m_pm->reduce(MessagePassing::ReduceMax, new_size) <= 0) {
     return { nullptr, 0 };
   }
@@ -118,8 +118,8 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
 void MachineShMemWinMemoryAllocator::
 deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 {
-  // Grâce au allocate(), on est sûr que tout le monde a un nullptr (pas
-  // besoin de vérifier avec une réduction).
+  // Thanks to allocate(), we are sure that everyone has a nullptr (no
+  // need to check with a reduction).
   if (ptr.baseAddress() == nullptr) {
     return;
   }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataTypes.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Définition des types liées aux données.                                   */
+/* Definition of data-related types.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPES_DATATYPES_H
 #define ARCANE_CORE_DATATYPES_DATATYPES_H
@@ -24,12 +24,14 @@
 namespace Arcane
 {
 
-// NOTE: Swig 4.2.0 ne gère pas bien le 'Int32´.
-// (cela fonctionne avec Swig 4.1.1)
+// NOTE: Swig 4.2.0 does not handle 'Int32' well.
+// (it works with Swig 4.1.1)
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type d'une donnée.
+ * \brief Data type.
  */
 #ifndef SWIG
 enum eDataType : Int32
@@ -37,32 +39,33 @@ enum eDataType : Int32
 enum eDataType
 #endif
 {
-  DT_Byte = 0, //!< Donnée de type octet
-  DT_Real = 1, //!< Donnée de type réel
-  DT_Int16 = 2, //!< Donnée de type entier 16 bits
-  DT_Int32 = 3, //!< Donnée de type entier 32 bits
-  DT_Int64 = 4, //!< Donnée de type entier 64 bits
-  DT_String = 5, //!< Donnée de type chaîne de caractère UTF-8
-  DT_Real2 = 6, //!< Donnée de type vecteur 2
-  DT_Real3 = 7, //!< Donnée de type vecteur 3
-  DT_Real2x2 = 8, //!< Donnée de type tenseur 3x3
-  DT_Real3x3 = 9, //!< Donnée de type tenseur 3x3
-  DT_BFloat16 = 10, //!< Donnée de type 'BFloat16'
-  DT_Float16 = 11, //!< Donnée de type 'Float16'
-  DT_Float32 = 12, //!< Donnée de type 'Float32'
-  DT_Int8 = 13, //!< Donnée de type entier sur 8 bits
-  DT_Float128 = 14, //!< Donnée de type flottant sur 128 bits
-  DT_Int128 = 15, //!< Donnée de type entier sur 128 bits
-  DT_Unknown = 16 //!< Donnée de type inconnue ou non initialisée
+  DT_Byte = 0, //!< Byte data type
+  DT_Real = 1, //!< Real data type
+  DT_Int16 = 2, //!< 16-bit integer data type
+  DT_Int32 = 3, //!< 32-bit integer data type
+  DT_Int64 = 4, //!< 64-bit integer data type
+  DT_String = 5, //!< UTF-8 character string data type
+  DT_Real2 = 6, //!< Vector 2 data type
+  DT_Real3 = 7, //!< Vector 3 data type
+  DT_Real2x2 = 8, //!< 2x2 tensor data type
+  DT_Real3x3 = 9, //!< 3x3 tensor data type
+  DT_BFloat16 = 10, //!< 'BFloat16' data type
+  DT_Float16 = 11, //!< 'Float16' data type
+  DT_Float32 = 12, //!< 'Float32' data type
+  DT_Int8 = 13, //!< 8-bit integer data type
+  DT_Float128 = 14, //!< 128-bit floating point data type
+  DT_Int128 = 15, //!< 128-bit integer data type
+  DT_Unknown = 16 //!< Unknown or uninitialized data type
 };
 
-//! Nombre de valeurs de eDataType
+//! Number of eDataType values
 static constexpr Int32 NB_ARCANE_DATA_TYPE = 17;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste des noms pour eDataType.
+ * \brief List of names for eDataType.
  */
 class DataTypeNames
 {
@@ -89,83 +92,85 @@ class DataTypeNames
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Nom du type de donnée.
+//! Data type name.
 extern "C++" ARCANE_CORE_EXPORT const char*
 dataTypeName(eDataType type);
 
-//! Trouve le type associé à \a name
+//! Finds the type associated with \a name
 extern "C++" ARCANE_CORE_EXPORT eDataType
 dataTypeFromName(const char* name,bool& has_error);
 
-//! Trouve le type associé à \a name. Envoie une exception en cas d'erreur
+//! Finds the type associated with \a name. Throws an exception in case of error
 extern "C++" ARCANE_CORE_EXPORT eDataType
 dataTypeFromName(const char* name);
 
-//! Taille du type de donnée \a type (qui doit être différent de \a DT_String)
+//! Size of data type \a type (which must be different from \a DT_String)
 extern "C++" ARCANE_CORE_EXPORT Integer
 dataTypeSize(eDataType type);
 
-//! Opérateur de sortie sur un flot
+//! Output operator for a float
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<< (std::ostream& ostr,eDataType data_type);
 
-//! Opérateur d'entrée depuis un flot
+//! Input operator from a float
 extern "C++" ARCANE_CORE_EXPORT std::istream&
 operator>> (std::istream& istr,eDataType& data_type);
 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type de politique d'initialisation possible pour une donnée.
+ * \brief Possible data initialization policy.
  *
- * Par défaut, pour des raisons historiques, il s'agit de DIP_Legacy.
+ * By default, for historical reasons, it is DIP_Legacy.
  *
- * La politique d'initialisation est prise en compte pour
- * l'initialisation des variables Arcane. Cette valeur peut être
- * positionnée/récupérée via les fonctions
- * setGlobalDataInitialisationPolicy() et getGlobalDataInitialisationPolicy().
+ * The initialization policy is considered for
+ * the initialization of Arcane variables. This value can be
+ * set/retrieved via the functions
+ * setGlobalDataInitialisationPolicy() and getGlobalDataInitialisationPolicy().
  *
  */
 enum eDataInitialisationPolicy
 {
-  //! Pas d'initialisation forcée
+  //! No forced initialization
   DIP_None =0,
+
   /*!
-   * \brief Initialisation avec le constructeur par défaut.
+   * \brief Initialization with the default constructor.
    *
-   * Pour les entiers, il s'agit de la valeurs 0. Pour les réels, il
-   * s'agit de la valeur 0.0.
+   * For integers, this is the value 0. For reals, this is the value 0.0.
    */
   DIP_InitWithDefault =1,
+
   /*!
-   * \brief Initialisation avec des NaN (Not a Number)
+   * \brief Initialization with NaN (Not a Number)
    *
-   * Ce mode permet d'initialiser les données de type Real et dérivés (Real2, Real3, ...)
-   * avec des valeurs NaN qui déclenchent une exception lorsqu'elles
-   * sont utilisées.
+   * This mode allows data of type Real and derived types (Real2, Real3, ...)
+   * to be initialized with NaN values which trigger an exception when they
+   * are used.
    */
   DIP_InitWithNan = 2,
+
   /*!
-   * \brief Initialisation en mode historique.
+   * \brief Initialization in historical mode.
    *
-   * Ce mode est conservé pour compatibilité avec les versions d'Arcane inférieurs
-   * à la version 2.0 où c'était le mode par défaut.
-   * Dans ce mode, les variables sur les entités du maillage étaient
-   * toujours initialisées avec le constructeur par défaut lors de
-   * leur première allocation, quelle que soit la valeur de
-   * getGlobalDataInitialisationPolicy(). La politique d'initialisation n'était
-   * prise en compte que lors d'un changement du nomnbre d'éléments (resize())
-   * où pour les variables qui n'étaient pas des variables du maillage.
+   * This mode is kept for compatibility with versions of Arcane prior
+   * to version 2.0 where it was the default mode.
+   * In this mode, variables on mesh entities were always initialized with the default constructor
+   * upon their first allocation, regardless of the value of
+   * getGlobalDataInitialisationPolicy(). The initialization policy was only
+   * considered upon a change in the number of elements (resize())
+   * or for variables that were not mesh variables.
    */
   DIP_Legacy = 3,
+
   /*!
-   * \brief Initialisation avec des NaN pour à la création et le constructeur
-   * par défaut ensuite.
+   * \brief Initialization with NaN upon creation and default constructor thereafter.
    *
-   * Ce mode est identique à DIP_InitWithNan pour la création des variables
-   * et à DIP_InitWithDefault lorsqu'on la taille de la variable évolue
-   * (en géneral via un appel à IVariable::resize() ou IVariable::resizeFromGroup()).
+   * This mode is identical to DIP_InitWithNan for variable creation
+   * and to DIP_InitWithDefault when the variable size changes
+   * (generally via a call to IVariable::resize() or IVariable::resizeFromGroup()).
    */
   DIP_InitInitialWithNanResizeWithDefault = 4
 };
@@ -173,17 +178,18 @@ enum eDataInitialisationPolicy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Positionne la politique d'initialisation des variables.
+//! Sets the initialization policy for variables.
 extern "C++" ARCANE_CORE_EXPORT void 
 setGlobalDataInitialisationPolicy(eDataInitialisationPolicy init_policy);
 
-//! Récupère la politique d'initialisation des variables.
+//! Gets the initialization policy for variables.
 extern "C++" ARCANE_CORE_EXPORT eDataInitialisationPolicy
 getGlobalDataInitialisationPolicy();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Type de trace possible
+
+//! Possible trace type
 enum eTraceType
 {
   TT_None = 0,
@@ -196,7 +202,7 @@ enum eTraceType
 
 } // End namespace Arcane
 
-// Macro pour instantier une classe template pour tous les types numériques
+// Macro to instantiate a template class for all numeric data types
 #define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name)\
 template class class_name <Real>;\
 template class class_name <Real3>;\
@@ -204,7 +210,7 @@ template class class_name <Real3x3>;\
 template class class_name <Real2>;\
 template class class_name <Real2x2>;
 
-// Macro pour instantier une classe template pour tous les types numériques
+// Macro to instantiate a template class for all numeric data types
 #define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name)\
 template class class_name <Int8>;\
 template class class_name <Int16>;\
@@ -212,13 +218,13 @@ template class class_name <Int32>;\
 template class class_name <Int64>;\
 template class class_name <Byte>
 
-// Macro pour instantier une classe template pour tous les types numériques
+// Macro to instantiate a template class for all numeric data types
 #define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(class_name)\
 template class class_name <BFloat16>;\
 template class class_name <Float16>;\
 template class class_name <Float32>;
 
-// Macro pour instantier une classe template pour tous les types numériques
+// Macro to instantiate a template class for all numeric data types
 #define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(class_name)\
   ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name);\
   ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name);\
@@ -227,4 +233,4 @@ template class class_name <Float32>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

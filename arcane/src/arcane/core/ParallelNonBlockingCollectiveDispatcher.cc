@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelNonBlockingCollectiveDispatcher.cc                  (C) 2000-2016 */
 /*                                                                           */
-/* Redirection de la gestion des messages suivant le type des arguments.     */
+/* Redirection of message handling based on argument type.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

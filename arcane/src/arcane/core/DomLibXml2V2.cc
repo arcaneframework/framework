@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DomLibXml2.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Encapsulation du DOM de libxml2.                                          */
+/* Encapsulation of libxml2 DOM.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,9 +44,10 @@ namespace Arcane::dom
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: POUR NamedNodeMap, il n'y a pas de type correspondant dans libxml2
-// et comme cela peut représenter des types différents il faut faire un
-// type spécifique qui gère cela.
+
+// TODO: FOR NamedNodeMap, there is no corresponding type in libxml2
+// and since this can represent different types, a
+// specific type must be created to handle this.
 class LibXml2_DOMImplementation;
 
 struct _wxmlText : _xmlNode {};
@@ -178,11 +179,12 @@ LibXml2_DOMImplementation LibXml2_DOMImplementation::sDOMImplementation;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion des erreurs du lecteur Xml.
+ * \brief Handling of XML reader errors.
  *
- * \note le handler d'erreur est géré par libxml2 par thread.
- * Il n'est donc pas nécessaire de le protéger en multi-threading.
+ * \note the error handler is managed by libxml2 per thread.
+ * It is therefore not necessary to protect it with multi-threading.
  */
 class LibXml2_ErrorHandler
 {
@@ -198,7 +200,7 @@ class LibXml2_ErrorHandler
   }
 
  public:
-  //! Handler à connecter à la libxml2.
+  //! Handler to connect to libxml2.
   template <class T>
   static void XMLCDECL handler(void* user_data,T* e)
   {
@@ -253,8 +255,9 @@ class ILibXml2_Reader;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe encapsulant l'analyser d'un document XML.
+ * \brief Class encapsulating the XML document parser.
  */
 class LibXml2_Parser
 {
@@ -272,14 +275,14 @@ class LibXml2_Parser
  public:
 
   /*!
-   * \brief Analyse le contenu Xml via le reader \a reader.
+   * \brief Parses the XML content via the reader \a reader.
    *
-   * Retourne un document Xml qui doit ensuite être détruit par
-   * appel à l'opérateur delete. Ce document ne peut pas être nul.
+   * Returns an XML document that must then be destroyed by
+   * calling the delete operator. This document cannot be null.
    *
-   * \a reader Lecteur associé.
-   * \a schema_name Nom du fichier contenant le XML Schema à valider. Peut être nul.
-   * \a schema_data Contenu mémoire du XML Schema. Peut être nul.
+   * \a reader Associated reader.
+   * \a schema_name Name of the file containing the XML Schema to validate. Can be null.
+   * \a schema_data In-memory content of the XML Schema. Can be null.
    */
   IXmlDocumentHolder* parse(ILibXml2_Reader* reader,const String& schema_name,
                             ByteConstArrayView schema_data);
@@ -303,8 +306,9 @@ class LibXml2_Parser
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe encapsulant la validation XML Schema d'un document XML.
+ * \brief Class encapsulating XML Schema validation of an XML document.
  */
 class LibXml2_SchemaValidator
 {
@@ -319,15 +323,16 @@ class LibXml2_SchemaValidator
     _clearMemory();
   }
  public:
+
   /*!
-   * \brief Valide un document XML.
+   * \brief Validates an XML document.
    *
-   * Valide le document \a doc. Le nom de fichier du schéma est donné
-   * par le constructeur. Si \a schema_data est non nul on considère qu'il
-   * s'agit du contenu du fichier XML Schema.
+   * Validates the document \a doc. The schema file name is given
+   * by the constructor. If \a schema_data is not null, it is considered
+   * to be the content of the XML Schema file.
    *
-   * \a doc Document XML.
-   * \a schema_data Contenu mémoire du XML Schema. Peut être nul.
+   * \a doc XML document.
+   * \a schema_data In-memory content of the XML Schema. Can be null.
    */
   void validate(::xmlDocPtr doc,ByteConstArrayView schema_data);
  private:
@@ -379,9 +384,9 @@ class LibXml2_MemoryReader
     const char* encoding = nullptr;
     int options = parser.options();
     const char* buf_base = reinterpret_cast<const char*>(m_buffer.data());
-    // TODO: regarder s'il n'y a pas une version 64 bits de lecture
-    // qui fonctionne aussi sur les anciennes versions de LibXml2
-    // (pour le support RHEL6)
+    // TODO: check if there is a 64-bit reading version
+    // that also works on older versions of LibXml2
+    // (for RHEL6 support)
     int buf_size = CheckedConvert::toInt32(m_buffer.size());
     while (buf_size > 0 && static_cast<char>(m_buffer[buf_size - 1]) == '\0') {
       buf_size--;
@@ -447,7 +452,7 @@ class XmlDocumentHolderLibXml2
   }
   String save() override
   {
-    //TODO verifier qu'on sauve toujours en UTF8.
+    //TODO verify that we always save in UTF8.
     ByteUniqueArray bytes;
     save(bytes);
     String new_s = String::fromUtf8(bytes);
@@ -541,8 +546,9 @@ createDOMWriter() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo traiter les arguments...
+ * \todo handle the arguments...
  */
 Document DOMImplementation::
 createDocument(const DOMString& namespace_uri,const DOMString& qualified_name,
@@ -626,15 +632,15 @@ void DOMImplementation::
 _save(ByteArray& bytes,const Document& document,int indent_level)
 {
   ARCANE_UNUSED(indent_level);
-  // NOTE: Les versions récentes de libxml2 (2.9.0) utilisent une nouvelle
-  // API pour les buffers via les méthodes xmlBufContent() (pour récupérer
-  // le contenu) et xmlBufUse() (pour récupérer la taille utilisée).
-  // Ces deux méthodes permettent de gérer des buffers d'une taille supérieure
-  // à 2Go.
-  // Cependant, sous RHEL6, la version par défaut de libxml2 est trop
-  // ancienne et donc il faut supporter les anciennes méthodes.
-  // La macro 'LIBXML2_NEW_BUFFER' est définie si on peut utiliser le
-  // nouveau mécanisme.
+  // NOTE: Recent versions of libxml2 (2.9.0) use a new
+  // API for buffers via the xmlBufContent() methods (to retrieve
+  // the content) and xmlBufUse() (to retrieve the used size).
+  // Both these methods allow handling buffers larger
+  // than 2GB.
+  // However, on RHEL6, the default libxml2 version is too
+  // old, so we must support the old methods.
+  // The macro 'LIBXML2_NEW_BUFFER' is defined if we can use the
+  // new mechanism.
   xmlDocPtr doc = impl(document._impl());
   xmlBufferPtr buf = ::xmlBufferCreate();
 
@@ -651,7 +657,7 @@ _save(ByteArray& bytes,const Document& document,int indent_level)
   Integer buf_view_size = arcaneCheckArraySize(content_len);
   ByteConstArrayView buf_view(buf_view_size,(const Byte*)content);
   bytes.copy(buf_view);
-  // TODO: protéger le buffer des exceptions possibles de bytes.copy().
+  // TODO: protect the buffer from possible exceptions in bytes.copy().
   ::xmlBufferFree(buf);
 }
 
@@ -670,8 +676,8 @@ parse(ILibXml2_Reader* reader,const String& schema_name,
   ::xmlDocPtr doc_ptr = nullptr;
 
   {
-    // Note: le handler d'erreur est géré par libxml2 par thread.
-    // Il n'est donc pas nécessaire de le protéger en multi-threading.
+    // Note: the error handler is managed by libxml2 per thread.
+    // Therefore, it is not necessary to protect it in multi-threading.
     LibXml2_ErrorHandler err_handler;
 
     doc_ptr = reader->read(*this);
@@ -680,24 +686,24 @@ parse(ILibXml2_Reader* reader,const String& schema_name,
       ARCANE_THROW(XmlException,"Could not parse document '{0}'\n{1}", fileName(),
                    err_handler.errorMessage());
 
-    // Assigne le document pour garantir sa libération en cas d'exception.
+    // Assigns the document to ensure its release in case of an exception.
     xml_parser->assignDocument(cvt(doc_ptr));
 
-    // Effectue le remplacement des XInclude. La méthode ::xmlXIncludeProcess()
-    // retourne le nombre de substitutions ou (-1) en cas d'erreur.
+    // Performs XInclude replacement. The ::xmlXIncludeProcess()
+    // returns the number of substitutions or (-1) in case of an error.
     int nb_xinclude = ::xmlXIncludeProcess(doc_ptr);
     if (nb_xinclude==(-1))
       ARCANE_THROW(XmlException,"Could not parse xinclude for document '{0}'\n{1}", fileName(),
                    err_handler.errorMessage());
 
-    // Même si la lecture est correcte, il est possible qu'il y ait des
-    // messages d'avertissement à afficher.
+    // Even if the reading is correct, there may be
+    // warning messages to display.
     String err_message = err_handler.errorMessage();
     if (m_trace && !err_message.null())
       m_trace->info() << "Info parsing document " << fileName() << " : " << err_message;
   }
 
-  // Décommenter pour débug si on souhaite afficher le document lu.
+  // Uncomment to debug if you want to display the read document.
   //::xmlDocDump(stdout,doc_ptr);
 
   {
@@ -714,9 +720,9 @@ parse(ILibXml2_Reader* reader,const String& schema_name,
 void LibXml2_SchemaValidator::
 validate(::xmlDocPtr doc_ptr,ByteConstArrayView schema_data)
 {
-  // Il faut positionner schema_name ou schema_data ou les deux.
-  // Si 'schema_data' est positionné, alors on l'utilise et on considère que
-  // 'schema_name' est le nom du fichier correspondant.
+  // We must provide schema_name or schema_data or both.
+  // If 'schema_data' is provided, we use it and consider that
+  // 'schema_name' is the corresponding file name.
   if (m_schema_file_name.null() && schema_data.empty())
     return;
   _clearMemory();
@@ -794,8 +800,8 @@ UShort Node::
 nodeType() const
 {
   _checkValid();
-  // Le type retourné par libxml2 (de type xmlElementType) correspond à celui du DOM
-  // avec les mêmes valeurs. Il faut donc simplement caster la valeur.
+  // The type returned by libxml2 (of type xmlElementType) corresponds to that of the DOM
+  // with the same values. Therefore, we just need to cast the value.
   return (UShort)(impl(m_p)->type);
 }
 Node Node::
@@ -905,8 +911,8 @@ removeChild(const Node& old_child) const
 {
   _checkValid();
   ::xmlNodePtr xchild = impl(old_child._impl());
-  // Attention, il faut ensuite détruire le noeud via Node::releaseNode())
-  // pour libérer la mémoire.
+  // Attention, the node must then be destroyed via Node::releaseNode())
+  // to free the memory.
   ::xmlUnlinkNode(xchild);
   return cvt(xchild);
 }
@@ -2025,13 +2031,13 @@ length() const
 Node NamedNodeMap::
 getNamedItem(const DOMString& name) const
 {
-  // NOTE: Ne marche que pour les attributs. Pour les autres types (entities, ...)
-  // il faudrait faire une autre version. A priori, si on caste 'xmlAttr' en
-  // 'xmlNode' et qu'on utilise que les champs de base (name, next), ca devrait
-  // pouvoir aller pour tout.
-  // NOTE: Pour les attributs, \a name peut contenir un préfix de namespace (par
-  // exemple xml:lang). Il faut donc rechercher via le préfix + le nom local
-  // et pas seulement le nom local.
+  // NOTE: Only works for attributes. For other types (entities, ...)
+  // another version would have to be made. In principle, if we cast 'xmlAttr' to
+  // 'xmlNode' and only use the basic fields (name, next), it should
+  // work for everything.
+  // NOTE: For attributes, the name can contain a namespace prefix (for
+  // example xml:lang). Therefore, we must search via the prefix + local name
+  // and not just the local name.
   if (_null())
     return Node();
   ::xmlAttrPtr xattrlist = (::xmlAttrPtr)impl(m_p);
@@ -2494,12 +2500,12 @@ ownerElement() const
 void DOMImplementation::
 initialize()
 {
-  // Appelle explicitement xmlInitParser(). Cela n'est en théorie pas
-  // indispensable mais cette méthode peut générer des exceptions flottante
-  // car à un momement il y a un appel explicite à une division par zéro pour
-  // générer un Nan (dans xmlXPathInit()). Comme DOMImplementation::initialize()
-  // est appelé avant d'activer les exception flottantes il faut faire
-  // explicitement l'appel à l'initialisation du parseur ici.
+  // Explicitly calls xmlInitParser(). This is not theoretically
+  // indispensable, but this method can generate floating point exceptions
+  // because at one point there is an explicit call to a division by zero to
+  // generate a Nan (in xmlXPathInit()). Since DOMImplementation::initialize()
+  // is called before enabling floating point exceptions, the call to parser
+  // initialization must be made explicitly here.
   ::xmlInitParser();
 }
 
@@ -2509,9 +2515,8 @@ initialize()
 void DOMImplementation::
 terminate()
 {
-  // Là encore ce n'est pas indispensable mais cela permet de libérer les
-  // ressources globales et ainsi éviter des fuites mémoire potentielles
-  // (ce qui gène les outils comme valgrind).
+  // Again, this is not indispensable, but it allows global resources to be freed
+  // and thus avoids potential memory leaks (which bothers tools like valgrind).
   ::xmlCleanupParser();
 }
 

@@ -7,6 +7,6 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2020 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime des accélérateurs.          */
+/* Information for initializing the accelerator runtime.                     */
 /*---------------------------------------------------------------------------*/
 #include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"

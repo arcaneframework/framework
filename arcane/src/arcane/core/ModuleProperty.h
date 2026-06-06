@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleProperty.h                                            (C) 2000-2018 */
 /*                                                                           */
-/* Propriétés d'un module.                                                   */
+/* Module properties.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MODULEPROPERTY_H
 #define ARCANE_MODULEPROPERTY_H
@@ -27,23 +27,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Propriétés de création d'un module.
+ * \brief Module creation properties.
  *
- * Cette classe est utilisé dans les macros d'enregistrement des modules
- * et peut donc être instantiée en tant que variable globale avant d'entrer
- * dans le main() du code. Elle ne doit donc contenir que des champs de type
- * Plain Object Data (POD).
+ * This class is used in module registration macros
+ * and can therefore be instantiated as a global variable before entering
+ * the code's main(). It must therefore only contain Plain Object Data (POD) fields.
  *
- * En général, lest instances de cette classes sont utilisés lors
- * de l'enregistrement d'un service via la macro ARCANE_REGISTER_MODULES().
+ * Generally, instances of this class are used when
+ * registering a service via the ARCANE_REGISTER_MODULES() macro.
  */
 class ARCANE_CORE_EXPORT ModuleProperty
 {
  public:
 
   /*!
-   * \brief Construit une instance pour un module de nom \a aname.
+   * \brief Constructs an instance for a module named \a aname.
    */
   ModuleProperty(const char* aname,bool is_autoload) ARCANE_NOEXCEPT
   : m_name(aname), m_is_autoload(is_autoload)
@@ -51,7 +51,7 @@ class ARCANE_CORE_EXPORT ModuleProperty
   }
 
   /*!
-   * \brief Construit une instance pour un module de nom \a aname.
+   * \brief Constructs an instance for a module named \a aname.
    */
   explicit ModuleProperty(const char* aname) ARCANE_NOEXCEPT
   : m_name(aname), m_is_autoload(false)
@@ -60,10 +60,10 @@ class ARCANE_CORE_EXPORT ModuleProperty
 
  public:
 
-  //! Nom du module.
+  //! Module name.
   const char* name() const { return m_name; }
   
-  //! Indique si le module est automatiquement chargé.
+  //! Indicates if the module is automatically loaded.
   bool isAutoload() const { return m_is_autoload; }
 
  private:
@@ -80,5 +80,4 @@ class ARCANE_CORE_EXPORT ModuleProperty
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

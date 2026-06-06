@@ -25,9 +25,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Macro pour convertir un IMesh en IPrimaryMesh.
+ * \brief Macro to convert an IMesh to IPrimaryMesh.
  *
- * \deprecated Ne pas utiliser. Appeler IMesh::toPrimaryMesh() à la place.
+ * \deprecated Do not use. Call IMesh::toPrimaryMesh() instead.
  */
 #define PRIMARYMESH_CAST(m) ((m)->toPrimaryMesh())
 
@@ -39,4 +39,4 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

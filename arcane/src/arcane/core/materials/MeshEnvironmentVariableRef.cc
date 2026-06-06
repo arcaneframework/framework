@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableRef.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Référence à une variable sur un matériau du maillage.                     */
+/* Reference to a variable on a mesh material.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,8 +61,8 @@ CellEnvironmentVariableScalarRef(const CellEnvironmentVariableScalarRef<DataType
 : m_private_part(rhs.m_private_part)
 , m_value(nullptr)
 {
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference(), but here it is not called
   if (m_private_part)
     m_private_part->incrementReference();
 
@@ -101,8 +101,8 @@ refersTo(const CellEnvironmentVariableScalarRef<DataType>& rhs)
   m_value = nullptr;
   m_container_value = {};
 
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference(), but here it is not called
   if (m_private_part)
     m_private_part->incrementReference();
   _init();
@@ -136,8 +136,9 @@ envValue(AllEnvCell c,Int32 env_id) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs partielles et globales de la variable avec la valeur \a value
+ * \brief Fills the partial and global values of the variable with the value \a value
  */
 template<typename DataType> void
 CellEnvironmentVariableScalarRef<DataType>::
@@ -149,8 +150,9 @@ fill(const DataType& value)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs partielles de la variable avec la valeur \a value
+ * \brief Fills the partial values of the variable with the value \a value
  */
 template<typename DataType> void
 CellEnvironmentVariableScalarRef<DataType>::
@@ -211,7 +213,7 @@ _setContainerView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
 : CellEnvironmentVariableArrayRef(MaterialVariableBuildInfo(nullptr,vb))
@@ -221,7 +223,7 @@ CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::Environment))
@@ -233,14 +235,14 @@ CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType>  CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const CellEnvironmentVariableArrayRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
 , m_value(nullptr)
 {
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference(), but here it is not called
   if (m_private_part)
     m_private_part->incrementReference();
 
@@ -250,7 +252,7 @@ CellEnvironmentVariableArrayRef(const CellEnvironmentVariableArrayRef<DataType>&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> void
 CellEnvironmentVariableArrayRef<DataType>::
 _init()
@@ -264,7 +266,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> void
 CellEnvironmentVariableArrayRef<DataType>::
 refersTo(const CellEnvironmentVariableArrayRef<DataType>& rhs)
@@ -278,8 +280,8 @@ refersTo(const CellEnvironmentVariableArrayRef<DataType>& rhs)
   m_value = nullptr;
   m_container_value = {};
 
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference(), but here it is not called
   if (m_private_part)
     m_private_part->incrementReference();
   _init();
@@ -288,7 +290,7 @@ refersTo(const CellEnvironmentVariableArrayRef<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> void
 CellEnvironmentVariableArrayRef<DataType>::
 updateFromInternal()

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariableSynchronizerMngInternal.h                          (C) 2000-2023 */
 /*                                                                           */
-/* API interne à Arcane de IVariableSynchronizerMng.                         */
+/* Internal Arcane API for IVariableSynchronizerMng.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IVARIABLESYNCHRONIZERMNGINTERNAL_H
@@ -26,8 +26,9 @@ class MemoryBuffer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API interne à Arcane de IVariableSynchronizerMng.
+ * \brief Internal Arcane API for IVariableSynchronizerMng.
  */
 class ARCANE_CORE_EXPORT IVariableSynchronizerMngInternal
 {

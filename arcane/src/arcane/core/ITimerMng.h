@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITimerMng.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un gestionnaire de timer.                                     */
+/* Interface of a timer manager.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMERMNG_H
 #define ARCANE_CORE_ITIMERMNG_H
@@ -24,25 +24,26 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un gestionnaire de timer.
+ * \brief Interface of a timer manager.
  *
- * Ce gestionnaire est utilisé exclusivement par les timers de
- * l'architecture (Timer) et ne doit pas être utilisé directement.
+ * This manager is used exclusively by the architecture's timers (Timer)
+ * and must not be used directly.
  *
- * Un timer utilise la méthode beginTimer() pour indiquer 
- * à ce gestionnaire qu'il souhaite débuter une mesure temporelle et
- * la méthode endTimer() pour indiquer que la mesure est terminée et
- * obtenir le temps écoulé depuis l'appel à beginTimer(). Il est aussi
- * possible d'obtenir le temps écoulé sans arrêter le timer par appel
- * à la fonction getTime().
+ * A timer uses the beginTimer() method to indicate 
+ * to this manager that it wishes to start a time measurement, and
+ * the endTimer() method to indicate that the measurement is finished and
+ * to obtain the time elapsed since the call to beginTimer(). It is also
+ * possible to obtain the elapsed time without stopping the timer by calling
+ * the getTime() function.
  *
- * Les timers de même type s'imbriquent les uns dans les autres et doivent respecter
- * le principe des piles pour les appels à beginTimer() et endTimer(): le
- * timer qui appelle endTimer() doit être le dernier à avoir appelé beginTimer().
+ * Timers of the same type nest within each other and must respect
+ * the stack principle for calls to beginTimer() and endTimer(): the
+ * timer calling endTimer() must be the last one to have called beginTimer().
  *
- * Le type de temps utilisé est déterminé par le Timer::type(). Il s'agit soit du
- * temps CPU, soit du temps réel.
+ * The type of time used is determined by Timer::type(). It is either
+ * CPU time or real time.
  *
  */
 class ITimerMng
@@ -50,7 +51,7 @@ class ITimerMng
  public:
 
   /*!
-   * \brief Libère les ressources.
+   * \brief Frees resources.
    * \pre !hasTimer()
    */
   virtual ~ITimerMng() = default;
@@ -58,7 +59,7 @@ class ITimerMng
  public:
 
   /*!
-   * \brief Attache le timer \a timer à ce gestionnaire.
+   * \brief Attaches the timer \a timer to this manager.
    *
    * \pre !\a timer
    * \pre !hasTimer(\a timer)
@@ -67,9 +68,9 @@ class ITimerMng
   virtual void beginTimer(Timer* timer) = 0;
 
   /*!
-   * \brief Relâche le timer \a timer.
+   * \brief Releases the timer \a timer.
    *
-   * \return le temps écoulé depuis l'appel à beginTimer().
+   * \return the time elapsed since the call to beginTimer().
    *
    * \pre !\a timer
    * \pre hasTimer(\a timer)
@@ -78,7 +79,7 @@ class ITimerMng
   virtual Real endTimer(Timer* timer) = 0;
 
   /*!
-   * \brief Temps écoulé depuis le dernier appel à beginTimer().
+   * \brief Time elapsed since the last call to beginTimer().
    *
    * \pre !\a timer
    * \pre hasTimer(\a timer)
@@ -86,10 +87,10 @@ class ITimerMng
   virtual Real getTime(Timer* timer) = 0;
 
   /*!
-   * \brief Indique si le timer \a timer est enregistré.
+   * \brief Indicates if the timer \a timer is registered.
    *
    * \pre !\a timer
-   * \deprecated Cette fonction sera supprimé à terme. Ne plus utiliser.
+   * \deprecated This function will eventually be removed. Do not use it.
    */
   ARCCORE_DEPRECATED_2019("Do not use this method")
   virtual bool hasTimer(Timer* timer) = 0;
@@ -103,4 +104,4 @@ class ITimerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

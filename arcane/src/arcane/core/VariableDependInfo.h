@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableDependInfo.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur une dépendance de variable.                              */
+/* Information about a variable dependency.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEDEPENDINFO_H
 #define ARCANE_CORE_VARIABLEDEPENDINFO_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une dépendance de variable.
+ * \brief Information about a variable dependency.
  */
 class ARCANE_CORE_EXPORT VariableDependInfo
 {
@@ -41,12 +42,12 @@ class ARCANE_CORE_EXPORT VariableDependInfo
   //! Variable
   IVariable* variable() const { return m_variable; }
 
-  //! Type de dépendance.
+  //! Dependency type.
   IVariable::eDependType dependType() const { return m_depend_type; }
 
   /*!
-   * Infos (si disponible) sur l'endroit dans le code source où la dépendance
-   * a été ajoutée.
+   * Info (if available) about the location in the source code where the dependency
+   * was added.
    */
   const TraceInfo& traceInfo() const { return m_trace_info; }
 
@@ -65,4 +66,4 @@ class ARCANE_CORE_EXPORT VariableDependInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

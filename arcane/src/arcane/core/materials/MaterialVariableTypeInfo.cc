@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialVariableTypeInfo.cc                                (C) 2000-2022 */
+/* MaterialVariableTypeInfo.cc                                 (C) 2000-2022 */
 /*                                                                           */
-/* Informations caractérisants le type d'une variable matériaux.             */
+/* Information characterizing the type of a material variable.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,7 +37,7 @@ _buildFullTypeName() const
   full_type_b += dimension();
   full_type_b += ".";
 
-  //! Variable ayant des valeurs sur les milieux et matériaux
+  //! Variable having values on media and materials
   switch (m_mat_var_space) {
   case MatVarSpace::MaterialAndEnvironment:
     full_type_b += "MatEnv";

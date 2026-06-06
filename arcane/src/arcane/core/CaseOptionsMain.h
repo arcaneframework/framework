@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionsMain.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Options principales de Arcane.                                            */
+/* Main options of Arcane.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONSMAIN_H
 #define ARCANE_CORE_CASEOPTIONSMAIN_H

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BlockIndexList.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant un tableau d'indices sous la forme d'une liste de blocs.    */
+/* Class managing an array of indices in the form of a block list.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_BLOCKINDEXLIST_H
 #define ARCANE_CORE_BLOCKINDEXLIST_H
@@ -27,9 +27,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Bloc contenant une une liste d'indices avec un offset.
+ * \brief Block containing a list of indices with an offset.
  * \warning Experimental API
  */
 class ARCANE_CORE_EXPORT BlockIndex
@@ -50,17 +51,17 @@ class ARCANE_CORE_EXPORT BlockIndex
 
  public:
 
-  //! i-ème valeur du bloc
+  //! i-th value of the block
   Int32 operator[](Int32 i) const
   {
     ARCANE_CHECK_AT(i, m_size);
     return m_block_start[i] + m_value_offset;
   }
 
-  //! Taille du bloc
+  //! Size of the block
   Int16 size() const { return m_size; }
 
-  //! Offset des valeurs du bloc.
+  //! Offset of the block values.
   Int32 valueOffset() const { return m_value_offset; }
 
  private:
@@ -72,16 +73,17 @@ class ARCANE_CORE_EXPORT BlockIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe gérant un tableau sous la forme d'une liste de blocs.
+ * \brief Class managing an array in the form of a block list.
  * \warning Experimental API
  */
 class ARCANE_CORE_EXPORT BlockIndexList
 {
   friend class BlockIndexListBuilder;
 
-  // TODO: pouvoir choisir un allocateur avec support accélérateur.
+  // TODO: be able to choose an allocator with accelerator support.
 
  public:
 
@@ -99,17 +101,17 @@ class ARCANE_CORE_EXPORT BlockIndexList
 
  private:
 
-  //! Liste des indexes
+  //! List of indexes
   UniqueArray<Int32> m_indexes;
-  // Index dans 'm_indexes' et offset de chaque bloc
+  // Index in 'm_indexes' and offset for each block
   UniqueArray<Int32> m_blocks_index_and_offset;
-  //! Taille d'origine du tableau d'indices
+  //! Original size of the index array
   Int32 m_original_size = 0;
-  //! Nombre de blocs (m_original_size/m_block_size arrondi au supérieur)
+  //! Number of blocks (m_original_size/m_block_size rounded up)
   Int32 m_nb_block = 0;
-  //! Taille  d'un bloc.
+  //! Size of a block.
   Int16 m_block_size = 0;
-  //! Taille du dernier bloc.
+  //! Size of the last block.
   Int16 m_last_block_size = 0;
 
  private:
@@ -123,9 +125,10 @@ class ARCANE_CORE_EXPORT BlockIndexList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe permettant de construire un BlockIndexList.
+ * \brief Class allowing the construction of a BlockIndexList.
  * \warning Experimental API
  */
 class ARCANE_CORE_EXPORT BlockIndexListBuilder
@@ -140,11 +143,11 @@ class ARCANE_CORE_EXPORT BlockIndexListBuilder
   void setVerbose(bool v) { m_is_verbose = v; }
 
   /*!
-   * \brief Positionne la taille de bloc sous la forme d'une puissance de 2.
+   * \brief Sets the block size as a power of 2.
    *
-   * La taille d'un bloc sera égal à 2 ^ \a v.
-   * Si \a v==0, la taille du bloc est de 1, si \a v==1, la taille est de 2,
-   * si \a v==2 la taille est de 4, si \a v==3 la taille est de 8 et ainsi de suite.
+   * The size of a block will be equal to 2 ^ \a v.
+   * If \a v==0, the block size is 1, if \a v==1, the size is 2,
+   * if \a v==2 the size is 4, if \a v==3 the size is 8, and so on.
    */
   void setBlockSizeAsPowerOfTwo(Int32 v);
 

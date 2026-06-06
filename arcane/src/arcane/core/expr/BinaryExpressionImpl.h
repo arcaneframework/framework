@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BinaryExpressionImpl.h                                      (C) 2000-2005 */
 /*                                                                           */
-/* Implementation d'une expression binaire.                                  */
+/* Implementation of a binary expression.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_BINARYEXPRESSIONIMPL_H
 #define ARCANE_EXPR_BINARYEXPRESSIONIMPL_H
@@ -33,7 +33,7 @@ class BinaryOperator;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Implementation d'une expression binaire
+ * \brief Implementation of a binary expression
  */
 class BinaryExpressionImpl
 : public ExpressionImpl
@@ -79,8 +79,9 @@ class BinaryExpressionImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Operateur binaire generique pour les expressions.
+ * \brief Generic binary operator for expressions.
  */
 class BinaryOperator
 {
@@ -106,7 +107,7 @@ template<class T> class DefaultBinaryOperator
                         ArrayVariant* a, 
                         ArrayVariant* b)
   {
-    // verification de la validite de l'operation
+    // Check operation validity
     if (a->type() != b->type())
       throw BadOperandException("DefaultBinaryOperator::evaluate");
     
@@ -114,10 +115,10 @@ template<class T> class DefaultBinaryOperator
     if (size != a->size() || size != b->size())
       throw BadOperandException("DefaultBinaryOperator::evaluate");
     
-    // allocation du résultat en fonction du type de a
+    // Allocate the result based on the type of a
     res->allocate(a->type());
     
-    // recuperation des valeurs des operandes
+    // Retrieve operand values
     ArrayView<T> res_val;
     res->data()->value(res_val);
     ArrayView<T> a_val;
@@ -125,7 +126,7 @@ template<class T> class DefaultBinaryOperator
     ArrayView<T> b_val;
     b->value(b_val);    
 
-    // evaluation des tableaux
+    // Evaluate arrays
     evaluate(res_val, a_val, b_val);
   }
 };
@@ -179,7 +180,7 @@ class BoolBinaryOperator
                         ArrayVariant* a, 
                         ArrayVariant* b)
   {
-    // verification de la validite de l'operation
+    // Check operation validity
     if (a->type() != b->type())
       throw BadOperandException("BoolBinaryOperator::evaluate");
 
@@ -187,10 +188,10 @@ class BoolBinaryOperator
     if (size != a->size() || size != b->size())
       throw BadOperandException("BoolBinaryOperator::evaluate");
 
-    // allocation du résultat qui doit etre booléen
+    // Allocate the result, which must be boolean
     res->allocate(ArrayVariant::TBool);
 
-    // recuperation des valeurs des operandes
+    // Retrieve operand values
     ArrayView<bool> res_val;
     res->data()->value(res_val);
     ArrayView<T> a_val;
@@ -198,7 +199,7 @@ class BoolBinaryOperator
     ArrayView<T> b_val;
     b->value(b_val);    
 
-    // evaluation des tableaux
+    // Evaluate arrays
     evaluate(res_val, a_val, b_val);
   }
 };

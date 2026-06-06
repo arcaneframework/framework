@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemIndexedListView.h                                       (C) 2000-2023 */
 /*                                                                           */
-/* Vue sur une liste indexée d'entités.                                      */
+/* View of an indexed list of entities.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMINDEXEDLISTVIEW_H
 #define ARCANE_ITEMINDEXEDLISTVIEW_H
@@ -27,15 +27,15 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Vue interne sur un tableau d'entités.
+ * \brief Internal view of an array of entities.
  *
- * Celle classe n'est utile que pour construire des listes d'entités utilisées
- * en interne de %Arcane. La version utilisateur de cette classe est
- * ItemConnectivityView. La principale différence entre les deux classes est
- * que celle-ci maintient juste les listes mais ne permet pas par exemple
- * de retourner une entité typée.
+ * This class is only useful for building entity lists used internally by
+ * %Arcane. The user version of this class is ItemConnectivityView. The main
+ * difference between the two classes is that this one only maintains the
+ * lists but does not allow, for example, returning a typed entity.
  *
  * \sa ItemConnectedListView
  */
@@ -58,7 +58,7 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
 
  private:
 
-  // TODO: A supprimer
+  // TODO: To be removed
   constexpr ItemIndexedListView(ItemSharedInfo* si, SmallSpan<const Int32> local_ids, Int32 local_id_offset)
   : m_local_ids(local_ids)
   , m_shared_info(si)
@@ -77,13 +77,13 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
 
  private:
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   constexpr Int32 size() const { return m_local_ids.size(); }
 
-  //! Tableau des numéros locaux des entités
+  //! Array of local entity IDs
   constexpr SmallSpan<const Int32, Extent> localIds() const { return m_local_ids; }
 
-  //! Tableau des numéros locaux des entités
+  //! Array of local entity IDs
   ConstArrayView<Int32> constLocalIds() const { return m_local_ids.constSmallView(); }
 
  private:

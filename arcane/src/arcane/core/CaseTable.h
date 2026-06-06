@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseTable.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une table de marche.                                        */
+/* Class managing a lookup table.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASETABLE_H
 #define ARCANE_CORE_CASETABLE_H
@@ -31,9 +31,10 @@ class CaseTableParams;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonction du jeu de donnée.
+ * \brief Data set function.
  */
 class ARCANE_CORE_EXPORT CaseTable
 : public CaseFunction
@@ -41,104 +42,103 @@ class ARCANE_CORE_EXPORT CaseTable
  public:
 
   /*!
-   * \brief Type des erreurs retournées par la classe.
+   * \brief Types of errors returned by the class.
    */
   enum eError
   {
     ErrNo,
-    //! Indique qu'un indice d'un élément n'est pas valide
+    //! Indicates that an element index is not valid
     ErrBadRange,
-    //! Indique que la conversion du paramètre vers le type souhaité est impossible
+    //! Indicates that converting the parameter to the desired type is impossible
     ErrCanNotConvertParamToRightType,
-    //! Indique que la conversion de la valeur vers le type souhaité est impossible
+    //! Indicates that converting the value to the desired type is impossible
     ErrCanNotConvertValueToRightType,
-    //! Indique que le paramètre n'est pas supérieur au précédent
+    //! Indicates that the parameter is not greater than the previous one
     ErrNotGreaterThanPrevious,
-    //! Indique que le paramètre n'est pas inférieur au suivant
+    //! Indicates that the parameter is not less than the next one
     ErrNotLesserThanNext
   };
 
-  /*! \brief Type de la courbe de la table.
+  /*! \brief Type of the table curve.
    */
   enum eCurveType
   {
-    CurveUnknown = 0, //!< Type de courbe inconnu
-    CurveConstant = 1, //!< Courbe constante par morceau
-    CurveLinear = 2  //!< Courbe linéaire par morceau
+    CurveUnknown = 0, //!< Unknown curve type
+    CurveConstant = 1, //!< Piecewise constant curve
+    CurveLinear = 2  //!< Piecewise linear curve
   };
 
  public:
 
-  /*! \brief Construit une table de marche du jeu de données.
-   * \param curve_type type de la courbe de la table de marche
+  /*! \brief Constructs a lookup table from the data set.
+   * \param curve_type type of the lookup table curve
    */
   CaseTable(const CaseFunctionBuildInfo& info,eCurveType curve_type);
   virtual ~CaseTable();
 
  public:
 
-  //! Nombre d'éléments de la fonction
+  //! Number of elements in the function
   virtual Integer nbElement() const;
 
-  //! \id ième valeur dans la chaîne \a str
+  //! The i-th value in the string \a str
   virtual void valueToString(Integer id,String& str) const;
 
-  //! \id ième paramètre dans la chaîne \a str
+  //! The i-th parameter in the string \a str
   virtual void paramToString(Integer id,String& param) const;
 
    /*!
-   * \brief Modifie le paramètre de l'élément \a id.
+   * \brief Modifies the parameter of element \a id.
    *
-   * Utilise \a value comme nouvelle valeur pour le paramètre.
-   * \a value doit pourvoir être converti en le type du paramètre.
+   * Uses \a value as the new value for the parameter.
+   * \a value must be convertible to the parameter type.
    *
-   * \return la valeur de l'erreur, ErrNo sinon.
+   * \return the error value, ErrNo otherwise.
    */
   virtual eError setParam(Integer id,const String& value);
 
    /*!
-   * \brief Modifie la valeur de l'élément \a id.
+   * \brief Modifies the value of element \a id.
    *
-   * Utilise \a value comme nouvelle valeur.
-   * \a value doit pourvoir être converti en le type de la valeur.
+   * Uses \a value as the new value.
+   * \a value must be convertible to the value type.
    *
-   * \return la valeur de l'erreur, ErrNo sinon.
+   * \return the error value, ErrNo otherwise.
    */
   virtual eError setValue(Integer id,const String& value);
 
-  /*! \brief Ajoute un élément à la table.
+  /*! \brief Adds an element to the table.
    *
-   * Ajoute l'élément (param,value) à la table.
+   * Adds the element (param,value) to the table.
    *
-   * \return la valeur de l'erreur, ErrNo sinon.
+   * \return the error value, ErrNo otherwise.
    */
   virtual eError appendElement(const String& param,const String& value);
   
    /*!
-   * \brief Insère un couple (paramètre,valeur) dans la fonction.
+   * \brief Inserts a couple (parameter,value) into the function.
    *
-   * Insère à la position \a id un couple (paramètre,valeur) identique
-   * à celui qui s'y trouvait. Les paramètres suivants sont décalées d'un cran.
-   * Il est ensuite possible de modifier ce couple par les
-   * méthodes setParam() ou setValue().
+   * Inserts a couple (parameter,value) identical to the one found at position
+   * \a id. Subsequent parameters are shifted by one position. It is then possible
+   * to modify this couple using the methods setParam() or setValue().
    *
-   * Si \a id est supérieur au nombre d'éléments de la fonction, un élément
-   * est ajouté à la fin avec la même valeur que le dernier élément de
-   * la fonction.
+   * If \a id is greater than the number of elements in the function, an element
+   * is added to the end with the same value as the last element of
+   * the function.
    */
   virtual void insertElement(Integer id);
   
   /*!
-   * \brief Supprime un couple (paramètre,valeur) dans la fonction.
+   * \brief Removes a couple (parameter,value) from the function.
    *
-   * Si \a id est supérieur au nombre d'éléments de la fonction, aucune
-   * opération n'est effectuée.
+   * If \a id is greater than the number of elements in the function, no
+   * operation is performed.
    */
   virtual void removeElement(Integer id);
 
-  /*! @name Type de la courbe */
+  /*! @name Curve Type */
   //@{
-  //! Retourne le type de la courbe de la fonction
+  //! Returns the curve type of the function
   virtual eCurveType curveType() const { return m_curve_type; }
   //@}
 
@@ -162,8 +162,8 @@ class ARCANE_CORE_EXPORT CaseTable
  private:
 
   CaseTableParams* m_param_list;
-  UniqueArray<SmallVariant> m_value_list; //!< Liste des valeurs.
-  eCurveType m_curve_type; //!< Type de la courbe
+  UniqueArray<SmallVariant> m_value_list; //!< List of values.
+  eCurveType m_curve_type; //!< Curve type
   bool m_use_fast_search = true;
 
  private:
@@ -183,4 +183,4 @@ class ARCANE_CORE_EXPORT CaseTable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

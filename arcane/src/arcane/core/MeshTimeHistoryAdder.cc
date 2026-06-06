@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshTimeHistoryAdder.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
+/* Class for adding a value history associated with a mesh.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

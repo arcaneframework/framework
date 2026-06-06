@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataFactory.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une fabrique de donnée.                                       */
+/* Interface of a data factory.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAFACTORY_H
 #define ARCANE_CORE_IDATAFACTORY_H
@@ -25,12 +25,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique d'une donnée.
- * \todo Renommer en 'IDataFactoryMng'.
- * \warning Cette classe est obsolète et ne doit plus être utilisée en
- * dehors de Arcane.
+ * \brief Interface of a data factory.
+ * \todo Rename to 'IDataFactoryMng'.
+ * \warning This class is obsolete and should no longer be used outside of Arcane.
  */
 class IDataFactory
 {
@@ -40,15 +40,15 @@ class IDataFactory
 
  public:
 
-  //! Construit l'instance
+  //! Builds the instance
   virtual void build() =0;
 
   //! Application
   virtual IApplication* application() =0;
 
   /*!
-   * \brief Créé une opération effectuant une réduction de type \a rt.
-   * \todo mettre dans une autre interface.
+   * \brief Creates an operation performing a reduction of type \a rt.
+   * \todo put in another interface.
    */
   ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'. Use 'IDataFactoryMng' instead")
   virtual IDataOperation* createDataOperation(Parallel::eReduceType rt) =0;
@@ -62,4 +62,4 @@ class IDataFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

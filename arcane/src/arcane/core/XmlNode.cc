@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlNode.cc                                                  (C) 2000-2023 */
 /*                                                                           */
-/* Noeud quelconque d'un arbre DOM.                                          */
+/* Any node in a DOM tree.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -292,7 +292,7 @@ removeAttr(const String& name) const
 void XmlNode::
 clear()
 {
-  // Supprime les noeuds fils.
+  // Removes child nodes.
   XmlNode n = front();
   while (!n.null()){
     remove(n);
@@ -330,7 +330,7 @@ remove(const XmlNode& child_node)
 XmlNode XmlNode::
 nextWithName(const String& name) const
 {
-  //\todo a tester
+  //\todo to test
   if (m_node._null())
     return _nullNode();
   XmlNode n(next());
@@ -345,7 +345,7 @@ nextWithName(const String& name) const
 XmlNode XmlNode::
 prevWithName(const String& name) const
 {
-  //\todo a tester
+  //\todo to test
   if (m_node._null())
     return _nullNode();
   XmlNode n(prev());
@@ -360,7 +360,7 @@ prevWithName(const String& name) const
 XmlNode XmlNode::
 nextSameType() const
 {
-  //\todo a tester
+  //\todo to test
   if (m_node._null())
     return _nullNode();
   XmlNode n(next());
@@ -375,7 +375,7 @@ nextSameType() const
 XmlNode XmlNode::
 prevSameType() const
 {
-  //\todo a tester
+  //\todo to test
   if (m_node._null())
     return _nullNode();
   XmlNode n(prev());
@@ -420,7 +420,7 @@ valueAsBoolean(bool throw_exception) const
     return true;
   if (throw_exception)
     ARCANE_THROW(XmlException,"XML Node '{0}' can not convert value '{1}' to type 'bool'."
-                 " Valid values are 'true', 'false', '0' (zero) ou '1'.",
+                 " Valid values are 'true', 'false', '0' (zero) or '1'.",
                  xpathFullName(),value);
   return false;
 }
@@ -749,4 +749,3 @@ _findNextValid(bool is_init)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

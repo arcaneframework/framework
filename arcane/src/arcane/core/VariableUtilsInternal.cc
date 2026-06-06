@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableUtilsInternal.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur les variables internes à Arcane.       */
+/* Various utility functions for internal Arcane variables.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ fillFloat64Array(IVariable* v, ArrayView<double> values)
   auto* true_data = dynamic_cast<IArrayDataT<double>*>(var_data);
   if (!true_data)
     return true;
-  // TODO: Vérifier la taille
+  // TODO: Check the size
   ArrayView<Real> var_values(true_data->view());
   values.copy(var_values);
   return false;

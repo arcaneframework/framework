@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array2Variable.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Variable tableau 2D.                                                      */
+/* 2D array variable.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ARRAY2VARIABLE_H
 #define ARCANE_CORE_ARRAY2VARIABLE_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Variable sur un tableau 2D.
+ * \brief Variable on a 2D array.
  */
 template<class T>
 class Array2VariableT
@@ -43,7 +44,7 @@ class Array2VariableT
 
  protected:
 
-  //! Construit une variable basée sur la référence \a v
+  //! Constructs a variable based on the reference \a v
   Array2VariableT(const VariableBuildInfo& v,const VariableInfo& vi);
 
  public:
@@ -101,5 +102,4 @@ class Array2VariableT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

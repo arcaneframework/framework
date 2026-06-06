@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshStats.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une classe donnant des informations sur le maillage.          */
+/* Interface of a class providing mesh information.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHSTATS_H
 #define ARCANE_CORE_IMESHSTATS_H
@@ -24,28 +24,29 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une classe donnant des informations sur le maillage.
+ * \brief Interface of a class providing mesh information.
  */
 class ARCANE_CORE_EXPORT IMeshStats
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IMeshStats() = default;
 
  public:
 
-  //! Création d'une instance par défaut
+  //! Creation of a default instance
   static IMeshStats* create(ITraceMng* trace, IMesh* mesh, IParallelMng* pm);
 
  public:
 
-  //! Imprime des infos sur le maillage
+  //! Prints mesh information
   virtual void dumpStats() = 0;
 
-  //! Imprime des infos sur le graphe du maillage
+  //! Prints mesh graph information
   virtual void dumpGraphStats() = 0;
 };
 
@@ -57,5 +58,4 @@ class ARCANE_CORE_EXPORT IMeshStats
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

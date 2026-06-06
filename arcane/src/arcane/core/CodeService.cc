@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CodeService.cc                                              (C) 2000-2024 */
 /*                                                                           */
-/* Service du code.                                                          */
+/* Code service.                                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -115,7 +115,7 @@ createAndLoadCase(ISession* session,const SubDomainBuildInfo& sdbi)
 
   ISubDomain* sub_domain = session->createSubDomain(sdbi);
 
-  // Permet à la classe dérivée de faire ses modifs
+  // Allows the derived class to make its modifications
   _preInitializeSubDomain(sub_domain);
 
   try{
@@ -150,12 +150,12 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     ProfilingSentryWithInitialize ps_sentry(ps);
     ps_sentry.setPrintAtEnd(true);
     /*
-     * Les différentes phases de l'initialisation sont :
-     * - allocation des structures gérant les maillages.
-     * - relecture des protections (si on est en reprise).
-     * - lecture (phase1, donc sans les éléments de maillage) du jeu de données.
-     * - appel des points d'entrée de type 'build'.
-     * - lecture des maillages (si init) ou relecture (si reprise).
+     * The different phases of initialization are:
+     * - allocation of structures managing meshes.
+     * - rereading protections (if restarting).
+     * - reading (phase1, so without mesh elements) the dataset.
+     * - calling 'build' type entry points.
+     * - reading meshes (if init) or rereading (if restart).
      */
     if (is_continue)
       sub_domain->setIsContinue();
@@ -167,7 +167,7 @@ initCase(ISubDomain* sub_domain,bool is_continue)
       cm->readCheckpoint(ci);
     }
     ICaseMng* case_mng = sub_domain->caseMng();
-    // Lecture du jeu de donnée (phase1)
+    // Reading the dataset (phase1)
     case_mng->readOptions(true);
     ITimeLoopMng* loop_mng = sub_domain->timeLoopMng();
     loop_mng->execBuildEntryPoints();
@@ -177,18 +177,18 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     vm->_internalApi()->initializeVariables(is_continue);
     if (!is_continue)
       sub_domain->initializeMeshVariablesFromCaseFile();
-    // Lecture du jeu de donnée (phase2)
+    // Reading the dataset (phase2)
     case_mng->readOptions(false);
     case_mng->printOptions();
-    // Effectue le partitionnement initial ou de reprise
+    // Performs initial or restart partitioning
     sub_domain->doInitMeshPartition();
     loop_mng->execInitEntryPoints(is_continue);
     sub_domain->setIsInitialized();
   }
 
   if (is_profile_init && ps){
-    // Génère un fichier JSON avec les informations de profiling
-    // de l'initialisation.
+    // Generates a JSON file with profiling information
+    // of the initialization.
     JSONWriter json_writer(JSONWriter::FormatFlags::None);
     json_writer.beginObject();
     ps->dumpJSON(json_writer);

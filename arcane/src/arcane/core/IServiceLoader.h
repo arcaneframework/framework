@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IServiceLoader.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface de chargement des services et modules.                          */
+/* Service and module loading interface.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERVICELOADER_H
 #define ARCANE_CORE_ISERVICELOADER_H
@@ -24,50 +24,51 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface de chargement des services.
+ * \brief Service loading interface.
  */
 class IServiceLoader
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IServiceLoader() = default;
 
  public:
 	
-  //! Type d'une fonction retournant une fabrique pour un service donné.
+  //! Type of a function that returns a factory for a given service.
   typedef IServiceFactory* (*CreateServiceFactoryFunc)(IServiceInfo*);
 
  public:
 
-  //! Charge les services singletons et autoload applicatifs disponibles
+  //! Loads available application singleton and autoload services
   virtual void loadApplicationServices(IApplication*) =0;
 
-  //! Charge les services singletons et autoload de session disponibles
+  //! Loads available session singleton and autoload services
   virtual void loadSessionServices(ISession*) =0;
 
-  //! Charge les services singletons et autoload de sous-domaine disponibles
+  //! Loads available subdomain singleton and autoload services
   virtual void loadSubDomainServices(ISubDomain* sd) =0;
 
   /*!
-   * \brief Charge le service singleton de sous-domaine de nom \a name.
+   * \brief Loads the subdomain singleton service with name \a name.
    *
-   * Retourne \a true en cas de succès et \a false si le service singleton
-   * n'est pas trouvé.
+   * Returns \a true upon success and \a false if the singleton service
+   * is not found.
    */
   virtual bool loadSingletonService(ISubDomain* sd,const String& name) =0;
 
   /*!
-   * \brief Charge les modules dans le sous-domaine \a sd.
+   * \brief Loads modules in the subdomain \a sd.
    *
-   * Si \a all_modules est vrai, tous les modules sont chargés, sinon,
-   * seul les modules avec l'attribut 'autoload' sont chargés
+   * If \a all_modules is true, all modules are loaded; otherwise,
+   * only modules with the 'autoload' attribute are loaded
    */
   virtual void loadModules(ISubDomain* sd,bool all_modules) =0;
 
-  //! Appel les méthodes d'initialisation des fabriques des modules.
+  //! Calls the initialization methods for module factories.
   virtual void initializeModuleFactories(ISubDomain* sd) =0;
 };
 
@@ -79,4 +80,4 @@ class IServiceLoader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

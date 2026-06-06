@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableRefScalar.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Référence à une variable scalaire.                                        */
+/* Reference to a scalar variable.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -168,8 +168,9 @@ updateFromInternal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Échange les valeurs de la variable \a rhs avec celles de l'instance.
+ * \brief Exchange the values of variable \a rhs with those of the instance.
  */
 template<typename DataType> void
 VariableRefScalarT<DataType>::

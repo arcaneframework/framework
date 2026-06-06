@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptions.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Options du jeu de données.                                                */
+/* Data set options.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASEOPTIONS_H
 #define ARCANE_CASEOPTIONS_H
@@ -24,8 +24,8 @@
 #include "arcane/core/ICaseOptions.h"
 #include "arcane/core/ICaseOptionList.h"
 
-// Ces fichiers ne sont pas nécessaires pour ce '.h' mais on les ajoute
-// car axlstar inclus uniquement 'CaseOptions.h'
+// These files are not necessary for this '.h' but are included
+// because axlstar only includes 'CaseOptions.h'
 #include "arcane/core/CaseOptionSimple.h"
 #include "arcane/core/CaseOptionEnum.h"
 #include "arcane/core/CaseOptionExtended.h"
@@ -43,13 +43,14 @@ class Document;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'une liste d'options du jeu de données.
+ * \brief Base class for a data set options list.
  *
- * Les instances de cette classe doivent toutes être allouées par
- * l'opérateur new() et ne doivent pas être détruite, le gestionnaire
- * de cas (ICaseMng) s'en chargeant.
+ * Instances of this class must all be allocated by
+ * the new() operator and must not be destroyed; the case manager
+ * (ICaseMng) handles this.
  */
 class ARCANE_CORE_EXPORT CaseOptions
 : private ReferenceCounterImpl
@@ -67,27 +68,27 @@ class ARCANE_CORE_EXPORT CaseOptions
 
  public:
 
-  //! Construit un jeu d'options.
+  //! Constructs an options set.
   CaseOptions(ICaseMng* cm, const String& name);
-  //! Construit un jeu d'options.
+  //! Constructs an options set.
   CaseOptions(ICaseOptionList*, const String& name);
-  //! Construit un jeu d'options.
+  //! Constructs an options set.
   CaseOptions(ICaseMng* cm, const String& name, const XmlNode& parent);
-  //! Construit un jeu d'options.
+  //! Constructs an options set.
   CaseOptions(ICaseOptionList*, const String& name, const XmlNode& parent, bool is_optional = false, bool is_multi = false);
-  //! Construit un jeu d'options.
+  //! Constructs an options set.
 
  protected:
 
   CaseOptions(ICaseMng*, const String& name, ICaseOptionList* parent);
-  //! Construit un jeu d'options.
+  //! Constructs an options set.
   CaseOptions(ICaseOptionList*, const String& name, ICaseOptionList* parent);
 
  private:
 
   friend class ServiceBuilderWithOptionsBase;
 
-  // Uniquement pour ServiceBuilderWithOptionsBase
+  // Only for ServiceBuilderWithOptionsBase
   static ReferenceCounter<ICaseOptions> createDynamic(ICaseMng* cm, const AxlOptionsBuilder::Document& options_doc);
 
   //! \internal
@@ -95,7 +96,7 @@ class ARCANE_CORE_EXPORT CaseOptions
 
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   ~CaseOptions() override;
 
  private:
@@ -105,19 +106,19 @@ class ARCANE_CORE_EXPORT CaseOptions
 
  public:
 
-  //! Retourne le vrai nom (non traduit) de l'élément.
+  //! Returns the true name (non-translated) of the element.
   String rootTagTrueName() const override;
 
-  //! Retourne le nom de l'élément dans le langage du jeu de données.
+  //! Returns the name of the element in the data set language.
   String rootTagName() const override;
 
-  //! Nom dans la langue \a lang de l'option. Retourne \a rootTagTrueName() si pas de traduction.
+  //! Name in language \a lang of the option. Returns \a rootTagTrueName() if no translation exists.
   String translatedName(const String& lang) const override;
 
-  //! Retourne le vrai nom (non traduit) de l'élément.
+  //! Returns the true name (non-translated) of the element.
   virtual String trueName() const { return rootTagTrueName(); }
 
-  //! Retourne le nom de l'élément dans le langage du jeu de données.
+  //! Returns the name of the element in the data set language.
   virtual String name() const { return rootTagName(); }
 
   void read(bool is_phase1) override
@@ -132,39 +133,39 @@ class ARCANE_CORE_EXPORT CaseOptions
 
   void printChildren(const String& lang, int indent) override;
 
-  //! Retourne le service associé ou 0 s'il n'y en a pas.
+  //! Returns the associated service or 0 if none exists.
   IServiceInfo* caseServiceInfo() const override;
 
-  //! Retourne le module associé ou 0 s'il n'y en a pas.
+  //! Returns the associated module or 0 if none exists.
   IModule* caseModule() const override;
 
-  //! Associe le service \a m à ce jeu de données.
+  //! Associates service \a m with this data set.
   void setCaseServiceInfo(IServiceInfo* m) override;
 
-  //! Associe le module \a m à ce jeu de données.
+  //! Associates module \a m with this data set.
   void setCaseModule(IModule* m) override;
 
-  //! Ajoute à la liste \a col tous les options filles.
+  //! Adds all child options to the list \a col.
   void deepGetChildren(Array<CaseOptionBase*>& col) override;
 
   ICaseOptionList* configList() override;
 
   const ICaseOptionList* configList() const override;
 
-  //! Fonction indiquant l'état d'activation de l'option
+  //! Function indicating the activation status of the option
   ICaseFunction* activateFunction() override;
 
   /*!
-    \brief Vrai si l'option est présente dans le fichier,
-    faux s'il s'agit de la valeur par défaut.
+    \brief True if the option is present in the file,
+    false if it is the default value.
   */
   bool isPresent() const override;
 
   /*!
-    \brief Ajoute une traduction pour le nom de l'option.
-    Ajoute le nom \a name de l'option correspondant au langage \a lang.
-    Si une traduction existe déjà pour ce langage, elle est remplacée par
-    celle-ci.
+    \brief Adds a translation for the option name.
+    Adds the option name \a name corresponding to language \a lang.
+    If a translation already exists for this language, it is replaced by
+    this one.
   */
   void addAlternativeNodeName(const String& lang, const String& name) override;
 
@@ -193,7 +194,7 @@ class ARCANE_CORE_EXPORT CaseOptions
 
  protected:
 
-  CaseOptionsPrivate* m_p; //!< Implémentation
+  CaseOptionsPrivate* m_p; //!< Implementation
 
  private:
 
@@ -209,4 +210,4 @@ class ARCANE_CORE_EXPORT CaseOptions
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

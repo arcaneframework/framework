@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VerifierService.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base du service de vérification des données.                    */
+/* Base class for the data verification service.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -74,13 +74,13 @@ _getVariables(VariableCollection variables,bool parallel_sequential)
     if (parallel_sequential){
       if (variable->property() & IVariable::PSubDomainDepend)
         continue;
-      // Ne compare pas les variables tableaux lors des comparaisons parallèles/séquentielles
-      // car en général ces variables sont dépendantes du découpage.
+      // Do not compare array variables during parallel/sequential comparisons
+      // because generally these variables are dependent on the decomposition.
       if (variable->itemKind()==IK_Unknown)
         continue;
-      // Ne compare pas les variables dont le maillage n'utilise pas le même
-      // parallelMng() que le sous-domaine. En effet, dans ce cas, il n'est pas possible
-      // de faire une vue séquentielle du maillage.
+      // Do not compare variables whose mesh does not use the same
+      // parallelMng() as the subdomain. Indeed, in this case, it is not possible
+      // to make a sequential view of the mesh.
       MeshHandle mesh_handle = variable->meshHandle();
       if (mesh_handle.hasMesh()){
         IMesh* mesh = mesh_handle.mesh();
@@ -183,7 +183,7 @@ _doVerif2(ReaderType reader,const VariableList& variables,bool compare_ghost)
     SerializeBuffer sbuf;
     Int64 nb_diff = diff_infos.size();
     sbuf.setMode(ISerializer::ModeReserve);
-    sbuf.reserve(DT_Int64,1); // pour la taille
+    sbuf.reserve(DT_Int64,1); // for the size
     for (auto& i_map : diff_infos) {
       const DiffInfo& diff_info = i_map.second;
       sbuf.reserve(DT_Int64,1);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParallelNonBlockingCollectiveDispatch.h                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface des collectives non blocantes pour un type donné.               */
+/* Interface for non-blocking collectives for a given type.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARALLELNONBLOCKINGCOLLECTIVEDISPATCH_H
 #define ARCANE_CORE_IPARALLELNONBLOCKINGCOLLECTIVEDISPATCH_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface des collectives non bloquantes pour le type \a Type.
+ * \brief Interface for non-blocking collectives for the type \a Type.
  */
 template <class Type>
 class IParallelNonBlockingCollectiveDispatchT
@@ -65,5 +66,4 @@ class IParallelNonBlockingCollectiveDispatchT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

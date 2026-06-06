@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelNonBlockingCollectiveDispatcher.h                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire du parallélisme sur un domaine.                 */
+/* Interface of the parallelism manager on a domain.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLELNONBLOCKINGCOLLECTIVEDISPATCHER_H
 #define ARCANE_CORE_PARALLELNONBLOCKINGCOLLECTIVEDISPATCHER_H
@@ -31,10 +31,11 @@ class IParallelNonBlockingCollectiveDispatchT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Redirige la gestion des messages des sous-domaines
- * suivant le type de l'argument.
+ * \brief Redirects the message management of sub-domains
+ * according to the argument type.
  */
 class ARCANE_CORE_EXPORT ParallelNonBlockingCollectiveDispatcher
 : public IParallelNonBlockingCollective
@@ -158,4 +159,4 @@ protected:                                                              \
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

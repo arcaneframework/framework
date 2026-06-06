@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DomUtils.cc                                                 (C) 2000-2018 */
 /*                                                                           */
-/* Fonctions utilitaires diveres concernant le DOM.                          */
+/* Various utility functions concerning the DOM.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -69,7 +69,7 @@ _notImplemented(const char* reason)
 void
 _writeNodeChildren(std::ostream& o,const dom::Node& node)
 {
-  // Affiche récursivement les noeuds fils
+  // Recursively writes child nodes
   dom::Node next = node.firstChild();
   while (!next._null()){
     domutils::writeNode(o,next);
@@ -112,9 +112,9 @@ textContent(const dom::Node& node)
 void domutils::
 textContent(dom::Node& node,const String& new_value)
 {
-  // Même sémantique que Node::textContent du DOM3:
-  // - Supprime tous les noeuds fils.
-  // - création d'un seul noeud texte contenant la nouvelle valeur
+  // Same semantics as Node::textContent of DOM3:
+  // - Removes all child nodes.
+  // - creation of a single text node containing the new value
   using namespace dom;
   if (node.nodeType()!=Node::ELEMENT_NODE)
     ARCANE_THROW(NotImplementedException,"set text value for non ELEMENT_NODE");
@@ -166,8 +166,8 @@ createElement(const dom::Node& parent,const String& name,const String& value)
 String domutils::
 attrValue(const dom::Node& node,const String& attr_name)
 {
-  // TODO: Utiliser directement les méthodes du DOM que sont getAttribute()
-  // mais il faut pour cela gérer les namespace.
+  // TODO: Use DOM methods directly such as getAttribute()
+  // but for that, namespaces must be handled.
   String str;
   if (node._null())
     return str;
@@ -180,7 +180,7 @@ attrValue(const dom::Node& node,const String& attr_name)
   str = n.nodeValue();
 
 #if 0
-  // A activer lorsque l'implémentation via getAttribute() sera effective.
+  // To be activated when the implementation via getAttribute() is effective.
   {
     dom::Element element{node};
     String str2 = element.getAttribute(attr_name);
@@ -226,22 +226,23 @@ removeAllChildren(const dom::Node& parent)
   if (parent._null())
     return;
 
-  // Supprime les noeuds fils.
+  // Removes child nodes.
   dom::Node n = parent.firstChild();
   while (!n._null()){
     parent.removeChild(n);
-    // TODO LIBERER LA MEMOIRE
+    // TODO RELEASE MEMORY
     n = parent.firstChild();
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le noeud correspondant à une expression XPath.
- * Retourne le noeud correspondant à l'expression \a xpath_expr avec
- * pour contexte le noeud \a context_node.
- * L'implémentation actuelle ne supporte que le type suivant d'expression:
+ * \brief Returns the node corresponding to an XPath expression.
+ * Returns the node corresponding to the expression \a xpath_expr with
+ * \a context_node as context.
+ * The current implementation only supports the following expression type:
  * - a/b*.
  */
 dom::Node domutils::
@@ -256,8 +257,8 @@ nodeFromXPath(const dom::Node& context_node,const String& xpath_expr)
   }
   const char* separator = ::strchr(expr,'/');
   if (separator){
-    // Chaîne de type \a a/b. Recherche le noeud fils de nom \a a et
-    // lui applique récursivement cette fonction avec \a b comme expression.
+    // String of type \a a/b. Searches for the child node named \a a and
+    // recursively applies this function to it with \a b as the expression.
     std::string_view buf1(expr,(Int64)(separator-expr));
     String buf(buf1);
     dom::Node child = childNode(context_node,buf);
@@ -426,7 +427,7 @@ IXmlDocumentHolder* IXmlDocumentHolder::
 loadFromBuffer(Span<const Byte> buffer,const String& name,ITraceMng* tm)
 {
   dom::DOMImplementation domimp;
-  // Lecture du fichier contenant les informations internes.
+  // Reading the file containing internal information.
   return domimp._load(asBytes(buffer),name,tm);
 }
 
@@ -434,7 +435,7 @@ IXmlDocumentHolder* IXmlDocumentHolder::
 loadFromBuffer(ByteConstSpan buffer,const String& name,ITraceMng* tm)
 {
   dom::DOMImplementation domimp;
-  // Lecture du fichier contenant les informations internes.
+  // Reading the file containing internal information.
   return domimp._load(buffer,name,tm);
 }
 
@@ -464,4 +465,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

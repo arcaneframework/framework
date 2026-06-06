@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemEnumerator.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Enumérateur sur des groupes d'entités du maillage.                        */
+/* Enumerator over mesh entity groups.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMENUMERATOR_H
 #define ARCANE_CORE_ITEMENUMERATOR_H
@@ -23,14 +23,16 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ItemEnumerator.h
  *
- * \brief Types et macros pour itérer sur les entités du maillage.
+ * \brief Types and macros for iterating over mesh entities.
  *
- * Ce fichier contient les différentes types d'itérateur et les macros
- * pour itérer sur les entités du maillage.
+ * This file contains the different enumerator types and macros
+ * for iterating over mesh entities.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,14 +46,15 @@ class ItemEnumeratorCS;
 class ItemGroupImpl;
 class ItemEnumeratorPOD;
 
-// Cette méthode est réservée pour SWIG
+// This method is reserved for SWIG
 extern "C++" ARCANE_CORE_EXPORT
 void _arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur une liste d'entités.
+ * \brief Enumerator over a list of entities.
  */
 class ItemEnumerator
 : public ItemEnumeratorBaseT<Item>
@@ -62,10 +65,10 @@ class ItemEnumerator
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
   template<int Extent> friend class ItemConnectedListView;
-  // NOTE: Normalement il suffirait de faire cela:
+  // NOTE: Normally, it would suffice to do this:
   //   template<class T> friend class ItemEnumeratorBase;
-  // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
-  // à la main
+  // but this does not work with GCC 8. So we do the specialization
+  // manually
   //template<class T> friend class ItemEnumeratorBaseT;
   friend class ItemEnumeratorBaseT<Item>;
   friend class ItemEnumeratorBaseT<Node>;
@@ -100,13 +103,13 @@ class ItemEnumerator
 
  public:
 
-  // Pour test
+  // For testing
   template<int E> ItemEnumerator(const ItemConnectedListView<E>& rhs)
   : BaseClass(ItemConnectedListViewT<Item,E>(rhs)){}
 
  private:
 
-  // Constructeur réservé pour ItemGroup
+  // Constructor reserved for ItemGroup
   ItemEnumerator(const ItemInfoListView& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items, local_ids, agroup)
   {}
@@ -130,7 +133,7 @@ class ItemEnumerator
 
  protected:
 
-  // TODO A supprimer
+  // TODO To be removed
   ItemEnumerator(ItemSharedInfo* s, const Int32ConstArrayView& local_ids)
   : BaseClass(s, local_ids)
   {}
@@ -161,7 +164,7 @@ class ItemEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Constructeur seulement utilisé par fromItemEnumerator()
+//! Constructor only used by fromItemEnumerator()
 inline ItemEnumeratorBase::
 ItemEnumeratorBase(const ItemEnumerator& rhs, bool)
 : m_view(rhs.m_view)
@@ -173,7 +176,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs, bool)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Constructeur seulement utilisé par fromItemEnumerator()
+//! Constructor only used by fromItemEnumerator()
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
 : ItemEnumeratorBase(rhs,v)
@@ -225,8 +228,9 @@ toItemEnumerator() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur une liste typée d'entités de type \a ItemType
+ * \brief Enumerator over a typed list of entities of type \a ItemType
  */
 template<typename ItemType>
 class ItemEnumeratorT
@@ -275,19 +279,19 @@ class ItemEnumeratorT
 
  public:
 
-  // Pour test
+  // For testing
   ItemEnumeratorT(const ItemConnectedListViewT<ItemType>& rhs) : BaseClass(rhs){}
 
  private:
 
-  // Constructeur réservé pour ItemGroup
+  // Constructor reserved for ItemGroup
   ItemEnumeratorT(const ItemInfoListViewT<ItemType>& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items, local_ids, agroup)
   {}
 
  private:
 
-  // TODO: a supprimer
+  // TODO: to be removed
   ItemEnumeratorT(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
   : BaseClass(s,local_ids){}
 
@@ -296,7 +300,7 @@ class ItemEnumeratorT
 
  public:
 
-  //! Conversion vers un ItemEnumerator
+  //! Conversion to an ItemEnumerator
   operator ItemEnumerator() const { return this->toItemEnumerator(); }
 
  public:
@@ -308,7 +312,7 @@ class ItemEnumeratorT
 
  private:
 
-  //! Constructeur seulement utilisé par fromItemEnumerator()
+  //! Constructor only used by fromItemEnumerator()
   ItemEnumeratorT(const ItemEnumerator& rhs,bool v) : BaseClass(rhs,v){}
 };
 
@@ -361,7 +365,7 @@ ItemLocalId(ItemConnectedEnumeratorT<ItemType> enumerator)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: ajouter vérification du bon type
+// TODO: add type checking
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumerator enumerator)
 : ItemLocalId(enumerator.asItemLocalId())
@@ -400,53 +404,53 @@ ItemLocalIdT(ItemConnectedEnumeratorT<ItemType> enumerator)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Enumérateur générique d'un groupe d'entité
+//! Generic enumerator for an entity group
 #define ENUMERATE_NO_TRACE_(type,name,group) A_ENUMERATE_ITEM_NO_TRACE(::Arcane::ItemEnumeratorT< type >,name,group)
 
-//! Enumérateur générique d'un groupe d'entité
+//! Generic enumerator for an entity group
 #define ENUMERATE_(type,name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumeratorT< type >,name,group)
 
-//! Enumérateur générique d'un groupe d'entité
+//! Generic enumerator for an entity group
 #define ENUMERATE_GENERIC(type,name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumeratorT< type >,name,group)
 
-//! Enumérateur générique d'un groupe de noeuds
+//! Generic enumerator for a node group
 #define ENUMERATE_ITEM(name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumerator,name,group)
 
 #define ENUMERATE_ITEMWITHNODES(name,group) ENUMERATE_(::Arcane::ItemWithNodes,name,group)
 
-//! Enumérateur générique d'un groupe de noeuds
+//! Generic enumerator for a node group
 #define ENUMERATE_NODE(name,group) ENUMERATE_(::Arcane::Node,name,group)
 
-//! Enumérateur générique d'un groupe d'arêtes
+//! Generic enumerator for an edge group
 #define ENUMERATE_EDGE(name,group) ENUMERATE_(::Arcane::Edge,name,group)
 
-//! Enumérateur générique d'un groupe de faces
+//! Generic enumerator for a face group
 #define ENUMERATE_FACE(name,group) ENUMERATE_(::Arcane::Face,name,group)
 
-//! Enumérateur générique d'un groupe de mailles
+//! Generic enumerator for a cell group
 #define ENUMERATE_CELL(name,group) ENUMERATE_(::Arcane::Cell,name,group)
 
-//! Enumérateur générique d'un groupe de particules
+//! Generic enumerator for a particle group
 #define ENUMERATE_PARTICLE(name,group) ENUMERATE_(::Arcane::Particle,name,group)
 
-//! Enumérateur generique d'un groupe de degrés de liberté
+//! Generic enumerator for a degree of freedom group
 #define ENUMERATE_DOF(name,group) ENUMERATE_(::Arcane::DoF,name,group)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumérateur sur un ItemPairGroup.
- * \param _item_type1 Type de l'entité du groupe
- * \param _item_type2 Type des sous-entités du groupe
- * \param _name Nom de l'énumérateur
- * \param _group Instance de ItemPairGroup
+ * \brief Enumerator over an ItemPairGroup.
+ * \param _item_type1 Type of the group entity
+ * \param _item_type2 Type of the sub-entities of the group
+ * \param _name Name of the enumerator
+ * \param _array Instance of ItemPairGroup
  */
 #define ENUMERATE_ITEMPAIR(_item_type1,_item_type2,_name,_array) \
 for( ::Arcane::ItemPairEnumeratorT< _item_type1, _item_type2 > _name(_array); _name.hasNext(); ++_name )
 
 /*!
- * \brief Enumérateur générique sur un ItemPairGroup.
+ * \brief Generic enumerator over an ItemPairGroup.
  * \sa ENUMERATE_ITEMPAIR
  */
 #define ENUMERATE_ITEMPAIR_DIRECT(_name,_array) \
@@ -456,17 +460,17 @@ for( ::Arcane::ItemPairEnumerator _name(_array); _name.hasNext(); ++_name )
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumérateur sur sous-élément d'un ItemPairGroup.
- * \param _item_type Type de la sous-entité
- * \param _name Nom de l'énumérateur
- * \param _parent_item Instance de l'entité parente ou de l'énumérateur
- * sur l'entité parente.
+ * \brief Enumerator over a sub-element of an ItemPairGroup.
+ * \param _item_type Type of the sub-entity
+ * \param _name Name of the enumerator
+ * \param _parent_item Instance of the parent entity or the enumerator
+ * on the parent entity.
  */
 #define ENUMERATE_SUB_ITEM(_item_type,_name,_parent_item) \
 for( ::Arcane::ItemEnumeratorT< _item_type > _name(_parent_item.subItems()); _name.hasNext(); ++_name )
 
 /*!
- * \brief Enumérateur générique sur un sous-élément d'un ItemPairGroup.
+ * \brief Generic enumerator over a sub-element of an ItemPairGroup.
  * \sa ENUMERATE_SUB_ITEM
  */
 #define ENUMERATE_SUB_ITEM_DIRECT(_name,_parent_item) \

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PrivateVariableScalarTpl.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Instanciation des classes templates communes des variables du maillage.   */
+/* Instantiation of common template classes for mesh variables.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

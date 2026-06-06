@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngDispatcher.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire du parallélisme sur un domaine.                 */
+/* Interface of the parallelism manager on a domain.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLELMNGDISPATCHER_H
 #define ARCANE_PARALLELMNGDISPATCHER_H
@@ -75,10 +75,11 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Redirige la gestion des messages des sous-domaines
- * suivant le type de l'argument.
+ * \brief Redirects the message management of sub-domains
+ * according to the argument type.
  */
 class ARCANE_CORE_EXPORT ParallelMngDispatcher
 : public ReferenceCounterImpl
@@ -86,7 +87,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 {
  public:
 
-  //! Implémentation de Arccore::MessagePassing::IControlDispatcher.
+  //! Implementation of Arccore::MessagePassing::IControlDispatcher.
   class ARCANE_CORE_EXPORT DefaultControlDispatcher
   : public MP::IControlDispatcher
   {
@@ -113,7 +114,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
     IParallelMng* m_parallel_mng;
   };
 
-  //! Implémentation de Arccore::MessagePassing::ISerializeDispatcher.
+  //! Implementation of Arccore::MessagePassing::ISerializeDispatcher.
   class SerializeDispatcher;
 
   friend class ParallelMngInternal;
@@ -144,7 +145,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   void broadcastString(String& str, Int32 rank) override;
   void broadcastMemoryBuffer(ByteArray& bytes, Int32 rank) override;
 
-  //! Redéfinit ici allGather pour éviter de cacher le symbole dans les classes dérivées.
+  //! Redefines allGather here to avoid hiding the symbol in derived classes.
   void allGather(ISerializer* send_serializer, ISerializer* recv_serializer) override;
 
  public:
@@ -321,4 +322,4 @@ class ParallelMngContainerBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

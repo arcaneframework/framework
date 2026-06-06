@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemFamilyInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IItemFamily.                                   */
+/* Internal Arcane part of IItemFamily.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IITEMFAMILYINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IITEMFAMILYINTERNAL_H
@@ -25,8 +25,9 @@ class IItemFamilyTopologyModifier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Partie interne de IItemFamily.
+ * \brief Internal part of IItemFamily.
  */
 class ARCANE_CORE_EXPORT IItemFamilyInternal
 {
@@ -36,53 +37,53 @@ class ARCANE_CORE_EXPORT IItemFamilyInternal
 
  public:
 
-  //! Informations sur les connectivités non structurés
+  //! Information on unstructured connectivities
   virtual ItemInternalConnectivityList* unstructuredItemInternalConnectivityList() = 0;
 
-  //! Interface du modificateur de topologie.
+  //! Topology modifier interface.
   virtual IItemFamilyTopologyModifier* topologyModifier() = 0;
 
-  //! Instance de ItemSharedInfo pour les entités de la famille
+  //! Instance of ItemSharedInfo for the family entities
   virtual ItemSharedInfo* commonItemSharedInfo() = 0;
 
   /*!
-   * \brief Indique une fin d'allocation.
+   * \brief Indicates the end of allocation.
    *
-   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
-   * au moment de l'allocate.
+   * This method should normally only be called by the mesh (IMesh)
+   * at the time of allocation.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   virtual void endAllocate() = 0;
 
   /*!
-   * \brief Indique une fin de modification par le maillage.
+   * \brief Indicates the end of modification by the mesh.
    *
-   * Cette méthode ne doit normalement être appelée que par le maillage (IMesh)
-   * à la fin d'un endUpdate().
+   * This method should normally only be called by the mesh (IMesh)
+   * at the end of an endUpdate().
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   virtual void notifyEndUpdateFromMesh() = 0;
 
   /*!
-   * \brief Ajoute une variable à cette famille.
+   * \brief Adds a variable to this family.
    *
-   * Cette méthode est appelée par la variable elle même et ne doit pas
-   * être apelée dans d'autres conditions.
+   * This method is called by the variable itself and should not
+   * be called under other conditions.
    */
   virtual void addVariable(IVariable* var) = 0;
 
   /*!
-   * \brief Supprime une variable à cette famille.
+   * \brief Removes a variable from this family.
    *
-   * Cette méthode est appelée par la variable elle même et ne doit pas
-   * être apelée dans d'autres conditions.
+   * This method is called by the variable itself and should not
+   * be called under other conditions.
    */
   virtual void removeVariable(IVariable* var) = 0;
 
   /*!
-   * \brief Redimensionne les variables de cette famille.
+   * \brief Resizes the variables of this family.
    */
   virtual void resizeVariables(bool force_resize) = 0;
 

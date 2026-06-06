@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IStandardFunction.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une fonction standard.                                        */
+/* Interface of a standard function.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISTANDARDFUNCTION_H
 #define ARCANE_CORE_ISTANDARDFUNCTION_H
@@ -24,12 +24,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface gérant une fonction standard.
+ * \brief Interface managing a standard function.
  *
- * Ces fonctions peuvent être associées à une option du jeu de données.
+ * These functions can be associated with a dataset option.
  *
- * Les fonctions standards ont les prototypes suivants possibles:
+ * Standard functions have the following possible prototypes:
  * - f(Real,Real) -> Real
  * - f(Real,Real3) -> Real
  * - f(Real,Real) -> Real3
@@ -58,5 +59,4 @@ class ARCANE_CORE_EXPORT IStandardFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

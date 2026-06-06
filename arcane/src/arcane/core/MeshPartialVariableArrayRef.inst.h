@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartialVariableArrayRef.inst.h                          (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des classes dérivant de MeshPartialVariableArrayRef.       */
+/* Implementation of classes deriving from MeshPartialVariableArrayRef.      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -180,11 +180,10 @@ MeshPartialVariableArrayRefT<ItemType,DataType>::
 MeshPartialVariableArrayRefT(const VariableBuildInfo& vb)
 : ItemPartialVariableArrayRefT<DataType>(vb,ItemTraitsT<ItemType>::kind())
 {
-  // Normalement, c'est à cette classe de faire l'initilisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableArrayRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableArrayRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows a variable to be generically created on a mesh entity based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,11 +194,10 @@ MeshPartialVariableArrayRefT<ItemType,DataType>::
 MeshPartialVariableArrayRefT(const MeshPartialVariableArrayRefT<ItemType,DataType>& rhs)
 : ItemPartialVariableArrayRefT<DataType>(rhs)
 {
-  // Normalement, c'est à cette classe de faire l'initilisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableArrayRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableArrayRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows a variable to be generically created on a mesh entity based on its type.
 }
 
 /*---------------------------------------------------------------------------*/

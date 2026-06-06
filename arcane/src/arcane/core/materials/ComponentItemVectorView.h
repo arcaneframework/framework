@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItemVectorView.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Vue sur un vecteur sur des entités de constituants.                       */
+/* View over a vector of constituent entities.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEMVECTORVIEW_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEMVECTORVIEW_H
@@ -42,10 +42,11 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur un vecteur sur les entités d'un composant.
+ * \brief View over a vector of entities of a component.
  *
- * Les constructeurs de cette classe sont internes à %Arcane.
+ * The constructors of this class are internal to %Arcane.
  */
 class ARCANE_CORE_EXPORT ComponentItemVectorView
 {
@@ -74,7 +75,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  protected:
 
-  //! Construit un vecteur contenant les entités de \a group pour le composant \a component
+  //! Constructs a vector containing the entities of \a group for the component \a component
   ComponentItemVectorView(IMeshComponent* component,
                           ConstArrayView<MatVarIndex> mvi,
                           ConstituentItemLocalIdListView constituent_local_ids,
@@ -86,13 +87,13 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   {
   }
 
-  //! Construit une vue vide pour le composant \a component
+  //! Constructs an empty view for the component \a component
   explicit ComponentItemVectorView(IMeshComponent* component)
   : m_component(component)
   {
   }
 
-  //! Construit une vue à partir d'une autre vue.
+  //! Constructs a view from another view.
   ComponentItemVectorView(IMeshComponent* component, ComponentItemVectorView rhs_view)
   : m_matvar_indexes_view(rhs_view.m_matvar_indexes_view)
   , m_constituent_list_view(rhs_view.m_constituent_list_view)
@@ -103,13 +104,13 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  public:
 
-  //! Nombre d'entités dans la vue
+  //! Number of entities in the view
   Integer nbItem() const { return m_matvar_indexes_view.size(); }
 
-  //! Composant associé
+  //! Associated component
   IMeshComponent* component() const { return m_component; }
 
-  //! Retourne la \a index-ème ComponentCell de la vue
+  //! Returns the index-th ComponentCell of the view
   ARCCORE_HOST_DEVICE ComponentCell componentCell(Int32 index) const
   {
     return m_constituent_list_view._constituenItemBase(index);
@@ -117,22 +118,23 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  private:
 
-  // Tableau des MatVarIndex de cette vue.
+  // Array of MatVarIndex for this view.
   ConstArrayView<MatVarIndex> _matvarIndexes() const { return m_matvar_indexes_view; }
 
-  //! Tableau des localId() des entités associées
+  //! Array of localId() of associated entities
   ConstArrayView<Int32> _internalLocalIds() const { return m_items_local_id_view; }
 
   ConstituentItemLocalIdListView _constituentItemListView() const { return m_constituent_list_view; }
+
   /*!
    * \internal
-   * \brief Créé une sous-vue de cette vue.
+   * \brief Creates a sub-view of this view.
    * 
-   * Cette méthode est interne à Arcane et ne doit pas être utilisée.
+   * This method is internal to Arcane and should not be used.
    */
   ComponentItemVectorView _subView(Integer begin, Integer size);
 
-  //! Pour les tests vérifie que \a rhs et l'instance pointent sur les même données
+  //! For tests verifies that \a rhs and the instance point to the same data
   bool _isSamePointerData(const ComponentItemVectorView& rhs) const
   {
     bool test1 = m_constituent_list_view._isSamePointerData(rhs.m_constituent_list_view);
@@ -141,9 +143,9 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  private:
 
-  // NOTE: Cette classe est wrappée directement en C#.
-  // Si on modifie les champs de cette classe, il faut modifier le type correspondant
-  // dans le wrappeur.
+  // NOTE: This class is wrapped directly in C#.
+  // If the fields of this class are modified, the corresponding type
+  // in the wrapper must be modified.
   ConstArrayView<MatVarIndex> m_matvar_indexes_view;
   ConstituentItemLocalIdListView m_constituent_list_view;
   ConstArrayView<Int32> m_items_local_id_view;
@@ -152,10 +154,11 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur un vecteur sur les entités d'un matériau.
+ * \brief View over a vector of entities of a material.
  *
- * Les constructeurs de cette classe sont internes à %Arcane.
+ * The constructors of this class are internal to %Arcane.
  */
 class ARCANE_CORE_EXPORT MatItemVectorView
 : public ComponentItemVectorView
@@ -190,21 +193,21 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 
   /*!
    * \internal
-   * \brief Créé une sous-vue de cette vue.
+   * \brief Creates a sub-view of this view.
    * 
-   * Cette méthode est interne à Arcane et ne doit pas être utilisée.
+   * This method is internal to Arcane and should not be used.
    */
   MatItemVectorView _subView(Integer begin, Integer size);
 
  public:
 
-  //! Matériau associé
+  //! Associated material
   IMeshMaterial* material() const;
 
-  //! Récupère la index-ème MatCell de la vue
+  //! Retrieves the index-th MatCell of the view
   ARCCORE_HOST_DEVICE MatCell matCell(Int32 index) const { return MatCell(componentCell(index)); }
 
-  // Temporaire: à conserver pour compatibilité
+  // Temporary: kept for compatibility
   ARCANE_DEPRECATED_240 MatItemVectorView subView(Integer begin, Integer size)
   {
     return _subView(begin, size);
@@ -213,10 +216,11 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur un vecteur sur les entités d'un milieu.
+ * \brief View over a vector of entities of an environment.
  *
- * Les constructeurs de cette classe sont internes à %Arcane.
+ * The constructors of this class are internal to %Arcane.
  */
 class ARCANE_CORE_EXPORT EnvItemVectorView
 : public ComponentItemVectorView
@@ -251,18 +255,18 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
 
   /*!
    * \internal
-   * \brief Créé une sous-vue de cette vue.
+   * \brief Creates a sub-view of this view.
    * 
-   * Cette méthode est interne à Arcane et ne doit pas être utilisée.
+   * This method is internal to Arcane and should not be used.
    */
   EnvItemVectorView _subView(Integer begin, Integer size);
 
  public:
 
-  //! Milieu associé
+  //! Associated environment
   IMeshEnvironment* environment() const;
 
-  //! Récupère la index-ème EnvCell de la vue
+  //! Retrieves the index-th EnvCell of the view
   ARCCORE_HOST_DEVICE EnvCell envCell(Int32 index) const { return EnvCell(componentCell(index)); }
 };
 
@@ -274,5 +278,4 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

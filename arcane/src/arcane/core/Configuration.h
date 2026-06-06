@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Configuration.h                                             (C) 2000-2020 */
 /*                                                                           */
-/* Gestion des options de configuration de l'exécution.                      */
+/* Management of execution configuration options.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CONFIGURATION_H
 #define ARCANE_CONFIGURATION_H
@@ -24,17 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une section de configuration.
+ * \brief Interface for a configuration section.
  *
- * Cette interface permet de récupérer les valeurs d'une option
- * de configuration.
+ * This interface allows retrieving the values of a configuration option.
  */
 class ARCANE_CORE_EXPORT IConfigurationSection
 {
  public:
 
-  virtual ~IConfigurationSection() {} //!< Libère les ressources
+  virtual ~IConfigurationSection() {} //!< Frees resources
 
  public:
 
@@ -56,81 +56,82 @@ class ARCANE_CORE_EXPORT IConfigurationSection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'une configuration.
+ * \brief Interface for a configuration.
  */
 class ARCANE_CORE_EXPORT IConfiguration
 {
  public:
 
-  virtual ~IConfiguration() {} //!< Libère les ressources
+  virtual ~IConfiguration() {} //!< Frees resources
 
  public:
 
   /*!
-   * \brief Créé une section de configuration.
+   * \brief Creates a configuration section.
    *
-   * L'instance retournée doit être détruire par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   virtual IConfigurationSection* createSection(const String& name) const =0;
 
   /*!
-   * \brief Section principale.
+   * \brief Main section.
    *
-   * L'instance retournée reste la propriété de cette instance
-   * et ne doit pas être détruite.
+   * The returned instance remains the property of this instance
+   * and should not be destroyed.
    */
   virtual IConfigurationSection* mainSection() const =0;
 
   /*!
-   * \brief Ajout une valeur à la configuration.
+   * \brief Adds a value to the configuration.
    *
-   * Ajoute à la configuration la valeur \a value pour le
-   * nom \a name. La nouvelle valeur aura comme priority \a priority. Si
-   * une valeur de nom \a name existe déjà, elle est remplacée par
-   * \a value si \a priority est inférieure à la priorité actuelle.
+   * Adds the value \a value for the name \a name to the configuration.
+   * The new value will have priority \a priority. If a value for name
+   * \a name already exists, it is replaced by \a value if \a priority
+   * is lower than the current priority.
    */
   virtual void addValue(const String& name,const String& value,Integer priority) =0;
   
   /*!
-   * \brief Clone cette configuration.
+   * \brief Clones this configuration.
    */
   virtual IConfiguration* clone() const =0;
 
   /*!
-   * \brief Fusionne cette configuration avec la configuration \a c.
+   * \brief Merges this configuration with configuration \a c.
    *
-   * Si une option existe à la fois dans cette configuration et dans \a c,
-   * c'est celle qui a la priorité la plus faible qui est conservée.
+   * If an option exists in both this configuration and \a c, the one
+   * with the lowest priority is kept.
    */
   virtual void merge(const IConfiguration* c) =0;
 
-  //! Affiche les valeurs des paramètres de configuration via le traceMng()
+  //! Displays the values of the configuration parameters via traceMng()
   virtual void dump() const =0;
 
-  //! Affiche les valeurs des paramètres de configuration sur le flot o
+  //! Displays the values of the configuration parameters to the stream o
   virtual void dump(std::ostream& ostr) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de configuration.
+ * \brief Configuration manager.
  */
 class ARCANE_CORE_EXPORT IConfigurationMng
 {
  public:
 
-  virtual ~IConfigurationMng() {} //!< Libère les ressources
+  virtual ~IConfigurationMng() {} //!< Frees resources
 
  public:
 
-  //! Configuration par défaut.
+  //! Default configuration.
   virtual IConfiguration* defaultConfiguration() const =0;
 
   /*!
-   * \brief Créé une nouvelle configuration.
+   * \brief Creates a new configuration.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   virtual IConfiguration* createConfiguration() =0;
 };
@@ -143,4 +144,4 @@ class ARCANE_CORE_EXPORT IConfigurationMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

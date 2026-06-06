@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemInternalSortFunction.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une fonction de tri des entités.                              */
+/* Interface of an entity sorting function.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMINTERNALSORTFUNCTION_H
 #define ARCANE_CORE_IITEMINTERNALSORTFUNCTION_H
@@ -24,36 +24,36 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'une fonction de tri des entités.
+ * \brief Interface of an entity sorting function.
  *
- * Cette classe est utilisée pour trier des entités.
- * Cela se fait lors de l'appel à la méthode sortItems().
+ * This class is used to sort entities.
+ * This is done when calling the sortItems() method.
  *
- * Pour simplifier le tri, il est préférable d'utiliser la
- * classe ItemInternalSortFunction en spécifiant la fonction
- * de comparaison.
+ * To simplify sorting, it is preferable to use the
+ * ItemInternalSortFunction class by specifying the comparison function.
  *
  */
 class IItemInternalSortFunction
 {
  public:
 
-  virtual ~IItemInternalSortFunction() = default; //!< Libère les ressources
+  virtual ~IItemInternalSortFunction() = default; //!< Releases resources
 
  public:
 
   /*!
-   * \brief Nom de la fonction de tri.
+   * \brief Name of the sorting function.
    *
-   * Les noms commençant par 'Arcane' sont réservés et ne doivent pas être
-   * utilisés.
+   * Names starting with 'Arcane' are reserved and must not be
+   * used.
    */
   virtual const String& name() const = 0;
 
   /*!
-   * \brief Trie les entités du tableau \a items.
+   * \brief Sorts the entities in the array \a items.
    */
   virtual void sortItems(ItemInternalMutableArrayView items) = 0;
 };
@@ -66,4 +66,4 @@ class IItemInternalSortFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

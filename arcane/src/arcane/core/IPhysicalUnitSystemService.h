@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IPhysicalUnitSystemService.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service gérant un système d'unité.                         */
+/* Interface of a service managing a unit system.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPHYSICALUNITSYSTEMSERVICE_H
 #define ARCANE_CORE_IPHYSICALUNITSYSTEMSERVICE_H
@@ -24,15 +24,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un service gérant un système d'unité.
+ * \brief Interface of a service managing a unit system.
  */
 class ARCANE_CORE_EXPORT IPhysicalUnitSystemService
 {
  public:
 
-  virtual ~IPhysicalUnitSystemService() = default; //!< Libère les ressources.
+  virtual ~IPhysicalUnitSystemService() = default; //!< Releases resources.
 
  public:
 
@@ -41,7 +42,7 @@ class ARCANE_CORE_EXPORT IPhysicalUnitSystemService
  public:
 
   /*!
-   * \brief Crée un système d'unité pour le Système International SI.
+   * \brief Creates a unit system for the International System SI.
    */
   virtual IPhysicalUnitSystem* createStandardUnitSystem() =0;
 
@@ -56,4 +57,3 @@ class ARCANE_CORE_EXPORT IPhysicalUnitSystemService
 /*---------------------------------------------------------------------------*/
 
 #endif
-

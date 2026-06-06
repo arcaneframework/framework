@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableUtils.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur les variables.                         */
+/* Various utility functions for variables.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,11 +30,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file VariableUtils.h
  *
- * \brief Fonctions utilitaires sur les variables.
+ * \brief Utility functions for variables.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -57,9 +59,9 @@ prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null)
   INumericDataInternal* nd = d->_commonInternal()->numericData();
   if (!nd)
     return;
-  // On ne pré-charge que si la variable est en mémoire unifiée.
-  // Cela n'est utile que dans ce cas et de plus avec CUDA cela provoque
-  // une erreur si la mémoire n'est pas u
+  // We only prefetch if the variable is in unified memory.
+  // This is only useful in this case and furthermore with CUDA it causes
+  // an error if the memory is not u
   if (nd->memoryAllocator()->memoryResource() != eMemoryResource::UnifiedMemory)
     return;
   ConstMemoryView mem_view = nd->memoryView();

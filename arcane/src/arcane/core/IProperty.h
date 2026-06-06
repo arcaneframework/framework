@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IProperty.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface des propriétés.                                                 */
+/* Property interface.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPROPERTY_H
 #define ARCANE_CORE_IPROPERTY_H
@@ -31,9 +31,10 @@ class IPropertyTypeInstance;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Définition des types pour les propriétés.
+ * \brief Definition of types for properties.
  */
 class Property
 {
@@ -43,15 +44,15 @@ class Property
 
  public:
 
-  //! Genre d'une propriété
+  //! Kind of a property
   enum ePropertyKind
   {
-    PkSimple, //!< Genre simple (Réel, entier, chaîne, ...)
-    PkEnum, //!< Genre énuméré
-    PkExtended, //!< Genre étendu
-    PkComplex //!< Genre complexe contenant des sous-types
+    PkSimple, //!< Simple kind (Real, integer, string, ...)
+    PkEnum, //!< Enumerated kind
+    PkExtended, //!< Extended kind
+    PkComplex //!< Complex kind containing sub-types
   };
-  //! Type simple dans le cas d'un genre PkSimple
+  //! Simple type in the case of a PkSimple kind
   enum eSimpleType
   {
     StString,
@@ -63,88 +64,91 @@ class Property
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une valeur propriété.
+ * \brief Interface of a property value.
  */
 class IPropertyValue
 : public Property
 {
  public:
 
-  //! Stocke la valeur de la propriété dans \a str
+  //! Stores the property value in \a str
   virtual void valueToString(String& str) const = 0;
-  //! Stocke le nom de la propriété dans \a str
+  //! Stores the property name in \a str
   virtual void nameToString(String& str) const = 0;
-  //! Positionne la nouvelle valeur de la propriété à \a str
+  //! Positions the new property value at \a str
   virtual void setValueFromString(const String& str) = 0;
-  //! Retourne si la valeur actuelle est la valeur par défaut
+  //! Returns whether the current value is the default value
   virtual bool isDefaultValue() const = 0;
-  //! Retourne si la valeur actuelle est la valeur originelle
+  //! Returns whether the current value is the original value
   virtual bool isOriginalValue() const = 0;
-  //! Stocke la valeur originale de la propriété dans \a str
+  //! Stores the original property value in \a str
   virtual void originalValueToString(String& str) const = 0;
-  //! Retourne si la valeur peut être éditée.
+  //! Returns whether the value can be edited.
   virtual bool canBeEdited() const = 0;
-  //! Retourne le type de cette propriété.
+  //! Returns the type of this property.
   virtual IPropertyType* type() = 0;
-  //! Retourne l'instance associé à cette valeur.
+  //! Returns the instance associated with this value.
   virtual IPropertyTypeInstance* typeInstance() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un type de propriété.
+ * \brief Interface of a property type.
  */
 class IPropertyType
 : public Property
 {
  public:
 
-  //! Retourne dans \a str le nom du type.
+  //! Returns the name of the type in \a str.
   virtual void typeNameToString(String& str) const = 0;
 
-  //! Retourne le genre du type de la propriété
+  //! Returns the kind of the property type
   virtual ePropertyKind kind() const = 0;
 
   /*!
-   * \brief Retourne le nombre de valeurs enumérées possible pour le type.
-   * Cette méthode n'est utile que les types du genre PkEnum. Dans les
-   * autres cas, elle retourne zéro.
+   * \brief Returns the number of possible enumerated values for the type.
+   * This method is only useful for PkEnum kind types. In
+   * other cases, it returns zero.
    */
   virtual Integer nbEnumeratedValue() const = 0;
 
   /*!
-   * \brief Retourne la \a ième valeur enumérée du type.
-   * Cette méthode n'est utile que les types du genre PkEnum. Dans les
-   * autres cas, elle retourne la chaîne nulle.
+   * \brief Returns the i-th enumerated value of the type.
+   * This method is only useful for PkEnum kind types. In
+   * other cases, it returns the null string.
    */
   virtual String enumeratedValue(Integer i) const = 0;
 
   /*!
-   * \brief Retourne le type simple du stockage de la propriété.
-   * Cette méthode n'est valide que les types du genre PkSimple. Pour tous les
-   * autres types, elle retourne StString.
+   * \brief Returns the simple type of the property storage.
+   * This method is only valid for PkSimple kind types. For all
+   * other types, it returns StString.
    */
   virtual eSimpleType simpleType() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une instance d'un type de propriété.
+ * \brief Interface of a property type instance.
  */
 class IPropertyTypeInstance
 : public Property
 {
  public:
 
-  //! Stocke le nom de l'instance dans \a str
+  //! Stores the instance name in \a str
   virtual void nameToString(String& str) const = 0;
-  //! Retourne le type de l'instance.
+  //! Returns the type of the instance.
   virtual IPropertyType* type() = 0;
 };
 
@@ -156,4 +160,4 @@ class IPropertyTypeInstance
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

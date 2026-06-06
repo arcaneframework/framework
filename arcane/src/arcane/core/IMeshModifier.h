@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshModifier.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface de modification du maillage.                                    */
+/* Mesh modification interface.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHMODIFIER_H
 #define ARCANE_CORE_IMESHMODIFIER_H
@@ -35,23 +35,24 @@ class IMeshModifier;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour IMeshModifier::addCells().
+ * \brief Arguments for IMeshModifier::addCells().
  *
- * Le format de cellsInfos() est identiques à celui de la méthode
- * IMesh::allocateCells(). Si \a cellsLocalIds() n'est pas vide, il contiendra
- * en retour les numéros locaux des mailles créées.
+ * The format of cellsInfos() is identical to that of the
+ * IMesh::allocateCells() method. If \a cellsLocalIds() is not empty, it
+ * will contain the local IDs of the created meshes.
  *
- * Si une maille ajoutée possède le même uniqueId() qu'une des mailles existantes,
- * la maille existante est conservée telle qu'elle et rien ne se passe.
+ * If an added mesh has the same uniqueId() as an existing mesh, the
+ * existing mesh is kept as is and nothing happens.
  *
- * Les mailles créées sont considérées comme appartenant à ce sous-domaine
- * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+ * The created meshes are considered to belong to this subdomain.
+ * If this is not the case, their ownership must be modified afterwards.
  *
- * Par défaut, lorsqu'on ajoute des mailles, si les faces associées n'existent
- * pas elles sont créées automatiquement. Cela n'est possible qu'en séquentiel.
- * Il est possible de désactiver cela en appelant setAllowBuildFaces().
- * En parallèle, la valeur de isAllowBuildFaces() est ignorée.
+ * By default, when adding meshes, if the associated faces do not exist,
+ * they are created automatically. This is only possible in sequential mode.
+ * It is possible to disable this by calling setAllowBuildFaces().
+ * In parallel, the value of isAllowBuildFaces() is ignored.
  */
 class MeshModifierAddCellsArgs
 {
@@ -75,7 +76,7 @@ class MeshModifierAddCellsArgs
   Int64ConstArrayView cellInfos() const { return m_cell_infos; }
   Int32ArrayView cellLocalIds() const { return m_cell_lids; }
 
-  //! Indique si on autorise la création des faces associées
+  //! Indicates whether associated faces are allowed to be built
   void setAllowBuildFaces(bool v) { m_is_allow_build_faces = v; }
   bool isAllowBuildFaces() const { return m_is_allow_build_faces; }
 
@@ -83,15 +84,16 @@ class MeshModifierAddCellsArgs
 
   Int32 m_nb_cell = 0;
   Int64ConstArrayView m_cell_infos;
-  //! En retour, liste des localId() des mailles créées
+  //! Returns, list of localIds() of the created meshes
   Int32ArrayView m_cell_lids;
   bool m_is_allow_build_faces = true;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour IMeshModifier::addFaces().
+ * \brief Arguments for IMeshModifier::addFaces().
  */
 class MeshModifierAddFacesArgs
 {
@@ -119,31 +121,30 @@ class MeshModifierAddFacesArgs
 
   Int32 m_nb_face = 0;
   Int64ConstArrayView m_face_infos;
-  //! En retour, liste des localId() des faces créées
+  //! Returns, list of localIds() of the created faces
   Int32ArrayView m_face_lids;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de modification du maillage.
+ * \brief Mesh modification interface.
  *
- * Cette interface fournit les services permettant de modifier un
- * maillage. La manipulation du maillage est un mécanisme complexe et est
- * réservée aux utilisateurs avertis. Certaines manipulations peuvent
- * laisser le maillage dans un état incohérent.
+ * This interface provides the services for modifying a mesh.
+ * Mesh manipulation is a complex mechanism and is reserved for experienced
+ * users. Some manipulations may leave the mesh in an inconsistent state.
  *
- * Les opérations supportées dépendent du type de maillage.
- * Pour des raisons de performance, l'ajout et la supression d'entité ne
- * mettent pas directement à jour les variables ou les groupes d'entités.
- * Pour que cela soit pris en compte, il faut appeler la méthode endUpdate().
- * En parallèle, cela provoque aussi la mise à jour des entités fantômes.
+ * The supported operations depend on the mesh type. For performance reasons,
+ * adding and deleting entities do not directly update the entity variables
+ * or groups. For this to be taken into account, the endUpdate() method must
+ * be called. In parallel, this also triggers the update of ghost entities.
  */
 class ARCANE_CORE_EXPORT IMeshModifier
 {
  public:
 
-  virtual ~IMeshModifier() {} //<! Libère les ressources
+  virtual ~IMeshModifier() {} //<! Releases resources
 
  public:
 
@@ -151,50 +152,50 @@ class ARCANE_CORE_EXPORT IMeshModifier
 
  public:
 
-  //! Maillage associé
+  //! Associated mesh
   virtual IMesh* mesh() = 0;
 
  public:
 
   /*!
-   * \brief Positionne la propriété indiquant si le maillage peut évoluer.
+   * \brief Sets the property indicating whether the mesh can evolve.
    *
-   * Cette propriété doit être positionnée à vrai si l'on souhaite modifier
-   * le maillage, par exemple en échangeant des entités par appel à
-   * exchangeItems(). Cela ne concerne que les noeuds, arêtes, faces et
-   * mailles mais pas les particules qui peuvent toujours être créées et détruites.
+   * This property must be set to true if you wish to modify the mesh,
+   * for example by exchanging entities via the exchangeItems() call.
+   * This only concerns nodes, edges, faces, and meshes, but not particles,
+   * which can still be created and destroyed.
    *
-   * Par défaut, isDynamic() est faux.
+   * By default, isDynamic() is false.
    *
-   * Le positionnement de la propriété ne peut se faire qu'à l'initialisation.
+   * The property setting can only be done during initialization.
    */
   virtual void setDynamic(bool v) = 0;
 
   /*!
-   * \brief Ajoute des mailles.
+   * \brief Adds meshes.
    *
-   * Ajoute des mailles. Le format de \a cells_infos est identiques à celui
-   * de la méthode IMesh::allocateCells(). Si \a cells_lid n'est pas vide, il contiendra
-   * en retour les numéros locaux des mailles créées. Il est possible de faire plusieurs ajouts
-   * successifs. Une fois les ajouts terminés, il faut appeler la méthode
-   * endUpdate(). Si une maille ajoutée possède le même uniqueId() qu'une
-   * des mailles existantes, la maille existante est conservée telle qu'elle et
-   * rien ne se passe.
+   * Adds meshes. The format of \a cells_infos is identical to that of
+   * the IMesh::allocateCells() method. If \a cells_lid is not empty,
+   * it will contain the local IDs of the created meshes. It is possible
+   * to perform multiple successive additions. Once the additions are
+   * complete, the endUpdate() method must be called. If an added mesh
+   * has the same uniqueId() as an existing mesh, the existing mesh is
+   * kept as is and nothing happens.
    *
-   * Les mailles créées sont considérées comme appartenant à ce sous-domaine
-   * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+   * The created meshes are considered to belong to this subdomain.
+   * If this is not the case, their ownership must be modified afterwards.
    *
-   * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
-   * de mailles, il est possible de passer un tableau vide.
+   * This method is collective. If a subdomain does not wish to add meshes,
+   * it is possible to pass an empty array.
    */
   virtual void addCells(Integer nb_cell, Int64ConstArrayView cell_infos,
                         Int32ArrayView cells_lid = Int32ArrayView()) = 0;
 
-  //! Ajoute des mailles
+  //! Adds meshes
   virtual void addCells(const MeshModifierAddCellsArgs& args);
 
   /*!
-   * \brief Ajoute des faces.
+   * \brief Adds faces.
    *
    * \sa addFaces(const MeshModifierAddFacesArgs&)
    */
@@ -202,89 +203,85 @@ class ARCANE_CORE_EXPORT IMeshModifier
                         Int32ArrayView face_lids = Int32ArrayView()) = 0;
 
   /*!
-   * \brief Ajoute des faces.
+   * \brief Adds faces.
    *
-   * Ajoute des faces. Le format de \a face_infos est identiques à celui
-   * de la méthode IMesh::allocateCells(). Si \a face_lids n'est pas vide, il contiendra
-   * en retour les numéros locaux des faces créées. Il est possible de faire plusieurs ajouts
-   * successifs. Une fois les ajouts terminés, il faut appeler la méthode
-   * endUpdate(). Si une face ajoutée possède le même uniqueId() qu'une
-   * des faces existantes, la face existante est conservée telle qu'elle et
-   * rien ne se passe.
+   * Adds faces. The format of \a face_infos is identical to that of the
+   * IMesh::allocateCells() method. If \a face_lids is not empty, it will
+   * contain the local IDs of the created faces. It is possible to perform
+   * multiple successive additions. Once the additions are complete, the
+   * endUpdate() method must be called. If an added face has the same uniqueId()
+   * as an existing face, the existing face is kept as is and nothing happens.
    *
-   * Les faces créées sont considérées comme appartenant à ce sous-domaine
-   * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+   * The created faces are considered to belong to this subdomain.
+   * If this is not the case, their ownership must be modified afterwards.
    */
   virtual void addFaces(const MeshModifierAddFacesArgs& args);
 
   /*!
-   * \brief Ajoute des arêtes.
+   * \brief Adds edges.
    *
-   * Ajoute des arêtes. Le format de \a edge_infos est identiques à celui
-   * de la méthode IMesh::allocateCells(). Si \a edge_lids n'est pas vide, il contiendra
-   * en retour les numéros locaux des arêtes créées. Il est possible de faire plusieurs ajouts
-   * successifs. Une fois les ajouts terminés, il faut appeler la méthode
-   * endUpdate(). Si une face ajoutée possède le même uniqueId() qu'une
-   * des arêtes existantes, la arête existante est conservée telle qu'elle et
-   * rien ne se passe.
+   * Adds edges. The format of \a edge_infos is identical to that of the
+   * IMesh::allocateCells() method. If \a edge_lids is not empty, it will
+   * contain the local IDs of the created edges. It is possible to perform
+   * multiple successive additions. Once the additions are complete, the
+   * endUpdate() method must be called. If an added edge has the same uniqueId()
+   * as an existing edge, the existing edge is kept as is and nothing happens.
    *
-   * Les arêtes créées sont considérées comme appartenant à ce sous-domaine
-   * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+   * The created edges are considered to belong to this subdomain.
+   * If this is not the case, their ownership must be modified afterwards.
    *
-   * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
-   * de arêtes, il est possible de passer un tableau vide.
+   * This method is collective. If a subdomain does not wish to add edges,
+   * it is possible to pass an empty array.
    */
   virtual void addEdges(Integer nb_edge, Int64ConstArrayView edge_infos,
                         Int32ArrayView edge_lids = Int32ArrayView()) = 0;
 
   /*!
-   * \brief Ajoute des noeuds.
+   * \brief Adds nodes.
    *
-   * Ajoute des noeuds avec comme identifiant unique les valeurs
-   * du tableau \a nodes_uid. Si \a nodes_lid n'est pas vide, il contiendra
-   * en retour les numéros locaux des noeuds créés. Il est possible de faire plusieurs ajouts
-   * successifs. Une fois les ajouts terminés, il faut appeler la méthode
-   * endUpdate(). Il est possible de spécifier un uniqueId() déjà
-   * existant. Dans ce cas le noeud est simplement ignoré.
+   * Adds nodes with unique identifiers being the values of the
+   * \a nodes_uid array. If \a nodes_lid is not empty, it will contain the
+   * local IDs of the created nodes. It is possible to perform multiple
+   * successive additions. Once the additions are complete, the endUpdate()
+   * method must be called. It is possible to specify an already existing
+   * uniqueId(). In this case, the node is simply ignored.
    *
-   * Les noeuds créés sont considérés comme appartenant à ce sous-domaine
-   * Si ce n'est pas le cas, il faut ensuite modifier leur appartenance.
+   * The created nodes are considered to belong to this subdomain.
+   * If this is not the case, their ownership must be modified afterwards.
    *
-   * Cette méthode est collective. Si un sous-domaine ne souhaite pas ajouter
-   * de noeuds, il est possible de passer un tableau vide.
+   * This method is collective. If a subdomain does not wish to add nodes,
+   * it is possible to pass an empty array.
    */
   virtual void addNodes(Int64ConstArrayView nodes_uid,
                         Int32ArrayView nodes_lid = Int32ArrayView()) = 0;
 
   /*!
-   * \brief Supprime des mailles.
+   * \brief Removes meshes.
    *
-   * Supprime les mailles dont les numéros locaux sont données
-   * dans \a cells_local_id. Il est possible de faire plusieurs suppressions
-   * successives. Une fois les suppressions terminées, il faut appeler la méthode
-   * endUpdate().
+   * Removes the meshes whose local IDs are provided in \a cells_local_id.
+   * It is possible to perform multiple successive removals. Once the removals
+   * are complete, the endUpdate() method must be called.
    */
   virtual void removeCells(Int32ConstArrayView cells_local_id) = 0;
 
   virtual void removeCells(Int32ConstArrayView cells_local_id, bool update_ghost) = 0;
 
   /*!
-   * \brief Détache des mailles du maillage.
+   * \brief Detaches meshes from the mesh.
    *
-   * Les mailles détachées sont déconnectées du maillage. Les noeuds, arêtes et faces
-   * de ces mailles ne leur font plus référence et le uniqueId() de ces mailles peuvent
-   * être réutilisés. Pour détruire définitivement ces mailles, il faut appeler
-   * la méthode removeDetachedCells().
+   * The detached meshes are disconnected from the mesh. The nodes, edges,
+   * and faces of these meshes no longer reference them, and the uniqueId()
+   * of these meshes can be reused. To permanently destroy these meshes, the
+   * removeDetachedCells() method must be called.
    */
   virtual void detachCells(Int32ConstArrayView cells_local_id) = 0;
 
   /*!
-   * \brief Supprime les mailles détachées
+   * \brief Removes detached meshes
    *
-   * Supprime les mailles détachées via detachCells().
-   * Il est possible de faire plusieurs suppressions
-   * successives. Une fois les suppressions terminées, il faut appeler la méthode
-   * endUpdate().
+   * Removes detached meshes via detachCells().
+   * It is possible to perform multiple successive removals. Once the removals
+   * are complete, the endUpdate() method must be called.
    */
   virtual void removeDetachedCells(Int32ConstArrayView cells_local_id) = 0;
 
@@ -309,36 +306,35 @@ class ARCANE_CORE_EXPORT IMeshModifier
   virtual void addParentNodeToNode(Node child, Node parent) = 0;
   virtual void addChildNodeToNode(Node parent, Node child) = 0;
 
-  //! Supprime toutes les entitées de toutes les familles de ce maillage.
+  //! Deletes all entities of all families in this mesh.
   virtual void clearItems() = 0;
 
   /*!
-   * \brief Ajoute les mailles à partir des données contenues dans \a buffer.
+   * \brief Adds meshes from the data contained in \a buffer.
    *
-   * \a buffer doit contenir des mailles sérialisées, par exemple par
-   * l'appel à IMesh::serializeCells().
+   * \a buffer must contain serialized meshes, for example by
+   * calling IMesh::serializeCells().
    *
-   * \deprecated Utiliser IMesh::cellFamily()->policyMng()->createSerializer() à la place.
+   * \deprecated Use IMesh::cellFamily()->policyMng()->createSerializer() instead.
    */
   ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer) = 0;
 
   /*!
-   * \brief Ajoute les mailles à partir des données contenues dans \a buffer.
+   * \brief Adds meshes from the data contained in \a buffer.
    *
-   * \a buffer doit contenir des mailles sérialisées, par exemple par
-   * l'appel à IMesh::serializeCells().
-   * En retour \a cells_local_id contient la liste des localId() des
-   * mailles désérialisées. Une maille peut être présente plusieurs
-   * fois dans cette liste si elle est présente plusieurs fois dans \a buffer.
+   * \a buffer must contain serialized meshes, for example by
+   * calling IMesh::serializeCells(). In return, \a cells_local_id
+   * contains the list of localIds() of the deserialized meshes. A mesh may
+   * appear multiple times in this list if it appears multiple times in \a buffer.
    *
-   * \deprecated Utiliser IMesh::cellFamily()->policyMng()->createSerializer() à la place.
+   * \deprecated Use IMesh::cellFamily()->policyMng()->createSerializer() instead.
    */
   ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer, Int32Array& cells_local_id) = 0;
 
   /*!
-   * \brief Notifie l'instance de la fin de la modification du maillage.
+   * \brief Notifies the instance that mesh modification is finished.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   virtual void endUpdate() = 0;
 
@@ -347,9 +343,9 @@ class ARCANE_CORE_EXPORT IMeshModifier
  public:
 
   /*!
-   * \brief Mise à jour de la couche fantôme.
+   * \brief Updates the ghost layer.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void updateGhostLayers() = 0;
 
@@ -358,26 +354,26 @@ class ARCANE_CORE_EXPORT IMeshModifier
                                           Array<Int64>& ghost_cell_to_coarsen,
                                           bool remove_old_ghost) = 0;
 
-  //! ajout du algorithme d'ajout de mailles fantômes "extraordinaires".
+  //! addition of the "extraordinary" ghost mesh addition algorithm.
   virtual void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) = 0;
 
-  //! Supprime l'association à l'instance \a builder.
+  //! Removes the association with the \a builder instance.
   virtual void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) = 0;
 
-  //! Ajout du algorithme d'ajout de particules fantômes "extraordinaires"
+  //! Addition of the "extraordinary" ghost particle addition algorithm
   virtual void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) = 0;
 
-  //! Supprime l'association à l'instance \a builder.
+  //! Removes the association with the \a builder instance.
   virtual void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) = 0;
 
  public:
 
-  //! Fusionne les maillages de \a meshes avec le maillage actuel.
+  //! Merges the meshes of \a meshes with the current mesh.
   virtual void mergeMeshes(ConstArrayView<IMesh*> meshes) = 0;
 
  public:
 
-  //! API interne à Arcane
+  //! Internal API for Arcane
   virtual IMeshModifierInternal* _modifierInternalApi() = 0;
 };
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtkCellTypes.cc                                             (C) 2000-2026 */
 /*                                                                           */
-/* Définitions des types de maille de VTK.                                   */
+/* Definitions of VTK mesh types.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,7 +81,7 @@ vtkToArcaneCellType(int vtk_type, Int32 nb_node)
     return IT_Octaedron12;
   case VTK_TRIQUADRATIC_HEXAHEDRON:
     return IT_Hexaedron27;
-    // NOTE GG: les types suivants ne sont pas bon pour VTK.
+    // NOTE GG: the following types are not good for VTK.
     //case 27: it = IT_Enneedron14; break; //
     //case 28: it = IT_Decaedron16; break; // VTK_HEXAGONAL_PRISM
     //case 29: it = IT_Heptagon7; break; // VTK_HEPTAGON

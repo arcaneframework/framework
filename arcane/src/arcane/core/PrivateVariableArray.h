@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PrivateVariableArray.h                                      (C) 2000-2023 */
 /*                                                                           */
-/* Classe gérant une variable array sur une entité du maillage.              */
+/* Class managing an array variable on a mesh entity.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PRIVATEVARIABLEARRAY_H
 #define ARCANE_CORE_PRIVATEVARIABLEARRAY_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Classe de factorisation des variables scalaires sur des entités du maillage.
+ * \brief Class for factoring scalar variables on mesh entities.
  */
 template<typename DataType>
 class PrivateVariableArrayT
@@ -63,16 +64,16 @@ class PrivateVariableArrayT
   ARCANE_CORE_EXPORT ItemGroup itemGroup() const;
 
   /*
-   * \brief Redimensionne le nombre d'éléments du tableau.
+   * \brief Resizes the number of elements in the array.
    *
-   * La première dimension reste toujours égale au nombre d'éléments du maillage.
-   * Seule la deuxième composante est retaillée.
-   * \warning le redimensionnement ne conserve pas les valeurs précédentes...
+   * The first dimension always remains equal to the number of mesh elements.
+   * Only the second component is resized.
+   * \warning resizing does not preserve previous values...
    */
   ARCANE_CORE_EXPORT void resize(Int32 dim2_size);
  
   /*
-   * \brief Redimensionne le nombre d'éléments du tableau.
+   * \brief Resizes the number of elements in the array.
    *
    * \sa resize(Int32)
    */
@@ -103,4 +104,4 @@ class PrivateVariableArrayT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

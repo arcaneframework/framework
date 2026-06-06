@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICaseDocumentVisitor.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Interface du visiteur pour un jeu de données.                             */
+/* Visitor interface for a dataset.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEDOCUMENTVISITOR_H
 #define ARCANE_CORE_ICASEDOCUMENTVISITOR_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du visiteur pour une option du jeu de données.
+ * \brief Visitor interface for a dataset option.
  */
 class ARCANE_CORE_EXPORT ICaseDocumentVisitor
 {
@@ -57,5 +58,4 @@ class ARCANE_CORE_EXPORT ICaseDocumentVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

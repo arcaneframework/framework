@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionBuildInfo.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour construire une option du jeu de données                 */
+/* Information for building a dataset option                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONBUILDINFO_H
 #define ARCANE_CORE_CASEOPTIONBUILDINFO_H
@@ -31,10 +31,11 @@ class ICaseOptionList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \ingroup CaseOption
- * \brief Informations pour construire une option de jeu de données.
+ * \brief Information for building a dataset option.
  */
 class ARCANE_CORE_EXPORT CaseOptionBuildInfo
 {
@@ -57,11 +58,11 @@ class ARCANE_CORE_EXPORT CaseOptionBuildInfo
  private:
   ICaseMng* m_case_mng;
   ICaseOptionList* m_case_option_list;
-  String m_name; //!< Nom de l'option
-  String m_default_value; //!< Valeur par défaut (null si aucune)
-  XmlNode m_element; //!< Elément de l'option
-  Integer m_min_occurs; //!< Nombre minimum d'occurences
-  Integer m_max_occurs; //!< Nombre maximum d'occurences (-1 == unbounded)
+  String m_name; //!< Name of the option
+  String m_default_value; //!< Default value (null if none)
+  XmlNode m_element; //!< Element of the option
+  Integer m_min_occurs; //!< Minimum number of occurrences
+  Integer m_max_occurs; //!< Maximum number of occurrences (-1 == unbounded)
   bool m_is_optional;
 };
 
@@ -73,4 +74,4 @@ class ARCANE_CORE_EXPORT CaseOptionBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

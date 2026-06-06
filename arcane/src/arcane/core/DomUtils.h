@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DomUtils.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires divers concernant le DOM.                           */
+/* Various utility functions concerning the DOM.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DOMUTILS_H
 #define ARCANE_CORE_DOMUTILS_H
@@ -18,10 +18,12 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Les méthodes de ce fichier sont internes à Arcane et ne doivent
- * pas être utilisées ailleurs.
+ * The methods in this file are internal to Arcane and should not
+ * be used elsewhere.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,13 +33,13 @@ namespace Arcane::domutils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Si le noeud est un élément, retourne la concaténation de ses fils textes,
-// sinon, retourn nodeValue().
-// Utiliser textContext() à la place
+// If the node is an element, returns the concatenation of its text children,
+// otherwise, returns nodeValue().
+// Use textContext() instead
 extern "C++" ARCANE_DEPRECATED_260 ARCANE_CORE_EXPORT String
 textValue(const dom::Node& node);
 
-// Utiliser textContext() à la place
+// Use textContext() instead
 extern "C++" ARCANE_DEPRECATED_260 ARCANE_CORE_EXPORT void
 textValue(dom::Node& node, const String& new_value);
 
@@ -73,9 +75,10 @@ createXmlDocument();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * Itérateur sur les fils d'un noeud \a from de nom \a ref_name.
+ * Iterator over the children of a node \a from with name \a ref_name.
  */
 class ARCANE_CORE_EXPORT NameIterator
 {
@@ -107,5 +110,4 @@ class ARCANE_CORE_EXPORT NameIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

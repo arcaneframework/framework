@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ApplicationBuildInfo.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour construire une instance de IApplication.                */
+/* Information for constructing an instance of IApplication.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_APPLICATIONBUILDINFO_H
 #define ARCANE_UTILS_APPLICATIONBUILDINFO_H
@@ -26,8 +26,9 @@ class CaseDatasetSource;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour construire une instance de IApplication.
+ * \brief Information for constructing an instance of IApplication.
  */
 class ARCANE_CORE_EXPORT ApplicationBuildInfo
 : public ArccoreApplicationBuildInfo
@@ -56,33 +57,32 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
   void setNbProcessusSubDomain(Int32 v);
 
   /*!
-   * \brief Positionne le fichier de configuration du code.
+   * \brief Sets the code configuration file.
    * \sa configFileName().
    */
   void setConfigFileName(const String& name);
 
   /*!
-   * \brief Nom du fichier de configuration du code.
+   * \brief Name of the code configuration file.
    *
-   * Par défaut, la valeur est celle de la chaîne vide ("").
-   * Dans ce cas, %Arcane recherche un fichier dont le nom
-   * est codeName() suivi de l'extension `.config`.
+   * By default, the value is an empty string ("").
+   * In this case, %Arcane searches for a file whose name
+   * is codeName() followed by the `.config` extension.
    *
-   * Si la valeur est nulle, alors il n'y a pas de fichier de
-   * configuration chargé.
+   * If the value is null, then no configuration file is loaded.
    */
   String configFileName() const;
 
   /*!
-   * \brief Positionne le niveau de verbosité des messages
-   * sur la sortie standard.
+   * \brief Sets the message verbosity level
+   * on standard output.
    */
   void setOutputLevel(Int32 v);
   Int32 outputLevel() const;
 
   /*!
-   * \brief Positionne le niveau de verbosité des messages
-   * des fichiers listings réduits.
+   * \brief Sets the message verbosity level
+   * of reduced listing files.
    */
   void setVerbosityLevel(Int32 v);
   Int32 verbosityLevel() const;
@@ -94,48 +94,48 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
   void setIsMasterHasOutputFile(bool v);
 
   /*!
-   * \brief Positionne le répertoire contenant les différentes sorties
-   * de la simulation.
+   * \brief Sets the directory containing the various
+   * simulation outputs.
    *
-   * Parmi ces sorties on trouve le dépouillement, les traces de profilage,
-   * les sorties listings, ...
+   * These outputs include the summary, profiling traces,
+   * listing outputs, ...
    */
   void setOutputDirectory(const String& name);
   String outputDirectory() const;
 
  public:
 
-  //! Positionne le nom de l'application
+  //! Sets the application name
   void setApplicationName(const String& v);
-  //! Nom de l'application
+  //! Application name
   String applicationName() const;
 
-  //! Positionne le numéro de version du code
+  //! Sets the code version
   void setCodeVersion(const VersionInfo& version_info);
-  //! Numéro de version
+  //! Version number
   VersionInfo codeVersion() const;
 
-  //! Positionne le nom du code
+  //! Sets the code name
   void setCodeName(const String& code_name);
-  //! Retourne le nom du code.
+  //! Returns the code name.
   String codeName() const;
 
-  //! Stratégie pour punaiser les threads des tâches
+  //! Strategy for binding task threads
   String threadBindingStrategy() const;
 
-  //! Positionne la strategie pour punaiser les threads des tâches
+  //! Sets the strategy for binding task threads
   void threadBindingStrategy(const String& v);
 
-  //! Source du jeu de données
+  //! Dataset source
   CaseDatasetSource& caseDatasetSource();
-  //! Source du jeu de données
+  //! Dataset source
   const CaseDatasetSource& caseDatasetSource() const;
 
  public:
 
   /*!
-   * \brief Nom du gestionnaire de message par défaut.
-   * Ne doit être modifié que par Arcane.
+   * \brief Default message passing manager name.
+   * Must only be modified by Arcane.
    */
   void internalSetDefaultMessagePassingService(const String& name);
   String internalDefaultMessagePassingService() const;
@@ -143,22 +143,22 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
  public:
 
   /*!
-   * \brief Ajoute la bibliothèque \a lib_name à la liste des bibliothèques
-   * chargées dynamiquements.
+   * \brief Adds the library \a lib_name to the list of
+   * dynamically loaded libraries.
    *
-   * \a lib_name doit être un nom, sans chemin et sans extension. Par exemple,
-   * \c my_lib est valide mais pas \c libtoto.so, ni \c /tmp/toto.
+   * \a lib_name must be a name, without path or extension. For example,
+   * \c my_lib is valid but not \c libtoto.so, nor \c /tmp/toto.
    */
   void addDynamicLibrary(const String& lib_name);
 
  public:
 
   /*!
-   * \brief Analyse les arguments de \a args.
+   * \brief Parses the arguments in \a args.
    *
-   * On ne récupère que les arguments du style *-A,x=b,y=c*.
-   * La méthode setDefaultValues() est appelée à la fin de cette
-   * méthode.
+   * Only arguments of the style *-A,x=b,y=c* are retrieved.
+   * The setDefaultValues() method is called at the end of this
+   * method.
    */
   ARCANE_DEPRECATED_REASON("Use parseArgumentsAndSetDefaultsValues() instead")
   void parseArguments(const CommandLineArguments& args)
@@ -189,5 +189,4 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

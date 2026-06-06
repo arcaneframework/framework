@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshWriter.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service d'écriture du maillage.                            */
+/* Interface of a mesh writing service.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHWRITER_H
 #define ARCANE_CORE_IMESHWRITER_H
@@ -29,34 +29,35 @@ class IMesh;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un service d'écriture d'un maillage.
+ * \brief Interface of a mesh writing service.
  */
 class IMeshWriter
 {
  public:
 
-  virtual ~IMeshWriter() {} //<! Libère les ressources
+  virtual ~IMeshWriter() {} //<! Releases resources
 
  public:
 
-  //! Construit l'instance
+  //! Constructs the instance
   virtual void build() =0;
 
  public:
 
   /*!
-   * \brief Ecrit un maillage sur un fichier.
+   * \brief Writes a mesh to a file.
    *
-   * Le chemin du fichier de maillage doit être accessible en écriture et
-   * le répertoire doit déja exiter.
+   * The mesh file path must be writable and
+   * the directory must already exist.
    *
-   * \param mesh maillage à sauver
-   * \param file_name nom du fichier de maillage.
+   * \param mesh mesh to save
+   * \param file_name name of the mesh file.
    *
-   * \retval true en cas d'erreur
-   * \retval false si tout est ok.
+   * \retval true in case of error
+   * \retval false if everything is ok.
    */
   virtual bool writeMeshToFile(IMesh* mesh,const String& file_name) =0;
 };
@@ -69,5 +70,4 @@ class IMeshWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

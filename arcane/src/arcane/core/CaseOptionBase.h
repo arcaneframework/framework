@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionBase.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe d'une base d'une option du jeu de donnés.                          */
+/* Base class for a data set option.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASEOPTIONBASE_H
 #define ARCANE_CASEOPTIONBASE_H
@@ -39,13 +39,13 @@ class ICaseDocumentVisitor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une option du jeu de donnée.
+ * \brief Base class for a data set option.
  *
  * \ingroup CaseOption
  *
- * Fait le lien entre l'option de nom \a m_name et le noeud du
- * DOM correspondant.
+ * Links the option with the name \a m_name to the corresponding DOM node.
  */
 class ARCANE_CORE_EXPORT CaseOptionBase
 {
@@ -59,90 +59,89 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 
  public:
 
-  //! Retourne le vrai nom (non traduit) de l'option.
+  //! Returns the true name (untranslated) of the option.
   String trueName() const;
 
-  //! Retourne le nom de l'option correspondant au langage du jeu de données
+  //! Returns the option name corresponding to the data set language.
   String name() const;
 
-  //! Nom dans la langue \a lang de l'option. Retourne \a name() si pas de traduction.
+  //! Name of the option in the language \a lang. Returns \a name() if no translation exists.
   String translatedName(const String& lang) const;
 
-  //! Récupère la valeur du fichier de configuration pour la variable
+  //! Retrieves the value from the configuration file for the variable
   void search(bool is_phase1);
 
-  //! Imprime la valeur de l'option dans le langage \a lang,sur le flot \a o
+  //! Prints the option value in the language \a lang, to the stream \a o
   virtual void print(const String& lang,std::ostream& o) const =0;
 
-  //! Gestionnaire de cas
+  //! Case manager
   ICaseMng* caseMng() const;
 
-  //! OptionList parent
+  //! Parent OptionList
   ICaseOptionList* parentOptionList() const;
 
-  //! Gestionnaire de traces
+  //! Trace manager
   ITraceMng* traceMng() const;
 
-  //! Gestionnaire de sous-domaine
+  //! Sub-domain manager
   ARCCORE_DEPRECATED_2019("Do not use subDomain(). Try to get subDomain from an other way.")
   ISubDomain* subDomain() const;
   
-  //! Retourne le gestionnaire de document
+  //! Returns the document manager
   ARCANE_DEPRECATED_REASON("Y2023: use caseMng()->caseDocument() instead.")
   ICaseDocument* caseDocument() const;
   
-  //! Retourne le document associé à cette option
+  //! Returns the document associated with this option
   ICaseDocumentFragment* caseDocumentFragment() const;
 
-  //! Positionne l'élément racine à \a root_element
+  //! Positions the root element at \a root_element
   void setRootElement(const XmlNode& root_element);
 
-  //! Retourne l'élément racine du DOM
+  //! Returns the root element of the DOM
   XmlNode rootElement() const;
   
-  //! Retourne la fonction liée à cette option ou `nullptr` s'il n'y en a pas
+  //! Returns the function linked to this option or `nullptr` if none exists
   virtual ICaseFunction* function() const =0;
 
-  //! Nombre minimum d'occurences (pour une option multiple)
+  //! Minimum number of occurrences (for a multiple option)
   Integer minOccurs() const;
 
-  //! Nombre maximum d'occurences (pour une option multiple) (-1 == unbounded)
+  //! Maximum number of occurrences (for a multiple option) (-1 == unbounded)
   Integer maxOccurs() const;
 
-  //! Permet de savoir si une option est optionnelle.
+  //! Allows knowing if an option is optional.
   bool isOptional() const;
 
-  /*! \brief Met à jour la valeur de l'option à partir d'une fonction.
+  /*! \brief Updates the option value from a function.
    *
-   * Si l'option n'est pas liée à une table de marche, ne fait rien.
-   * Sinon, utilise \a current_time ou \a current_iteration suivant
-   * le type de paramètre de la fonction pour calculer la nouvelle
-   * valeur de l'option. Cette valeur sera ensuite accessible normalement par
-   * la méthode operator().
+   * If the option is not linked to a workflow table, it does nothing.
+   * Otherwise, it uses \a current_time or \a current_iteration depending on the function parameter type to calculate the new
+   * option value. This value will then be normally accessible via
+   * the operator() method.
    */
   virtual void updateFromFunction(Real current_time,Integer current_iteration) =0;
 
   /*!
-    \brief Ajoute une traduction pour le nom de l'option.
+    \brief Adds a translation for the option name.
     *
-    Ajoute le nom \a name de l'option correspondant au langage \a lang.
-    Si une traduction existe déjà pour ce langage, elle est remplacée par
-    celle-ci.
+    Adds the option name \a name corresponding to the language \a lang.
+    If a translation already exists for this language, it is replaced by
+    this one.
   */
   void addAlternativeNodeName(const String& lang,const String& name);
 
-  //! Ajoute la valeur par défaut \a value à la catégorie \a category
+  //! Adds the default value \a value to the category \a category
   void addDefaultValue(const String& category,const String& value);
 
-  //! Applique le visiteur sur cette option
+  //! Applies the visitor to this option
   virtual void visit(ICaseDocumentVisitor* visitor) const =0;
 
-  //! Lève une exception si l'option n'a pas été initialisée.
+  //! Throws an exception if the option has not been initialized.
   void checkIsInitialized() const { _checkIsInitialized(); }
 
  protected:
 
-  //! Retourne la valeur par défaut de l'option ou 0 s'il n'y en a pas
+  //! Returns the default value of the option or 0 if none exists
   String _defaultValue() const;
 
   void _setDefaultValue(const String& def_value);
@@ -158,19 +157,19 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 
  private:
 
-  CaseOptionBasePrivate* m_p; //!< Implémentation.
+  CaseOptionBasePrivate* m_p; //!< Implementation.
 
  private:
 
   void _setTranslatedName();
   void _setCategoryDefaultValue();
-  /*! \brief Constructeur de copie.
+  /*! \brief Copy constructor.
    *
-   * Le constructeur par copie est privée car l'option ne doit pas être
-   * copiée, notamment à cause du ICaseFunction qui est unique.
+   * The copy constructor is private because the option should not be
+   * copied, notably due to the ICaseFunction which is unique.
    */  
   CaseOptionBase(const CaseOptionBase& from) = delete;
-  //! Opérateur de recopie
+  //! Copy assignment operator
   CaseOptionBase& operator=(const CaseOptionBase& from) = delete;
 };
 
@@ -182,4 +181,4 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

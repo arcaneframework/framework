@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadVariantTypeException.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Exception levée lorsqu'un variant n'est pas du type souhaité              */
+/* Exception raised when a variant is not of the desired type                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_BADVARIANTTYPEEXCEPTION_H
 #define ARCANE_CORE_DATATYPE_BADVARIANTTYPEEXCEPTION_H
@@ -26,13 +26,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Exception sur un type de variant non valide.
+ * \brief Exception for an invalid variant type.
  *
- * Cette exception est envoyée lorsqu'on essaye de construire un variant
- * avec un type inconnu.
+ * This exception is thrown when trying to construct a variant
+ * with an unknown type.
  */
 class BadVariantTypeException
 : public Exception
@@ -59,4 +60,3 @@ class BadVariantTypeException
 /*---------------------------------------------------------------------------*/
 
 #endif
-

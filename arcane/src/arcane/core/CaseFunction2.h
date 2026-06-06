@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseFunction2.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Fonction du jeu de données avec type de valeur explicite.                 */
+/* Data set function with explicit value type.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEFUNCTION2_H
 #define ARCANE_CORE_CASEFUNCTION2_H
@@ -25,24 +25,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation de CaseFunction permettant de retourner directement
- * la valeur associée à un paramètre sans passer par une référence.
+ * \brief Implementation of CaseFunction allowing direct return
+ * of the value associated with a parameter without passing through a reference.
  *
- * Cela est principalement utilisé pour simplifier les extensions C# en évitant
- * les différentes surcharges de value().
+ * This is primarily used to simplify C# extensions by avoiding
+ * the different overloads of value().
  *
- * Pour utiliser cette classe, il faut implémenter les méthodes 'valueAs*'
- * pour les deux types d'argument \a Integer et \a Real et pour les
- * différents types de retour possibles.
+ * To use this class, you must implement the 'valueAs*' methods
+ * for the two argument types \a Integer and \a Real and for the
+ * different possible return types.
  */
 class ARCANE_CORE_EXPORT CaseFunction2
 : public CaseFunction
 {
  public:
 
-  //! Construit une fonction du jeu de données.
+  //! Constructs a data set function.
   explicit CaseFunction2(const CaseFunctionBuildInfo& cfbi)
   : CaseFunction(cfbi)
   {}

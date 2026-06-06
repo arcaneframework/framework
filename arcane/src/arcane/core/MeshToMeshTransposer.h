@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshToMeshTransposer.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Opérateur de transposition entre sous-maillages.                          */
+/* Transposition operator between sub-meshes.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESGTOMESHTRANSPOSE_H
 #define ARCANE_CORE_MESGTOMESHTRANSPOSE_H
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Transposeur d'items entre sous-maillages
+//! Item transposer between sub-meshes
 class ARCANE_CORE_EXPORT MeshToMeshTransposer
 {
  public:
@@ -40,7 +40,7 @@ class ARCANE_CORE_EXPORT MeshToMeshTransposer
   static ItemVector transpose(IItemFamily* familyA, IItemFamily* familyB,
                               ItemVectorView itemsA, bool do_fatal = false);
 
-  //! Transpose le genre \a kindA du maillage \a meshA en le genre associé dans \a meshB
+  //! Transpose the kind \a kindA of mesh \a meshA to the associated kind in \a meshB
   static eItemKind kindTranspose(eItemKind kindA, IMesh* meshA, IMesh* meshB);
 
  private:
@@ -57,4 +57,4 @@ class ARCANE_CORE_EXPORT MeshToMeshTransposer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

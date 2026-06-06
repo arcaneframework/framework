@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedReference.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un compteur de référence.                                */
+/* Base class of a reference counter.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SHAREDREFERENCE_H
 #define ARCANE_CORE_SHAREDREFERENCE_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Implémentation d'un compteur de référence utilisant std::atomic.
+ * \brief Implementation of a reference counter using std::atomic.
  */
 class ARCANE_CORE_EXPORT SharedReference
 : public ISharedReference
@@ -43,12 +44,12 @@ class ARCANE_CORE_EXPORT SharedReference
   void removeRef() override;
   Int32 refCount() const override { return m_ref_count; }
 
-  //! Détruit l'objet référencé
+  //! Destroys the referenced object
   virtual void deleteMe() =0;
 
  private:
 
-  std::atomic<Int32> m_ref_count; //!< Nombre de références sur l'objet.
+  std::atomic<Int32> m_ref_count; //!< Number of references on the object.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -59,5 +60,4 @@ class ARCANE_CORE_EXPORT SharedReference
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

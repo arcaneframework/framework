@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatVarIndex.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Index sur les variables matériaux.                                        */
+/* Index on material variables.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATVARINDEX_H
 #define ARCANE_CORE_MATERIALS_MATVARINDEX_H
@@ -24,16 +24,17 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Représente un index sur les variables matériaux et milieux.
+ * \brief Represents an index on material and environment variables.
  *
- * L'index comprend 2 valeurs:
- * - la première (arrayIndex()) est le numéro dans la liste des tableaux de la variable.
- * - le deuxième (valueIndex()) est l'indice dans le tableau des valeurs de cette variable.
+ * The index includes 2 values:
+ * - the first (arrayIndex()) is the number in the list of the variable's arrays.
+ * - the second (valueIndex()) is the index in the array of values of this variable.
  *
- * \note Pour des raisons de performance, le constructeur par défaut
- * n'initialise par les membres de cette classe. Il faut donc appeler
- * reset() pour initialiser à une valeur invalide.
+ * \note For performance reasons, the default constructor
+ * does not initialize the members of this class. Therefore, reset() must be called
+ * to initialize to an invalid value.
  */
 class MatVarIndex
 {
@@ -48,39 +49,39 @@ class MatVarIndex
 
  public:
 
-  //! Retourne l'indice du tableau de valeur dans la liste des variables.
+  //! Returns the index of the value array in the list of variables.
   constexpr ARCCORE_HOST_DEVICE Int32 arrayIndex() const { return m_array_index; }
 
-  //! Retourne l'indice dans le tableau de valeur
+  //! Returns the index in the value array
   constexpr ARCCORE_HOST_DEVICE Int32 valueIndex() const { return m_value_index; }
 
-  //! Positionne l'index
+  //! Sets the index
   constexpr ARCCORE_HOST_DEVICE void setIndex(Int32 array_index, Int32 value_index)
   {
     m_array_index = array_index;
     m_value_index = value_index;
   }
 
-  //! Positionne l'entité à l'instance nulle.
+  //! Sets the entity to the null instance.
   constexpr ARCCORE_HOST_DEVICE void reset()
   {
     m_array_index = (-1);
     m_value_index = (-1);
   }
 
-  //! Indique si l'instance représente l'entité nulle
+  //! Indicates if the instance represents the null entity
   constexpr ARCCORE_HOST_DEVICE bool null() const
   {
     return m_value_index == (-1);
   }
 
-  //! Indique si l'instance représente l'entité nulle
+  //! Indicates if the instance represents the null entity
   constexpr ARCCORE_HOST_DEVICE bool isNull() const
   {
     return m_value_index == (-1);
   }
 
-  //! Opérateur de comparaison
+  //! Comparison operator
   constexpr ARCCORE_HOST_DEVICE friend bool
   operator==(MatVarIndex mv1, MatVarIndex mv2)
   {
@@ -89,14 +90,14 @@ class MatVarIndex
     return mv1.valueIndex() == mv2.valueIndex();
   }
 
-  //! Opérateur de comparaison
+  //! Comparison operator
   constexpr ARCCORE_HOST_DEVICE friend bool
   operator!=(MatVarIndex mv1, MatVarIndex mv2)
   {
     return !(operator==(mv1, mv2));
   }
 
-  //! Opérateur d'écriture
+  //! Output operator
   ARCANE_CORE_EXPORT friend std::ostream&
   operator<<(std::ostream& o, const MatVarIndex& mvi);
 
@@ -108,9 +109,10 @@ class MatVarIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Index d'un Item matériaux pure dans une variable.
+ * \brief Index of a pure material item in a variable.
  */
 class PureMatVarIndex
 {

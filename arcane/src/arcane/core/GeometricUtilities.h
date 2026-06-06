@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeometricUtilities.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires sur la géométrie.                                   */
+/* Utility functions on geometry.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_GEOMETRICUTILITIES_H
 #define ARCANE_CORE_GEOMETRICUTILITIES_H
@@ -19,20 +19,22 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions utilitaires sur la géométrie
+ * \brief Utility functions on geometry
  */
 namespace Arcane::GeometricUtilities
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe permettant de mapper les coordonnées cartésiennes en
- * coordonnées barycentriques.
+ * \brief Class allowing mapping Cartesian coordinates to
+ * barycentric coordinates.
  *
- * Les coordonnées barycentriques sont comprises entre -1.0 et 1.0.
+ * Barycentric coordinates are between -1.0 and 1.0.
  *
  */
 class ARCANE_CORE_EXPORT QuadMapping
@@ -48,7 +50,7 @@ class ARCANE_CORE_EXPORT QuadMapping
 
  public:
 
-  //! Calcule les coordonnées cartésiennes à partir des coordonnées iso-barycentriques
+  //! Calculates Cartesian coordinates from iso-barycentric coordinates
   Real3 evaluatePosition(Real3 iso) const
   {
     Real u = iso.x;
@@ -87,10 +89,11 @@ class ARCANE_CORE_EXPORT QuadMapping
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations sur la projection d'un point sur un segment
- * ou un triangle.
+ * \brief Information about the projection of a point onto a segment
+ * or a triangle.
  */
 class ARCANE_CORE_EXPORT ProjectionInfo
 {
@@ -107,31 +110,31 @@ class ARCANE_CORE_EXPORT ProjectionInfo
 
  public:
 
-  //! Distance du point à sa projection
+  //! Distance of the point to its projection
   Real m_distance = FloatInfo<Real>::maxValue();
-  //! Région dans laquelle se situe la projection (0 si intérieur au segment ou au triangle)
+  //! Region where the projection is located (0 if inside the segment or triangle)
   int m_region = -1;
-  //! Coordonnées barycentrique x de la projection
+  //! Barycentric x-coordinate of the projection
   Real m_alpha = -1.0;
-  //! Coordonnées barycentrique y de la projection
+  //! Barycentric y-coordinate of the projection
   Real m_beta = -1.0;
-  //! Position de la projection
+  //! Position of the projection
   Real3 m_projection;
 
  public:
 
-  //! Projection du point \a point au triangle défini  par \a v1, \a v2 et \a v3.
+  //! Projection of point \a point onto the triangle defined by \a v1, \a v2 and \a v3.
   static ProjectionInfo projection(Real3 v1, Real3 v2, Real3 v3, Real3 point);
 
-  //! Projection du point \a point au segment défini  par \a v1, \a v2.
+  //! Projection of point \a point onto the segment defined by \a v1, \a v2.
   static ProjectionInfo projection(Real3 v1, Real3 v2, Real3 point);
 
-  /*! \brief Indique si un la projection du point \a point est à l'intérieur du triangle défini
-     * par \a v1, \a v2 et \a v3.
+  /*! \brief Indicates if the projection of point \a point is inside the triangle defined
+     * by \a v1, \a v2 and \a v3.
      */
   static bool isInside(Real3 v1, Real3 v2, Real3 v3, Real3 point);
-  /*! \brief Indique si un la projection du point \a point est à l'intérieur du segment défini
-     * par \a v1 et \a v2.
+  /*! \brief Indicates if the projection of point \a point is inside the segment defined
+     * by \a v1 and \a v2.
      */
   static bool isInside(Real3 v1, Real3 v2, Real3 point);
 };
@@ -144,4 +147,4 @@ class ARCANE_CORE_EXPORT ProjectionInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnitTestServiceAdapter.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Adapte un service qui déclare des tests a l'interface IUnitTest.          */
+/* Adapts a service that declares tests to the IUnitTest interface.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_UNITTESTADAPTER_H
@@ -28,9 +28,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Adapte un service qui déclare des tests a l'interface IUnitTest.
+ * \brief Adapts a service that declares tests to the IUnitTest interface.
  */
 template<typename T>
 class UnitTestServiceAdapter
@@ -39,7 +40,7 @@ class UnitTestServiceAdapter
 {
  public:
 
-  typedef void (T::*FuncPtr)(); //!< Type du pointeur sur les méthodes de test
+  typedef void (T::*FuncPtr)(); //!< Type of the pointer to the test methods
 
  public:
 
@@ -60,14 +61,14 @@ class UnitTestServiceAdapter
 
  public:
 
-  //! Implémentation de l'interface IUnitTest
+  //! Implementation of the IUnitTest interface
   void initializeTest() override
   {
     if (m_class_set_up_function)
       (m_service->*m_class_set_up_function)();
   }
 
-  //! Implémentation de l'interface IUnitTest
+  //! Implementation of the IUnitTest interface
   bool executeTest(XmlNode& report) override
   {
     bool success = true;
@@ -92,7 +93,7 @@ class UnitTestServiceAdapter
         xexception.setAttrValue("file", e.file());
         xexception.setAttrValue("line", Arcane::String::fromNumber(e.line()));
         xexception.setAttrValue("message", e.message());
-        m_service->info() << "[ECHEC] " << func_info.m_name << " (line " << e.line() << " in " << e.where() << ")";
+        m_service->info() << "[FAILURE] " << func_info.m_name << " (line " << e.line() << " in " << e.where() << ")";
         m_service->info() << "        " << e.message();
         success = false;
       }
@@ -100,7 +101,7 @@ class UnitTestServiceAdapter
     return success;
   }
 
-  //! Implémentation de l'interface IUnitTest
+  //! Implementation of the IUnitTest interface
   void finalizeTest() override
   {
     if (m_class_tear_down_function)
@@ -121,17 +122,17 @@ class UnitTestServiceAdapter
 
  private:
 
-  //! Pointeur vers la méthode d'initialisation de la classe.
+  //! Pointer to the class initialization method.
   FuncPtr m_class_set_up_function = nullptr;
-  //! Pointeur vers la méthode d'initialisation de chaque test.
+  //! Pointer to the initialization method of each test.
   FuncPtr m_set_up_function = nullptr;
-  //! Pointeur vers la méthode de fin des tests de la classe.
+  //! Pointer to the class teardown method.
   FuncPtr m_class_tear_down_function = nullptr;
-  //! Pointeur vers la méthode de fin de chaque test.
+  //! Pointer to the teardown method of each test.
   FuncPtr m_tear_down_function = nullptr;
-  //!< Pointeurs vers les méthodes de test.
+  //!< Pointers to the test methods.
   UniqueArray<TestFuncInfo> m_test_functions;
-  //!< Service associé.
+  //!< Associated service.
   T* m_service;
 };
 

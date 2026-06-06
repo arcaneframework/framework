@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MultiReduce.cc                                              (C) 2000-2013 */
 /*                                                                           */
-/* Gestion de réductions multiples.                                          */
+/* Multiple reduction management.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -132,32 +132,32 @@ execute()
     return;
   }
 
-  // Si on ne souhaite pas de réduction stricte, on stocke dans un
-  // tableau l'ensemble des sommes à réduire et on effectue
-  // une seule réduction sur ce tableau.
+  // If we do not want a strict reduction, we store in an
+  // array all the sums to be reduced and we perform
+  // a single reduction on this array.
 
   Integer nb_val = arcaneCheckArraySize(m_sum_helpers.size());
   RealUniqueArray values(nb_val);
-    
-  // Copie dans \a values les sommes à réduire
+
+  // Copy the sums to be reduced into the array values
   {
     Integer index = 0;
     ReduceSumOfRealHelperMap::const_iterator i = m_sum_helpers.begin();
     for( ; i!=m_sum_helpers.end(); ++i ){
-      // Dans ce cas non strict, une seule valeur le tableau.
+      // In this non-strict case, a single value in the array.
       values[index] = i->second->values()[0];
       ++index;
     }
   }
 
-  // Effectue la réduction
+  // Perform the reduction
   m_parallel_mng->reduce(Parallel::ReduceSum,values);
 
   {
     Integer index = 0;
     ReduceSumOfRealHelperMap::const_iterator i = m_sum_helpers.begin();
     for( ; i!=m_sum_helpers.end(); ++i ){
-      // Dans ce cas non strict, une seule valeur le tableau.
+      // In this non-strict case, a single value in the array.
       i->second->setReducedValue(values[index]);
       ++index;
     }
@@ -170,9 +170,9 @@ execute()
 void MultiReduce::
 _execStrict(ReduceSumOfRealHelper* v)
 {
-  // On souhaite une réduction stricte qui donne toujours les même résultats.
-  // Pour cela, un proc (le 0) récupère toutes les valeurs accumulées.
-  // Elles sont ensuite triées et accumulées puis renvoyées à tous le monde.
+  // We want a strict reduction that always gives the same results.
+  // For this, a proc (the 0) retrieves all accumulated values.
+  // They are then sorted and accumulated and then sent back to everyone.
   RealUniqueArray all_values;
   m_parallel_mng->gatherVariable(v->values(),all_values,0);
   //info() << "NB_VAL=" << all_values.size();
@@ -180,8 +180,8 @@ _execStrict(ReduceSumOfRealHelper* v)
   Real sum = 0.0;
   for( Integer i=0, n=all_values.size(); i<n; ++i )
     sum += all_values[i];
-  // TODO: il est possible de faire un seul broadcast une fois les réductions
-  // de tous les \a v effectuées
+  // TODO: it is possible to perform a single broadcast once the reductions
+  // of all the v's are completed
   m_parallel_mng->broadcast(RealArrayView(1,&sum),0);
   v->setReducedValue(sum);
 }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AMG.cc                                                      (C) 2000-2026 */
 /*                                                                           */
-/* Multi-grille algébrique.                                                  */
+/* Algebraic multigrid.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -183,14 +183,14 @@ matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
   RealUniqueArray col_right_values;
   IntegerUniqueArray col_right_columns_size(nb_right_col);
   {
-    // Calcule le nombre d'éléments de chaque colonne
+    // Calculates the number of elements in each column
     col_right_columns_size.fill(0);
     for (Integer i = 0; i < nb_right_row; ++i) {
       for (Integer j = right_rows_index[i]; j < right_rows_index[i + 1]; ++j) {
         ++col_right_columns_size[right_columns[j]];
       }
     }
-    // Calcule l'index du premier élément de chaque colonne.
+    // Calculates the index of the first element of each column.
     Integer index = 0;
     for (Integer j = 0; j < nb_right_col; ++j) {
       col_right_columns_index[j] = index;
@@ -201,7 +201,7 @@ matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
     col_right_rows.resize(index);
     col_right_values.resize(index);
     index = 0;
-    // Remplit les valeurs par colonne
+    // Fills the values by column
     col_right_columns_size.fill(0);
     for (Integer i = 0; i < nb_right_row; ++i) {
       for (Integer j = right_rows_index[i]; j < right_rows_index[i + 1]; ++j) {
@@ -220,7 +220,7 @@ matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
   current_row_values.fill(0.0);
   for (Integer i = 0; i < nb_left_row; ++i) {
     Integer local_nb_col = 0;
-    // Remplit la ligne avec les valeurs courantes
+    // Fills the row with the current values
     for (Integer z = left_rows_index[i], zs = left_rows_index[i + 1]; z < zs; ++z) {
       current_row_values[left_columns[z]] = left_values[z];
       //if (i==1)
@@ -255,7 +255,7 @@ matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix)
 
     new_matrix_rows_size[i] = local_nb_col;
 
-    // Remet des zeros dans la ligne courante.
+    // Resets zeros in the current row.
     for (Integer z = left_rows_index[i], zs = left_rows_index[i + 1]; z < zs; ++z)
       current_row_values[left_columns[z]] = 0.0;
   }
@@ -335,7 +335,7 @@ transposeFast(const Matrix& matrix)
 
   IntegerUniqueArray new_matrix_rows_size(new_matrix_nb_row);
 
-  // Calcul le nombre de colonnes de chaque ligne de la transposee.
+  // Calculates the number of columns of each row of the transpose.
   new_matrix_rows_size.fill(0);
   Integer nb_element = values.size();
   for (Integer i = 0, is = columns.size(); i < is; ++i) {
@@ -395,19 +395,19 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
 
   IntegerUniqueArray new_matrix_rows_size(nb_final_row);
 
-  // D'abord, détermine le nombre de colonnes de chaque ligne de la
-  // matrice finale
+  // First, determines the number of columns of each row of the
+  // final matrix
   for (Integer ic = 0; ic < nb_final_row; ++ic) {
-    // Ajoute la diagonale
+    // Adds the diagonal
     p_marker[ic] = jj_counter;
     jj_row_begining = jj_counter;
     ++jj_counter;
 
-    // Boucle sur les colonnes de la ligne \a ic de \a matrix
+    // Loop over the columns of row ic of matrix
     for (Integer jj1 = left_matrix_rows[ic]; jj1 < left_matrix_rows[ic + 1]; ++jj1) {
       Integer i1 = left_matrix_columns[jj1];
 
-      // Boucle sur les colonnes de la ligne \a i1 de \a matrix
+      // Loop over the columns of row i1 of matrix
       for (Integer jj2 = matrix_rows[i1]; jj2 < matrix_rows[i1 + 1]; ++jj2) {
         Integer i2 = matrix_columns[jj2];
         /*--------------------------------------------------------------
@@ -447,23 +447,23 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
   IntegerArrayView new_matrix_columns = new_matrix.columns();
   RealArrayView new_matrix_values = new_matrix.values();
 
-  // Maintenant, remplit les coefficients de la matrice
+  // Now, fill the matrix coefficients
   p_marker.fill(-1);
   a_marker.fill(-1);
   jj_counter = 0;
   for (Integer ic = 0; ic < nb_final_row; ++ic) {
-    // Ajoute la diagonale
+    // Add the diagonal
     p_marker[ic] = jj_counter;
     jj_row_begining = jj_counter;
     new_matrix_columns[jj_counter] = ic;
     new_matrix_values[jj_counter] = 0.0;
     ++jj_counter;
-    // Boucle sur les colonnes de la ligne \a ic de \a matrix
+    // Loop over the columns of row ic of matrix
     for (Integer jj1 = left_matrix_rows[ic]; jj1 < left_matrix_rows[ic + 1]; ++jj1) {
       Integer i1 = left_matrix_columns[jj1];
       Real r_entry = left_matrix_values[jj1];
 
-      // Boucle sur les colonnes de la ligne \a i1 de \a matrix
+      // Loop over the columns of row i1 of matrix
       for (Integer jj2 = matrix_rows[i1]; jj2 < matrix_rows[i1 + 1]; ++jj2) {
         Integer i2 = matrix_columns[jj2];
         Real r_a_product = r_entry * matrix_values[jj2];
@@ -497,7 +497,7 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
         }
         else {
           /*--------------------------------------------------------------
-           *  If i2 is previously visted ( A_marker[12]=ic ) it yields
+           *  If i2 is previously visited ( A_marker[12]=ic ) it yields
            *  no new entries in RAP and can just add new contributions.
            *--------------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
@@ -543,19 +543,19 @@ applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
 
   IntegerUniqueArray new_matrix_rows_size(nb_final_row);
 
-  // D'abord, détermine le nombre de colonnes de chaque ligne de la
-  // matrice finale
+  // First, determine the number of columns for each row of the
+  // final matrix
   for (Integer ic = 0; ic < nb_final_row; ++ic) {
-    // Ajoute la diagonale
+    // Add the diagonal
     p_marker[ic] = jj_counter;
     jj_row_begining = jj_counter;
     ++jj_counter;
 
-    // Boucle sur les colonnes de la ligne \a ic de \a matrix
+    // Loop over the columns of row ic of matrix
     for (Integer jj1 = left_matrix_rows[ic]; jj1 < left_matrix_rows[ic + 1]; ++jj1) {
       Integer i1 = left_matrix_columns[jj1];
 
-      // Boucle sur les colonnes de la ligne \a i1 de \a matrix
+      // Loop over the columns of row i1 of matrix
       for (Integer jj2 = matrix_rows[i1]; jj2 < matrix_rows[i1 + 1]; ++jj2) {
         Integer i2 = matrix_columns[jj2];
         /*--------------------------------------------------------------
@@ -592,23 +592,23 @@ applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
   Integer* ARCANE_RESTRICT new_matrix_columns = new_matrix.columns().data();
   Real* ARCANE_RESTRICT new_matrix_values = new_matrix.values().data();
 
-  // Maintenant, remplit les coefficients de la matrice
+  // Now, fill the matrix coefficients
   p_marker.fill(-1);
   a_marker.fill(-1);
   jj_counter = 0;
   for (Integer ic = 0; ic < nb_final_row; ++ic) {
-    // Ajoute la diagonale
+    // Add the diagonal
     p_marker[ic] = jj_counter;
     jj_row_begining = jj_counter;
     new_matrix_columns[jj_counter] = ic;
     new_matrix_values[jj_counter] = 0.0;
     ++jj_counter;
-    // Boucle sur les colonnes de la ligne \a ic de \a matrix
+    // Loop over the columns of row ic of matrix
     for (Integer jj1 = left_matrix_rows[ic]; jj1 < left_matrix_rows[ic + 1]; ++jj1) {
       Integer i1 = left_matrix_columns[jj1];
       Real r_entry = left_matrix_values[jj1];
 
-      // Boucle sur les colonnes de la ligne \a i1 de \a matrix
+      // Loop over the columns of row i1 of matrix
       for (Integer jj2 = matrix_rows[i1]; jj2 < matrix_rows[i1 + 1]; ++jj2) {
         Integer i2 = matrix_columns[jj2];
         Real r_a_product = r_entry * matrix_values[jj2];
@@ -642,7 +642,7 @@ applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
         }
         else {
           /*--------------------------------------------------------------
-           *  If i2 is previously visted ( A_marker[12]=ic ) it yields
+           *  If i2 is previously visited ( A_marker[12]=ic ) it yields
            *  no new entries in RAP and can just add new contributions.
            *--------------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
@@ -1077,7 +1077,7 @@ _solve(const Vector& vector_b, Vector& vector_x, Integer level)
     //_relax(fine_matrix,vector_b,vector_x,nb_relax1);
   }
 
-  // Restreint le nouveau b à partir du b actuel
+  // Restrict the new b from the current b
   // b(k+1) = I * (b(k) - A * x)
   {
     OStringStream ostr;
@@ -1096,8 +1096,8 @@ _solve(const Vector& vector_b, Vector& vector_x, Integer level)
 
   //mat_op.matrixVectorProduct(transpose_prolongation_matrix,vector_x,tmp);
 
-  // Si niveau final atteint, résoud la matrice.
-  // Sinon, continue en restreignant à nouvea la matrice
+  // If final level reached, solve the matrix.
+  // Otherwise, continue by restricting the matrix anew
   if (is_final_level) {
 
     //info() << " SOLVE FINAL LEVEL";
@@ -1130,7 +1130,7 @@ _solve(const Vector& vector_b, Vector& vector_x, Integer level)
     _solve(new_b, new_x, level + 1);
   }
 
-  // Interpole le nouveau x à partir de la solution trouvée
+  // Interpolate the new x from the solution found
   // x(k) = x(k) + tI * x(k+1)
   mat_op.matrixVectorProduct(prolongation_matrix, new_x, tmp);
   mat_op.addVector(vector_x, tmp);
@@ -1141,7 +1141,7 @@ _solve(const Vector& vector_b, Vector& vector_x, Integer level)
     _printResidualInfo(fine_matrix,vector_b,vector_x);
     }*/
 
-  // Relaxation de richardson
+  // Richardson relaxation
   if (use_gauss_seidel) {
     for (Integer i = 0; i < nb_relax1; ++i)
       _relaxGaussSeidel(fine_matrix, vector_b, vector_x, TYPE_FINE, current_level->pointsType());
@@ -1210,8 +1210,8 @@ class PointInfo
   Integer m_lambda;
   Integer m_index;
   /*!
-   * Le tri est fait pour que le premier point de la liste est celui
-   * avec le lambda maximal et d'indice minimal.
+   * The sorting is done so that the first point in the list is the one
+   * with the maximal lambda and minimal index.
    */
   bool operator<(const PointInfo& rhs) const
   {
@@ -1314,7 +1314,7 @@ _buildCoarsePoints(Real alpha,
   weak_depends.fill(0);
 
   const bool type_hypre = true;
-  // Valeurs de chaque ligne qui influence
+  //Values of each row that influences
   rows_max_val.resize(nb_row);
   for (Integer row = 0; row < nb_row; ++row) {
     Real max_val = 0.0;
@@ -1543,8 +1543,8 @@ _buildCoarsePoints(Real alpha,
     fatal() << "Can not find all COARSE or FINE points nb_done=" << nb_done << " nb_point=" << nb_row;
 
   {
-    // Maintenant, il faut etre certain que deux connections F-F ont au moins un
-    // point C en commun. Si ce n'est pas le cas, le premier F est changé en C
+    //Now, we must ensure that two F-F connections have at least one
+    // common C point. If not, the first F is changed to C
     //info() << "SECOND PASS !!!";
     Int32UniqueArray points_marker(nb_row);
     points_marker.fill(-1);
@@ -1607,7 +1607,7 @@ _buildCoarsePoints(Real alpha,
   }
 
   if (0) {
-    // Lecture depuis Hypre
+    //Reading from Hypre
     static int matrix_number = 0;
     ++matrix_number;
     info() << "READ HYPRE CF_marker n=" << matrix_number;
@@ -1639,7 +1639,7 @@ _buildCoarsePoints(Real alpha,
     }
   }
 
-  // Vérifie que tous les points fins ont au moins un point qui influence
+  // Checks that all fine points have at least one influencing point
   nb_coarse = 0;
   for (Integer i = 0; i < nb_row; ++i) {
     if (m_points_type[i] == TYPE_UNDEFINED)
@@ -1774,7 +1774,7 @@ _buildInterpolationMatrix(RealConstArrayView rows_max_val,
   }
   bool type_hypre = true;
 
-  // Maintenant,calcule les éléments de la matrice d'influence
+  // Now, calculate the elements of the influence matrix
   IntegerUniqueArray prolongation_matrix_columns;
   RealUniqueArray prolongation_matrix_values;
   IntegerUniqueArray prolongation_matrix_rows_size(nb_row);
@@ -1885,7 +1885,7 @@ _buildInterpolationMatrix(RealConstArrayView rows_max_val,
       }
     }
     else {
-      // Point grossier, met 1.0 dans la diagonale
+      // Coarse point, sets 1.0 on the diagonal
       Integer column = points_in_coarse[row];
       if (column >= nb_coarse || column < 0)
         fatal() << " BAD COLUMN for coarse point j=" << column << " nb=" << nb_coarse
@@ -1936,7 +1936,7 @@ _buildInterpolationMatrix(RealConstArrayView rows_max_val,
     info() << ostr.str();
   }
   //info() << " ** TOTAL SUM=" << total_sum;
-  // Calcule la matrice grossiere Ak+1 = I * Ak * tI
+  // Calculate the coarse matrix Ak+1 = I * Ak * tI
   //MatrixOperation mat_op;
   const bool old = false;
   if (old) {

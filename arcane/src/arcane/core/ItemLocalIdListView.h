@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemLocalIdListView.h                                       (C) 2000-2023 */
 /*                                                                           */
-/* Vue sur une liste de ItemLocalId.                                         */
+/* View over a list of ItemLocalId.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMLOCALIDLISTVIEW_H
 #define ARCANE_CORE_ITEMLOCALIDLISTVIEW_H
@@ -34,8 +34,9 @@ namespace mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des itérateurs pour ItemLocalIdViewT.
+ * \brief Base class for iterators for ItemLocalIdViewT.
  */
 class ItemLocalIdListViewConstIterator
 {
@@ -50,11 +51,11 @@ class ItemLocalIdListViewConstIterator
 
   typedef ItemLocalIdListViewConstIterator ThatClass;
   typedef std::random_access_iterator_tag iterator_category;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Int32 value_type;
-  //! Type de la taille
+  //! Type of the size
   typedef Int32 size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a difference between array iterator elements
   typedef std::ptrdiff_t difference_type;
 
  public:
@@ -91,7 +92,7 @@ class ItemLocalIdListViewConstIterator
   {
     return lhs.m_local_id_ptr <= rhs.m_local_id_ptr;
   }
-  //! Compare les indices d'itération de deux instances
+  //! Compare the iteration indices of two instances
   constexpr ARCCORE_HOST_DEVICE friend bool operator==(const ThatClass& lhs, const ThatClass& rhs)
   {
     return lhs.m_local_id_ptr == rhs.m_local_id_ptr;
@@ -109,8 +110,9 @@ class ItemLocalIdListViewConstIterator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur pour ItemLocalIdViewT.
+ * \brief Iterator for ItemLocalIdViewT.
  */
 template <typename ItemType>
 class ItemLocalIdListViewConstIteratorT
@@ -165,8 +167,9 @@ class ItemLocalIdListViewConstIteratorT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur une liste de ItemLocalId.
+ * \brief View over a list of ItemLocalId.
  */
 class ARCANE_CORE_EXPORT ItemLocalIdListView
 : private impl::ItemLocalIdListContainerView
@@ -220,8 +223,9 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue typée sur une liste d'entités d'une connectivité.
+ * \brief Typed view over a list of connectivity entities.
  */
 template <typename ItemType>
 class ItemLocalIdListViewT
@@ -237,7 +241,7 @@ class ItemLocalIdListViewT
 
   using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
   using const_iterator = ItemLocalIdListViewConstIteratorT<ItemType>;
-  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  // TODO: Create the 'Sentinel' type when we are in C++20
   using SentinelType = const_iterator;
 
  public:

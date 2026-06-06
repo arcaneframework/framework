@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemFamilyCompactPolicy.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la politique de compactage des entités d'une famille.        */
+/* Interface for the compaction policy of family entities.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILYCOMPACTPOLICY_H
 #define ARCANE_CORE_IITEMFAMILYCOMPACTPOLICY_H
@@ -24,12 +24,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Politique de compactage des entités.
+ * \brief Entity compaction policy.
  *
- * Une instance de cette classe est associée à chaque famille.
+ * An instance of this class is associated with each family.
  *
- * Le pseudo-code d'appel pour un compactage est le suivant:
+ * The call pseudo-code for a compaction is as follows:
  *
  \code
  * IMesh* mesh = ...;
@@ -48,10 +49,9 @@ namespace Arcane
  *   policy->endCompact(...);
  \endcode
  *
- * En dehors d'un compactage, il est possible d'appeler
- * compactReferenceData() qui permet de compacter les données servant
- * à contenir les infos de connectivité.
- * données.
+ * Outside of a compaction, it is possible to call
+ * compactReferenceData(), which allows compacting the data used
+ * to hold connectivity information.
  */
 class ARCANE_CORE_EXPORT IItemFamilyCompactPolicy
 {
@@ -61,15 +61,15 @@ class ARCANE_CORE_EXPORT IItemFamilyCompactPolicy
 
  public:
 
-  // TODO: faire une méthode computeCompact après beginCompact().
+  // TODO: implement a computeCompact method after beginCompact().
   virtual void beginCompact(ItemFamilyCompactInfos& compact_infos) = 0;
   virtual void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos) = 0;
   virtual void updateInternalReferences(IMeshCompacter* compacter) = 0;
   virtual void endCompact(ItemFamilyCompactInfos& compact_infos) = 0;
   virtual void finalizeCompact(IMeshCompacter* compacter) = 0;
-  //! Famille associée
+  //! Associated family
   virtual IItemFamily* family() const = 0;
-  //! Compacte les données sur les connectivités.
+  //! Compacts the connectivity data.
   virtual void compactConnectivityData() = 0;
 };
 

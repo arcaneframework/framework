@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataStorageFactory.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour construire une instance de 'IData'.                     */
+/* Information to construct an instance of 'IData'.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_DATASTORAGEBUILDINFO_H
 #define ARCANE_CORE_DATATYPE_DATASTORAGEBUILDINFO_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour construire une instance de 'IData'.
+ * \brief Information to construct an instance of 'IData'.
  */
 class ARCANE_CORE_EXPORT DataStorageBuildInfo
 {
@@ -53,4 +54,4 @@ class ARCANE_CORE_EXPORT DataStorageBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableFactory.h                                            C) 2000-2025 */
 /*                                                                           */
-/* Fabrique d'une variable d'un type donné.                                  */
+/* Factory for a variable of a given type.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEFACTORY_H
 #define ARCANE_CORE_VARIABLEFACTORY_H
@@ -27,9 +27,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Enregistreur d'une fabrique de variables.
+ * \brief Registerer of a variable factory.
  */
 class VariableFactory
 : public IVariableFactory
@@ -37,14 +38,14 @@ class VariableFactory
  public:
 
   /*!
-   * \brief Crée une fabrique une variable.
+   * \brief Creates a variable factory.
    *
-   * \param func fonction créant la variable
-   * \param item_kind genre d'entité de la variable
-   * \param data_type type de donnée de la variable
-   * \param dimension dimension de la variable
-   * \param multi_tag tag indiquant s'il s'agit d'un tableau à taille multiple.
-   * \param is_partial indique s'il s'agit d'une variable partielle.
+   * \param func function creating the variable
+   * \param item_kind kind of the variable entity
+   * \param data_type data type of the variable
+   * \param dimension dimension of the variable
+   * \param multi_tag tag indicating if it is a multi-sized array.
+   * \param is_partial indicates if it is a partial variable.
    */
   ARCCORE_DEPRECATED_2020("Use overload with 'VariableTypeInfo' argument")
   VariableFactory(VariableFactoryFunc func,eDataType data_type,
@@ -64,13 +65,13 @@ class VariableFactory
 
  private:
   
-  //! Fonction de création du IVariableFactoryFactory
+  //! Creation function for IVariableFactoryFactory
   VariableFactoryFunc m_function;
 
-  //! Informations sur le type de la variable
+  //! Information about the variable type
   VariableTypeInfo m_variable_type_info;
 
-  //! Nom complet du type de la variable
+  //! Full name of the variable type
   String m_full_type_name;
 };
 

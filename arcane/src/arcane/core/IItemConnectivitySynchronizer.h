@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemConnectivitySynchronizer.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface de synchronisation de la connectivité des entités.              */
+/* Interface for synchronizing entity connectivity.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMCONNECTIVITYSYNCHRONIZER_H
 #define ARCANE_CORE_IITEMCONNECTIVITYSYNCHRONIZER_H
@@ -29,7 +29,7 @@ class ARCANE_CORE_EXPORT IItemConnectivitySynchronizer
 {
  public:
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IItemConnectivitySynchronizer() = default;
 
  public:

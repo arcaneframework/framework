@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ScalarVariant.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Type de base polymorphe pour les scalaires (dimension 0).                 */
+/* Polymorphic base type for scalars (dimension 0).                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_SCALARVARIANT_H
 #define ARCANE_CORE_DATATYPE_SCALARVARIANT_H
@@ -30,9 +30,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Type de base polymorphe pour les scalaires (dimension 0).
+ * \brief Polymorphic base type for scalars (dimension 0).
  */
 class ARCANE_DATATYPE_EXPORT ScalarVariant 
 : public VariantBase
@@ -90,15 +91,15 @@ class ARCANE_DATATYPE_EXPORT ScalarVariant
   
  private:
 
-  Real m_real_value; //!< Valeur de type réel
-  Real2 m_real2_value; //!< Valeur de type vecteur de 2 réels
-  Real3 m_real3_value; //!< Valeur de type vecteur de 3 réel
-  Real2x2 m_real2x2_value; //!< Valeur de type matrice 2x2 de réels
-  Real3x3 m_real3x3_value; //!< Valeur de type matrice 3x3 de réels
-  Int32 m_int32_value; //!< Valeur de type entier 32 bits
-  Int64 m_int64_value; //!< Valeur de type eniter 64 bits
-  bool m_bool_value; //!< Valeur de type entier booléenne
-  String m_string_value; //!< Valeur de type chaîne de caractère.
+  Real m_real_value; //!< Real type value
+  Real2 m_real2_value; //!< 2-real vector type value
+  Real3 m_real3_value; //!< 3-real vector type value
+  Real2x2 m_real2x2_value; //!< 2x2 real matrix type value
+  Real3x3 m_real3x3_value; //!< 3x3 real matrix type value
+  Int32 m_int32_value; //!< 32-bit integer type value
+  Int64 m_int64_value; //!< 64-bit integer type value
+  bool m_bool_value; //!< Boolean type value
+  String m_string_value; //!< Character string type value.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -109,4 +110,4 @@ class ARCANE_DATATYPE_EXPORT ScalarVariant
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

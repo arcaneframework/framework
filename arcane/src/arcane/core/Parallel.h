@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Parallel.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Espace de nom des types gérant le parallélisme.                           */
+/* Namespace for types managing parallelism.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLEL_H
 #define ARCANE_CORE_PARALLEL_H
@@ -32,8 +32,9 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Types des classes du parallélisme.
+ * \brief Types of parallelism classes.
  */
 namespace Arcane::Parallel
 {
@@ -42,26 +43,26 @@ class IStat;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Déclarations des types et méthodes utilisés par les mécanismes
- * d'échange de messages.
+ * \brief Declarations of types and methods used by message exchange mechanisms.
  */
 namespace Arcane::MessagePassing
 {
+
 /*!
- * \brief Effectue une barrière nommée de nom \a name
+ * \brief Performs a named barrier with name \a name
  *
- * Effectue une barrière de nom \a name en utilisant le gestionnaire
- * \a pm.
+ * Performs a named barrier \a name using the manager \a pm.
  *
- * Tous les rangs de \a pm bloquent dans cette barrière et vérifient
- * que tous les rangs utilisent le même nom de barrière. Si un des rangs
- * utilise un nom différent une exception est levée.
+ * All ranks of \a pm block in this barrier and verify that all ranks use the
+ * same barrier name. If one of the ranks uses a different name, an exception
+ * is raised.
  *
- * Cette opération permet de vérifier que tous les rangs utilisent
- * la même barrière contrairement à l'opération IParallelMng::barrier().
+ * This operation allows checking that all ranks use the same barrier, unlike
+ * the IParallelMng::barrier() operation.
  *
- * \note Seuls les 1024 premiers caractères de \a name sont utilisés.
+ * \note Only the first 1024 characters of \a name are used.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 namedBarrier(IParallelMng* pm, const String& name);
@@ -69,12 +70,11 @@ namedBarrier(IParallelMng* pm, const String& name);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Filtre les chaînes de caractères communes à tous les rangs de \a pm.
+ * \brief Filters strings common to all ranks of \a pm.
  *
- * Prend en entrée une liste \a input_string de chaînes de caractères et retourne
- * dans \a common_strings celles qui sont communes à tous les rangs de \a pm.
- * Les chaînes de caractères retournées dans \a common_strings sont triées
- * par ordre alphabétique.
+ * Takes an input list \a input_string of strings and returns in
+ * \a common_strings those that are common to all ranks of \a pm.
+ * The strings returned in \a common_strings are sorted alphabetically.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 filterCommonStrings(IParallelMng* pm, ConstArrayView<String> input_strings,
@@ -83,11 +83,11 @@ filterCommonStrings(IParallelMng* pm, ConstArrayView<String> input_strings,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Écrit dans \a tm la date et la mémoire consommée.
+ * \brief Writes the date and memory consumed into \a tm.
  *
- * L'opération est collective sur \a pm et affiche la mémoire minimimale,
- * moyenne et maximale consommée ainsi que les rangs de ceux qui consomment
- * le moins et le plus de mémoire.
+ * The operation is collective on \a pm and displays the minimum, average,
+ * and maximum memory consumed, as well as the ranks of those that consume
+ * the least and the most memory.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 dumpDateAndMemoryUsage(IParallelMng* pm, ITraceMng* tm);
@@ -121,5 +121,4 @@ operator<<(std::ostream& o, const Parallel::Request prequest)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnstructuredMeshAllocateBuildInfo.cc                        (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour allouer les entités d'un maillage non structuré.        */
+/* Information for allocating entities of an unstructured mesh.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

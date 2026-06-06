@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataAllocationInfo.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur l'allocation d'une donnée.                               */
+/* Data allocation information.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_DATAALLOCATIONINFO_H
 #define ARCANE_CORE_DATATYPE_DATAALLOCATIONINFO_H
@@ -24,14 +24,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur l'allocation d'une donnée.
+ * \brief Information on data allocation.
  */
 class ARCANE_DATATYPE_EXPORT DataAllocationInfo
 {
  public:
 
-  //! Constructeur.
+  //! Constructor.
   DataAllocationInfo() = default;
   DataAllocationInfo(eMemoryLocationHint hint)
   : m_location_hint(hint)

@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* IRayMeshIntersection.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Calcul de l'intersection entre des segments et la surface d'un maillage.  */
+/* Calculation of the intersection between segments and the surface of a     */
+/* mesh.                                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IRAYMESHINTERSECTION_H
 #define ARCANE_CORE_IRAYMESHINTERSECTION_H
@@ -24,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface générique du calcul de l'intersection d'un rayon avec une face.
+ * \brief Generic interface for calculating the intersection of a ray with a face.
  */
 class IRayFaceIntersector
 {
@@ -36,18 +38,18 @@ class IRayFaceIntersector
  public:
 
   /*!
-   * \brief Calcul l'intersection entre un rayon et une face.
+   * \brief Calculates the intersection between a ray and a face.
    *
-   * \param origin position d'origine du rayon.
-   * \param direction direction du rayon.
-   * \param orig_face_local_id numéro local de la face d'origine du rayon
-   * \param face_nodes positions des noeuds de la face.
-   * \param face_local_id numéro local de la face. S'il ne s'agit
-   * pas d'une face du sous-domaine, vaut ITEM_NULL_LOCAL_ID.
-   * \param user_value valeur utilisateur à remplir par l'appelant si besoin
-   * \param distance en retour, distance d'intersection s'il y en a une
-   * \param intersection_position en retour, position du point d'intersection
-   * \return true si une intersection est trouvée, false sinon.
+   * \param origin ray origin position.
+   * \param direction direction of the ray.
+   * \param orig_face_local_id local ID of the ray's origin face
+   * \param face_nodes positions of the face nodes.
+   * \param face_local_id local ID of the face. If it is not
+   * a sub-domain face, it equals ITEM_NULL_LOCAL_ID.
+   * \param user_value user value to be filled by the caller if necessary.
+   * \param distance returned, intersection distance if one exists.
+   * \param intersection_position returned, position of the intersection point.
+   * \return true if an intersection is found, false otherwise.
    */
   virtual bool computeIntersection(Real3 origin, Real3 direction,
                                    Int32 orig_face_local_id,
@@ -59,30 +61,31 @@ class IRayFaceIntersector
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul de l'intersection entre un ensemble de segments et la surface
- * d'un maillage.
+ * \brief Calculation of the intersection between a set of segments and the surface
+ * of a mesh.
  */
 class IRayMeshIntersection
 {
  public:
 
-  //! Libère les ressources
+  //! Frees resources.
   virtual ~IRayMeshIntersection() = default;
 
  public:
 
-  //! Construit l'instance
+  //! Builds the instance.
   virtual void build() = 0;
 
  public:
 
   /*!
-   * \brief Calcule l'intersection.
+   * \brief Calculates the intersection.
    *
-   * En retour, le tableau \a faces_local_id contient le numéro
-   * local de la face coupée pour chaque segment. Si un segment
-   * ne coupe pas de face, le local_id correspondant est NULL_ITEM_LOCAL_ID.
+   * In return, the array \a faces_local_id contains the local ID
+   * of the intersected face for each segment. If a segment
+   * does not intersect any face, the corresponding local_id is NULL_ITEM_LOCAL_ID.
    */
   virtual void compute(Real3ConstArrayView segments_position,
                        Real3ConstArrayView segments_direction,
@@ -93,30 +96,29 @@ class IRayMeshIntersection
                        Int32ArrayView faces_local_id) = 0;
 
   /*!
-   * \brief Calcule l'intersection de rayons.
+   * \brief Calculates the intersection of rays.
    *
-   * Calcul l'intersection des rayons de la famille \a ray_family
-   * avec la surface du maillage. La position et la direction
-   * des rayons est donnée par les variables \a rays_position
-   * et \a rays_direction. Le tableau \a rays_orig_face contient
-   * le numéro local de la face dont le rayon est originaire. Ce tableau
-   * est utilisé dans le IRayFaceIntersector.
+   * Calculates the intersection of rays in the family \a ray_family
+   * with the surface of the mesh. The position and direction
+   * of the rays are given by the variables \a rays_position
+   * and \a rays_direction. The array \a rays_orig_face contains
+   * the local ID of the face from which the ray originates. This array
+   * is used in the IRayFaceIntersector.
    *
-   * En retour \a rays_face contiendra pour chaque rayon le localId()
-   * de la face intersectée
-   * ou NULL_ITEM_LOCAL_ID si un rayon n'intersecte aucune face.
-   * Le tableau \a rays_intersection contient en retour la position
-   * du point d'intersection et \a rays_distance la distance du
-   * point d'intersection par rapport à l'origine du rayon.
-   * Le tableau \a user_values est remplit en retour par
-   * le IRayFaceIntersector
+   * In return, \a rays_face will contain for each ray the localId()
+   * of the intersected face
+   * or NULL_ITEM_LOCAL_ID if a ray does not intersect any face.
+   * The array \a rays_intersection returns the position
+   * of the intersection point and \a rays_distance the distance
+   * of the intersection point relative to the ray origin.
+   * The array \a user_values is filled in return by
+   * the IRayFaceIntersector.
    *
-   * En parallèle, les rayons de la famille sont échangés
-   * entre sous-domaines pour qu'un rayon se trouve dans le
-   * même sous-domaine que celui propriétaire de la face
-   * intersectée.
-   * Si un rayon n'intersecte pas de face, il reste dans
-   * ce sous-domaine.
+   * In parallel, the rays in the family are exchanged
+   * between sub-domains so that a ray is in the
+   * same sub-domain as the owner of the intersected face.
+   * If a ray does not intersect any face, it remains in
+   * this sub-domain.
    */
   virtual void compute(IItemFamily* ray_family,
                        VariableParticleReal3& rays_position,
@@ -128,15 +130,15 @@ class IRayMeshIntersection
                        VariableParticleInt32& rays_face) = 0;
 
   /*!
-   * \brief Positionne le callback d'intersection.
+   * \brief Sets the intersection callback.
    *
-   * Cela permet à l'appelant de spécifier sa méthode de calcul
-   * d'intersection d'un rayon avec une face. Si cette méthode n'est
-   * pas appelée, un intersecteur par défaut est utilisé.   
+   * This allows the caller to specify its method for calculating
+   * the intersection of a ray with a face. If this method is not
+   * called, a default intersector is used.   
    */
   virtual void setFaceIntersector(IRayFaceIntersector* intersector) = 0;
 
-  //! Intersecteur utilisé (0 si aucun spécifié)
+  //! Intersector used (0 if none specified)
   virtual IRayFaceIntersector* faceIntersector() = 0;
 };
 
@@ -148,5 +150,4 @@ class IRayMeshIntersection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

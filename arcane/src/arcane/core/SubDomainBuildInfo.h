@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SubDomainBuildInfo.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour construire un sous-domaine.                             */
+/* Information for building a subdomain.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SUBDOMAINBUILDINFO_H
 #define ARCANE_CORE_SUBDOMAINBUILDINFO_H
@@ -32,22 +32,23 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Paramètres nécessaires à la construction d'un sous-domaine.
- 
- Info pour créer un sous-domaine associé au gestionnaire de parallèlisme
- \a parallelMng(), avec le jeu de données de nom \a caseFileName()
- et de contenu \a caseBytes. \a index() est l'indice dans
- la liste des sous-domaines de la session de ce sous-domaine.
- 
- Le nom du fichier est purement informatif, et seul le contenu \a caseBytes()
- est utilisé. Si \a caseBytes() n'est pas vide, il doit contenir un
- document XML valide.
 
- En réplication de domaine, il faut construire l'instance en lui spécifiant
- le IParallelMng correspondant à l'ensemble des sous-domaines et des réplicats,
- qui est allReplicaParallelMng().Sans réplication, cela correspond au gestionnaire
- parallèle standard. 
+/*!
+ * \brief Parameters necessary for building a subdomain.
+ 
+ Info to create a subdomain associated with the parallelism manager
+ \a parallelMng(), using the data set name \a caseFileName()
+ and content \a caseBytes. \a index() is the index in
+ the list of subdomains for this subdomain's session.
+ 
+ The file name is purely informative, and only the content \a caseBytes()
+ is used. If \a caseBytes() is not empty, it must contain a
+ valid XML document.
+
+ In domain replication, the instance must be constructed by specifying
+ the IParallelMng corresponding to the set of subdomains and replicas,
+ which is allReplicaParallelMng(). Without replication, this corresponds to the standard
+ parallel manager. 
 */
 class ARCANE_CORE_EXPORT SubDomainBuildInfo
 {
@@ -86,10 +87,10 @@ class ARCANE_CORE_EXPORT SubDomainBuildInfo
  private:
 
   Ref<IParallelMng> m_parallel_mng;
-  String m_case_file_name; //!< Nom du fichier contenant le jeu de données.
-  UniqueArray<std::byte> m_case_content; //!< Contenu du jeu de données
-  Int32 m_index; //!< Numéro du sous-domaine dans la session
-  //! Gestionnnaire de parallélisme contenant tous les réplica de m_parallel_mng
+  String m_case_file_name; //!< Name of the file containing the data set.
+  UniqueArray<std::byte> m_case_content; //!< Data set content
+  Int32 m_index; //!< Subdomain number in the session
+  //! Parallelism manager containing all replicas of m_parallel_mng
   Ref<IParallelMng> m_all_replica_parallel_mng;
 };
 
@@ -101,5 +102,4 @@ class ARCANE_CORE_EXPORT SubDomainBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

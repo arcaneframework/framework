@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItem.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Include utilisateur regroupant les fonctionnalités AnyItem                */
+/* User header file grouping AnyItem functionalities                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEM_PRIVATE_H
 #define ARCANE_CORE_ANYITEM_ANYITEM_PRIVATE_H

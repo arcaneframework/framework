@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IIndexedIncrementalItemConnectivityMng.h                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de 'IIndexedIncrementalItemConnectivity'.       */
+/* Interface of the 'IIndexedIncrementalItemConnectivity' manager.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IINDEXEDINCREMENTALITEMCONNECTIVITYMNG_H
 #define ARCANE_CORE_IINDEXEDINCREMENTALITEMCONNECTIVITYMNG_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire des connectivités incrémentales indexées sur les entités.
+ * \brief Interface of the manager for indexed incremental item connectivities.
  */
 class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivityMng
 {
@@ -36,20 +37,20 @@ class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivityMng
  public:
 
   /*!
-   * \brief Cherche ou créé une connectivité.
+   * \brief Searches for or creates a connectivity.
    *
-   * Lève une exception si une connectivité de nom \a name existe déjà mais
-   * pas avec le même couple (source,target).
-   * L'instance reste propriétaire de la connectivité retournée.
+   * Throws an exception if a connectivity with name \a name already exists but
+   * not with the same pair (source, target).
+   * The instance remains the owner of the returned connectivity.
    */
   virtual Ref<IIndexedIncrementalItemConnectivity>
   findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String& name) = 0;
 
   /*!
-   * \brief Cherche ou créé une connectivité.
+   * \brief Searches for or creates a connectivity.
    *
-   * Lève une exception si la connectivité de nom \a name n'est pas trouvée.
-   * L'instance reste propriétaire de la connectivité retournée.
+   * Throws an exception if the connectivity with name \a name is not found.
+   * The instance remains the owner of the returned connectivity.
    */
   virtual Ref<IIndexedIncrementalItemConnectivity>
   findConnectivity(const String& name) = 0;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellToAllEnvCellConverter.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Conversion de 'Cell' en 'AllEnvCell'.                                     */
+/* Conversion of 'Cell' to 'AllEnvCell'.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CELLTOALLENVCELLCONVERTER_H
 #define ARCANE_CORE_MATERIALS_CELLTOALLENVCELLCONVERTER_H
@@ -28,25 +28,26 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Conversion de 'Cell' en 'AllEnvCell'.
+ * \brief Conversion of 'Cell' to 'AllEnvCell'.
 
- Les instances de cette classe permettent de convertir une maille \a Cell
- en une maille \a AllEnvCell afin d'avoir les infos sur les matériaux.
+ Instances of this class allow converting a \a Cell mesh
+ into an \a AllEnvCell mesh to obtain material information.
  
- La création d'une instance se fait via le gestionnaire de matériaux:
+ An instance is created via the material manager:
  \code
  * IMeshMaterialMng* mm = ...;
  * CellToAllEnvCellConverter all_env_cell_converter(mm);
  \endcode
 
- Le coût de la création est faible, équivalent à un appel de fonction
- virtuelle. Il n'est donc pas nul et il est préférable de ne pas construire
- d'instance dans les boucles sur les entités par exemple, mais au dehors.
+ The creation cost is low, equivalent to a virtual function call. It is
+ therefore not negligible, and it is preferable not to construct an instance
+ inside loops over entities, for example, but outside them.
 
- Une fois l'instance créée, il est ensuite possible d'utiliser
- l'opérateur [] (operator[]()) pour faire la conversion:
+ Once the instance is created, it is then possible to use
+ the [] operator (operator[]()) to perform the conversion:
  
  \code
  * CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
@@ -59,9 +60,8 @@ namespace Arcane::Materials
  * }
  \endcode
  
- \warning Les instances de cette classe sont invalidées si la liste des
- mailles matériaux ou milieu change. Dans ce cas, il faut
- refabriquer l'objet:
+ \warning Instances of this class are invalidated if the list of
+ material or environment meshes changes. In this case, the object must be rebuilt:
 
  \code
  * all_env_cell_converter = CellToAllEnvCellConverter(m_material_mng);
@@ -87,13 +87,13 @@ class CellToAllEnvCellConverter
 
  public:
 
-  //! Converti une maille \a Cell en maille \a AllEnvCell
+  //! Converts a \a Cell mesh to an \a AllEnvCell mesh
   AllEnvCell operator[](Cell c)
   {
     return operator[](CellLocalId(c));
   }
 
-  //! Converti une maille \a CellLocalId en maille \a AllEnvCell
+  //! Converts a \a CellLocalId mesh to an \a AllEnvCell mesh
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
     return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(c.localId())));
@@ -112,5 +112,4 @@ class CellToAllEnvCellConverter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

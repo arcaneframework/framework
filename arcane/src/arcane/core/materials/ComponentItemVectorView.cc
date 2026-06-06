@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItemVectorView.cc                                  (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur un vecteur sur des entités composants.                            */
+/* View over a vector of component entities.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,13 +54,13 @@ _subView(Integer begin,Integer size)
 {
   Integer nb_total = nbItem();
 
-  // Pas d'éléments, retourne un tableau vide
+  // No elements, returns an empty array
   if (nb_total==0){
     return ComponentItemVectorView(m_component);
   }
 
   if (begin>=nb_total){
-    // Indice de début supérieur au nombre d'éléments.
+    // Start index greater than the number of elements.
     ARCANE_THROW(ArgumentException,"Bad 'begin' value '{0}' total={1}",begin,nb_total);
   }
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISharedReference.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la classe compteur de référence.                             */
+/* Interface of the reference counter class.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISHAREDREFERENCE_H
 #define ARCANE_CORE_ISHAREDREFERENCE_H
@@ -24,36 +24,37 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Interface d'un compteur de référence.
+ * \brief Interface of a reference counter.
  *
- * Le compteur de référence permet à une instance classe de connaître le nombre
- * de références sur elle. Lorsque ce nombre arrive à zéro, cela signifie
- * que l'instance n'est plus utilisée. Ce système est utilisé principalement
- * pour libérer automatiquement la mémoire lorsque le nombre de références
- * tombe à zéro.
+ * The reference counter allows a class instance to know the number
+ * of references on it. When this number reaches zero, it means
+ * that the instance is no longer used. This system is used primarily
+ * to automatically free memory when the number of references
+ * drops to zero.
  *
- * Cette classe s'utilise par l'intermédiaire de classes comme AutoRefT qui
- * permettent d'incrémenter ou de décrémenter automatiquement le compteur
- * de l'objet sur lesquelles elles pointent.
+ * This class is used through classes like AutoRefT which
+ * allow automatically incrementing or decrementing the counter
+ * of the objects they point to.
  */
 class ARCANE_CORE_EXPORT ISharedReference
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~ISharedReference() = default;
 
  public:
 
-  //! Incrémente le compteur de référence
+  //! Increments the reference counter
   virtual void addRef() = 0;
 
-  //! Décrémente le compteur de référence
+  //! Decrements the reference counter
   virtual void removeRef() = 0;
 
-  //! Retourne la valeur du compteur de référence
+  //! Returns the value of the reference counter
   virtual Int32 refCount() const = 0;
 };
 
@@ -65,4 +66,4 @@ class ARCANE_CORE_EXPORT ISharedReference
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

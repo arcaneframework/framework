@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMainFactory.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface des AbstractFactory d'Arcane.                                   */
+/* Interface of Arcane's AbstractFactory.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMAINFACTORY_H
 #define ARCANE_CORE_IMAINFACTORY_H
@@ -60,31 +60,32 @@ class IDataFactoryMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Manufacture des classes d'Arcane.
+ * \brief Factory for Arcane classes.
  *
- Il s'agit d'une classe virtuelle comprenant les méthodes pour fabriquer
- les différentes instances des gestionnaires de l'architecture
+ It is a virtual class containing methods to manufacture
+ the different instances of the architecture managers
  (Design Pattern: AbstractFactory).
 
- Arcane fournit des fabriques par défaut pour la plupart des gestionnaires
- (IApplication, IParallelSuperMng, ...). La classe gérant le code doit par contre
- être spécifiée en implémentant la méthode createArcaneMain() dans une
- classe dérivée.
+ Arcane provides default factories for most managers
+ (IApplication, IParallelSuperMng, ...). However, the class managing the code must
+ be specified by implementing the createArcaneMain() method in a
+ derived class.
 
- Le point d'entrée général du code se fait par l'appel à la fonction
+ The general entry point of the code is achieved by calling the function
  arcaneMain().
 
- Par exemple, si on définit une classe <tt>ConcreteMainFactory</tt> qui
- dérive de IMainFactory, on lance le code comme suit:
+ For example, if we define a class <tt>ConcreteMainFactory</tt> that
+ derives from IMainFactory, we run the code as follows:
  
  * \code
  * int
  * main(int argc,char** argv)
  * {
- *   ApplicationInfo exe_info = ... // Création des infos de l'exécutable.
- *   ConcreteMainFactory cmf; // Création de la manufacture
+ *   ApplicationInfo exe_info = ... // Creation of executable info.
+ *   ConcreteMainFactory cmf; // Creation of the factory
  *   return IMainFactory::arcaneMain(exe_info,&cmf);
  * }
  * \endcode
@@ -93,191 +94,191 @@ class IMainFactory
 {
  public:
 
-  virtual ~IMainFactory() {} //!< Libère les ressources.
+  virtual ~IMainFactory() {} //!< Releases resources.
 
  public:
 
  public:
 
-  //! Crée une instance de IArcaneMain
+  //! Creates an instance of IArcaneMain
   virtual IArcaneMain* createArcaneMain(const ApplicationInfo& app_info) =0;
 
  public:
 
-  //! Crée une instance d'un superviseur
+  //! Creates an instance of a supervisor
   virtual IApplication* createApplication(IArcaneMain*) =0;
 
-  //! Crée une instance du gestionnaire de variable
+  //! Creates an instance of the variable manager
   virtual IVariableMng* createVariableMng(ISubDomain*) =0;
 
-  //! Crée une instance du gestionnaire de module
+  //! Creates an instance of the module manager
   virtual IModuleMng* createModuleMng(ISubDomain*) =0;
 
-  //! Crée une instance du gestionnaire des points d'entrée
+  //! Creates an instance of the entry point manager
   virtual IEntryPointMng* createEntryPointMng(ISubDomain*) =0;
 
-  //! Crée une instance du gestionnaire d'historique en temps
+  //! Creates an instance of the time history manager
   virtual ITimeHistoryMng* createTimeHistoryMng(ISubDomain*) =0;
 
-  //! Crée une instance du gestionnaire du jeu de données
+  //! Creates an instance of the case manager
   virtual ICaseMng* createCaseMng(ISubDomain*) =0;
 
-  //! Crée une instance d'un document du jeu de données
+  //! Creates an instance of a case document
   virtual ICaseDocument* createCaseDocument(IApplication*) =0;
 
-  //! Crée une instance d'un document du jeu de données pour une langue donnée \a lang
+  //! Creates an instance of a case document for a given language \a lang
   virtual ICaseDocument* createCaseDocument(IApplication*,const String& lang) =0;
 
-  //! Crée une instance d'un document du jeu de données
+  //! Creates an instance of a case document
   virtual ICaseDocument* createCaseDocument(IApplication*,IXmlDocumentHolder* doc) =0;
 
   /*!
-   * \brief Crée une instance des statistiques de temps d'exécution.
+   * \brief Creates an instance of execution time statistics.
    *
-   * Utiliser la surchage createTimeStats(ITimerMng*,ITraceMng*,const String& name).
+   * Use the overloaded createTimeStats(ITimerMng*,ITraceMng*,const String& name).
    */
   virtual ARCANE_DEPRECATED_116 ITimeStats* createTimeStats(ISubDomain*) =0;
 
-  //! Crée une instance des statistiques de temps d'exécution
+  //! Creates an instance of execution time statistics
   virtual ITimeStats* createTimeStats(ITimerMng* tim,ITraceMng* trm,const String& name) =0;
 
-  //! Crée une instance du gestionnaire de la boucle en temps
+  //! Creates an instance of the time loop manager
   virtual ITimeLoopMng* createTimeLoopMng(ISubDomain*) =0;
 
-  //! Crée une boucle en temps de nom \a name
+  //! Creates a time loop named \a name
   virtual ITimeLoop* createTimeLoop(IApplication* sm,const String& name) =0;
 
-  //! Crée une instance du gestionnaire d'entrée/sortie
+  //! Creates an instance of the I/O manager
   virtual IIOMng* createIOMng(IApplication*) =0;
 
-  //! Crée une instance du gestionnaire d'entrée/sortie pour le gestionnaire de parallélisme \a pm
+  //! Creates an instance of the I/O manager for the parallelism manager \a pm
   virtual IIOMng* createIOMng(IParallelMng* pm) =0;
 
-  //! Crée une instance du chargeur de services
+  //! Creates an instance of the service loader
   virtual IServiceLoader* createServiceLoader() =0;
 
-  //! Crée une instance du gestionnaire de services
+  //! Creates an instance of the service manager
   virtual IServiceMng* createServiceMng(IBase*) =0;
 
-  //! Crée une instance du gestionnaire de protections
+  //! Creates an instance of the checkpoint manager
   virtual ICheckpointMng* createCheckpointMng(ISubDomain*) =0;
 
-  //! Crée une instance du gestionnaire de propriétés
+  //! Creates an instance of the property manager
   ARCCORE_DEPRECATED_2020("Use createPropertyMngReference() instead")
   virtual IPropertyMng* createPropertyMng(ISubDomain*) =0;
 
-  //! Crée une instance du gestionnaire de propriétés
+  //! Creates an instance of the property manager
   virtual Ref<IPropertyMng> createPropertyMngReference(ISubDomain*) =0;
 
   /*!
-   * \brief Créé ou récupère un maillage.
+   * \brief Creates or retrieves a mesh.
    *
-   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain.
+   * Creates or retrieves a mesh named \a name for the sub-domain \a sub_domain.
    *
-   * Si le sous-domaine possède déjà un maillage avec le nom \a name,
-   * c'est ce dernier qui est retourné.
+   * If the sub-domain already has a mesh with the name \a name,
+   * the latter is returned.
    */
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name) =0;
 
   /*!
-   * \brief Créé ou récupère un maillage.
+   * \brief Creates or retrieves a mesh.
    *
-   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain.
+   * Creates or retrieves a mesh named \a name for the sub-domain \a sub_domain.
    *
-   * Si le sous-domaine possède déjà un maillage avec le nom \a name,
-   * c'est ce dernier qui est retourné.
+   * If the sub-domain already has a mesh with the name \a name,
+   * the latter is returned.
    */
   ARCANE_DEPRECATED_REASON("Y2023: Use createMesh(..., eMeshAMRKind amr_type) instead")
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name,bool is_amr) =0;
 
   /*!
-   * \brief Créé ou récupère un maillage.
+   * \brief Creates or retrieves a mesh.
    *
-   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain.
+   * Creates or retrieves a mesh named \a name for the sub-domain \a sub_domain.
    *
-   * Si le sous-domaine possède déjà un maillage avec le nom \a name,
-   * c'est ce dernier qui est retourné.
+   * If the sub-domain already has a mesh with the name \a name,
+   * the latter is returned.
    */
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain,const String& name,eMeshAMRKind amr_type) =0;
 
   /*!
-   * \brief Créé ou récupère un maillage.
+   * \brief Creates or retrieves a mesh.
    *
-   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain
-   * associé au gestionnaire de parallélisme \a pm. Si le sous-domaine possède
-   * déjà un maillage avec le nom \a name, c'est ce dernier qui est retourné.
+   * Creates or retrieves a mesh named \a name for the sub-domain \a sub_domain
+   * associated with the parallelism manager \a pm. If the sub-domain already has
+   * a mesh with the name \a name, the latter is returned.
    *
-   * Le gestionnaire de parallélisme doit être le même que celui du sous-domaine
-   * ou issu de celui-ci.
+   * The parallelism manager must be the same as that of the sub-domain
+   * or derived from it.
    */
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm,
                                    const String& name) =0;
 
   /*!
-   * \brief Créé ou récupère un maillage.
+   * \brief Creates or retrieves a mesh.
    *
-   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain
-   * associé au gestionnaire de parallélisme \a pm. Si le sous-domaine possède
-   * déjà un maillage avec le nom \a name, c'est ce dernier qui est retourné.
+   * Creates or retrieves a mesh named \a name for the sub-domain \a sub_domain
+   * associated with the parallelism manager \a pm. If the sub-domain already has
+   * a mesh with the name \a name, the latter is returned.
    *
-   * Le gestionnaire de parallélisme doit être le même que celui du sous-domaine
-   * ou issu de celui-ci.
+   * The parallelism manager must be the same as that of the sub-domain
+   * or derived from it.
    */
   ARCANE_DEPRECATED_REASON("Y2023: Use createMesh(..., eMeshAMRKind amr_type) instead")
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm,
                                    const String& name, bool is_amr) =0;
 
   /*!
-   * \brief Créé ou récupère un maillage.
+   * \brief Creates or retrieves a mesh.
    *
-   * Créé ou récupère un maillage de nom \a name pour le sous-domaine \a sub_domain
-   * associé au gestionnaire de parallélisme \a pm. Si le sous-domaine possède
-   * déjà un maillage avec le nom \a name, c'est ce dernier qui est retourné.
+   * Creates or retrieves a mesh named \a name for the sub-domain \a sub_domain
+   * associated with the parallelism manager \a pm. If the sub-domain already has
+   * a mesh with the name \a name, the latter is returned.
    *
-   * Le gestionnaire de parallélisme doit être le même que celui du sous-domaine
-   * ou issu de celui-ci.
+   * The parallelism manager must be the same as that of the sub-domain
+   * or derived from it.
    */
   virtual IPrimaryMesh* createMesh(ISubDomain* sub_domain, IParallelMng* pm,
                                    const String& name, eMeshAMRKind amr_type) =0;
 
   /*!
-   * \brief Créé un sous-maillage pour le maillage \a mesh, de nom \a name.
+   * \brief Creates a sub-mesh for the mesh \a mesh, named \a name.
    *
-   * Le sous-maillage est initialisé avec les items du groupe \a group.
-   * Actuellement, ce groupe ne peut ni être un groupe complet (isAllItems())
-   * ni un groupe calculé (si non incrémental).
+   * The sub-mesh is initialized with the items of the group \a group.
+   * Currently, this group cannot be a complete group (isAllItems())
+   * nor a calculated group (if not incremental).
    */
   virtual IMesh* createSubMesh(IMesh* mesh, const ItemGroup& group, const String& name) =0;
 
-  //! Créé une fabrique pour les données
+  //! Creates a factory for data
   ARCCORE_DEPRECATED_2020("Use createDataFactoryMngRef() instead")
   virtual IDataFactory* createDataFactory(IApplication*) =0;
 
-  //! Créé un gestionnaire de fabrique pour les données
+  //! Creates a factory manager for data
   virtual Ref<IDataFactoryMng> createDataFactoryMngRef(IApplication*) =0;
 
-  //! Créé un gestionnaire pour les accélérateurs
+  //! Creates a manager for accelerators
   virtual Ref<IAcceleratorMng> createAcceleratorMngRef(ITraceMng* tm) =0;
 
   /*!
-   * \brief Créé un gestionnaire de trace.
+   * \brief Creates a trace manager.
    *
-   * L'instance retournée doit être initialisée via un ITraceMngPolicy.
+   * The returned instance must be initialized via an ITraceMngPolicy.
    */
   virtual ITraceMng* createTraceMng() =0;
 
   /*!
-   * \brief Créé un gestionnaire de configuration pour un gestion de trace.
+   * \brief Creates a configuration manager for a trace manager.
    */
   virtual ITraceMngPolicy* createTraceMngPolicy(IApplication* app) =0;
 
   /*!
-   * \brief Créé le module maitre pour le sous-domaine \a sd.
+   * \brief Creates the master module for the sub-domain \a sd.
    */
   virtual IModuleMaster* createModuleMaster(ISubDomain* sd) =0;
 
   /*!
-   * \brief Cree un gestionnaire de description pour l'equilibrage.
+   * \brief Creates a description manager for load balancing.
    */
   virtual ILoadBalanceMng* createLoadBalanceMng(ISubDomain* sd) =0;
 
@@ -293,4 +294,3 @@ class IMainFactory
 /*---------------------------------------------------------------------------*/
 
 #endif
-

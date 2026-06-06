@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroup.cc                                                (C) 2000-2025 */
 /*                                                                           */
-/* Groupes d'entités du maillage.                                            */
+/* Mesh entity groups.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,56 +32,53 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \class ItemGroup
  
- Un groupe d'entité du maillage est une liste d'entités
- d'une même famille (IItemFamily).
+ A mesh entity group is a list of entities of the same family (IItemFamily).
 
- Une entité ne peut être présente qu'une seule fois dans un groupe.
+ An entity can only appear once in a group.
 
- Une instance de cette classe possède une référence sur un groupe
- quelconque d'entités du maillage. Il est possible à partir de cette référence
- de connaître le genre (itemKind(), le nom (name()) et le nombre d'éléments
- (size()) du groupe et d'itérer de manière générique sur les éléments qui le compose.
- Pour itérer sur les éléments dérivés (mailles, noeuds, ...), il faut d'abord le
- convertir en une référence sur un groupe spécifique (NodeGroup, FaceGroup,
- EdgeGroup ou CellGroup). Par exemple:
+ An instance of this class holds a reference to any mesh entity group. From
+ this reference, it is possible to know the type (itemKind(), the name (name()),
+ and the number of elements (size()) of the group and to iterate generically
+ over the elements that compose it. To iterate over derived elements
+ (meshes, nodes, ...), it must first be converted into a reference to a
+ specific group (NodeGroup, FaceGroup, EdgeGroup, or CellGroup). For example:
  \code
  ItemGroup group = subDomain()->defaultMesh()->findGroup("Surface");
  FaceGroup surface(surface);
  if (surface.null())
-   // Pas une surface.
+   // Not a surface.
  if (surface.empty())
-   // Surface existe mais est vide
+   // Surface exists but is empty
  \endcode
 
- Il est possible de trier un groupe pour que ses éléments soient
- toujours être classés par ordre
- croissant des uniqueId() des éléments, afin de garantir que les codes
- séquentiels et parallèles peuvent donner le même résultat.
+ It is possible to sort a group so that its elements are always classified
+ in ascending order of the elements' uniqueId(), in order to ensure that
+ sequential and parallel codes produce the same result.
 
- Il existe un groupe spécial, dit groupe nul, permettant de représenter
- un groupe non référencé, c'est à dire qui n'existe pas. Ce groupe est
- le seul pour lequel null() retourne \c true. Le groupe nul possède
- les propriétés suivantes:
+ There is a special group, called the null group, which allows representing
+ an unreferenced group, meaning one that does not exist. This group is the
+ only one for which null() returns \c true. The null group has the following
+ properties:
  \arg null() == \c true;
  \arg size() == \c 0;
  \arg name().null() == \c true;
 
- Cette classe utilise un compteur de référence et s'utilise donc par
- référence. Par exemple:
+ This class uses a reference counter and is therefore used by reference.
+ For example:
  \code
  ItemGroup a = subDomain()->defaultMesh()->findGroup("Toto");
- ItemGroup b = a; // b et a font référence au même groupe.
+ ItemGroup b = a; // b and a refer to the same group.
  if (a.null())
-   // Groupe pas trouvé...
+   // Group not found...
    ;
  \endcode
 
- Pour parcourir les entités d'un groupe, il faut utiliser un énumérateur,
- par l'intermédiaire des macros ENUMERATE_*, par exemple ENUMERATE_CELL
- pour un groupe de mailles:
+ To iterate over the entities of a group, an enumerator must be used,
+ via the ENUMERATE_* macros, for example ENUMERATE_CELL for a cell group:
  \code
  * CellGroup g;
  * ENUMERATE_CELL(icell,g){
@@ -89,41 +86,36 @@ namespace Arcane
  * }
  \endcode
 
- Il est possible d'ajouter (addItems()) ou supprimer des entités
- d'un groupe (removeItems()).
+ It is possible to add (addItems()) or remove entities from a group
+ (removeItems()).
 
- Les groupes qui n'ont pas de parents sont persistants et peuvent
- être récupérés lors d'une reprise. Les éléments de ces groupes sont
- automatiquement mis à jour lors de la modification de la famille
- associée. Par exemple, si un élément d'une famille est supprimé
- et qu'il appartenait à un groupe, il est automatiquement supprimé
- de ce groupe. De même les groupes sont mis à jour lors d'un
- repartitionnement du maillage. Il existe cependant une petite restriction
- avec l'implémentation actuelle sur cette utilisation. Pour éviter de remettre
- à jour le groupe à chaque changement de la famille, le groupe est marqué
- comme devant être remis à jour (via invalidate()) à chaque changement
- mais n'est réellement recalculé que lorsqu'il sera utilisé. Il est
- donc théoriquement possible que des ajouts et suppressions multiples
- entre deux utilisations du groupe rendent ses éléments incohérents
- (TODO: lien sur explication detaillée). Pour éviter ce problème, il
- est possible de forcer le recalcul du groupe en appelant invalidate()
- avec comme argument \a true.
+ Groups that have no parents are persistent and can be recovered during
+ a restart. The elements of these groups are automatically updated when
+ the associated family is modified. For example, if an element of a family
+ is deleted and belonged to a group, it is automatically deleted from that
+ group. Similarly, groups are updated during a mesh repartitioning. However,
+ there is a small restriction with the current implementation regarding
+ this usage. To avoid updating the group with every family change, the group
+ is marked as needing to be updated (via invalidate()) upon every change but
+ is only actually recalculated when it is used. It is therefore theoretically
+ possible that multiple additions and deletions between two uses of the group
+ render its elements inconsistent (TODO: link to detailed explanation). To
+ avoid this problem, it is possible to force the recalculation of the group
+ by calling invalidate() with \a true as an argument.
 
- Les groupes dits dérivés (qui ont un parent) comme les own() ou
- les cellGroup() sont invalidés et vidés de leurs éléments lors d'une
- modification de la famille associée.
+ Derived groups (which have a parent), such as own() or cellGroup(), are
+ invalidated and emptied of their elements when the associated family
+ is modified.
 
- Si un groupe est utilisé comme support pour des variables partielles, alors
- les entités appartenant au groupe doivent être cohérentes entre les
- sous-domaines. C'est à dire que si une entité \a x est présente dans
- plusieurs sous-domaines (que soit en tant qu'entité propre ou
- fantôme), il faut qu'elle soit dans ce groupe pour tous les
- sous-domaines ou dans aucun des groupes. Par exemple, si la maille de
- uniqueId() 238 est présente les sous-domaines 1, 4 et 8 et que
- pour le sous-domaine 4 elle est dans le groupe de mailles 'TOTO',
- alors il faut aussi qu'elle soit dans ce groupe de mailles 'TOTO'
- pour les sous-domaines 1 et 8.
+ If a group is used as support for partial variables, then the entities
+ belonging to the group must be consistent across subdomains. That is, if
+ an entity \a x is present in several subdomains (whether as a local or
+ ghost entity), it must be in this group for all subdomains or in none of
+ the groups. For example, if the mesh with uniqueId() 238 is present in
+ subdomains 1, 4, and 8, and for subdomain 4 it is in the mesh group
+ 'TOTO', then it must also be in this mesh group 'TOTO' for subdomains 1 and 8.
 */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -131,10 +123,9 @@ ItemGroup::
 ItemGroup(ItemGroupImpl* grp)
 : m_impl(grp)
 {
-  // Si \a grp est nul, le remplace par le groupe nul.
-  // Cela est fait (version 2.3) pour des raisons de compatibilité.
-  // A terme, ce constructeur sera explicite et dans ce cas il
-  // faudra faire:
+  // If \a grp is null, it is replaced by the null group.
+  // This is done (version 2.3) for compatibility reasons.
+  // Eventually, this constructor will be explicit, and in that case, you will have to do:
   //   ARCANE_CHECK_POINTER(grp);
   if (!grp){
     std::cerr << "Creating group with null pointer is not allowed\n";
@@ -175,14 +166,15 @@ setOwn(bool v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Groupe équivalent à celui-ci mais contenant
- * uniquement les éléments propres au sous-domaine.
+ * \brief Group equivalent to this one but containing only the local elements
+ * of the subdomain.
  *
- * Si ce groupe est déjà un groupe ne contenant que des éléments propres
- * au sous-domaine, c'est lui même qui est retourné:
+ * If this group is already a group containing only the local elements of the
+ * subdomain, it is returned itself:
  * \code
- * group.own()==group; // Pour un groupe local
+ * group.own()==group; // For a local group
  * group.own().own()==group.own(); // Invariant
  * \endcode
  */
@@ -222,7 +214,7 @@ interface() const
   return ItemGroup(m_impl->interfaceGroup());
 }
 
-// GERER PLANTAGE SORTED
+// HANDLE CRASH SORTED
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -433,14 +425,15 @@ clear()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Ajoute les entités de numéros locaux \a items_local_id.
+ * Adds the local ID entities \a items_local_id.
  *
- * La paramètre \a check_if_present indique s'il vaut vérifier si les entités
- * à ajouter sont déjà présentes dans le groupe, auquel cas elles ne sont
- * pas ajouter. Si l'appelant est certain que les entités à ajouter
- * ne sont pas actuellement dans le groupe, il peut positionner le
- * paramètre \a check_if_present à \a false ce qui accélère l'ajout.
+ * The parameter \a check_if_present indicates whether to check if the entities
+ * to be added are already present in the group; if so, they will not be
+ * added. If the caller is certain that the entities to be added
+ * are not currently in the group, they can set the
+ * parameter \a check_if_present to \a false, which speeds up the addition.
  */
 void ItemGroup::
 addItems(Int32ConstArrayView items_local_id,bool check_if_present)
@@ -455,14 +448,15 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Supprime les entités de numéros locaux \a items_local_id.
+ * Removes the local ID entities \a items_local_id.
  *
- * La paramètre \a check_if_present indique s'il vaut vérifier si les entités
- * à supprimer ne sont déjà présentes dans le groupe, auquel cas elles ne sont
- * pas supprimées. Si l'appelant est certain que les entités à supprimer
- * sont dans le groupe, il peut positionner le
- * paramètre \a check_if_present à \a false ce qui accélère la suppression.
+ * The parameter \a check_if_present indicates whether to check if the entities
+ * to be removed are already present in the group; if so, they will not be
+ * removed. If the caller is certain that the entities to be removed
+ * are in the group, they can set the
+ * parameter \a check_if_present to \a false, which speeds up the removal.
  */
 void ItemGroup::
 removeItems(Int32ConstArrayView items_local_id,bool check_if_present)
@@ -477,13 +471,14 @@ removeItems(Int32ConstArrayView items_local_id,bool check_if_present)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne les entités du groupe.
+ * \brief Positions the group entities.
  *
- * Positionne les entités dont les numéros locaux sont donnés par
+ * Positions the entities whose local IDs are given by
  * \a items_local_id.
- * L'appelant garanti que chaque entité n'est présente qu'une fois dans
- * ce tableau
+ * The caller guarantees that each entity is present only once in
+ * this array
  */
 void ItemGroup::
 setItems(Int32ConstArrayView items_local_id)
@@ -495,15 +490,16 @@ setItems(Int32ConstArrayView items_local_id)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne les entités du groupe.
+ * \brief Positions the group entities.
  *
- * Positionne les entités dont les numéros locaux sont donnés par
+ * Positions the entities whose local IDs are given by
  * \a items_local_id.
- * L'appelant garanti que chaque entité n'est présente qu'une fois dans
- * ce tableau
- * Si \a do_sort est vrai, les entités sont triées par uniqueId croissant
- * avant d'être ajoutées au groupe.
+ * The caller guarantees that each entity is present only once in
+ * this array
+ * If \a do_sort is true, the entities are sorted by increasing uniqueId
+ * before being added to the group.
  */
 void ItemGroup::
 setItems(Int32ConstArrayView items_local_id,bool do_sort)
@@ -515,8 +511,9 @@ setItems(Int32ConstArrayView items_local_id,bool do_sort)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérification interne de la validité du groupe.
+ * \brief Internal check of group validity.
  */
 void ItemGroup::
 checkValid()

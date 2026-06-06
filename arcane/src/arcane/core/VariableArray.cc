@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableArray.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Variable tableau 1D.                                                      */
+/* 1D array variable.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,7 +86,7 @@ class ArrayVariableDiff
     int nb_diff = 0;
     bool compare_failed = false;
     eVariableComparerComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
-    // Pas de norme max si le type n'est pas numérique.
+    // No max norm if the type is not numeric.
     if (!IsNumeric)
       diff_method = eVariableComparerComputeDifferenceMethod::Relative;
 
@@ -96,7 +96,7 @@ class ArrayVariableDiff
     if constexpr (IsNumeric) {
       bool is_use_local_norm = diff_method == eVariableComparerComputeDifferenceMethod::LocalNormMax;
       if (is_use_local_norm) {
-        // Gros copier-coller pour calculer la norme globale
+        // Large copy-paste to calculate the global norm
         ENUMERATE_ITEM (i, group) {
           Item item = *i;
           if (!item.isOwn() && !compare_ghost)
@@ -120,7 +120,7 @@ class ArrayVariableDiff
         }
       }
     }
-    // On calcule les erreurs normalisées
+    // We calculate the normalized errors
     ENUMERATE_ITEM (i, group) {
       Item item = *i;
       if (!item.isOwn() && !compare_ghost)
@@ -166,8 +166,7 @@ class ArrayVariableDiff
     IParallelMng* replica_pm = var->_internalApi()->replicaParallelMng();
     if (!replica_pm)
       return {};
-    // Appelle la bonne spécialisation pour être certain que le type template possède
-    // la réduction.
+    // Calls the correct specialization to ensure the template type has reduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
       return _checkReplica2(replica_pm, var, var_value, compare_args);
@@ -193,7 +192,7 @@ class ArrayVariableDiff
     Integer ref_size = ref.size();
     Integer current_size = current.size();
     eVariableComparerComputeDifferenceMethod diff_method = compare_args.computeDifferenceMethod();
-    // Pas de norme max si le type n'est pas numérique.
+    // No max norm if the type is not numeric.
     if (!IsNumeric)
       diff_method = eVariableComparerComputeDifferenceMethod::Relative;
     NormType local_norm_max = {};
@@ -201,7 +200,7 @@ class ArrayVariableDiff
     if constexpr (IsNumeric) {
       bool is_use_local_norm = compare_args.computeDifferenceMethod() == eVariableComparerComputeDifferenceMethod::LocalNormMax;
       if (is_use_local_norm) {
-        // Gros copier-coller pour calculer la norme globale
+        // Large copy-paste to calculate the global norm
         for (Integer index = 0; index < current_size; ++index) {
           if (index >= ref_size) {
             continue;
@@ -216,7 +215,7 @@ class ArrayVariableDiff
         }
       }
     }
-    // On calcule les erreurs normalisées
+    // We calculate the normalized errors
     for( Integer index=0; index<current_size; ++index ){
       DataType diff = DataType();
       if (index>=ref_size){
@@ -236,8 +235,8 @@ class ArrayVariableDiff
       Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
-                   << " comparaison impossible car nombre d'éléments différents"
-                   << " pour la variable " << var_name << " ref_size=" << ref_size;
+                   << " comparison impossible because the number of elements is different"
+                   << " for the variable " << var_name << " ref_size=" << ref_size;
         
     }
     if (nb_diff!=0)
@@ -252,7 +251,7 @@ class ArrayVariableDiff
   {
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
-    // Vérifie que tous les réplica ont le même nombre d'éléments pour la variable.
+    // Checks that all replicas have the same number of elements for the variable.
     Integer max_size = pm->reduce(Parallel::ReduceMax,size);
     Integer min_size = pm->reduce(Parallel::ReduceMin,size);
     msg->info(5) << "CheckReplica2 rep_size=" << pm->commSize() << " rank=" << pm->commRank();
@@ -426,9 +425,10 @@ allocatedMemory() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Utilise une fonction Helper afin de spécialiser l'appel dans le
-// cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
-// une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
+
+// Uses a Helper function to specialize the call in the
+// case of the 'Byte' type because ArrayVariableDiff::checkReplica() uses
+// a Min/Max reduction, and this does not exist in MPI for the Byte type.
 namespace
 {
   template <typename T> VariableComparerResults
@@ -439,7 +439,7 @@ namespace
     return csa.checkReplica(var, values, compare_args);
   }
 
-  // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
+  // Specialization for the 'Byte' type which does not support reductions.
   VariableComparerResults
   _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArrayView<Byte> values,
                                  const VariableComparerArgs& compare_args)
@@ -482,7 +482,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
       return {};
     ValueType& data_values = m_value->_internal()->_internalDeprecatedValue();
     UniqueArray<T> ref_array(constValueView());
-    this->synchronize(); // fonctionne pour toutes les variables
+    this->synchronize(); // works for all variables
     ArrayVariableDiff<T> csa;
     ConstArrayView<T> from_array(constValueView());
     VariableComparerResults r = csa.check(this, ref_array, from_array, compare_args);
@@ -499,25 +499,26 @@ _compareVariable(const VariableComparerArgs& compare_args)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Initialise la variable.
- *
- Initialise la variable avec la valeur \a value sur le groupe \a group.
- 
- La valeur étant passée sous forme d'une chaine de caractère, vérifie que
- la conversion en le type de la variable est possible. De même vérifie
- que le groupe \a group est du type #GroupType. Si l'un de ces deux points
- n'est pas respecté, l'initialisation échoue.
 
- \retval true en cas d'erreur,
- \retval false en cas de succés.
+/*!
+ * \brief Initializes the variable.
+ *
+ Initializes the variable with the value \a value on the group \a group.
+ 
+ Since the value is passed as a character string, it verifies that
+ the conversion to the variable's type is possible. It also verifies
+ that the group \a group is of type #GroupType. If either of these two points
+ is not met, the initialization fails.
+
+ \retval true in case of error,
+ \retval false in case of success.
 */
 template<typename T> bool VariableArrayT<T>::
 initialize(const ItemGroup& group,const String& value)
 {
-  //TODO: peut-être vérifier que la variable est utilisée ?
+  //TODO: maybe check if the variable is used?
 
-  // Tente de convertir value en une valeur du type de la variable.
+  // Tries to convert value into a value of the variable's type.
   T v = T();
   bool is_bad = VariableDataTypeTraitsT<T>::getValue(v,value);
 
@@ -532,9 +533,9 @@ initialize(const ItemGroup& group,const String& value)
   ArrayView<T> values(m_value->view());
   if (group.itemFamily()==itemFamily()){
     is_ok = true;
-    // TRES IMPORTANT
-    //TODO doit utiliser une indirection et une hierarchie entre groupe
-    // Enfin, affecte la valeur \a v à toutes les entités du groupe.
+    // VERY IMPORTANT
+    //TODO must use an indirection and a hierarchy between groups
+    // Finally, assign the value \a v to all entities in the group.
     //ValueType& var_value = this->value();
     ENUMERATE_ITEM(i,group){
       Item elem = *i;
@@ -661,13 +662,13 @@ _internalResize(const VariableResizeArgs& resize_args)
       value_internal->reserve(new_size+nb_additional_element);
   }
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
-  // Si la nouvelle taille est supérieure à l'ancienne,
-  // initialise les nouveaux éléments suivant
-  // la politique voulue
+  // If the new size is greater than the old one,
+  // initialize the new elements following
+  // the desired policy
   Integer current_size = m_value->view().size();
   if (!isUsed()){
-    // Si la variable n'est plus utilisée, libérée la mémoire
-    // associée.
+    // If the variable is no longer used, free the memory
+    // associated with it.
     value_internal->dispose();
   }
   if (use_no_init)
@@ -690,19 +691,19 @@ _internalResize(const VariableResizeArgs& resize_args)
     }
   }
 
-  // Compacte la mémoire si demandé
+  // Compresses the memory if requested
   if (_wantShrink()){
     if (m_value->view().size() < value_internal->capacity()){
       value_internal->shrink();
     }
   }
 
-  // Controle si toutes les modifs après le dispose n'ont pas altéré l'état de l'allocation
-  // Dans le cas d'une variable non utilisée, la capacité max autorisée est
-  // égale à celle d'un vecteur Simd de la plateforme.
-  // (cela ne peut pas être 0 car la classe Array doit allouer au moins un
-  // élément si on utilise un allocateur spécifique ce qui est le cas
-  // pour les variables.
+  // Checks if all modifications after the dispose have not altered the allocation state
+  // In the case of an unused variable, the maximum allowed capacity is
+  // equal to that of a platform SIMD vector.
+  // (this cannot be 0 because the Array class must allocate at least one
+  // element if a specific allocator is used, which is the case
+  // for variables.
   Int64 capacity = value_internal->capacity();
   if ( !((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment())) )
     ARCANE_FATAL("Wrong unused data size {0}",capacity);
@@ -763,10 +764,10 @@ VariableArrayT<DataType>::
 swapValues(ThatClass& rhs)
 {
   _checkSwapIsValid(&rhs);
-  // TODO: regarder s'il faut que les deux variables aient le même nombre
-  // d'éléments mais a priori cela ne semble pas indispensable.
+  // TODO: check if both variables must have the same number
+  // of elements, but it doesn't seem necessary a priori.
   m_value->swapValues(rhs.m_value);
-  // Il faut mettre à jour les références pour cette variable et \a rhs.
+  // References must be updated for this variable and \a rhs.
   syncReferences();
   rhs.syncReferences();
 }
@@ -774,7 +775,7 @@ swapValues(ThatClass& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// SDP: Specialisation
+// SDP: Specialization
 template<> void VariableArrayT<String>::
 copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,

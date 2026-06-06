@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GeometricUtilities.cc                                       (C) 2000-2021 */
 /*                                                                           */
-/* Fonctions utilitaires sur la géométrie.                                   */
+/* Utility functions on geometry.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -64,14 +64,15 @@ computeInverseJacobian(Real3 uvw,Real3x3& matrix)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Convertie une coordonnée cartérienne en coordonnée iso-paramétrique.
+ * \brief Converts a Cartesian coordinate to an iso-parametric coordinate.
  *
- * Cette opération utilise un newton pour trouver la solution et peut donc
- * ne pas converger. Dans ce cas, elle retourne \a true.
+ * This operation uses Newton's method to find the solution and may therefore
+ * fail to converge. In this case, it returns \a true.
  *
- * \param point position en coordonnée cartésienne du point à calculer.
- * \param uvw en retour, coordonnées iso-paramétriques calculées
+ * \param point Cartesian coordinate position of the point to be calculated.
+ * \param uvw returned, calculated iso-parametric coordinates
  */
 
 bool GeometricUtilities::QuadMapping::
@@ -154,14 +155,15 @@ _normal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Convertie une coordonnée cartérienne en coordonnée iso-paramétrique.
+ * \brief Converts a Cartesian coordinate to an iso-parametric coordinate.
  *
- * Cette opération utilise un newton pour trouver la solution et peut donc
- * ne pas converger. Dans ce cas, elle retourne \a true.
+ * This operation uses Newton's method to find the solution and may therefore
+ * fail to converge. In this case, it returns \a true.
  *
- * \param point position en coordonnée cartésienne du point à calculer.
- * \param uvw en retour, coordonnées iso-paramétriques calculées
+ * \param point Cartesian coordinate position of the point to be calculated.
+ * \param uvw returned, calculated iso-parametric coordinates
  */
 
 bool GeometricUtilities::QuadMapping::
@@ -171,7 +173,7 @@ cartesianToIso2(Real3 point,Real3& uvw,ITraceMng* tm)
   int newton_loop_limit = 100;
   bool error = false;
 
-  // Position de départ pour le Newton
+  // Starting position for Newton
   Real u = 0.5;
   Real v = 0.5;
   Real w = 0.5;
@@ -225,7 +227,7 @@ cartesianToIso2(Real3 point,Real3& uvw,ITraceMng* tm)
   Real czw = 0.0;
   Real determinant = 0.0;
   
-  // Boucle du NEWTON
+  // NEWTON loop
   Real residue = 1.0e30;
 
   Real u0;
@@ -415,7 +417,7 @@ cartesianToIso2(Real3 point,Real3& uvw,ITraceMng* tm)
     }
     else {
       if (tm)
-        tm->info() << "echec du Newton : déterminant nul";
+        tm->info() << "Newton failure: determinant zero";
       error = true;
       break;
     }
@@ -426,8 +428,8 @@ cartesianToIso2(Real3 point,Real3& uvw,ITraceMng* tm)
       tm->info() << "Too many iterations in the newton";
     error = true;
   }
-  // Cette routine calcule les coordonnées barycentriques entre 0 et 1 et
-  // on veut la valeur entre -1 et 1
+  // This routine calculates the barycentric coordinates between 0 and 1 and
+  // we want the value between -1 and 1
   Real3 iso(u,v,w);
   iso -= Real3(0.5,0.5,0.5);
   iso *= 2.0;

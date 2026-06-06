@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RealArray2Variant.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.   */
+/* Variant that can contain the types ConstArray2View, Real2x2, and Real3x3. */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DATATYPE_REALARRAY2VARIANT_H
@@ -31,9 +31,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.
+ * \brief Variant that can contain the types ConstArray2View, Real2x2, and Real3x3.
  */
 class RealArray2Variant
 {

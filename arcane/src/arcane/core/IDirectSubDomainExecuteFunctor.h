@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDirectSubDomainExecuteFunctor.h                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un fonctor d'exécution directe avec sous-domaine.             */
+/* Interface of a direct execution functor with subdomain.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDIRECTSUBDOMAINEXECUTEFUNCTOR_H
 #define ARCANE_CORE_IDIRECTSUBDOMAINEXECUTEFUNCTOR_H
@@ -24,10 +24,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un fonctor pour exécuter du code directement après
- * la création d'un sous-domaine sans passer par la boucle en temps.
+ * \brief Interface of a functor to execute code directly after
+ * the creation of a subdomain without going through the time loop.
  */
 class ARCANE_CORE_EXPORT IDirectSubDomainExecuteFunctor
 {
@@ -37,12 +38,12 @@ class ARCANE_CORE_EXPORT IDirectSubDomainExecuteFunctor
 
  public:
 
-  //! Exécute l'opération du fonctor
+  //! Executes the functor's operation
   virtual int execute() =0;
 
   /*!
-   * \brief Positionne le sous-domaine associé.
-   * Cette méthode doit être appelée avant execute()
+   * \brief Positions the associated subdomain.
+   * This method must be called before execute()
    */
   virtual void setSubDomain(ISubDomain* sd) =0;
 };

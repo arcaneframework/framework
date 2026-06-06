@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ContigMachineShMemWin.h                                     (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire partagée entre les         */
-/* processus d'un même noeud.                                                */
+/* Class allowing the creation of a shared memory window between the         */
+/* processes of the same node.                                               */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_CORE_CONTIGMACHINESHMEMWIN_H
@@ -32,11 +32,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
- * sous-domaines d'un même noeud.
- * Les segments de cette fenêtre seront contigüs en mémoire.
+ * \brief Class allowing the creation of a shared memory window between the
+ * subdomains of the same node.
+ * The segments of this window will be contiguous in memory.
  *
- * \tparam Type Le type des éléments de la fenêtre.
+ * \tparam Type The type of the window elements.
  */
 template <class Type>
 class ContigMachineShMemWin
@@ -44,9 +44,9 @@ class ContigMachineShMemWin
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param pm Le ParallelMng contenant les processus du noeud.
-   * \param nb_elem_segment Le nombre d'éléments pour le segment de ce sous-domaine.
+   * \brief Constructor.
+   * \param pm The ParallelMng containing the node processes.
+   * \param nb_elem_segment The number of elements for the segment of this subdomain.
    */
   ContigMachineShMemWin(IParallelMng* pm, Int64 nb_elem_segment)
   : m_impl(pm, nb_elem_segment, static_cast<Int32>(sizeof(Type)))
@@ -55,10 +55,10 @@ class ContigMachineShMemWin
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment de fenêtre
-   * mémoire.
+   * \brief Method allowing retrieval of a view on our window segment
+   * memory.
    *
-   * \return Une vue.
+   * \return A view.
    */
   Span<Type> segmentView()
   {
@@ -66,11 +66,11 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
-   * mémoire d'un autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a view on the window segment
+   * memory of another subdomain of the node.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   Span<Type> segmentView(Int32 rank)
   {
@@ -78,9 +78,9 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
+   * \brief Method allowing retrieval of a view on the entire memory window.
    *
-   * \return Une vue.
+   * \return A view.
    */
   Span<Type> windowView()
   {
@@ -88,10 +88,10 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur notre segment
-   * de fenêtre mémoire.
+   * \brief Method allowing retrieval of a constant view on our segment
+   * memory window.
    *
-   * \return Une vue constante.
+   * \return A constant view.
    */
   Span<const Type> segmentConstView() const
   {
@@ -99,11 +99,11 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur le segment de
-   * fenêtre mémoire d'un autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a constant view on the segment of
+   * memory window of another subdomain of the node.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue constante.
+   * \param rank The rank of the subdomain.
+   * \return A constant view.
    */
   Span<const Type> segmentConstView(Int32 rank) const
   {
@@ -111,10 +111,10 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur toute la fenêtre
-   * mémoire.
+   * \brief Method allowing retrieval of a constant view on the entire window
+   * memory.
    *
-   * \return Une vue constante.
+   * \return A constant view.
    */
   Span<const Type> windowConstView() const
   {
@@ -122,13 +122,12 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant de redimensionner les segments de la fenêtre.
-   * Appel collectif.
+   * \brief Method allowing resizing of the window segments.
+   * Collective call.
    *
-   * La taille totale de la fenêtre doit être inférieure ou égale à la taille
-   * d'origine.
+   * The total size of the window must be less than or equal to the original size.
    *
-   * \param new_nb_elem La nouvelle taille de notre segment.
+   * \param new_nb_elem The new size of our segment.
    */
   void resizeSegment(Integer new_nb_elem)
   {
@@ -136,13 +135,13 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method allowing retrieval of the ranks that possess a segment
+   * in the window.
    *
-   * L'ordre des processus de la vue retournée correspond à l'ordre des
-   * segments dans la fenêtre.
+   * The order of the processes in the returned view corresponds to the order of
+   * segments in the window.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ConstArrayView<Int32> machineRanks() const
   {
@@ -150,8 +149,8 @@ class ContigMachineShMemWin
   }
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method allowing waiting until all processes/threads
+   * of the node call this method to continue execution.
    */
   void barrier() const
   {

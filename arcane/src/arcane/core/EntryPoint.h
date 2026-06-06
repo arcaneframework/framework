@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EntryPoint.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Point d'entrée d'un module.                                               */
+/* Module entry point.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ENTRYPOINT_H
 #define ARCANE_CORE_ENTRYPOINT_H
@@ -27,30 +27,31 @@ class Timer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour construire un point d'entrée.
+ * \brief Information to build an entry point.
  *
- * Normalement cette classe n'est pas utilisée directement. Pour
- * construire un point d'entrée, il faut utiliser addEntryPoint().
+ * Normally this class is not used directly. To
+ * build an entry point, you must use addEntryPoint().
  */
 class ARCANE_CORE_EXPORT EntryPointBuildInfo
 {
  public:
   /*!
-   * \brief Informations de construction d'un point d'entrée.
+   * \brief Entry point build information.
    *
-   * \param module module associé à la fonction
-   * \param where endroit de la boucle en temps où est appelé le point d'entrée
-   * \param property propriétés du point d'entrée (voir IEntryPoint)
-   * \param name nom du point d'entrée
-   * \param caller encapsulation de la méthode à appeler.
-   * \param is_destroy_caller indique si le point d'entrée doit détruire
-   * le fonctor \a caller.
+   * \param module module associated with the function
+   * \param where location in the time loop where the entry point is called
+   * \param property properties of the entry point (see IEntryPoint)
+   * \param name name of the entry point
+   * \param caller encapsulation of the method to be called.
+   * \param is_destroy_caller indicates whether the entry point should destroy
+   * the functor \a caller.
    *
-   * En général, \a is_destroy_caller doit valoir \a true sinon la
-   * mémoire ne sera pas libéré. A noter que le wrapping C# gère le fonctor
-   * via un garbage collector et donc dans ce cas \a is_destroy_caller doit
-   * valoir \a false.
+   * Generally, \a is_destroy_caller must be \a true, otherwise the
+   * memory will not be released. Note that the C# wrapping handles the functor
+   * via a garbage collector, so in this case \a is_destroy_caller must
+   * be \a false.
    */
   EntryPointBuildInfo(IModule* module,const String& name,
                       IFunctor* caller,const String& where,int property,
@@ -81,26 +82,27 @@ class ARCANE_CORE_EXPORT EntryPointBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Point d'entrée d'un module.
+ * \brief Module entry point.
  */
 class ARCANE_CORE_EXPORT EntryPoint
 : public IEntryPoint
 {
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   ~EntryPoint() override;
 
  public:
 
   /*!
-   * \brief Construit et retourne un point d'entrée.
+   * \brief Constructs and returns an entry point.
    *
-   * Le point d'entrée est construit avec les informations données par \bi.
-   * Il est automatiquement ajouté au gestionnaire IEntryPointMng et ne doit
-   * pas être détruit explicitement.
+   * The entry point is constructed with the information provided by \bi.
+   * It is automatically added to the IEntryPointMng manager and should not
+   * be explicitly destroyed.
    */
   static EntryPoint* create(const EntryPointBuildInfo& bi);
 
@@ -123,16 +125,16 @@ class ARCANE_CORE_EXPORT EntryPoint
 
  private:
 
-  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
-  IFunctor* m_caller = nullptr; //!< Point d'appel
-  Timer* m_elapsed_timer = nullptr; //!< Timer horloge du point d'entrée
-  String m_name; //!< Nom du point d'entrée
-  String m_full_name; //!< Nom du point d'entrée
-  IModule* m_module = nullptr; //!< Module associé
-  String m_where; //!< Endroit de l'appel
-  int m_property = 0; //!< Propriétés du point d'entrée
-  Integer m_nb_call = 0; //!< Nombre de fois que le point d'entrée a été exécuté
-  bool m_is_destroy_caller = false; //!< Indique si on doit détruire le functor d'appel.
+  ISubDomain* m_sub_domain = nullptr; //!< Sub-domain manager
+  IFunctor* m_caller = nullptr; //!< Call point
+  Timer* m_elapsed_timer = nullptr; //!< Entry point clock timer
+  String m_name; //!< Entry point name
+  String m_full_name; //!< Entry point name
+  IModule* m_module = nullptr; //!< Associated module
+  String m_where; //!< Call location
+  int m_property = 0; //!< Entry point properties
+  Integer m_nb_call = 0; //!< Number of times the entry point has been executed
+  bool m_is_destroy_caller = false; //!< Indicates whether the calling functor should be destroyed.
 
  private:
 
@@ -150,17 +152,18 @@ class ARCANE_CORE_EXPORT EntryPoint
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Routine template permettant de référencer un point d'entrée
- * dans un module.
+ * \brief Template routine allowing an entry point to be referenced
+ * in a module.
  *
- * Le paramètre \a ModuleType doit être un type qui dérive de IModule.
+ * The parameter \a ModuleType must be a type that derives from IModule.
  *
- * \param module Module associé à la fonction
- * \param func méthode membre appelée par la fonction
- * \param where endroit ou est appelé le point d'entrée
- * \param property propriétés du point d'entrée (voir IEntryPoint)
- * \param name nom de la fonction pour Arcane
+ * \param module Module associated with the function
+ * \param func member function called by the function
+ * \param where location where the entry point is called
+ * \param property properties of the entry point (see IEntryPoint)
+ * \param name name of the function for Arcane
  */
 template<typename ModuleType> inline void
 addEntryPoint(ModuleType* module,const char* name,void (ModuleType::*func)(),
@@ -173,17 +176,18 @@ addEntryPoint(ModuleType* module,const char* name,void (ModuleType::*func)(),
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Routine template permettant de référencer un point d'entrée
- * dans un module.
+ * \brief Template routine allowing an entry point to be referenced
+ * in a module.
  *
- * Le paramètre \a ModuleType doit être un type qui dérive de IModule.
+ * The parameter \a ModuleType must be a type that derives from IModule.
  *
- * \param module Module associé à la fonction
- * \param func méthode membre appelée par la fonction
- * \param where endroit ou est appelé le point d'entrée
- * \param property propriétés du point d'entrée (voir IEntryPoint)
- * \param name nom de la fonction pour Arcane
+ * \param module Module associated with the function
+ * \param func member function called by the function
+ * \param where location where the entry point is called
+ * \param property properties of the entry point (see IEntryPoint)
+ * \param name name of the function for Arcane
  */
 template<typename ModuleType> inline void
 addEntryPoint(ModuleType* module,const String& name,void (ModuleType::*func)(),
@@ -202,5 +206,4 @@ addEntryPoint(ModuleType* module,const String& name,void (ModuleType::*func)(),
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

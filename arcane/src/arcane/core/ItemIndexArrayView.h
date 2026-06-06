@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemIndexArrayView.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur un tableau d'index (localIds()) d'entités.                        */
+/* View over an index array (localIds()) of entities.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMINDEXARRAYVIEW_H
 #define ARCANE_CORE_ITEMINDEXARRAYVIEW_H
@@ -25,21 +25,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Vue sur un tableau d'index (localIds()) d'entités.
+ * \brief View over an index array (localIds()) of entities.
  *
- * \warning La vue n'est valide que tant que le tableau associé n'est
- * pas modifié. Les instances de cette classe sont en général temporaires
- * et ne doivent pas être conservées.
+ * \warning The view is only valid as long as the associated array is not
+ * modified. Instances of this class are generally temporary
+ * and should not be retained.
  *
- * En plus de la liste des entités, cette classe permet d'avoir des
- * informations supplémentaires, comme par exemple si la liste est contigüe.
+ * In addition to the list of entities, this class allows for
+ * additional information, such as whether the list is contiguous.
  */
 class ARCANE_CORE_EXPORT ItemIndexArrayView
 {
-  // NOTE: Cette classe est mappée en C# et si on change sa structure il
-  // faut mettre à jour la version C# correspondante.
+  // NOTE: This class is mapped in C# and if its structure is changed, it
+  // must update the corresponding C# version.
   friend ItemVectorView;
   friend ItemGroup;
   template <int Extent> friend class ItemConnectedListView;
@@ -48,21 +49,21 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
 
  public:
 
-  // NOTE: Si on ajoute des valeurs ici, il faut vérifier s'il faut les
-  // propager dans les méthodes telles que subView().
+  // NOTE: If values are added here, it must be checked whether they should be
+  // propagated in methods such as subView().
   enum
   {
-    F_Contiguous = 1 << 1, //!< Les numéros locaux sont contigüs.
+    F_Contiguous = 1 << 1, //!< The local IDs are contiguous.
     F_Contigous = F_Contiguous
   };
 
  public:
 
-  //! Construit une vue vide
+  //! Constructs an empty view
   ItemIndexArrayView() = default;
 
-  // TODO: A supprimer
-  //! Construit une vue à partir des numéros locaux \a local_ids
+  // TODO: To be removed
+  //! Constructs a view from the local IDs \a local_ids
   explicit ItemIndexArrayView(const Int32ConstArrayView local_ids)
   : m_view(local_ids, 0)
   {}
@@ -74,26 +75,26 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
 
  public:
 
-  //! Accède au \a i-ème élément du vecteur
+  //! Accesses the i-th element of the vector
   inline Int32 operator[](Integer index) const
   {
     return m_view.localId(index);
   }
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Int32 size() const
   {
     return m_view.size();
   }
 
-  //! Ajoute à \a ids la liste des localIds() du vecteur.
+  //! Adds the list of the vector's localIds() to \a ids.
   void fillLocalIds(Array<Int32>& ids) const;
 
-  //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
+  //! Sub-view starting from element \a abegin and containing \a asize elements
   inline ItemIndexArrayView subView(Integer abegin, Integer asize) const
   {
-    // On propage le flag F_Contigous sur la sous-vue.
-    // Pour les autres flags, il faudra vérifier s'il faut les propager.
+    // The F_Contiguous flag is propagated to the sub-view.
+    // For other flags, it will be necessary to check if they should be propagated.
     return ItemIndexArrayView(m_view._idsWithoutOffset().subView(abegin, asize), m_view.m_local_id_offset, m_flags);
   }
 
@@ -104,7 +105,7 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
 
   bool isContigous() const { return isContiguous(); }
 
-  //! Vrai si les localIds() sont contigüs
+  //! True if the localIds() are contiguous
   bool isContiguous() const
   {
     return m_flags & F_Contigous;
@@ -118,8 +119,8 @@ class ARCANE_CORE_EXPORT ItemIndexArrayView
 
  public:
 
-  // TODO Rendre obsolète (3.11+)
-  //! Tableau des numéros locaux des entités
+  // TODO Deprecate (3.11+)
+  //! Array of local IDs of entities
   Int32ConstArrayView localIds() const
   {
     return m_view._idsWithoutOffset();

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AbstractCaseOptionVisitor.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Visiteur abstrait pour une option du jeu de données.                      */
+/* Abstract visitor for a dataset option.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ABSTRACTCASEDOCUMENTVISITOR_H
 #define ARCANE_CORE_ABSTRACTCASEDOCUMENTVISITOR_H
@@ -21,13 +21,15 @@
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée scalaire.
+ * \brief Abstract visitor for a scalar data point.
  *
- * Ce visiteur lève une exception pour chaque fonction applyVisitor()
- * non réimplémentée.
+ * This visitor raises an exception for every applyVisitor() function
+ * that is not re-implemented.
  */
 class ARCANE_CORE_EXPORT AbstractCaseDocumentVisitor
 : public ICaseDocumentVisitor
@@ -60,5 +62,4 @@ class ARCANE_CORE_EXPORT AbstractCaseDocumentVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

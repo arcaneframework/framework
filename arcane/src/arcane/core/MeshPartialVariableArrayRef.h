@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartialVariableArrayRef.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une variable partielle array sur une entité du maillage.    */
+/* Class managing a partial array variable on a mesh entity.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHPARTIALVARIABLEARRAYREF_H
 #define ARCANE_CORE_MESHPARTIALVARIABLEARRAYREF_H
@@ -31,9 +31,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable partielle scalaire sur un type d'entité du maillage.
+ * \brief Scalar partial variable on a mesh entity type.
  */
 template<typename DataTypeT>
 class ItemPartialVariableArrayRefT
@@ -56,18 +57,18 @@ class ItemPartialVariableArrayRefT
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT ItemPartialVariableArrayRefT(const VariableBuildInfo& vb,eItemKind ik);
   
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT ItemPartialVariableArrayRefT(IVariable* var);
   
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT ItemPartialVariableArrayRefT(const ItemPartialVariableArrayRefT<DataType>& rhs);
   
  protected:
   
-  //! Opérateur de recopie
+  //! Copy assignment operator
   ARCANE_CORE_EXPORT void operator=(const ItemPartialVariableArrayRefT<DataType>& rhs);
 
  public:
@@ -123,7 +124,7 @@ class ItemPartialVariableArrayRefT
 
  public:
 
-  //! Vue sur table d'indirection du groupe.
+  //! View of the group indirection table.
   GroupIndexTableView tableView() const { return m_table->view(); }
 
  protected:
@@ -138,9 +139,10 @@ class ItemPartialVariableArrayRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable scalaire sur un type d'entité du maillage.
+ * \brief Scalar partial variable on a mesh entity type.
  */
 template<typename ItemTypeT,typename DataTypeT>
 class MeshPartialVariableArrayRefT
@@ -168,11 +170,11 @@ class MeshPartialVariableArrayRefT
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT MeshPartialVariableArrayRefT(const VariableBuildInfo& vb);
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT MeshPartialVariableArrayRefT(const MeshPartialVariableArrayRefT<ItemType,DataType>& rhs);
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableArrayRefT<ItemType,DataType>& rhs);
   
  public:
@@ -224,7 +226,7 @@ class MeshPartialVariableArrayRefT
     return this->m_view[i.index()];
   }
 
-  //! Groupe associé à la grandeur
+  //! Group associated with the quantity
   ARCANE_CORE_EXPORT GroupType itemGroup() const;
 
  private:
@@ -243,4 +245,4 @@ class MeshPartialVariableArrayRefT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

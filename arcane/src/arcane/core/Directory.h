@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Directory.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'un répertoire.                                                  */
+/* Directory management.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DIRECTORY_H
 #define ARCANE_CORE_DIRECTORY_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Classe gérant un répertoire.
+ * \brief Class managing a directory.
  */
 class ARCANE_CORE_EXPORT Directory
 : public IDirectory
@@ -65,5 +66,4 @@ class ARCANE_CORE_EXPORT Directory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

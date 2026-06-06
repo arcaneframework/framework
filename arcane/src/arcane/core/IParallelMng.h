@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParallelMng.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire du parallélisme sur un sous-domaine.            */
+/* Interface of the parallelism manager on a subdomain.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARALLELMNG_H
 #define ARCANE_CORE_IPARALLELMNG_H
@@ -27,39 +27,39 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Parallel
- * \brief Interface du gestionnaire de parallélisme pour un sous-domaine.
+ * \brief Interface of the parallelism manager for a subdomain.
  *
- * Ce gestionnaire propose une interface pour accéder à
- * l'ensemble des fonctionnalités liées au parallélisme.
+ * This manager provides an interface to access
+ * all functionalities related to parallelism.
  *
- * Il existe plusieurs implémentations possibles:
- * - mode séquentiel.
- * - mode parallèle via MPI
- * - mode parallèle via les threads.
- * - mode parallèle mixte MPI/threads.
- * Le choix de l'implémentation se fait lors du lancement de l'application.
+ * Several possible implementations exist:
+ * - sequential mode.
+ * - parallel mode via MPI
+ * - parallel mode via threads.
+ * - mixed MPI/threads parallel mode.
+ * The choice of implementation is made when launching the application.
  *
- * Lorsqu'une opération est collective, tous les gestionnaires associés doivent
- * participer.
+ * When an operation is collective, all associated managers must
+ * participate.
  *
- * Il est possible de créer à partir d'une instance un autre gestionnaire
- * contenant un sous-ensemble de rang via createSubParallelMng().
+ * It is possible to create another manager from an instance
+ * containing a subset of ranks via createSubParallelMng().
  *
  */
 class ARCANE_CORE_EXPORT IParallelMng
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
-  // Classe pour accéder à _internalUtilsFactory()
+  // Class to access _internalUtilsFactory()
   friend class ParallelMngUtilsAccessor;
 
  public:
 
-  // NOTE: Laisse temporairement ce destructeur publique tant que
-  // les méthodes createParallelMng() existent pour des raisons de
-  // compatibilité avec l'existant
-  virtual ~IParallelMng() = default; //!< Libère les ressources.
+  // NOTE: Temporarily keeping this public destructor while
+  // createParallelMng() methods exist for compatibility with the existing code
+  virtual ~IParallelMng() = default; //!< Releases resources.
 
  public:
 
@@ -72,58 +72,58 @@ class ARCANE_CORE_EXPORT IParallelMng
   
  public:
 
-  //! Construit l'instance.
+  //! Constructs the instance.
   virtual void build() =0;
 
  public:
 
   /*!
-   * \brief Retourne \a true si l'exécution est parallèle.
+   * \brief Returns true if the execution is parallel.
    *
-   * L'exécution est parallèle si l'instance implémente
-   * un mécanisme d'échange de message tel que MPI.
+   * The execution is parallel if the instance implements
+   * a message exchange mechanism such as MPI.
    */
   virtual bool isParallel() const =0;
 
  private:
 
-  // NOTE: on laisse temporairement ces deux méthodes pour garder la compatibilité binaire.
+  // NOTE: Temporarily leaving these two methods to maintain binary compatibility.
 
-  //! Numéro du sous-domaine associé à ce gestionnaire.
+  //! Subdomain number associated with this manager.
   virtual ARCANE_DEPRECATED Integer subDomainId() const final { return commRank(); }
 
-  //! Nombre total de sous-domaines.
+  //! Total number of subdomains.
   virtual ARCANE_DEPRECATED Integer nbSubDomain() const final { return commSize(); }
 
  public:
 
-  //! Rang de cette instance dans le communicateur
+  //! Rank of this instance in the communicator
   virtual Int32 commRank() const =0;
 
-  //! Nombre d'instance dans le communicateur
+  //! Number of instances in the communicator
   virtual Int32 commSize() const =0;
 
   /*!
-   * \brief Adresse du communicateur MPI associé à ce gestionnaire.
+   * \brief Address of the MPI communicator associated with this manager.
    *
-   * Le communicateur n'est valide que si on utilise MPI. Sinon, l'adresse
-   * retournée est 0. La valeur retournée est de type (MPI_Comm*).
+   * The communicator is only valid if MPI is used. Otherwise, the returned address
+   * is 0. The returned value is of type (MPI_Comm*).
    */
   virtual void* getMPICommunicator() =0;
 
   /*!
-   * \brief Adresse du communicateur MPI associé à ce gestionnaire.
+   * \brief Address of the MPI communicator associated with this manager.
    *
-   * \deprecated Utiliser getMPICommunicator() à la place.
+   * \deprecated Use getMPICommunicator() instead.
    */
   virtual ARCANE_DEPRECATED_120 void* mpiCommunicator();
 
   /*!
-   * \brief Communicateur MPI associé à ce gestionnaire
+   * \brief MPI communicator associated with this manager
    *
-   * Le communicateur n'est valide que si on utilise MPI. Il est possible
-   * de tester la validité en appelant la méthode Communicator::isValid().
-   * S'il est valide, il est possible de récupérer sa valeur via un cast:
+   * The communicator is only valid if MPI is used. It is possible
+   * to test its validity by calling the Communicator::isValid() method.
+   * If it is valid, it is possible to retrieve its value via a cast:
    * \code
    * IParallelMng* pm = ...;
    * MPI_Comm c = static_cast<MPI_Comm>(pm->communicator());
@@ -132,12 +132,12 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual Parallel::Communicator communicator() const =0;
 
   /**
-   * \brief Communicateur MPI issus du communicateur \a communicator()
-   * réunissant tous les processus du noeud de calcul.
+   * \brief MPI communicator derived from the communicator \a communicator()
+   * gathering all processes of the compute node.
    *
-   * Le communicateur n'est valide que si on utilise MPI. Il est possible
-   * de tester la validité en appelant la méthode Communicator::isValid().
-   * S'il est valide, il est possible de récupérer sa valeur via un cast:
+   * The communicator is only valid if MPI is used. It is possible
+   * to test its validity by calling the Communicator::isValid() method.
+   * If it is valid, it is possible to retrieve its value via a cast:
    * \code
    * IParallelMng* pm = ...;
    * MPI_Comm mc = static_cast<MPI_Comm>(pm->machineCommunicator());
@@ -146,45 +146,45 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual Parallel::Communicator machineCommunicator() const { return {}; }
 
   /*!
-   * \brief Indique si l'implémentation utilise les threads.
+   * \brief Indicates if the implementation uses threads.
    *
-   * L'implémentation utilise les threads soit en mode
-   * thread pure, soit en mode mixte MPI/thread.
+   * The implementation uses threads either in pure thread mode,
+   * or in mixed MPI/thread mode.
    */
   virtual bool isThreadImplementation() const =0;
 
   /*!
-   * \brief Indique si l'implémentation utilise le mode hybride.
+   * \brief Indicates if the implementation uses hybrid mode.
    *
-   * L'implémentation utilise le mode mixte MPI/thread.
+   * The implementation uses mixed MPI/thread mode.
    */
   virtual bool isHybridImplementation() const =0;
 
-  //! Positionne le gestionnaire de statistiques
+  //! Sets the statistics manager
   virtual void setTimeStats(ITimeStats* time_stats) =0;
 
-  //! Gestionnaire de statistiques associé (peut être nul)
+  //! Associated statistics manager (can be null)
   virtual ITimeStats* timeStats() const =0;
 
-  //! Gestionnaire de traces
+  //! Trace manager
   virtual ITraceMng* traceMng() const =0;
 
-  //! Gestionnaire de threads
+  //! Thread manager
   virtual IThreadMng* threadMng() const =0;
 
-  //! Gestionnaire de timers
+  //! Timer manager
   virtual ITimerMng* timerMng() const =0;
 
-  //! Gestionnaire des entrées/sorties
+  //! I/O manager
   virtual IIOMng* ioMng() const =0;
 
-  //! Gestionnaire de parallélisme sur l'ensemble des ressources allouées
+  //! Parallelism manager over all allocated resources
   virtual IParallelMng* worldParallelMng() const =0;
 
-  //! Initialise le gestionnaire du parallélisme
+  //! Initializes the parallelism manager
   virtual void initialize() =0;
 
-  //! Collecteur Arccore des statistiques temporelles (peut être nul)
+  //! Arccore temporal statistics collector (can be null)
   virtual ITimeMetricCollector* timeMetricCollector() const =0;
 
  public:
@@ -192,24 +192,24 @@ class ARCANE_CORE_EXPORT IParallelMng
 
  public:
     
-  //! \a true si l'instance est un gestionnaire maître des entrées/sorties.
+  //! \a true if the instance is a master I/O manager.
   virtual bool isMasterIO() const =0;
 
   /*!
-    \brief Rang de l'instance gérant les entrées/sorties (pour laquelle isMasterIO() est vrai)
+    \brief Rank of the instance managing I/O (for which isMasterIO() is true)
     *
-    * Dans l'implémentation actuelle, il s'agit toujours du processeur de rang 0.
+    * In the current implementation, this is always the rank 0 processor.
     */
   virtual Integer masterIORank() const =0;
 
   //! @name allGather
   //@{
   /*!
-   * \brief Effectue un regroupement sur tous les processeurs.
-   * Il s'agit d'une opération collective. Le tableau \a send_buf
-   * doit avoir la même taille, notée \a n, pour tous les processeurs et
-   * le tableau \a recv_buf doit avoir une taille égale au nombre
-   * de processeurs multiplié par \a n.
+   * \brief Performs an all-gather operation across all processors.
+   * This is a collective operation. The array \a send_buf
+   * must have the same size, denoted \a n, for all processors, and
+   * the array \a recv_buf must have a size equal to the number
+   * of processors multiplied by \a n.
    */
   virtual void allGather(ConstArrayView<char> send_buf,ArrayView<char> recv_buf) =0;
   virtual void allGather(ConstArrayView<unsigned char> send_buf,ArrayView<unsigned char> recv_buf) =0;
@@ -237,12 +237,12 @@ class ARCANE_CORE_EXPORT IParallelMng
   //! @name gather
   //@{
   /*!
-   * \brief Effectue un regroupement sur un processeurs.
-   * Il s'agit d'une opération collective. Le tableau \a send_buf
-   * doit avoir la même taille, notée \a n, pour tous les processeurs et
-   * le tableau \a recv_buf pour le processeur \a rank doit avoir une taille égale au nombre
-   * de processeurs multiplié par \a n. Ce tableau \a recv_buf est inutilisé pour
-   * les autres rangs que \a rank.
+   * \brief Performs a gather operation onto a processor.
+   * This is a collective operation. The array \a send_buf
+   * must have the same size, denoted \a n, for all processors, and
+   * the array \a recv_buf for processor \a rank must have a size equal to the number
+   * of processors multiplied by \a n. This array \a recv_buf is unused for
+   * other ranks than \a rank.
    */
   virtual void gather(ConstArrayView<char> send_buf,ArrayView<char> recv_buf,Int32 rank) =0;
   virtual void gather(ConstArrayView<unsigned char> send_buf,ArrayView<unsigned char> recv_buf,Int32 rank) =0;
@@ -270,13 +270,13 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@{
 
   /*!
-   * \brief Effectue un regroupement sur tous les processeurs.
+   * \brief Performs an all-gather operation across all processors.
    *
-   * Il s'agit d'une opération collective. Le nombre d'éléments du tableau
-   * \a send_buf peut être différent pour chaque processeur. Le tableau
-   * \a recv_buf contient en sortie la concaténation des tableaux \a send_buf
-   * de chaque processeur. Ce tableau \a recv_buf est éventuellement redimensionné
-   * pour le processeurs de rang \a rank.
+   * This is a collective operation. The number of elements in the array
+   * \a send_buf may be different for each processor. The array
+   * \a recv_buf contains the concatenation of the \a send_buf
+   * arrays from each processor. This array \a recv_buf may be resized
+   * for the processor of rank \a rank.
    */
   virtual void gatherVariable(ConstArrayView<char> send_buf,
                               Array<char>& recv_buf,Int32 rank) =0;
@@ -324,12 +324,12 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@{
 
   /*!
-   * \brief Effectue un regroupement sur tous les processeurs.
+   * \brief Performs an all-gather operation across all processors.
    *
-   * Il s'agit d'une opération collective. Le nombre d'éléments du tableau
-   * \a send_buf peut être différent pour chaque processeur. Le tableau
-   * \a recv_buf contient en sortie la concaténation des tableaux \a send_buf
-   * de chaque processeur. Ce tableau \a recv_buf est éventuellement redimensionné.
+   * This is a collective operation. The number of elements in the array
+   * \a send_buf may be different for each processor. The array
+   * \a recv_buf contains the concatenation of the \a send_buf
+   * arrays from each processor. This array \a recv_buf may be resized.
    */
   virtual void allGatherVariable(ConstArrayView<char> send_buf,
                                  Array<char>& recv_buf) =0;
@@ -373,10 +373,10 @@ class ARCANE_CORE_EXPORT IParallelMng
                                  Array<HPReal>& recv_buf) =0;
   //@}
 
-  //! @name opérations de réduction sur un scalaire
+  //! @name scalar reduction operations
   //@{
   /*!
-   * \brief Scinde un tableau sur plusieurs processeurs.
+   * \brief Scatters an array across multiple processors.
    */
   virtual void scatterVariable(ConstArrayView<char> send_buf,
                                ArrayView<char> recv_buf,Integer root) =0;
@@ -420,10 +420,10 @@ class ARCANE_CORE_EXPORT IParallelMng
                                ArrayView<HPReal> recv_buf,Integer root) =0;
   //@}
 
-  //! @name opérations de réduction sur un scalaire
+  //! @name scalar reduction operations
   //@{
   /*!
-   * \brief Effectue la réduction de type \a rt sur le réel \a v et retourne la valeur
+   * \brief Performs a reduction of type \a rt on the real \a v and returns the value
    */
   virtual char reduce(eReduceType rt,char v) =0;
   virtual signed char reduce(eReduceType rt,signed char v) =0;
@@ -447,18 +447,18 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual HPReal reduce(eReduceType rt,HPReal v) =0;
   //@}
 
-  //! @name opérations de réduction sur un scalaire
+  //! @name scalar reduction operations
   //@{
   /*!
-   * \brief Calcule en une opération la somme, le min, le max d'une valeur.
+   * \brief Calculates the sum, min, and max of a value in one operation.
    *
-   * Calcule le minimum, le maximum et la somme de la valeur \a val.
-   * \param val valeur servant pour le calcul
-   * \param[out] min_val valeur minimale
-   * \param[out] max_val valeur maximale
-   * \param[out] sum_val somme des valeurs
-   * \param[out] min_rank rang du processeur ayant la valeur minimale
-   * \param[out] max_rank rang du processeur ayant la valeur maximale
+   * Calculates the minimum, maximum, and sum of the value \a val.
+   * \param val value used for the calculation
+   * \param[out] min_val minimum value
+   * \param[out] max_val maximum value
+   * \param[out] sum_val sum of values
+   * \param[out] min_rank rank of the processor having the minimum value
+   * \param[out] max_rank rank of the processor having the maximum value
    */
   virtual void computeMinMaxSum(char val,char& min_val,
                                 char& max_val,char& sum_val,
@@ -522,18 +522,18 @@ class ARCANE_CORE_EXPORT IParallelMng
                                 Int32& min_rank,Int32& max_rank) =0;
   //@}
 
-  //! @name opérations de réduction sur un vecteur
+  //! @name vector reduction operations
   //@{
   /*!
-   * \brief Calcule en une opération la somme, le min, le max d'une valeur.
+   * \brief Calculates the sum, min, and max of a value in one operation.
    *
-   * Calcule le minimum, le maximum et la somme de la valeur \a val.
-   * \param val valeur servant pour le calcul
-   * \param[out] min_val valeur minimale
-   * \param[out] max_val valeur maximale
-   * \param[out] sum_val somme des valeurs
-   * \param[out] min_rank rang du processeur ayant la valeur minimale
-   * \param[out] max_rank rang du processeur ayant la valeur maximale
+   * Calculates the minimum, maximum, and sum of the value \a val.
+   * \param val value used for the calculation
+   * \param[out] min_val minimum value
+   * \param[out] max_val maximum value
+   * \param[out] sum_val sum of values
+   * \param[out] min_rank rank of the processor having the minimum value
+   * \param[out] max_rank rank of the processor having the maximum value
    */
   virtual void computeMinMaxSum(ConstArrayView<char> values, ArrayView<char> min_values,
                                 ArrayView<char> max_values, ArrayView<char> sum_values,
@@ -598,10 +598,10 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@}
 
 
-  //! @name opérations de réduction sur un tableau
+  //! @name array reduction operations
   //@{
   /*!
-   * \brief Effectue la réduction de type \a rt sur le tableau \a v.
+   * \brief Performs the reduction of type \a rt on array \a v.
    */
   virtual void reduce(eReduceType rt,ArrayView<char> v) =0;
   virtual void reduce(eReduceType rt,ArrayView<signed char> v) =0;
@@ -626,15 +626,15 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@}
 
   /*!
-   * @name opérations de broadcast
+   * @name broadcast operations
    *
-   * \brief Envoie un tableau de valeurs sur tous les sous-domaines.
+   * \brief Sends an array of values to all subdomains.
    *
-   * Cette opération envoie le tableau de valeur \a send_buf sur tous
-   * les sous-domaines. Le tableau utilisé est celui dont le rang (commRank) est \a rank.
-   * Tous les sous-domaines participants doivent appelés cette méthode avec
-   * le même paramètre \a rank et avoir un tableau \a send_buf
-   * contenant le même nombre d'éléments.
+   * This operation sends the value array \a send_buf to all
+   * subdomains. The array used is the one whose rank (commRank) is \a rank.
+   * All participating subdomains must call this method with
+   * the same parameter \a rank and have an array \a send_buf
+   * containing the same number of elements.
    */
   //@{
   virtual void broadcast(ArrayView<char> send_buf,Int32 rank) =0;
@@ -660,27 +660,27 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual void broadcastString(String& str,Int32 rank) =0;
 
   virtual void broadcastSerializer(ISerializer* values,Int32 rank) =0;
-  /*! \brief Effectue un broadcast d'une zone mémoire.
+  /*! \brief Performs a broadcast of a memory region.
    *
-   * Le processeur qui effectue le broadcast est donnée par \id. Le tableau
-   * envoyé est alors donnée par \a bytes. Les processeurs réceptionnent
-   * le tableau dans \a bytes. Ce tableau est alloué automatiquement, les processeurs
-   * réceptionnant n'ont pas besoin de connaitre le nombre d'octets devant être envoyés.
+   * The processor performing the broadcast is given by \id. The array
+   * sent is then given by \a bytes. The processors receiving
+   * the array in \a bytes. This array is allocated automatically, the processors
+   * receiving do not need to know the number of bytes to be sent.
    *
    */
   virtual void broadcastMemoryBuffer(ByteArray& bytes,Int32 rank) =0;
   //@}
 
   /*!
-   * @name opérations d'envoie de messages
+   * @name message sending operations
    *
-   * \brief Envoie bloquant d'un tableau de valeurs à un sous-domaine.
+   * \brief Blocking send of an array of values to a subdomain.
    *
-   * Envoie les valeurs du tableau \a values au sous-domaine \a rank.
-   * Le sous-domaine doit effectuer une réception correspondante (le numéro
-   * de sous-domaine doit être celui de ce gestionnaire et le type et la
-   * taille du tableau doit correspondre) avec la fonction recvValues().
-   * L'envoie est bloquant.
+   * Sends the values of array \a values to subdomain \a rank.
+   * The subdomain must perform a corresponding reception (the subdomain
+   * number must be that of this handler and the type and the
+   * size of the array must correspond) with the function recvValues().
+   * The send is blocking.
    */
   //@{
   virtual void send(ConstArrayView<char> values,Int32 rank) =0;
@@ -706,23 +706,23 @@ class ARCANE_CORE_EXPORT IParallelMng
 
   virtual void sendSerializer(ISerializer* values,Int32 rank) =0;
   /*!
-   * la requête donnée en retour doit être utilisée dans waitAllRequests() ou
-   * libérée par appel à freeRequests().
+   * The returned request must be used in waitAllRequests() or
+   * freed by calling freeRequests().
    */
   ARCCORE_DEPRECATED_2019("Use createSendSerializer(Int32 rank) instead")
   virtual Parallel::Request sendSerializer(ISerializer* values,Int32 rank,ByteArray& bytes) =0;
 
   /*!
-   * \brief Créé un message non bloquant pour envoyer des données sérialisées au rang \a rank.
+   * \brief Creates a non-blocking message to send serialized data to rank \a rank.
    *
-   * Le message est traité uniquement lors de l'appel à processMessages().
+   * The message is processed only when processMessages() is called.
    */
   virtual ISerializeMessage* createSendSerializer(Int32 rank) =0;
   //@}
 
-  //! @name opérations de réception de messages.
+  //! @name message receiving operations.
   //@{
-  /*! Reception du rang \a rank le tableau \a values */
+  /*! Receives array \a values from rank \a rank */
   virtual void recv(ArrayView<char> values,Int32 rank) =0;
   virtual void recv(ArrayView<signed char> values,Int32 rank) =0;
   virtual void recv(ArrayView<unsigned char> values,Int32 rank) =0;
@@ -747,38 +747,38 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@}
 
   /*!
-   * \brief Créé un message non bloquant pour recevoir des données sérialisées du rang \a rank.
+   * \brief Creates a non-blocking message to receive serialized data from rank \a rank.
    *
-   * Le message est traité uniquement lors de l'appel à processMessages().
+   * The message is processed only when processMessages() is called.
    */
   virtual ISerializeMessage* createReceiveSerializer(Int32 rank) =0;
 
   /*!
-   * \brief Exécute les opérations des messages \a messages
+   * \brief Executes the operations of messages \a messages
    */
   virtual void processMessages(ConstArrayView<ISerializeMessage*> messages) =0;
 
   /*!
-   * \brief Exécute les opérations des messages \a messages
+   * \brief Executes the operations of messages \a messages
    */
   virtual void processMessages(ConstArrayView<Ref<ISerializeMessage>> messages) =0;
 
   /*!
-   * \brief Libère les requêtes.
+   * \brief Frees the requests.
    */
   virtual void freeRequests(ArrayView<Parallel::Request> requests) =0;
 
-  /*! @name opérations d'envoie de messages non bloquants
+  /*! @name non-blocking message sending operations
    *
-   * \brief Envoie un tableau de valeurs à un rang \a rank.
+   * \brief Sends an array of values to rank \a rank.
    *
-   * Envoie les valeurs du tableau \a values à l'instance de rang \a rank.
-   * Le destinataire doit effectuer une réception correspondante (dont le
-   * rang doit être celui de ce gestionnaire et le type et la
-   * taille du tableau doit correspondre) avec la fonction recvValues().
-   * L'envoie est bloquant si \a is_blocking vaut \a true, non bloquant s'il vaut \a false.
-   * Dans ce dernier cas, la requête retournée doit être utilisée dans waitAllRequests()
-   * ou libérée par freeRequests().
+   * Sends the values of array \a values to the instance of rank \a rank.
+   * The recipient must perform a corresponding reception (whose
+   * rank must be that of this handler and the type and the
+   * size of the array must correspond) with the function recvValues().
+   * The send is blocking if \a is_blocking is true, non-blocking if it is false.
+   * In the latter case, the returned request must be used in waitAllRequests()
+   * or freed by freeRequests().
    */
   //@{
   virtual Request send(ConstArrayView<char> values,Int32 rank,bool is_blocking) =0;
@@ -803,9 +803,9 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual Request send(ConstArrayView<HPReal> values,Int32 rank,bool is_blocking) =0;
   //@}
 
-  //! @name opérations de réception de messages non bloquantes.
+  //! @name non-blocking message receiving operations.
   //@{
-  /*! Recoie du sous-domaine \a rank le tableau \a values */
+  /*! Receives array \a values from subdomain \a rank */
   virtual Request recv(ArrayView<char> values,Int32 rank,bool is_blocking) =0;
   virtual Request recv(ArrayView<signed char> values,Int32 rank,bool is_blocking) =0;
   virtual Request recv(ArrayView<unsigned char> values,Int32 rank,bool is_blocking) =0;
@@ -828,9 +828,9 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual Request recv(ArrayView<HPReal> values,Int32 rank,bool is_blocking) =0;
   //@}
 
-  //! @name opérations de réception génériques de messages 
+  //! @name generic message receiving operations
   //@{
-  /*! Reception du message \a message le tableau \a values */
+  /*! Receives message \a message, array \a values */
   virtual Request receive(Span<char> values,const PointToPointMessageInfo& message) =0;
   virtual Request receive(Span<signed char> values,const PointToPointMessageInfo& message) =0;
   virtual Request receive(Span<unsigned char> values,const PointToPointMessageInfo& message) =0;
@@ -854,9 +854,9 @@ class ARCANE_CORE_EXPORT IParallelMng
   virtual Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) =0;
   //@}
 
-  //! @name opérations d'envoie génériques de messages 
+  //! @name generic message sending operations
   //@{
-  /*! Envoie du message \a message avec les valeurs du tableau \a values */
+  /*! Sends message \a message with the values of array \a values */
   virtual Request send(Span<const char> values,const PointToPointMessageInfo& message) =0;
   virtual Request send(Span<const signed char> values,const PointToPointMessageInfo& message) =0;
   virtual Request send(Span<const unsigned char> values,const PointToPointMessageInfo& message) =0;
@@ -881,14 +881,14 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@}
 
   /*!
-   * \brief Sonde si des messages sont disponibles.
+   * \brief Probes if messages are available.
    *
    * \sa Arccore::MessagePassing::mpProbe().
    */
   virtual MessageId probe(const PointToPointMessageInfo& message) =0;
 
   /*!
-   * \brief Sonde si des messages sont disponibles.
+   * \brief Probes if messages are available.
    *
    * \sa Arccore::MessagePassing::mpLegacyProbe().
    */
@@ -976,7 +976,7 @@ class ARCANE_CORE_EXPORT IParallelMng
 
   /*! @name allToAll variable
    *
-   * \brief Effectue un allToAll variable
+   * \brief Performs a variable allToAll operation
    */
   //@{
   virtual void allToAllVariable(ConstArrayView<char> send_buf,Int32ConstArrayView send_count,
@@ -1043,10 +1043,10 @@ class ARCANE_CORE_EXPORT IParallelMng
 
   /*! @name scan
    *
-   * \brief Effectue un algorithme de scan équivalent en sémantique à MPI_Scan
+   * \brief Performs an algorithm equivalent to MPI_Scan in semantics
    */
   //@{
-  //! Applique un algorithme de prefix-um sur les valeurs de \a v via l'opération \a rt.
+  //! Applies a prefix-sum algorithm on the values of \a v using the \a rt operation.
   virtual void scan(eReduceType rt,ArrayView<char> v) =0;
   virtual void scan(eReduceType rt,ArrayView<signed char> v) =0;
   virtual void scan(eReduceType rt,ArrayView<unsigned char> v) =0;
@@ -1070,50 +1070,50 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@}
 
   /*!
-   * \brief Créé une liste pour gérer les 'ISerializeMessage'.
+   * \brief Creates a list to manage 'ISerializeMessage'.
    *
-   * \deprecated Utiliser createSerializeMessageListRef() à la place.
+   * \deprecated Use createSerializeMessageListRef() instead.
    */
   ARCCORE_DEPRECATED_2020("Use createSerializeMessageListRef() instead")
   virtual ISerializeMessageList* createSerializeMessageList() =0;
 
-  //! Créé une liste pour gérer les 'ISerializeMessage'
+  //! Creates a list to manage 'ISerializeMessage'
   virtual Ref<ISerializeMessageList> createSerializeMessageListRef() =0;
 
-  //! @name opérations de synchronisation et opérations asynchrones
+  //! @name synchronization operations and asynchronous operations
   //@{
-  //! Effectue une barière
+  //! Performs a barrier
   virtual void barrier() =0;
 
-  //! Bloque en attendant que les requêtes \a rvalues soient terminées
+  //! Blocks while waiting for the \a rvalues requests to complete
   virtual void waitAllRequests(ArrayView<Request> rvalues) =0;
 
   /*!
-  * \brief Bloque en attendant qu'une des requêtes \a rvalues soit terminée.
+  * \brief Blocks while waiting for one of the \a rvalues requests to complete.
   *
-  * Retourne un tableau d'indices des requêtes réalisées.
+  * Returns an array of indices of completed requests.
   */
   virtual UniqueArray<Integer> waitSomeRequests(ArrayView<Request> rvalues) =0;
 
   /*!
-  * \brief Test si une des requêtes \a rvalues est terminée.
+  * \brief Tests if one of the \a rvalues requests is complete.
   *
-  * Retourne un tableau d'indices des requêtes réalisées.
+  * Returns an array of indices of completed requests.
   */
   virtual UniqueArray<Integer> testSomeRequests(ArrayView<Request> rvalues) =0;
 
  //@}
 
 
-  //! @name opérations diverses
+  //! @name various operations
   //@{
 
   /*!
-   * \brief Retourne un gestionnaire de parallélisme séquentiel.
+   * \brief Returns a sequential parallelism manager.
    *
-   * Cette instance reste propriétaire de l'instance retournée qui ne doit
-   * pas être détruite. La durée de vie de l'instance retournée est
-   * la même que cette instance.
+   * This instance retains ownership of the returned instance, which must not
+   * be destroyed. The lifetime of the returned instance is
+   * the same as this instance.
    */
   virtual IParallelMng* sequentialParallelMng() =0;
   virtual Ref<IParallelMng> sequentialParallelMngRef() =0;
@@ -1121,142 +1121,143 @@ class ARCANE_CORE_EXPORT IParallelMng
   //@}
 
   /*!
-   * \brief Retourne une opération pour récupérer les valeurs d'une variable
-   * sur les entités d'un autre sous-domaine.
+   * \brief Returns an operation to retrieve the values of a variable
+   * on the entities of another subdomain.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createGetVariablesValuesOperationRef() instead")]]
   virtual IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() =0;
 
   /*!
-   * \brief Retourne une opération pour transférer des valeurs
-   * entre sous-domaine.
+   * \brief Returns an operation to transfer values
+   * between subdomains.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createTransferValuesOperationRef() instead")]]
   virtual ITransferValuesParallelOperation* createTransferValuesOperation() =0;
 
   /*!
-   * \brief Retourne une interface pour transférer des messages
-   * entre processeurs.
+   * \brief Returns an interface for transferring messages
+   * between processors.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createExchangerRef() instead")]]
   virtual IParallelExchanger* createExchanger() =0;
 
   /*!
-   * \brief Retourne une interface pour synchroniser des
-   * variables sur le groupe de la famille \a family
+   * \brief Returns an interface for synchronizing
+   * variables on the group of the \a family
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createSynchronizerRef() instead")]]
   virtual IVariableSynchronizer* createSynchronizer(IItemFamily* family) =0;
  
   /*!
-   * \brief Retourne une interface pour synchroniser des
-   * variables sur le groupe \a group.
+   * \brief Returns an interface for synchronizing
+   * variables on the \a group.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createSynchronizerRef() instead")]]
   virtual IVariableSynchronizer* createSynchronizer(const ItemGroup& group) =0;
 
   /*!
-   * \brief Créé une instance contenant les infos sur la topologie des rangs de ce gestionnnaire.
+   * \brief Creates an instance containing information about the rank topology of this manager.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createTopologyRef() instead")]]
   virtual IParallelTopology* createTopology() =0;
 
   /*!
-   * \brief Informations sur la réplication.
+   * \brief Replication information.
    *
-   * Le pointeur retourné n'est jamais nul et reste la propriété de cette
+   * The returned pointer is never null and remains the property of this
    * instance.
    */
   virtual IParallelReplication* replication() const =0;
 
   /*!
    * \internal
-   * \brief Positionne les Informations sur la réplication.
+   * \brief Sets the Replication Information.
    *
-   * Cette méthode est interne à Arcane et ne doit être appelée que lors de l'initialisation.
+   * This method is internal to Arcane and should only be called during initialization.
    */
   virtual void setReplication(IParallelReplication* v) =0;
 
   /*!
-   * \brief Créé un nouveau gestionnaire de parallélisme pour un sous-ensemble
-   * des rangs.
+   * \brief Creates a new parallelism manager for a subset
+   * of ranks.
    *
-   * \deprecated Utiliser createSubParallelMngRef() à la place
+   * \deprecated Use createSubParallelMngRef() instead
    */
   ARCCORE_DEPRECATED_2020("Use createSubParallelMngRef() instead")
   virtual IParallelMng* createSubParallelMng(Int32ConstArrayView kept_ranks) =0;
 
   /*!
-   * \brief Créé un nouveau gestionnaire de parallélisme pour un sous-ensemble
-   * des rangs.
+   * \brief Creates a new parallelism manager for a subset
+   * of ranks.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Cett opération permet de créér un nouveau gestionnaire contenant
-   * uniquement les rangs \a kept_ranks de ce gestionnaire.
+   * This operation allows creating a new manager containing
+   * only the \a kept_ranks of this manager.
    *
-   * Si le rang appelant cette opération n'est pas dans \a kept_ranks,
-   * retourne 0.
+   * If the rank calling this operation is not in \a kept_ranks,
+   * it returns 0.
    *
-   * L'instance retournée doit être détruire par l'opérateur delete.
+   * The returned instance must be destroyed by the delete operator.
    */
   virtual Ref<IParallelMng> createSubParallelMngRef(Int32ConstArrayView kept_ranks) =0;
 
   /*!
-   * \brief Créé une liste de requêtes pour ce gestionnaire.
+   * \brief Creates a request list for this manager.
    */
   virtual Ref<Parallel::IRequestList> createRequestListRef() =0;
 
-  //! Gestionnaire des statistiques
+  //! Statistics manager
   virtual IStat* stat() =0;
 
-  //! Affiche des statistiques liées à ce gestionnaire du parallélisme
+  //! Prints statistics related to this parallelism manager
   virtual void printStats() =0;
 
-  //! Interface des opérations collectives non blocantes.
+  //! Interface for non-blocking collective operations.
   virtual IParallelNonBlockingCollective* nonBlockingCollective() const =0;
 
-  //! Gestionnaire de message de %Arccore associé
+  //! Associated %Arccore message passing manager
   virtual IMessagePassingMng* messagePassingMng() const =0;
 
  public:
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   virtual IParallelMngInternal* _internalApi() =0;
 
  private:
 
   /*!
    * \internal
-   * \brief Fabrique des fonctions utilitaires.
+   * \brief Factory for utility functions.
    */
   virtual Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un conteneur de 'IParallelMng'.
+ * \brief Interface for an 'IParallelMng' container.
  *
- * Un conteneur de IParallelMng gère en mode mémoire partagée un ensemble
- * de IParallelMng d'un même communicateur.
+ * An IParallelMng container manages a set
+ * of IParallelMng instances from the same communicator in shared memory mode.
  *
- * \note Ne pas utiliser en dehors d'Arcane. API non stabilisée.
+ * \note Do not use outside of Arcane. Unstabilized API.
  */
 class ARCANE_CORE_EXPORT IParallelMngContainer
 {
@@ -1264,16 +1265,17 @@ class ARCANE_CORE_EXPORT IParallelMngContainer
  protected:
   virtual ~IParallelMngContainer() = default;
  public:
-  //! Créé le IParallelMng pour le rang local \a local_rank
+  //! Creates the IParallelMng for the local rank \a local_rank
   virtual Ref<IParallelMng> _createParallelMng(Int32 local_rank,ITraceMng* tm) =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique de conteneur de 'IParallelMng'.
- * \note Ne pas utiliser en dehors d'Arcane. API non stabilisée.
+ * \brief Interface for an 'IParallelMng' container factory.
+ * \note Do not use outside of Arcane. Unstabilized API.
  */
 class ARCANE_CORE_EXPORT IParallelMngContainerFactory
 {
@@ -1281,16 +1283,14 @@ class ARCANE_CORE_EXPORT IParallelMngContainerFactory
   virtual ~IParallelMngContainerFactory() = default;
  public:
   /*!
-   * \brief Créé un conteneur pour \a nb_local_rank rangs locaux et
-   * avec comme communicateur \a communicator.
+   * \brief Creates a container for \a nb_local_rank local ranks and
+   * with \a communicator as the communicator.
    *
-   * Le communicateur MPI \a communicator peut être nul en mode séquentiel ou
-   * mémoire partagé.
-   * Le nombre de rangs locaux vaut 1 en mode séquentiel ou en mode MPI pure.
+   * The MPI communicator \a communicator can be null in sequential or
+   * shared memory mode. The number of local ranks is 1 in sequential or pure MPI mode.
    *
-   * Le second communicateur \a machine_communicator est utile qu'en mode
-   * hydride.
-   * Dans les autres modes, il peut être nul.
+   * The second communicator \a machine_communicator is only useful in hybrid mode.
+   * In other modes, it can be null.
    */
   virtual Ref<IParallelMngContainer>
   _createParallelMngBuilder(Int32 nb_local_rank, Parallel::Communicator communicator,
@@ -1305,4 +1305,4 @@ class ARCANE_CORE_EXPORT IParallelMngContainerFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

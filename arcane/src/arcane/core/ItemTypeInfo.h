@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypeInfo.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Informations sur un type d'entité du maillage.                            */
+/* Information about a mesh entity type.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMTYPEINFO_H
 #define ARCANE_CORE_ITEMTYPEINFO_H
@@ -27,26 +27,27 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Infos sur un type d'entité du maillage.
+ * \brief Info on a mesh entity type.
  *
- * Une instance de cette classe décrit un type d'entité de maillage, par
- * exemple une maille hexédrique, une maille quadrangulaire.
+ * An instance of this class describes a mesh entity type, such as
+ * a hexahedral mesh, a quadrilateral mesh.
  *
  * \sa ItemTypeMng
  *
- * Il ne doit exister qu'une instance par type d'entité. La création d'un
- * type se fait par la classe dérivée ItemTypeInfoBuilder. Les types doivent
- * être créé avant toute création de maillage (i.e durant
- * l'initialisation de l'architecture).
+ * There should only be one instance per entity type. Creation of a
+ * type is done by the derived class ItemTypeInfoBuilder. Types must
+ * be created before any mesh creation (i.e. during
+ * the initialization of the architecture).
  */
 class ItemTypeInfo
 {
  public:
 
   /*!
-   * \brief Informations locales sur une face d'une maille.
+   * \brief Local information about a mesh face.
    */
   class LocalFace
   {
@@ -58,27 +59,27 @@ class ItemTypeInfo
 
    public:
 
-    //! Type de l'entité face
+    //! Type of the face entity
     Integer typeId() const { return m_index[0]; }
-    //! Nombre de noeuds de la face
+    //! Number of nodes of the face
     Integer nbNode() const { return m_index[1]; }
-    //! Indice locale dans la maille du i-ème noeud de la face
+    //! Local index in the mesh of the i-th node of the face
     Integer node(Integer i) const { return m_index[2 + i]; }
-    //! Nombre d'arête de la face
+    //! Number of edges of the face
     Integer nbEdge() const { return m_index[2 + nbNode()]; }
-    //! Arête de la face
+    //! Edge of the face
     Integer edge(Integer i) const { return m_index[3 + nbNode() + i]; }
 
    private:
 
-    Integer* m_index; //!< Indices dans le tampon des infos de la face
+    Integer* m_index; //!< Indices in the face info buffer
   };
 
   /*!
-   * \brief Informations locales sur une arête d'une maille.
+   * \brief Local information about a mesh edge.
    *
-   * \warning Pour être initialisée comme un tableau, cette classe doit être
-   * un POD et ne pas avoir de constructeur.
+   * \warning To be initialized as an array, this class must be
+   * a POD and not have a constructor.
    */
   class LocalEdge
   {
@@ -90,63 +91,63 @@ class ItemTypeInfo
 
    public:
 
-    //! Indice local à la maille du sommet origine de l'arête
+    //! Local index in the mesh of the starting node of the edge
     Integer beginNode() const { return m_index[0]; }
-    //! Indice local à la maille du sommet extrémité de l'arête
+    //! Local index in the mesh of the ending node of the edge
     Integer endNode() const { return m_index[1]; }
-    //! Indice local à la maille de la face à gauche de l'arête
+    //! Local index in the mesh of the face to the left of the edge
     Integer leftFace() const { return m_index[2]; }
-    //! Indice local à la maille du la face à droite de l'arête
+    //! Local index in the mesh of the face to the right of the edge
     Integer rightFace() const { return m_index[3]; }
 
    private:
 
-    Integer* m_index; //!< Indices dans le tampon des infos de la face
+    Integer* m_index; //!< Indices in the face info buffer
   };
 
  protected:
 
-  //! Constructeur par défaut
+  //! Default constructor
   ItemTypeInfo() = default;
 
  public:
 
-  //! Numéro du type
+  //! Type number
   Int16 typeId() const { return m_type_id.typeId(); }
-  //! Numéro du type
+  //! Type number
   ItemTypeId itemTypeId() const { return m_type_id; }
-  //! Nombre de noeuds de l'entité
+  //! Number of nodes of the entity
   Integer nbLocalNode() const { return m_nb_node; }
-  //! Nombre de faces de l'entité
+  //! Number of faces of the entity
   Integer nbLocalFace() const { return m_nb_face; }
-  //! Nombre d'arêtes de l'entité
+  //! Number of edges of the entity
   Integer nbLocalEdge() const { return m_nb_edge; }
-  //! Nom du type
+  //! Type name
   String typeName() const { return m_type_name; }
-  //! Dimension de l'élément (<0 si inconnu)
+  //! Dimension of the element (<0 if unknown)
   Int16 dimension() const { return m_dimension; }
-  //! Indique si le type est valide pour créér une maille (Cell)
+  //! Indicates if the type is valid for creating a mesh (Cell)
   bool isValidForCell() const { return m_is_valid_for_cell; }
-  //! Ordre du type
+  //! Order of the type
   Int32 order() const { return m_order; }
-  //! Type de l'élément linéaire correspondant
+  //! Type of the corresponding linear element
   Int16 linearTypeId() const { return m_linear_type_id.typeId(); }
-  //! Type de l'élément linéaire correspondant
+  //! Type of the corresponding linear element
   ItemTypeId linearItemTypeId() const { return m_linear_type_id; }
-  //! Type de l'élément linéaire correspondant
+  //! Type of the corresponding linear element
   const ItemTypeInfo* linearTypeInfo() const { return m_mng->typeFromId(m_linear_type_id); }
-  //! Indique si le type a un noeud au centre
+  //! Indicates if the type has a center node
   bool hasCenterNode() const { return m_has_center_node; }
   /*!
-   * \brief Indique si le type est un polygone.
+   * \brief Indicates if the type is a polygon.
    *
-   * Un polygone est un élément 2D d'ordre 1 contenant au moins 5 noeuds.
+   * A polygon is a 2D element of order 1 containing at least 5 nodes.
    */
   bool isPolygon() const { return m_is_polygon; }
 
  public:
 
-  //! Connectivité locale de la \a i-ème arête de la maille
+  //! Local connectivity of the i-th edge of the mesh
   LocalEdge localEdge(Integer id) const
   {
     Array<Integer>& buf = m_mng->m_ids_buffer;
@@ -154,7 +155,7 @@ class ItemTypeInfo
     return LocalEdge(&buf[fi]);
   }
 
-  //! Connectivité locale de la \a i-ème face de la maille
+  //! Local connectivity of the i-th face of the mesh
   LocalFace localFace(Integer id) const
   {
     Array<Integer>& buf = m_mng->m_ids_buffer;
@@ -167,19 +168,19 @@ class ItemTypeInfo
   ItemTypeMng* m_mng = nullptr;
   ItemTypeId m_type_id{ IT_NullType };
   ItemTypeId m_linear_type_id{ IT_NullType };
-  //! Dimension (-1) si pas initialisé.
+  //! Dimension (-1) if not initialized.
   Int16 m_dimension = (-1);
-  //! Indique si le type est valide pour une maille.
+  //! Indicates if the type is valid for a mesh.
   bool m_is_valid_for_cell = true;
-  //! Indique si le type a un nœud au centre (pour les faces ou les mailles)
+  //! Indicates if the type has a center node (for faces or meshes)
   bool m_has_center_node = false;
-  //! Indique si le type est un polygone
+  //! Indicates if the type is a polygon
   bool m_is_polygon = false;
   Integer m_nb_node = 0;
   Integer m_nb_edge = 0;
   Integer m_nb_face = 0;
   Int32 m_order = 1;
-  //! Indice de ce type dans la liste des index de \a m_mng.
+  //! Index of this type in the list of indices of \a m_mng.
   Integer m_first_item_index = 0;
   String m_type_name;
 };
@@ -192,5 +193,4 @@ class ItemTypeInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

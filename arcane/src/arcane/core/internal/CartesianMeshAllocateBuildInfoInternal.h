@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshAllocateBuildInfoInternal.h                    (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour allouer les entités d'un maillage cartésien.            */
+/* Information for allocating entities of a Cartesian mesh.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CARTESIANMESHALLOCATEBUILDINFOINTERNAL_H
 #define ARCANE_CORE_CARTESIANMESHALLOCATEBUILDINFOINTERNAL_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Partie interne de CartesianMeshAllocateBuildInfo.
+ * \brief Internal part of CartesianMeshAllocateBuildInfo.
  */
 class ARCANE_CORE_EXPORT CartesianMeshAllocateBuildInfoInternal
 {

@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* InversiveCongruential.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Ce fichier définit le patron de classe InversiveCongruential ainsi qu'une */
-/* classe associée Hellekalek1995.  Il est une version adaptée du fichier    */
-/* InversiveCongruential.hpp provenant de la bibliothèque BOOST              */
+/* This file defines the InversiveCongruential class pattern as well as a    */
+/* associated class Hellekalek1995. It is an adapted version of the file     */
+/* InversiveCongruential.hpp from the BOOST library */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_INVERSIVECONGRUENTIAL_H
@@ -29,20 +29,21 @@ namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! Patron de classe \c InversiveCongruential. Il permet de définir des classes  
- * de générateurs de type Inversive Congruential en fonction des paramètres \c a,
- * \c c et \c m. Les nombres pseudo-aléatoires générés sont de type \c IntType.
+
+/*! Class pattern \c InversiveCongruential. It allows defining classes
+ * of the Inversive Congruential type based on the parameters \c a,
+ * \c c, and \c m. The generated pseudo-random numbers are of type \c IntType.
  *
- * La génération d'une séquence de  nombres pseudo-aléatoires s'effectue :
+ * The generation of a sequence of pseudo-random numbers is done:
  *
- * - soit par l'appel successif de l'opérateur \c (). Dans ce cas, la graine peut  
- *   être initialisée par l'appel au constructeur  ou les différentes méthodes  
- *   \c seed . L'état du générateur est gérée en interne par l'intermédiaire du 
- *   membre private \c _x. Sa valeur est accessible via la méthode \c getState().
+ * - either by successive calls to the operator \c (). In this case, the seed can  
+ *   be initialized by calling the constructor or the different methods  
+ *   \c seed. The generator state is managed internally via the  
+ *   private member \c _x. Its value is accessible via the \c getState() method.
  *
- * - soit par l'appel de la méthode \c apply(x). L'état du générateur \c x 
- *   est géré à l'extérieur de la classe. Les méthodes \c seed et \c getState() 
- *   n'ont pas de sens dans cette utilisation.
+ * - or by calling the method \c apply(x). The generator state \c x 
+ *   is managed outside the class. The \c seed and \c getState() methods 
+ *   are meaningless in this usage.
 */
 template<typename IntType, IntType a, IntType c, IntType m, IntType val>
 class InversiveCongruential
@@ -52,25 +53,31 @@ class InversiveCongruential
   static const bool has_fixed_range = true;
   static const result_type min_value = ( c == 0 ? 1 : 0 );
   static const result_type max_value = m-1;
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur minimum possible d'une séquence. 
+
+  /*! \brief Returns the minimum possible value of a sequence.
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
    */
   result_type min() const { return c == 0 ? 1 : 0; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur maximum possible d'une séquence. 
+
+  /*! \brief Returns the maximum possible value of a sequence.
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
    */
   result_type max() const { return m-1; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Constructeur avec initialisation de la graine à partir de la valeur
+
+  /*! \brief Constructor with seed initialization from the value
    *         \c x0.
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
@@ -80,26 +87,32 @@ class InversiveCongruential
     : _x(x0)
   { 
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Initialisation de la graine du générateur à partir de la valeur \c x0.
+
+  /*! \brief Initialization of the generator seed from the value \c x0.
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
    */
   void seed(IntType x0) { _x = x0; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Méthode qui retourne l'état générateur.
+
+  /*! \brief Method that returns the generator state.
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date   28/07/2006
    */
   IntType getState() const { return _x; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Surdéfinition de l'opérateur () qui retourne la valeur pseudo 
-   *         aléatoire du générateur. L'état du générateur est modifié. 
+
+  /*! \brief Overriding the operator () which returns the pseudo
+   * random value of the generator. The generator state is modified. 
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
@@ -109,11 +122,13 @@ class InversiveCongruential
     _x = apply(_x);
     return _x;
   }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! \brief Retourne la valeur pseudo aléatoire à partir de l'état \c x. Le 
- *         membre privée \c _x du générateur n'est pas utilisé et n'est pas  
- *         modifié. 
+
+/*! \brief Returns the pseudo-random value from the state \c x. The
+ * private member \c _x of the generator is not used and is not  
+ * modified. 
  *
  * \author Patrick Rathouit (origine bibliotheque BOOST)
  * \date  28/07/2006
@@ -123,17 +138,21 @@ class InversiveCongruential
     typedef utils::const_mod<IntType, m> do_mod;
     return x = do_mod::mult_add(a,do_mod::invert(x), c);
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Fonction de validation (je ne sais pas trop a quoi elle sert!)
+
+  /*! \brief Validation function (I don't really know what it is for!)
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
    */
   bool validation(IntType x) const { return val == x; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Surdéfinition de l'opérateur ==
+
+  /*! \brief Overriding the == operator
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
@@ -161,4 +180,3 @@ typedef InversiveCongruential<Int32, 9102, 2147483647-36884165,
 /*---------------------------------------------------------------------------*/
 
 #endif
-

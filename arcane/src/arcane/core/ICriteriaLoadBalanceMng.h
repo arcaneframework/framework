@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICriteriaLoadBalanceMng.h                                   (C) 2000-2024 */
 /*                                                                           */
-/* Interface pour un gestionnaire des critères d'équilibre de charge des     */
-/* maillages.                                                                */
+/* Interface for a load balance criteria manager for meshes.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICRITERIALOADBALANCEMNG_H
 #define ARCANE_CORE_ICRITERIALOADBALANCEMNG_H
@@ -26,75 +25,76 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de classe permettant d'ajouter des critères pour ajuster
- *        l'équilibre de charge.
+ * \brief Class interface allowing criteria to be added to adjust
+ *        the load balance.
  */
 class ICriteriaLoadBalanceMng
 {
  public:
 
-  virtual ~ICriteriaLoadBalanceMng() = default; //!< Libère les ressources.
+  virtual ~ICriteriaLoadBalanceMng() = default; //!< Frees resources.
 
  public:
 
   /*!
-   * \brief Méthode permettant d'ajouter un critère pour chaque maille.
+   * \brief Method allowing a criterion to be added for each cell.
    *
-   * \param count Une variable aux mailles avec un poids par maille.
+   * \param count A cell variable with a weight per cell.
    */
   virtual void addCriterion(VariableCellInt32& count) =0;
 
   /*!
-   * \brief Méthode permettant d'ajouter un critère pour chaque maille.
+   * \brief Method allowing a criterion to be added for each cell.
    *
-   * \param count Une variable aux mailles avec un poids par maille.
+   * \param count A cell variable with a weight per cell.
    */
   virtual void addCriterion(VariableCellReal& count) =0;
 
-  // TODO Comprendre comment fonctionne PartitionerMemoryInfo
+  // TODO Understand how PartitionerMemoryInfo works
   /*!
-   * \brief Méthode permettant d'ajouter un critère pour chaque maille.
+   * \brief Method allowing a criterion to be added for each cell.
    *
-   * \param count Une variable aux mailles avec un poids par maille.
-   * \param entity Le type d'entité lié à ce critère.
+   * \param count A cell variable with a weight per cell.
+   * \param entity The entity type linked to this criterion.
    */
   virtual void addMass(VariableCellInt32& count, const String& entity) = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter un critère pour chaque face.
+   * \brief Method allowing a criterion to be added for each face.
    *
-   * \param count Une variable aux faces avec un poids par face.
-   * \param entity Le type d'entité lié à ce critère.
+   * \param count A face variable with a weight per face.
+   * \param entity The entity type linked to this criterion.
    */
   virtual void addCommCost(VariableFaceInt32& count, const String& entity) = 0;
 
   /*!
-   * \brief Méthode permettant d'effacer les critères déjà ajoutés.
+   * \brief Method allowing the criteria already added to be cleared.
    */
   virtual void reset() =0;
 
   /*!
-   * \brief Méthode permettant de dire si la masse de données de chaque
-   *        maille est un critère pour l'équilibre de charge.
+   * \brief Method allowing to specify if the data mass of each
+   *        cell is a criterion for load balance.
    *
-   * \param active true si la masse de données doit être un critère.
+   * \param active true if the data mass must be a criterion.
    */
   virtual void setMassAsCriterion(bool active) = 0;
 
   /*!
-   * \brief Méthode permettant de dire si le nombre de mailles dans un
-   *        sous-domaine doit être un critère pour l'équilibre de charge.
+   * \brief Method allowing to specify if the number of cells in a
+   *        subdomain must be a criterion for load balance.
    *
-   * \param active true si le nombre de maille doit être un critère.
+   * \param active true if the number of cells must be a criterion.
    */
   virtual void setNbCellsAsCriterion(bool active) = 0;
 
   /*!
-   * \brief Méthode permettant de dire si la masse des communications
-   *        entre les mailles doit être un critère pour l'équilibre de charge.
+   * \brief Method allowing to specify if the mass of communications
+   *        between cells must be a criterion for load balance.
    *
-   * \param active true si la masse des communications doit être un critère.
+   * \param active true if the mass of communications must be a criterion.
    */
   virtual void setCellCommContrib(bool active) = 0;
 
@@ -105,9 +105,9 @@ class ICriteriaLoadBalanceMng
   virtual void setComputeComm(bool active) = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir le nombre de critères déjà enregistrés.
+   * \brief Method allowing to retrieve the number of criteria already registered.
    *
-   * \return Le nombre de critères.
+   * \return The number of criteria.
    */
   virtual Integer nbCriteria() = 0;
 };

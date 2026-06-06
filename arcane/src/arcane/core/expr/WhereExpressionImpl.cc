@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* WhereExpressionImpl.cc                                      (C) 2000-2004 */
 /*                                                                           */
-/* Implémentation d'une expression conditionnelle.                           */
+/* Implementation of a conditional expression.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@ apply(ExpressionResult* result)
 {
   // cerr << ">> BEGIN WHERE EXPRESSION [" << *result << "]\n";
 
-  // evaluation du test
+  // Evaluation of the test
   IntegerConstArrayView indices = result->indices();
   ExpressionResult test_op(indices);
   m_test->apply(&test_op);
@@ -76,7 +76,7 @@ apply(ExpressionResult* result)
     cerr << "]."<< endl;
   */
 
-  // evaluation de l'expression en fonction du resultat du test
+  // Evaluation of the expression based on the test result
   ExpressionResult iftrue_op(true_indices);
   m_iftrue->apply(&iftrue_op);
   ExpressionResult iffalse_op(false_indices);

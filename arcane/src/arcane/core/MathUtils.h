@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MathUtils.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions mathématiques diverses.                                         */
+/* Diverse mathematical functions.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATHUTILS_H
 #define ARCANE_CORE_MATHUTILS_H
@@ -31,22 +31,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
-  \brief Espace de nom pour les fonctions mathématiques.
+  \brief Namespace for mathematical functions.
  
-  Cet espace de nom contient toutes les fonctions mathématiques utilisées
-  par le code.
+  This namespace contains all the mathematical functions used
+  by the code.
 */
 namespace math
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit vectoriel de \a u par \a v. dans \f$R^3\f$.
+ * \brief Vector cross product of \a u by \a v in \f$R^3\f$.
  *
- * \deprecated Utiliser cross() à la place.
+ * \deprecated Use cross() instead.
  */
 ARCCORE_HOST_DEVICE inline Real3
 vecMul(Real3 u, Real3 v)
@@ -60,11 +62,12 @@ vecMul(Real3 u, Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit vectoriel de \a u par \a v dans \f$R^2\f$.
+ * \brief Vector cross product of \a u by \a v in \f$R^2\f$.
  *
- * \deprecated Utiliser cross2D() à la place.
+ * \deprecated Use cross2D() instead.
  */
 ARCCORE_HOST_DEVICE inline Real
 vecMul2D(Real3 u, Real3 v)
@@ -74,9 +77,10 @@ vecMul2D(Real3 u, Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit vectoriel de \a u par \a v dans \f$R^2\f$.
+ * \brief Vector cross product of \a u by \a v in \f$R^2\f$.
  */
 ARCCORE_HOST_DEVICE inline Real
 cross2D(Real3 u,Real3 v)
@@ -86,11 +90,12 @@ cross2D(Real3 u,Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit scalaire de \a u par \a v dans \f$R^2\f$.
+ * \brief Dot product of \a u by \a v in \f$R^2\f$.
  *
- * Il s'agit de: \f$u{\cdot}v\f$
+ * This is: \f$u{\cdot}v\f$
  */
 ARCCORE_HOST_DEVICE inline Real
 dot(Real2 u,Real2 v)
@@ -100,14 +105,15 @@ dot(Real2 u,Real2 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit scalaire de \a u par \a v dans \f$R^2\f$
+
+  /*!
+ * \brief Dot product of \a u by \a v in \f$R^2\f$
  *
  * \ingroup GroupMathUtils
  *
- * Il s'agit de: \f$u{\cdot}v\f$.
+ * This is: \f$u{\cdot}v\f$.
  *
- * \deprecated Utiliser dot(Real2,Real2) à la place
+ * \deprecated Use dot(Real2,Real2) instead
  */
 ARCCORE_HOST_DEVICE inline Real
 scaMul(Real2 u, Real2 v)
@@ -117,12 +123,13 @@ scaMul(Real2 u, Real2 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit scalaire de \a u par \a v
+
+  /*!
+ * \brief Dot product of \a u by \a v
  *
  * \ingroup GroupMathUtils
  *
- * Il s'agit de: \f$u{\cdot}v\f$.
+ * This is: \f$u{\cdot}v\f$.
  */
 ARCCORE_HOST_DEVICE inline Real
 dot(Real3 u,Real3 v)
@@ -132,14 +139,15 @@ dot(Real3 u,Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit scalaire de \a u par \a v
+
+  /*!
+ * \brief Dot product of \a u by \a v
  *
  * \ingroup GroupMathUtils
  *
- * Il s'agit de: \f$u{\cdot}v\f$
+ * This is: \f$u{\cdot}v\f$
  *
- * \deprecated Utiliser dot(Real2,Real2) à la place
+ * \deprecated Use dot(Real2,Real2) instead
  */
 ARCCORE_HOST_DEVICE inline Real
 scaMul(Real3 u, Real3 v)
@@ -149,8 +157,9 @@ scaMul(Real3 u, Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit mixte de \a u, \a v et \a w
+
+  /*!
+ * \brief Mixed product of \a u, \a v and \a w
  *
  * \ingroup GroupMathUtils
  *
@@ -163,8 +172,9 @@ mixteMul(Real3 u,Real3 v,Real3 w)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Déterminant de la matrice u,v,w
+
+  /*!
+ * \brief Determinant of the matrix u,v,w
  */
 ARCCORE_HOST_DEVICE inline Real
 matDet(Real3 u,Real3 v,Real3 w)
@@ -178,9 +188,10 @@ matDet(Real3 u,Real3 v,Real3 w)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit tensoriel de deux vecteurs Real3.
+ * \brief Tensor product of two Real3 vectors.
 
  Il s'agit de \f$\vec{u}=~^t(u_{x},u_{y},u_{z})\f$ et \f$\vec{v}=~^t(v_{x},v_{y},v_{z})\f$
  et est noté \f$\vec{u} \otimes \vec{v}\f$, et est donné par~:
@@ -197,8 +208,9 @@ prodTens(Real3 u,Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit matrice vecteur entre un tenseur et un vecteur.
+
+  /*!
+ * \brief Matrix-vector product between a tensor and a vector.
  *
  * \ingroup GroupMathUtils
  *
@@ -216,11 +228,12 @@ prodTensVec(Real2x2 t,Real2 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit transposé(vecteur) matrice entre la transposée d'un vecteur et une matrice.
+ * \brief Transposed(vector) matrix product between the transpose of a vector and a matrix.
  *
- * Retourne le vecteur transposé du résultat.
+ * Returns the transposed vector of the result.
  */
 ARCCORE_HOST_DEVICE inline Real3
 prodVecTens(Real3 v,Real3x3 t)
@@ -230,9 +243,10 @@ prodVecTens(Real3 v,Real3x3 t)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit matrice matrice entre deux tenseurs.
+ * \brief Matrix-matrix product between two tensors.
  */
 ARCCORE_HOST_DEVICE inline Real3x3
 matrixProduct(const Real3x3& t,const Real3x3& v)
@@ -250,9 +264,10 @@ matrixProduct(const Real3x3& t,const Real3x3& v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Transpose la matrice.
- * \deprecated Utiliser matrixTranspose() à la place.
+
+  /*!
+ * \brief Transpose the matrix.
+ * \deprecated Use matrixTranspose() instead.
  */
 ARCCORE_HOST_DEVICE inline Real3x3
 transpose(const Real3x3& t)
@@ -264,9 +279,10 @@ transpose(const Real3x3& t)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Transpose la matrice.
+ * \brief Transpose the matrix.
  */
 ARCCORE_HOST_DEVICE inline Real3x3
 matrixTranspose(const Real3x3& t)
@@ -278,9 +294,10 @@ matrixTranspose(const Real3x3& t)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit doublement contracté de deux tenseurs.
+ * \brief Double contracted product of two tensors.
  *
  * U:V = sum_{i,j \in \{x,y,z \}} U_{i,j}V_{i,j} 
  */
@@ -304,9 +321,10 @@ doubleContraction(const Real3x3& u, const Real3x3& v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Produit doublement contracté de deux tenseurs.
+ * \brief Double contracted product of two tensors.
  *
  * U:V = sum_{i,j \in \{x,y,z \}} U_{i,j}V_{i,j} 
  */
@@ -329,7 +347,7 @@ doubleContraction(const Real2x2& u,const Real2x2& v)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne le minimum de deux Real2
+ * \brief Returns the minimum of two Real2
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real2
@@ -337,8 +355,9 @@ min(Real2 a,Real2 b)
 {
   return Real2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
-/*!
- * \brief Retourne le minimum de deux Real3
+
+  /*!
+ * \brief Returns the minimum of two Real3s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real3
@@ -346,8 +365,9 @@ min(Real3 a,Real3 b)
 {
   return Real3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
 }
-/*!
- * \brief Retourne le minimum de deux Real2x2
+
+  /*!
+ * \brief Returns the minimum of two Real2x2s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real2x2
@@ -355,8 +375,9 @@ min(const Real2x2& a,const Real2x2& b)
 {
   return Real2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
-/*!
- * \brief Retourne le minimum de deux Real3x3
+
+  /*!
+ * \brief Returns the minimum of two Real3x3s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real3x3
@@ -367,12 +388,13 @@ min(const Real3x3& a,const Real3x3& b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Retourne le minimum de trois éléments.
+
+  /*!
+ * \brief Returns the minimum of three elements.
  *
  * \ingroup GroupMathUtils
  *
- * Utilise l'opérateur < pour déterminer le minimum.
+ * Uses the < operator to determine the minimum.
  */
 template<class T> inline T
 min(const T& a,const T& b,const T& c)
@@ -382,11 +404,12 @@ min(const T& a,const T& b,const T& c)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!\brief Retourne le maximum de trois éléments.
+
+  /*!\brief Returns the maximum of three elements.
  *
  * \ingroup GroupMathUtils
  *
- * Utilise l'opérateur > pour déterminer le maximum.
+ * Uses the > operator to determine the maximum.
  */
 template<class T> inline T
 max(const T& a,const T& b,const T& c)
@@ -398,7 +421,7 @@ max(const T& a,const T& b,const T& c)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne le maximum de deux Real2
+ * \brief Returns the maximum of two Real2s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real2
@@ -406,8 +429,9 @@ max(Real2 a,Real2 b)
 {
   return Real2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
-/*!
- * \brief Retourne le maximum de deux Real3
+
+  /*!
+ * \brief Returns the maximum of two Real3s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real3
@@ -415,8 +439,9 @@ max(Real3 a,Real3 b)
 {
   return Real3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
 }
-/*!
- * \brief Retourne le maximum de deux Real2x2
+
+  /*!
+ * \brief Returns the maximum of two Real2x2s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real2x2
@@ -424,8 +449,9 @@ max(const Real2x2& a,const Real2x2& b)
 {
   return Real2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
-/*!
- * \brief Retourne le maximum de deux Real3x3
+
+  /*!
+ * \brief Returns the maximum of two Real3x3s
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real3x3
@@ -439,8 +465,9 @@ max(const Real3x3& a,const Real3x3& b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief retourne le min de quatre Real
+
+  /*!
+ * \brief Returns the minimum of four Reals
  */
 ARCCORE_HOST_DEVICE inline Real
 min4Real(Real a,Real b,Real c,Real d)
@@ -450,8 +477,9 @@ min4Real(Real a,Real b,Real c,Real d)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief retourne le max de quatre Real
+
+  /*!
+ * \brief Returns the maximum of four Reals
  */
 ARCCORE_HOST_DEVICE inline Real
 max4Real(Real a,Real b,Real c,Real d)
@@ -461,8 +489,9 @@ max4Real(Real a,Real b,Real c,Real d)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief retourne le min de huit <tt>Real</tt>
+
+  /*!
+ * \brief Returns the minimum of eight <tt>Reals</tt>
  */
 ARCCORE_HOST_DEVICE inline Real
 min8Real(const Real a[8])
@@ -472,8 +501,9 @@ min8Real(const Real a[8])
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief retourne le max de huit <tt>Real</tt>
+
+  /*!
+ * \brief Returns the maximum of eight <tt>Reals</tt>
  */
 inline Real max8Real(const Real a[8])
 {
@@ -482,9 +512,10 @@ inline Real max8Real(const Real a[8])
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils 
- * \brief retourne le Min mod de quatre Real
+ * \brief Returns the Min mod of four Reals
  */
 ARCCORE_HOST_DEVICE inline Real
 minMod(Real a,Real b,Real c,Real d)
@@ -495,9 +526,10 @@ minMod(Real a,Real b,Real c,Real d)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief retourne le Min mod de deux Reals
+ * \brief Returns the Min mod of two Reals
  */
 ARCCORE_HOST_DEVICE inline Real
 minMod2(Real a,Real b)
@@ -508,9 +540,10 @@ minMod2(Real a,Real b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief retourne le Max mod de deux Reals
+ * \brief Returns the Max mod of two Reals
  *
  */
 ARCCORE_HOST_DEVICE inline Real
@@ -522,10 +555,11 @@ maxMod2(Real a,Real b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Retourne l'erreur relative entre deux scalaires \a a et \a b.
+
+  /*!
+ * \brief Returns the relative error between two scalars \a a and \a b.
  *
- * L'erreur relative est calculée par :
+ * The relative error is calculated by:
  *
  *	\f$\frac{a-b}{|a|+|b|}\f$
  */
@@ -538,11 +572,12 @@ relativeError(Real a,Real b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Retourne l'erreur relative entre deux tenseurs \a T1 et \a T2.
+
+  /*!
+ * \brief Returns the relative error between two tensors \a T1 and \a T2.
  *
- * L'erreur relative est calculée comme le max des erreurs relatives
- * sur chacune des composantes des tenseurs.
+ * The relative error is calculated as the maximum of the relative errors
+ * on each of the tensor components.
  *
  */
 inline Real
@@ -564,10 +599,11 @@ relativeError(const Real3x3& T1,const Real3x3& T2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Retourne l'erreur relative entre deux scalaires \a a et \a b relativement à \a b
+
+  /*!
+ * \brief Returns the relative error between two scalars \a a and \a b relative to \a b
  *
- * L'erreur relative est calculée par :
+ * The relative error is calculated by:
  *
  *  \f$\frac{a-b}{(|b|)}\f$
  */
@@ -580,10 +616,11 @@ relativeError2(Real a, Real b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Retourne l'erreur relative entre deux scalaires \a a et \a b relativement à \a a
+
+  /*!
+ * \brief Returns the relative error between two scalars \a a and \a b relative to \a a
  *
- * L'erreur relative est calculée par :
+ * The relative error is calculated by:
  *
  *  \f$\frac{a-b}{(|b|)}\f$
  */
@@ -596,8 +633,9 @@ relativeError1(Real a, Real b)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Recherche les valeurs extrèmes d'un tableau de couple (x,y).
+
+  /*!
+ * \brief Searches for the extreme values of an array of pairs (x,y).
  */
 inline bool
 searchExtrema(ConstArrayView<Real2> array,Real& xmin,Real& xmax,
@@ -633,8 +671,9 @@ searchExtrema(ConstArrayView<Real2> array,Real& xmin,Real& xmax,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Calcul du déterminant d'une matrice 3x3.
+
+  /*!
+ * \brief Calculates the determinant of a 3x3 matrix.
  */
 ARCCORE_HOST_DEVICE inline Real
 matrixDeterminant(Real3x3 m)
@@ -644,10 +683,11 @@ matrixDeterminant(Real3x3 m)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Norme d'un vecteur
+
+  /*!
+ * \brief Norm of a vector
  *
- * \deprecated Utiliser Real3.abs() à la place.
+ * \deprecated Use Real3.abs() instead.
  */
 inline Real
 normeR3(Real3 v1)
@@ -657,8 +697,9 @@ normeR3(Real3 v1)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Matrice identite.
+
+  /*!
+ * \brief Identity matrix.
  */
 ARCCORE_HOST_DEVICE inline Real3x3
 matrix3x3Id()
@@ -670,8 +711,9 @@ matrix3x3Id()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Calcul de l'inverse d'une matrice \a m en supposant connu son déterminant \a d
+
+  /*!
+ * \brief Calculates the inverse of a matrix \a m assuming its determinant \a d is known
  */
 ARCCORE_HOST_DEVICE inline Real3x3
 inverseMatrix(const Real3x3& m,Real d)
@@ -685,8 +727,9 @@ inverseMatrix(const Real3x3& m,Real d)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Calcul de l'inverse d'une matrice \a m.
+
+  /*!
+ * \brief Calculates the inverse of a matrix \a m.
  */
 ARCCORE_HOST_DEVICE inline Real3x3
 inverseMatrix(const Real3x3& m)
@@ -697,10 +740,11 @@ inverseMatrix(const Real3x3& m)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit vectoriel de deux vecteurs à 3 composantes.
+
+  /*!
+ * \brief Cross product of two 3-component vectors.
  *
- * \deprecated Utiliser cross() à la place.
+ * \deprecated Use cross() instead.
  */
 inline Real3
 crossProduct3(Real3 v1, Real3 v2)
@@ -715,9 +759,10 @@ crossProduct3(Real3 v1, Real3 v2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils 
- * \brief Produit vectoriel de deux vecteurs à 3 composantes.
+ * \brief Cross product of two 3-component vectors.
  */
 ARCCORE_HOST_DEVICE inline Real3
 cross(Real3 v1, Real3 v2)
@@ -732,10 +777,11 @@ cross(Real3 v1, Real3 v2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils 
- * \brief Normalisation d'un Real3.
- * \pre la norme de \a v ne doit pas être nulle.
+ * \brief Normalization of a Real3.
+ * \pre The norm of \a v must not be zero.
  */
 ARCCORE_HOST_DEVICE inline Real3
 normalizeReal3(Real3 v)
@@ -747,9 +793,10 @@ normalizeReal3(Real3 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \ingroup GroupMathUtils 
- * \brief Produit vectoriel normalisé.
+
+  /*!
+ * \ingroup GroupMathUtils
+ * \brief Normalized cross product.
  */
 inline Real3
 normalizedCrossProduct3(Real3 v1, Real3 v2)
@@ -759,12 +806,13 @@ normalizedCrossProduct3(Real3 v1, Real3 v2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
  *
- * \warning Cette méthode n'utilise pas la convention habituelle des Real3x3.
- * Elle suppose qu'ils sont rangés en colonne. En général, il faut utiliser
- * matrixTanspose() à la place.
+ * \warning This method does not use the usual convention for Real3x3.
+ * It assumes they are stored in columns. Generally, you should use
+ * matrixTanspose() instead.
  */
 inline Real3x3
 matrix3x3Transp(Real3x3 m)
@@ -777,12 +825,13 @@ matrix3x3Transp(Real3x3 m)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Multiplication de 2 matrices 3x3.
+
+  /*!
+ * \brief Multiplication of 2 3x3 matrices.
  *
- * \warning Cette méthode n'utilise pas la convention habituelle des Real3x3.
- * Elle suppose qu'ils sont rangés en colonne. En général, il faut utiliser
- * matrixProduct() à la place.
+ * \warning This method does not use the usual convention for Real3x3.
+ * It assumes they are stored in columns. Generally, you should use
+ * matrixProduct() instead.
  */
 inline Real3x3 
 matrix3x3Prod(Real3x3 m1, Real3x3 m2)
@@ -802,8 +851,9 @@ matrix3x3Prod(Real3x3 m1, Real3x3 m2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit matrice 3x3 . vecteur 
+
+  /*!
+ * \brief 3x3 matrix multiplied by a vector.
  */
 ARCCORE_HOST_DEVICE inline Real3
 multiply(const Real3x3& m, Real3 v)
@@ -815,8 +865,9 @@ multiply(const Real3x3& m, Real3 v)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie qu'une matrice vaut bien la matrice identité.
+
+  /*!
+ * \brief Checks if a matrix is the identity matrix.
  */
 inline bool
 isNearlyId(Real3x3 m, Real epsilon = 1.e-10)
@@ -833,9 +884,10 @@ isNearlyId(Real3x3 m, Real epsilon = 1.e-10)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Symétrie d'un vecteur \a u par rapport à un plan de normale \a n.
+ * \brief Symmetry of a vector \a u with respect to a normal plane \a n.
  */
 inline Real3
 planarSymmetric(Real3 u, Real3 n)
@@ -853,9 +905,10 @@ planarSymmetric(Real3 u, Real3 n)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
+
+  /*!
  * \ingroup GroupMathUtils
- * \brief Symétrie d'un vecteur u par rapport à un axe de vecteur directeur a .
+ * \brief Symmetry of a vector u with respect to an axis defined by direction vector a.
  */ 
 inline Real3
 axisSymmetric(Real3 u,Real3 a)
@@ -873,13 +926,14 @@ axisSymmetric(Real3 u,Real3 a)
     
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Ajoute le tableau \a copy_array dans l'instance.
+
+  /*!
+ * \brief Adds the array \a copy_array to the instance.
  *
- * Comme aucune allocation mémoire n'est effectuée, le
- * nombre d'éléments de \a copy_array doit être inférieur ou égal au
- * nombre d'éléments courant. S'il est inférieur, les éléments du
- * tableau courant situés à la fin du tableau sont inchangés
+ * Since no memory allocation is performed, the
+ * number of elements in \a copy_array must be less than or equal to the
+ * current number of elements. If it is smaller, the elements of the
+ * current array located at the end of the array remain unchanged
  */
 template<typename T> inline void
 add(ArrayView<T> lhs,ConstArrayView<T> copy_array)
@@ -893,12 +947,12 @@ add(ArrayView<T> lhs,ConstArrayView<T> copy_array)
 }
 
 /*!
- * \brief Ajoute le tableau \a copy_array dans l'instance.
+ * \brief Adds the array \a copy_array to the instance.
  *
- * Comme aucune allocation mémoire n'est effectuée, le
- * nombre d'éléments de \a copy_array doit être inférieur ou égal au
- * nombre d'éléments courant. S'il est inférieur, les éléments du
- * tableau courant situés à la fin du tableau sont inchangés
+ * Since no memory allocation is performed, the
+ * number of elements in \a copy_array must be less than or equal to the
+ * current number of elements. If it is smaller, the elements of the
+ * current array located at the end of the array remain unchanged
  */
 template<typename T> inline void
 add(ArrayView<T> lhs,ArrayView<T> copy_array)
@@ -912,12 +966,12 @@ add(ArrayView<T> lhs,ArrayView<T> copy_array)
 }
 
 /*!
- * \brief Soustrait le tableau \a copy_array de l'instance.
+ * \brief Subtracts the array \a copy_array from the instance.
  *
- * Comme aucune allocation mémoire n'est effectuée, le
- * nombre d'éléments de \a copy_array doit être inférieur ou égal au
- * nombre d'éléments courant. S'il est inférieur, les éléments du
- * tableau courant situés à la fin du tableau sont inchangés
+ * Since no memory allocation is performed, the
+ * number of elements in \a copy_array must be less than or equal to the
+ * current number of elements. If it is smaller, the elements of the
+ * current array located at the end of the array remain unchanged
  */
 template<typename T> inline void
 sub(ArrayView<T> lhs,ConstArrayView<T> copy_array)
@@ -931,12 +985,12 @@ sub(ArrayView<T> lhs,ConstArrayView<T> copy_array)
 }
 
 /*!
- * \brief Soustrait le tableau \a copy_array de l'instance.
+ * \brief Subtracts the array \a copy_array from the instance.
  *
- * Comme aucune allocation mémoire n'est effectuée, le
- * nombre d'éléments de \a copy_array doit être inférieur ou égal au
- * nombre d'éléments courant. S'il est inférieur, les éléments du
- * tableau courant situés à la fin du tableau sont inchangés
+ * Since no memory allocation is performed, the
+ * number of elements in \a copy_array must be less than or equal to the
+ * current number of elements. If it is smaller, the elements of the
+ * current array located at the end of the array remain unchanged
  */
 template<typename T> inline void
 sub(ArrayView<T> lhs,ArrayView<T> copy_array)
@@ -950,14 +1004,14 @@ sub(ArrayView<T> lhs,ArrayView<T> copy_array)
 }
 
 /*!
- * \brief Multiplie terme à terme les éléments de l'instance par les
- * éléments du tableau \a copy_array.
+ * \brief Multiplies the elements of the instance term-by-term by the
+ * elements of the array \a copy_array.
  *
- * Comme aucune allocation
- * mémoire n'est effectuée, le nombre d'éléments de \a copy_array
- * doit être inférieur ou égal au nombre d'éléments courant. S'il
- * est inférieur, les éléments du tableau courant situés à la fin du
- * tableau sont inchangés
+ * Since no memory allocation
+ * is performed, the number of elements in \a copy_array
+ * must be less than or equal to the current number of elements. If it
+ * is smaller, the elements of the current array located at the end of the
+ * array remain unchanged
  */
 template<typename T> inline void
 mult(ArrayView<T> lhs,ConstArrayView<T> copy_array)
@@ -971,14 +1025,14 @@ mult(ArrayView<T> lhs,ConstArrayView<T> copy_array)
 }
 
 /*!
- * \brief Multiplie terme à terme les éléments de l'instance par les
- * éléments du tableau \a copy_array.
+ * \brief Multiplies the elements of the instance term-by-term by the
+ * elements of the array \a copy_array.
  *
- * Comme aucune allocation
- * mémoire n'est effectuée, le nombre d'éléments de \a copy_array
- * doit être inférieur ou égal au nombre d'éléments courant. S'il
- * est inférieur, les éléments du tableau courant situés à la fin du
- * tableau sont inchangés
+ * Since no memory allocation
+ * is performed, the number of elements in \a copy_array
+ * must be less than or equal to the current number of elements. If it
+ * is smaller, the elements of the current array located at the end of the
+ * array remain unchanged
  */
 template<typename T> inline void
 mult(ArrayView<T> lhs,ArrayView<T> copy_array)
@@ -987,7 +1041,7 @@ mult(ArrayView<T> lhs,ArrayView<T> copy_array)
 }
 
 /*!
- * \brief Multiplie tous les éléments du tableau par le réel \a o.
+ * \brief Multiplies all elements of the array by the real number \a o.
  */
 template<typename T> inline void
 mult(ArrayView<T> lhs,T o)
@@ -998,7 +1052,7 @@ mult(ArrayView<T> lhs,T o)
 }
 
 /*!
- * \brief Met à la puissance \a o tous les éléments du tableau.
+ * \brief Raises all elements of the array to the power \a o.
  */
 template<typename T> inline void
 power(ArrayView<T> lhs,T o)
@@ -1018,4 +1072,4 @@ power(ArrayView<T> lhs,T o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

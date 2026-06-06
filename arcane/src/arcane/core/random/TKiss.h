@@ -7,9 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TKiss.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Ce fichier définit le patron de classe TKiss ainsi que la classe associée */
-/* Kiss.                                                                     */
-/*---------------------------------------------------------------------------*/
+/* This file defines the TKiss class template and the associated class Kiss. */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_TKISS_H
 #define ARCANE_CORE_RANDOM_TKISS_H
@@ -29,13 +27,13 @@ namespace Arcane::random
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*! Patron de classe Kiss. Il permet de définir des classes de générateurs
- * de type Kiss.  Les nombres pseudo-aléatoires générés sont de type UIntType.
- * La génération de ces nombres s'effectue par l'appel de l'opérateur (). L'état
- * du genérateur est défini par un membre private \c _state[i] de la classe qui 
- * est un tableau de cinq éléments (0<i<=4). La graine (état \c state[i] 0<i<=4 
- * initial du générateur appelé également tableau de graines) est initialisée 
- * par l'appel au constructeur ou les différentes méthodes \c seed existantes.
+/*! Kiss class template. It allows defining Kiss generator classes. The
+ * pseudo-random numbers generated are of type UIntType. The generation of
+ * these numbers is performed by calling the () operator. The state of the
+ * generator is defined by a private member \c _state[i] of the class, which
+ * is an array of five elements (0<i<=4). The seed (state \c state[i] 0<i<=4
+ * initial of the generator, also called seed array) is initialized by
+ * calling the constructor or the various \c seed methods available.
 */
 template<typename UIntType, UIntType val>
 class TKiss
@@ -46,26 +44,31 @@ class TKiss
   static const bool has_fixed_range = true;
   static const result_type min_value = 0 ;
   static const result_type max_value = 4294967295U;
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur minimum possible d'une séquence.
+
+  /*! \brief Returns the minimum possible value of a sequence.
    *
    * \author Patrick Rathouit 
    * \date 28/07/2006
    */
   result_type min() const { return  min_value; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur maximum possible d'une séquence.
+
+  /*! \brief Returns the maximum possible value of a sequence.
    *
    * \author Patrick Rathouit 
    * \date 28/07/2006
    */
   result_type max() const { return max_value; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Constructeur avec initialisation du tableau de graines à partir des
-   *         valeurs des arguments. 
+
+  /*! \brief Constructor with initialization of the seed array from the argument values.
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
@@ -78,22 +81,26 @@ class TKiss
     _state[3] = w0;
     _state[4] = carry0;
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief  Initialisation du tableau de graines à partir de l'état \c state.
-   *          L'état du générateur \c state doit être composé de cinq éléments.
+
+  /*! \brief Initialization of the seed array from the \c state.
+   *          The generator state \c state must consist of five elements.
    *
    * \author Patrick Rathouit 
    * \date 28/07/2006
    */
   void seed(UIntType *  state)
   { for (Integer i=0;i<5;i++) _state[i] = state[i];}
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief  Initialisation du tableau de graines à partir de la valeur \c x0.  
-   *          Le tableau de graines de ce générateur est composé de cinq éléments. 
-   *          Les quatre premiers éléments prennent la valeur \c x0. Le cinquième
-   *          élément prend la valeur nulle.
+
+  /*! \brief Initialization of the seed array from the value \c x0.
+   *          The seed array of this generator consists of five elements. 
+   *          The first four elements take the value \c x0. The fifth
+   *          element takes the zero value.
    *
    * \author Patrick Rathouit 
    * \date 28/07/2006
@@ -102,30 +109,32 @@ class TKiss
   { for (Integer i=0;i<4;i++) _state[i] = x0;
     _state[4] = 0;
 }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Initialisation du tableau de graines à partir des valeurs des
-   *         arguments. 
+
+  /*! \brief Initialization of the seed array from the argument values.
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
    */ 
   void seed(UIntType  x0,UIntType  y0,UIntType  z0,UIntType  w0,UIntType  carry0)
   { _state[0] = x0; _state[1] = y0;_state[2] = z0;_state[3] = w0;_state[4] = carry0;}
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Méthode qui retourne la composante i del'état du générateur. L'état
-   *         complet du générateur est donnée par les valeurs d'index \c i 
-   *         comprises entre 0 et 4 ( 0 < \c i <= 4 ).
+
+  /*! \brief Method that returns the i-th component of the generator state. The complete generator state is given by the indices \c i ranging between 0 and 4 ( 0 < \c i <= 4 ).
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
    */ 
   UIntType  getState(Integer i) const { return _state[i]; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Surdéfinition de l'opérateur \c () qui retourne la valeur pseudo 
-   *         aléatoire. L'état du générateur est modifié.  
+
+  /*! \brief Overdefinition of the \c () operator which returns the pseudo-random value. The generator state is modified.
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
@@ -144,17 +153,21 @@ class TKiss
     _state[3]=t;
     return (_state[0] + _state[1] + _state[2]);
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Fonction de validation (je ne sais pas trop a quoi elle sert!)
+
+  /*! \brief Validation function (I don't know what it's for!)
    *
    * \author Patrick Rathouit
    * \date   28/07/2006
    */
   bool validation(UIntType x) const { return val == x; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Surdéfinition de l'opérateur ==
+
+  /*! \brief Overdefinition of the == operator
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngUtils.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires associées aux 'IParallelMng'.                       */
+/* Utility functions associated with 'IParallelMng'.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe ' friend'  de IParallelMng permettant d'accéder à
+ * \brief 'friend' class of IParallelMng allowing access to
  * IParallelMng::_internalUtilsFactory() const;
  */
 class ParallelMngUtilsAccessor

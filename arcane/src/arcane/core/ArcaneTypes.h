@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneTypes.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Définition des types généraux de Arcane.                                  */
+/* Definition of Arcane's general types.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ARCANETYPES_H
 #define ARCANE_CORE_ARCANETYPES_H
@@ -20,10 +20,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// GG: Ne devrait pas être ici. Il faudrait inclure "SerializeGlobal.h" à la
-// place mais cela n'est pas possible tant que certains fichiers de
-// 'arcane/utils' utilisent des fichiers d'en-tête de 'arcane/core'. C'est
-// le cas par exemple des fichiers '*AMR*.h'.
+// GG: Should not be here. "SerializeGlobal.h" should be included instead,
+// but this is not possible as long as certain files in
+// 'arcane/utils' use header files from 'arcane/core'. This is
+// the case, for example, with files '*AMR*.h'.
 
 namespace Arcane
 {
@@ -38,11 +38,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ArcaneTypes.h
  *
- * \brief Déclarations des types généraux de Arcane.
+ * \brief Declarations of Arcane's general types.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -84,14 +86,15 @@ class ServiceProperty;
 class ServiceInstanceRef;
 
 /*!
- * \brief Référence à l'interface 'ISingletonServiceInstance'
+ * \brief Reference to the 'ISingletonServiceInstance' interface
  */
 typedef Ref<ISingletonServiceInstance> SingletonServiceInstanceRef;
+
 /*!
- * \brief Types interne à Arcane.
+ * \brief Internal types of Arcane.
  *
- * Ces types ne doivent pas être utilisés en dehors de Arcane et leur
- * API peut être modifiée à tout moment.
+ * These types should not be used outside of Arcane and their
+ * API may be modified at any time.
  */
 namespace Internal
 {
@@ -207,9 +210,9 @@ using TimeLoopSingletonServiceInfoCollection = Collection<TimeLoopSingletonServi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Les classes suivantes ne doivent pas être déclarées pour SWIG car ce
-// fichier est inclus par SWIG et la déclaration modifie la manière dont
-// certaines classes sont générées ce qui conduit à des erreurs
+// The following classes should not be declared for SWIG because this
+// file is included by SWIG and the declaration modifies how
+// certain classes are generated, which leads to errors
 #ifndef SWIG
 class ItemVectorView;
 #endif
@@ -217,182 +220,182 @@ class ItemVectorView;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Genre d'entité de maillage
+//! Mesh entity type
 enum eItemKind
 {
-  IK_Node     = 0, //!< Entité de maillage de genre noeud
-  IK_Edge     = 1, //!< Entité de maillage de genre arête
-  IK_Face     = 2, //!< Entité de maillage de genre face
-  IK_Cell     = 3, //!< Entité de maillage de genre maille
-  IK_DoF      = 4, //!< Entité de maillage de genre degre de liberte
-  IK_Particle = 5, //!< Entité de maillage de genre particule
-  IK_Unknown  = 6  //!< Entité de maillage de genre inconnu ou non initialisé
+  IK_Node     = 0, //!< Node mesh entity
+  IK_Edge     = 1, //!< Edge mesh entity
+  IK_Face     = 2, //!< Face mesh entity
+  IK_Cell     = 3, //!< Cell mesh entity
+  IK_DoF      = 4, //!< Degree of Freedom mesh entity
+  IK_Particle = 5, //!< Particle mesh entity
+  IK_Unknown  = 6  //!< Unknown or uninitialized mesh entity
 };
 
-//! Nombre de genre d'entités de maillage.
+//! Number of mesh entity kinds.
 static const Integer NB_ITEM_KIND = 6;
 
-//! Nom du genre d'entité.
+//! Entity kind name.
 extern "C++" ARCANE_CORE_EXPORT const char*
 itemKindName(eItemKind kind);
 
-//! Opérateur de sortie sur un flot
+//! Output operator for a stream
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<< (std::ostream& ostr,eItemKind item_kind);
 
-//! Opérateur d'entrée depuis un flot
+//! Input operator from a stream
 extern "C++" ARCANE_CORE_EXPORT std::istream&
 operator>> (std::istream& istr,eItemKind& item_kind);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*! \brief Numéro correspondant à une entité nulle.
+/*! \brief Number corresponding to a null entity.
   \deprecated.
 */
 static const Integer NULL_ITEM_ID = static_cast<Integer>(-1);
 
-//! Numéro correspondant à une entité nulle
+//! Number corresponding to a null local entity
 static const Integer NULL_ITEM_LOCAL_ID = static_cast<Integer>(-1);
 
-//! Numéro correspondant à une entité nulle
+//! Number corresponding to a null unique entity
 static const Int64 NULL_ITEM_UNIQUE_ID = static_cast<Int64>(-1);
 
-//! Numéro correspondant à un sous-domaine nul
+//! Number corresponding to a null subdomain
 static const Integer NULL_SUB_DOMAIN_ID = static_cast<Integer>(-1);
 
-//! Numéro correspondant à un rang nul (pour l'échange de message)
+//! Number corresponding to a null rank (for message exchange)
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
-//! Numéro du type d'entité inconnu ou null
+//! Number of unknown or null entity type
 static const Int16 IT_NullType = 0;
-//! Numéro du type d'entité Noeud (1 sommet 1D, 2D et 3D)
+//! Number of Node entity type (1 vertex, 1D, 2D, and 3D)
 static const Int16 IT_Vertex = 1;
-//! Numéro du type d'entité Arête (2 sommets, 1D, 2D et 3D)
+//! Number of Edge entity type (2 vertices, 1D, 2D, and 3D)
 static const Int16 IT_Line2 = 2;
-//! Numéro du type d'entité Triangle (3 sommets, 2D)
+//! Number of Triangle entity type (3 vertices, 2D)
 static const Int16 IT_Triangle3 = 3;
-//! Numéro du type d'entité Quadrilatère (4 sommets, 2D)
+//! Number of Quadrilateral entity type (4 vertices, 2D)
 static const Int16 IT_Quad4 = 4;
-//! Numéro du type d'entité Pentagone (5 sommets, 2D)
+//! Number of Pentagon entity type (5 vertices, 2D)
 static const Int16 IT_Pentagon5 = 5;
-//! Numéro du type d'entité Hexagone (6 sommets, 2D)
+//! Number of Hexagon entity type (6 vertices, 2D)
 static const Int16 IT_Hexagon6 = 6;
-//! Numéro du type d'entité Tetraèdre (4 sommets, 3D)
+//! Number of Tetrahedron entity type (4 vertices, 3D)
 static const Int16 IT_Tetraedron4 = 7;
-//! Numéro du type d'entité Pyramide (5 sommets, 3D)
+//! Number of Pyramid entity type (5 vertices, 3D)
 static const Int16 IT_Pyramid5 = 8;
-//! Numéro du type d'entité Prisme (6 sommets, 3D)
+//! Number of Prism entity type (6 vertices, 3D)
 static const Int16 IT_Pentaedron6 = 9;
-//! Numéro du type d'entité Hexaèdre (8 sommets, 3D)
+//! Number of Hexahedron entity type (8 vertices, 3D)
 static const Int16 IT_Hexaedron8 = 10;
-//! Numéro du type d'entité Heptaèdre (prisme à base pentagonale)
+//! Number of Heptahedron entity type (prism with pentagonal base)
 static const Int16 IT_Heptaedron10 = 11;
-//! Numéro du type d'entité Octaèdre (prisme à base hexagonale)
+//! Number of Octahedron entity type (prism with hexagonal base)
 static const Int16 IT_Octaedron12 = 12;
-//! Numéro du type d'entité HemiHexa7 (héxahèdre à 1 dégénérescence)
+//! Number of HemiHexa7 entity type (hexahedron with 1 degeneracy)
 static const Int16 IT_HemiHexa7 = 13;
-//! Numéro du type d'entité HemiHexa6 (héxahèdre à 2 dégénérescences non contigues)
+//! Number of HemiHexa6 entity type (hexahedron with 2 non-contiguous degeneracies)
 static const Int16 IT_HemiHexa6 = 14;
-//! Numéro du type d'entité HemiHexa5 (héxahèdres à 3 dégénérescences non contigues)
+//! Number of HemiHexa5 entity type (hexahedrons with 3 non-contiguous degeneracies)
 static const Int16 IT_HemiHexa5 = 15;
-//! Numéro du type d'entité AntiWedgeLeft6 (héxahèdre à 2 dégénérescences contigues)
+//! Number of AntiWedgeLeft6 entity type (hexahedron with 2 contiguous degeneracies)
 static const Int16 IT_AntiWedgeLeft6 = 16;
-//! Numéro du type d'entité AntiWedgeRight6 (héxahèdre à 2 dégénérescences contigues (seconde forme))
+//! Number of AntiWedgeRight6 entity type (hexahedron with 2 contiguous degeneracies (second form))
 static const Int16 IT_AntiWedgeRight6 = 17;
-//! Numéro du type d'entité DiTetra5 (héxahèdre à 3 dégénérescences orthogonales)
+//! Number of DiTetra5 entity type (hexahedron with 3 orthogonal degeneracies)
 static const Int16 IT_DiTetra5 = 18;
-//! Numero du type d'entite noeud dual d'un sommet
+//! Number of dual node entity type of a vertex
 static const Int16 IT_DualNode = 19;
-//! Numero du type d'entite noeud dual d'une arête
+//! Number of dual edge entity type
 static const Int16 IT_DualEdge = 20;
-//! Numero du type d'entite noeud dual d'une face
+//! Number of dual face entity type
 static const Int16 IT_DualFace = 21;
-//! Numero du type d'entite noeud dual d'une cellule
+//! Number of dual cell entity type
 static const Int16 IT_DualCell = 22;
-//! Numéro du type d'entité liaison
+//! Number of link entity type
 static const Int16 IT_Link = 23;
-//! Numéro du type d'entité Face pour les maillages 1D.
+//! Number of Face entity type for 1D meshes.
 static const Int16 IT_FaceVertex = 24;
-//! Numéro du type d'entité Cell pour les maillages 1D.
+//! Number of Cell entity type for 1D meshes.
 static const Int16 IT_CellLine2 = 25;
-//! Numero du type d'entite noeud dual d'une particule
+//! Number of dual particle entity type
 static const Int16 IT_DualParticle = 26;
 
-//! Numéro du type d'entité Enneèdre (prisme à base heptagonale)
+//! Number of Ennehedron entity type (prism with heptagonal base)
 static const Int16 IT_Enneedron14 = 27;
-//! Numéro du type d'entité Decaèdre (prisme à base Octogonale)
+//! Number of Decahedron entity type (prism with octagonal base)
 static const Int16 IT_Decaedron16 = 28;
 
-//! Numéro du type d'entité Heptagon 2D (heptagonale)
+//! Number of 2D Heptagon entity type (heptagonal)
 static const Int16 IT_Heptagon7 = 29;
 
-//! Numéro du type d'entité Octogon 2D (Octogonale)
+//! Number of 2D Octagon entity type (octagonal)
 static const Int16 IT_Octogon8 = 30;
 
-//! Éléments quadratiques
+//! Quadratic elements
 //@{
-//! Ligne d'ordre 2
+//! Order 2 line
 static const Int16 IT_Line3 = 31;
-//! Triangle d'ordre 2
+//! Order 2 triangle
 static const Int16 IT_Triangle6 = 32;
-//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces)
+//! Order 2 quadrangle (with 4 nodes on the faces)
 static const Int16 IT_Quad8 = 33;
-//! Tétraèdre d'ordre 2
+//! Order 2 tetrahedron
 static const Int16 IT_Tetraedron10 = 34;
-//! Hexaèdre d'ordre 2
+//! Order 2 hexahedron
 static const Int16 IT_Hexaedron20 = 35;
-//! Pyramide d'ordre 2
+//! Order 2 pyramid
 static const Int16 IT_Pyramid13 = 36;
-//! Prisme d'ordre 2
+//! Order 2 prism
 static const Int16 IT_Pentaedron15 = 37;
 //@}
 
-//! Maille Line3. EXPERIMENTAL !
+//! Line3 Mesh. EXPERIMENTAL!
 static const Int16 IT_CellLine3 = 38;
 
 /*!
- * \brief Mailles 2D dans un maillage 3D.
- * \warning Ces types sont expérimentaux et ne doivent
- * pas être utilisés en dehors de %Arcane.
+ * \brief 2D meshes in a 3D mesh.
+ * \warning These types are experimental and should not
+ * be used outside of %Arcane.
  */
 //@{
-//! Maille Line2 dans un maillage 3D. EXPERIMENTAL !
+//! Line2 Mesh in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Line2 = 39;
-//! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Triangular Mesh with 3 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Triangle3 = 40;
-//! Maille Quadrangulaire à 4 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Quadrangular Mesh with 4 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Quad4 = 41;
-//! Maille Line3 dans un maillage 3D. EXPERIMENTAL !
+//! Line3 Mesh in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Line3 = 42;
-//! Maille Triangulaire à 6 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Triangular Mesh with 6 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Triangle6 = 43;
-//! Maille Quadrangulaire à 8 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Quadrangular Mesh with 8 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Quad8 = 44;
-//! Maille Quadrangulaire à 9 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Quadrangular Mesh with 9 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Quad9 = 45;
 //@}
 
-//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces et 1 noeud au centre). EXPERIMENTAL !
+//! Order 2 Quadrangle (with 4 nodes on the faces and 1 node in the center). EXPERIMENTAL!
 static const Int16 IT_Quad9 = 46;
-//! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
+//! Order 2 Hexahedron (with 12 nodes on the edges, 6 on the faces, and one center node). EXPERIMENTAL!
 static const Int16 IT_Hexaedron27 = 47;
 
-//! Ligne d'ordre 3
+//! Order 3 Line
 static const Int16 IT_Line4 = 48;
-//! Triangle d'ordre 3. EXPERIMENTAL !
+//! Order 3 Triangle. EXPERIMENTAL!
 static const Int16 IT_Triangle10 = 49;
-//! Ligen d'ordre 3. EXPERIMENTAL !
+//! Order 3 Line. EXPERIMENTAL!
 static const Int16 IT_CellLine4 = 50;
-//! Ligen d'ordre 3. EXPERIMENTAL !
+//! Order 3 Line. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Line4 = 51;
-//! Triangle d'ordre 3 dans un maillage 3D. EXPERIMENTAL !
+//! Order 3 Triangle in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Triangle10 = 52;
 
-//! Nombre de types d'entités disponible par défaut
+//! Default number of available entity types
 static const Integer NB_BASIC_ITEM_TYPE = 53;
 
-//! Première valeur pour les type polygones génériques (EXPERIMENTAL)
+//! First value for generic polygon types (EXPERIMENTAL)
 static const Int16 IT_GenericPolygon = 200;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
@@ -400,8 +403,9 @@ dualItemKind(Integer type);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Phase d'une action temporelle.
+ * \brief Phase of a temporal action.
  */
 enum eTimePhase
 {
@@ -411,31 +415,31 @@ enum eTimePhase
 };
 static const Integer NB_TIME_PHASE = 3;
 
-//! Opérateur de sortie sur un flot
+//! Output operator on a stream
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<< (std::ostream& ostr,eTimePhase time_phase);
 
-//! Opérateur d'entrée depuis un flot
+//! Input operator from a stream
 extern "C++" ARCANE_CORE_EXPORT std::istream&
 operator>> (std::istream& istr,eTimePhase& time_phase);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Type de la direction pour un maillage structuré
+//! Direction type for a structured mesh
 enum eMeshDirection
 {
-  //! Direction X
+  //! X Direction
   MD_DirX = 0,
-  //! Direction Y
+  //! Y Direction
   MD_DirY = 1,
-  //! Direction Z
+  //! Z Direction
   MD_DirZ = 2,
-  //! Direction invalide ou non initialisée
+  //! Invalid or uninitialized direction
   MD_DirInvalid = (-1)
 };
 
-//! Opérateur de sortie sur un flot
+//! Output operator on a stream
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
 operator<<(std::ostream& o,eMeshDirection md);
 
@@ -471,7 +475,7 @@ template<typename DataType>
 class VariableRefArrayT;
 template<typename DataType>
 class VariableRefArray2T;
-// TODO: Ce type n'est plus utilisé. A supprimer fin 2025
+// TODO: This type is no longer used. Delete by end of 2025
 template<typename DataType>
 class MultiArray2VariableRefT;
 
@@ -546,64 +550,64 @@ class ITiedInterface;
 class VariableCollection;
 typedef VariableCollection VariableList;
 
-/*! \brief Collection de modules. */
+/*! \brief Collection of modules. */
 typedef Collection<IModule*> ModuleCollection;
-/*! \brief Collection de services. */
+/*! \brief Collection of services. */
 typedef Collection<IService*> ServiceCollection;
-/*! \brief Collection d'instances de services. */
+/*! \brief Collection of service instances. */
 typedef Collection<ServiceInstanceRef> ServiceInstanceCollection;
-/*! \brief Collection d'instances de services singletons. */
+/*! \brief Collection of singleton service instances. */
 typedef Collection<SingletonServiceInstanceRef> SingletonServiceInstanceCollection;
-/*! \brief Collection de fabriques de service. */
+/*! \brief Collection of service factories. */
 typedef Collection<Internal::IServiceFactory2*> ServiceFactory2Collection;
-/*! \brief Collection d'informations sur les fabriques de service. */
+/*! \brief Collection of service factory information. */
 typedef Collection<IServiceFactoryInfo*> ServiceFactoryInfoCollection;
-/*! \brief Collection d'informations sur les fabriques de module. */
+/*! \brief Collection of module factory information. */
 typedef Collection<IModuleFactoryInfo*> ModuleFactoryInfoCollection;
-/*! \brief Collection de points d'entrées. */
+/*! \brief Collection of entry points. */
 typedef Collection<IEntryPoint*> EntryPointCollection;
-/*! \brief Collection de boucles en temps. */
+/*! \brief Collection of time loops. */
 typedef Collection<ITimeLoop*> TimeLoopCollection;
-/*! \brief Collection de variables. */
+/*! \brief Collection of variables. */
 typedef Collection<VariableRef*> VariableRefCollection;
-/*! \brief Collection de groupes d'éléments du maillage. */
+/*! \brief Collection of mesh item groups. */
 typedef Collection<ItemGroup> ItemGroupCollection;
-/*! \brief Collection de sous-domaines. */
+/*! \brief Collection of subdomains. */
 typedef Collection<ISubDomain*> SubDomainCollection;
-/*! \brief Collection de sessions. */
+/*! \brief Collection of sessions. */
 typedef Collection<ISession*> SessionCollection;
-/*! \brief Collection d'options du jeu de données. */
+/*! \brief Collection of dataset options. */
 typedef Collection<ICaseOptions*> CaseOptionsCollection;
-/*! \brief Collection de familles d'entités. */
+/*! \brief Collection of item families. */
 typedef Collection<IItemFamily*> IItemFamilyCollection;
-/*! \brief Collection de familles d'entités. */
+/*! \brief Collection of item families. */
 typedef Collection<IItemFamily*> ItemFamilyCollection;
-/*! \brief Collection de maillages. */
+/*! \brief Collection of meshes. */
 typedef Collection<IMesh*> IMeshCollection;
-/*! \brief Collection de maillages. */
+/*! \brief Collection of meshes. */
 typedef Collection<IMesh*> MeshCollection;
-/*! \brief Collection d'interfaces liées. */
+/*! \brief Collection of tied interfaces. */
 typedef Collection<ITiedInterface*> TiedInterfaceCollection;
 
-/*! \brief Tableau de modules. */
+/*! \brief Array of modules. */
 typedef List<IModule*> ModuleList;
-/*! \brief Tableau de services. */
+/*! \brief Array of services. */
 typedef List<IService*> ServiceList;
-/*! \brief Tableau de points d'entrées. */
+/*! \brief Array of entry points. */
 typedef List<IEntryPoint*> EntryPointList;
-/*! \brief Tableau de boucles en temps. */
+/*! \brief Array of time loops. */
 typedef List<ITimeLoop*> TimeLoopList;
-/*! \brief Tableau de références de variables. */
+/*! \brief Array of variable references. */
 typedef List<VariableRef*> VariableRefList;
-/*! \brief Tableau de groupes d'éléments du maillage. */
+/*! \brief Array of mesh item groups. */
 typedef List<ItemGroup> ItemGroupList;
-/*! \brief Tableau de sous-domaines. */
+/*! \brief Array of subdomains. */
 typedef List<ISubDomain*> SubDomainList;
-/*! \brief Tableau de sessions. */
+/*! \brief Array of sessions. */
 typedef List<ISession*> SessionList;
-/*! \brief Tableau d'options du jeu de données. */
+/*! \brief Array of dataset options. */
 typedef List<ICaseOptions*> CaseOptionsList;
-/*! \brief Tableau d'interfaces liées. */
+/*! \brief Array of tied interfaces. */
 typedef List<ITiedInterface*> TiedInterfaceList;
 
 /*---------------------------------------------------------------------------*/
@@ -654,7 +658,8 @@ using Accelerator::AcceleratorRuntimeInitialisationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Déclarations de types utilisés pour les classes 'friend'.
+
+// Declarations of types used for 'friend' classes.
 namespace mesh
 {
 class DynamicMesh;
@@ -688,9 +693,9 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMngContainer)
 
 namespace Arcane
 {
-/*! \brief Collection de fonctions du jeu de données. */
+/*! \brief Collection of dataset functions. */
 typedef Collection<Ref<ICaseFunction>> CaseFunctionCollection;
-/*! \brief Tableau de fonctions du jeu de données. */
+/*! \brief Array of dataset functions. */
 typedef List<Ref<ICaseFunction>> CaseFunctionList;
 }
 

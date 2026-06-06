@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyCompactInfos.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour gérer le compactage des entités d'une famille.          */
+/* Information to manage the compaction of entities of a family.             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMFAMILYCOMPACTINFOS_H
 #define ARCANE_CORE_ITEMFAMILYCOMPACTINFOS_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour gérer le compactage des entités d'une famille.
+ * \brief Information to manage the compaction of entities of a family.
  */
 class ARCANE_CORE_EXPORT ItemFamilyCompactInfos
 {
@@ -41,13 +42,13 @@ class ARCANE_CORE_EXPORT ItemFamilyCompactInfos
 
   IMeshCompacter* compacter() const { return m_compacter; }
   IItemFamily* family() const { return m_family; }
-  //! Conversion entre les anciens et les nouveaux id locaux.
+  //! Conversion between old and new local IDs.
   Int32ConstArrayView oldToNewLocalIds() const
   {
     return m_old_to_new_local_ids;
   }
 
-  //! Conversion entre les nouveaux et les anciens id locaux.
+  //! Conversion between new and old local IDs.
   Int32ConstArrayView newToOldLocalIds() const
   {
     return m_new_to_old_local_ids;

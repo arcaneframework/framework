@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionsService.cc                                       (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des options du jeu de données.                                    */
+/* Management of dataset options.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,7 +50,7 @@ _getAvailableServiceNames(ICaseOptionServiceContainer* container,IApplication* a
   for( ServiceFactory2Collection::Enumerator i(app->serviceFactories2()); ++i; ){
     Internal::IServiceFactory2* sf2 = *i;
     IServiceInfo* si = sf2->serviceInfo();
-    // Il faut que le service soit autorisé pour le jeu de données.
+    // The service must be authorized for the dataset.
     if (!(si->usageType() & Arcane::ST_CaseOption))
       continue;
     if (container->hasInterfaceImplemented(sf2)){
@@ -63,8 +63,8 @@ bool
 _tryCreateService(ICaseOptionServiceContainer* container,IApplication* app,
                   const String& service_name,Integer index,ICaseOptions* opt)
 {
-  // Parcours la liste des fabriques et essaie de créer un service avec le nom
-  // qu'on souhaite et qui implémente la bonne interface.
+  // Iterates through the list of factories and tries to create a service with the desired name
+  // that implements the correct interface.
   bool is_found = false;
   ServiceBuildInfoBase sbi(_arcaneDeprecatedGetSubDomain(opt),opt);
   for( ServiceFactory2Collection::Enumerator i(app->serviceFactories2()); ++i; ){
@@ -209,7 +209,7 @@ _readPhase1()
     mesh_name = meshName();
   }
   else {
-    // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+    // In an else block: Symbol replacement does not apply to default values in .axl.
     mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
   }
 
@@ -237,10 +237,10 @@ _readPhase1()
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
 
   if (str_val.null()){
-    // Utilise la valeur par défaut :
-    // - si elle a été spécifiée par l'utilisateur, utilise celle-ci.
-    // - sinon utilise celle de la catégorie associée aux défauts.
-    // - sinon, la valeur par défaut classique.
+    // Uses the default value:
+    // - if it was specified by the user, use this one.
+    // - otherwise use the one associated with the default category.
+    // - otherwise, the classic default value.
     if (!m_is_override_default){
       String category = doc->defaultCategory();
       if (!category.null()){
@@ -253,7 +253,7 @@ _readPhase1()
     str_val = m_default_value;
   }
   else {
-    // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+    // In an else block: Symbol replacement does not apply to default values in .axl.
     str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
   }
   if (str_val.null() && !isOptional()){
@@ -262,8 +262,8 @@ _readPhase1()
   }
   m_service_name = str_val;
 
-  // Si le service peut-être nul et que l'élément n'est pas présent dans le jeu de données,
-  // on considère qu'il ne doit pas être chargé.
+  // If the service can be null and the element is not present in the dataset,
+  // it is considered that it should not be loaded.
   bool need_create = col->isPresent() || !isOptional();
 
   if (need_create){
@@ -271,9 +271,8 @@ _readPhase1()
     bool is_found = _tryCreateService(m_container,caseMng()->application(),str_val,0,this);
 
     if (!is_found && !m_allow_null){
-      // Le service souhaité n'est pas trouvé. Il s'agit d'une erreur.
-      // Recherche les noms des implémentations valides pour affichage dans le message
-      // d'erreur correspondant.
+      // The desired service was not found. This is an error.
+      // Searches for the names of valid implementations to display in the corresponding error message.
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
       CaseOptionError::addError(doc,A_FUNCINFO,element.xpathFullName(),
@@ -390,7 +389,7 @@ multiAllocate(const XmlNodeList& elem_list)
   XmlNode parent_element = configList()->parentElement();
 
   String full_xpath = String::format("{0}/{1}", parent_element.xpathFullName(), name());
-  // !!! En XML, on commence par 1 et non 0.
+  // !!! In XML, we start counting from 1, not 0.
   UniqueArray<Integer> option_in_param;
   pco.indexesInParam(full_xpath, option_in_param, true);
 
@@ -407,7 +406,7 @@ multiAllocate(const XmlNodeList& elem_list)
 
   Integer max_in_param = 0;
 
-  // On regarde si l'utilisateur n'a pas mis un indice trop élevé pour l'option dans la ligne de commande.
+  // We check if the user has provided an index too high for the option in the command line.
   if (!option_in_param.empty()) {
     max_in_param = option_in_param[0];
     for (Integer index : option_in_param) {
@@ -441,9 +440,9 @@ multiAllocate(const XmlNodeList& elem_list)
     }
   }
 
-  // Il y aura toujours au moins min_occurs options.
-  // S'il n'y a pas assez l'options dans le jeu de données et dans les paramètres de la
-  // ligne de commande, on ajoute des services par défaut (si pas de défaut, il y aura un plantage).
+  // There will always be at least min_occurs options.
+  // If there are not enough options in the dataset and in the command line parameters,
+  // we add default services (if there is no default, there will be a crash).
   Integer final_size = std::max(size, std::max(min_occurs, max_in_param));
 
   ITraceMng* tm = traceMng();
@@ -456,25 +455,25 @@ multiAllocate(const XmlNodeList& elem_list)
   m_allocated_options.resize(final_size);
   m_services_name.resize(final_size);
 
-  // D'abord, on aura les options du jeu de données : comme on ne peut pas définir un indice
-  // pour les options dans le jeu de données, elles seront forcément au début et seront contigües.
-  // Puis, s'il manque des options pour atteindre le min_occurs, on ajoute des options par défaut.
-  // S'il n'y a pas d'option par défaut, il y aura une exception.
-  // Enfin, l'utilisateur peut avoir ajouté des options à partir de la ligne de commande. On les ajoute alors.
-  // Si l'utilisateur souhaite modifier des valeurs du jeu de données à partir de la ligne de commande, on
-  // remplace les options au fur et à mesure de la lecture.
+  // First, we will have the dataset options: since we cannot define an index
+  // for options in the dataset, they will necessarily be at the beginning and contiguous.
+  // Then, if options are missing to reach min_occurs, we add default options.
+  // If there is no default option, there will be an exception.
+  // Finally, the user may have added options from the command line. We add them then.
+  // If the user wants to modify dataset values from the command line, we replace the
+  // options as we read them.
   for (Integer index = 0; index < final_size; ++index) {
     XmlNode element;
 
     String mesh_name;
     String str_val;
 
-    // Partie paramètres de la ligne de commande.
+    // Command line parameters section.
     if (option_in_param.contains(index + 1)) {
       mesh_name = pco.getParameterOrNull(full_xpath, "@mesh-name", index + 1);
       str_val = pco.getParameterOrNull(full_xpath, "@name", index + 1);
     }
-    // Partie jeu de données.
+    // Dataset section.
     if (index < size && (mesh_name.null() || str_val.null())) {
       element = elem_list[index];
       if (!element.null()) {
@@ -485,25 +484,25 @@ multiAllocate(const XmlNodeList& elem_list)
       }
     }
 
-    // Valeur par défaut.
+    // Default value.
     if (mesh_name.null()) {
       mesh_name = meshName();
     }
     else {
-      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      // In an else: Symbol replacement does not apply to .axl default values.
       mesh_name = StringVariableReplace::replaceWithCmdLineArgs(params, mesh_name, true);
     }
 
-    // Valeur par défaut.
+    // Default value.
     if (str_val.null()) {
       str_val = _defaultValue();
     }
     else {
-      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      // In an else: Symbol replacement does not apply to .axl default values.
       str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
     }
 
-    // Si l'on n'utilise pas les options du jeu de données, on doit créer de nouvelles options.
+    // If we are not using the dataset options, we must create new options.
     if (element.null()) {
       element = parent_element.createElement(name());
 
@@ -517,12 +516,11 @@ multiAllocate(const XmlNodeList& elem_list)
                 << " default_value='" << _defaultValue() << "'"
                 << " mesh=" << meshHandle().meshName();
 
-    // Maintenant, ce plantage concerne aussi le cas où il n'y a pas de valeurs par défaut et qu'il n'y a
-    // pas assez d'options pour atteindre le min_occurs.
+    // Now, this crash also concerns the case where there are no default values and not enough options to reach min_occurs.
     if (str_val.null())
       throw CaseOptionException("get_value", "@name");
 
-    // TODO: regarder si on ne peut pas créer directement un CaseOptionService.
+    // TODO: check if we cannot create a CaseOptionService directly.
     auto* coptions = new CaseOptions(configList(), name(), parent_element, false, true);
     if (coptions->_setMeshHandleAndCheckDisabled(mesh_name)) {
       delete coptions;
@@ -537,7 +535,7 @@ multiAllocate(const XmlNodeList& elem_list)
                   << " service not found";
       delete coptions;
       coptions = nullptr;
-      // Recherche les noms des implémentations valides
+      // Search for valid implementation names
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
       CaseOptionError::addError(doc, A_FUNCINFO, element.xpathFullName(),
@@ -569,4 +567,3 @@ getAvailableNames(StringArray& names) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

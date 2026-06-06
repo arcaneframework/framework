@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ObserverPool.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Liste d'observables.                                                      */
+/* List of observables.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_OBSERVABLEPOOL_H
 #define ARCANE_CORE_OBSERVABLEPOOL_H
@@ -34,11 +34,12 @@ class IObservable;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste d'observables.
+ * \brief List of observables.
  *
- * Cette classe permet de gérer une liste d'observables. Chaque observable
- * est associée à une clé de type \a KeyType.
+ * This class allows managing a list of observables. Each observable
+ * is associated with a key of type \a KeyType.
  */
 template<typename KeyType>
 class ObservablePool
@@ -49,9 +50,9 @@ class ObservablePool
 
  public:
 	
-  //! Constructeur
+  //! Constructor
   ObservablePool() {}
-  //! Libère les ressources
+  //! Frees resources
   ~ObservablePool()
   {
     for( const auto& x : m_observables ){
@@ -83,7 +84,7 @@ class ObservablePool
 
  private:
 
-  ObservableListType m_observables; //!< Liste des observables
+  ObservableListType m_observables; //!< List of observables
 
   IObservable* _getIfExists(const KeyType& key) const
   {
@@ -102,5 +103,4 @@ class ObservablePool
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

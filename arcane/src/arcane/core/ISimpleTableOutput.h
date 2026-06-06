@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableOutput.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Interface pour simples services de sortie de tableaux de valeurs.         */
+/* Interface for simple table output services.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISIMPLETABLEOUTPUT_H
 #define ARCANE_CORE_ISIMPLETABLEOUTPUT_H
@@ -28,7 +28,7 @@ namespace Arcane
 
 /**
  * @ingroup StandardService
- * @brief Interface représentant une sortie de tableau simple.
+ * @brief Interface representing a simple table output.
  */
 class ARCANE_CORE_EXPORT ISimpleTableOutput
 {
@@ -37,20 +37,20 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
 
  public:
   /**
-   * @brief Méthode permettant d'initialiser le tableau.
+   * @brief Method to initialize the table.
    */
   virtual bool init() = 0;
   /**
-   * @brief Méthode permettant d'initialiser le tableau.
+   * @brief Method to initialize the table.
    * 
-   * @param table_name Le nom du tableau (et du fichier de sortie).
+   * @param table_name The name of the table (and the output file).
    */
   virtual bool init(const String& table_name) = 0;
   /**
-   * @brief Méthode permettant d'initialiser le tableau.
+   * @brief Method to initialize the table.
    * 
-   * @param table_name Le nom du tableau (et du fichier de sortie).
-   * @param directory_name Le nom du dossier dans lequel enregistrer les tableaux.
+   * @param table_name The name of the table (and the output file).
+   * @param directory_name The name of the directory where the tables should be saved.
    */
   virtual bool init(const String& table_name, const String& directory_name) = 0;
 
@@ -58,7 +58,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de remettre à zéro les tableaux
+   * @brief Method to clear the tables
    */
   virtual void clear() = 0;
 
@@ -66,30 +66,30 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter une ligne.
+   * @brief Method to add a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @return Integer La position de la ligne dans le tableau.
+   * @param row_name The name of the row.
+   * @return Integer The position of the row in the table.
    */
   virtual Integer addRow(const String& row_name) = 0;
   /**
-   * @brief Méthode permettant d'ajouter une ligne.
+   * @brief Method to add a row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés).
+   * If the number of elements in 'elements' is greater than the
+   * number of columns, the addition still takes place (but the
+   * extra elements will not be added).
    * 
-   * @param row_name Le nom de la ligne.
-   * @param elements Les éléments à insérer sur la ligne.
-   * @return Integer La position de la ligne dans le tableau.
+   * @param row_name The name of the row.
+   * @param elements The elements to insert into the row.
+   * @return Integer The position of the row in the table.
    */
   virtual Integer addRow(const String& row_name, ConstArrayView<Real> elements) = 0;
   /**
-   * @brief Méthode permettant d'ajouter plusieurs lignes.
+   * @brief Method to add multiple rows.
    * 
-   * @param rows_names Les noms des lignes.
-   * @return true Si toutes les lignes ont été créées.
-   * @return false Si toutes les lignes n'ont pas été créées.
+   * @param rows_names The names of the rows.
+   * @return true If all rows were created.
+   * @return false If not all rows were created.
    */
   virtual bool addRows(StringConstArrayView rows_names) = 0;
 
@@ -97,30 +97,30 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter une colonne.
+   * @brief Method to add a column.
    * 
-   * @param column_name Le nom de la colonne.
-   * @return Integer La position de la colonne dans le tableau.
+   * @param column_name The name of the column.
+   * @return Integer The position of the column in the table.
    */
   virtual Integer addColumn(const String& column_name) = 0;
   /**
-   * @brief Méthode permettant d'ajouter une colonne.
+   * @brief Method to add a column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés).
+   * If the number of elements in 'elements' is greater than the
+   * number of rows, the addition still takes place (but the
+   * extra elements will not be added).
    * 
-   * @param column_name Le nom de la colonne.
-   * @param elements Les éléments à ajouter sur la colonne.
-   * @return Integer La position de la colonne dans le tableau.
+   * @param column_name The name of the column.
+   * @param elements The elements to add to the column.
+   * @return Integer The position of the column in the table.
    */
   virtual Integer addColumn(const String& column_name, ConstArrayView<Real> elements) = 0;
   /**
-   * @brief Méthode permettant d'ajouter plusieurs colonnes.
+   * @brief Method to add multiple columns.
    * 
-   * @param rows_names Les noms des colonnes.
-   * @return true Si toutes les colonnes ont été créées.
-   * @return false Si toutes les colonnes n'ont pas été créées.
+   * @param rows_names The names of the columns.
+   * @return true If all columns were created.
+   * @return false If not all columns were created.
    */
   virtual bool addColumns(StringConstArrayView columns_names) = 0;
 
@@ -128,36 +128,34 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter un élément à une ligne.
+   * @brief Method to add an element to a row.
    * 
-   * @param position La position de la ligne.
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * @param position The position of the row.
+   * @param element The element to add.
+   * @return true If the element was successfully added.
+   * @return false If the element could not be added.
    */
   virtual bool addElementInRow(Integer position, Real element) = 0;
   /**
-   * @brief Méthode permettant l'ajouter un élément sur une ligne.
+   * @brief Method to add an element to a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @param element L'élément à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la 
-   *                            ligne si elle n'existe pas encore.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * @param row_name The name of the row.
+   * @param element The element to add.
+   * @param create_if_not_exist To determine whether the row should be created
+   *                            if it does not yet exist.
+   * @return true If the element was successfully added.
+   * @return false If the element could not be added.
    */
   virtual bool addElementInRow(const String& row_name, Real element, bool create_if_not_exist = true) = 0;
   /**
-   * @brief Méthode permettant d'ajouter un élément sur la ligne 
-   * dernièrement manipulée.
+   * @brief Method to add an element to the last manipulated row.
    * 
-   * Cette méthode diffère de 'editElementRight()' car ici, on ajoute 
-   * un élément à la fin de la ligne, pas forcement après le
-   * dernier élement ajouté.
+   * This method differs from 'editElementRight()' because here, an element is
+   * added to the end of the row, not necessarily after the last added element.
    * 
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a été ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * @param element The element to add.
+   * @return true If the element was added.
+   * @return false If the element could not be added.
    */
   virtual bool addElementInSameRow(Real element) = 0;
 
@@ -165,48 +163,47 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une ligne.
+   * @brief Method to add multiple elements to a row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available columns, the addition still takes place (but the
+   * extra elements will not be added) and a return false will be returned.
    * 
-   * @param position La position de la ligne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * @param position The position of the row.
+   * @param elements The array of elements to add.
+   * @return true If all elements were added.
+   * @return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInRow(Integer position, ConstArrayView<Real> elements) = 0;
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une ligne.
+   * @brief Method to add multiple elements to a row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available columns, the addition still takes place (but the
+   * extra elements will not be added) and a return false will be returned.
    * 
-   * @param row_name Le nom de la ligne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la ligne
-   *                            si elle n'existe pas encore.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * @param row_name The name of the row.
+   * @param elements The array of elements to add.
+   * @param create_if_not_exist To determine whether the row should be created
+   *                            if it does not yet exist.
+   * @return true If all elements were added.
+   * @return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist = true) = 0;
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur la 
-   * ligne dernièrement manipulée.
+   * @brief Method to add multiple elements to the last manipulated row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available columns, the addition still takes place (but the
+   * extra elements will not be added) and a return false will be returned.
    * 
-   * Mis à part le fait qu'ici, on manipule un tableau, cette méthode diffère
-   * de 'editElementRight()' car ici, on ajoute des éléments à la fin de la ligne,
-   * pas forcement après le dernier élement ajouté.
+   * Aside from the fact that we are manipulating an array here, this method differs
+   * from 'editElementRight()' because here, elements are added to the end of the row,
+   * not necessarily after the last added element.
    * 
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * @param elements The array of elements to add.
+   * @return true If all elements were added.
+   * @return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInSameRow(ConstArrayView<Real> elements) = 0;
 
@@ -214,35 +211,34 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter un élément à une colonne.
+   * @brief Method to add an element to a column.
    * 
-   * @param position La position de la colonne.
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * @param position The position of the column.
+   * @param element The element to add.
+   * @return true If the element was successfully added.
+   * @return false If the element could not be added.
    */
   virtual bool addElementInColumn(Integer position, Real element) = 0;
   /**
-   * @brief Méthode permettant l'ajouter un élément sur une colonne.
+   * @brief Method to add an element to a column.
    * 
-   * @param column_name Le nom de la colonne.
-   * @param element L'élément à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la colonne
-   *                            si elle n'existe pas encore.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * @param column_name The name of the column.
+   * @param element The element to add.
+   * @param create_if_not_exist To determine whether the column should be created
+   *                            if it does not yet exist.
+   * @return true If the element was successfully added.
+   * @return false If the element could not be added.
    */
   virtual bool addElementInColumn(const String& column_name, Real element, bool create_if_not_exist = true) = 0;
   /**
-   * @brief Méthode permettant d'ajouter un élément sur la colonne
-   * dernièrement manipulée.
+   * @brief Method to add an element to the last manipulated column.
    * 
-   * Cette méthode diffère de 'editElementDown()' car ici, on ajoute un élément
-   * à la fin de la colonne, pas forcement après le dernier élement ajouté.
+   * This method differs from 'editElementDown()' because here, an element is
+   * added to the end of the column, not necessarily after the last added element.
    * 
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a été ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * @param element The element to add.
+   * @return true If the element was added.
+   * @return false If the element could not be added.
    */
   virtual bool addElementInSameColumn(Real element) = 0;
 
@@ -250,48 +246,47 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une colonne.
+   * @brief Method to add multiple elements to a column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available rows, the addition still takes place (but the
+   * extra elements will not be added) and a return false will be returned.
    * 
-   * @param position La position de la colonne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * @param position The position of the column.
+   * @param elements The array of elements to add.
+   * @return true If all elements were added.
+   * @return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInColumn(Integer position, ConstArrayView<Real> elements) = 0;
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une colonne.
+   * @brief Method to add multiple elements to a column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available rows, the addition still takes place (but the
+   * extra elements will not be added) and a return false will be returned.
    * 
-   * @param column_name Le nom de la colonne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la colonne si
-   *                            elle n'existe pas encore.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * @param column_name The name of the column.
+   * @param elements The array of elements to add.
+   * @param create_if_not_exist To determine whether the column should be created if
+   *                            it does not yet exist.
+   * @return true If all elements were added.
+   * @return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist = true) = 0;
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur la
-   * colonne dernièrement manipulée.
+   * @brief Method to add multiple elements to the last manipulated column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available rows, the addition still takes place (but the
+   * extra elements will not be added) and a return false will be returned.
    * 
-   * Mis à part le fait qu'ici, on manipule un tableau, cette méthode diffère
-   * de 'editElementDown()' car ici, on ajoute des éléments à la fin de la colonne,
-   * pas forcement après le dernier élement ajouté.
+   * Aside from the fact that we are manipulating an array here, this method differs
+   * from 'editElementDown()' because here, elements are added to the end of the column,
+   * not necessarily after the last added element.
    * 
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * @param elements The array of elements to add.
+   * @return true If all elements were added.
+   * @return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInSameColumn(ConstArrayView<Real> elements) = 0;
 
@@ -299,63 +294,61 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'éditer un élément au-dessus du dernier
-   * élement dernièrement manipulé (ligne du dessus/même colonne).
+   * @brief Method to edit an element above the last
+   * element manipulated (row above/same column).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * @param element The element to modify.
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return true If the element was modified.
+   * @return false If the element could not be modified.
    */
   virtual bool editElementUp(Real element, bool update_last_position = true) = 0;
   /**
-   * @brief Méthode permettant d'éditer un élément en-dessous du dernier 
-   * élement dernièrement manipulé (ligne du dessous/même colonne).
+   * @brief Method to edit an element below the last
+   * element manipulated (row below/same column).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié 
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element 
+   * at the end of this method (if update_last_position = true).
    * 
-   * Cette méthode diffère de 'addElementInSameColumn()' car ici, on ajoute 
-   * (ou modifie) un élement sous le dernier élement manipulé, qui n'est
-   * pas forcement à la fin de la colonne.
+   * This method differs from 'addElementInSameColumn()' because here, an element is added
+   * (or modified) below the last manipulated element, which is not necessarily at the end of the column.
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * @param element The element to modify.
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return true If the element was modified.
+   * @return false If the element could not be modified.
    */
   virtual bool editElementDown(Real element, bool update_last_position = true) = 0;
   /**
-   * @brief Méthode permettant d'éditer un élément à gauche du dernier
-   * élement dernièrement manipulé (même ligne/colonne à gauche).
+   * @brief Method to edit an element to the left of the last
+   * element manipulated (same row/column to the left).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * @param element The element to modify.
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return true If the element was modified.
+   * @return false If the element could not be modified.
    */
   virtual bool editElementLeft(Real element, bool update_last_position = true) = 0;
   /**
-   * @brief Méthode permettant d'éditer un élément à droite du dernier
-   * élement dernièrement manipulé (même ligne/colonne à droite).
+   * @brief Method to edit an element to the right of the last
+   * element manipulated (same row/column to the right).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element
+   * at the end of this method (if update_last_position = true).
    * 
-   * Cette méthode diffère de 'addElementInSameRow()' car ici, on ajoute 
-   * (ou modifie) un élement à la droite du dernier élement manipulé, 
-   * qui n'est pas forcement à la fin de la colonne.
+   * This method differs from 'addElementInSameRow()' because here, an element is added
+   * (or modified) to the right of the last manipulated element, which is not necessarily at the end of the column.
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * @param element The element to modify.
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return true If the element was modified.
+   * @return false If the element could not be modified.
    */
   virtual bool editElementRight(Real element, bool update_last_position = true) = 0;
 
@@ -363,47 +356,47 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer un élément au-dessus du dernier
-   * élement dernièrement manipulé (ligne du dessus/même colonne).
+   * @brief Method to retrieve an element above the last
+   * element manipulated (row above/same column).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return Real The found element (0 if not found).
    */
   virtual Real elementUp(bool update_last_position = false) = 0;
   /**
-   * @brief Méthode permettant de récupérer un élément en-dessous du dernier
-   * élement dernièrement manipulé (ligne du dessous/même colonne).
+   * @brief Method to retrieve an element below the last
+   * element manipulated (row below/same column).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return Real The found element (0 if not found).
    */
   virtual Real elementDown(bool update_last_position = false) = 0;
   /**
-   * @brief Méthode permettant de récupérer un élément à gauche du dernier
-   * élement dernièrement manipulé (même ligne/colonne à gauche).
+   * @brief Method to retrieve an element to the left of the last
+   * element manipulated (same row/column to the left).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return Real The found element (0 if not found).
    */
   virtual Real elementLeft(bool update_last_position = false) = 0;
   /**
-   * @brief Méthode permettant de récupérer un élément à droite du dernier
-   * élement dernièrement manipulé (même ligne/colonne à droite).
+   * @brief Method to retrieve an element to the right of the last
+   * element manipulated (same row/column to the right).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return Real The found element (0 if not found).
    */
   virtual Real elementRight(bool update_last_position = false) = 0;
 
@@ -411,37 +404,37 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de modifier un élement dans le tableau.
+   * @brief Method to modify an element in the table.
    * 
-   * Les positions x et y correspondent à l'emplacement du dernier
-   * élement manipulé.
+   * The x and y positions correspond to the location of the last
+   * manipulated element.
    * 
-   * Cette méthode a de l'intéret après l'utilisation de
-   * 'elemUDLR(true)' par exemple.
+   * This method is useful after using
+   * 'elemUDLR(true)' for example.
    * 
-   * @param element L'élement remplaçant.
-   * @return true Si l'élement a bien été remplacé.
-   * @return false Si l'élement n'a pas été remplacé.
+   * @param element The replacement element.
+   * @return true If the element was successfully replaced.
+   * @return false If the element was not replaced.
    */
   virtual bool editElement(Real element) = 0;
   /**
-   * @brief Méthode permettant de modifier un élement dans le tableau.
+   * @brief Method to modify an element in the table.
    * 
-   * @param position_x La position de la colonne à modifier.
-   * @param position_y La position de la ligne à modifier.
-   * @param element L'élement remplaçant.
-   * @return true Si l'élement a bien été remplacé.
-   * @return false Si l'élement n'a pas été remplacé.
+   * @param position_x The position of the column to modify.
+   * @param position_y The position of the row to modify.
+   * @param element The replacement element.
+   * @return true If the element was successfully replaced.
+   * @return false If the element was not replaced.
    */
   virtual bool editElement(Integer position_x, Integer position_y, Real element) = 0;
   /**
-   * @brief Méthode permettant de modifier un élement dans le tableau.
+   * @brief Method allowing modification of an element in the array.
    * 
-   * @param column_name Le nom de la colonne où se trouve l'élement.
-   * @param row_name Le nom de la ligne où se trouve l'élement.
-   * @param element L'élement remplaçant.
-   * @return true Si l'élement a bien été remplacé.
-   * @return false Si l'élement n'a pas pu être remplacé.
+   * @param column_name The name of the column where the element is located.
+   * @param row_name The name of the row where the element is located.
+   * @param element The replacement element.
+   * @return true If the element was successfully replaced.
+   * @return false If the element could not be replaced.
    */
   virtual bool editElement(const String& column_name, const String& row_name, Real element) = 0;
 
@@ -449,29 +442,29 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'obtenir une copie d'un élement.
+   * @brief Method allowing retrieval of a copy of an element.
    * 
-   * Les positions x et y correspondent à l'emplacement du dernier élement manipulé.
+   * The x and y positions correspond to the location of the last manipulated element.
    * 
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @return Real The found element (0 if not found).
    */
   virtual Real element() = 0;
   /**
-   * @brief Méthode permettant d'obtenir une copie d'un élement.
+   * @brief Method allowing retrieval of a copy of an element.
    * 
-   * @param position_x La position de la colonne où se trouve l'élement.
-   * @param position_y La position de la ligne où se trouve l'élement.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @param position_x The position of the column where the element is located.
+   * @param position_y The position of the row where the element is located.
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return Real The found element (0 if not found).
    */
   virtual Real element(Integer position_x, Integer position_y, bool update_last_position = false) = 0;
   /**
-   * @brief Méthode permettant d'obtenir une copie d'un élement.
+   * @brief Method allowing retrieval of a copy of an element.
    * 
-   * @param column_name Le nom de la colonne où se trouve l'élement.
-   * @param row_name Le nom de la ligne où se trouve l'élement.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * @param column_name The name of the column where the element is located.
+   * @param row_name The name of the row where the element is located.
+   * @param update_last_position Should the "last modified element" cursor be moved?
+   * @return Real The found element (0 if not found).
    */
   virtual Real element(const String& column_name, const String& row_name, bool update_last_position = false) = 0;
 
@@ -479,32 +472,32 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une ligne.
+   * @brief Method allowing retrieval of a copy of a row.
    * 
-   * @param position La position de la ligne.
-   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
+   * @param position The position of the row.
+   * @return RealUniqueArray The copy of the row (empty array if not found).
    */
   virtual RealUniqueArray row(Integer position) = 0;
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une ligne.
+   * @brief Method allowing retrieval of a copy of a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
+   * @param row_name The name of the row.
+   * @return RealUniqueArray The copy of the row (empty array if not found).
    */
   virtual RealUniqueArray row(const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une colonne.
+   * @brief Method allowing retrieval of a copy of a column.
    * 
-   * @param position La position de la colonne.
-   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
+   * @param position The position of the column.
+   * @return RealUniqueArray The copy of the column (empty array if not found).
    */
   virtual RealUniqueArray column(Integer position) = 0;
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une colonne.
+   * @brief Method allowing retrieval of a copy of a column.
    * 
-   * @param column_name Le nom de la colonne.
-   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
+   * @param column_name The name of the column.
+   * @return RealUniqueArray The copy of the column (empty array if not found).
    */
   virtual RealUniqueArray column(const String& column_name) = 0;
 
@@ -512,36 +505,36 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une ligne.
-   * Incluant les hypothétiques 'trous' dans la ligne.
+   * @brief Method allowing retrieval of the size of a row.
+   * Including hypothetical 'gaps' in the row.
    * 
-   * @param position La position de la ligne.
-   * @return Integer La taille de la ligne (0 si non trouvée).
+   * @param position The position of the row.
+   * @return Integer The size of the row (0 if not found).
    */
   virtual Integer rowSize(Integer position) = 0;
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une ligne.
-   * Incluant les hypotétiques 'trous' dans la ligne.
+   * @brief Method allowing retrieval of the size of a row.
+   * Including hypothetical 'gaps' in the row.
    * 
-   * @param position Le nom de la ligne.
-   * @return Integer La taille de la ligne (0 si non trouvée).
+   * @param position The name of the row.
+   * @return Integer The size of the row (0 if not found).
    */
   virtual Integer rowSize(const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une colonne.
-   * Incluant les hypotétiques 'trous' dans la colonne.
+   * @brief Method allowing retrieval of the size of a column.
+   * Including hypothetical 'gaps' in the column.
    * 
-   * @param position La position de la colonne.
-   * @return Integer La taille de la colonne (0 si non trouvée).
+   * @param position The position of the column.
+   * @return Integer The size of the column (0 if not found).
    */
   virtual Integer columnSize(Integer position) = 0;
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une colonne.
-   * Incluant les hypotétiques 'trous' dans la colonne.
+   * @brief Method allowing retrieval of the size of a column.
+   * Including hypothetical 'gaps' in the column.
    * 
-   * @param position Le nom de la colonne.
-   * @return Integer La taille de la colonne (0 si non trouvée).
+   * @param position The name of the column.
+   * @return Integer The size of the column (0 if not found).
    */
   virtual Integer columnSize(const String& column_name) = 0;
 
@@ -549,17 +542,17 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer la position d'une ligne.
+   * @brief Method allowing retrieval of the position of a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @return Integer La position de la ligne (-1 si non trouvée).
+   * @param row_name The name of the row.
+   * @return Integer The position of the row (-1 if not found).
    */
   virtual Integer rowPosition(const String& row_name) = 0;
   /**
-   * @brief Méthode permettant de récupérer la position d'une colonne.
+   * @brief Method allowing retrieval of the position of a column.
    * 
-   * @param row_name Le nom de la colonne.
-   * @return Integer La position de la colonne (-1 si non trouvée).
+   * @param row_name The name of the column.
+   * @return Integer The position of the column (-1 if not found).
    */
   virtual Integer columnPosition(const String& column_name) = 0;
 
@@ -567,17 +560,17 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer le nombre de lignes dans le tableau.
-   * C'est, en quelque sorte, le nombre max d'élements que peut contenir une colonne.
+   * @brief Method allowing retrieval of the number of rows in the array.
+   * This is, in a way, the maximum number of elements a column can contain.
    * 
-   * @return Integer Le nombre de lignes du tableau.
+   * @return Integer The number of rows in the array.
    */
   virtual Integer numberOfRows() = 0;
   /**
-   * @brief Méthode permettant de récupérer le nombre de colonnes dans le tableau.
-   * C'est, en quelque sorte, le nombre max d'élements que peut contenir une ligne.
+   * @brief Method allowing retrieval of the number of columns in the array.
+   * This is, in a way, the maximum number of elements a row can contain.
    * 
-   * @return Integer Le nombre de colonnes du tableau.
+   * @return Integer The number of columns in the array.
    */
   virtual Integer numberOfColumns() = 0;
 
@@ -591,89 +584,89 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de changer le nom d'une ligne.
+   * @brief Method allowing changing the name of a row.
    * 
-   * @param position La position de la ligne.
-   * @param new_name Le nouveau nom de la ligne.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * @param position The position of the row.
+   * @param new_name The new name of the row.
+   * @return true If the change occurred.
+   * @return false If the change did not occur.
    */
   virtual bool editRowName(Integer position, const String& new_name) = 0;
   /**
-   * @brief Méthode permettant de changer le nom d'une ligne.
+   * @brief Method allowing changing the name of a row.
    * 
-   * @param row_name Le nom actuel de la ligne.
-   * @param new_name Le nouveau nom de la ligne.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * @param row_name The current name of the row.
+   * @param new_name The new name of the row.
+   * @return true If the change occurred.
+   * @return false If the change did not occur.
    */
   virtual bool editRowName(const String& row_name, const String& new_name) = 0;
 
   /**
-   * @brief Méthode permettant de changer le nom d'une colonne.
+   * @brief Method allowing changing the name of a column.
    * 
-   * @param position La position de la colonne.
-   * @param new_name Le nouveau nom de la colonne.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * @param position The position of the column.
+   * @param new_name The new name of the column.
+   * @return true If the change occurred.
+   * @return false If the change did not occur.
    */
   virtual bool editColumnName(Integer position, const String& new_name) = 0;
   /**
-   * @brief Méthode permettant de changer le nom d'une colonne.
+   * @brief Method allowing changing the name of a column.
    * 
-   * @param column_name Le nom actuel de la colonne.
-   * @param new_name Le nouveau nom de la colonne.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * @param column_name The current name of the column.
+   * @param new_name The new name of the column.
+   * @return true If the change occurred.
+   * @return false If the change did not occur.
    */
   virtual bool editColumnName(const String& column_name, const String& new_name) = 0;
 
   /**
-   * @brief Méthode permettant de créer une colonne contenant la moyenne des
-   * éléments de chaque ligne.
+   * @brief Method allowing creation of a column containing the average of the
+   * elements of each row.
    * 
-   * @param column_name Le nom de la nouvelle colonne.
-   * @return Integer La position de la colonne.
+   * @param column_name The name of the new column.
+   * @return Integer The position of the column.
    */
   virtual Integer addAverageColumn(const String& column_name) = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
   /**
-   * @brief Méthode permettant d'afficher le tableau.
-   * Méthode effectuant des opérations collectives.
+   * @brief Method allowing display of the array.
+   * Method performing collective operations.
    * 
-   * @param rank L'id du processus devant afficher le tableau (-1 pour 
-   *                  signifier "tous les processus").
+   * @param rank The ID of the process that should display the array
+   * (-1 to signify "all processes").
    */
   virtual void print(Integer rank = 0) = 0;
 
   virtual bool writeFile(const Directory& root_directory, Integer rank) = 0;
 
   /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Méthode effectuant des opérations collectives.
-   * Si rank != -1, les processus autres que P0 retournent true.
+   * @brief Method allowing writing the array to a file.
+   * Method performing collective operations.
+   * If rank != -1, processes other than P0 return true.
    * 
-   * @param rank L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
+   * @param rank The ID of the process that should write the array to a file
+   * (-1 to signify "all processes").
+   * @return true If the file was written correctly.
+   * @return false If the file was not written correctly.
    */
   virtual bool writeFile(Integer rank = -1) = 0;
   /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Méthode effectuant des opérations collectives.
-   * Si rank != -1, les processus autres que P0 retournent true.
+   * @brief Method allowing writing the array to a file.
+   * Method performing collective operations.
+   * If rank != -1, processes other than P0 return true.
    * 
-   * @param directory Le répertoire où sera écrit le fichier
-   *            . Le chemin final sera "./[output_dir]/csv/[directory]/"
-   * @param rank L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
+   * @param directory The directory where the file will be written. The final
+   * path will be "./[output_dir]/csv/[directory]/".
+   * @param rank The ID of the process that should write the array to a file
+   * (-1 to signify "all processes").
+   * @return true If the file was written correctly.
+   * @return false If the file was not written correctly.
    * 
-   * @deprecated Utiliser setOutputDirectory() puis writeFile() à la place.
+   * @deprecated Use setOutputDirectory() then writeFile() instead.
    */
   virtual bool writeFile(const String& directory, Integer rank = -1) = 0;
 
@@ -681,175 +674,176 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer la précision actuellement
-   * utilisée pour l'écriture des valeurs.
+   * @brief Method allowing retrieval of the precision currently
+   * used for writing values.
    * 
-   * @return Integer La précision.
+   * @return Integer The precision.
    */
   virtual Integer precision() = 0;
   /**
-   * @brief Méthode permettant de modifier la précision du print.
+   * @brief Method allowing modification of the print precision.
    * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * For both the 'print()' method and the 'writeFile()' methods.
    * 
-   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
-   *          si le flag "std::fixed" est désactivé, la précision définira le
-   *          nombre de chiffres total (avant et après la virgule) ;
-   *          si le flag "std::fixed" est activé, la précision définira le
-   *          nombre de chiffres après la virgule. Attention donc lors de
-   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
-   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
-   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * @warning The "std::fixed" flag modifies the behavior of "setPrecision()".
+   * If the "std::fixed" flag is disabled, precision defines the total number
+   * of digits (before and after the comma); if the "std::fixed" flag is enabled,
+   * precision defines the number of digits after the comma. Therefore, be
+   * careful when using "std::numeric_limits<Real>::max_digits10" (for writing)
+   * or "std::numeric_limits<Real>::digits10" (for reading), which should be used
+   * without the "std::fixed" flag.
    * 
-   * @param precision La nouvelle précision.
+   * @param precision The new precision.
    */
   virtual void setPrecision(Integer precision) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si le frag 'std::fixed' est
-   * actif ou non pour l'écriture des valeurs.
+   * @brief Method allowing knowledge of whether the 'std::fixed' flag is
+   * active or not for writing values.
    * 
-   * @return true Si oui.
-   * @return false Si non.
+   * @return true If yes.
+   * @return false If no.
    */
   virtual bool isFixed() = 0;
   /**
-   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
+   * @brief Method allowing setting the 'std::fixed' flag or not.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * For both the 'print()' method and the 'writetable()' method.
    * 
-   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
-   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
-   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
+   * This flag allows 'forcing' the number of digits after the comma
+   * to the desired precision. For example, if 'setPrecision(4)' is
+   * called, and 'setFixed(true)' is called, the print of '6.1' will
+   * yield '6.1000'.
    * 
-   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
-   *          si le flag "std::fixed" est désactivé, la précision définira le
-   *          nombre de chiffres total (avant et après la virgule) ;
-   *          si le flag "std::fixed" est activé, la précision définira le
-   *          nombre de chiffres après la virgule. Attention donc lors de
-   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
-   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
-   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * @warning The "std::fixed" flag modifies the behavior of
+   * "setPrecision()". If the "std::fixed" flag is disabled, precision
+   * defines the total number of digits (before and after the comma);
+   * if the "std::fixed" flag is enabled, precision defines the number
+   * of digits after the comma. Therefore, be careful when using
+   * "std::numeric_limits<Real>::max_digits10" (for writing) or
+   * "std::numeric_limits<Real>::digits10" (for reading), which should
+   * be used without the "std::fixed" flag.
    * 
-   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
+   * @param fixed Whether the 'std::fixed' flag should be set or not.
    */
   virtual void setFixed(bool fixed) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si le frag 'std::scientific' est
-   * actif ou non pour l'écriture des valeurs.
+   * @brief Method allowing knowledge of whether the 'std::scientific' flag is
+   * active or not for writing values.
    * 
-   * @return true Si oui.
-   * @return false Si non.
+   * @return true If yes.
+   * @return false If no.
    */
   virtual bool isForcedToUseScientificNotation() = 0;
   /**
-   * @brief Méthode permettant de définir le flag 'std::scientific' ou non.
+   * @brief Method allowing setting the 'std::scientific' flag or not.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * For both the 'print()' method and the 'writetable()' method.
    * 
-   * Ce flag permet de 'forcer' l'affichage des valeurs en écriture
-   * scientifique.
+   * This flag allows 'forcing' the display of values in scientific notation.
    * 
-   * @param use_scientific Si le flag 'std::scientific' doit être défini ou non.
+   * @param use_scientific Whether the 'std::scientific' flag should be set or not.
    */
   virtual void setForcedToUseScientificNotation(bool use_scientific) = 0;
 
   /**
-   * @brief Accesseur permettant de récupérer le nom du répertoire où sera
-   * placé les tableaux.
+   * @brief Accessor allowing retrieval of the name of the directory
+   * where the arrays will be placed.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * @return String Le répertoire.
+   * @return String The directory.
    */
   virtual String outputDirectory() = 0;
   /**
-   * @brief Accesseur permettant de définir le répertoire
-   * dans lequel enregistrer les tableaux.
+   * @brief Accessor allowing definition of the directory
+   * in which the arrays will be saved.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * @param directory Le répertoire.
+   * @param directory The directory.
    */
   virtual void setOutputDirectory(const String& directory) = 0;
 
   /**
-   * @brief Accesseur permettant de récupérer le nom des tableaux.
+   * @brief Accessor allowing retrieval of the name of the arrays.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * @return String Le nom.
+   * @return String The name.
    */
   virtual String tableName() = 0;
   /**
-   * @brief Accesseur permettant de définir le nom du tableau.
+   * @brief Accessor allowing definition of the array name.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * @param name Le nom.
+   * @param name The name.
    */
   virtual void setTableName(const String& name) = 0;
 
   /**
-   * @brief Accesseur permettant de récupérer le nom des fichiers.
+   * @brief Accessor allowing retrieval of the file name.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * @return String Le nom.
+   * @return String The name.
    */
   virtual String fileName() = 0;
 
   /**
-   * @brief Accesseur permettant de récupérer le chemin où sera
-   * enregistrés les tableaux. 
+   * @brief Accessor allowing retrieval of the path where the arrays
+   * will be saved.
    * 
-   * En comparaison avec rootPathOutput(), le retour peut être
-   * different selon le "directory" et le "name".
+   * Compared to rootPathOutput(), the return value may differ
+   * depending on the "directory" and the "name".
    * 
-   * @return String Le chemin.
+   * @return String The path.
    */
   virtual Directory outputPath() = 0;
 
   /**
-   * @brief Accesseur permettant de récupérer le chemin où l'implémentation
-   * enregistre ces tableaux. 
+   * @brief Accessor allowing retrieval of the path where the
+   * implementation saves these arrays.
    * 
-   * En comparaison avec pathOutput(), le retour ne dépend pas de "directory" ou de "name".
+   * Compared to pathOutput(), the return value does not depend on
+   * "directory" or "name".
    * 
-   * @return String Le chemin.
+   * @return String The path.
    */
   virtual Directory rootPath() = 0;
 
   /**
-   * @brief Méthode permettant de savoir si les paramètres actuellement en possession
-   * de l'implémentation lui permet d'écrire un fichier par processus.
+   * @brief Method allowing knowledge of whether the parameters
+   * currently held by the implementation allow it to write one
+   * file per process.
    * 
-   * @return true Si oui, l'implémentation peut écrire un fichier par processus.
-   * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
+   * @return true If yes, the implementation can write one file per process.
+   * @return false Otherwise, only one file can be written.
    */
   virtual bool isOneFileByRanksPermited() = 0;
 
   /**
-   * @brief Méthode permettant de connaitre le type de fichier du service.
+   * @brief Method allowing knowledge of the service's file type.
    * 
-   * @return String Le type de fichier.
+   * @return String The file type.
    */
   virtual String fileType() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * SimpleTableInternal utilisé.
+   * @brief Method allowing retrieval of a reference to the
+   * SimpleTableInternal object used.
    * 
-   * @return Ref<SimpleTableInternal> Une copie de la référence. 
+   * @return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * ISimpleTableReaderWriter utilisé.
+   * @brief Method allowing retrieval of a reference to the
+   * ISimpleTableReaderWriter object used.
    * 
-   * @return Ref<ISimpleTableReaderWriter> Une copie de la référence. 
+   * @return Ref<ISimpleTableReaderWriter> A copy of the reference. 
    */
   virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
 };

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Algorithm.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Algorithmes de la STL.                                                    */
+/* STL Algorithms.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ALGORITHM_H
 #define ARCANE_CORE_ALGORITHM_H

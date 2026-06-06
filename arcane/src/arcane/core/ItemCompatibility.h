@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* ItemCompatibility.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Méthodes assurant la compatibilité entre versions de Item.                */
+/* Methods ensuring compatibility between Item versions.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMCOMPATIBILITY_H
 #define ARCANE_ITEMCOMPATIBILITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: Ce fichier est inclus directement par 'Item.h' et ne doit pas
-// être inclus directement par d'autres fichiers.
+// NOTE: This file is included directly by 'Item.h' and should not
+// be included directly by other files.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,15 +49,15 @@ namespace AnyItem
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Méthodes pour conversions entre différentes classes de gestion
- * des entités
+ * \brief Methods for conversions between different entity management classes
+ * of entities
  *
- * Cette classe est temporaire et interne à Arcane. Seules les classes 'friend'
- * peuvent l'utiliser.
+ * This class is temporary and internal to Arcane. Only 'friend' classes
+ * can use it.
  */
 class ItemCompatibility
 {
-  // Pour accéder à _internal()
+  // For accessing _internal()
   friend Materials::ComponentItemInternal;
   friend class ItemSharedInfo;
   friend class IItemFamilyModifier;

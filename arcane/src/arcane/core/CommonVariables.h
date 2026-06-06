@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonVariables.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Variables communes décrivant un cas.                                      */
+/* Common variables describing a case.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_COMMONVARIABLES_H
 #define ARCANE_CORE_COMMONVARIABLES_H
@@ -31,9 +31,10 @@ class ModuleMaster;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variables communes d'un cas.
+ * \brief Common variables of a case.
  */
 class ARCANE_CORE_EXPORT CommonVariables
 {
@@ -43,50 +44,50 @@ class ARCANE_CORE_EXPORT CommonVariables
 
  public:
 
-  //! Construit les références des variables communes pour le module \a c
+  //! Constructs the references of the common variables for the module \a c
   CommonVariables(IModule* c);
-  //! Construit les références des variables communes pour le gestionnaire \a variable_mng
+  //! Constructs the references of the common variables for the manager \a variable_mng
   CommonVariables(IVariableMng* variable_mng);
   // TODO: make deprecated
-  //! Construit les références des variables communes pour le sous-domaine \a sd
+  //! Constructs the references of the common variables for the subdomain \a sd
   CommonVariables(ISubDomain* sd);
-  virtual ~CommonVariables() {} //!< Libère les ressources.
+  virtual ~CommonVariables() {} //!< Releases resources.
 
  public:
 	
-  //! Numéro de l'itération courante
+  //! Current iteration number
   Int32 globalIteration() const;
-  //! Temps courant
+  //! Current time
   Real globalTime() const;
-  //! Temps courant précédent.
+  //! Previous current time.
   Real globalOldTime() const;
-  //! Temps final de la simulation
+  //! Final time of the simulation
   Real globalFinalTime() const;
-  //! Delta T courant.
+  //! Current Delta T.
   Real globalDeltaT() const;
-  //! Temps CPU utilisé (en seconde)
+  //! CPU time used (in seconds)
   Real globalCPUTime() const;
-  //! Temps CPU utilisé précédent (en seconde)
+  //! Previous CPU time used (in seconds)
   Real globalOldCPUTime() const;
-  //! Temps horloge (elapsed) utilisé (en seconde)
+  //! Clock time (elapsed) used (in seconds)
   Real globalElapsedTime() const;
-  //! Temps horloge (elapsed) utilisé précédent (en seconde)
+  //! Previous clock time (elapsed) used (in seconds)
   Real globalOldElapsedTime() const;
 
  private:
 
  public:
 	
-  VariableScalarInt32 m_global_iteration; //!< Itération courante
-  VariableScalarReal m_global_time; //!< Temps actuel
-  VariableScalarReal m_global_deltat; //!< Delta T global
-  VariableScalarReal m_global_old_time; //!< Temps précédent le temps actuel
-  VariableScalarReal m_global_old_deltat; //!< Delta T au temps précédent le temps global
-  VariableScalarReal m_global_final_time; //!< Temps final du cas
-  VariableScalarReal m_global_old_cpu_time; //!< Temps précédent CPU utilisé (en seconde)
-  VariableScalarReal m_global_cpu_time; //!< Temps CPU utilisé (en seconde)
-  VariableScalarReal m_global_old_elapsed_time; //!< Temps précédent horloge utilisé (en seconde)
-  VariableScalarReal m_global_elapsed_time; //!< Temps horloge utilisé (en seconde)
+  VariableScalarInt32 m_global_iteration; //!< Current iteration
+  VariableScalarReal m_global_time; //!< Current time
+  VariableScalarReal m_global_deltat; //!< Global Delta T
+  VariableScalarReal m_global_old_time; //!< Time previous to the current time
+  VariableScalarReal m_global_old_deltat; //!< Delta T at the time previous to the global time
+  VariableScalarReal m_global_final_time; //!< Final time of the case
+  VariableScalarReal m_global_old_cpu_time; //!< Previous CPU time used (in seconds)
+  VariableScalarReal m_global_cpu_time; //!< CPU time used (in seconds)
+  VariableScalarReal m_global_old_elapsed_time; //!< Previous clock time used (in seconds)
+  VariableScalarReal m_global_elapsed_time; //!< Clock time used (in seconds)
 };
 
 /*---------------------------------------------------------------------------*/
@@ -97,5 +98,4 @@ class ARCANE_CORE_EXPORT CommonVariables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

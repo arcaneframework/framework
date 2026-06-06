@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Dom.h                                                       (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un DOM1+DOM2+DOM3(core).                                 */
+/* Implementation of DOM1+DOM2+DOM3(core).                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DOM_H
 #define ARCANE_CORE_DOM_H
@@ -172,7 +172,7 @@ class ARCANE_CORE_EXPORT DOMImplementation
   //@}
 
  public:
-  //! Les méthodes suivantes sont internes à Arcane.
+  //! The following methods are internal to Arcane.
   //@{
   IXmlDocumentHolder* _newDocument();
   IXmlDocumentHolder* _load(const String& fname,ITraceMng* msg,const String& schemaname);
@@ -379,14 +379,14 @@ class ARCANE_CORE_EXPORT Node
   //@}
 
   /*!
-   * \brief Détruit le noeud.
+   * \brief Destroys the node.
    *
-   * Le noeud ne doit pas appartenir à un document.
+   * The node must not belong to a document.
    *
-   * Le noeud ne doit plus être utilisé par la suite.
+   * The node must no longer be used afterwards.
    *
-   * Cette méthode ne fait pas partie du DOM mais est nécessaire pour
-   * certaines implémentation pour supprimer la mémoire associée à un noeud.
+   * This method is not part of the DOM but is necessary for
+   * certain implementations to delete the memory associated with a node.
    */
   void releaseNode();
 
@@ -410,7 +410,7 @@ class ARCANE_CORE_EXPORT Node
 
  protected:
 
-  NodePrv* m_p; //!< Implémentation de la classe.
+  NodePrv* m_p; //!< Class implementation.
   //void* m_p;
   void _assign(const Node&);
 
@@ -1248,5 +1248,4 @@ class XPathNamespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

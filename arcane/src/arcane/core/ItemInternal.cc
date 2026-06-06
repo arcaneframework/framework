@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInternal.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne d'une entité.                                              */
+/* Internal part of an entity.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -205,30 +205,30 @@ _setFaceInfos(Int32 mod_flags)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Pour une face, positionne à la fois la back cell et la front cell.
+ * \brief For a face, positions both the back cell and the front cell.
  *
- * \a back_cell_lid et/ou \a front_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
- * ce qui signifie que l'entité n'a pas de back cell ou front cell. Si les
- * deux valeurs sont nulles, alors la face est considérée comme n'ayant
- * plus de mailles connectées.
+ * \a back_cell_lid and/or \a front_cell_lid may be NULL_ITEM_LOCAL_ID
+ * which means that the entity does not have a back cell or a front cell. If both
+ * values are null, then the face is considered to have no connected cells.
  *
- * \note Cette méthode est utilisée uniquement par FaceFamily.
+ * \note This method is used only by FaceFamily.
  */
 void impl::MutableItemBase::
 _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
 {
   if (front_cell_lid==NULL_ITEM_LOCAL_ID){
-    // Reste uniquement la back_cell ou aucune maille.
+    // Only the back_cell remains or no cell.
     Int32 mod_flags = (back_cell_lid!=NULL_ITEM_LOCAL_ID) ? (II_Boundary | II_HasBackCell | II_BackCellIsFirst) : 0;
     _setFaceInfos(mod_flags);
   }
   else if (back_cell_lid==NULL_ITEM_LOCAL_ID){
-    // Reste uniquement la front cell
+    // Only the front cell remains
     _setFaceInfos(II_Boundary | II_HasFrontCell | II_FrontCellIsFirst);
   }
   else{
-    // Il y a deux mailles connectées.
+    // There are two connected cells.
     _setFaceInfos(II_HasFrontCell | II_HasBackCell | II_BackCellIsFirst);
   }
 }

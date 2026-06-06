@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshReaderMng.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de lecteurs de maillage.                                     */
+/* Mesh reader manager.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHREADERMNG_H
 #define ARCANE_CORE_MESHREADERMNG_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de lecteurs de maillage.
+ * \brief Mesh reader manager.
  */
 class ARCANE_CORE_EXPORT MeshReaderMng
 {
@@ -43,38 +44,39 @@ class ARCANE_CORE_EXPORT MeshReaderMng
  public:
 
   /*!
-   * \brief Lit le maillage dont le nom de fichier est \a file_name.
+   * \brief Reads the mesh whose file name is \a file_name.
    *
-   * \a file_name doit avoir une extension et le lecteur utilisé est basé
-   * sur cette extension.
-   * Le maillage créé est associé à un \a IParallelMng séquentiel et aura
-   * pour nom \a mesh_name.
+   * \a file_name must have an extension and the reader used is based
+   * on this extension.
+   * The created mesh is associated with a sequential \a IParallelMng
+   * and will be named \a mesh_name.
    *
-   * Cette méthode lève une exception si le maillage ne peut pas être lu.
+   * This method throws an exception if the mesh cannot be read.
    */
   IMesh* readMesh(const String& mesh_name,const String& file_name);
 
   /*!
-   * \brief Lit le maillage dont le nom de fichier est \a file_name.
+   * \brief Reads the mesh whose file name is \a file_name.
    *
-   * \a file_name doit avoir une extension et le lecteur utilisé est basé
-   * sur cette extension.
-   * Le maillage créé est associé au gestionnaire de parallélisme
-   * \a parallel_mng et aura pour nom \a mesh_name.
+   * \a file_name must have an extension and the reader used is based
+   * on this extension.
+   * The created mesh is associated with the parallelism manager
+   * \a parallel_mng and will be named \a mesh_name.
    *
-   * Cette méthode lève une exception si le maillage ne peut pas être lu.
+   * This method throws an exception if the mesh cannot be read.
    */
   IMesh* readMesh(const String& mesh_name,const String& file_name,
                   IParallelMng* parallel_mng);
 
   /*!
-   * \brief Si vrai, indique qu'on utilise le système d'unité éventuellement présent
-   * dans le format de fichier (\a true par défaut).
+   * \brief If true, indicates that the unit system possibly present
+   * in the file format is used (\a true by default).
    *
-   * Cette méthode doit être appelée avant l'appel à readMesh() pour être prise en compte.
+   * This method must be called before calling readMesh() for it to
+   * be taken into account.
    */
   void setUseMeshUnit(bool v);
-  //! Indique si on utilise le système d'unité présent dans le fichier
+  //! Indicates whether the unit system present in the file is used
   bool isUseMeshUnit() const;
 
  private:
@@ -90,5 +92,4 @@ class ARCANE_CORE_EXPORT MeshReaderMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

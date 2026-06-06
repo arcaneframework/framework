@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PrivateVariableScalar.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une variable sur une entité du maillage.                    */
+/* Class managing a variable on a mesh entity.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PRIVATEVARIABLESCALAR_H
 #define ARCANE_CORE_PRIVATEVARIABLESCALAR_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Classe de factorisation des variables scalaires sur des entités du maillage.
+ * \brief Class for factoring scalar variables on mesh entities.
  */
 template<typename DataType>
 class PrivateVariableScalarT
@@ -39,7 +40,7 @@ class PrivateVariableScalarT
   
  protected:
   
-  //! Construit une référence liée au module \a module
+  //! Constructs a reference linked to the \a module
   ARCANE_CORE_EXPORT PrivateVariableScalarT(const VariableBuildInfo& vb, const VariableInfo& vi);
   
  protected:
@@ -97,4 +98,4 @@ class PrivateVariableScalarT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

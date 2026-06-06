@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinVariableBase.cc                              (C) 2000-2026 */
 /*                                                                           */
-/* Classes de bases permettant d'exploiter l'objet MachineShMemWinVariable   */
-/* pointé de la zone mémoire des variables en mémoire partagée.              */
+/* Base classes allowing the exploitation of the MachineShMemWinVariable     */
+/* object pointed to the memory area of variables in shared memory.          */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/MachineShMemWinVariableBase.h"

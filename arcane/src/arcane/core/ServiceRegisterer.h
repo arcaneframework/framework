@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceRegisterer.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Singleton permettant d'enregistrer un service.                            */
+/* Singleton allowing service registration.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERCVICEREGISTERER_H
 #define ARCANE_CORE_SERCVICEREGISTERER_H
@@ -26,23 +26,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistreur de service et modules
+ * \brief Service and module registrar
  *
- * Cette classe implémente le pattern Singleton pour un service donnée.
+ * This class implements the Singleton pattern for a given service.
  * 
- * Elle permet de déclarer une variable globale qui enregistre automatiquement
- * le IServiceFactory du service souhaité. Cette classe ne s'utilise pas
- * directement mais par l'intermédiaire de la macro ARCANE_DEFINE_SERVICE(name).
+ * It allows declaring a global variable that automatically registers
+ * the IServiceFactory of the desired service. This class is not used
+ * directly but through the ARCANE_DEFINE_SERVICE(name) macro.
  * 
- * Comme cette classe est utilisé avec des instances globales, elles sont
- * construites avant que le code ne rentre dans le main(). Il faut donc
- * faire très attention à n'utiliser aucun objet ni faire d'allocation( En
- * particulier, le nom du service doit être un const char* standard).
- * Pour cela, la liste des services enregistré est maintenu dans une liste
- * chaînée et chaque instance contient le pointeur vers le membre suivant et
- * précédent de la liste. Le premier élément de la liste est obtenu par
- * l'appel à ServiceRegisterer::firstService().
+ * Since this class is used with global instances, they are
+ * constructed before the code enters main(). Therefore, extreme care
+ * must be taken not to use any objects or perform allocations (in
+ * particular, the service name must be a standard const char*). For
+ * this purpose, the list of registered services is maintained in a
+ * linked list, and each instance contains pointers to the next and
+ * previous members of the list. The first element of the list is
+ * obtained by calling ServiceRegisterer::firstService().
  */
 class ARCANE_CORE_EXPORT ServiceRegisterer
 {
@@ -54,92 +55,92 @@ class ARCANE_CORE_EXPORT ServiceRegisterer
  public:
 
   /*!
-   * \brief Crée en enregistreur pour le service \a name et la fonction \a func.
+   * \brief Creates a registrar for the service \a name and the function \a func.
    *
-   * Ce constructeur est utilisé pour enregistrer un service.
+   * This constructor is used to register a service.
    */
   ServiceRegisterer(ServiceInfoWithPropertyCreateFunc func, const ServiceProperty& properties) ARCANE_NOEXCEPT;
 
   /*!
-   * \brief Crée en enregistreur pour le module \a name avec les propriétés \a properties.
+   * \brief Creates a registrar for the module \a name with properties \a properties.
    *
-   * Ce constructeur est utilisé pour enregistrer un module.
+   * This constructor is used to register a module.
    */
   ServiceRegisterer(ModuleFactoryWithPropertyFunc func, const ModuleProperty& properties) ARCANE_NOEXCEPT;
 
  public:
 
   /*!
-   * \brief Fonction de création de l'instance 'ServiceInfo' si on est un service.
+   * \brief Creation function for the 'ServiceInfo' instance if it is a service.
    *
-   * Ce pointeur peut-être nul si on n'est pas un service, auquel cas
-   * il faut utiliser infoCreatorFunction().
+   * This pointer may be null if it is not a service, in which case
+   * infoCreatorFunction() must be used.
    */
   ServiceInfoWithPropertyCreateFunc infoCreatorWithPropertyFunction() { return m_info_function_with_property; }
 
   /*!
-   * \brief Fonction de création de la factory si on est un module.
+   * \brief Creation function for the factory if it is a module.
    *
-   * Ce pointeur peut-être nul si on n'est pas un module, auquel cas
-   * il faut utiliser infoCreatorFunction().
+   * This pointer may be null if it is not a module, in which case
+   * infoCreatorFunction() must be used.
    */
   ModuleFactoryWithPropertyFunc moduleFactoryWithPropertyFunction() { return m_module_factory_with_property_functor; }
 
-  //! Nom du service
+  //! Service name
   const char* name() { return m_name; }
 
   /*!
-   * \brief Propriétés du service.
+   * \brief Service properties.
    *
-   * \deprecated Utiliser \a serviceProperty() à la place
+   * \deprecated Use \a serviceProperty() instead
    */
   ARCANE_DEPRECATED_260 const ServiceProperty& property() const { return m_service_property; }
 
-  //! Propriétés dans le cas d'un service
+  //! Properties in the case of a service
   const ServiceProperty& serviceProperty() const { return m_service_property; }
 
-  //! Propriétés dans le cas d'un module
+  //! Properties in the case of a module
   const ModuleProperty& moduleProperty() const { return m_module_property; }
 
-  //! Service précédent (0 si le premier)
+  //! Previous service (0 if the first)
   ServiceRegisterer* previousService() const { return m_previous; }
 
-  //! Service suivant (0 si le dernier)
+  //! Next service (0 if the last)
   ServiceRegisterer* nextService() const { return m_next; }
 
  private:
 
-  //! Positionne le service précédent
-  /*! Utilisé en interne pour construire la chaine de service */
+  //! Positions the previous service
+  /*! Used internally to build the service chain */
   void setPreviousService(ServiceRegisterer* s) { m_previous = s; }
 
-  //! Positionne le service suivant
-  /*! Utilisé en interne pour construire la chaine de service */
+  //! Positions the next service
+  /*! Used internally to build the service chain */
   void setNextService(ServiceRegisterer* s) { m_next = s; }
 
  public:
 
-  //! Accès au premier élément de la chaine d'enregistreur de service
+  //! Access to the first element of the service registrar chain
   static ServiceRegisterer* firstService();
 
-  //! Nombre d'enregistreurs de service dans la chaine
+  //! Number of service registrars in the chain
   static Integer nbService();
 
  private:
 
-  //! Fonction de création du IModuleFactory
+  //! Function to create the IModuleFactory
   ModuleFactoryWithPropertyFunc m_module_factory_with_property_functor = nullptr;
-  //! Fonction de création du IServiceInfo
+  //! Function to create the IServiceInfo
   ServiceInfoWithPropertyCreateFunc m_info_function_with_property = nullptr;
-  //! Nom du service
+  //! Service name
   const char* m_name = nullptr;
-  //! Propriétés du service
+  //! Service properties
   ServiceProperty m_service_property;
-  //! Propriétés du module
+  //! Module properties
   ModuleProperty m_module_property;
-  //! Service précédent
+  //! Previous service
   ServiceRegisterer* m_previous = nullptr;
-  //! Service suivant
+  //! Next service
   ServiceRegisterer* m_next = nullptr;
 
  private:

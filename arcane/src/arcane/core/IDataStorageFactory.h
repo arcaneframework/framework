@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataStorageFactory.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une fabrique de conteneur d'une donnée.                       */
+/* Interface of a data container factory.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATASTORAGEFACTORY_H
 #define ARCANE_CORE_IDATASTORAGEFACTORY_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique de conteneur d'une donnée.
+ * \brief Interface of a data container factory.
  */
 class ARCANE_CORE_EXPORT IDataStorageFactory
 {
@@ -36,10 +37,10 @@ class ARCANE_CORE_EXPORT IDataStorageFactory
 
  public:
 
-  //! Créé une donnée d'un type simple.
+  //! Creates a simple data type.
   virtual Ref<IData> createSimpleDataRef(const DataStorageBuildInfo& dsbi) =0;
 
-  //! Informations sur le type de conteneur créé
+  //! Information about the created container type
   virtual DataStorageTypeInfo storageTypeInfo() =0;
 };
 
@@ -51,4 +52,4 @@ class ARCANE_CORE_EXPORT IDataStorageFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

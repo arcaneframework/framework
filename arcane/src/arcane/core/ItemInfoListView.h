@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInfoListView.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur une liste pour obtenir des informations sur les entités.          */
+/* View of a list to obtain information about entities.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMINFOLISTVIEW_H
 #define ARCANE_ITEMINFOLISTVIEW_H
@@ -24,17 +24,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur une liste pour obtenir des informations sur les entités.
+ * \brief View of a list to obtain information about entities.
  *
- * Comme toutes les vues, ces instances sont temporaires et ne doivent pas être
- * conservées entre deux modifications de la famille associée.
+ * Like all views, these instances are temporary and should not be
+ * kept between two modifications of the associated family.
  *
- * Les méthodes de cette classe ne sont valides que si l'instance a été initialisée
- * avec une famille (IItemFamily) non nulle.
+ * The methods of this class are only valid if the instance has been initialized
+ * with a non-null family (IItemFamily).
  *
- * Via cette classe, il est possible de récupérer une instance de Item à partir
- * d'un numéro local ItemLocalId.
+ * Via this class, it is possible to retrieve an Item instance from
+ * an ItemLocalId.
  */
 class ARCANE_CORE_EXPORT ItemInfoListView
 : public ItemGenericInfoListView
@@ -47,7 +48,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
   template <int Extent> friend class ItemConnectedListView;
   template <typename ItemType> friend class ItemEnumeratorBaseT;
 
-  // A supprimer lorqu'on n'aura plus besoin de _itemsInternal()
+  // To be deleted when we no longer need _itemsInternal()
   friend ItemVectorView;
 
  public:
@@ -55,29 +56,29 @@ class ARCANE_CORE_EXPORT ItemInfoListView
   ItemInfoListView() = default;
 
   /*!
-   * \brief Construit une vue associée à la famille \a family.
+   * \brief Constructs a view associated with the family \a family.
    *
-   * \a family peut valoir \a nullptr auquel cas l'instance n'est
-   * pas utilisable pour récupérer des informations sur les entités
+   * \a family may be \a nullptr in which case the instance is not
+   * usable for retrieving entity information
    */
   explicit ItemInfoListView(IItemFamily* family);
 
  public:
 
-  //! Famille associée
+  //! Associated family
   IItemFamily* itemFamily() const { return m_item_shared_info->itemFamily(); }
 
-  // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
+  // NOTE: The definitions of the two operator[] methods are in Item.h
 
-  //! Entité associée du numéro local \a local_id
+  //! Entity associated with local ID \a local_id
   inline Item operator[](ItemLocalId local_id) const;
 
-  //! Entité associée du numéro local \a local_id
+  //! Entity associated with local ID \a local_id
   inline Item operator[](Int32 local_id) const;
 
  private:
 
-  // Seule ItemFamily peut créer des instances via ce constructeur
+  // Only ItemFamily can create instances via this constructor
   explicit ItemInfoListView(ItemSharedInfo* shared_info)
   : ItemGenericInfoListView(shared_info)
   {}
@@ -91,8 +92,9 @@ class ARCANE_CORE_EXPORT ItemInfoListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues spécialisées des informations sur les entités.
+ * \brief Base class for specialized views of entity information.
  */
 template <typename ItemType>
 class ItemInfoListViewT
@@ -102,7 +104,7 @@ class ItemInfoListViewT
 
   ItemInfoListViewT() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit ItemInfoListViewT(IItemFamily* family)
   : ItemInfoListView(family)
   {
@@ -111,19 +113,20 @@ class ItemInfoListViewT
 
  public:
 
-  // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
+  // NOTE: The definitions of the two operator[] methods are in Item.h
 
-  //! Entité associée du numéro local \a local_id
+  //! Entity associated with local ID \a local_id
   inline ItemType operator[](ItemLocalId local_id) const;
 
-  //! Entité associée du numéro local \a local_id
+  //! Entity associated with local ID \a local_id
   inline ItemType operator[](Int32 local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations des noeuds.
+ * \brief View of node information.
  */
 class NodeInfoListView
 : public ItemInfoListViewT<Node>
@@ -136,7 +139,7 @@ class NodeInfoListView
 
   NodeInfoListView() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit NodeInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
@@ -144,8 +147,9 @@ class NodeInfoListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations des arêtes.
+ * \brief View of edge information.
  */
 class EdgeInfoListView
 : public ItemInfoListViewT<Edge>
@@ -158,7 +162,7 @@ class EdgeInfoListView
 
   EdgeInfoListView() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit EdgeInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
@@ -166,8 +170,9 @@ class EdgeInfoListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations des faces.
+ * \brief View of face information.
  */
 class FaceInfoListView
 : public ItemInfoListViewT<Face>
@@ -180,7 +185,7 @@ class FaceInfoListView
 
   FaceInfoListView() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit FaceInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
@@ -207,8 +212,9 @@ class FaceInfoListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations des mailles.
+ * \brief View of cell information.
  */
 class CellInfoListView
 : public ItemInfoListViewT<Cell>
@@ -221,7 +227,7 @@ class CellInfoListView
 
   CellInfoListView() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit CellInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
@@ -229,8 +235,9 @@ class CellInfoListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations des particules.
+ * \brief View of particle information.
  */
 class ParticleInfoListView
 : public ItemInfoListViewT<Particle>
@@ -243,7 +250,7 @@ class ParticleInfoListView
 
   ParticleInfoListView() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit ParticleInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}
@@ -251,8 +258,9 @@ class ParticleInfoListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations des DoFs.
+ * \brief View of DoF information.
  */
 class DoFInfoListView
 : public ItemInfoListViewT<DoF>
@@ -265,7 +273,7 @@ class DoFInfoListView
 
   DoFInfoListView() = default;
 
-  //! Construit une vue associée à la famille \a family.
+  //! Constructs a view associated with the family \a family.
   explicit DoFInfoListView(IItemFamily* family)
   : BaseClass(family)
   {}

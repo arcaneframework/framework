@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableArray.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Variable tableau 1D.                                                      */
+/* 1D array variable.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEARRAY_H
 #define ARCANE_CORE_VARIABLEARRAY_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'une variable sur un tableau 1D.
+ * \brief Implementation of a variable on a 1D array.
  *
- * Les méthodes de cette classe sont internes à %Arcane.
+ * The methods of this class are internal to %Arcane.
  */
 template<class T>
 class VariableArrayT
@@ -107,4 +108,4 @@ class VariableArrayT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

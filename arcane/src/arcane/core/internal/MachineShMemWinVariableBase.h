@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinVariableBase.h                               (C) 2000-2026 */
 /*                                                                           */
-/* Classes de bases permettant d'exploiter l'objet MachineShMemWinVariable   */
-/* pointé de la zone mémoire des variables en mémoire partagée.              */
+/* Base classes allowing the exploitation of the MachineShMemWinVariable     */
+/* pointed to the shared memory variable zone.                               */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_CORE_INTERNAL_MACHINESHMEMWINVARIABLEBASE_H
@@ -33,11 +33,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder à la partie en mémoire partagée entre
- * sous-domaines d'un même noeud d'une variable.
+ * \brief Class allowing access to the shared memory part between
+ * sub-domains of the same node of a variable.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  */
 class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
 {
@@ -45,44 +45,44 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariableBase(IVariable* var);
 
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method allowing retrieval of the ranks that possess a segment
+   * in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method allowing waiting until all processes/threads
+   * of the node call this method to continue execution.
    */
   void barrier() const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
-   * autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a view on the segment of another
+   * sub-domain of the node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the sub-domain.
+   * \return A view.
    */
   Span<std::byte> segmentView(Int32 rank) const;
 
   /*!
    * \brief
-   * \param nb_elem_dim1 En nb éléments
-   * \param sizeof_elem En octet
+   * \param nb_elem_dim1 In number of elements
+   * \param sizeof_elem In bytes
    */
   void updateVariable(Int64 nb_elem_dim1, Int64 sizeof_elem);
 
@@ -104,14 +104,14 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableBase
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder à la partie en mémoire partagée entre
- * sous-domaines d'un même noeud d'une variable tableau 2D.
+ * \brief Class allowing access to the shared memory part between
+ * sub-domains of the same node of a 2D array variable.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Dans cette classe, les deux dimensions peuvent être différentes pour chaque
- * sous-domaine.
+ * In this class, the two dimensions can be different for each
+ * sub-domain.
  */
 class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 : public MachineShMemWinVariableBase
@@ -120,8 +120,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariable2DBase(IVariable* var);
 
@@ -129,9 +129,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 
   /*!
    * \brief
-   * \param nb_elem_dim1 En nb elements
-   * \param nb_elem_dim2 En nb elements
-   * \param sizeof_elem En octet
+   * \param nb_elem_dim1 In number of elements
+   * \param nb_elem_dim2 In number of elements
+   * \param sizeof_elem In bytes
    */
   void updateVariable(Int64 nb_elem_dim1, Int64 nb_elem_dim2, Int64 sizeof_elem);
 
@@ -152,15 +152,15 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariable2DBase
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder à la partie en mémoire partagée entre
- * sous-domaines d'un même noeud d'une variable tableau 2D.
+ * \brief Class allowing access to the shared memory part between
+ * sub-domains of the same node of a 2D array variable.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Dans cette classe, seule la première dimension peut être différente pour
- * chaque sous-domaine. La seconde dimension doit être la même pour tous les
- * sous-domaines.
+ * In this class, only the first dimension can be different for
+ * each sub-domain. The second dimension must be the same for all
+ * sub-domains.
  */
 class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
 : public MachineShMemWinVariableBase
@@ -169,8 +169,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariableMDBase(IVariable* var);
 
@@ -178,9 +178,9 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableMDBase
 
   /*!
    * \brief
-   * \param nb_elem_dim1 En nb elements
-   * \param nb_elem_dim2 En nb elements
-   * \param sizeof_elem En octet
+   * \param nb_elem_dim1 In number of elements
+   * \param nb_elem_dim2 In number of elements
+   * \param sizeof_elem In bytes
    */
   void updateVariable(Int64 nb_elem_dim1, Int32 nb_elem_dim2, Int64 sizeof_elem);
 

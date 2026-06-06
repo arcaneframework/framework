@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleBuildInfo.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Paramètres pour construire un module.                                     */
+/* Parameters for building a module.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MODULEBUILDINFO_H
 #define ARCANE_CORE_MODULEBUILDINFO_H
@@ -25,12 +25,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour construire un module.
+ * \brief Information for building a module.
  *
- * \a ModuleBuildInfo est usuellement utilisé via \a BasicModule
- * (module basique) et \a AbstractModule (tout module) pour la
- * création des différents modules.
+ * \a ModuleBuildInfo is usually used via \a BasicModule
+ * (basic module) and \a AbstractModule (any module) for
+ * the creation of different modules.
  * 
  * \ingroup Module
  */
@@ -39,61 +40,61 @@ class ARCANE_CORE_EXPORT ModuleBuildInfo
  public:
 
   /*!
-  * \brief Constructeur à partir d'un sous-domaine, un maillage et un
-  * nom d'implémentation de module.
+  * \brief Constructor from a subdomain, a mesh, and a
+  * module implementation name.
   *
-  * \deprecated Utiliser la surcharge qui prend un MeshHandle à la place.
+  * \deprecated Use the overload that takes a MeshHandle instead.
   */
   ARCANE_DEPRECATED_REASON("Y2022: use overload with meshHandle() instead of mesh")
   ModuleBuildInfo(ISubDomain* sd, IMesh* mesh, const String& name);
 
  public:
 
-  //! Constructeur à partir d'un sous-domaine, un maillage et un nom d'implémentation de module
+  //! Constructor from a subdomain, a mesh, and a module implementation name
   ModuleBuildInfo(ISubDomain* sd, const MeshHandle& mesh_handle, const String& name);
 
   /*!
-   * \brief Constructeur à partir d'un sous-domaine et un nom d'implémentation de module
+   * \brief Constructor from a subdomain and a module implementation name
    *
-   * Le maillage considéré est alors le maillage par défaut \a ISubDomain::defautMesh()
+   * The mesh considered is then the default mesh \a ISubDomain::defautMesh()
    */
   ModuleBuildInfo(ISubDomain* sd, const String& name);
 
-  //! Destructeur
+  //! Destructor
   virtual ~ModuleBuildInfo() {}
 
  public:
 
-  //! Accès au sous-domaine associé
+  //! Access to the associated subdomain
   ISubDomain* subDomain() const { return m_sub_domain; }
 
-  //! Accès au maillage associé
+  //! Access to the associated mesh
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
-  //! Nom de l'implémentation recherchée
+  //! Name of the implementation sought
   const String& name() const { return m_name; }
 
  public:
 
   /*!
-   * \brief Accès au maillage associé.
+   * \brief Access to the associated mesh.
    *
-   * Le maillage n'existe pas toujours si le jeu de donnée n'a pas
-   * encore été lu.
+   * The mesh does not always exist if the dataset has not
+   * been read yet.
    *
-   * \deprecated Il faut utiliser meshHandle() à la place.
+   * \deprecated You must use meshHandle() instead.
    */
   IMesh* mesh() const { return m_mesh_handle.mesh(); }
 
  private:
 
-  //! Sous-domaine associé
+  //! Associated subdomain
   ISubDomain* m_sub_domain;
 
-  //! Maillage associé
+  //! Associated mesh
   MeshHandle m_mesh_handle;
 
-  //! Nom de l'implémentation recherchée
+  //! Name of the implementation sought
   String m_name;
 };
 
@@ -105,5 +106,4 @@ class ARCANE_CORE_EXPORT ModuleBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

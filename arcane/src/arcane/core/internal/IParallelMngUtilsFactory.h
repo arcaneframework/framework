@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParallelMngUtilsFactory.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une fabrique pour les fonctions utilitaires de IParallelMng.  */
+/* Interface of a factory for the utility functions of IParallelMng.         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IPARALLELMNGUTILSFACTORY_H
 #define ARCANE_CORE_INTERNAL_IPARALLELMNGUTILSFACTORY_H
@@ -25,9 +25,10 @@ namespace Arcane
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique pour les fonctions utilitaires de IParallelMng.
+ * \brief Interface of a factory for the utility functions of IParallelMng.
  */
 class ARCANE_CORE_EXPORT IParallelMngUtilsFactory
 {
@@ -38,54 +39,54 @@ class ARCANE_CORE_EXPORT IParallelMngUtilsFactory
  public:
 
   /*!
-   * \brief Retourne une opération pour récupérer les valeurs d'une variable
-   * sur les entités d'un autre sous-domaine.
+   * \brief Returns an operation to retrieve the values of a variable
+   * on the entities of another subdomain.
    */
   virtual Ref<IGetVariablesValuesParallelOperation>
   createGetVariablesValuesOperation(IParallelMng* pm) = 0;
 
-  //! Retourne une opération pour transférer des valeurs entre rangs.
+  //! Returns an operation to transfer values between ranks.
   virtual Ref<ITransferValuesParallelOperation>
   createTransferValuesOperation(IParallelMng* pm) = 0;
 
-  //! Retourne une interface pour transférer des messages entre rangs
+  //! Returns an interface to transfer messages between ranks
   virtual Ref<IParallelExchanger>
   createExchanger(IParallelMng* pm) = 0;
 
   /*!
-   * \brief Retourne une interface pour synchroniser des
-   * variables sur le groupe de la famille \a family
+   * \brief Returns an interface to synchronize
+   * variables on the group of the family \a family
    */
   virtual Ref<IVariableSynchronizer>
   createSynchronizer(IParallelMng* pm, IItemFamily* family) = 0;
 
   /*!
-   * \brief Retourne une interface pour synchroniser des
-   * variables sur le groupe \a group.
+   * \brief Returns an interface to synchronize
+   * variables on the group \a group.
    */
   virtual Ref<IVariableSynchronizer>
   createSynchronizer(IParallelMng* pm, const ItemGroup& group) = 0;
 
   /*!
-   * \brief Créé une instance contenant les infos sur la topologie des rangs de ce gestionnnaire.
+   * \brief Creates an instance containing information about the rank topology of this manager.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual Ref<IParallelTopology>
   createTopology(IParallelMng* pm) = 0;
 
   /*!
-   * \brief Créé un message de sérialisation non bloquant en envoi au rang \a rank.
+   * \brief Creates a non-blocking serialization message for sending to rank \a rank.
    *
-   * Le message est traité uniquement lors de l'appel à IParallelMng::processMessages().
+   * The message is processed only when IParallelMng::processMessages() is called.
    */
   virtual Ref<ISerializeMessage>
   createSendSerializeMessage(IParallelMng* pm, Int32 rank) = 0;
 
   /*!
-   * \brief Créé un message de sérialisation non bloquant en réception du rang \a rank.
+   * \brief Creates a non-blocking serialization message for receiving from rank \a rank.
    *
-   * Le message est traité uniquement lors de l'appel à IParallelMng::processMessages().
+   * The message is processed only when IParallelMng::processMessages() is called.
    */
   virtual Ref<ISerializeMessage>
   createReceiveSerializeMessage(IParallelMng* pm, Int32 rank) = 0;

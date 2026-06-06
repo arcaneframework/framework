@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EntryPoint.cc                                               (C) 2000-2022 */
 /*                                                                           */
-/* Point d'entrée d'un module.                                               */
+/* Entry point of a module.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,8 +56,8 @@ EntryPoint(const EntryPointBuildInfo& bi)
 , m_nb_call(0)
 , m_is_destroy_caller(bi.isDestroyCaller())
 {
-  // S'enregistre auprès du gestionnaire de points d'entrée.
-  // qui s'occupera de la destruction.
+  // Registers with the entry point manager.
+  // which will handle the destruction.
   m_sub_domain->entryPointMng()->addEntryPoint(this);
 
   {
@@ -88,7 +88,7 @@ EntryPoint::
 ~EntryPoint()
 {
   delete m_elapsed_timer;
-  //FIXME ceci ne doit pas etre detruit si on passe par le wrapper C#
+  //FIXME this must not be destroyed if we go through the C# wrapper
   if (m_is_destroy_caller)
     delete m_caller;
 }
@@ -121,13 +121,13 @@ _getAddressForHyoda(void* next_entry_point_address)
 void EntryPoint::
 executeEntryPoint()
 {
-  // Les points d'entrée de la boucle de calcul ne
-  // sont pas appelés si le module n'est pas actif.
+  // Entry points for the compute loop are not
+  // called if the module is not active.
   if (m_module->disabled() && m_where == WComputeLoop)
     return;
 
-  // Dans le cas de GCC, on va piocher dans la module_vtable pour récupérer l'adresse à venir
-  // que l'on va présenter à Hyoda
+  // In the case of GCC, we will fetch from the module_vtable to retrieve the upcoming address
+  // which we will present to Hyoda
   if (!platform::hasDotNETRuntime()) {
 #ifdef __GNUG__
     _getAddressForHyoda((static_cast<IFunctorWithAddress*>(m_caller))->functorAddress());
@@ -210,4 +210,3 @@ lastTime(Timer::eTimerType) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

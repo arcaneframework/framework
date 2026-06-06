@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IGhostLayerMng.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de couches fantômes d'un maillage.              */
+/* Interface of the mesh ghost layer manager.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IGHOSTLAYERMNG_H
 #define ARCANE_CORE_IGHOSTLAYERMNG_H
@@ -24,34 +24,35 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * Interface du gestionnaire de couche fantômes d'un maillage.
+ * Interface of the mesh ghost layer manager.
  */
 class IGhostLayerMng
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IGhostLayerMng() =default;
 
  public:
 
-  //! Positionne le nombre de couches fantômes.
+  //! Sets the number of ghost layers.
   virtual void setNbGhostLayer(Integer n) =0;
 
-  //! Nombre de couches fantômes.
+  //! Number of ghost layers.
   virtual Integer nbGhostLayer() const =0;
 
   /*!
-   * \brief Positionne la version du constructeur de mailles fantômes.
-   * Pour l'instant (version 3.3), les valeurs possibles sont 2, 3 ou 4.
-   * La valeur par défaut est 2. Les valeurs 3 et 4 permettent le support
-   * de plusieurs couches de mailles fantômes.
+   * \brief Sets the version of the ghost mesh builder.
+   * For now (version 3.3), the possible values are 2, 3, or 4.
+   * The default value is 2. Values 3 and 4 allow support
+   * of multiple ghost mesh layers.
    */  
   virtual void setBuilderVersion(Integer n) =0;
 
-  //! Version du constructeur de mailles fantômes.
+  //! Ghost mesh builder version.
   virtual Integer builderVersion() const =0;
 };
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemPairGroup.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Tableau de listes d'entités.                                              */
+/* Table of entity lists.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMPAIRGROUP_H
 #define ARCANE_CORE_ITEMPAIRGROUP_H
@@ -29,36 +29,38 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//NOTE: la documentation complète est dans ItemPairGroup.cc
+
+//NOTE: The complete documentation is in ItemPairGroup.cc
+
 /*!
- * \brief Tableau de listes d'entités.
+ * \brief Table of entity lists.
  */
 class ARCANE_CORE_EXPORT ItemPairGroup
 {
  public:
 
   /*!
-   * \brief Functor pour un calcul personnalisé des connectivités.
+   * \brief Functor for custom connectivity calculation.
    */
   typedef IFunctorWithArgumentT<ItemPairGroupBuilder&> CustomFunctor;
   class CustomFunctorWrapper;
 
  public:
 
-  //! Construit un tableau vide.
+  //! Constructs an empty table.
   ItemPairGroup();
-  //! Construit un groupe à partir de la représentation interne \a prv
+  //! Constructs a group from the internal representation \a prv
   explicit ItemPairGroup(ItemPairGroupImpl* prv);
   /*!
-   * \brief Construit une instance en spécifiant le voisinage via les entités
-   * de genre \a link_kind.
+   * \brief Constructs an instance by specifying the neighborhood via entities
+   * of kind \a link_kind.
    */
   ItemPairGroup(const ItemGroup& group, const ItemGroup& sub_item_group,
                 eItemKind link_kind);
-  //! Construit une instance avec un fonctor particulier.
+  //! Constructs an instance with a specific functor.
   ItemPairGroup(const ItemGroup& group, const ItemGroup& sub_item_group,
                 CustomFunctor* functor);
-  //! Constructeur de recopie.
+  //! Copy constructor.
   ItemPairGroup(const ItemPairGroup& from)
   : m_impl(from.m_impl)
   {}
@@ -72,49 +74,48 @@ class ARCANE_CORE_EXPORT ItemPairGroup
 
  public:
 
-  //! \a true is le groupe est le groupe nul
+  //! \a true means the group is the null group
   inline bool null() const { return m_impl->null(); }
-  //! Type des entités du groupe
+  //! Type of entities in the group
   inline eItemKind itemKind() const { return m_impl->itemKind(); }
-  //! Type des sous-entités du groupe
+  //! Type of sub-entities in the group
   inline eItemKind subItemKind() const { return m_impl->subItemKind(); }
 
  public:
 
   /*!
-   * \brief Retourne l'implémentation du groupe.
+   * \brief Returns the group implementation.
    *
-   * \warning Cette méthode retourne un pointeur sur la représentation
-   * interne du groupe et ne doit pas être utilisée
-   * en dehors d'Arcane.
+   * \warning This method returns a pointer to the group's internal representation
+   * and should not be used outside of Arcane.
    */
   ItemPairGroupImpl* internal() const { return m_impl.get(); }
 
-  //! Famille d'entité à laquelle appartient ce groupe (0 pour une liste nulle)
+  //! Entity family to which this group belongs (0 for a null list)
   IItemFamily* itemFamily() const { return m_impl->itemFamily(); }
 
-  //! Famille d'entité à laquelle appartient ce groupe (0 pour une liste nulle)
+  //! Entity family to which this group belongs (0 for a null list)
   IItemFamily* subItemFamily() const { return m_impl->subItemFamily(); }
 
-  //! Maillage auquel appartient cette liste (0 pour une liste nulle)
+  //! Mesh to which this list belongs (0 for a null list)
   IMesh* mesh() const { return m_impl->mesh(); }
 
-  //! Groupe des items initiaux
+  //! Initial item group
   const ItemGroup& itemGroup() const { return m_impl->itemGroup(); }
 
-  //! Groupe des items finaux (après rebond)
+  //! Final item group (after bounce)
   const ItemGroup& subItemGroup() const { return m_impl->subItemGroup(); }
 
  public:
 
-  /*! \brief Invalide la liste.
+  /*! \brief Invalidates the list.
    */
   void invalidate(bool force_recompute = false)
   {
     m_impl->invalidate(force_recompute);
   }
 
-  //! Vérification interne de la validité du groupe
+  //! Internal check of group validity
   void checkValid() { m_impl->checkValid(); }
 
  public:
@@ -123,12 +124,12 @@ class ARCANE_CORE_EXPORT ItemPairGroup
 
  protected:
 
-  //! Représentation interne du groupe.
+  //! Internal representation of the group.
   AutoRefT<ItemPairGroupImpl> m_impl;
 
  protected:
 
-  //! Retourne le groupe \a impl s'il est du genre \a kt, le groupe nul sinon
+  //! Returns the group \a impl if it is of kind \a kt, the null group otherwise
   static ItemPairGroupImpl* _check(ItemPairGroupImpl* impl, eItemKind ik, eItemKind aik)
   {
     return (impl->itemKind() == ik && impl->subItemKind() == aik) ? impl : ItemPairGroupImpl::checkSharedNull();
@@ -137,10 +138,11 @@ class ARCANE_CORE_EXPORT ItemPairGroup
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Compare les références de deux groupes.
- * \retval true si \a g1 et \a g2 réfèrent au même groupe,
- * \retval false sinon.
+ * \brief Compares the references of two groups.
+ * \retval true if \a g1 and \a g2 refer to the same group,
+ * \retval false otherwise.
  */
 inline bool
 operator==(const ItemPairGroup& g1, const ItemPairGroup& g2)
@@ -149,9 +151,9 @@ operator==(const ItemPairGroup& g1, const ItemPairGroup& g2)
 }
 
 /*!
- * \brief Compare les références de deux groupes.
- * \retval true si \a g1 et \a g2 ne réfèrent pas au même groupe,
- * \retval false sinon.
+ * \brief Compares the references of two groups.
+ * \retval true if \a g1 and \a g2 do not refer to the same group,
+ * \retval false otherwise.
  */
 inline bool
 operator!=(const ItemPairGroup& g1, const ItemPairGroup& g2)
@@ -161,8 +163,9 @@ operator!=(const ItemPairGroup& g1, const ItemPairGroup& g2)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence à un groupe d'un genre donné.
+ * \brief Reference to a group of a given kind.
  */
 template <typename ItemKind, typename SubItemKind>
 class ItemPairGroupT
@@ -170,9 +173,9 @@ class ItemPairGroupT
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemPairGroupT<ItemKind, SubItemKind> ThatClass;
-  //! Type de la classe contenant les caractéristiques de l'entité
+  //! Type of the class containing the entity characteristics
   typedef ItemTraitsT<ItemKind> TraitsType;
   typedef ItemTraitsT<SubItemKind> SubTraitsType;
 

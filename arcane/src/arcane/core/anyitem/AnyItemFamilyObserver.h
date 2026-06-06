@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemFamilyObserver.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interfaces Observeur pour la famille et famille de liens                  */
+/* Observer Interfaces for family and link family                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMFAMILYOBSERVER_H
 #define ARCANE_CORE_ANYITEM_ANYITEMFAMILYOBSERVER_H 
@@ -30,7 +30,7 @@ ANYITEM_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
   
 /*!
- * \brief Interface d'observeurs de famille AnyItem
+ * \brief AnyItem family observer interface
  */
 class IFamilyObserver
 { 
@@ -38,17 +38,17 @@ public:
   
   virtual ~IFamilyObserver() {}
   
-  //! Notifie à l'observeur que la famille est invalidée
+  //! Notifies the observer that the family is invalidated
   virtual void notifyFamilyIsInvalidate() = 0; 
 
-  //! Notifie à l'observeur que la famille est agrandie
+  //! Notifies the observer that the family has been increased
   virtual void notifyFamilyIsIncreased() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Interface d'observeurs de famille de liaisons AnyItem
+ * \brief AnyItem link family observer interface
  */
 class ILinkFamilyObserver
 { 
@@ -56,10 +56,10 @@ public:
   
   virtual ~ILinkFamilyObserver() {}
 
-  //! Notifie à l'observeur que la famille est invalidée
+  //! Notifies the observer that the family is invalidated
   virtual void notifyFamilyIsInvalidate() = 0; 
 
-  //! Notifie à l'observeur que la famille est reservée
+  //! Notifies the observer that the family is reserved
   virtual void notifyFamilyIsReserved() = 0;
 };
 

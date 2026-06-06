@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshBuildInfo.cc                                            (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour construire un maillage.                                 */
+/* Information for building a mesh.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@ MeshBuildInfo(const String& name)
 : m_name(name)
 , m_factory_name("ArcaneDynamicMeshFactory")
 {
-  // TODO: vérifier la validité du nom
+  // TODO: check the validity of the name
 }
 
 /*---------------------------------------------------------------------------*/

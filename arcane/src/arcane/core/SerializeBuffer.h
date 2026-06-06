@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializeBuffer.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Tampon de serialisation.                                                  */
+/* Serialization buffer.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERIALIZEBUFFER_H
 #define ARCANE_CORE_SERIALIZEBUFFER_H
@@ -27,15 +27,16 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'un tampon pour la sérialisation.
+ * \brief Implementation of a buffer for serialization.
  *
- * Cette classe est interne à %Arcane et ne doit pas être utilisée en
- * dehors.
+ * This class is internal to %Arcane and should not be used
+ * externally.
  *
- * Cette classe est obsolète. Il faut Utiliser Arccore::BasicSerializer
- * à la place
+ * This class is obsolete. You must use Arccore::BasicSerializer
+ * instead.
  */
 class ARCANE_CORE_EXPORT SerializeBuffer
 : public Arccore::BasicSerializer

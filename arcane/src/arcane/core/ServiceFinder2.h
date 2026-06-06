@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceFinder2.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classe pour trouver un service donné.                                     */
+/* Class to find a given service.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICEFINDER2_H
 #define ARCANE_CORE_SERVICEFINDER2_H
@@ -37,10 +37,11 @@ namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe utilitaire pour retrouver un ou plusieurs services
- * implémentant l'interface \a InterfaceType.
+ * \brief Utility class to find one or more services
+ * implementing the \a InterfaceType interface.
  */
 template<typename InterfaceType>
 class ServiceFinderBase2T
@@ -56,12 +57,13 @@ class ServiceFinderBase2T
   virtual ~ServiceFinderBase2T(){}
 
  public:
+
   /*!
-   * \brief Créé une instance du service \a name.
+   * \brief Creates an instance of the service \a name.
    *
-   * Retourne nul si aucun service de ce nom n'existe.
+   * Returns null if no service with this name exists.
    *
-   * \deprecated Utiliser createReference() à la place.
+   * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
   virtual InterfaceType* create(const String& name)
@@ -70,9 +72,9 @@ class ServiceFinderBase2T
   }
 
   /*!
-   * \brief Créé une instance du service \a name.
+   * \brief Creates a reference to the service \a name.
    *
-   * Retourne une référence nulle si aucun service de ce nom n'existe.
+   * Returns a null reference if no service with this name exists.
    */
   virtual Ref<InterfaceType> createReference(const String& name)
   {
@@ -80,14 +82,14 @@ class ServiceFinderBase2T
   }
 
   /*!
-   * \brief Créé une instance du service \a name pour le maillage \a mesh.
+   * \brief Creates an instance of the service \a name for the mesh \a mesh.
    *
-   * Cela n'est valide que pour les services de sous-domaine. Pour les autres,
-   * cela est sans effet.
-   * L'appelant doit détruire ces services.
-   * Retourne nul si aucun service de ce nom n'existe.
+   * This is only valid for subdomain services. For others,
+   * it has no effect.
+   * The caller must destroy these services.
+   * Returns null if no service with this name exists.
    *
-   * \deprecated Utiliser createReference() à la place.
+   * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
   virtual InterfaceType* create(const String& name,IMesh* mesh)
@@ -101,12 +103,12 @@ class ServiceFinderBase2T
   }
 
   /*!
-   * \brief Créé une instance du service \a name pour le maillage \a mesh.
+   * \brief Creates a reference to the service \a name for the mesh \a mesh.
    *
-   * Cela n'est valide que pour les services de sous-domaine. Pour les autres,
-   * cela est sans effet.
-   * L'appelant doit détruire ces services.
-   * Retourne nul si aucun service de ce nom n'existe.
+   * This is only valid for subdomain services. For others,
+   * it has no effect.
+   * The caller must destroy these services.
+   * Returns null if no service with this name exists.
    */
   virtual Ref<InterfaceType> createReference(const String& name,IMesh* mesh)
   {
@@ -119,9 +121,9 @@ class ServiceFinderBase2T
   }
 
   /*!
-   * \brief Instance singleton du service ayant pour interface \a InterfaceType.
+   * \brief Singleton instance of the service having the \a InterfaceType interface.
    *
-   * Retourne nul si aucun service n'est trouvé
+   * Returns null if no service is found
    */
   virtual InterfaceType* getSingleton()
   {
@@ -142,11 +144,11 @@ class ServiceFinderBase2T
   }
 
   /*!
-   * \brief Créé une instance de chaque service qui implémente \a InterfaceType.
+   * \brief Creates an instance of every service that implements \a InterfaceType.
    *
-   * L'appelant doit détruire ces services via l'appel à 'operator delete'.
+   * The caller must destroy these services via the call to 'operator delete'.
    *
-   * \deprecated Utilise ls surcharge prenant en argument un tableau de références.
+   * \deprecated Use the overload taking an array of references instead.
    */
   ARCCORE_DEPRECATED_2019("Use createAll(Array<ServiceRef<InterfaceType>>&) instead")
   virtual void createAll(Array<InterfaceType*>& instances)
@@ -155,7 +157,7 @@ class ServiceFinderBase2T
   }
 
   /*!
-   * \brief Créé une instance de chaque service qui implémente \a InterfaceType.
+   * \brief Creates an instance of every service that implements \a InterfaceType.
    */
   virtual UniqueArray<Ref<InterfaceType>> createAll()
   {
@@ -254,11 +256,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour retrouver un ou plusieurs services
- * implémentant l'interface \a InterfaceType.
- * \deprecated Cette classe ne doit plus être utilisée directement.
- * Il faut utiliser à la place ServiceBuilder.
+ * \brief Utility class to find one or more services
+ * implementing the \a InterfaceType interface.
+ * \deprecated This class should no longer be used directly.
+ * Use ServiceBuilder instead.
  */
 template<typename InterfaceType,typename ParentType>
 class ServiceFinder2T
@@ -283,4 +286,4 @@ class ServiceFinder2T
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

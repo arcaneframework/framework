@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemLocalId.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Index sur les variables matériaux.                                        */
+/* Index for material variables.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CONSTITUENTITEMLOCALID_H
 #define ARCANE_CORE_MATERIALS_CONSTITUENTITEMLOCALID_H
@@ -24,9 +24,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Index d'un ConstituentItem dans une variable.
+ * \brief Index of a ConstituentItem in a variable.
  */
 class ConstituentItemLocalId
 {
@@ -41,7 +42,7 @@ class ConstituentItemLocalId
 
  public:
 
-  //! Index générique pour accéder aux valeurs d'une variable.
+  //! Generic index to access variable values.
   constexpr ARCCORE_HOST_DEVICE MatVarIndex localId() const { return m_local_id; }
 
  public:
@@ -58,7 +59,7 @@ class ConstituentItemLocalId
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
- * \brief Index d'un MatItem dans une variable.
+ * \brief Index of a MatItem in a variable.
  */
 class MatItemLocalId
 : public ConstituentItemLocalId
@@ -78,7 +79,7 @@ class MatItemLocalId
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
- * \brief Index d'un EnvItem dans une variable.
+ * \brief Index of an EnvItem in a variable.
  */
 class EnvItemLocalId
 : public ConstituentItemLocalId
@@ -102,5 +103,4 @@ class EnvItemLocalId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

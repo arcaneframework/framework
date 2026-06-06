@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemFamilyPolicyMng.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Politiques d'une famille d'entités.                                       */
+/* Policies of an entity family.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILYPOLICYMNG_H
 #define ARCANE_CORE_IITEMFAMILYPOLICYMNG_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des politiques d'une famille d'entités.
+ * \brief Interface for entity family policies.
  */
 class ARCANE_CORE_EXPORT IItemFamilyPolicyMng
 {
@@ -35,32 +36,32 @@ class ARCANE_CORE_EXPORT IItemFamilyPolicyMng
 
  public:
 
-  //! Politique de compactage
+  //! Compaction policy
   virtual IItemFamilyCompactPolicy* compactPolicy() = 0;
   /*!
-   * \brief Créé une instance pour l'échange d'entités entre sous-domaines.
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * \brief Creates an instance for exchanging entities between subdomains.
+   * The returned instance must be destroyed by the delete operator.
    */
   virtual IItemFamilyExchanger* createExchanger() = 0;
 
   /*!
-   * \brief Créé une instance pour la sérialisation des entités.
-   * L'instance retournée doit être détruite par l'opérateur delete.
+   * \brief Creates an instance for entity serialization.
+   * The returned instance must be destroyed by the delete operator.
    *
-   * \a with_flags indique si on doit sérialiser la valeur de Item::flags().
-   * Cela n'est pas forcément supporté pour toutes les familles.
+   * \a with_flags indicates whether the value of Item::flags() should be serialized.
+   * This is not necessarily supported for all families.
    */
   virtual IItemFamilySerializer* createSerializer(bool with_flags = false) = 0;
 
   /*!
-   * \brief Ajoute une fabrique pour une étape de la sérialisation.
+   * \brief Adds a factory for a serialization step.
    *
-   * \a factory reste la propriété de l'appelant et ne doit pas être détruit
-   * tant que cette instance existe.
+   * \a factory remains the property of the caller and must not be destroyed
+   * as long as this instance exists.
    */
   virtual void addSerializeStep(IItemFamilySerializeStepFactory* factory) = 0;
 
-  //! Supprime une fabrique pour une étape de la sérialisation.
+  //! Removes a factory for a serialization step.
   virtual void removeSerializeStep(IItemFamilySerializeStepFactory* factory) = 0;
 };
 

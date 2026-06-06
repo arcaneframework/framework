@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemUserGroup.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Groupe utilisateur aggrégée de types quelconques.                         */
+/* Aggregated user group of arbitrary types.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H 
 #define ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H
@@ -29,11 +29,11 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Groupe utilisateur
- * pour spécifier des groupes (Arcane) sur lesquels on souhaite itérer
- * ces groupes doivent être dans la famille
+ * \brief User group
+ * to specify groups (Arcane) over which one wishes to iterate
+ * these groups must be in the family
  *
- * Par exemple :
+ * For example:
  *
  * AnyItem::Family family;
  *
@@ -68,7 +68,7 @@ public:
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
   }
 
-  //! Ajout d'un groupe arcane au groupe
+  //! Adds an arcane group to the group
   inline UserGroup& operator<<(GroupBuilder builder)
   {
     ItemGroup group = builder.group();
@@ -86,28 +86,28 @@ public:
     return *this;
   }
   
-  //! Vide le groupe
+  //! Clears the group
   inline void clear() {
     m_currents.clear();
   }
 
-  //! Action si la famille est invalidée : on vide le groupe
+  //! Action if the family is invalidated: clears the group
   inline void notifyFamilyIsInvalidate() {
-    // Si la famille change, on invalide le groupe
+    // If the family changes, the group is invalidated
     clear();
   }
 
-  //! Si la famille est agrandie, pas d'impact sur le groupe
+  //! If the family is increased, no impact on the group
   inline void notifyFamilyIsIncreased() {
-    // On ne fait rien dans ce cas
+    // Nothing is done in this case
   }
   
 private:
   
-  //! Famille AnyItem (copie flyweight)
+  //! AnyItem Family (flyweight copy)
   const Family m_family;
   
-  //! Table Groupe - offset
+  //! Group Table - offset
   GroupIndexMapping m_currents;
 };
 

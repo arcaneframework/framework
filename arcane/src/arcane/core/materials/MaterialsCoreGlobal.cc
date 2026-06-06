@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialsCoreGlobal.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales des matériaux de Arcane.                           */
+/* General declarations of Arcane materials.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,7 +22,7 @@
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactory.h"
 
-// Pas utilisé directement mais nécessaire pour l'exportation des symboles.
+// Not used directly but necessary for symbol export.
 #include "arcane/core/materials/internal/IMeshComponentInternal.h"
 #include "arcane/core/materials/internal/IMeshMaterialMngInternal.h"
 #include "arcane/core/materials/ConstituentItemIndexedSelectionView.h"

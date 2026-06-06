@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BinaryExpressionImpl.cc                                     (C) 2000-2007 */
 /*                                                                           */
-/* Implementation d'une expression binaire.                                  */
+/* Implementation of a binary expression.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -69,13 +69,13 @@ apply(ExpressionResult* result)
     << operationName() << " [" << *result << "]\n";
   */
 
-  // calcul des expressions gauche et droite
+  // calculate the left and right expressions
   ExpressionResult first_op(result->indices());
   m_first->apply(&first_op);
   ExpressionResult second_op(result->indices());
   m_second->apply(&second_op);
 
-  // recherche de l'operateur en fonction du type attendu en resultat
+  // search for the operator based on the expected type in the result
   VariantBase::eType type = first_op.data()->type();
   BinaryOperator* op = m_op_mng->find(this, type, m_operation);
   if (!op)
@@ -97,4 +97,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

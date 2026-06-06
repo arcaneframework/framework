@@ -7,13 +7,12 @@
 /*---------------------------------------------------------------------------*/
 /* InterfaceImpl.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des interfaces.                                            */
+/* Implementation of interfaces.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Sous Windows, il faut inclure les interfaces pour que leurs symboles
- * soient disponibles (sous linux aussi si on utilise gcc avec les infos
- * de visibilités).
+ * On Windows, you must include the interfaces so that their symbols
+ * are available (on Linux too if using gcc with visibility information).
  */
 
 #include "arcane/core/IVariableSynchronizerMng.h"
@@ -273,7 +272,7 @@ setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 void IPostProcessorWriter::
 setMesh([[maybe_unused]] IMesh* mesh)
 {
-  // Utiliser variable d'environnement.
+  // Use environment variable.
   if (platform::getEnvironmentVariable("ARCANE_ALLOW_POSTPROCESSOR_SETMESH")=="1")
     return;
   ARCANE_FATAL("This call is deprecated and does not do anything."

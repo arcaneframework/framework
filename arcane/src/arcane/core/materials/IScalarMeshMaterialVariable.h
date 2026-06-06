@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IScalarMeshMaterialVariable.h                               (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'une variable matériau scalaire.                               */
+/* Interface for a scalar material variable.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_ISCALARMESHMATERIALVARIABLE_H
 #define ARCANE_MATERIALS_ISCALARMESHMATERIALVARIABLE_H
@@ -27,9 +27,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'accès pour CellMaterialVariableScalarRef.
+ * \brief Access interface for CellMaterialVariableScalarRef.
  */
 template<typename ItemType,typename DataType>
 class IScalarMeshMaterialVariable

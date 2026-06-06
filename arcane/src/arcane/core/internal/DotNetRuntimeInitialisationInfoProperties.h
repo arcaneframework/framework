@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DotNetRuntimeInitialisationInfoProperties.h                 (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime '.Net'.                     */
+/* Information for the initialization of the '.Net' runtime.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_DOTNETRUNTIMEINITIALISATIONINFOPROPERTIES_H
 #define ARCANE_UTILS_INTERNAL_DOTNETRUNTIMEINITIALISATIONINFOPROPERTIES_H

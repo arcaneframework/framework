@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadVariantTypeException.cc                                  (C) 2000-2018 */
 /*                                                                           */
-/* Exception levée lorsqu'un variant n'est pas du type souhaité              */
+/* Exception raised when a variant is not of the desired type                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

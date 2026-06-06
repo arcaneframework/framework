@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshUtilities.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une classe proposant des fonctions utilitaires sur maillage.  */
+/* Interface of a class providing utility functions on meshes.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHUTILITIES_H
 #define ARCANE_CORE_IMESHUTILITIES_H
@@ -28,24 +28,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une classe proposant des fonctions utilitaires sur maillage.
+ * \brief Interface of a class providing utility functions on meshes.
  */
 class ARCANE_CORE_EXPORT IMeshUtilities
 {
  public:
 
-  virtual ~IMeshUtilities() = default; //!< Libère les ressources.
+  virtual ~IMeshUtilities() = default; //!< Frees resources.
 
  public:
 
   /*!
-   * \brief Recherche les identifiants locaux des entités à partir
-   * de leur connectivité.
+   * \brief Searches for the local IDs of entities based on their
+   * connectivity.
    *
-   * Cette méthode n'est implémentée que pour les faces d'ordre 1.
+   * This method is only implemented for order 1 faces.
    *
-   * \deprecated Utiliser getFacesLocalIdFromConnectivity() à la place.
+   * \deprecated Use getFacesLocalIdFromConnectivity() instead.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use getFacesLocalIdFromConnectivity() instead")
   virtual void localIdsFromConnectivity(eItemKind item_kind,
@@ -55,27 +56,28 @@ class ARCANE_CORE_EXPORT IMeshUtilities
                                         bool allow_null=false) =0;
 
   /*!
-   * \brief Recherche les identifiants locaux des faces à partir
-   * de leur connectivité.
+   * \brief Searches for the local IDs of faces based on their connectivity.
    *
-   * Prend en entrée une liste d'entités décrite par les identifiants uniques
-   * (Item::uniqueId()) de leurs noeuds et recherche les identifiants locaux (Item::localId())
-   * de ces entités.
+   * Takes as input a list of entities described by the unique IDs
+   * (Item::uniqueId()) of their nodes and searches for the local IDs
+   * (Item::localId())
+   * of these entities.
    *
-   * \param items_type tableau des ItemTypeId des entités
-   * \param items_connectivity tableau contenant les indices uniques des noeuds des entités.
-   * \param local_ids en retour, contient les identifiants locaux des
-   * entités. Le nombre d'éléments de \a local_ids doit être égal à
-   * celui de \a items_nb_node.
+   * \param items_type array of ItemTypeId of the entities
+   * \param items_connectivity array containing the unique indices of the
+   *                           entities' nodes.
+   * \param local_ids in return, contains the local IDs of the entities.
+   *                  The number of elements in \a local_ids must be equal to that
+   *                  of \a items_nb_node.
    *
-   * Le tableau \a items_connectivity contient les identifiants des noeuds des faces,
-   * rangés consécutivement. Par exemple, si \c items_type[0]==IT_Triangle3 et
-   * \c items_type[1]==IT_Quad4, alors \a items_connectivity[0..2] contiendra les
-   * noeuds de l'entité 0, et items_connectivity[3..6] ceux de l'entité 1.
+   * The array \a items_connectivity contains the node IDs of the faces,
+   * listed consecutively. For example, if \c items_type[0]==IT_Triangle3 and
+   * \c items_type[1]==IT_Quad4, then \a items_connectivity[0..2] will contain the
+   * nodes of entity 0, and items_connectivity[3..6] those of entity 1.
    *
-   * Si \a allow_null est faux, une erreur fatale est générée si
-   * une entité n'est pas trouvée, sinon NULL_ITEM_LOCAL_ID est
-   * retourné pour l'entité correspondante.
+   * If \a allow_null is false, a fatal error is generated if
+   * an entity is not found; otherwise, NULL_ITEM_LOCAL_ID is
+   * returned for the corresponding entity.
    */
   virtual void getFacesLocalIdFromConnectivity(ConstArrayView<ItemTypeId> items_type,
                                                ConstArrayView<Int64> items_connectivity,
@@ -83,156 +85,153 @@ class ARCANE_CORE_EXPORT IMeshUtilities
                                                bool allow_null = false) = 0;
 
   /*!
-   * \brief Calcule la normale d'un groupe de face.
+   * \brief Calculates the normal of a face group.
    *
-   * Cette méthode calcule la normale à un groupe de face en considérant que
-   * cette surface est un plan. Pour le calcul, l'algorithme essaie de
-   * déterminer les noeuds aux extrémités de cette surface, et calcule une
-   * normale à partir de ces noeuds. L'orientation de la normale (rentrante
-   * ou sortante) est indéfinie.
+   * This method calculates the normal of a face group by assuming that
+   * this surface is a plane. For the calculation, the algorithm attempts to
+   * determine the nodes at the ends of this surface and calculates a
+   * normal from these nodes. The orientation of the normal (inward
+   * or outward) is undefined.
    *
-   * Si la surface n'est pas plane, le résultat est indéfini.
+   * If the surface is not planar, the result is undefined.
    *
-   * L'algorithme actuel ne fonctionne pas toujours sur une surface composée
-   * uniquement de triangles.
+   * The current algorithm does not always work on a surface composed
+   * only of triangles.
    *
-   * Cette méthode est collective. L'algorithme utilisé garantit les
-   * mêmes résultats en séquentiel et en parallèle.
+   * This method is collective. The algorithm used guarantees the
+   * same results in sequential and parallel execution.
    *
-   * La variable \a nodes_coord est utilisée comme coordonnées pour les noeuds.
-   * En général, il s'agit de IMesh::nodesCoordinates().
+   * The variable \a nodes_coord is used as coordinates for the nodes.
+   * Generally, this is IMesh::nodesCoordinates().
    */
   virtual Real3 computeNormal(const FaceGroup& face_group,
                               const VariableNodeReal3& nodes_coord) =0;
 
   /*!
-   * \brief Calcule le vecteur directeur d'une ligne.
+   * \brief Calculates the direction vector of a line.
    *
-   * Cette méthode calcule le vecteur directeur d'un groupe de noeuds
-   * en considérant qu'il forme une ligne. Pour le calcul, l'algorithme essaie de
-   * déterminer les noeuds aux extrémités de cette ligne, et calcule un
-   * vecteur à partir de ces noeuds. Le sens du vecteur est indéfini.
+   * This method calculates the direction vector of a group of nodes
+   * by assuming that it forms a line. For the calculation, the algorithm attempts to
+   * determine the nodes at the ends of this line and calculates a
+   * vector from these nodes. The direction of the vector is undefined.
    *
-   * Si le groupe ne forme pas une ligne, le résultat est indéfini.
+   * If the group does not form a line, the result is undefined.
    *
-   * Cette méthode est collective. L'algorithme utilisé garantit les
-   * mêmes résultats en séquentiel et en parallèle.
+   * This method is collective. The algorithm used guarantees the
+   * same results in sequential and parallel execution.
    *
-   * Si \a n1 et \a n2 ne sont pas nuls, ils contiendront en sortie
-   * les coordonnées extrèmes à partir desquelles la direction est calculée.
+   * If \a n1 and \a n2 are not null, they will contain the extreme coordinates
+   * from which the direction is calculated.
    *
-   * La variable \a nodes_coord est utilisée comme coordonnées pour les noeuds.
-   * En général, il s'agit de IMesh::nodesCoordinates().
+   * The variable \a nodes_coord is used as coordinates for the nodes.
+   * Generally, this is IMesh::nodesCoordinates().
    */
   virtual Real3 computeDirection(const NodeGroup& node_group,
                                  const VariableNodeReal3& nodes_coord,
                                  Real3* n1,Real3* n2) =0;
 
-  //! Calcul des adjacences, rangées dans \a adjacency_array
+  //! Calculates adjacencies, stored in \a adjacency_array
   ARCANE_DEPRECATED_REASON("Y2020: Use computeAdjacency() instead")
   virtual void computeAdjency(ItemPairGroup adjacency_array, eItemKind link_kind,
                               Integer nb_layer) =0;
 
-  //! Calcul des adjacences, rangées dans \a adjacency_array
+  //! Calculates adjacencies, stored in \a adjacency_array
   virtual void computeAdjacency(const ItemPairGroup& adjacency_array, eItemKind link_kind,
                                 Integer nb_layer);
 
   /*!
-   * \brief Positionne les nouveaux propriétaires des noeuds, arêtes
-   * et faces à partir des mailles.
+   * \brief Positions the new owners of nodes, edges, and faces based
+   * on the cells (meshes).
    *
-   * En considérant que les nouveaux propriétaires des mailles sont
-   * connus (et synchronisés), détermine les nouveaux propriétaires des autres
-   * entités et les synchronise.
+   * Assuming the new owners of the cells are known (and synchronized),
+   * it determines the new owners of other entities and synchronizes them.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    *
-   * \note Cette méthode nécessite que les informations de synchronisations soient
-   * valides. Si on souhaite déterminer les propriétaires des entités sans
-   * information préalable, il faut utiliser computeAndSetOwnersForNodes()
-   * ou computeAndSetOwnersForFaces().
+   * \note This method requires that the synchronization information be valid.
+   * If you want to determine the owners of entities without prior
+   * information, you must use computeAndSetOwnersForNodes()
+   * or computeAndSetOwnersForFaces().
    */
   virtual void changeOwnersFromCells() =0;
 
   /*!
-   * \brief Détermine les propriétaires des noeuds.
+   * \brief Determines the owners of the nodes.
    *
-   * La détermination se fait en fonction des propriétaires des mailles.
-   * Il ne doit pas y avoir de couches de mailles fantômes.
+   * The determination is based on the owners of the cells (meshes).
+   * There must be no ghost cell layers.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForNodes() instead")
   virtual void computeAndSetOwnersForNodes() =0;
 
   /*!
-   * \brief Détermine les propriétaires des arêtes.
+   * \brief Determines the owners of the edges.
    *
-   * La détermination se fait en fonction des propriétaires des mailles.
-   * Il ne doit pas y avoir de couches de mailles fantômes.
+   * The determination is based on the owners of the cells (meshes).
+   * There must be no ghost cell layers.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForEdges() instead")
   virtual void computeAndSetOwnersForEdges() = 0;
 
   /*!
-   * \brief Détermine les propriétaires des faces.
+   * \brief Determines the owners of the faces.
    *
-   * La détermination se fait en fonction des propriétaires des mailles.
-   * Il ne doit pas y avoir de couches de mailles fantômes.
+   * The determination is based on the owners of the cells (meshes).
+   * There must be no ghost cell layers.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForFaces() instead")
   virtual void computeAndSetOwnersForFaces() =0;
 
   /*!
-   * \brief Ecrit le maillage dans un fichier.
+   * \brief Writes the mesh to a file.
    *
-   * Ecrit le maillage dans le fichier \a file_name en utilisant
-   * le service implémentant l'interface 'IMeshWriter' et de nom \a service_name.
+   * Writes the mesh to the file \a file_name using the service implementing
+   * the 'IMeshWriter' interface and named \a service_name.
    *
-   * \retval true si le service spécifié n'est pas disponible.
-   * \retval false si tout est ok.
+   * \retval true if the specified service is not available.
+   * \retval false if everything is ok.
    */
   virtual bool writeToFile(const String& file_name,const String& service_name) =0;
 
 
   /*!
-   * \brief Repartitionne et échange le maillage en gérant la réplication.
+   * \brief Repartitions and exchanges the mesh while managing replication.
    *
-   * Cette méthode effectue un repartitionnement du maillage via
-   * l'appel à IMeshPartitioner::partitionMesh(bool) et procède à l'échange
-   * des entités via IPrimaryMesh::exchangeItems().
+   * This method performs a mesh repartitioning via
+   * the call to IMeshPartitioner::partitionMesh(bool) and proceeds to exchange
+   * entities via IPrimaryMesh::exchangeItems().
    *
-   * Elle mais gère aussi la réplication en s'assurant que tous les réplica
-   * ont le même maillage.
-   * Le principe est le suivant:
-   * - seul le réplica maître effectue le repartitionnement en
-   * appelant IMeshPartitioner::partitionMesh() avec \a partitioner comme partitionneur
-   * - les valeurs des IItemFamily::itemsNewOwner() sont ensuite
-   * synchronisées avec les autres réplicas.
-   * - les échanges d'entités sont effectués via IPrimaryMesh::exchangeItems().
+   * It also manages replication by ensuring that all replicas
+   * have the same mesh.
+   * The principle is as follows:
+   * - only the master replica performs the repartitioning by calling
+   * IMeshPartitioner::partitionMesh() with \a partitioner as the partitioner
+   * - the values of IItemFamily::itemsNewOwner() are then
+   * synchronized with the other replicas.
+   * - entity exchanges are performed via IPrimaryMesh::exchangeItems().
    *
-   * Cette méthode est collective sur l'ensemble des réplicas.
+   * This method is collective across all replicas.
    *
-   * \pre Tous les réplicas doivent avoir le même maillage, c'est à dire
-   * que toutes les familles d'entités doivent être identiques à l'exception
-   * des familles de particules qui ne sont pas concernées.
-   * \pre Le maillage doit être une instance de IPrimaryMesh.
+   * \pre All replicas must have the same mesh, meaning that all entity families
+   * must be identical except for particle families which are not concerned.
+   * \pre The mesh must be an instance of IPrimaryMesh.
    *
-   * \post Tous les réplicas ont le même maillage à l'exception des familles
-   * de particules.
+   * \post All replicas have the same mesh except for particle families.
    *
-   * \param partitioner Instance du partitionneur à utiliser
-   * \param initial_partition Indique s'il s'agit du partitionnement initial.
+   * \param partitioner Instance of the partitioner to be used
+   * \param initial_partition Indicates if it is the initial partitioning.
    */
   virtual void partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
                                                        bool initial_partition) =0;
 
   /*!
-   * \brief Fusionne des nœuds.
+   * \brief Merges nodes.
    */
   virtual void mergeNodes(Int32ConstArrayView nodes_local_id,
                           Int32ConstArrayView nodes_to_merge_local_id)
@@ -241,34 +240,33 @@ class ARCANE_CORE_EXPORT IMeshUtilities
   }
 
   /*!
-   * \brief Fusionne des nœuds.
+   * \brief Merges nodes.
    *
-   * Fusionne deux à deux les nœuds de \a nodes_to_merge_local_id avec ceux
-   * de \a nodes_local_id. Chaque nœud \a nodes_to_merge_local_id[i] est
-   * fusionné avec \a nodes_local_id[i].
+   * Merges nodes in pairs from \a nodes_to_merge_local_id with those
+   * from \a nodes_local_id. Each node \a nodes_to_merge_local_id[i] is
+   * merged with \a nodes_local_id[i].
    *
-   * Les nœuds \a nodes_to_merge_local_id sont détruits après fusion. Les entités
-   * reposant entièrement sur ces nœuds fusionnés sont aussi détruites.
+   * The nodes \a nodes_to_merge_local_id are destroyed after merging. Entities
+   * entirely resting on these merged nodes are also destroyed.
    *
-   * Il est interdit de fusionner deux nœuds d'une même maille ou d'une même face
-   * (après fusion, une face ou une maille ne peut pas avoir deux fois le
-   * même nœud).
+   * It is forbidden to merge two nodes from the same cell or the same face
+   * (after merging, a face or a cell cannot have the same node twice).
    *
-   * Une fois la fusion effectuée, les faces contenant les nœuds fusionnés
-   * (\a nodes_to_merge_local_id) sont détruites. Si \a allow_non_corresponding_face
-   * est faux, alors pour chaque face détruite doit correspondre une face
-   * existante avec les nœuds fusionnés (\a nodes_local_id).
+   * Once the merge is performed, the faces containing the merged nodes
+   * (\a nodes_to_merge_local_id) are destroyed. If \a allow_non_corresponding_face
+   * is false, then for each destroyed face, there must correspond an existing face
+   * with the merged nodes (\a nodes_local_id).
    */
   virtual void mergeNodes(Int32ConstArrayView nodes_local_id,
                           Int32ConstArrayView nodes_to_merge_local_id,
                           bool allow_non_corresponding_face) = 0;
   /*!
-   * \brief Recalcule les uniqueId() des arêtes, faces et mailles en fonction
-   * des uniqueId() des noeuds.
+   * \brief Recalculates the uniqueId() of edges, faces, and cells based on the
+   * uniqueId() of the nodes.
    *
-   * \warning Cette méthode est expérimentale et ne doit être utilisée que
-   * dans Arcane. Elle suppose que les uniqueId() des entités sont construit
-   * à partir de generateHashUniqueId().
+   * \warning This method is experimental and should only be used within Arcane.
+   * It assumes that the uniqueId() of the entities are constructed from
+   * generateHashUniqueId().
    */
   virtual void recomputeItemsUniqueIdFromNodesUniqueId() =0;
 };
@@ -281,5 +279,4 @@ class ARCANE_CORE_EXPORT IMeshUtilities
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NodesOfItemReorderer.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe utilitaire pour réordonner les noeuds d'une entité.                */
+/* Utility class to reorder the nodes of an entity.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_NODESOFITEMREORDERER_H
 #define ARCANE_CORE_NODESOFITEMREORDERER_H
@@ -26,8 +26,9 @@ class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour réordonner les noeuds d'une entité.
+ * \brief Utility class to reorder the nodes of an entity.
  */
 class ARCANE_CORE_EXPORT NodesOfItemReorderer
 {

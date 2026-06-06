@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PreciseOutputChecker.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Sorties basées sur un temps (physique ou CPU) ou un nombre d'itération.   */
+/* Outputs based on time (physical or CPU) or a number of iterations.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PRECISEOUTPUTCHECKER_H
 #define ARCANE_CORE_PRECISEOUTPUTCHECKER_H
@@ -27,14 +27,14 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * Service de contrôle sur la réalisation des sorties fichier.
- * Ce dervice est un singleton devant être initialisé au lancement de l'applicaiton.
+ * Service for controlling the execution of file outputs.
+ * This service is a singleton that must be initialized when the application starts.
  */
 class PreciseOutputChecker
 {
  public:
   /*!
-   * Initialisation en fonction du jeu de données utilisateur. 
+   * Initialization based on the user data set. 
    **/
   void initializeOutputPhysicalTime(double output_period);
   void initializeOutputPhysicalTime(ICaseFunction* output_period);
@@ -42,21 +42,21 @@ class PreciseOutputChecker
   void initializeOutputIteration(Integer output_period);
   void initializeOutputIteration(ICaseFunction* output_period);
 
-  //! Indique s'il faut ou non faire une sortie
+  //! Indicates whether or not an output should be made
   bool checkIfOutput(double old_time,double current_time,Integer current_iteration);
 
  private:
 
-  //! Méthode interne de comparaison des temps
+  //! Internal method for comparing times
   bool _compareTime(Real current_time, Real compar_time);
 
-  //! Méthode pour contrôler un output fixé
+  //! Method to control a fixed output
   bool _checkTime(Real old_time, Real current_time, Real output_period);
 
-  //! Méthode pour vérifier si un temps précédent ne provoque pas d'output
+  //! Method to check if a previous time does not trigger an output
   bool _checkOldTime(Real old_time, Real output_period, Integer curr_number_of_outputs);
 
-  //! Méthode pour contrôler un output par encadrement
+  //! Method to control an output by interval
   bool _checkTimeInterval(Real output_period, Real current_time, Real period);
 
   double m_output_period_physical_time = 0.0;

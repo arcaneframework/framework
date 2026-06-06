@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseCodeNames.cc                                            (C) 2000-2020 */
 /*                                                                           */
-/* Noms des noeuds XML d'un jeu de donnée Arcane.                            */
+/* Names of XML nodes in an Arcane dataset.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -104,8 +104,8 @@ CaseNodeNames::
 CaseNodeNames(const String& lang)
 : m_p(new Impl(lang))
 {
-  // Doit être indépendant du langage puisque sert à initialiser
-  // la langue.
+  // Must be language independent since it is used to initialize
+  // the language.
   lang_attribute = String("xml:lang");
   _init();
 }
@@ -125,8 +125,8 @@ CaseNodeNames::
 void CaseNodeNames::
 _init()
 {
-  // NOTE: Si on ajoute ou change des noms de cette liste, il faut mettre
-  // à jour la conversion correspondante dans CaseDocumentLangTranslator.
+  // NOTE: If you add or change names in this list, you must update
+  // the corresponding conversion in CaseDocumentLangTranslator.
 
   root = m_p->tr("case");
   timeloop = m_p->tr("timeloop");

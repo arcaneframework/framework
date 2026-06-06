@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadOperationException.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Exception sur une opération des expressions.                              */
+/* Exception on an expression operation.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_BADOPERATIONEXCEPTION_H
 #define ARCANE_CORE_EXPR_BADOPERATIONEXCEPTION_H
@@ -26,11 +26,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception sur une opération des expressions.
+ * \brief Exception on an expression operation.
  *
- * Cette exception est envoyée lorsqu'un script essaie d'utiliser une 
- * opération non définie sur des expressions.
+ * This exception is thrown when a script tries to use a 
+ * undefined operation on expressions.
  */
 class ARCANE_EXPR_EXPORT BadOperationException
 : public Exception
@@ -60,5 +61,4 @@ class ARCANE_EXPR_EXPORT BadOperationException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

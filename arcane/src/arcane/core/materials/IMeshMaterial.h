@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterial.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un matériau d'un maillage.                                    */
+/* Interface of a mesh material.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHMATERIAL_H
 #define ARCANE_CORE_MATERIALS_IMESHMATERIAL_H
@@ -16,8 +16,8 @@
 
 #include "arcane/core/materials/IMeshComponent.h"
 
-// Cet include n'est pas utile pour ce '.h' mais on le laisse temporairement
-// pour compatibilité avec l'existant (Juin 2022).
+// This include is not useful for this '.h' but we keep it temporarily
+// for compatibility with the existing code (June 2022).
 #include "arcane/core/materials/IMeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -28,9 +28,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Interface d'un matériau utilisateur.
+ * \brief Interface of a user material.
  */
 class ARCANE_CORE_EXPORT IUserMeshMaterial
 {
@@ -41,12 +42,13 @@ class ARCANE_CORE_EXPORT IUserMeshMaterial
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Interface d'un matériau d'un maillage.
+ * \brief Interface of a mesh material.
  *
- * Un matériau appartient à un milieu (IMeshEnvironment). Il est possible
- * de récupérer la liste des mailles de ce matériau via cells().
+ * A material belongs to an environment (IMeshEnvironment). It is possible
+ * to retrieve the list of meshes for this material via cells().
  */
 class ARCANE_CORE_EXPORT IMeshMaterial
 : public IMeshComponent
@@ -57,39 +59,39 @@ class ARCANE_CORE_EXPORT IMeshMaterial
 
  public:
 
-  //! Infos du matériau.
+  //! Material information.
   virtual MeshMaterialInfo* infos() const =0;
 
-  //! Milieu auquel appartient ce matériau.
+  //! Environment to which this material belongs.
   virtual IMeshEnvironment* environment() const =0;
 
-  //! Matériau utilisateur associé
+  //! Associated user material
   virtual IUserMeshMaterial* userMaterial() const =0;
 
-  //! Positionne le matériau utilisateur associé
+  //! Sets the associated user material
   virtual void setUserMaterial(IUserMeshMaterial* umm) =0;
 
   /*!
-   * \brief Maille de ce matériau pour la maille \a c.
+   * \brief Mesh of this material for mesh \a c.
    *
-   * Si ce matériau n'est pas présent dans la présent dans la maille,
-   * la maille matériau nulle est retournée.
+   * If this material is not present in the mesh,
+   * a null material mesh is returned.
    *
-   * Le coût de cette fonction est proportionnel au nombre de matériaux
-   * présents dans la maille.
+   * The cost of this function is proportional to the number of materials
+   * present in the mesh.
    */   
   virtual MatCell findMatCell(AllEnvCell c) const =0;
 
-  //! Vue associée à ce matériau
+  //! View associated with this material
   virtual MatItemVectorView matView() const =0;
 
-  //! Vue sur la liste des entités pures (associées à la maille globale) du matériau
+  //! View on the list of pure entities (associated with the global mesh) of the material
   virtual MatPurePartItemVectorView pureMatItems() const =0;
 
-  //! Vue sur la liste des entités impures (partielles) partielles du matériau
+  //! View on the list of impure (partial) entities of the material
   virtual MatImpurePartItemVectorView impureMatItems() const =0;
 
-  //! Vue sur la partie pure ou impure des entités du matériau
+  //! View on the pure or impure part of the material entities
   virtual MatPartItemVectorView partMatItems(eMatPart part) const =0;
 
  public:
@@ -120,5 +122,4 @@ class ARCANE_CORE_EXPORT IMeshMaterial
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

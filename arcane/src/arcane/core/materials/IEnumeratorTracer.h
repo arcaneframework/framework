@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IEnumeratorTracer.h                                         (C) 2000-2022 */
 /*                                                                           */
-/* Interface du tracage des énumérateurs sur les composants.                 */
+/* Interface for enumerator tracing on components.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IENUMERATORTRACER_H
 #define ARCANE_CORE_MATERIALS_IENUMERATORTRACER_H
@@ -97,5 +97,4 @@ class ARCANE_CORE_EXPORT IEnumeratorTracer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

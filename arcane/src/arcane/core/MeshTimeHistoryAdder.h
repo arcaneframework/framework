@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshTimeHistoryAdder.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Classe permettant d'ajouter un historique de valeur lié à un maillage.    */
+/* Class allowing the addition of a value history linked to a mesh.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHTIMEHISTORYADDER_H
 #define ARCANE_CORE_MESHTIMEHISTORYADDER_H
@@ -28,48 +28,48 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'ajouter une ou plusieurs valeurs à un
- * historique de valeurs.
+ * \brief Class allowing the addition of one or more values to a
+ * value history.
  *
- * Cette classe enregistrera les courbes avec comme support un maillage.
- * C'est-à-dire que les courbes seront liées à un maillage, en plus d'être
- * liées au domaine complet ou au sous-domaine demandé.
- * Si le lien au maillage n'est pas désiré, la classe GlobalTimeHistoryAdder
- * peut être plus intéressante.
+ * This class will record curves supported by a mesh.
+ * That is, the curves will be linked to a mesh, in addition to being
+ * linked to the entire domain or the requested subdomain.
+ * If the link to the mesh is not desired, the GlobalTimeHistoryAdder
+ * class may be more interesting.
  *
- * Pour un nom d'historique donné, il peut y avoir qu'une courbe de une
- * ou plusieurs valeurs par maillage et par sous-domaine (et une globale à
- * tous les sous-domaines).
+ * For a given history name, there may be only one curve of a
+ * or several values per mesh and per subdomain (and one global one for
+ * all subdomains).
  *
- * Exemple : plusieurs courbes de moyennes des pressions (appelons-les
- * "avg_pressure"), deux sous-domaines (0 et 1) et deux maillages (mesh0 et mesh1).
- * Une valeur par itération.
- * - Une courbe "avg_pressure" liée au sous-domaine 0 et au maillage 0. Chaque
- *   valeur est la moyenne des pressions de chaque maille du maillage 0 et
- *   du sous-domaine 0.
- * - Une courbe "avg_pressure" liée au sous-domaine 0 et au maillage 1. Chaque
- *   valeur est la moyenne des pressions de chaque maille du maillage 1 et
- *   du sous-domaine 0.
- * - Une courbe "avg_pressure" liée au sous-domaine 1 et au maillage 0. Chaque
- *   valeur est la moyenne des pressions de chaque maille du maillage 0 et
- *   du sous-domaine 1.
- * - Une courbe "avg_pressure" liée au sous-domaine 1 et au maillage 1. Chaque
- *   valeur est la moyenne des pressions de chaque maille du maillage 1 et
- *   du sous-domaine 1.
- * - Une courbe "avg_pressure" liée au domaine complet et au maillage 0.
- *   Chaque valeur est la moyenne des pressions du maillage 0 de chaque
- *   sous-domaine.
- * - Une courbe "avg_pressure" liée au domaine complet et au maillage 1.
- *   Chaque valeur est la moyenne des pressions du maillage 1 de chaque
- *   sous-domaine.
+ * Example: several curves of pressure averages (let's call them
+ * "avg_pressure"), two subdomains (0 and 1) and two meshes (mesh0 and mesh1).
+ * One value per iteration.
+ * - An "avg_pressure" curve linked to subdomain 0 and mesh 0. Each
+ *   value is the average of the pressures of each element of mesh 0 and
+ *   of subdomain 0.
+ * - An "avg_pressure" curve linked to subdomain 0 and mesh 1. Each
+ *   value is the average of the pressures of each element of mesh 1 and
+ *   of subdomain 0.
+ * - An "avg_pressure" curve linked to subdomain 1 and mesh 0. Each
+ *   value is the average of the pressures of each element of mesh 0 and
+ *   of subdomain 1.
+ * - An "avg_pressure" curve linked to subdomain 1 and mesh 1. Each
+ *   value is the average of the pressures of each element of mesh 1 and
+ *   of subdomain 1.
+ * - An "avg_pressure" curve linked to the entire domain and mesh 0.
+ *   Each value is the average of the pressures of mesh 0 across each
+ *   subdomain.
+ * - An "avg_pressure" curve linked to the entire domain and mesh 1.
+ *   Each value is the average of the pressures of mesh 1 across each
+ *   subdomain.
  *
- * On peut remarquer qu'il est possible d'avoir plusieurs courbes
- * indépendantes avec le même nom mais liée à des maillages différents et à
- * des sous-domaines différents (+1 courbe globale). Et il est important de
- * souligner que ce même nom peut être aussi utilisé avec les courbes de
- * GlobalTimeHistoryAdder indépendement, donc l'exemple ci-dessus peut être
- * complémentaire avec celui donné dans la description de GlobalTimeHistoryAdder !
- * (donc possiblement 9 courbes indépendantes mais de même nom !)
+ * It can be noted that it is possible to have several independent curves
+ * with the same name but linked to different meshes and
+ * different subdomains (+1 global curve). It is important to
+ * emphasize that this same name can also be used with the curves of
+ * GlobalTimeHistoryAdder independently, so the example above can be
+ * complementary to the one given in the description of GlobalTimeHistoryAdder!
+ * (meaning potentially 9 independent curves but with the same name!)
  */
 class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
 : public ITimeHistoryAdder
@@ -77,10 +77,10 @@ class ARCANE_CORE_EXPORT MeshTimeHistoryAdder
  public:
 
   /*!
-   * \brief Constructeur.
+   * \brief Constructor.
    *
-   * \param time_history_mng Un pointeur vers une instance de ITimeHistoryMng.
-   * \param mesh_handle Le maillage à lier aux courbes.
+   * \param time_history_mng A pointer to an instance of ITimeHistoryMng.
+   * \param mesh_handle The mesh to link to the curves.
    */
   MeshTimeHistoryAdder(ITimeHistoryMng* time_history_mng, const MeshHandle& mesh_handle);
   ~MeshTimeHistoryAdder() override = default;

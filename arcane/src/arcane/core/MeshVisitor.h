@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshVisitor.h                                               (C) 2000-2023 */
 /*                                                                           */
-/* Visiteurs divers sur les entités du maillage.                             */
+/* Various visitors on mesh entities.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHVISITOR_H
 #define ARCANE_CORE_MESHVISITOR_H
@@ -16,7 +16,7 @@
 
 #include "arcane/core/MeshUtils.h"
 
-// NOTE: Les visiteurs sont maintenant dans MeshUtils
+// NOTE: The visitors are now in MeshUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

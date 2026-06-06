@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SynchronizerMatrixPrinter.h                                 (C) 2011-2011 */
 /*                                                                           */
-/* Affiche la matrix de synchronization.                                     */
+/* Displays the synchronization matrix.                                      */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"

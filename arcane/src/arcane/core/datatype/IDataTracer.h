@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataTracer.h                                               (C) 2000-2005 */
 /*                                                                           */
-/* Interface d'un traceur.                                                   */
+/* Interface of a tracer.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DATATYPE_IDATATRACER_H
 #define ARCANE_DATATYPE_IDATATRACER_H
@@ -25,15 +25,16 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Point d'arrêt utilisable par un débuggeur pour une trace
+//! Breakpoint usable by a debugger for tracing
 extern "C" ARCANE_DATATYPE_EXPORT 
 void arcaneTraceBreakpoint();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un tracer.
+ * \brief Interface of a tracer.
  */
 template<typename DataType>
 class IDataTracerT
@@ -43,11 +44,11 @@ class IDataTracerT
  public:
   virtual ~IDataTracerT() {}
  public:
-  //! Message de trace pour un accès (lecture ou écriture) à une valeur
+  //! Trace message for an access (read or write) to a value
   virtual void traceAccess(const DataType& value) =0;
-  //! Message de trace pour un accès en lecture d'une valeur
+  //! Trace message for a read access of a value
   virtual void traceRead(const DataType& value) =0;
-  //! Message de trace pour un accès en écriture d'une valeur
+  //! Trace message for a write access of a value
   virtual void traceWrite(const DataType& old_value,const DataType& new_value) =0;
 };
 
@@ -59,5 +60,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

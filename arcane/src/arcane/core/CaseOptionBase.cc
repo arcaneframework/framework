@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionBase.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des options du jeu de données.                                    */
+/* Data set option management.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,9 +32,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- *\brief Implémentation de la classe de base d'une option du jeu de données.
+ * \brief Implementation of the base class for a data set option.
  */
 class CaseOptionBasePrivate
 {
@@ -44,22 +45,22 @@ class CaseOptionBasePrivate
 
  public:
 
-  ICaseMng* m_case_mng = nullptr; //!< Gestionnaire du sous-domaine
+  ICaseMng* m_case_mng = nullptr; //!< Sub-domain manager
   ICaseOptionList* m_parent_option_list = nullptr; //!< Parent
-  ICaseDocumentFragment* m_case_document_fragment = nullptr; //!< Document associé
-  XmlNode m_root_element; //!< Elément du DOM de l'option
-  String m_true_name; //!< Nom de l'option
-  String m_name; //!< Nom traduit de l'option
-  const String m_axl_default_value; //!< Valeur par défaut initiale
-  String m_default_value; //!< Valeur par défaut
-  Integer m_min_occurs; //!< Nombre minimum d'occurences
-  Integer m_max_occurs; //!< Nombre maximum d'occurences (-1 == unbounded)
+  ICaseDocumentFragment* m_case_document_fragment = nullptr; //!< Associated document
+  XmlNode m_root_element; //!< Option's DOM element
+  String m_true_name; //!< Option name
+  String m_name; //!< Translated option name
+  const String m_axl_default_value; //!< Initial default value
+  String m_default_value; //!< Default value
+  Integer m_min_occurs; //!< Minimum number of occurrences
+  Integer m_max_occurs; //!< Maximum number of occurrences (-1 == unbounded)
   bool m_is_optional;
-  bool m_is_initialized; //!< \a true si initialisé
-  bool m_is_override_default; //!< \a true si la valeur par défaut est surchargée
-  //! Liste des noms d'options par langue.
+  bool m_is_initialized; //!< \a true if initialized
+  bool m_is_override_default; //!< \a true if the default value is overridden
+  //! List of option names by language.
   StringDictionary m_name_translations;
-  //! Liste des valeurs par défaut par catégorie.
+  //! List of default values by category.
   StringDictionary m_default_values;
 };
 
@@ -259,7 +260,7 @@ _setTranslatedName()
 void CaseOptionBase::
 _setCategoryDefaultValue()
 {
-  // Si le développeur a surchargé l'option, ne fait rien
+  // If the developer has overridden the option, do nothing
   if (m_p->m_is_override_default)
     return;
   String category = caseDocumentFragment()->defaultCategory();
@@ -409,4 +410,3 @@ _xpathFullName() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

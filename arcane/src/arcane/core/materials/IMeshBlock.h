@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshBlock.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un bloc d'un maillage.                                        */
+/* Interface of a mesh block.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHBLOCK_H
 #define ARCANE_CORE_MATERIALS_IMESHBLOCK_H
@@ -25,28 +25,29 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Interface d'un bloc d'un maillage.
+ * \brief Interface of a mesh block.
  * 
- * Les blocs sont créés via IMeshMaterialMng::createBlock().
+ * Blocks are created via IMeshMaterialMng::createBlock().
  *
- * Les blocs ne peuvent pas être détruits et doivent être créés lors
- * de l'initialisation.
+ * Blocks cannot be destroyed and must be created during
+ * initialization.
  *
- * La notion de bloc est optionnelle et il n'est pas nécessaire d'avoir
- * des blocs pour utiliser les milieux et les matériaux.
+ * The concept of a block is optional and it is not necessary to have
+ * blocks to use environments and materials.
  *
- * Un bloc se caractérise par un nom (name()), un groupe de mailles (cells())
- * et une liste de milieux (environments()).
+ * A block is characterized by a name (name()), a cell group (cells()),
+ * and a list of environments (environments()).
  *
- * A noter qu'en théorie le groupe de mailles (cells())
- * est indépendant de la liste des milieux mais que pour des raisons de
- * cohérence, il est préférable que ce groupe corresponde à l'union des
- * milieux du bloc. Cependant, aucune vérification de cette cohérence n'est effectuée.
+ * Note that theoretically the cell group (cells())
+ * is independent of the list of environments, but for reasons of
+ * consistency, it is preferable that this group corresponds to the union of
+ * the block's environments. However, no verification of this consistency is performed.
  *
- * Il est possible d'utiliser une instance ce cette classe comme argument à
- * ENUMERATE_ENV ou à ENUMERATE_ALLENVCELL.
+ * It is possible to use an instance of this class as an argument to
+ * ENUMERATE_ENV or to ENUMERATE_ALLENVCELL.
  */
 class ARCANE_CORE_EXPORT IMeshBlock
 {
@@ -56,31 +57,31 @@ class ARCANE_CORE_EXPORT IMeshBlock
 
  public:
 
-  //! Gestionnaire associé.
+  //! Associated manager.
   virtual IMeshMaterialMng* materialMng() =0;
 
-  //! Nom du bloc
+  //! Block name
   virtual const String& name() const =0;
 
   /*!
-   * \brief Groupe des mailles de ce bloc.
+   * \brief Cell group of this block.
    */
   virtual const CellGroup& cells() const =0;
 
-  //! Liste des milieux de ce bloc
+  //! List of environments in this block
   virtual ConstArrayView<IMeshEnvironment*> environments() =0;
 
-  //! Nombre de milieux dans le bloc
+  //! Number of environments in the block
   virtual Integer nbEnvironment() const =0;
 
   /*!
-   * \brief Identifiant du bloc.
-   * Il s'agit aussi de l'indice (en commencant par 0) de ce bloc
-   * dans la liste des blocs.
+   * \brief Block identifier.
+   * It is also the index (starting from 0) of this block
+   * in the list of blocks.
    */
   virtual Int32 id() const =0;
 
-  //! Vue sur les mailles milieux correspondant à ce bloc.
+  //! View of the environments cells corresponding to this block.
   virtual AllEnvCellVectorView view() =0;
 };
 
@@ -92,5 +93,4 @@ class ARCANE_CORE_EXPORT IMeshBlock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

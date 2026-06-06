@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemConnectivityInfo.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface des informations sur la connectivité par type d'entité.         */
+/* Interface for connectivity information by entity type.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMCONNECTIVITYINFO_H
 #define ARCANE_CORE_IITEMCONNECTIVITYINFO_H
@@ -24,38 +24,39 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
  *
- * \brief Interface des informations sur la connectivité par type d'entité.
+ * \brief Interface for connectivity information by entity type.
  *
- * Cette inferface permet de connaître pour un type d'entité donné
- * le nombre maximal d'entitée connectés. Cela peut être utilisé
- * par exemple pour dimensionner des variables.
+ * This interface allows knowing for a given entity type
+ * the maximum number of connected entities. This can be used
+ * for example to size variables.
  *
- * Les instances de cette interface se récupèrent généralement
- * via IItemFamily::localConnectivityInfos() pour les infos locales au
- * sous-domaine ou IItemFamily::globalConnectivityInfos() pour les
- * infos globales sur tous les maillages.
+ * Instances of this interface are generally retrieved
+ * via IItemFamily::localConnectivityInfos() for local information within the
+ * subdomain or IItemFamily::globalConnectivityInfos() for global information
+ * across all meshes.
  */
 class IItemConnectivityInfo
 {
  public:
 
-  virtual ~IItemConnectivityInfo() = default; //<! Libère les ressources
+  virtual ~IItemConnectivityInfo() = default; //<! Releases resources
 
  public:
 
-  //! Nombre maximal de noeuds par entité
+  //! Maximum number of nodes per entity
   virtual Integer maxNodePerItem() const =0;
   
-  //! Nombre maximal d'arêtes par entité
+  //! Maximum number of edges per entity
   virtual Integer maxEdgePerItem() const =0;
 
-  //! Nombre maximal de faces par entité
+  //! Maximum number of faces per entity
   virtual Integer maxFacePerItem() const =0;
 
-  //! Nombre maximal de mailles par entité
+  //! Maximum number of cells per entity
   virtual Integer maxCellPerItem() const =0;
 };
 
@@ -67,4 +68,4 @@ class IItemConnectivityInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IIncrementalItemConnectivityInternal.h                      (C) 2000-2024 */
 /*                                                                           */
-/* API interne à Arcane de IncrementalItemConnectivity                       */
+/* Internal Arcane API for IncrementalItemConnectivity                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IINCREMENTALITEMCONNECTIVITYINTERNAL_H
@@ -27,23 +27,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur l'utilisation mémoire pour les connectivités.
+ * \brief Memory usage information for connectivities.
  */
 class ItemConnectivityMemoryInfo
 {
  public:
 
-  //! Nombre total de Int32 utilisés (correspoind à la somme des size())
+  //! Total number of Int32 used (corresponds to the sum of size())
   Int64 m_total_size = 0;
-  //! Nombre total de Int32 allouées (correspond à la somme des capacity())
+  //! Total number of Int32 allocated (corresponds to the sum of capacity())
   Int64 m_total_capacity = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API interne à Arcane de IIncrementalItemConnectivity.
+ * \brief Internal Arcane API for IIncrementalItemConnectivity.
  */
 class ARCANE_CORE_EXPORT IIncrementalItemConnectivityInternal
 {
@@ -53,10 +55,10 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivityInternal
 
  public:
 
-  //! Réduit au minimum l'utilisation mémoire pour les connectivités
+  //! Minimally reduces memory usage for connectivities
   virtual void shrinkMemory() = 0;
 
-  //! Ajoute \a mem_info les informations mémoire de l'instance.
+  //! Adds the instance's memory information to mem_info.
   virtual void addMemoryInfos(ItemConnectivityMemoryInfo& mem_info) = 0;
 };
 

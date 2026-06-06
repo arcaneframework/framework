@@ -50,115 +50,116 @@ class IMeshBase
 
  public:
 
-  //! Handle sur ce maillage
+  //! Handle on this mesh
   virtual MeshHandle handle() const = 0;
 
  public:
 
-  //! Nom du maillage
+  //! Mesh name
   virtual String name() const = 0;
 
-  //! Nombre de noeuds du maillage
+  //! Number of mesh nodes
   virtual Integer nbNode() = 0;
 
-  //! Nombre d'arêtes du maillage
+  //! Number of mesh edges
   virtual Integer nbEdge() = 0;
 
-  //! Nombre de faces du maillage
+  //! Number of mesh faces
   virtual Integer nbFace() = 0;
 
-  //! Nombre de mailles du maillage
+  //! Number of mesh cells
   virtual Integer nbCell() = 0;
 
   /*!
-   * \brief Nombre d'éléments du genre \a ik.
+   * \brief Number of elements of type \a ik.
    * \pre ik==IK_Node || ik==IK_Edge || ik==IK_Face || ik==IK_Cell
    */
   virtual Integer nbItem(eItemKind ik) = 0;
 
-  //! Gestionnaire de message associé
+  //! Associated message manager
   virtual ITraceMng* traceMng() = 0;
 
   /*!
-   * \brief Dimension du maillage (1D, 2D ou 3D).
+   * \brief Mesh dimension (1D, 2D, or 3D).
    *
-   * La dimension correspond à la dimension des éléments mailles (Cell).
-   * Si des mailles de plusieurs dimensions sont présentes, c'est la dimension
-   * la plus importante qui est retournée.
-   * Si la dimension n'a pas encore été positionnée, retourne -1;
+   * The dimension corresponds to the dimension of the mesh elements (Cell).
+   * If mesh elements of multiple dimensions are present, the highest dimension
+   * is returned.
+   * If the dimension has not yet been set, returns -1;
    */
   virtual Integer dimension() = 0;
 
-  //! Groupe de tous les noeuds
+  //! Group of all nodes
   virtual NodeGroup allNodes() = 0;
 
-  //! Groupe de toutes les arêtes
+  //! Group of all edges
   virtual EdgeGroup allEdges() = 0;
 
-  //! Groupe de toutes les faces
+  //! Group of all faces
   virtual FaceGroup allFaces() = 0;
 
-  //! Groupe de toutes les mailles
+  //! Group of all cells
   virtual CellGroup allCells() = 0;
 
-  //! Groupe de tous les noeuds propres au domaine
+  //! Group of all domain-specific nodes
   virtual NodeGroup ownNodes() = 0;
 
-  //! Groupe de toutes les arêtes propres au domaine
+  //! Group of all domain-specific edges
   virtual EdgeGroup ownEdges() = 0;
 
-  //! Groupe de toutes les faces propres au domaine
+  //! Group of all domain-specific faces
   virtual FaceGroup ownFaces() = 0;
 
-  //! Groupe de toutes les mailles propres au domaine
+  //! Group of all domain-specific cells
   virtual CellGroup ownCells() = 0;
 
-  //! Groupe de toutes les faces sur la frontière.
+  //! Group of all faces on the boundary.
   virtual FaceGroup outerFaces() = 0;
 
  public:
 
-  //! Créé une famille de particule de nom \a name
+  //! Create a particle family named \a name
   virtual IItemFamily* createItemFamily(eItemKind ik, const String& name) = 0;
 
   /*!
-   * \brief Retourne la famille de nom \a name.
+   * \brief Returns the family named \a name.
    *
-   * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
-   * Si \a register_modifier_if_created est vrai, le modifier de la famille est enregistré
+   * If \a create_if_needed is true, the family is created if it did not exist.
+   * If \a register_modifier_if_created is true, the family modifier is registered
    */
   virtual IItemFamily* findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false,
                                       bool register_modifier_if_created = false) = 0;
 
   /*!
-   * \brief Retourne la famille de nom \a name.
+   * \brief Returns the family named \a name.
    *
-   * Si la famille demandée n'existe pas, si \a throw_exception vaut \a true une
-   * exception est levée, sinon le pointeur nul est retourné.
+   * If the requested family does not exist, if \a throw_exception is true, an
+   * exception is thrown, otherwise a null pointer is returned.
    */
   virtual IItemFamily* findItemFamily(const String& name, bool throw_exception = false) = 0;
 
   /*!
-   * \brief Retourne l'interface IItemFamilyModifier pour famille de nom \a name et de type \a ik
+   * \brief Returns the IItemFamilyModifier interface for the family
+   * named \a name and of type \a ik
    *
-   * Si ce modificateur n'est pas trouvé, retourne nullptr
+   * If this modifier is not found, returns nullptr
    */
   virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind ik, const String& name) = 0;
 
   /*!
-   * \brief Retourne la famille d'entité de type \a ik.
+   * \brief Returns the entity family of type \a ik.
    *
    * \pre ik==IK_Node || ik==IK_Edge || ik==IK_Face || ik==IK_Cell
    */
   virtual IItemFamily* itemFamily(eItemKind ik) = 0;
 
-  //! Retourne la famille des noeuds.
+  //! Returns the node family.
   virtual IItemFamily* nodeFamily() = 0;
-  //! Retourne la famille des arêtes.
+  //! Returns the edge family.
   virtual IItemFamily* edgeFamily() = 0;
-  //! Retourne la famille des faces.
+  //! Returns the face family.
   virtual IItemFamily* faceFamily() = 0;
-  //! Retourne la famille des mailles.
+  //! Returns the cell family.
   virtual IItemFamily* cellFamily() = 0;
 
   virtual IItemFamilyCollection itemFamilies() = 0;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableBuildInfo.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Informations pour construire une variable.                                */
+/* Information for building a variable.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_VARIABLEBUILDINFO_H
 #define ARCANE_VARIABLEBUILDINFO_H
@@ -36,194 +36,195 @@ class IDataFactoryMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Paramètres nécessaires à la construction d'une variable.
+ * \brief Parameters necessary for building a variable.
  */
 class ARCANE_CORE_EXPORT VariableBuildInfo
 {
  public:
 
-  // Pour accéder au constructeur par défaut.
+  // To access the default constructor.
   friend class NullVariableBuildInfo;
-  // TEMPORAIRE Pour accéder à _subDomain(). A supprimer par la suite.
+  // TEMPORARY To access _subDomain(). To be removed later.
   friend class VariablePrivate;
 
  private:
 
-  //! Tag pour un VariableBuildInfo nul.
+  //! Tag for a null VariableBuildInfo.
   struct NullTag
   {};
 
  public:
 
   /*!
-   * \brief Construit un initialiseur pour une variable.
+   * \brief Constructs an initializer for a variable.
    *
-   * \param name nom de la variable
-   * \param m module associé
-   * \param property propriétés de la variable
+   * \param name variable name
+   * \param m associated module
+   * \param property variable properties
    */
   VariableBuildInfo(IModule* m,const String& name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable sans l'associer à
-   * un module.
+   * \brief Constructs an initializer for a variable without associating it with
+   * a module.
    *
-   * \param sub_domain gestionnaire de sous-domaine
-   * \param name nom de la variable
-   * \param property propriétés de la variable
+   * \param sub_domain subdomain manager
+   * \param name variable name
+   * \param property variable properties
    */
   VariableBuildInfo(ISubDomain* sub_domain,const String& name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable sans l'associer à
-   * un module.
+   * \brief Constructs an initializer for a variable without associating it with
+   * a module.
    *
-   * \param variable_mng gestionnaire de variable
-   * \param name nom de la variable
-   * \param property propriétés de la variable
+   * \param variable_mng variable manager
+   * \param name variable name
+   * \param property variable properties
    */
   VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh other
+   * than the default mesh.
    *
-   * \param mesh maillage
-   * \param name nom de la variable
-   * \param property propriétés de la variable
+   * \param mesh mesh
+   * \param name variable name
+   * \param property variable properties
    */
   VariableBuildInfo(IMesh* mesh,const String& name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh other
+   * than the default mesh.
    *
-   * \param mesh maillage
-   * \param name nom de la variable
-   * \param property propriétés de la variable
+   * \param mesh mesh
+   * \param name variable name
+   * \param property variable properties
    */
   VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable.
+   * \brief Constructs an initializer for a variable.
    *
-   * \param m module associé
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
-   * \param property propriétés de la variable
+   * \param m associated module
+   * \param name variable name
+   * \param item_family_name entity family name
+   * \param property variable properties
    */
   VariableBuildInfo(IModule* m,const String& name,
                     const String& item_family_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh
+   * other than the default mesh.
    *
-   * \param mesh maillage
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
-   * \param property propriétés de la variable
+   * \param mesh mesh
+   * \param name variable name
+   * \param item_family_name entity family name
+   * \param property variable properties
    */
   VariableBuildInfo(IMesh* mesh,const String& name,
                     const String& item_family_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh
+   * other than the default mesh.
    *
-   * \param mesh maillage
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
-   * \param property propriétés de la variable
+   * \param mesh mesh
+   * \param name variable name
+   * \param item_family_name entity family name
+   * \param property variable properties
    */
   VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
                     const String& item_family_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable non associée à un maillage.
+   * \brief Constructs an initializer for a variable not associated with a mesh.
    *
-   * \param sd sous-domaine
-   * \param name nom de la variable
-   * \param mesh_name nom du maillage
-   * \param item_family_name nom de la famille d'entité
-   * \param property propriétés de la variable
+   * \param sd subdomain
+   * \param name variable name
+   * \param mesh_name mesh name
+   * \param item_family_name entity family name
+   * \param property variable properties
    */
   VariableBuildInfo(ISubDomain* sd,const String& name, const String& mesh_name,
                     const String& item_family_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable non associée à un maillage.
+   * \brief Constructs an initializer for a variable not associated with a mesh.
    *
-   * \param variable_mng gestionnaire de variable
-   * \param name nom de la variable
-   * \param mesh_name nom du maillage
-   * \param item_family_name nom de la famille d'entité
-   * \param property propriétés de la variable
+   * \param variable_mng variable manager
+   * \param name variable name
+   * \param mesh_name mesh name
+   * \param item_family_name entity family name
+   * \param property variable properties
    */
   VariableBuildInfo(IVariableMng* variable_mng,const String& name, const String& mesh_name,
                     const String& item_family_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh
+   * other than the default mesh.
    *
-   * \param family famille d'entité
-   * \param name nom de la variable
-   * \param property propriétés de la variable
+   * \param family entity family
+   * \param name variable name
+   * \param property variable properties
    */
   VariableBuildInfo(IItemFamily* family,const String& name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable.
+   * \brief Constructs an initializer for a variable.
    *
-   * \param m module associé
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
-   * \param group_name nom du groupe associé (pour les variables partielles)
-   * \param property propriétés de la variable
+   * \param m associated module
+   * \param name variable name
+   * \param item_family_name entity family name
+   * \param item_group_name associated group name (for partial variables)
+   * \param property variable properties
    */
   VariableBuildInfo(IModule* m,const String& name,
                     const String& item_family_name,
                     const String& item_group_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh
+   * other than the default mesh.
    *
-   * \param mesh maillage
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
-   * \param group_name nom du groupe associé (pour les variables partielles)
-   * \param property propriétés de la variable
+   * \param mesh mesh
+   * \param name variable name
+   * \param item_family_name entity family name
+   * \param group_name associated group name (for partial variables)
+   * \param property variable properties
    */
   VariableBuildInfo(IMesh* mesh,const String& name,
                     const String& item_family_name,
                     const String& item_group_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Constructs an initializer for a variable associated with a mesh
+   * other than the default mesh.
    *
-   * \param mesh maillage
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
-   * \param group_name nom du groupe associé (pour les variables partielles)
-   * \param property propriétés de la variable
+   * \param mesh mesh
+   * \param name variable name
+   * \param item_family_name entity family name
+   * \param group_name associated group name (for partial variables)
+   * \param property variable properties
    */
   VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
                     const String& item_family_name,
                     const String& item_group_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable non associée à un maillage
+   * \brief Constructs an initializer for a variable not associated with a mesh
    *
-   * \param sd sous-domaine
-   * \param name nom de la variable
-   * \param mesh_name nom du maillage
-   * \param item_family_name nom de la famille d'entité
-   * \param group_name nom du groupe associé (pour les variables partielles)
-   * \param property propriétés de la variable
+   * \param sd subdomain
+   * \param name variable name
+   * \param mesh_name mesh name
+   * \param item_family_name entity family name
+   * \param group_name associated group name (for partial variables)
+   * \param property variable properties
    */
   VariableBuildInfo(ISubDomain* sd,const String& name,
                     const String& mesh_name,
@@ -231,14 +232,14 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
                     const String& item_group_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable non associée à un maillage
+   * \brief Constructs an initializer for a variable not associated with a mesh
    *
-   * \param variable_mng gestionnaire de variable
-   * \param name nom de la variable
-   * \param mesh_name nom du maillage
-   * \param item_family_name nom de la famille d'entité
-   * \param group_name nom du groupe associé (pour les variables partielles)
-   * \param property propriétés de la variable
+   * \param variable_mng variable manager
+   * \param name variable name
+   * \param mesh_name mesh name
+   * \param item_family_name entity family name
+   * \param group_name associated group name (for partial variables)
+   * \param property variable properties
    */
   VariableBuildInfo(IVariableMng* variable_mng,const String& name,
                     const String& mesh_name,
@@ -271,14 +272,14 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
 
  private:
 
-  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
-  IModule* m_module = nullptr; //!< Module associé à la variable
-  MeshHandle m_mesh_handle;  //!< Handle sur le maillage
-  String m_name; //!< Nom de la variable
-  String m_item_family_name; //!< Nom de la famille d'entité
-  String m_item_group_name; //!< Nom du groupe d'entité support
-  String m_mesh_name; //!< Nom du maillage associé à la variable
-  int m_property = 0; //!< Propriétés de la variable
+  ISubDomain* m_sub_domain = nullptr; //!< Subdomain manager
+  IModule* m_module = nullptr; //!< Module associated with the variable
+  MeshHandle m_mesh_handle;  //!< Handle on the mesh
+  String m_name; //!< Variable name
+  String m_item_family_name; //!< Entity family name
+  String m_item_group_name; //!< Supported entity group name
+  String m_mesh_name; //!< Name of the mesh associated with the variable
+  int m_property = 0; //!< Variable properties
   bool m_is_null = false;
 
  private:
@@ -289,11 +290,11 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Constructeur pour une variable nulle.
+ * \brief Constructor for a null variable.
  *
- * \warning Cette classe est expérimentale. Ne pas utiliser en dehors
- * de Arcane.
+ * \warning This class is experimental. Do not use it outside of Arcane.
  */
 class ARCANE_CORE_EXPORT NullVariableBuildInfo
 : public VariableBuildInfo
@@ -313,5 +314,4 @@ class ARCANE_CORE_EXPORT NullVariableBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

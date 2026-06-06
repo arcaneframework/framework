@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadExpressionException.h                                    (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une expression n'est pas valide.                         */
+/* Exception when an expression is not valid.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_BADEXPRESSIONEXCEPTION_H
 #define ARCANE_EXPR_BADEXPRESSIONEXCEPTION_H
@@ -23,8 +23,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception lorsqu'une expression n'est pas valide.
+ * \brief Exception when an expression is not valid.
  */
 class BadExpressionException
 : public Exception
@@ -52,5 +53,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

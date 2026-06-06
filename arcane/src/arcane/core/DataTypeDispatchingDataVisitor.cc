@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataTypeDispatchingDataVisitor.cc                           (C) 2000-2023 */
 /*                                                                           */
-/* IDataVisitor dispatchant les opérations suivant le type de donnée.        */
+/* IDataVisitor dispatching operations according to the data type.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

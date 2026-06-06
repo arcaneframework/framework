@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItem.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Entité représentant un constituant d'une maille multi-matériaux.          */
+/* Entity representing a constituent of a multi-material mesh.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CONSTITUENTITEM_H
 #define ARCANE_CORE_MATERIALS_CONSTITUENTITEM_H
@@ -26,31 +26,32 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Représente un composant d'une maille multi-matériau.
+ * \brief Represents a component of a multi-material mesh.
  *
- * Cet objet représente un composant d'une maille multi-matériau. Par
- * composant, on entend un matériau (MatCell), un milieu (EnvCell) ou
- * un allenvcell (AllEnvCell).
+ * This object represents a component of a multi-material mesh. By
+ * component, we mean a material (MatCell), an environment (EnvCell), or
+ * an allenvcell (AllEnvCell).
  *
- * Il existe une notion de hiérarchie entre ces composants et il est
- * possible de récupérer le ConstituentItem de niveau supérieur via
- * superCell(). Pour itérer sur les éléments de niveau inférieur, il
- * est possible d'utiliser la macro ENUMERATE_CELL_COMPONENTCELL()
+ * There is a notion of hierarchy between these components, and it is
+ * possible to retrieve the higher-level ConstituentItem via
+ * superCell(). To iterate over lower-level elements, it is possible to
+ * use the macro ENUMERATE_CELL_COMPONENTCELL()
  *
- * Il existe une maille spéciale, appelée maille nulle, pour laquelle
- * null() est vrai et qui représente une maille invalide. Dans le
- * cas de la maille invalide, il ne faut appeler aucune des autres
- * méthode de la classe sous peine de provoquer un plantage.
+ * There is a special mesh, called the null mesh, for which
+ * null() is true and which represents an invalid mesh. In the case of
+ * the invalid mesh, no other methods of the class should be called
+ * under penalty of causing a crash.
  *
- * \warning Ces mailles sont invalidées dès que la liste des mailles d'un
- * matériau ou d'un milieux change. Il ne faut donc pas
- * conserver une maille de ce type entre deux changements de cette liste.
+ * \warning These meshes are invalidated as soon as the list of meshes of
+ * a material or an environment changes. Therefore, a mesh of this type
+ * should not be kept between two changes to this list.
  */
 class ARCANE_CORE_EXPORT ConstituentItem
 {
-  // Pour accéder à _internal()
+  // For accessing _internal()
   friend CellComponentCellEnumerator;
   friend EnvCellVector;
   friend MatCellVector;
@@ -76,7 +77,7 @@ class ARCANE_CORE_EXPORT ConstituentItem
 
  public:
 
-  //! Opérateur de conversion vers un ComponentItemLocalId
+  //! Conversion operator to a ComponentItemLocalId
   ARCCORE_HOST_DEVICE operator ComponentItemLocalId() const { return ComponentItemLocalId{ _varIndex() }; }
 
  public:
@@ -87,52 +88,51 @@ class ARCANE_CORE_EXPORT ConstituentItem
   ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase constituentItemBase() const { return { m_shared_info, m_constituent_item_index }; }
 
   /*!
-   * \brief Constituant associé.
+   * \brief Associated constituent.
    * \pre null()==false
    */
   IMeshComponent* component() const { return m_shared_info->_component(m_constituent_item_index); }
 
-  //! Identifiant du composant dans la liste des composants de ce type.
+  //! Component identifier in the list of components of this type.
   ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_constituent_item_index); }
 
-  //! Indique s'il s'agit de la maille nulle
+  //! Indicates if it is the null mesh
   ARCCORE_HOST_DEVICE bool null() const { return m_constituent_item_index.isNull(); }
 
-  //! Maille de niveau supérieur dans la hiérarchie
+  //! Higher-level mesh in the hierarchy
   ARCCORE_HOST_DEVICE ComponentCell superCell() const { return ComponentCell(_superItemBase()); }
 
-  //! Niveau hiérarchique de l'entité
+  //! Hierarchical level of the entity
   ARCCORE_HOST_DEVICE Int32 level() const { return m_shared_info->m_level; }
 
-  //! Nombre de sous-éléments
+  //! Number of sub-elements
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
 
-  //! Maille globale
+  //! Global mesh
   Cell globalCell() const
   {
     return Cell(m_shared_info->_globalItemBase(m_constituent_item_index));
   }
 
-  //! localId() de la maille globale
+  //! localId() of the global mesh
   ARCCORE_HOST_DEVICE CellLocalId globalCellId() const
   {
     return CellLocalId(m_shared_info->_globalItemId(m_constituent_item_index));
   }
 
   /*!
-   * \brief Numéro unique de l'entité constituant.
+   * \brief Unique number of the constituent entity.
    *
-   * Ce numéro est unique pour chaque constituant de chaque maille.
+   * This number is unique for each constituent of each mesh.
    *
-   * \warning Ce numéro unique n'est pas le même que celui de la maille globale
-   * associée.
+   * \warning This unique number is not the same as that of the associated global mesh.
    */
   Int64 componentUniqueId() const { return m_shared_info->_componentUniqueId(m_constituent_item_index); }
 
-  //! Liste des sous-constituents de cette entité
+  //! List of sub-constituents of this entity
   ARCCORE_HOST_DEVICE inline CellComponentCellEnumerator subItems() const;
 
-  //! Opérateur d'écriture
+  //! Output operator
   ARCANE_CORE_EXPORT friend std::ostream&
   operator<<(std::ostream& o, const ComponentCell& mvi);
 
@@ -180,8 +180,9 @@ class ARCANE_CORE_EXPORT ConstituentItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur les constituants d'une maille.
+ * \brief Enumerator over the constituents of a mesh.
  */
 class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 {
@@ -316,8 +317,9 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur typés sur les mailles composants d'une maille.
+ * \brief Typed enumerator over the component meshes of a mesh.
  */
 template <typename ComponentCellType> class CellComponentCellEnumeratorT
 : public CellComponentCellEnumerator

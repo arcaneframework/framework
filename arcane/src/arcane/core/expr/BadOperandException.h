@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadOperandException.h                                       (C) 2000-2018 */
 /*                                                                           */
-/* Exception sur les opérandes des opérations des expressions.               */
+/* Exception for operands in expression operations.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_BADOPERANDEXCEPTION_H
 #define ARCANE_EXPR_BADOPERANDEXCEPTION_H
@@ -23,11 +23,12 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception sur les opérandes des opérations des expressions.
+ * \brief Exception for operands in expression operations.
  *
- * Cette exception est envoyée lorsque les opérandes des opérations des 
- * des expressions n'ont pas le bon type ou la bonne dimension.
+ * This exception is thrown when the operands of the
+ * expressions do not have the correct type or dimension.
  */
 class BadOperandException
 : public Exception
@@ -51,5 +52,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

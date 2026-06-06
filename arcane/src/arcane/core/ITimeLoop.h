@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITimeLoop.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une boucle en temps.                                          */
+/* Interface of a time loop.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMELOOP_H
 #define ARCANE_CORE_ITIMELOOP_H
@@ -24,41 +24,42 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Module
- * \brief Interface d'une boucle en temps.
+ * \brief Interface of a time loop.
  */
 class ARCANE_CORE_EXPORT ITimeLoop
 {
  public:
 
-  /*! @name Point d'appel
-    Endroit ou est utilisé le point d'entrée.
+  /*! @name Call point
+    Where the entry point is used.
    */
   //@{
-  //! appelé pendant la boucle de calcul
+  //! called during the calculation loop
   static const char* WComputeLoop;
-  //! appelé lors de la lecture du jeu de données
+  //! called when reading the dataset
   static const char* WBuild;
-  //! appelé pendant l'initialisation, l'initialisation d'une reprise ou d'un nouveau cas
+  //! called during initialization, initialization of a restart, or a new case
   static const char* WInit;
-  //! appelé pour restaurer les variables lors d'un retour arrière
+  //! called to restore variables during a rollback
   static const char* WRestore;
-  //! appelé après un changement de maillage
+  //! called after a mesh change
   static const char* WOnMeshChanged;
-  //! appelé après un raffinement de maillage
+  //! called after mesh refinement
   static const char* WOnMeshRefinement;
-  //! appelé lors de la terminaison du code.
+  //! called upon termination of the code.
   static const char* WExit;
   //@}
 
  public:
 
-  virtual ~ITimeLoop() = default; //!< Libère les ressources.
+  virtual ~ITimeLoop() = default; //!< Frees resources.
 
  public:
 
-  //! Construit la boucle en temps
+  //! Constructs the time loop
   virtual void build() = 0;
 
  public:
@@ -68,52 +69,52 @@ class ARCANE_CORE_EXPORT ITimeLoop
 
  public:
 
-  //! Nom de la boucle en temps
+  //! Name of the time loop
   virtual String name() const = 0;
 
-  //! Titre de la boucle en temps
+  //! Title of the time loop
   virtual String title() const = 0;
 
-  //! Positionne le titre de la boucle en temps
+  //! Sets the title of the time loop
   virtual void setTitle(const String&) = 0;
 
-  //! Description de la boucle en temps
+  //! Description of the time loop
   virtual String description() const = 0;
 
-  //! Positionne la description de la boucle en temps
+  //! Sets the description of the time loop
   virtual void setDescription(const String&) = 0;
 
-  //! Liste des noms des modules obligatoires.
+  //! List of names of required modules.
   virtual StringCollection requiredModulesName() const = 0;
 
-  //! Positionne la liste des des modules obligatoires.
+  //! Sets the list of required modules.
   virtual void setRequiredModulesName(const StringCollection&) = 0;
 
-  //! Liste des noms des modules facultatifs.
+  //! List of names of optional modules.
   virtual StringCollection optionalModulesName() const = 0;
 
-  //! Positionne la liste des des modules facultatifs.
+  //! Sets the list of optional modules.
   virtual void setOptionalModulesName(const StringCollection&) = 0;
 
-  //! Liste des noms des points d'entrée pour le point d'appel \a where.
+  //! List of names of entry points for the call point \a where.
   virtual TimeLoopEntryPointInfoCollection entryPoints(const String& where) const = 0;
 
-  //! Positionne la liste des noms des points d'entrée pour le point d'appel \a where
+  //! Sets the list of names of entry points for the call point \a where
   virtual void setEntryPoints(const String& where, const TimeLoopEntryPointInfoCollection&) = 0;
 
-  //! Liste des classes utilisateurs associées à la boucle en temps.
+  //! List of user classes associated with the time loop.
   virtual StringCollection userClasses() const = 0;
 
-  //! Retourne la liste des classes associées à la boucle en temps.
+  //! Returns the list of classes associated with the time loop.
   virtual void setUserClasses(const StringCollection&) = 0;
 
-  //! Liste services singletons
+  //! List of singleton services
   virtual TimeLoopSingletonServiceInfoCollection singletonServices() const = 0;
 
-  //! Positionne la liste des services singletons.
+  //! Sets the list of singleton services.
   virtual void setSingletonServices(const TimeLoopSingletonServiceInfoCollection& c) = 0;
 
-  //! Options de configuration
+  //! Configuration options
   virtual IConfiguration* configuration() = 0;
 };
 
@@ -125,5 +126,4 @@ class ARCANE_CORE_EXPORT ITimeLoop
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

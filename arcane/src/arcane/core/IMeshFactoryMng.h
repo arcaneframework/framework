@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshFactoryMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de fabriques de maillages.                      */
+/* Interface of the mesh factory manager.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHFACTORYMNG_H
 #define ARCANE_CORE_IMESHFACTORYMNG_H
@@ -24,25 +24,26 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de fabriques de maillages.
+ * \brief Interface of the mesh factory manager.
  */
 class ARCANE_CORE_EXPORT IMeshFactoryMng
 {
  public:
 
-  //! Libère les ressources.
+  //! Frees the resources.
   virtual ~IMeshFactoryMng() = default;
 
  public:
 
-  //! Gestionnaire de maillage associé
+  //! Associated mesh manager
   virtual IMeshMng* meshMng() const =0;
 
   /*!
-   * \brief Créé un maillage ou un sous-maillage.
+   * \brief Creates a mesh or a sub-mesh.
    *
-   * Le maillage créé est automatiquement ajouté au meshMng() associé.
+   * The created mesh is automatically added to the associated meshMng().
    */
   virtual IPrimaryMesh* createMesh(const MeshBuildInfo& build_info) =0;
 };
@@ -55,4 +56,4 @@ class ARCANE_CORE_EXPORT IMeshFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

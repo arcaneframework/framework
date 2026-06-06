@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionComplexValue.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Option du jeu de données de type 'complexe'.                              */
+/* Option for a 'complex' data set.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASEOPTIONCOMPLEXVALUE_H
 #define ARCANE_CASEOPTIONCOMPLEXVALUE_H
@@ -29,11 +29,12 @@ class ICaseOptionsMulti;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'une valeur d'une option complexe.
+ * \brief Base class for a complex option value.
  *
- * Une option complexe est composé de plusieurs instances de cette classe.
+ * A complex option is composed of multiple instances of this class.
  */
 class ARCANE_CORE_EXPORT CaseOptionComplexValue
 {
@@ -50,13 +51,13 @@ class ARCANE_CORE_EXPORT CaseOptionComplexValue
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane. Do not use it")
   ICaseOptionList* configList() const { return m_config_list.get(); }
 
-  //! Nom complet au format donné par la norme XPath.
+  //! Full name in the format specified by the XPath standard.
   String xpathFullName() const { return m_element.xpathFullName(); }
 
  protected:
 
-  // Les deux méthodes suivantes sont utilisés par le générateur 'axl2cc' et
-  // ne doivent pas être modifiées.
+  // The following two methods are used by the 'axl2cc' generator and
+  // must not be modified.
   ICaseOptionList* _configList() { return m_config_list.get(); }
   XmlNode _element() { return m_element; }
 
@@ -74,4 +75,4 @@ class ARCANE_CORE_EXPORT CaseOptionComplexValue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

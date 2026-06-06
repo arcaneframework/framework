@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UniformSmallInt.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Randomiser 'UniformSmallInt'.                                             */
+/* Randomize 'UniformSmallInt'.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_UNIFORMONSMALLINT_H
@@ -62,7 +62,7 @@ public:
   UniformSmallInt(base_type & rng, IntType min, IntType max);
   result_type operator()()
   {
-    // we must not use the low bits here, because LCGs get very bad then
+    // we must not use the low bits here, because LCGs perform very poorly then
     return ((_rng() - _rng.min()) / _factor) % _range + _min;
   }
   result_type min() const { return _min; }
@@ -81,7 +81,7 @@ UniformSmallInt(base_type & rng, IntType min, IntType max)
   : _rng(rng), _min(min), _max(max),
     _range(static_cast<base_result>(_max-_min)+1), _factor(1)
 {
-  // LCGs get bad when only taking the low bits.
+  // LCGs perform poorly when only taking the low bits.
   // (probably put this logic into a partial template specialization)
   // Check how many low bits we can ignore before we get too much
   // quantization error.

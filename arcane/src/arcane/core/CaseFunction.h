@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseFunction.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une fonction du jeu de données.                             */
+/* Class managing a dataset function.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEFUNCTION_H
 #define ARCANE_CORE_CASEFUNCTION_H
@@ -31,17 +31,18 @@ class ISubDomain;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour construire une instance de \a CaseFunction.
+ * \brief Information to build an instance of \a CaseFunction.
  * 
- * \param name nom de la fonction
- * \param param_type type du paramètre de la fonction
- * \param curve_type type de la courbe de la fonction
+ * \param name name of the function
+ * \param param_type type of the function parameter
+ * \param curve_type type of the function curve
  */
 class ARCANE_CORE_EXPORT CaseFunctionBuildInfo
 {
  public:
-  //! \deprecated Utiliser CaseFunctionBuildInfo(ITraceMng* tm,const String& name)
+  //! \deprecated Use CaseFunctionBuildInfo(ITraceMng* tm,const String& name)
   ARCANE_DEPRECATED_260 CaseFunctionBuildInfo(ISubDomain* sd,const String& name);
   explicit CaseFunctionBuildInfo(ITraceMng* tm)
   : m_trace_mng(tm),
@@ -57,20 +58,21 @@ class ARCANE_CORE_EXPORT CaseFunctionBuildInfo
 
  public:
 
-  ITraceMng* m_trace_mng; //!< Gestionnaire de trace associé.
-  String m_name; //!< Nom de la fonction
-  ICaseFunction::eParamType m_param_type; //!< Type du paramètre (x)
-  ICaseFunction::eValueType m_value_type; //!< Type de la valeur (y)
-  String m_transform_param_func; //!< Fonction de transformation X
-  String m_transform_value_func; //!< Fonction de transformation Y
-  Real m_deltat_coef; //!< Coefficient multiplicateur du deltat pour les tables en temps
+  ITraceMng* m_trace_mng; //!< Associated trace manager.
+  String m_name; //!< Name of the function
+  ICaseFunction::eParamType m_param_type; //!< Parameter type (x)
+  ICaseFunction::eValueType m_value_type; //!< Value type (y)
+  String m_transform_param_func; //!< X transformation function
+  String m_transform_value_func; //!< Y transformation function
+  Real m_deltat_coef; //!< Multiplier coefficient of deltat for time tables
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonction du jeu de données.
+ * \brief Dataset function.
  *
  * \ingroup CaseOption
  */
@@ -82,7 +84,7 @@ class ARCANE_CORE_EXPORT CaseFunction
 
  public:
 
-  //! Construit une fonction du jeu de données.
+  //! Constructs a dataset function.
   explicit CaseFunction(const CaseFunctionBuildInfo& info);
   ~CaseFunction() override;
 
@@ -115,12 +117,12 @@ class ARCANE_CORE_EXPORT CaseFunction
 
  private:
 
-  ITraceMng* m_trace; //!< Gestionnaire de traces
-  String m_name; //!< Nom de la fonction
-  eParamType m_param_type; //!< Type du paramètre (x)
-  eValueType m_value_type; //!< Type de la valeur (y)
-  String m_transform_param_func;  //!< Fonction de transformation du paramètre
-  String m_transform_value_func;  //!< Fonction de transformation de la valeur
+  ITraceMng* m_trace; //!< Trace manager
+  String m_name; //!< Name of the function
+  eParamType m_param_type; //!< Parameter type (x)
+  eValueType m_value_type; //!< Value type (y)
+  String m_transform_param_func;  //!< Parameter transformation function
+  String m_transform_value_func;  //!< Value transformation function
   Real m_deltat_coef;
 
  private:

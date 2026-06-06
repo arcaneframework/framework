@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeLoop.cc                                                 (C) 2000-2014 */
 /*                                                                           */
-/* Boucle en temps.                                                          */
+/* Time loop.                                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,9 +47,10 @@ typedef List<TimeLoopEntryPointInfo> TimeLoopEntryPointInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Boucle en temps.
+ * \brief Time loop.
  */
 class TimeLoopPrivate
 {
@@ -65,13 +66,13 @@ class TimeLoopPrivate
  public:
 
   IApplication* m_application; //!< Application
-  String m_name; //!< Nom informatique
-  String m_title; //!< Titre
+  String m_name; //!< Name
+  String m_title; //!< Title
   String m_description; //!< Description
-  bool m_is_old; //! Vrai si boucle en temps au vieux format
+  bool m_is_old; //! True if time loop is in the old format
   StringList m_required_modules_name;
   StringList m_optional_modules_name;
-  StringList m_user_classes; //!< Liste des classes utilisateurs.
+  StringList m_user_classes; //!< List of user classes.
   EntryPointInfoMap m_entry_points;
   List<TimeLoopSingletonServiceInfo> m_singleton_services;
   IConfiguration* m_configuration;

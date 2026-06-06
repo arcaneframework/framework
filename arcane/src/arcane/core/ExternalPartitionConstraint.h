@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExternalPartitionConstraint.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur les contraintes pour le partitionnement.                 */
+/* Information on constraints for partitioning.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXTERNALPARTITIONCONSTRAINT_H
 #define ARCANE_CORE_EXTERNALPARTITIONCONSTRAINT_H

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemGlobal.h                                              (C) 2012-2013 */
+/* AnyItemGlobal.h                                             (C) 2012-2013 */
 /*                                                                           */
-/* Namespace pour AnyItem.                                                    */
+/* Namespace for AnyItem.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ANYITEM_ANTITEMGLOBAL_H
 #define ARCANE_ANYITEM_ANTITEMGLOBAL_H
@@ -27,4 +27,3 @@
 /*---------------------------------------------------------------------------*/
 
 #endif /* ARCANE_ANYITEM_ANTITEMGLOBAL_H */
-

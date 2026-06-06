@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataOperation.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une opération sur une donnée.                                 */
+/* Interface of an operation on a data.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_IDATAOPERATION_H
 #define ARCANE_CORE_DATATYPE_IDATAOPERATION_H
@@ -29,15 +29,16 @@ class IDataOperation;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une opération sur une donnée.
+ * \brief Interface of an operation on a data.
  */
 class IDataOperation
 {
  public:
   
-  virtual ~IDataOperation() {} //!< Libère les ressources
+  virtual ~IDataOperation() {} //!< Frees resources
 
  public:
 
@@ -78,4 +79,4 @@ class IDataOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

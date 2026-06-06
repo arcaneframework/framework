@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartialVariableScalarRef.h                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une variable partielle scalaire sur une entité du maillage. */
+/* Class managing a partial scalar variable on a mesh entity.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHPARTIALVARIABLESCALARREF_H
 #define ARCANE_CORE_MESHPARTIALVARIABLESCALARREF_H
@@ -31,9 +31,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable partielle scalaire sur un type d'entité du maillage.
+ * \brief Partial scalar variable on a mesh entity type.
  */
 template<typename DataTypeT>
 class ItemPartialVariableScalarRefT
@@ -54,16 +55,16 @@ class ItemPartialVariableScalarRefT
   
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(const VariableBuildInfo& vb,eItemKind ik);
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(IVariable* var);  
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(const ItemPartialVariableScalarRefT<DataType>& rhs);
   
  protected:
   
-  //! Opérateur de recopie
+  //! Copy operator
   ARCANE_CORE_EXPORT void operator=(const ItemPartialVariableScalarRefT<DataType>& rhs);
   
  public:
@@ -133,7 +134,7 @@ class ItemPartialVariableScalarRefT
 
  public:
 
-  //! Vue sur table d'indirection du groupe.
+  //! View of the group's redirection table.
   GroupIndexTableView tableView() const { return m_table->view(); }
 
  protected:
@@ -148,9 +149,10 @@ class ItemPartialVariableScalarRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable scalaire sur un type d'entité du maillage.
+ * \brief Scalar variable on a mesh entity type.
  */
 template<typename ItemTypeT,typename DataTypeT>
 class MeshPartialVariableScalarRefT
@@ -174,11 +176,11 @@ class MeshPartialVariableScalarRefT
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT MeshPartialVariableScalarRefT(const VariableBuildInfo& vb);
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT MeshPartialVariableScalarRefT(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs);
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs);
   
  public:
@@ -231,7 +233,7 @@ class MeshPartialVariableScalarRefT
     return this->_value(i.index());
   }
 
-  //! Groupe associé à la grandeur
+  //! Group associated with the quantity
   ARCANE_CORE_EXPORT GroupType itemGroup() const;
   
  private:
@@ -250,4 +252,4 @@ class MeshPartialVariableScalarRefT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

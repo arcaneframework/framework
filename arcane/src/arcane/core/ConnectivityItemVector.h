@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConnectivityItemVector.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface des accesseurs des connectivités des entités.                   */
+/* Interface for entity connectivity accessors.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CONNECTIVITYITEMVECTOR_H
 #define ARCANE_CORE_CONNECTIVITYITEMVECTOR_H
@@ -32,8 +32,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type temporaire automatiquement casté en ConnectivityItemVector
+ * \brief Temporary type automatically cast to ConnectivityItemVector
  */
 struct ConnectivityItemVectorCatalyst
 {
@@ -43,8 +44,9 @@ struct ConnectivityItemVectorCatalyst
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère la récupération des informations de connectivité.
+ * \brief Manages the retrieval of connectivity information.
  *
  * \sa IItemConnectivity
  * \sa IIncrementalItemConnectivity
@@ -52,8 +54,10 @@ struct ConnectivityItemVectorCatalyst
  */
 class ARCANE_CORE_EXPORT ConnectivityItemVector
 : public ItemVector
-// SDC new API : user handles directly the ConnectivityItemVector and iterates on it...need a public inheritance.
-// the Use of views as in first version is confusing for user that doesn't understand where the view comes from and easily invalidates it...
+// SDC new API: user handles ConnectivityItemVector directly and iterates on it... needs
+// public inheritance.
+// the Use of views as in first version is confusing for user that doesn't understand
+// where the view comes from and easily invalidates it...
 {
  public:
 
@@ -91,10 +95,10 @@ class ARCANE_CORE_EXPORT ConnectivityItemVector
 
  public:
 
-  //! Connectivité associée
+  //! Associated connectivity
   IItemConnectivityAccessor* accessor() const { return m_connectivity_accessor; }
 
-  //! Retourne les entités connectées à \a item.
+  //! Returns the entities connected to \a item.
   ItemVectorView connectedItems(ItemLocalId item)
   {
     return m_connectivity_accessor->_connectedItems(item, *this);
@@ -104,8 +108,8 @@ class ARCANE_CORE_EXPORT ConnectivityItemVector
 
   /*!
    * \internal
-   * \brief Positionne la liste de connectivité avec les entités
-   * spécifiées par \a ids.
+   * \brief Positions the connectivity list with the entities
+   * specified by \a ids.
    */
   ItemVectorView resizeAndCopy(Int32ConstArrayView ids)
   {
@@ -116,8 +120,8 @@ class ARCANE_CORE_EXPORT ConnectivityItemVector
 
   /*!
    * \internal
-   * \brief Positionne la liste de connectivité avec l'entité
-   * de localId() \a id.
+   * \brief Positions the connectivity list with the entity
+   * of localId() \a id.
    */
   ItemVectorView setItem(Int32 id)
   {
@@ -128,7 +132,7 @@ class ARCANE_CORE_EXPORT ConnectivityItemVector
 
   /*!
    * \internal
-   * \brief Permet de récupérer le ConnectivityItemVector
+   * \brief Allows retrieving the ConnectivityItemVector
    */
   void operator=(const ConnectivityItemVectorCatalyst& to_con_vec)
   {

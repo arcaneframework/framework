@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IIOMng.h                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des entrées-sorties.                            */
+/* Interface of the input-output manager.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IIOMNG_H
 #define ARCANE_CORE_IIOMNG_H
@@ -25,145 +25,146 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Interface du gestionnaire des entrées sorties.
+ * \brief Interface of the input/output manager.
  *
- * \todo gestionnaire des entrées sorties permettant d'encapsuler
- * la gestion des fichiers en parallèles.
+ * \todo input/output manager allowing encapsulation
+ * of file management in parallel.
  */
 class ARCANE_CORE_EXPORT IIOMng
 {
  public:
 
-  virtual ~IIOMng() = default; //!< Libère les ressources
+  virtual ~IIOMng() = default; //!< Frees resources
 
  public:
 
   /*!
-   * \brief Lit et analyse le fichier XML \a filename.
+   * \brief Reads and parses the XML file \a filename.
    *
-   * En cas d'erreur, retourne 0.
-   * L'appelant est propriétaire de l'instance retournée et doit
-   * la détruire par l'opérateur delete.
-   * Si un nom de schéma est spécifié, la cohérence
-   * du fichier relativement au schéma est vérifiée.
+   * In case of an error, returns 0.
+   * The caller owns the returned instance and must
+   * destroy it using the delete operator.
+   * If a schema name is specified, the consistency
+   * of the file relative to the schema is checked.
    */
   virtual IXmlDocumentHolder*
   parseXmlFile(const String& filename, const String& schemaname = String{}) = 0;
 
   /*!
-   * \brief Lit et analyse le fichier XML \a filename.
+   * \brief Reads and parses the XML file \a filename.
    *
-   * En cas d'erreur, retourne 0.
-   * L'appelant est propriétaire de l'instance retournée et doit
-   * la détruire par l'opérateur delete.
-   * La cohérence du fichier relativement au schéma est vérifiée; 
-   * Le nom du schéma est donnée uniquement pour traitement des messages d'erreurs.
+   * In case of an error, returns 0.
+   * The caller owns the returned instance and must
+   * destroy it using the delete operator.
+   * The consistency of the file relative to the schema is checked; 
+   * The schema name is provided only for error message processing.
    */
   virtual IXmlDocumentHolder* parseXmlFile(const String& filename,
                                            const String& schemaname,
                                            ConstArrayView<Byte> schema_data) = 0;
 
   /*!
-   * \brief Lit et analyse le fichier XML contenu dans le buffer \a buffer.
+   * \brief Reads and parses the XML file contained in the buffer \a buffer.
    *
-   * En cas d'erreur, retourne 0.
-   * L'appelant est propriétaire de l'instance retournée et doit
-   * la détruire par l'opérateur delete.
-   * L'argument \a name associe un nom à la zone mémoire qui est
-   * utilisé pour afficher les messages d'erreur.
+   * In case of an error, returns 0.
+   * The caller owns the returned instance and must
+   * destroy it using the delete operator.
+   * The argument \a name associates a name with the memory area that is
+   * used for displaying error messages.
    */
   virtual IXmlDocumentHolder* parseXmlBuffer(Span<const Byte> buffer, const String& name) = 0;
 
   /*!
-   * \brief Lit et analyse le fichier XML contenu dans le buffer \a buffer.
+   * \brief Reads and parses the XML file contained in the buffer \a buffer.
    *
-   * En cas d'erreur, retourne 0.
-   * L'appelant est propriétaire de l'instance retournée et doit
-   * la détruire par l'opérateur delete.
-   * L'argument \a name associe un nom à la zone mémoire qui est
-   * utilisé pour afficher les messages d'erreur.
+   * In case of an error, returns 0.
+   * The caller owns the returned instance and must
+   * destroy it using the delete operator.
+   * The argument \a name associates a name with the memory area that is
+   * used for displaying error messages.
    */
   virtual IXmlDocumentHolder* parseXmlBuffer(Span<const std::byte> buffer, const String& name) = 0;
 
   /*!
-   * \brief Lit et analyse le fichier XML contenu dans la chaîne \a str.
+   * \brief Reads and parses the XML file contained in the string \a str.
    *
-   * En cas d'erreur, retourne 0.
-   * L'appelant est propriétaire de l'instance retournée et doit
-   * la détruire par l'opérateur delete.
-   * L'argument \a name associe un nom à la zone mémoire qui est
-   * utilisé pour afficher les messages d'erreur.
+   * In case of an error, returns 0.
+   * The caller owns the returned instance and must
+   * destroy it using the delete operator.
+   * The argument \a name associates a name with the memory area that is
+   * used for displaying error messages.
    */
   virtual IXmlDocumentHolder* parseXmlString(const String& str, const String& name) = 0;
 
-  /*! \brief Ecrit l'arbre XML du document \a doc dans le fichier filename.
-   * \retval true en cas d'erreur,
-   * \return false en cas de succès.
+  /*! \brief Writes the XML tree of the document \a doc to the file filename.
+   * \retval true in case of an error,
+   * \return false in case of success.
    */
   virtual bool writeXmlFile(IXmlDocumentHolder* doc, const String& filename, const bool indented = false) = 0;
 
   /*!
-   * \brief Lecture collective d'un fichier.
+   * \brief Collective reading of a file.
    *
-   * Lit collectivement le fichier \a filename et retourne son
-   * contenu dans \a bytes. Le fichier est considéré comme un fichier binaire.
-   * La lecture collective signifie que l'ensemble des
-   * processeurs appellent cette opération et vont lire le même fichier.
-   * L'implémentation peut alors optimiser les accès disque en regroupant la
-   * lecture effective sur un ou plusieurs processeurs puis envoyer le
-   * contenu du fichier sur les autres.
+   * Collectively reads the file \a filename and returns its
+   * content in \a bytes. The file is considered a binary file.
+   * Collective reading means that all
+   * processors call this operation and will read the same file.
+   * The implementation can then optimize disk access by grouping the
+   * actual reading on one or more processors and then sending the
+   * file content to the others.
    *
-   * \retval true en cas d'erreur
-   * \retval false si tout est ok.
+   * \retval true in case of an error
+   * \retval false if everything is okay.
    */
   virtual bool collectiveRead(const String& filename, ByteArray& bytes) = 0;
 
   /*!
-   * \brief Lecture collective d'un fichier.
+   * \brief Collective reading of a file.
    *
-   * Lit collectivement le fichier \a filename et retourne son
-   * contenu dans \a bytes. Le fichier est considéré comme un fichier binaire
-   * si \a is_binary est vrai.
-   * La lecture collective signifie que l'ensemble des
-   * processeurs appellent cette opération et vont lire le même fichier.
-   * L'implémentation peut alors optimiser les accès disque en regroupant la
-   * lecture effective sur un ou plusieurs processeurs puis envoyer le
-   * contenu du fichier sur les autres.
+   * Collectively reads the file \a filename and returns its
+   * content in \a bytes. The file is considered a binary file
+   * if \a is_binary is true.
+   * Collective reading means that all
+   * processors call this operation and will read the same file.
+   * The implementation can then optimize disk access by grouping the
+   * actual reading on one or more processors and then sending the
+   * file content to the others.
    *
-   * \retval true en cas d'erreur
-   * \retval false si tout est ok.
+   * \retval true in case of an error
+   * \retval false if everything is okay.
    */
   virtual bool collectiveRead(const String& filename, ByteArray& bytes, bool is_binary) = 0;
 
   /*!
-   * \brief Lecture locale d'un fichier.
+   * \brief Local reading of a file.
    *
-   * Lit localement le fichier \a filename et retourne son
-   * contenu dans \a bytes. Le fichier est considéré comme un fichier binaire.
-   * Cette opération n'est pas collective.
+   * Locally reads the file \a filename and returns its
+   * content in \a bytes. The file is considered a binary file.
+   * This operation is not collective.
    *
-   * \retval true en cas d'erreur.
-   * \retval false si tout est ok.
+   * \retval true in case of an error.
+   * \retval false if everything is okay.
    *
-   * \warning retourne aussi true si le fichier est vide.
-   * \warning si le ByteUniqueArray doit être converti en String, il _faut_ y ajouter un 0 terminal au préalable (bytes.add(0))
+   * \warning also returns true if the file is empty.
+   * \warning if the ByteUniqueArray must be converted to a String, a terminal 0 must be added beforehand (bytes.add(0))
    */
   virtual bool localRead(const String& filename, ByteArray& bytes) = 0;
 
   /*!
-   * \brief Lecture locale d'un fichier.
+   * \brief Local reading of a file.
    *
-   * Lit localement le fichier \a filename et retourne son
-   * contenu dans \a bytes.
-   * Cette opération n'est pas collective.
+   * Locally reads the file \a filename and returns its
+   * content in \a bytes.
+   * This operation is not collective.
    *
-   * \retval true en cas d'erreur.
-   * \retval false si tout est ok.
+   * \retval true in case of an error.
+   * \retval false if everything is okay.
    *
-   * \warning retourne aussi true si le fichier est vide.
-   * \warning si le ByteUniqueArray doit être converti en String, il _faut_ y ajouter un 0 terminal au préalable (bytes.add(0))
+   * \warning also returns true if the file is empty.
+   * \warning if the ByteUniqueArray must be converted to a String, a terminal 0 must be added beforehand (bytes.add(0))
    */
   virtual bool localRead(const String& filename, ByteArray& bytes, bool is_binary) = 0;
 };
@@ -176,5 +177,4 @@ class ARCANE_CORE_EXPORT IIOMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

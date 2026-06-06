@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialVariableBuildInfo.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour une construire une variable matériau.                   */
+/* Information for building a material variable.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATERIALVARIABLEBUILDINFO_H
 #define ARCANE_CORE_MATERIALS_MATERIALVARIABLEBUILDINFO_H
@@ -51,5 +51,4 @@ class ARCANE_CORE_EXPORT MaterialVariableBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

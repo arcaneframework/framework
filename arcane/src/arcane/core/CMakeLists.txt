@@ -17,11 +17,11 @@ target_include_directories(arcane_core PUBLIC $<BUILD_INTERFACE:${COMPAT_DIRECTO
 
 arcane_register_library(arcane_core)
 
-# Génère pour chaque include 'Toto.h' un fichier d'en-tête
-# 'arcane/Toto.h' qui inclue 'arcane/core/Toto.h'
-# Cela est nécessaire pour les codes utilisant les versions
-# d'Arcane pour lesquelles les fichiers d'en-tête n'étaient pas
-# dans 'core'.
+# Generates a header file for each 'Toto.h' include
+# 'arcane/Toto.h' which includes 'arcane/core/Toto.h'
+# This is necessary for codes using versions
+# of Arcane for which the header files were not
+# in 'core'.
 set(SED_REGEX)
 foreach(file ${ARCANE_ORIGINAL_SOURCES})
   if (${file} MATCHES "\.(h|H)$")
@@ -34,8 +34,8 @@ foreach(file ${ARCANE_ORIGINAL_SOURCES})
     set(SED_REGEX "${SED_REGEX}s-#include \\\"arcane/${file}\\\"-#include \\\"arcane/core/${file}\\\"-g\n")
   endif()
 endforeach()
-# Génère un fichier contenant des expressions régulières pour modifier
-# un fichier en remplacant les 'arcane/Toto.h' par 'arcane/core/Toto.h'
+# Generates a file containing regular expressions to modify
+# a file by replacing 'arcane/Toto.h' with 'arcane/core/Toto.h'
 file(WRITE ${CMAKE_BINARY_DIR}/share/change_core_header_sed_regex.txt ${SED_REGEX})
 file(WRITE ${CMAKE_BINARY_DIR}/share/do_change_core_header_sed_regex.sh "#!/bin/sh\nsed -i --file=\"${CMAKE_BINARY_DIR}/share/change_core_header_sed_regex.txt\" \"$@\"\n")
 

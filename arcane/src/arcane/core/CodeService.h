@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CodeService.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Service du code.                                                          */
+/* Code Service.                                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CODESERVICE_H
 #define ARCANE_CORE_CODESERVICE_H
@@ -34,11 +34,12 @@ class CodeServicePrivate;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe abstraite d'un service de code.
+ * \brief Abstract class for a code service.
  *
- * La classe dérivée doit implémenter ICodeService::createSession()
+ * The derived class must implement ICodeService::createSession()
  */
 class ARCANE_CORE_EXPORT CodeService
 : public ICodeService
@@ -84,5 +85,4 @@ class ARCANE_CORE_EXPORT CodeService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

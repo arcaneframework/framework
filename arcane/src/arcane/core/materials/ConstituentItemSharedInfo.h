@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemSharedInfo.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Informations partagées pour les structures de 'ConstituentItem'           */
+/* Shared information for 'ConstituentItem' structures                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CONSTITUENTITEMSHAREDINFO_H
 #define ARCANE_CORE_MATERIALS_CONSTITUENTITEMSHAREDINFO_H
@@ -26,12 +26,13 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Index d'une entité constituant dans la liste des entités constituants.
+ * \brief Index of a constituent entity in the list of constituent entities.
  *
- * L'index est propre à chaque type d'entité consituant (AllEnvCell, EnvCell, MatCell).
- * La liste est gérée par ComponentIemtInternalData.
+ * The index is specific to each type of constituent entity (AllEnvCell, EnvCell, MatCell).
+ * The list is managed by ComponentIemtInternalData.
  */
 class ARCANE_CORE_EXPORT ConstituentItemIndex
 {
@@ -64,19 +65,20 @@ class ARCANE_CORE_EXPORT ConstituentItemIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur pour les données des constituants.
+ * \brief Container for constituent data.
  */
 class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
 {
-  // Les champs de cette classe sont des tableaux dont la taille est
-  // \a m_storage_size et qui peuvent être indexés par une entité nulle
+  // The fields of this class are arrays whose size is
+  // \a m_storage_size and which can be indexed by a null entity
   // (ConstituentItemIndex==(-1)).
-  // Le conteneur est géré par ComponenItemInternalData.
-  // Seuls ComponentItemSharedInfo et ComponenItemInternalData
-  // doivent accéder aux champs de cette classe
+  // The container is managed by ComponenItemInternalData.
+  // Only ComponentItemSharedInfo and ComponenItemInternalData
+  // should access the fields of this class
 
-  // TODO: Utiliser stockage avec un seul élément pour le nullComponent
+  // TODO: Use single-element storage for the nullComponent
 
   friend class ComponentItemInternalData;
   friend ConstituentItemSharedInfo;
@@ -84,31 +86,32 @@ class ARCANE_CORE_EXPORT ComponentItemSharedInfoStorageView
  private:
 
   Int32 m_storage_size = 0;
-  //! Id de la première entité sous-constituant
+  //! Id of the first sub-constituent entity
   ConstituentItemIndex* m_first_sub_constituent_item_id_data = nullptr;
-  //! Index du constituant (IMeshComponent)
+  //! Index of the constituent (IMeshComponent)
   Int16* m_component_id_data = nullptr;
-  //! Nombre d'entités sous-constituant
+  //! Number of sub-constituent entities
   Int16* m_nb_sub_constituent_item_data = nullptr;
-  //! localId() de l'entité globale associée
+  //! localId() of the associated global entity
   Int32* m_global_item_local_id_data = nullptr;
-  //! Id de l'entité sous-constituant parente
+  //! Id of the parent sub-constituent entity
   ConstituentItemIndex* m_super_component_item_local_id_data = nullptr;
-  //! MatVarIndex de l'entité
+  //! MatVarIndex of the entity
   MatVarIndex* m_var_index_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations partagées sur les 'ComponentItem'.
+ * \brief Shared information about 'ComponentItem'.
  *
- * Il y a 3 instances de cette classe : une pour les AllEnvCell, une pour les
- * EnvCell et une pour les MatCell. Ces instances sont gérées par la classe
- * ComponentItemInternalData. Il est possible de conserver un pointeur sur
- * les intances de cette classe car ils sont valides durant toute la vie
- * d'un MeshMaterialMng.
+ * There are 3 instances of this class: one for AllEnvCell, one for
+ * EnvCell, and one for MatCell. These instances are managed by the class
+ * ComponentItemInternalData. It is possible to keep a pointer to
+ * the instances of this class because they are valid throughout the life
+ * of a MeshMaterialMng.
  */
 class ARCANE_CORE_EXPORT ConstituentItemSharedInfo
 : private ComponentItemSharedInfoStorageView
@@ -127,7 +130,7 @@ class ARCANE_CORE_EXPORT ConstituentItemSharedInfo
 
  private:
 
-  //! Pour l'entité nulle
+  //! For the null entity
   static ComponentItemSharedInfo null_shared_info;
   static ComponentItemSharedInfo* null_shared_info_pointer;
   static ComponentItemSharedInfo* _nullInstance() { return null_shared_info_pointer; }
@@ -206,10 +209,10 @@ class ARCANE_CORE_EXPORT ConstituentItemSharedInfo
     m_var_index_data[id.localId()] = mv_index;
   }
 
-  //! Numéro unique de l'entité component
+  //! Unique ID number of the component entity
   Int64 _componentUniqueId(ConstituentItemIndex id) const
   {
-    // TODO: Vérifier que arrayIndex() ne dépasse pas (1<<MAT_INDEX_OFFSET)
+    // TODO: Check that arrayIndex() does not exceed (1<<MAT_INDEX_OFFSET)
     impl::ItemBase item_base(_globalItemBase(id));
     return (Int64)m_var_index_data[id.localId()].arrayIndex() + ((Int64)item_base.uniqueId() << MAT_INDEX_OFFSET);
   }
@@ -229,9 +232,9 @@ class ARCANE_CORE_EXPORT ConstituentItemSharedInfo
 
  private:
 
-  // NOTE : Cette classe est partagée avec le wrapper C#
-  // Toute modification de la structure interne doit être reportée
-  // dans la structure C# correspondante
+  // NOTE: This class is shared with the C# wrapper
+  // Any modification to the internal structure must be reported
+  // in the corresponding C# structure
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   Int16 m_level = (-1);
   ConstArrayView<IMeshComponent*> m_components;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Item.h                                                      (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur les éléments du maillage.                                */
+/* Information about mesh elements.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEM_H
 #define ARCANE_CORE_ITEM_H
@@ -29,8 +29,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Macro pour vérifier en mode Check que les conversions entre les
-// les genres d'entités sont correctes.
+// Macro to check in Check mode that conversions between the
+// entity kinds are correct.
 #ifdef ARCANE_CHECK
 #define ARCANE_CHECK_KIND(type) _checkKind(type())
 #else
@@ -49,39 +49,40 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un élément de maillage.
+ * \brief Base class for a mesh element.
  *
  * \ingroup Mesh
 
- Les éléments du maillage sont les noeuds (Node), les mailles (Cell),
- les faces (Face), les arêtes (Edge), les particules (Particle) ou les
- degrés de liberté (DoF). Chacun de ses éléments est décrit
- dans la classe dérivée correspondante.
+ Mesh elements are nodes (Node), cells (Cell),
+ faces (Face), edges (Edge), particles (Particle) or degrees of freedom (DoF).
+ Each of its elements is described
+ in the corresponding derived class.
 
- Cette classe et les classes dérivées sont des objets légers qui s'utilisent par
- valeur plutôt que par référence et qui ne doivent pas être conservés entre deux
- modifications du la famille (IItemFamily) à laquelle ils sont associés.
+ This class and its derived classes are lightweight objects that are used by
+ value rather than by reference and should not be kept between two
+ modifications of the family (IItemFamily) they are associated with.
 
- Quel que soit son type un élément du maillage possède un identifiant
- unique (localId()) pour son type et local au sous-domaine géré et un identifiant
- unique (uniqueId()) pour son type sur l'ensemble du domaine. La numérotation est
- <b>continue</b> et commence à <b>0</b>. L'identifiant local est utilisé par
- exemple pour accéder aux variables ou pour la connectivité.
+ Regardless of its type, a mesh element has a unique identifier
+ (localId()) for its type and local to the managed subdomain and a unique identifier
+ (uniqueId()) for its type across the entire domain. The numbering is
+ <b>continuous</b> and starts at <b>0</b>. The local identifier is used, for example,
+ to access variables or for connectivity.
 
- Par exemple, si un maillage possède 2 mailles hexaédriques qui se joignent
- par une face, il y 12 noeuds, 11 faces et 2 mailles. Dans ce cas, le premier
- noeud aura l'identifiant 0, le second 1 et ainsi de suite jusqu'à 11. La
- première face aura l'identifiant 0, la seconde 1 et ainsi de suite
- jusqu'à 10.
+ For example, if a mesh has 2 hexahedral cells that join
+ by a face, there are 12 nodes, 11 faces, and 2 cells. In this case, the first
+ node will have identifier 0, the second 1, and so on up to 11. The
+ first face will have identifier 0, the second 1, and so on
+ up to 10.
 
- Il existe une entité correspondant à un objet nul. C'est la seule
- pour laquelle null() est vrai. Aucune opération autre que l'appel à null()
- et les opérations de comparaisons ne sont valides sur l'entité nulle.
+ There is an entity corresponding to a null object. It is the only one
+ for which null() is true. No operation other than calling null() and comparison
+ operations is valid on the null entity.
  */
 class ARCANE_CORE_EXPORT Item
 {
-  // Pour accéder aux constructeurs privés
+  // To access private constructors
   friend class ItemEnumeratorBaseT<Item>;
   friend class ItemConnectedEnumeratorBaseT<Item>;
   friend class ItemVector;
@@ -97,14 +98,14 @@ class ARCANE_CORE_EXPORT Item
   template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
-  // Pour accéder à _internal()
+  // To access _internal()
   friend class ItemCompatibility;
 
  public:
 
   typedef ItemInternal* ItemInternalPtr;
   
-  //! Type du localId()
+  //! Type of localId()
   typedef ItemLocalId LocalIdType;
 
   using ItemBase = impl::ItemBase;
@@ -112,15 +113,15 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   /*!
-   * \brief Index d'un Item dans une variable.
+   * \brief Index of an Item in a variable.
    * \deprecated
    */
   class Index
   {
-    // TODO Rendre obsolète lorsqu'on aura supprimer
-    // les classes dérivées qui sont obsolètes.
-    // On ne peut pas le faire avant car cela génère trop
-    // d'avertissements de compilation.
+    // TODO Deprecate when we remove
+    // the obsolete derived classes.
+    // We cannot do this before because it generates too many
+    // compilation warnings.
    public:
     Index() : m_local_id(NULL_ITEM_LOCAL_ID){}
     explicit Index(Int32 id) : m_local_id(id){}
@@ -135,49 +136,49 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   /*!
-   * \brief Type des éléments.
+   * \brief Element types.
    *
-   * Les valeurs des types doivent aller de 0 à #NB_TYPE par pas de 1.
+   * Type values must range from 0 to #NB_TYPE in steps of 1.
    *
-   * \deprecated. Utilise les types définis dans ArcaneTypes.h
+   * \deprecated. Use types defined in ArcaneTypes.h
    */
   enum
   {
-    Unknown ARCANE_DEPRECATED_REASON("Use 'IT_NullType' instead") = IT_NullType, //!< Elément de type nul
-    Vertex ARCANE_DEPRECATED_REASON("Use 'IT_Vertex' instead") = IT_Vertex, //!< Elément de type noeud (1 sommet 1D, 2D et 3D)
-    Bar2 ARCANE_DEPRECATED_REASON("Use 'IT_Line2' instead") = IT_Line2, //!< Elément de type arête (2 sommets, 1D, 2D et 3D)
-    Tri3 ARCANE_DEPRECATED_REASON("Use 'IT_Triangle3' instead") = IT_Triangle3, //!< Elément de type triangle (3 sommets, 2D)
-    Quad4 ARCANE_DEPRECATED_REASON("Use 'IT_Quad4' instead") = IT_Quad4, //!< Elément de type quad (4 sommets, 2D)
-    Pentagon5 ARCANE_DEPRECATED_REASON("Use 'IT_Pentagon5' instead") = IT_Pentagon5, //!< Elément de type pentagone (5 sommets, 2D)
-    Hexagon6 ARCANE_DEPRECATED_REASON("Use 'IT_Hexagon6' instead") = IT_Hexagon6, //!< Elément de type hexagone (6 sommets, 2D)
-    Tetra ARCANE_DEPRECATED_REASON("Use 'IT_Tetraedron4' instead") = IT_Tetraedron4, //!< Elément de type tétraédre (4 sommets, 3D)
-    Pyramid ARCANE_DEPRECATED_REASON("Use 'IT_Pyramid5' instead") = IT_Pyramid5, //!< Elément de type pyramide  (5 sommets, 3D)
-    Penta ARCANE_DEPRECATED_REASON("Use 'IT_Pentaedron6' instead") = IT_Pentaedron6, //!< Elément de type pentaèdre (6 sommets, 3D)
-    Hexa ARCANE_DEPRECATED_REASON("Use 'IT_Hexaedron8' instead") = IT_Hexaedron8, //!< Elément de type hexaèdre  (8 sommets, 3D)
-    Wedge7 ARCANE_DEPRECATED_REASON("Use 'IT_Heptaedron10' instead") = IT_Heptaedron10, //!< Elément de type prisme à 7 faces (base pentagonale)
-    Wedge8 ARCANE_DEPRECATED_REASON("Use 'IT_Octaedron12' instead") = IT_Octaedron12 //!< Elément de type prisme à 8 faces (base hexagonale)
-    // Réduit au minimum pour compatibilité.
+    Unknown ARCANE_DEPRECATED_REASON("Use 'IT_NullType' instead") = IT_NullType, //!< Null type element
+    Vertex ARCANE_DEPRECATED_REASON("Use 'IT_Vertex' instead") = IT_Vertex, //!< Node type element (1 vertex 1D, 2D and 3D)
+    Bar2 ARCANE_DEPRECATED_REASON("Use 'IT_Line2' instead") = IT_Line2, //!< Edge type element (2 vertices, 1D, 2D and 3D)
+    Tri3 ARCANE_DEPRECATED_REASON("Use 'IT_Triangle3' instead") = IT_Triangle3, //!< Triangle type element (3 vertices, 2D)
+    Quad4 ARCANE_DEPRECATED_REASON("Use 'IT_Quad4' instead") = IT_Quad4, //!< Quad type element (4 vertices, 2D)
+    Pentagon5 ARCANE_DEPRECATED_REASON("Use 'IT_Pentagon5' instead") = IT_Pentagon5, //!< Pentagon type element (5 vertices, 2D)
+    Hexagon6 ARCANE_DEPRECATED_REASON("Use 'IT_Hexagon6' instead") = IT_Hexagon6, //!< Hexagon type element (6 vertices, 2D)
+    Tetra ARCANE_DEPRECATED_REASON("Use 'IT_Tetraedron4' instead") = IT_Tetraedron4, //!< Tetrahedron type element (4 vertices, 3D)
+    Pyramid ARCANE_DEPRECATED_REASON("Use 'IT_Pyramid5' instead") = IT_Pyramid5, //!< Pyramid type element (5 vertices, 3D)
+    Penta ARCANE_DEPRECATED_REASON("Use 'IT_Pentaedron6' instead") = IT_Pentaedron6, //!< Pentahedron type element (6 vertices, 3D)
+    Hexa ARCANE_DEPRECATED_REASON("Use 'IT_Hexaedron8' instead") = IT_Hexaedron8, //!< Hexahedron type element (8 vertices, 3D)
+    Wedge7 ARCANE_DEPRECATED_REASON("Use 'IT_Heptaedron10' instead") = IT_Heptaedron10, //!< Prism type element with 7 faces (pentagonal base)
+    Wedge8 ARCANE_DEPRECATED_REASON("Use 'IT_Octaedron12' instead") = IT_Octaedron12 //!< Prism type element with 8 faces (hexagonal base)
+    // Reduced to minimum for compatibility.
   };
 
-  //! Indice d'un élément nul
+  //! Null element index
   static const Int32 NULL_ELEMENT = NULL_ITEM_ID;
 
-  //! Nom du type de maille \a cell_type
+  //! Mesh type name \a cell_type
   ARCCORE_DEPRECATED_2021("Use ItemTypeMng::typeName() instead")
   static String typeName(Int32 type);
 
  protected:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   constexpr ARCCORE_HOST_DEVICE Item(Int32 local_id,ItemSharedInfo* shared_info)
   : m_shared_info(shared_info), m_local_id(local_id) {}
 
  public:
 
-  //! Création d'une entité de maillage nulle
+  //! Creation of a null mesh entity
   Item() = default;
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the \a internal entity
   //ARCANE_DEPRECATED_REASON("Remove this overload")
   Item(ItemInternal* ainternal)
   {
@@ -187,23 +188,23 @@ class ARCANE_CORE_EXPORT Item
     ARCANE_ITEM_ADD_STAT(m_nb_created_from_internal);
   }
 
-  // NOTE: Pour le constructeur suivant; il est indispensable d'utiliser
-  // const& pour éviter une ambiguité avec le constructeur par recopie
-  //! Construit une référence à l'entité \a abase
+  // NOTE: For the following constructor; it is essential to use
+  // const& to avoid ambiguity with the copy constructor
+  //! Constructs a reference to the \a abase entity
   constexpr ARCCORE_HOST_DEVICE Item(const ItemBase& abase)
   : m_shared_info(abase.m_shared_info)
   , m_local_id(abase.m_local_id)
   {
   }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the \a internal entity
   Item(const ItemInternalPtr* internals,Int32 local_id)
   : Item(local_id,internals[local_id]->m_shared_info)
   {
     ARCANE_ITEM_ADD_STAT(m_nb_created_from_internalptr);
   }
 
-  //! Opérateur de copie
+  //! Copy operator
   Item& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -212,143 +213,143 @@ class ARCANE_CORE_EXPORT Item
 
  public:
 
-  //! \a true si l'entité est nul (i.e. non connecté au maillage)
+  //! \a true if the entity is null (i.e. not connected to the mesh)
   constexpr bool null() const { return m_local_id==NULL_ITEM_ID; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   constexpr Int32 localId() const { return m_local_id; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   constexpr ItemLocalId itemLocalId() const { return ItemLocalId{ m_local_id }; }
 
-  //! Identifiant unique sur tous les domaines
+  //! Unique identifier across all domains
   ItemUniqueId uniqueId() const
   {
 #ifdef ARCANE_CHECK
     if (m_local_id!=NULL_ITEM_LOCAL_ID)
       arcaneCheckAt((Integer)m_local_id,m_shared_info->m_unique_ids.size());
 #endif
-    // Ne pas utiliser l'accesseur normal car ce tableau peut etre utilise pour la maille
-    // nulle et dans ce cas m_local_id vaut NULL_ITEM_LOCAL_ID (qui est negatif)
-    // ce qui provoque une exception pour debordement de tableau.
+    // Do not use the normal accessor because this array may be used for the
+    // null mesh and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
+    // which causes an exception for array overflow.
     return ItemUniqueId(m_shared_info->m_unique_ids.data()[m_local_id]);
   }
 
-  //! Numéro du sous-domaine propriétaire de l'entité
+  //! Owner subdomain number of the entity
   Int32 owner() const { return m_shared_info->_ownerV2(m_local_id); }
 
-  //! Type de l'entité
+  //! Entity type
   Int16 type() const { return m_shared_info->_typeId(m_local_id); }
 
-  //! Type de l'entité
+  //! Entity type
   ItemTypeId itemTypeId() const { return ItemTypeId(type()); }
 
-  //! Famille dont est issue l'entité
+  //! Family from which the entity originates
   IItemFamily* itemFamily() const { return m_shared_info->m_item_family; }
 
-  //! Genre de l'entité
+  //! Entity kind
   constexpr eItemKind kind() const { return m_shared_info->m_item_kind; }
 
-  //! \a true si l'entité est appartient au sous-domaine
+  //! \a true if the entity belongs to the subdomain
   constexpr bool isOwn() const { return (_flags() & ItemFlags::II_Own)!=0; }
 
   /*!
-   * \brief Vrai si l'entité est partagé d'autres sous-domaines.
+   * \brief True if the entity is shared by other subdomains.
    *
-   * Une entité est considérée comme partagée si et seulement si
-   * isOwn() est vrai et elle est fantôme pour un ou plusieurs
-   * autres sous-domaines.
+   * An entity is considered shared if and only if
+   * isOwn() is true and it is ghost for one or more
+   * other subdomains.
    *
-   * Cette méthode n'est pertinente que si les informations de connectivité
-   * ont été calculées (par un appel à IItemFamily::computeSynchronizeInfos()).
+   * This method is only relevant if the connectivity information
+   * has been calculated (by calling IItemFamily::computeSynchronizeInfos()).
    */
   bool isShared() const { return (_flags() & ItemFlags::II_Shared)!=0; }
 
-  //! Converti l'entité en le genre \a ItemWithNodes.
+  //! Converts the entity to the \a ItemWithNodes kind.
   inline ItemWithNodes toItemWithNodes() const;
-  //! Converti l'entité en le genre \a Node.
+  //! Converts the entity to the \a Node kind.
   inline Node toNode() const;
-  //! Converti l'entité en le genre \a Cell.
+  //! Converts the entity to the \a Cell kind.
   inline Cell toCell() const;
-  //! Converti l'entité en le genre \a Edge.
+  //! Converts the entity to the \a Edge kind.
   inline Edge toEdge() const;
-  //! Converti l'entité en le genre \a Edge.
+  //! Converts the entity to the \a Face kind.
   inline Face toFace() const;
-  //! Converti l'entité en le genre \a Particle.
+  //! Converts the entity to the \a Particle kind.
   inline Particle toParticle() const;
-  //! Converti l'entité en le genre \a DoF.
+  //! Converts the entity to the \a DoF kind.
   inline DoF toDoF() const;
 
-  //! Nombre de parents pour les sous-maillages
+  //! Number of parents for submeshes
   Int32 nbParent() const { return _nbParent(); }
 
-  //! i-ème parent pour les sous-maillages
+  //! i-th parent for submeshes
   Item parent(Int32 i) const { return m_shared_info->_parentV2(m_local_id,i); }
 
-  //! premier parent pour les sous-maillages
+  //! first parent for submeshes
   Item parent() const { return m_shared_info->_parentV2(m_local_id,0); }
 
  public:
 
-  //! \a true si l'entité est du genre \a ItemWithNodes.
+  //! \a true if the entity is of the \a ItemWithNodes kind.
   constexpr bool isItemWithNodes() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Edge || ik==IK_Face || ik==IK_Cell );
   }
 
-  //! \a true si l'entité est du genre \a Node.
+  //! \a true if the entity is of the \a Node kind.
   constexpr bool isNode() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Node);
   }
-  //! \a true si l'entité est du genre \a Cell.
+  //! \a true if the entity is of the \a Cell kind.
   constexpr bool isCell() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Cell);
   }
-  //! \a true si l'entité est du genre \a Edge.
+  //! \a true if the entity is of the \a Edge kind.
   constexpr bool isEdge() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Edge);
   }
-  //! \a true si l'entité est du genre \a Edge.
+  //! \a true if the entity is of the \a Face kind.
   constexpr bool isFace() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Face);
   }
-  //! \a true is l'entité est du genre \a Particle.
+  //! \a true if the entity is of the \a Particle kind.
   constexpr bool isParticle() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Particle);
   }
-  constexpr //! \a true is l'entité est du genre \a DoF
+  constexpr //! \a true if the entity is of the \a DoF kind
   bool isDoF() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_DoF);
   }
 
-  //! Retourne si les flags \a flags sont positionnées pour l'entité
+  //! Returns if the \a flags are set for the entity
   constexpr bool hasFlags(Int32 flags) const { return (_flags() & flags); }
 
-  //! Flags de l'entité
+  //! Entity flags
   constexpr Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
 
  public:
 
  /*!
-   * \brief Partie interne de l'entité.
+   * \brief Internal part of the entity.
    *
-   * \warning La partie interne de l'entité ne doit être modifiée que
-   * par ceux qui savent ce qu'ils font.
-   * \deprecated Utiliser itemBase() ou mutableItemBase() à la place pour
-   * les cas l'instance retournée n'est pas conservée.
+   * \warning The internal part of the entity should only be modified by
+   * those who know what they are doing.
+   * \deprecated Use itemBase() or mutableItemBase() instead for
+   * cases where the returned instance is not kept.
    */
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. use itemBase() or mutableItemBase() instead")
   ItemInternal* internal() const
@@ -361,10 +362,10 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   /*!
-   * \brief Partie interne de l'entité.
+   * \brief Internal part of the entity.
    *
-   * \warning La partie interne de l'entité ne doit être modifiée que
-   * par ceux qui savent ce qu'ils font.
+   * \warning The internal part of the entity should only be modified by
+   * those who know what they are doing.
    */
   impl::ItemBase itemBase() const
   {
@@ -372,10 +373,10 @@ class ARCANE_CORE_EXPORT Item
   }
 
   /*!
-   * \brief Partie interne modifiable de l'entité.
+   * \brief Mutable internal part of the entity.
    *
-   * \warning La partie interne de l'entité ne doit être modifiée que
-   * par ceux qui savent ce qu'ils font.
+   * \warning The internal part of the entity should only be modified by
+   * those who know what they are doing.
    */
   impl::MutableItemBase mutableItemBase() const
   {
@@ -383,11 +384,11 @@ class ARCANE_CORE_EXPORT Item
   }
 
   /*!
-   * \brief Infos sur le type de l'entité.
+   * \brief Information about the entity type.
    *
-   * Cette méthode permet d'obtenir les informations concernant
-   * un type donné d'entité , comme par exemple les numérotations locales
-   * de ces faces ou de ses arêtes.
+   * This method allows obtaining information concerning
+   * a given entity type, such as the local numbering
+   * of its faces or edges.
    */
   const ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(type()); }
 
@@ -401,16 +402,16 @@ class ARCANE_CORE_EXPORT Item
 
  private:
 
-  //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
+  //! Shared information among all entities with the same characteristics
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullItemSharedInfoPointer;
 
  protected:
 
   /*!
-   * \brief Numéro local (au sous-domaine) de l'entité.
+   * \brief Local number (in the subdomain) of the entity.
    *
-   * Pour des raisons de performance, le numéro local doit être
-   * le premier champs de la classe.
+   * For performance reasons, the local number must be
+   * the first field of the class.
    */
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
 
@@ -433,21 +434,21 @@ class ARCANE_CORE_EXPORT Item
 
  protected:
 
-  //! Flags de l'entité
+  //! Entity flags
   constexpr Int32 _flags() const { return m_shared_info->_flagsV2(m_local_id); }
-  //! Nombre de noeuds de l'entité
+  //! Number of nodes of the entity
   constexpr Integer _nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
-  //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
+  //! Number of edges of the entity or number of edges connected to the entity (for nodes)
   constexpr Integer _nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
-  //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
+  //! Number of faces of the entity or number of faces connected to the entity (for nodes and edges)
   constexpr Integer _nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
-  //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
+  //! Number of cells connected to the entity (for nodes, edges and faces)
   constexpr Integer _nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
-  //! Nombre de parent pour l'AMR
+  //! Number of parents for AMR
   Int32 _nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
-  //! Nombre d' enfants pour l'AMR
+  //! Number of children for AMR
   Int32 _nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
-  //! Nombre de parent pour les sous-maillages
+  //! Number of parents for submeshes
   Integer _nbParent() const { return m_shared_info->nbParent(); }
   constexpr NodeLocalId _nodeId(Int32 index) const { return NodeLocalId(_connectivity()->_nodeLocalIdV2(m_local_id,index)); }
   constexpr EdgeLocalId _edgeId(Int32 index) const { return EdgeLocalId(_connectivity()->_edgeLocalIdV2(m_local_id,index)); }
@@ -473,7 +474,7 @@ class ARCANE_CORE_EXPORT Item
   ItemBase _hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   ItemBase _toItemBase() const { return ItemBase(m_local_id,m_shared_info); }
 
-  //! Nombre de noeuds de l'entité
+  //! Number of nodes of the entity
   Int32 _nbLinearNode() const { return itemBase()._nbLinearNode(); }
 
  private:
@@ -517,11 +518,12 @@ class ARCANE_CORE_EXPORT Item
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Compare deux entités.
+ * \brief Compare two entities.
  *
- * \retval true si elles sont identiques (mêmes localId())
- * \retval false sinon
+ * \retval true if they are identical (same localId())
+ * \retval false otherwise
  */
 inline bool
 operator==(const Item& item1,const Item& item2)
@@ -530,10 +532,10 @@ operator==(const Item& item1,const Item& item2)
 }
 
 /*!
- * \brief Compare deux entités.
+ * \brief Compare two entities.
  *
- * \retval true si elles sont différentes (différents localId())
- * \retval false sinon
+ * \retval true if they are different (different localId())
+ * \retval false otherwise
  */
 inline bool
 operator!=(const Item& item1,const Item& item2)
@@ -542,10 +544,10 @@ operator!=(const Item& item1,const Item& item2)
 }
 
 /*!
- * \brief Compare deux entités.
+ * \brief Compare two entities.
  *
- * \retval true si elles sont inferieures (sur localId())
- * \retval false sinon
+ * \retval true if they are less than (based on localId())
+ * \retval false otherwise
  */
 inline bool
 operator<(const Item& item1,const Item& item2)
@@ -572,8 +574,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Noeud d'un maillage.
+ * \brief Node of a mesh.
  *
  * \ingroup Mesh
  */
@@ -581,7 +584,7 @@ class ARCANE_CORE_EXPORT Node
 : public Item
 {
   using ThatClass = Node;
-  // Pour accéder aux constructeurs privés
+  // For accessing private constructors
   friend class ItemEnumeratorBaseT<ThatClass>;
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
@@ -596,7 +599,7 @@ class ARCANE_CORE_EXPORT Node
  public:
 
   /*!
-   * \brief Index d'un Node dans une variable.
+   * \brief Index of a Node in a variable.
    * \deprecated
    */  
   class ARCANE_DEPRECATED_REASON("Y2024: Use NodeLocalId instead") Index
@@ -612,35 +615,35 @@ class ARCANE_CORE_EXPORT Node
 
  protected:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   constexpr Node(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
  public:
 
-  //! Type du localId()
+  //! Type of localId()
   typedef NodeLocalId LocalIdType;
 
-  //! Création d'un noeud non connecté au maillage
+  //! Creation of a node not connected to the mesh
   Node() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the entity \a internal
   Node(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isNode); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the entity \a abase
   constexpr Node(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isNode); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the entity \a abase
   constexpr explicit Node(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isNode); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the entity \a internal
   Node(const ItemInternalPtr* internals,Int32 local_id) : Item(internals,local_id)
   { ARCANE_CHECK_KIND(isNode); }
 
-  //! Opérateur de copie
+  //! Copy operator
   Node& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -649,60 +652,60 @@ class ARCANE_CORE_EXPORT Node
 
  public:
 
-  //! Genre de l'entité
+  //! Kind of the entity
   constexpr eItemKind kind() const { return IK_Node; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   constexpr NodeLocalId itemLocalId() const { return NodeLocalId{ m_local_id }; }
 
-  //! Nombre d'arêtes connectées au noeud
+  //! Number of edges connected to the node
   constexpr Int32 nbEdge() const { return _nbEdge(); }
 
-  //! Nombre de faces connectées au noeud
+  //! Number of faces connected to the node
   constexpr Int32 nbFace() const { return _nbFace(); }
 
-  //! Nombre de mailles connectées au noeud
+  //! Number of cells connected to the node
   Int32 nbCell() const { return _nbCell(); }
 
-  //! i-ème arête du noeud
+  //! i-th edge of the node
   inline Edge edge(Int32 i) const;
 
-  //! i-ème face du noeud
+  //! i-th face of the node
   inline Face face(Int32 i) const;
 
-  //! i-ème maille du noeud
+  //! i-th cell of the node
   inline Cell cell(Int32 i) const;
 
-  //! i-ème arête du noeud
+  //! i-th edge of the node
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
-  //! i-ème face du noeud
+  //! i-th face of the node
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
 
-  //! i-ème maille du noeud
+  //! i-th cell of the node
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
-  //! Liste des arêtes du noeud
+  //! List of edges of the node
   EdgeConnectedListViewType edges() const { return _edgeList(); }
 
-  //! Liste des faces du noeud
+  //! List of faces of the node
   FaceConnectedListViewType faces() const { return _faceList(); }
 
-  //! Liste des mailles du noeud
+  //! List of cells of the node
   CellConnectedListViewType cells() const { return _cellList(); }
 
-  //! Liste des arêtes du noeud
+  //! List of edges of the node
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
 
-  //! Liste des faces du noeud
+  //! List of faces of the node
   FaceLocalIdView faceIds() const { return _faceIds(); }
 
-  //! Liste des mailles du noeud
+  //! List of cells of the node
   CellLocalIdView cellIds() const { return _cellIds(); }
 
   // AMR
 
-  //! Enumére les mailles connectées au noeud
+  //! Enumerates the cells connected to the node
   CellVectorView _internalActiveCells(Int32Array& local_ids) const
   {
     return _toItemBase()._internalActiveCells2(local_ids);
@@ -726,8 +729,9 @@ _node(Int32 index) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Elément de maillage s'appuyant sur des noeuds (Edge,Face,Cell).
+ * \brief Mesh element based on nodes (Edge,Face,Cell).
  *
  * \ingroup Mesh
  */
@@ -735,7 +739,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
   using ThatClass = ItemWithNodes;
-  // Pour accéder aux constructeurs privés
+  // For accessing private constructors
   friend class ItemEnumeratorBaseT<ThatClass>;
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
@@ -749,33 +753,33 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 
  protected:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   constexpr ItemWithNodes(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
  public:
   
-  //! Création d'une entité non connectée au maillage
+  //! Creation of an entity not connected to the mesh
   ItemWithNodes() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the entity \a internal
   ItemWithNodes(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the entity \a abase
   constexpr ItemWithNodes(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
-  //! Construit une référence à l'entité \a aitem
+  //! Constructs a reference to the entity \a aitem
   constexpr explicit ItemWithNodes(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the entity \a internal
   ItemWithNodes(const ItemInternalPtr* internals,Int32 local_id)
   : Item(internals,local_id)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
-  //! Opérateur de copie
+  //! Copy operator
   ItemWithNodes& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -784,22 +788,22 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 
  public:
 
-  //! Nombre de noeuds de l'entité
+  //! Number of nodes of the entity
   Int32 nbNode() const { return _nbNode(); }
 
-  //! i-ème noeud de l'entité
+  //! i-th node of the entity
   Node node(Int32 i) const { return _node(i); }
 
-  //! Liste des noeuds de l'entité
+  //! List of nodes of the entity
   NodeConnectedListViewType nodes() const { return _nodeList(); }
 
-  //! Liste des noeuds de l'entité
+  //! List of nodes of the entity
   NodeLocalIdView nodeIds() const { return _nodeIds(); }
 
-  //! i-ème noeud de l'entité.
+  //! i-th node of the entity.
   NodeLocalId nodeId(Int32 index) const { return _nodeId(index); }
 
-  //! Nombre de noeuds de l'entité linéaire associée (si entité ordre 2 ou plus)
+  //! Number of nodes of the associated linear entity (if entity order 2 or more)
   Int32 nbLinearNode() const { return _nbLinearNode(); }
 
  public:
@@ -813,11 +817,11 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arête d'une maille.
+ * \brief Edge of a mesh.
  *
- * Les arêtes n'existent qu'en 3D. En 2D, il faut utiliser la structure
- * 'Face'.
+ * Edges only exist in 3D. In 2D, you must use the 'Face' structure.
  *
  * \ingroup Mesh
  */
@@ -825,7 +829,7 @@ class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
   using ThatClass = Edge;
-  // Pour accéder aux constructeurs privés
+  // For accessing private constructors
   friend class ItemEnumeratorBaseT<ThatClass>;
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
@@ -840,7 +844,7 @@ class ARCANE_CORE_EXPORT Edge
  public:
 
   /*!
-   * \brief Index d'une Edge dans une variable.
+   * \brief Index of an Edge in a variable.
    * \deprecated
    */
   class ARCANE_DEPRECATED_REASON("Y2024: Use EdgeLocalId instead") Index
@@ -856,36 +860,36 @@ class ARCANE_CORE_EXPORT Edge
 
   private:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   Edge(Int32 local_id,ItemSharedInfo* shared_info)
   : ItemWithNodes(local_id,shared_info) {}
 
  public:
 
-  //! Type du localId()
+  //! Type of localId()
   typedef EdgeLocalId LocalIdType;
 
-  //! Créé une arête nulle
+  //! Creates a null edge
   Edge() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the entity \a internal
   Edge(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isEdge); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the entity \a abase
   constexpr Edge(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isEdge); }
 
-  //! Construit une référence à l'entité \a aitem
+  //! Constructs a reference to the entity \a aitem
   constexpr explicit Edge(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isEdge); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the entity \a internal
   Edge(const ItemInternalPtr* internals,Int32 local_id)
   : ItemWithNodes(internals,local_id)
   { ARCANE_CHECK_KIND(isEdge); }
 
-  //! Opérateur de copie
+  //! Copy operator
   Edge& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -894,43 +898,43 @@ class ARCANE_CORE_EXPORT Edge
 
  public:
 
-  //! Genre de l'entité
+  //! Kind of the entity
   constexpr eItemKind kind() const { return IK_Edge; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   EdgeLocalId itemLocalId() const { return EdgeLocalId{ m_local_id }; }
 
-  //! Nombre de sommets de l'arête
+  //! Number of vertices of the edge
   Int32 nbNode() const { return 2; }
 
-  //! Nombre de faces connectées à l'arête
+  //! Number of faces connected to the edge
   Int32 nbFace() const { return _nbFace(); }
 
-  //! Nombre de mailles connectées à l'arête
+  //! Number of cells connected to the edge
   Int32 nbCell() const { return _nbCell(); }
 
-  //! i-ème maille de l'arête
+  //! i-th cell of the edge
   inline Cell cell(Int32 i) const;
 
-  //! Liste des mailles de l'arête
+  //! List of edge cells
   CellConnectedListViewType cells() const { return _cellList(); }
 
-  //! i-ème maille de l'arête
+  //! i-th edge cell
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
-  //! Liste des mailles de l'arête
+  //! List of edge cells
   CellLocalIdView cellIds() const { return _cellIds(); }
 
-  //! i-ème face de l'arête
+  //! i-th face of the edge
   inline Face face(Int32 i) const;
 
-  //! Liste des faces de l'arête
+  //! List of faces of the edge
   FaceConnectedListViewType faces() const { return _faceList(); }
 
-  //! i-ème face de l'arête
+  //! i-th face of the edge
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
 
-  //! Liste des faces de l'arête
+  //! List of faces of the edge
   FaceLocalIdView faceIds() const { return _faceIds(); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
@@ -951,19 +955,19 @@ _edge(Int32 index) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Face d'une maille.
+ * \brief Face of a cell.
  *
  * \ingroup Mesh
  *
- Une face est décrite par la liste ordonnée de ses sommets, ce qui lui
- donne une orientation.
+ A face is described by the ordered list of its nodes, which gives it an orientation.
  */
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
   using ThatClass = Face;
-  // Pour accéder aux constructeurs privés
+  // To access private constructors
   friend class ItemEnumeratorBaseT<ThatClass>;
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
@@ -978,7 +982,7 @@ class ARCANE_CORE_EXPORT Face
  public:
 
   /*!
-   * \brief Index d'une Face dans une variable.
+   * \brief Index of a Face in a variable.
    * \deprecated
    */
   class ARCANE_DEPRECATED_REASON("Y2024: Use FaceLocalId instead") Index
@@ -994,36 +998,36 @@ class ARCANE_CORE_EXPORT Face
 
  private:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   constexpr Face(Int32 local_id,ItemSharedInfo* shared_info)
   : ItemWithNodes(local_id,shared_info) {}
 
  public:
 
-  //! Type du localId()
+  //! Type of localId()
   typedef FaceLocalId LocalIdType;
 
-  //! Création d'une face non connecté au maillage
+  //! Creation of a face not connected to the mesh
   Face() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the \a internal entity
   Face(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isFace); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the \a base entity
   constexpr Face(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isFace); }
 
-  //! Construit une référence à l'entité \a aitem
+  //! Constructs a reference to the \a item entity
   constexpr explicit Face(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isFace); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the \a internal entity
   Face(const ItemInternalPtr* internals,Int32 local_id)
   : ItemWithNodes(internals,local_id)
   { ARCANE_CHECK_KIND(isFace); }
 
-  //! Opérateur de copie
+  //! Copy operator
   Face& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -1032,80 +1036,80 @@ class ARCANE_CORE_EXPORT Face
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   constexpr eItemKind kind() const { return IK_Face; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   FaceLocalId itemLocalId() const { return FaceLocalId{ m_local_id }; }
 
-  //! Nombre de mailles de la face (1 ou 2)
+  //! Number of cells of the face (1 or 2)
   Int32 nbCell() const { return _nbCell(); }
 
-  //! i-ème maille de la face
+  //! i-th cell of the face
   inline Cell cell(Int32 i) const;
 
-  //! Liste des mailles de la face
+  //! List of cells of the face
   CellConnectedListViewType cells() const { return _cellList(); }
 
-  //! i-ème maille de la face
+  //! i-th cell of the face
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
-  //! Liste des mailles de la face
+  //! List of cells of the face
   CellLocalIdView cellIds() const { return _cellIds(); }
 
   /*!
-   * \brief Indique si la face est au bord du sous-domaine (i.e nbCell()==1)
+   * \brief Indicates if the face is on the subdomain boundary (i.e nbCell()==1)
    *
-   * \warning Une face au bord du sous-domaine n'est pas nécessairement au bord du maillage global.
+   * \warning A face on the subdomain boundary is not necessarily on the global mesh boundary.
    */
   bool isSubDomainBoundary() const { return (_flags() & ItemFlags::II_Boundary)!=0; }
 
   /*!
-   * \a true si la face est au bord du sous-domaine.
-   * \deprecated Utiliser isSubDomainBoundary() à la place.
+   * \a true if the face is on the subdomain boundary.
+   * \deprecated Use isSubDomainBoundary() instead.
    */
   ARCANE_DEPRECATED_118 bool isBoundary() const { return isSubDomainBoundary(); }
 
-  //! Indique si la face est au bord t orientée vers l'extérieur.
+  //! Indicates if the face is on the subdomain boundary facing outwards.
   bool isSubDomainBoundaryOutside() const
   {
     return isSubDomainBoundary() && (_flags() & ItemFlags::II_HasBackCell);
   }
 
   /*!
-   * \brief Indique si la face est au bord t orientée vers l'extérieur.
+   * \brief Indicates if the face is on the subdomain boundary facing outwards.
    *
-   * \deprecated Utiliser isSubDomainBoundaryOutside()
+   * \deprecated Use isSubDomainBoundaryOutside()
    */
   ARCANE_DEPRECATED_118 bool isBoundaryOutside() const
   {
     return isSubDomainBoundaryOutside();
   }
 
-  //! Maille associée à cette face frontière (maille nulle si aucune)
+  //! Cell associated with this boundary face (null cell if none)
   inline Cell boundaryCell() const;
 
-  //! Maille derrière la face (maille nulle si aucune)
+  //! Cell behind the face (null cell if none)
   inline Cell backCell() const;
 
-  //! Maille derrière la face (maille nulle si aucune)
+  //! Cell behind the face (null cell if none)
   CellLocalId backCellId() const { return CellLocalId(_toItemBase().backCellId()); }
 
-  //! Maille devant la face (maille nulle si aucune)
+  //! Cell in front of the face (null cell if none)
   inline Cell frontCell() const;
 
-  //! Maille devant la face (maille nulle si aucune)
+  //! Cell in front of the face (null cell if none)
   CellLocalId frontCellId() const { return CellLocalId(_toItemBase().frontCellId()); }
 
   /*!
-   * \brief Maille opposée de cette face à la maille \a cell.
+   * \brief Opposite cell of this face to the cell \a cell.
    *
    * \pre backCell()==cell || frontCell()==cell.
    */
   inline Cell oppositeCell(Cell cell) const;
 
   /*!
-   * \brief Maille opposée de cette face à la maille \a cell.
+   * \brief Opposite cell of this face to the cell \a cell.
    *
    * \pre backCell()==cell || frontCell()==cell.
    */
@@ -1116,29 +1120,29 @@ class ARCANE_CORE_EXPORT Face
   }
 
   /*!
-   * \brief Face maître associée à cette face.
+   * \brief Master face associated with this face.
    *
-   * Cette face n'est non nul que si la face est liée à une interface
-   * et est une face esclave de cette interface (i.e. isSlaveFace() est vrai)
+   * This face is non-null only if the face is tied to an interface
+   * and is a slave face of that interface (i.e. isSlaveFace() is true)
    *
    * \sa ITiedInterface
    */
   Face masterFace() const { return _toItemBase().masterFace(); }
 
-  //! \a true s'il s'agit de la face maître d'une interface
+  //! \a true if it is the master face of an interface
   bool isMasterFace() const { return _toItemBase().isMasterFace(); }
 
-  //! \a true s'il s'agit d'une face esclave d'une interface
+  //! \a true if it is a slave face of an interface
   bool isSlaveFace() const { return _toItemBase().isSlaveFace(); }
 
-  //! \a true s'il s'agit d'une face esclave ou maître d'une interface
+  //! \a true if it is a slave or master face of an interface
   bool isTiedFace() const { return isSlaveFace() || isMasterFace(); }
 
   /*!
-   * \brief Liste des faces esclaves associées à cette face maître.
+   * \brief List of slave faces associated with this master face.
    *
-   * Cette liste n'existe que pour les faces dont isMasterFace() est vrai.
-   * Pour les autres, elle est vide.
+   * This list only exists for faces where isMasterFace() is true.
+   * For others, it is empty.
    */
   FaceConnectedListViewType slaveFaces() const
   {
@@ -1149,19 +1153,19 @@ class ARCANE_CORE_EXPORT Face
 
  public:
 
-  //! Nombre d'arêtes de la face
+  //! Number of edges of the face
   Int32 nbEdge() const { return _nbEdge(); }
 
-  //! i-ème arête de la face
+  //! i-th edge of the face
   Edge edge(Int32 i) const { return _edge(i); }
 
-  //! Liste des arêtes de la face
+  //! List of edges of the face
   EdgeConnectedListViewType edges() const { return _edgeList(); }
 
-  //! i-ème arête de la face
+  //! i-th edge of the face
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
-  //! Liste des arêtes de la face
+  //! List of edges of the face
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
@@ -1182,38 +1186,37 @@ _face(Int32 index) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Maille d'un maillage.
+ * \brief Cell of a mesh.
  *
  * \ingroup Mesh
  *
- Chaque maille utilise de la mémoire pour stocker sa connectivité. Cela
- permet aux modules d'écrire leur boucle de manière identique quelle que
- soit le type de la maille. Dans un premier temps, c'est le mécanisme le
- plus simple. On peut envisager par la suite d'utiliser des classes template
- pour traiter la même information de manière statique (i.e. toute la connectivité
- est gérée à la compilation).
+ Each cell uses memory to store its connectivity. This allows modules to
+ write their loop identically regardless of the cell type. Initially, this
+ is the simplest mechanism. It may be possible later to use template classes
+ to process the same information statically (i.e., all connectivity is
+ managed at compile time).
 
- La connectivité utilise la numérotation <b>locale</b> des sommets de
- la maille. Elle est stockée dans les variables de classe #global_face_list
- pour les faces et #global_edge_list pour les arêtes.
+ Connectivity uses the <b>local</b> numbering of the cell's nodes. It is
+ stored in the class variables #global_face_list for faces and
+ #global_edge_list for edges.
 
- La connectivité utilisée est celle qui est décrite dans la notice
- LIMA version 3.1 à ceci près que la numérotation commence à zéro et non
- pas à un.
+ The connectivity used is that described in the LIMA notice version 3.1,
+ with the difference that the numbering starts at zero and not at one.
 
- LIMA ne décrivant pas la pyramide, la numérotation utilisée est celle
- de l'hexaèdre dégénérée en considérant que les sommets 4, 5, 6 et 7
- sont le sommet de la pyramide
+ Since LIMA does not describe the pyramid, the numbering used is that of
+ the degenerate hexahedron, considering that nodes 4, 5, 6, and 7 are the
+ pyramid's apex.
 
- Dans la version actuelle (1.6), les arêtes ne sont pas prises en compte
- de manière globale (i.e: il n'y a pas d'entités Edge par maille).
+ In the current version (1.6), edges are not taken into account globally
+ (i.e.: there are no Edge entities per cell).
 */
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
   using ThatClass = Cell;
-  // Pour accéder aux constructeurs privés
+  // To access private constructors
   friend class ItemEnumeratorBaseT<ThatClass>;
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
@@ -1228,7 +1231,7 @@ class ARCANE_CORE_EXPORT Cell
  public:
 
   /*!
-   * \brief Index d'une Cell dans une variable.
+   * \brief Index of a Cell in a variable.
    * \deprecated
    */  
   class ARCANE_DEPRECATED_REASON("Y2024: Use CellLocalId instead") Index
@@ -1244,36 +1247,36 @@ class ARCANE_CORE_EXPORT Cell
 
  private:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   Cell(Int32 local_id,ItemSharedInfo* shared_info)
   : ItemWithNodes(local_id,shared_info) {}
 
  public:
 
-  //! Type du localId()
+  //! Type of localId()
   typedef CellLocalId LocalIdType;
 
-  //! Constructeur d'une maille nulle
+  //! Constructor of a null cell
   Cell() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the \a internal entity
   Cell(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isCell); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the \a base entity
   constexpr Cell(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isCell); }
 
-  //! Construit une référence à l'entité \a aitem
+  //! Constructs a reference to the \a item entity
   constexpr explicit Cell(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isCell); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the \a internal entity
   Cell(const ItemInternalPtr* internals,Int32 local_id)
   : ItemWithNodes(internals,local_id)
   { ARCANE_CHECK_KIND(isCell); }
 
-  //! Opérateur de copie
+  //! Copy operator
   Cell& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -1282,104 +1285,104 @@ class ARCANE_CORE_EXPORT Cell
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   constexpr eItemKind kind() const { return IK_Cell; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   CellLocalId itemLocalId() const { return CellLocalId{ m_local_id }; }
 
-  //! Nombre de faces de la maille
+  //! Number of faces of the cell
   Int32 nbFace() const { return _nbFace(); }
 
-  //! i-ème face de la maille
+  //! i-th face of the cell
   Face face(Int32 i) const { return _face(i); }
 
-  //! Liste des faces de la maille
+  //! List of faces of the cell
   FaceConnectedListViewType faces() const { return _faceList(); }
 
-  //! i-ème face de la maille
+  //! i-th face of the cell
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
 
-  //! Liste des faces de la maille
+  //! List of faces of the cell
   FaceLocalIdView faceIds() const { return _faceIds(); }
 
-  //! Nombre d'arêtes de la maille
+  //! Number of edges of the cell
   Int32 nbEdge() const { return _nbEdge(); }
 
-  //! i-ème arête de la maille
+  //! i-th edge of the cell
   Edge edge(Int32 i) const { return _edge(i); }
 
-  //! i-ème arête de la maille
+  //! i-th edge of the cell
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
-  //! Liste des arêtes de la maille
+  //! List of edges of the cell
   EdgeConnectedListViewType edges() const { return _edgeList(); }
 
-  //! Liste des arêtes de la maille
+  //! List of edges of the cell
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
 
   //! AMR
-  //! ATT: la notion de parent est utilisé à la fois dans le concept sous-maillages et AMR.
-  //! La première implémentation AMR sépare les deux concepts pour des raisons de consistances.
-  //! Une fusion des deux notions est envisageable dans un deuxième temps
-  //! dans un premier temps, les appelations, pour l'amr, sont en français i.e. parent -> pere et child -> enfant
-  //! un seul parent
+  //! ATT: the notion of parent is used both in the sub-mesh concept and AMR.
+  //! The first AMR implementation separates the two concepts for consistency reasons.
+  //! A fusion of the two notions is possible later
+  //! initially, the names for AMR are in French, i.e. parent -> pere and child -> enfant
+  //! a single parent
   Cell hParent() const { return Cell(_hParentBase(0)); }
 
-  //! Nombre de parent pour l'AMR
+  //! Number of parents for AMR
   Int32 nbHParent() const { return _nbHParent(); }
 
-  //! Nombre d'enfants pour l'AMR
+  //! Number of children for AMR
   Int32 nbHChildren() const { return _nbHChildren(); }
 
-  //! i-ème enfant AMR
+  //! i-th AMR child
   Cell hChild(Int32 i) const { return Cell(_hChildBase(i)); }
 
-  //! parent de niveau 0 pour l'AMR
+  //! level 0 parent for AMR
   Cell topHParent() const { return Cell(_toItemBase().topHParentBase()); }
 
   /*!
-   * \returns \p true si l'item est actif (i.e. n'a pas de
-   * descendants actifs), \p false  sinon. Notez qu'il suffit de vérifier
-   * le premier enfant seulement. Renvoie toujours \p true si l'AMR est désactivé.
+   * \returns \p true if the item is active (i.e. has no
+   * active descendants), \p false otherwise. Note that it is sufficient to check
+   * only the first child. Always returns \p true if AMR is disabled.
    */
   bool isActive() const { return _toItemBase().isActive(); }
 
   bool isSubactive() const { return _toItemBase().isSubactive(); }
 
   /*!
-   * \returns \p true si l'item est un ancetre (i.e. a un
-   * enfant actif ou un enfant ancetre), \p false sinon.
-   * Renvoie toujours \p false si l'AMR est désactivé.
+   * \returns \p true if the item is an ancestor (i.e. has an
+   * active child or an ancestor child), \p false otherwise.
+   * Always returns \p false if AMR is disabled.
    */
   bool isAncestor() const { return _toItemBase().isAncestor(); }
 
   /*!
-   * \returns \p true si l'item a des enfants (actifs ou non),
-   * \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
+   * \returns \p true if the item has children (active or not),
+   * \p false otherwise. Always returns \p false if AMR is disabled.
    */
   bool hasHChildren() const { return _toItemBase().hasHChildren(); }
 
   /*!
-   * \returns le niveau de raffinement de l'item courant.  Si l'item
-   * parent est \p NULL donc par convention il est au niveau 0,
-   * sinon il est simplement au niveau superieur que celui de son parent.
+   * \returns the refinement level of the current item. If the item
+   * parent is \p NULL, then by convention it is at level 0,
+   * otherwise it is simply at a level higher than its parent.
    */
   Int32 level() const
   {
-    //! si je n'ai pas de parent donc j'ai été crée
-    //! directement à partir d'un fichier ou par l'utilisateur,
-    //! donc je suis un item de niveau 0
+    //! if I don't have a parent, I was created
+    //! directly from a file or by the user,
+    //! so I am a level 0 item
     if (this->_nbHParent() == 0)
       return 0;
-    //! sinon je suis au niveau supérieur que celui de mon parent
+    //! otherwise I am one level higher than my parent
     return (this->_hParentBase(0).level() + 1);
   }
 
   /*!
-   * \returns le rang de l'enfant \p (iitem).
-   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
-   * m_internal->hChild(rank) serait iitem;
+   * \returns the rank of the child \p (iitem).
+   * example: if rank = m_internal->whichChildAmI(iitem); then
+   * m_internal->hChild(rank) would be iitem;
    */
   Int32 whichChildAmI(const ItemInternal* iitem) const
   {
@@ -1387,9 +1390,9 @@ class ARCANE_CORE_EXPORT Cell
   }
 
   /*!
-   * \returns le rang de l'enfant avec \p (iitem).
-   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
-   * m_internal->hChild(rank) serait iitem;
+   * \returns the rank of the child with \p (iitem).
+   * example: if rank = m_internal->whichChildAmI(iitem); then
+   * m_internal->hChild(rank) would be iitem;
    */
   Int32 whichChildAmI(CellLocalId local_id) const
   {
@@ -1414,8 +1417,9 @@ _cell(Int32 index) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Particule.
+ * \brief Particle.
  * \ingroup Mesh
  */
 class Particle
@@ -1436,36 +1440,36 @@ class Particle
 
  private:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   Particle(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
  public:
   
-  //! Type du localId()
+  //! Type of localId()
   typedef ParticleLocalId LocalIdType;
 
-  //! Constructeur d'une particule nulle
+  //! Constructor for a null particle
   Particle() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the \a internal entity
   Particle(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isParticle); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the \a abase entity
   constexpr Particle(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isParticle); }
 
-  //! Construit une référence à l'entité \a aitem
+  //! Constructs a reference to the \a aitem entity
   constexpr explicit Particle(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isParticle); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the \a internal entity
   Particle(const ItemInternalPtr* internals,Int32 local_id)
   : Item(internals,local_id)
   { ARCANE_CHECK_KIND(isParticle); }
 
-  //! Opérateur de copie
+  //! Copy operator
   Particle& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -1474,29 +1478,29 @@ class Particle
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   constexpr eItemKind kind() const { return IK_Particle; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   ParticleLocalId itemLocalId() const { return ParticleLocalId{ m_local_id }; }
 
   /*!
-   * \brief Maille à laquelle appartient la particule.
-   * Il faut appeler setCell() avant d'appeler cette fonction.
-   * \precondition hasCell() doit être vrai.
+   * \brief Cell to which the particle belongs.
+   * You must call setCell() before calling this function.
+   * \precondition hasCell() must be true.
    */
   Cell cell() const { return _cell(0); }
 
-  //! Maille connectée à la particule
+  //! Cell connected to the particle
   CellLocalId cellId() const { return _cellId(0); }
 
-  //! Vrai si la particule est dans une maille du maillage
+  //! True if the particle is in a mesh cell
   bool hasCell() const { return (_cellId(0).localId()!=NULL_ITEM_LOCAL_ID); }
 
   /*!
-   * \brief Maille à laquelle appartient la particule ou maille nulle.
-   * Retourne cell() si la particule est dans une maille ou la
-   * maille nulle si la particule n'est dans aucune maille.
+   * \brief Cell to which the particle belongs or null cell.
+   * Returns cell() if the particle is in a cell or the
+   * null cell if the particle is not in any cell.
    */
   Cell cellOrNull() const
   {
@@ -1515,17 +1519,16 @@ class Particle
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- *
- * \brief classe degré de liberté.
+ * \brief degree of freedom class.
  *
  * \ingroup Mesh
  *
- * Ce nouvel item DoF introduit une nouvelle gestion de la connectivité, déportée
- * dans des propriétés et non plus stockées dans l'ItemSharedInfo afin de pouvoir créer
- * de nouvelles connectivités en fonction des besoins de l'utilisateur. Par défaut aucune
- * connectivité n'est associée au DoF. Les connectivités nécessaires seront ajoutées par l'utilisateur.
- *
+ * This new DoF item introduces a new connectivity management, offloaded
+ * into properties and no longer stored in ItemSharedInfo in order to be able to create
+ * new connectivities based on user needs. By default, no
+ * connectivity is associated with the DoF. Necessary connectivities will be added by the user.
  */
 class DoF
 : public Item
@@ -1545,7 +1548,7 @@ class DoF
 
  private:
 
-  //! Constructeur réservé pour les énumérateurs
+  //! Constructor reserved for enumerators
   constexpr DoF(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
 
@@ -1554,27 +1557,27 @@ class DoF
 
   using LocalIdType = DoFLocalId;
 
-  //! Constructeur d'une maille non connectée
+  //! Constructor for a non-connected cell
   DoF() = default;
 
-  //! (deprecated) Construit une référence à l'entité \a internal
+  //! (deprecated) Constructs a reference to the \a internal entity
   DoF(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isDoF); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the \a abase entity
   constexpr DoF(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isDoF); }
 
-  //! Construit une référence à l'entité \a abase
+  //! Constructs a reference to the \a abase entity
   constexpr explicit DoF(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isDoF); }
 
-  //! Construit une référence à l'entité \a internal
+  //! Constructs a reference to the \a internal entity
   DoF(const ItemInternalPtr* internals,Int32 local_id)
   : Item(internals,local_id)
   { ARCANE_CHECK_KIND(isDoF); }
 
-  //! Opérateur de copie
+  //! Copy operator
   DoF& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
@@ -1587,10 +1590,10 @@ class DoF
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const DoF* operator->() const { return this; }
 
-  //! Genre de l'entité
+  //! Entity kind
   constexpr eItemKind kind() const { return IK_DoF; }
 
-  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  //! Local identifier of the entity in the processor subdomain
   DoFLocalId itemLocalId() const { return DoFLocalId{ m_local_id }; }
 };
 

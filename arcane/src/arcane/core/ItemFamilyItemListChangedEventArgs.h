@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFamilyItemListChangedEventArgs.h                        (C) 2000-2025 */
 /*                                                                           */
-/* Arguments de l'évènement pour l'ajout ou la supression d'entités.         */
+/* Event arguments for entity addition or deletion.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMFAMILYITEMLISTCHANGEDARGS_H
 #define ARCANE_CORE_ITEMFAMILYITEMLISTCHANGEDARGS_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Arguments de l'évènement pour l'ajout ou la supression d'entités.
+ * \brief Event arguments for entity addition or deletion.
  */
 class ARCANE_CORE_EXPORT ItemFamilyItemListChangedEventArgs
 {
@@ -35,7 +36,7 @@ class ARCANE_CORE_EXPORT ItemFamilyItemListChangedEventArgs
 
  private:
 
-  //! Constructeur. Uniquement pour DynamicMeshKindInfos.
+  //! Constructor. Only for DynamicMeshKindInfos.
   ItemFamilyItemListChangedEventArgs() = default;
   ItemFamilyItemListChangedEventArgs(IItemFamily* item_family, Int32 local_id, Int64 unique_id)
   : m_item_family(item_family)

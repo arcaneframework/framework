@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseTable.cc                                                (C) 2000-2023 */
 /*                                                                           */
-/* Classe gérant une table de marche.                                        */
+/* Class managing a case table.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -213,8 +213,9 @@ setParamType(eParamType new_type)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo en cas d'erreur de l'un des deux, ne pas changer la valeur de l'autre.
+ * \todo In case of an error in either, do not change the value of the other.
  */
 CaseTable::eError CaseTable::
 appendElement(const String& param,const String& value)
@@ -232,7 +233,7 @@ appendElement(const String& param,const String& value)
 void CaseTable::
 insertElement(Integer id)
 {
-  // Ajoute un élément à la fin.
+  // Adds an element to the end.
   Integer n = nbElement();
   if (n==0)
     return;
@@ -326,20 +327,21 @@ _curveLinear(const String&,const String&,U)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul la valeur de la courbe pour le paramètre \a param.
- * La valeur est stockée dans \a value.
+ * \brief Calculates the curve value for the parameter \a param.
+ * The value is stored in \a value.
  *
- * \retval false en cas de succès
- * \retval true si erreur
+ * \retval false on success
+ * \retval true if error
  */
 template<typename ParamType,typename ValueType> void CaseTable::
 _findValue(ParamType param,ValueType& avalue) const
 {
   _applyParamTransform(param);
 
-  // On suppose que les éléments de la table sont rangés par paramètres
-  // croissants (begin[i+1]>begin[i])
+  // It is assumed that the elements of the table are sorted by increasing parameters
+  // (begin[i+1]>begin[i])
   Integer nb_elem = nbElement();
 
   Int32 i0 = 0;
@@ -352,14 +354,13 @@ _findValue(ParamType param,ValueType& avalue) const
     ParamType current_begin_value;
     m_param_list->value(i,current_begin_value);
 		
-    // Si dernier élément, on prend la valeur de celui-ci
+    // If it is the last element, we take the value of this one
     if ((i+1)==nb_elem){
       _verboseBuiltInGetValue(this,i,avalue,current_value_str);
       return;
     }
     
-    // Tout d'abord, regarde si le paramètre n'est pas
-    // égal ou inférieur à la borne actuelle.
+    // First, check if the parameter is not equal to or less than the current boundary.
     if (math::isEqual(current_begin_value,param) || param<current_begin_value ){
       _verboseBuiltInGetValue(this,i,avalue,current_value_str);
       return;
@@ -369,13 +370,13 @@ _findValue(ParamType param,ValueType& avalue) const
     ParamType next_begin_value;
     m_param_list->value(i+1,next_begin_value);
 
-    // Regarde si le paramètre n'est pas égal à la borne de l'élément suivant.
+    // Check if the parameter is not equal to the boundary of the next element.
     if (math::isEqual(next_begin_value,param)){
       _verboseBuiltInGetValue(this,i,avalue,next_value_str);
       return;
     }
 
-    // Regarde si le paramètre est compris entre l'élément courant et le suivant.
+    // Check if the parameter is between the current element and the next one.
     if (param>current_begin_value && param<next_begin_value){
       ValueType current_value = ValueType();
       ValueType next_value = ValueType();
@@ -404,4 +405,3 @@ _findValue(ParamType param,ValueType& avalue) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

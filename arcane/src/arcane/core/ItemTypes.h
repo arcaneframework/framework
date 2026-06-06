@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypes.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Déclaration des types liés aux entités de maillage.                       */
+/* Declaration of types related to mesh entities.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMTYPES_H
 #define ARCANE_CORE_ITEMTYPES_H
@@ -18,32 +18,34 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ItemTypes.h
  *
- * \brief Déclarations de types sur les entités.
+ * \brief Declarations of types on entities.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
 
-// A définir si on souhaiter ajouter un offset aux classes 'ItemVector' et
-// 'ItemEnumerator'. Cela change la taille de ces structures et il ne faut
-// donc recompiler code code utilisateur si on change ce '#define'.
+// Define whether to add an offset to the 'ItemVector' and
+// 'ItemEnumerator' classes. This changes the size of these structures and
+// therefore, user code must be recompiled if this '#define' is changed.
 #define ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
 
-// A définir si on souhaite cacher les méthodes d'accès aux structures
-// internes des connectivités. Pour l'instant (mi-2023) on ne le fait que
-// pour les sources internes à Arcane mais ensuite il faudra le généraliser.
-// (La macro ARCANE_FORCE_... est définie dans le CMakeLists.txt principal)
+// Define whether to hide access methods to the internal structures
+// of connectivities. For now (mid-2023), this is only done for internal
+// Arcane sources, but later it will need to be generalized.
+// (The macro ARCANE_FORCE_... is defined in the main CMakeLists.txt)
 #ifdef ARCANE_FORCE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
 #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
 #endif
 
-// A définir si on souhaite utiliser les classes spécifiques pour gérer
-// les entités connectées (sinon on utilise ItemVectorView)
+// Define whether to use specific classes to manage
+// connected entities (otherwise, ItemVectorView is used)
 #define ARCANE_USE_SPECIFIC_ITEMCONNECTED
 
 /*---------------------------------------------------------------------------*/
@@ -114,47 +116,47 @@ class ItemConnectedListViewConstIterator;
 template<typename ItemType>
 class ItemConnectedListViewConstIteratorT;
 
-// (Avril 2022) Fait un typedef de 'ItemLocalIdViewT' vers 'ItemLocalIdView'
-// pour compatibilité avec l'existant. A supprimer dès que possible.
+// (April 2022) Creates a typedef of 'ItemLocalIdViewT' to 'ItemLocalIdView'
+// for compatibility with existing code. To be removed as soon as possible.
 template <typename ItemType>
 using ItemLocalIdView ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdViewT' instead") = ItemLocalIdListViewT<ItemType>;
 
 template<typename ItemType1,typename ItemType2>
 class IndexedItemConnectivityViewT;
 
-// (Avril 2022) Fait un typedef de 'IndexedItemConnectivityView' vers 'IndexedItemConnectivityViewT'
-// pour compatibilité avec l'existant. A supprimer dès que possible.
+// (April 2022) Creates a typedef of 'IndexedItemConnectivityView' to 'IndexedItemConnectivityViewT'
+// for compatibility with existing code. To be removed as soon as possible.
 template<typename ItemType1,typename ItemType2>
 using IndexedItemConnectivityView ARCANE_DEPRECATED_REASON("Use 'IndexedItemConnectivityViewT' instead") = IndexedItemConnectivityViewT<ItemType1,ItemType2>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Groupe de noeuds connectés à des noeuds
+//! Group of nodes connected to nodes
 typedef ItemPairGroupT<Node,Node> NodeNodeGroup;
-//! Groupe d'arêtes connectées à des noeuds
+//! Group of edges connected to nodes
 typedef ItemPairGroupT<Edge,Node> EdgeNodeGroup;
-//! Groupe de faces connectées à des noeuds
+//! Group of faces connected to nodes
 typedef ItemPairGroupT<Face,Node> FaceNodeGroup;
-//! Groupe de mailles connectées à des noeuds
+//! Group of cells connected to nodes
 typedef ItemPairGroupT<Cell,Node> CellNodeGroup;
 
-//! Groupe de noeuds connectés à des faces
+//! Group of nodes connected to faces
 typedef ItemPairGroupT<Node,Face> NodeFaceGroup;
-//! Groupe d'arêtes connectées à des faces
+//! Group of edges connected to faces
 typedef ItemPairGroupT<Edge,Face> EdgeFaceGroup;
-//! Groupe de faces connectées à des faces
+//! Group of faces connected to faces
 typedef ItemPairGroupT<Face,Face> FaceFaceGroup;
-//! Groupe de mailles connectées à des faces
+//! Group of cells connected to faces
 typedef ItemPairGroupT<Cell,Face> CellFaceGroup;
 
-//! Groupe de noeuds connectés à des mailless
+//! Group of nodes connected to cells
 typedef ItemPairGroupT<Node,Cell> NodeCellGroup;
-//! Groupe d'arêtes connectées à des mailles
+//! Group of edges connected to cells
 typedef ItemPairGroupT<Edge,Cell> EdgeCellGroup;
-//! Groupe de faces connectées à des mailles
+//! Group of faces connected to cells
 typedef ItemPairGroupT<Face,Cell> FaceCellGroup;
-//! Groupe de mailles connectées à des mailles
+//! Group of cells connected to cells
 typedef ItemPairGroupT<Cell,Cell> CellCellGroup;
 
 /*---------------------------------------------------------------------------*/
@@ -162,39 +164,39 @@ typedef ItemPairGroupT<Cell,Cell> CellCellGroup;
 
 /*!
  * \ingroup Mesh
- * \brief Groupe de noeuds.
+ * \brief Group of nodes.
  */
 typedef ItemGroupT<Node> NodeGroup;
 /*!
  * \ingroup Mesh
- * \brief Groupe d'arêtes
- * \note Cette classe n'est pas implémentée.
+ * \brief Group of edges
+ * \note This class is not implemented.
  */
 typedef ItemGroupT<Edge> EdgeGroup;
 /*!
  * \ingroup Mesh
- * \brief Groupe de faces.
+ * \brief Group of faces.
  */
 typedef ItemGroupT<Face> FaceGroup;
 /*!
  * \ingroup Mesh
- * \brief Groupe de mailles.
+ * \brief Group of cells.
  */
 typedef ItemGroupT<Cell> CellGroup;
 /*!
  * \ingroup Mesh
- * \brief Groupe de particules.
+ * \brief Group of particles.
  */
 typedef ItemGroupT<Particle> ParticleGroup;
 /*!
  * \ingroup Mesh
- * \brief Groupe de Degre de Liberte.
+ * \brief Group of Degrees of Freedom.
  */
 typedef ItemGroupT<DoF> DoFGroup;
 /*!
  * \ingroup Mesh
  * \internal
- * \brief Enumerateur sur la partie interne d'une entité.
+ * \brief Enumerator over the internal part of an entity.
  */
 class ItemInternalEnumerator;
 class ItemEnumerator;
@@ -225,7 +227,7 @@ class SimdItemT;
 
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur d'entité.
+ * \brief View over an entity vector.
  */
 class ItemVectorView;
 template<typename ItemType>
@@ -233,7 +235,7 @@ class ItemVectorViewT;
 
 /*!
  * \ingroup Mesh
- * \brief Vue sur une liste de connectivité
+ * \brief View over a connectivity list
  */
 template<int Extent = DynExtent> class ItemConnectedListView;
 template<typename ItemType, int Extent = DynExtent>
@@ -241,7 +243,7 @@ class ItemConnectedListViewT;
 
 /*!
  * \ingroup Mesh
- * \brief Enumérateur sur une paire d'entité.
+ * \brief Enumerator over an entity pair.
  */
 class ItemPairEnumerator;
 template<typename ItemType,typename SubItemType>
@@ -249,68 +251,68 @@ class ItemPairEnumeratorT;
 
 /*!
  * \ingroup Mesh
- * \brief Enumérateurs sur des noeuds.
+ * \brief Enumerators over nodes.
  */
 typedef ItemEnumeratorT<Node> NodeEnumerator;
 /*!
  * \ingroup Mesh
- * \brief Enumérateurs sur des arêtes
+ * \brief Enumerators over edges
  */
 typedef ItemEnumeratorT<Edge> EdgeEnumerator;
 
 /*!
  * \ingroup Mesh
- * \brief Enumérateurs sur des faces.
+ * \brief Enumerators over faces.
  */
 typedef ItemEnumeratorT<Face> FaceEnumerator;
 
 /*!
  * \ingroup Mesh
- * \brief Enumérateurs sur des mailles.
+ * \brief Enumerators over cells.
  */
 typedef ItemEnumeratorT<Cell> CellEnumerator;
 
 /*!
  * \ingroup Mesh
- * \brief Enumérateurs sur des particules.
+ * \brief Enumerators over particles.
  */
 typedef ItemEnumeratorT<Particle> ParticleEnumerator;
 
 /*!
  * \ingroup Mesh
- * \brief Enumérateurs sur des DoFs.
+ * \brief Enumerators over DoFs.
  */
 typedef ItemEnumeratorT<DoF> DoFEnumerator;
 
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur de noeuds.
+ * \brief View over a vector of nodes.
  */
 typedef ItemVectorViewT<Node> NodeVectorView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur d'arêtes.
+ * \brief View over a vector of edges.
  */
 typedef ItemVectorViewT<Edge> EdgeVectorView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur de faces.
+ * \brief View over a vector of faces.
  */
 typedef ItemVectorViewT<Face> FaceVectorView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur de mailles.
+ * \brief View over a vector of cells.
  */
 typedef ItemVectorViewT<Cell> CellVectorView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur de particules.
+ * \brief View over a vector of particles.
  */
 typedef ItemVectorViewT<Particle> ParticleVectorView;
 
 /*!
  * \ingroup Mesh
- * \brief Vue sur un vecteur de degre de liberte.
+ * \brief View over a vector of degrees of freedom.
  */
 typedef ItemVectorViewT<DoF> DoFVectorView;
 
@@ -318,149 +320,149 @@ typedef ItemVectorViewT<DoF> DoFVectorView;
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Mesh
- * \brief Vue sur une liste de noeuds connectés à une entité
+ * \brief View over a list of nodes connected to an entity
  */
 using NodeConnectedListView = ItemConnectedListViewT<Node>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur une liste d'arêtes connectées à une entité
+ * \brief View over a list of edges connected to an entity
  */
 using EdgeConnectedListView = ItemConnectedListViewT<Edge>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur une liste de faces connectées à une entité
+ * \brief View over a list of faces connected to an entity
  */
 using FaceConnectedListView = ItemConnectedListViewT<Face>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur une liste de mailles connectées à une entité
+ * \brief View over a list of cells connected to an entity
  */
 using CellConnectedListView = ItemConnectedListViewT<Cell>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur une liste de DoFs connectés à une entité
+ * \brief View over a list of DoFs connected to an entity
  */
 using DoFConnectedListView = ItemConnectedListViewT<DoF>;
 
 #ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
-//! Liste d'entités connectées
+//! List of connected entities
 using ItemConnectedListViewType = ItemConnectedListView<DynExtent>;
-//! Liste de noeuds connectés
+//! List of connected nodes
 using NodeConnectedListViewType = NodeConnectedListView;
-//! Liste d'arêtes connectées
+//! List of connected edges
 using EdgeConnectedListViewType = EdgeConnectedListView;
-//! Liste de faces connectées
+//! List of connected faces
 using FaceConnectedListViewType = FaceConnectedListView;
-//! Liste de mailles connectées
+//! List of connected cells
 using CellConnectedListViewType = CellConnectedListView;
-//! Liste générique d'entités connectées
+//! Generic list of connected entities
 template<typename ItemType> using ItemConnectedListViewTypeT = ItemConnectedListViewT<ItemType>;
 #else
-//! Liste d'entités connectées
+//! List of connected entities
 using ItemConnectedListViewType = ItemVectorView;
-//! Liste de noeuds connectés
+//! List of connected nodes
 using NodeConnectedListViewType = NodeVectorView;
-//! Liste d'arêtes connectées
+//! List of connected edges
 using EdgeConnectedListViewType = EdgeVectorView;
-//! Liste de faces connectées
+//! List of connected faces
 using FaceConnectedListViewType = FaceVectorView;
-//! Liste de mailles connectées
+//! List of connected cells
 using CellConnectedListViewType = CellVectorView;
-//! Liste générique d'entités connectées
+//! Generic list of connected entities
 template<typename ItemType> using ItemConnectedListViewTypeT = ItemVectorViewT<ItemType>;
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*! \brief Collection de groupes de noeuds. */
+/*! \brief Collection of node groups. */
 typedef Collection<NodeGroup> NodeGroupCollection;
-/*! \brief Collection de groupes d'arêtes. */
+/*! \brief Collection of edge groups. */
 typedef Collection<EdgeGroup> EdgeGroupCollection;
-/*! \brief Collection de groupes de faces. */
+/*! \brief Collection of face groups. */
 typedef Collection<FaceGroup> FaceGroupCollection;
-/*! \brief Collection de groupes de mailles. */
+/*! \brief Collection of cell groups. */
 typedef Collection<CellGroup> CellGroupCollection;
-/*! \brief Collection de groupes de particules. */
+/*! \brief Collection of particle groups. */
 typedef Collection<ParticleGroup> ParticleGroupCollection;
-/*! \brief Collection de groupes de degre de liberte. */
+/*! \brief Collection of degrees of freedom groups. */
 typedef Collection<DoFGroup> DoFGroupCollection;
 
 
-/*! \brief Tableau de groupes de noeuds. */
+/*! \brief Array of node groups. */
 typedef List<NodeGroup> NodeGroupList;
-/*! \brief Tableau de groupes d'arêtes. */
+/*! \brief Array of edge groups. */
 typedef List<EdgeGroup> EdgeGroupList;
-/*! \brief Tableau de groupes de faces. */
+/*! \brief Array of face groups. */
 typedef List<FaceGroup> FaceGroupList;
-/*! \brief Tableau de groupes de mailles. */
+/*! \brief Array of cell groups. */
 typedef List<CellGroup> CellGroupList;
-/*! \brief Tableau de groupes de particules. */
+/*! \brief Array of particle groups. */
 typedef List<ParticleGroup> ParticleGroupList;
-/*! \brief Tableau de groupes de degre de liberte. */
+/*! \brief Array of degrees of freedom groups. */
 typedef List<DoFGroup> DoFGroupList;
 
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de noeuds.
+ * \brief View over the localId() of a list of nodes.
  */
 typedef ItemLocalIdListViewT<Node> NodeLocalIdView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de noeuds.
+ * \brief View over the localId() of a list of nodes.
  */
 using NodeLocalIdListView = ItemLocalIdListViewT<Node>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste d'arêtes.
+ * \brief View over the localId() of a list of edges.
  */
 typedef ItemLocalIdListViewT<Edge> EdgeLocalIdView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste d'arêtes.
+ * \brief View on the localIds() of a list of edges.
  */
 using EdgeLocalIdListView = ItemLocalIdListViewT<Edge>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de faces.
+ * \brief View on the localIds() of a list of faces.
  */
 typedef ItemLocalIdListViewT<Face> FaceLocalIdView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de faces.
+ * \brief View on the localIds() of a list of faces.
  */
 using FaceLocalIdListView = ItemLocalIdListViewT<Face>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de mailles.
+ * \brief View on the localIds() of a list of cells.
  */
 typedef ItemLocalIdListViewT<Cell> CellLocalIdView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de mailles.
+ * \brief View on the localIds() of a list of cells.
  */
 using CellLocalIdListView = ItemLocalIdListViewT<Cell>;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de particules.
+ * \brief View on the localIds() of a list of particles.
  */
 typedef ItemLocalIdListViewT<Particle> ParticleLocalIdView;
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de particules.
+ * \brief View on the localIds() of a list of particles.
  */
 using ParticleLocalIdListView = ItemLocalIdListViewT<Particle>;
 
 /*!
  * \ingroup Mesh
- * \brief Vue sur les localId() d'une liste de DoF.
+ * \brief View on the localIds() of a list of DoFs.
  */
 typedef ItemLocalIdListViewT<DoF> DoFLocalIdView;
 using DoFLocalIdListView = ItemLocalIdListViewT<DoF>;
 
-/*! \brief Type de la liste interne des entités
+/*! \brief Type of the internal list of entities
   
-  \deprecated Utiliser ItemInternalArrayView.
+  \deprecated Use ItemInternalArrayView.
   
 */
 typedef ConstArrayView<ItemInternal*> ItemInternalList;
@@ -489,337 +491,347 @@ class DoFInfoListView;
 class ItemEnumeratorIndex;
 template<typename ItemType>
 class ItemEnumeratorIndexT;
-//! Index d'une énumération sur des noeuds
+//! Index of an enumeration on nodes
 using NodeEnumeratorIndex = ItemEnumeratorIndexT<Node>;
-//! Index d'une énumération sur des arêtes
+//! Index of an enumeration on edges
 using EdgeEnumeratorIndex = ItemEnumeratorIndexT<Edge>;
-//! Index d'une énumération sur des faces
+//! Index of an enumeration on faces
 using FaceEnumeratorIndex = ItemEnumeratorIndexT<Face>;
-//! Index d'une énumération sur des mailles
+//! Index of an enumeration on cells
 using CellEnumeratorIndex = ItemEnumeratorIndexT<Cell>;
-//! Index d'une énumération sur des particules
+//! Index of an enumeration on particles
 using ParticleEnumeratorIndex = ItemEnumeratorIndexT<Particle>;
-//! Index d'une énumération sur des DoF
+//! Index of an enumeration on DoFs
 using DoFEnumeratorIndex = ItemEnumeratorIndexT<DoF>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Politique d'utilisation des connectivités.
+ * \brief Connectivity usage policy.
  *
- * Cette énumération sert à faire la transition entre les connectivités
- * historiques et la nouvelle implémentation.
+ * This enumeration serves to transition between historical connectivities
+ * and the new implementation.
  *
- * Actuellement, seule la valeur InternalConnectivityPolicy::NewOnly est utilisée
+ * Currently, only the InternalConnectivityPolicy::NewOnly value is used
  */
 enum class InternalConnectivityPolicy
 {
   /*!
-   * \brief Connectivités historiques.
+   * \brief Historical connectivities.
    *
-   * Ce mode est identique au mode d'avant l'incorporation des nouvelles
-   * connectivités. Son empreinte mémoire est la plus faible de tous les modes
-   * disponibles.
-   * \warning Ce mode n'est plus opérationnel.
+   * This mode is identical to the mode before the incorporation of new
+   * connectivities. Its memory footprint is the smallest of all available modes.
+   * \warning This mode is no longer operational.
    */
   Legacy,
   /*!
-   * \brief Utilise les connectivités historiques et alloue les accesseurs pour
-   * ces connectivités
-   * \warning Ce mode n'est plus opérationnel.
+   * \brief Uses historical connectivities and allocates accessors for
+   * these connectivities
+   * \warning This mode is no longer operational.
    */
   LegacyAndAllocAccessor,
   /*!
-   * \brief Alloue les anciennes et les nouvelles connectivités
-   * et utilise les anciennes via les nouveaux accesseurs dans ItemInternal.
-   * \warning Ce mode n'est plus opérationnel.
+   * \brief Allocates old and new connectivities
+   * and uses the old ones via new accessors in ItemInternal.
+   * \warning This mode is no longer operational.
    */
   LegacyAndNew,
   /*!
-   * \brief Alloue les anciennes et les nouvelles connectivités
-   * et utilise les nouvelles via les nouveaux accesseurs dans ItemInternal.
-   * \warning Ce mode n'est plus opérationnel.
+   * \brief Allocates old and new connectivities
+   * and uses the new ones via new accessors in ItemInternal.
+   * \warning This mode is no longer operational.
    */
   NewAndLegacy,
   /*!
-   * \brief Alloue les anciennes et les nouvelles connectivités
-   * utilise les nouvelles via les nouveaux accesseurs dans ItemInternal
-   * et s'appuie sur un graphe de dépendances des familles (Familles,Connectivités).
-   * \warning Ce mode n'est plus opérationnel.
+   * \brief Allocates old and new connectivities
+   * uses the new ones via new accessors in ItemInternal
+   * and relies on a dependency graph of families (Families,Connectivities).
+   * \warning This mode is no longer operational.
    */
   NewWithDependenciesAndLegacy,
   /*!
-   * \brief Alloue uniquement les nouvelles connectivités
+   * \brief Allocates only the new connectivities
    */
   NewOnly,
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe statique pour avoir des informations sur la
- * configuration des connectivités.
+ * \brief Static class for obtaining information about the
+ * connectivity configuration.
  */
 class ARCANE_CORE_EXPORT InternalConnectivityInfo
 {
  public:
-  //! Vrai si les anciennes connectivités sont actives
+  //! True if legacy connectivities are active
   static constexpr bool hasLegacyConnectivity(InternalConnectivityPolicy) { return false; }
-  //! Vrai si les nouvelles connectivités sont actives
+  //! True if new connectivities are active
   static constexpr bool hasNewConnectivity(InternalConnectivityPolicy) { return true; }
   /*!
-   * \brief Indique si on utilise les nouvelles connectivités pour accéder
-   * aux entités dans ItemInternal.
+   * \brief Indicates whether new connectivities are used to access
+   * entities in ItemInternal.
    */
   static constexpr bool useNewConnectivityAccessor(InternalConnectivityPolicy) { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Vecteur de noeuds.
+ * \brief Vector of nodes.
  */
 typedef ItemVectorT<Node> NodeVector;
 /*!
  * \ingroup Mesh
- * \brief Vecteur d'arêtes
- * \note Cette classe n'est pas implémentée.
+ * \brief Vector of edges
+ * \note This class is not implemented.
  */
 typedef ItemVectorT<Edge> EdgeVector;
 /*!
  * \ingroup Mesh
- * \brief Vecteur de faces.
+ * \brief Vector of faces.
  */
 typedef ItemVectorT<Face> FaceVector;
 /*!
  * \ingroup Mesh
- * \brief Vecteur de mailles.
+ * \brief Vector of cells.
  */
 typedef ItemVectorT<Cell> CellVector;
 /*!
  * \ingroup Mesh
- * \brief Vecteur de particules.
+ * \brief Vector of particles.
  */
 typedef ItemVectorT<Particle> ParticleVector;
 /*!
  * \ingroup Mesh
- * \brief Vecteur de degres de liberte.
+ * \brief Vector of degrees of freedom.
  */
 typedef ItemVectorT<DoF> DoFVector;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des éléments du maillage.
+ * \brief Characteristics of mesh elements.
  *
- * A spécialiser par type d'élément.
+ * To be specialized by element type.
  */
 template<class T>
 class ItemTraitsT
 {
  public:
-   //! Genre de l'entité
+   //! Entity kind
   static eItemKind kind() { return IK_Unknown; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des entités du maillage de type \c Node.
+ * \brief Characteristics of mesh entities of type \c Node.
  */
 template<>
 class ItemTraitsT<Node>
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemTraitsT<Node> ItemTraitsType;
-  //! Type de l'entité de maillage
+  //! Type of the mesh entity
   typedef Node ItemType;
-  //! Type du groupe de l'entité
+  //! Type of the entity group
   typedef NodeGroup ItemGroupType;
-  //! Type du localId()
+  //! Type of the localId()
   typedef NodeLocalId LocalIdType;
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   static eItemKind kind() { return IK_Node; }
 
-  //! Nom de la famille par défaut associée
+  //! Name of the associated default family
   static const char* defaultFamilyName() { return "Node"; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des entités du maillage de type \c Edge.
+ * \brief Characteristics of mesh entities of type \c Edge.
  */
 template<>
 class ItemTraitsT<Edge>
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemTraitsT<Edge> ItemTraitsType;
-  //! Type de l'entité de maillage
+  //! Type of the mesh entity
   typedef Edge ItemType;
-  //! Type du groupe de l'entité
+  //! Type of the entity group
   typedef EdgeGroup ItemGroupType;
-  //! Type du localId()
+  //! Type of the localId()
   typedef EdgeLocalId LocalIdType;
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   static eItemKind kind() { return IK_Edge; }
 
-  //! Nom de la famille par défaut associée
+  //! Name of the associated default family
   static const char* defaultFamilyName() { return "Edge"; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des entités du maillage de type \c Face.
+ * \brief Characteristics of mesh entities of type \c Face.
  */
 template<>
 class ItemTraitsT<Face>
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemTraitsT<Face> ItemTraitsType;
-  //! Type de l'entité de maillage
+  //! Type of the mesh entity
   typedef Face ItemType;
-  //! Type du groupe de l'entité
+  //! Type of the entity group
   typedef FaceGroup ItemGroupType;
-  //! Type du localId()
+  //! Type of the localId()
   typedef FaceLocalId LocalIdType;
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   static eItemKind kind() { return IK_Face; }
 
-  //! Nom de la famille par défaut associée
+  //! Name of the associated default family
   static const char* defaultFamilyName() { return "Face"; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des entités du maillage de type \c Cell.
+ * \brief Characteristics of mesh entities of type \c Cell.
  */
 template<>
 class ItemTraitsT<Cell>
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemTraitsT<Cell> ItemTraitsType;
-  //! Type de l'entité de maillage
+  //! Type of the mesh entity
   typedef Cell ItemType;
-  //! Type du groupe de l'entité
+  //! Type of the entity group
   typedef CellGroup ItemGroupType;
-  //! Type du localId()
+  //! Type of the localId()
   typedef CellLocalId LocalIdType;
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   static eItemKind kind() { return IK_Cell; }
 
-  //! Nom de la famille par défaut associée
+  //! Name of the associated default family
   static const char* defaultFamilyName() { return "Cell"; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des entités du maillage de type \c Particle.
+ * \brief Characteristics of mesh entities of type \c Particle.
  */
 template<>
 class ItemTraitsT<Particle>
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemTraitsT<Particle> ItemTraitsType;
-  //! Type de l'entité de maillage
+  //! Type of the mesh entity
   typedef Particle ItemType;
-  //! Type du groupe de l'entité
+  //! Type of the entity group
   typedef ParticleGroup ItemGroupType;
-  //! Type du localId()
+  //! Type of the localId()
   typedef ParticleLocalId LocalIdType;
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   static eItemKind kind() { return IK_Particle; }
 
-  //! Nom de la famille par défaut associée
+  //! Name of the associated default family
   static const char* defaultFamilyName() { return nullptr; }
 };
 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Caractéristiques des entités du maillage de type \c DoF
+ * \brief Characteristics of mesh entities of type \c DoF
  */
 template<>
 class ItemTraitsT<DoF>
 {
  public:
 
-  //! Type de cette classe
+  //! Type of this class
   typedef ItemTraitsT<DoF> ItemTraitsType;
-  //! Type de l'entité de maillage
+  //! Type of the mesh entity
   typedef DoF ItemType;
-  //! Type du groupe de l'entité
+  //! Type of the entity group
   typedef DoFGroup ItemGroupType;
-  //! Type du localId()
+  //! Type of the localId()
   using LocalIdType = ItemLocalIdT<DoF>;
 
  public:
 
-  //! Genre de l'entité
+  //! Entity kind
   static eItemKind kind() { return IK_DoF; }
 
-  // NOTE: GG: devrait être nullptr car pas de défaut pour la famille de DoF ?
-  //! Nom de la famille par défaut associée
+  // NOTE: GG: should be nullptr because there is no default for the DoF family?
+  //! Name of the associated default family
   static const char* defaultFamilyName() { return nullptr; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristique associées aux 'localId()'.
+ * \brief Characteristics associated with 'localId()'.
  */
 template<typename ItemType>
 class ItemLocalIdTraitsT
 {
  public:
 
-  //! Type du localId()
+  //! Type of the localId()
   using LocalIdType = typename ItemTraitsT<ItemType>::LocalIdType;
 };
 
-//! Spécialisation pour 'Item' qui n'a pas de 'ItemTraitsT'.
+//! Specialization for 'Item' which does not have 'ItemTraitsT'.
 template<>
 class ItemLocalIdTraitsT<Item>
 {
  public:
-  //! Type du localId()
+  //! Type of the localId()
   using LocalIdType = ItemLocalId;
 };
 
@@ -831,4 +843,4 @@ class ItemLocalIdTraitsT<Item>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

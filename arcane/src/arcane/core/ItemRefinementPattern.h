@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemRefinementPattern.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires pour AMR.                                           */
+/* Utility functions for AMR.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMREFINEMENTPATTERN_H
 #define ARCANE_CORE_ITEMREFINEMENTPATTERN_H
@@ -99,7 +99,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Quad4>
  public:
   ItemRefinementPatternT() {}
 
-	//! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+	//! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
 		return _refine_matrix[i][j][k];
@@ -140,7 +140,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Hexaedron8>
  public:
   ItemRefinementPatternT() {}
 
-	//! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+	//! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
 		return _refine_matrix [i][j][k];
@@ -178,7 +178,7 @@ class ARCANE_CORE_EXPORT HexRefinementPattern27Hex
  public:
 	HexRefinementPattern27Hex() {}
 
-	//! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+	//! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer,const Integer,const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -210,7 +210,7 @@ public RefinementPatternT< ItemRefinementPatternT< IT_Tetraedron4 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 2) return _refine_matrix_1 [i][j][k];
@@ -273,7 +273,7 @@ class ARCANE_CORE_EXPORT TetraRefinementPattern8T
  public:
 	TetraRefinementPattern8T() {}
 
-	//! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+	//! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     return _refine_matrix_1 [i][j][k];
@@ -306,7 +306,7 @@ class ARCANE_CORE_EXPORT TetraRefinementPattern32T
  public:
 	TetraRefinementPattern32T() {}
 
-	//! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+	//! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer,const Integer,const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -340,7 +340,7 @@ public RefinementPatternT< ItemRefinementPatternT< IT_Pentaedron6 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i<4) return _refine_matrix_1 [i][j][k];
@@ -388,7 +388,7 @@ class ARCANE_CORE_EXPORT PrismRefinementPattern8Pr
  public:
 	PrismRefinementPattern8Pr() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     return _refine_matrix_1 [i][j][k];
@@ -421,7 +421,7 @@ class ARCANE_CORE_EXPORT PrismRefinementPattern27Pr
  public:
 	PrismRefinementPattern27Pr() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer,const Integer,const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -454,7 +454,7 @@ public RefinementPatternT< ItemRefinementPatternT< IT_Pyramid5 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes to the child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const      {
     if (i < 4) return _refine_matrix_1 [i][j][k];
     return _refine_matrix_2 [i-4][j][k];
@@ -495,7 +495,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern4Py8T
  public:
 	PyramidRefinementPattern4Py8T() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -531,7 +531,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern6Py4T
  public:
 	PyramidRefinementPattern6Py4T() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 6) return _refine_matrix_1 [i][j][k];
@@ -563,7 +563,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern4Py
  public:
 	PyramidRefinementPattern4Py() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer,const Integer,const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -596,7 +596,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern19Py12T
  public:
 	PyramidRefinementPattern19Py12T() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 19) return _refine_matrix_1 [i][j][k];
@@ -634,14 +634,14 @@ public RefinementPatternT< ItemRefinementPatternT< IT_HemiHexa5 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 2) return _refine_matrix_1 [i][j][k];
     if (i < 6) return _refine_matrix_2 [i-2][j][k];
     return _refine_matrix_3 [i-6][j][k];
   }
-  //! mapping des orientations des faces des mailles filles avec les faces de la la maille mère
+  //! mapping of the orientations of the faces of the child meshes with the faces of the parent mesh
   Integer face_mapping (const Integer i,const Integer j) const
   {
     if (i < 2) return _face_mapping_1 [i][j];
@@ -689,7 +689,7 @@ class ARCANE_CORE_EXPORT HemiHex5RefinementPattern3HHex5_2Pr_1HHex7
  public:
 	HemiHex5RefinementPattern3HHex5_2Pr_1HHex7() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 3)
@@ -734,7 +734,7 @@ class ARCANE_CORE_EXPORT HemiHex5RefinementPattern7HHex5_4Pr_3HHex6_2HHex7_1Hex
  public:
 	HemiHex5RefinementPattern7HHex5_4Pr_3HHex6_2HHex7_1Hex() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 7) return _refine_matrix_1 [i][j][k];
@@ -778,7 +778,7 @@ public RefinementPatternT< ItemRefinementPatternT< IT_HemiHexa6 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -824,7 +824,7 @@ class ARCANE_CORE_EXPORT HemiHex6RefinementPattern4HHex5_4HHex7
  public:
 	HemiHex6RefinementPattern4HHex5_4HHex7() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -860,7 +860,7 @@ class ARCANE_CORE_EXPORT HemiHex6RefinementPattern6HHex6_12HHex5_6HHex7_1Hex
  public:
 	HemiHex6RefinementPattern6HHex6_12HHex5_6HHex7_1Hex() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 6) return _refine_matrix_1 [i][j][k];
@@ -903,13 +903,13 @@ public RefinementPatternT< ItemRefinementPatternT< IT_HemiHexa7 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 6) return _refine_matrix_1 [i][j][k];
     return _refine_matrix_2 [i-6][j][k];
   }
-  //! mapping des orientations des faces des mailles filles avec les faces de la la maille mère
+  //! mapping of the orientations of the faces of the child meshes with the faces of the parent mesh
   Integer face_mapping (const Integer i,const Integer j) const
   {
     if (i < 6) return _face_mapping_1 [i][j];
@@ -953,7 +953,7 @@ class ARCANE_CORE_EXPORT HemiHex7RefinementPattern4HHex7_4Pr_2HHex5_1Hex
  public:
 	HemiHex7RefinementPattern4HHex7_4Pr_2HHex5_1Hex() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -995,7 +995,7 @@ class ARCANE_CORE_EXPORT HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex
  public:
 	HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 8) return _refine_matrix_1 [i][j][k];
@@ -1038,7 +1038,7 @@ public RefinementPatternT< ItemRefinementPatternT< IT_AntiWedgeLeft6 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -1084,7 +1084,7 @@ class ARCANE_CORE_EXPORT AntiWedgeLeft6RefinementPattern4AWL6_4Pr
  public:
 	AntiWedgeLeft6RefinementPattern4AWL6_4Pr() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -1120,7 +1120,7 @@ class ARCANE_CORE_EXPORT AntiWedgeLeft6RefinementPattern9AWL6_18Pr
  public:
 	AntiWedgeLeft6RefinementPattern9AWL6_18Pr() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 9) return _refine_matrix_1 [i][j][k];
@@ -1157,7 +1157,7 @@ public RefinementPatternT< ItemRefinementPatternT< IT_AntiWedgeRight6 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -1203,7 +1203,7 @@ class ARCANE_CORE_EXPORT AntiWedgeRight6RefinementPattern4AWR6_4Pr
  public:
 	AntiWedgeRight6RefinementPattern4AWR6_4Pr() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 4) return _refine_matrix_1 [i][j][k];
@@ -1239,7 +1239,7 @@ class ARCANE_CORE_EXPORT AntiWedgeRight6RefinementPattern9AWR6_18Pr
  public:
 	AntiWedgeRight6RefinementPattern9AWR6_18Pr() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 9) return _refine_matrix_1 [i][j][k];
@@ -1277,13 +1277,13 @@ public RefinementPatternT< ItemRefinementPatternT< IT_DiTetra5 > >
  public:
   ItemRefinementPatternT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 2) return _refine_matrix_1 [i][j][k];
     return _refine_matrix_2 [i-2][j][k];
   }
-  //! mapping des orientations des faces des mailles filles avec les faces de la la maille mère
+  //! mapping of child mesh face orientations with parent mesh faces
   Integer face_mapping (const Integer i,const Integer j) const
   {
     if (i < 2) return _face_mapping_1 [i][j];
@@ -1324,7 +1324,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern3DT_4Py_2T
  public:
 	DiTetra5RefinementPattern3DT_4Py_2T() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 3) return _refine_matrix_1 [i][j][k];
@@ -1363,7 +1363,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern7DT_2T
  public:
 	DiTetra5RefinementPattern7DT_2T() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer i,const Integer j,const Integer k) const
   {
     if (i < 7) return _refine_matrix_1 [i][j][k];
@@ -1398,7 +1398,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern64T
  public:
 	DiTetra5RefinementPattern64T() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer,const Integer,const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -1429,7 +1429,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern32DT
  public:
 	DiTetra5RefinementPattern32DT() {}
 
-  //! matrice de transformation des noeuds de la maille mère en noeuds des mailles filles
+  //! transformation matrix of the parent mesh nodes into child mesh nodes
   Real refine_matrix (const Integer,const Integer,const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);

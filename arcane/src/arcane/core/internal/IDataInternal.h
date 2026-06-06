@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataInternal.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IData.                                         */
+/* Internal part of IData in Arcane.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IDATAINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IDATAINTERNAL_H
@@ -29,8 +29,9 @@ class INumericDataInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer la compression/décompression des données.
+ * \brief Class to manage data compression/decompression.
  */
 class DataCompressionBuffer
 {
@@ -44,8 +45,9 @@ class DataCompressionBuffer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour le calcul du hash d'une donnée.
+ * \brief Information for calculating data hash.
  */
 class DataHashInfo
 {
@@ -69,9 +71,10 @@ class DataHashInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de IData.
+ * \brief Internal part of IData.
  */
 class ARCANE_CORE_EXPORT IDataInternal
 {
@@ -82,18 +85,18 @@ class ARCANE_CORE_EXPORT IDataInternal
  public:
 
   /*!
-   * \brief Compresse les données et libère la mémoire associée
+   * \brief Compresses the data and frees the associated memory
    *
-   * Compresse les données et remplit \a buf avec les information compressées.
-   * Libère ensuite la mémoire associée. L'instance ne sera plus utilisable
-   * tant que decompressAndFill() n'aura pas été appelé.
+   * Compresses the data and fills \a buf with the compressed information.
+   * Then it frees the associated memory. The instance will no longer be usable
+   * until decompressAndFill() has been called.
    *
-   * \retval true si une compression a eu lieu.
-   * \retval false si l'instance ne supporte pas la compression. Dans ce cas
-   * elle reste utilisable.
+   * \retval true if compression occurred.
+   * \retval false if the instance does not support compression. In this case
+   * it remains usable.
    *
-   * \warning L'appel à cette méthode modifie le conteneur sous-jacent. Si
-   * cette donnée est associée à une variable il faut appeler IVariable::syncReferences().
+   * \warning Calling this method modifies the underlying container. If
+   * this data is associated with a variable, IVariable::syncReferences() must be called.
    */
   virtual bool compressAndClear(DataCompressionBuffer& buf)
   {
@@ -102,17 +105,16 @@ class ARCANE_CORE_EXPORT IDataInternal
   }
 
   /*!
-   * \brief Décompresse les données et remplit les valeurs de la donnée.
+   * \brief Decompresses the data and fills the data values.
    *
-   * Décompresse les données de \a buf et remplit les valeurs de cette instance
-   * avec les information decompressées.
+   * Decompresses the data from \a buf and fills the values of this instance
+   * with the decompressed information.
    *
-   * \retval true si une décompression a eu lieu.
-   * \retval false si aucune décompression n'a eu lieu car l'instance ne le
-   * supporte pas.
+   * \retval true if decompression occurred.
+   * \retval false if no decompression occurred because the instance does not support it.
    *
-   * \warning L'appel à cette méthode modifie le conteneur sous-jacent. Si
-   * cette donnée est associée à une variable il faut appeler IVariable::syncReferences().
+   * \warning Calling this method modifies the underlying container. If
+   * this data is associated with a variable, IVariable::syncReferences() must be called.
    */
   virtual bool decompressAndFill(DataCompressionBuffer& buf)
   {
@@ -120,25 +122,26 @@ class ARCANE_CORE_EXPORT IDataInternal
     return false;
   }
 
-  //! Interface générique pour les données numériques (nullptr si la donnée n'est pas numérique)
+  //! Generic interface for numeric data (nullptr if the data is not numeric)
   virtual INumericDataInternal* numericData() { return nullptr; }
 
   /*!
-   * \brief Calcule le hash de la donnée.
+   * \brief Calculates the hash of the data.
    *
-   * En sortie, remplit hash_info.m_version et hash_info.m_value.
+   * Outputs the version and value into hash_info.m_version and hash_info.m_value.
    */
   virtual void computeHash(DataHashInfo& hash_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour un 'IData' d'un type numérique.
+ * \brief Interface for an 'IData' of a numeric type.
  *
- * Les types numériques sont les types de eBasicDataType.
+ * Numeric types are the types of eBasicDataType.
  *
- * En général tous les IData sont de ce type sauf StringScalarData ou
+ * Generally, all IData are of this type except StringScalarData or
  * StringArrayData.
  */
 class ARCANE_CORE_EXPORT INumericDataInternal
@@ -149,20 +152,20 @@ class ARCANE_CORE_EXPORT INumericDataInternal
 
  public:
 
-  //! Vue mémoire sur la donnée
+  //! Memory view of the data
   virtual MutableMemoryView memoryView() = 0;
 
-  //! Nombre d'éléments de la première dimension
+  //! Number of elements in the first dimension
   virtual Int32 extent0() const = 0;
 
   /*!
-   * \brief Change l'allocateur de la variable.
+   * \brief Changes the variable's allocator.
    * \warning For experimental use only.
    */
   virtual void changeAllocator(const MemoryAllocationOptions& alloc_info) = 0;
 
   /*!
-   * \brief Allocateur utilisé pour la donnée.
+   * \brief Allocator used for the data.
    */
   virtual IMemoryAllocator* memoryAllocator() const = 0;
 };
@@ -177,9 +180,10 @@ class NullDataInternal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une donnée tableau d'un type \a T
+ * \brief Interface for an array data of type \a T
  */
 template <class DataType>
 class IArrayDataInternalT
@@ -187,30 +191,31 @@ class IArrayDataInternalT
 {
  public:
 
-  //! Réserve de la mémoire pour \a new_capacity éléments
+  //! Reserves memory for \a new_capacity elements
   virtual void reserve(Integer new_capacity) =0;
 
-  //! Conteneur associé à la donnée.
+  //! Container associated with the data.
   virtual Array<DataType>& _internalDeprecatedValue() = 0;
 
-  //! Capacité allouée par le conteneur
+  //! Capacity allocated by the container
   virtual Integer capacity() const =0;
 
-  //! Libère la mémoire additionnelle éventuellement allouée
+  //! Frees additional allocated memory
   virtual void shrink() const =0;
 
-  //! Redimensionne le conteneur.
+  //! Resizes the container.
   virtual void resize(Integer new_size) =0;
 
-  //! Vide le conteneur et libère la mémoire alloué.
+  //! Clears the container and frees allocated memory.
   virtual void dispose() =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une donnée tableau bi-dimensionnel d'un type \a T
+ * \brief Interface for a two-dimensional array data of type \a T
  */
 template <class DataType>
 class IArray2DataInternalT
@@ -218,19 +223,19 @@ class IArray2DataInternalT
 {
  public:
 
-  //! Réserve de la mémoire pour \a new_capacity éléments
+  //! Reserves memory for \a new_capacity elements
   virtual void reserve(Integer new_capacity) = 0;
 
-  //! Conteneur associé à la donnée.
+  //! Container associated with the data.
   virtual Array2<DataType>& _internalDeprecatedValue() = 0;
 
-  //! Redimensionne le conteneur.
+  //! Resizes the container only in dimension 1.
   virtual void resizeOnlyDim1(Int32 new_dim1_size) = 0;
 
-  //! Redimensionne le conteneur.
+  //! Resizes the container.
   virtual void resize(Int32 new_dim1_size, Int32 new_dim2_size) = 0;
 
-  //! Libère la mémoire additionnelle éventuellement allouée
+  //! Frees additional allocated memory
   virtual void shrink() const = 0;
 };
 
@@ -244,20 +249,21 @@ class IArray2DataInternalT
 
 namespace Arcane::impl
 {
+
 /*!
- * \brief Copie de \a source vers \a destination.
+ * \brief Copies \a source to \a destination.
  *
- * La zone mémoire \a source doit déjà avoir la même taille que celle de
- * la donnée \a destination.
+ * The memory region \a source must already have the same size as that of
+ * the data \a destination.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 copyContiguousData(INumericDataInternal* destination, ConstMemoryView source, RunQueue& queue);
 
 /*!
- * \brief Copie de \a source vers \a destination.
+ * \brief Copies \a source to \a destination.
  *
- * Les données doivent être de type \a INumericData et la zone mémoire
- * de destination doit déjà avoir été alloué à la bonne taille.
+ * The data must be of type \a INumericData and the memory region
+ * of the destination must already have been allocated to the correct size.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 copyContiguousData(IData* destination, IData* source, RunQueue& queue);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DynamicMesh.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe de description de la connectivité du maillage.                     */
+/* Class describing the mesh connectivity.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -95,12 +95,12 @@ freeze(IMesh* mesh)
   if (_hasConnectivity(m_connectivity(), CT_Dim2D) && hasConnectivity(m_connectivity(), CT_Dim3D))
     ARCANE_FATAL("A mesh cannot have both dimensions 2 and 3");
 
-  // Connectivité minimale
-  // c'est la relation avec une cellule qui définit le non-rejet d'un item
+  // Minimal connectivity
+  // it is the relation with a cell that defines item acceptance
   if (hasConnectivity(CT_HasNode))
     _enableConnectivity(CT_CellToNode);
   if (hasConnectivity(CT_HasEdge))
-    _enableConnectivity(CT_CellToEdge + CT_NodeToEdge + CT_EdgeToNode + CT_EdgeToCell); // il faudrait faire avec moins
+    _enableConnectivity(CT_CellToEdge + CT_NodeToEdge + CT_EdgeToNode + CT_EdgeToCell); // it should be done with less
   if (hasConnectivity(CT_HasFace))
     _enableConnectivity(CT_CellToFace);
 
@@ -140,8 +140,8 @@ getPrealloc(const Integer connectivity, eItemKind kindA, eItemKind kindB)
   Integer prealloc = 0;
   switch (dim) {
   case 1: {
-    // utilise l'ordre de l'enum eItemKind (contient tous les kind jusqu'à Particle)
-    // (kindA=ligne,kindB=colonne) => nb d'item de type 'itemB' pour un kind de type 'kindA'
+    // uses the order of the eItemKind enum (contains all kinds up to Particle)
+    // (kindA=row, kindB=column) => number of 'itemB' type items for a 'kindA' type
     Integer preallocs[8][8] = { { x, x, 2, 2, x, x, x, x },
                                 { x, x, x, x, x, x, x, x },
                                 { 2, x, x, 2, x, x, x, x },
@@ -153,8 +153,8 @@ getPrealloc(const Integer connectivity, eItemKind kindA, eItemKind kindB)
     prealloc = preallocs[kindA][kindB];
   } break;
   case 2: {
-    // utilise l'ordre de l'enum eItemKind (contient tous les kind jusqu'à Particle)
-    // (kindA=ligne,kindB=colonne) => nb d'item de type 'itemB' pour un kind de type 'kindA'
+    // uses the order of the eItemKind enum (contains all kinds up to Particle)
+    // (kindA=row, kindB=column) => number of 'itemB' type items for a 'kindA' type
     Integer preallocs[8][8] = { { x, x, 4, 4, x, x, x, x },
                                 { x, x, x, x, x, x, x, x },
                                 { 4, x, x, 2, x, x, x, x },
@@ -166,8 +166,8 @@ getPrealloc(const Integer connectivity, eItemKind kindA, eItemKind kindB)
     prealloc = preallocs[kindA][kindB];
   } break;
   case 3: {
-    // utilise l'ordre de l'enum eItemKind (contient tous les kind jusqu'à Particle)
-    // (kindA=ligne,kindB=colonne) => nb d'item de type 'itemB' pour un kind de type 'kindA'
+    // uses the order of the eItemKind enum (contains all kinds up to Particle)
+    // (kindA=row, kindB=column) => number of 'itemB' type items for a 'kindA' type
     Integer preallocs[8][8] = { { x, 6, 12, 8, x, x, x, x },
                                 { 2, x, 4, 4, x, x, x, x },
                                 { 4, 4, x, 2, x, x, x, x },

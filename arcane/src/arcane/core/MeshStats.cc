@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshStats.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Statistiques sur le maillage.                                             */
+/* Mesh statistics.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -62,7 +62,7 @@ MeshStats(ITraceMng* trace, IMesh* mesh, IParallelMng* pm)
 void MeshStats::
 dumpStats()
 {
-  // Affichage du maillage
+  // Mesh statistics display
   _dumpStats<IMesh>();
 }
 
@@ -110,26 +110,26 @@ _dumpStats()
 
   const char* name[3] = { "(All)", "(Own)", "(Ghost)" };
 
-  // Pour ne s'occuper de Own et Ghost que en parallèle
+  // To handle Own and Ghost only in parallel
   const Integer nstat = (m_parallel_mng->isParallel()) ? 3 : 1;
 
-  // On regroupe toutes les données dans la même communication
+  // We group all data into the same communication
   const Integer data_by_stat = nb_type + nb_kind;
   const Integer all_data_count = nstat * data_by_stat;
   Int64UniqueArray nb_data(all_data_count, 0);
 
-  // On remplit maintenant tout le tableau par bloc
+  // We now fill the entire array block by block
   for (Integer istat = 0; istat < nstat; ++istat) {
     const Integer first_type = istat * data_by_stat;
     const Integer first_kind = first_type + nb_type;
-    // Nombre d'éléments de chaque type sur ce sous-domaine.
+    // Number of elements of each type on this subdomain.
     Int64ArrayView nb_local_type = nb_data.view().subView(first_type, nb_type);
-    // Nombre d'éléments de chaque genre sur de sous-domaine
+    // Number of elements of each kind on a subdomain
     Int64ArrayView nb_local_kind = nb_data.view().subView(first_kind, nb_kind);
     _computeElementsOnGroup<T>(nb_local_type, nb_local_kind, istat);
   }
 
-  // Tableau résultat de synthèse
+  // Summary result table
   Int64UniqueArray nb_data_min(all_data_count, 0);
   Int64UniqueArray nb_data_max(all_data_count, 0);
   Int64UniqueArray nb_data_sum(all_data_count, 0);
@@ -142,7 +142,7 @@ _dumpStats()
                                    min_data_rank,
                                    max_data_rank);
 
-  // On vérifie s'il y a quelque chose à afficher
+  // We check if there is anything to display
   {
     bool is_empty = true;
     for (Integer istat = 0; istat < nstat; ++istat) {
@@ -162,11 +162,11 @@ _dumpStats()
 
   ItemTypeMng* type_mng = m_mesh->itemTypeMng();
 
-  // On produit maintenant l'affichage des stats
+  // We now produce the stats display
   const Integer nb_rank = m_parallel_mng->commSize();
   for (Integer istat = 0; istat < nstat; ++istat) {
-    // Construction des vues de travail décompactées
-    // (on reprend les noms des variables de la précédente version)
+    // Construction of decompressed working views
+    // (reusing variable names from the previous version)
     const Integer first_type = istat * data_by_stat;
     const Integer first_kind = first_type + nb_type;
 
@@ -240,7 +240,7 @@ _dumpStats()
 void MeshStats::
 _dumpLegacyConnectivityMemoryUsage()
 {
-  // Cette liste de nom est issue de mesh/ItemFamily.cc
+  // This list of names comes from mesh/ItemFamily.cc
   UniqueArray<String> var_names = { "FamilyItemsData", "FamilyItemsShared" };
   IVariableMng* vm = m_mesh->variableMng();
   Real total_memory = 0.0;
@@ -364,8 +364,8 @@ _computeNeighboorsComm()
 void MeshStats::
 _dumpCommunicatingRanks()
 {
-  // Affiche les statistiques sur le nombre de sous-domaines avec
-  // lesquels on communique. On prend les voisins sur la liste des mailles.
+  // Displays statistics on the number of subdomains we communicate with.
+  // We take neighbors from the mesh list.
   IItemFamily* cell_family = m_mesh->cellFamily();
   IVariableSynchronizer* sync_info = cell_family->allItemsSynchronizer();
   Int64 nb_comm_local = sync_info->communicatingRanks().size();

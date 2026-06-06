@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupComputeFunctor.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Functors de calcul des éléments d'un groupe en fonction d'un autre groupe */
+/* Functors for calculating elements of one group based on another group     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +30,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Calcul des entités propres du groupe
+
+//! Calculation of the group's own entities
 void OwnItemGroupComputeFunctor::
 executeFunctor()
 {
@@ -130,9 +131,10 @@ executeFunctor()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctor pour calculer un groupe contenant les entités connectées
- * aux entités du groupe parent.
+ * \brief Functor to calculate a group containing entities connected
+ * to the entities of the parent group.
  */
 template<typename ItemType> void
 ItemItemGroupComputeFunctor<ItemType>::

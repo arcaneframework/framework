@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceInstance.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Instance de service.                                                      */
+/* Service instance.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICEINSTANCE_H
 #define ARCANE_CORE_SERVICEINSTANCE_H
@@ -25,11 +25,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence sur une instance de service.
+ * \brief Reference to a service instance.
  *
- * Cette classe est gérée via un compteur de référence à la manière
- * de la classe std::shared_ptr.
+ * This class is managed via a reference counter in the manner
+ * of the std::shared_ptr class.
  */
 class ARCANE_CORE_EXPORT ServiceInstanceRef
 {

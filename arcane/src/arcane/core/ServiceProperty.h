@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceProperty.h                                           (C) 2000-2022 */
 /*                                                                           */
-/* Propriétés d'un service.                                                  */
+/* Properties of a service.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_SERVICEPROPERTY_H
 #define ARCANE_SERVICEPROPERTY_H
@@ -24,70 +24,71 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Propriétés pour les fabriques des service.
+ * \brief Properties for service factories.
  *
- * Il s'agit de drapeaux qui s'utilisent avec l'opérateur ou binaire (|)
+ * These are flags used with the binary OR operator (|).
  */
 enum eServiceFactoryProperties
 {
-  //! Aucune propriété particulière
+  //! No specific property
   SFP_None = 0,
-  //! Indique que le service est singleton
+  //! Indicates that the service is a singleton
   SFP_Singleton = 1,
-  //! Indique que le service se charge automatiquement.
+  //! Indicates that the service loads automatically.
   SFP_Autoload = 2
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type du service.
+ * \brief Service type.
  *
- * Cette énumération permet de connaitre à quel endroit peut
- * être créé un service.
+ * This enumeration allows knowing where a service can be created.
  *
- * Il s'agit de drapeaux qui s'utilisent avec l'opérateur ou binaire (|).
- * Un service peut donc être disponible à plusieurs endroits. Par exemple,
- * il peut être présent comme option du jeu de données (#ST_CaseOption) et aussi
- * au niveau du sous-domaine (#ST_SubDomain). Dans ce dernier cas,
- * il peut être créé via la classe ServiceBuilder.
+ * These are flags used with the binary OR operator (|).
+ * A service can therefore be available in several places. For example,
+ * it can be present as a dataset option (#ST_CaseOption) and also
+ * at the subdomain level (#ST_SubDomain). In this latter case,
+ * it can be created via the ServiceBuilder class.
  *
- * \note Ce type doit correspondre avec le type C# correspondant
+ * \note This type must correspond to the corresponding C# type
  */
 enum eServiceType
 {
   ST_None = 0,
-  //! Le service s'utilise au niveau de l'application
+  //! The service is used at the application level
   ST_Application = 1,
-  //! Le service s'utilise au niveau de la session
+  //! The service is used at the session level
   ST_Session = 2,
-  //! Le service s'utilise au niveau du sous-domaine
+  //! The service is used at the subdomain level
   ST_SubDomain = 4,
-  //! Le service s'utilise au niveau du jeu de données.
+  //! The service is used at the dataset level.
   ST_CaseOption = 8,
-  // NOTE: Cette valeur n'est pas encore utilisée.
-  //! Le service s'utilise avec un maillage spécifié explicitement.
+  // NOTE: This value is not yet used.
+  //! The service is used with an explicitly specified mesh.
   ST_Mesh = 16
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Propriétés de création d'un service.
+ * \brief Service creation properties.
  *
- * Cette classe est utilisée dans les macros d'enregistrement des services
- * et peut donc être instantiée en tant que variable globale avant d'entrer
- * dans le main() du code. Elle ne doit donc contenir que des champs de type
- * Plain Object Data (POD).
+ * This class is used in service registration macros
+ * and can therefore be instantiated as a global variable before entering
+ * the code's main(). It should therefore only contain Plain Object Data (POD) fields.
  *
- * En général, les instances de cette classe sont utilisés lors
- * de l'enregistrement d'un service via la macro ARCANE_REGISTER_SERVICE().
+ * Generally, instances of this class are used when
+ * registering a service via the ARCANE_REGISTER_SERVICE() macro.
  *
- * Dans le constructeur, les paramètres \a type et \a properties
- * peuvent utiliser une combinaison de valeur énumérées. Par exemple,
- * pour spécifier un service pouvant être utilisé à la fois dans le
- * jeu de données et au niveau du sous-domaine, on peut faire comme suit:
+ * In the constructor, the \a type and \a properties parameters
+ * can use a combination of enumerated values. For example,
+ * to specify a service that can be used both in the
+ * dataset and at the subdomain level, you can do the following:
  *
  * \code
  * ServiceProperty("ServiceName",ST_SubDomain|ST_CaseOption);
@@ -98,8 +99,8 @@ class ARCANE_CORE_EXPORT ServiceProperty
  public:
 
   /*!
-   * \brief Construit une instance pour un service de nom \a aname  et de type \a atype
-   * avec les propriétés \a properties.
+   * \brief Constructs an instance for a service named \a aname and of type \a atype
+   * with properties \a properties.
    */
   ServiceProperty(const char* aname, int atype, eServiceFactoryProperties aproperties) ARCANE_NOEXCEPT
   : m_name(aname)
@@ -108,7 +109,7 @@ class ARCANE_CORE_EXPORT ServiceProperty
   {
   }
 
-  //! Construit une instance pour un service de nom \a aname et de type \a atype
+  //! Constructs an instance for a service named \a aname and of type \a atype
   ServiceProperty(const char* aname, int atype) ARCANE_NOEXCEPT
   : m_name(aname)
   , m_type(atype)
@@ -116,7 +117,7 @@ class ARCANE_CORE_EXPORT ServiceProperty
   {
   }
 
-  //! Construit une instance pour un service de nom \a aname et de type \a atype
+  //! Constructs an instance for a service named \a aname and of type \a atype
   ServiceProperty(const char* aname, eServiceType atype) ARCANE_NOEXCEPT
   : m_name(aname)
   , m_type((int)atype)
@@ -126,13 +127,13 @@ class ARCANE_CORE_EXPORT ServiceProperty
 
  public:
 
-  //! Nom du service.
+  //! Service name.
   const char* name() const { return m_name; }
 
-  //! Type du service (combinaison de eServiceType)
+  //! Service type (combination of eServiceType)
   int type() const { return m_type; }
 
-  //! Propriétés du service (combinaison de eServiceFactoryProperties)
+  //! Service properties (combination of eServiceFactoryProperties)
   eServiceFactoryProperties properties() const { return m_properties; }
 
  private:

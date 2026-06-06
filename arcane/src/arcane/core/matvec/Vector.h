@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Vector.h                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Vecteur d'algèbre linéraire.                                              */
+/* Linear algebra vector.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATVEC_VECTOR_H
 #define ARCANE_CORE_MATVEC_VECTOR_H
@@ -30,91 +30,105 @@ class VectorImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vecteur d'algèbre linéraire.
+ * \brief Linear algebra vector.
  *
- * Cette classe a une sémantique par référence.
+ * This class has a reference semantics.
  */
 class ARCANE_CORE_EXPORT Vector
 {
  public:
 
-  //! Créé un vecteur vide
+  //! Creates an empty vector
   Vector();
+
   /*!
-   * \brief Créé pour stocker \a size éléments.
+   * \brief Created to store \a size elements.
    *
-   * Le vecteur n'est pas initialisé et ses valeurs sont quelconques.
+   * The vector is not initialized and its values are arbitrary.
    */
   explicit Vector(Integer size);
+
   /*!
-   * \brief Créé pour stocker \a size éléments.
+   * \brief Created to store \a size elements.
    *
-   * Le vecteur est initialisé avec les valeurs de \a init_value.
+   * The vector is initialized with the values of \a init_value.
    */
   Vector(Integer size, Real init_value);
+
   /*!
-   * \brief Créé un vecteur avec les éléments de \a v.
+   * \brief Creates a vector with the elements of \a v.
    */
   explicit Vector(RealUniqueArray v);
+
   /*!
-   * \brief Construit un vecteur qui référence \a rhs.
+   * \brief Constructs a vector that references \a rhs.
    */
   Vector(const Vector& rhs);
-  //! Change la référence du vecteur
+
+  //! Changes the vector reference
   const Vector& operator=(const Vector& rhs);
-  //! Supprime la référence
+
+  //! Destroys the reference
   ~Vector();
 
  public:
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Integer size() const;
+
   /*!
-   * \brief Valeurs du vecteur.
-   * \warning la vue retournée est invalidée dès que le vecteur
-   * est redimensionné.
+   * \brief Vector values.
+   * \warning the returned view is invalidated as soon as the vector
+   * is resized.
    */
   RealArrayView values();
+
   /*!
-   * \brief Valeurs du vecteur
-   * \warning la vue retournée est invalidée dès que le vecteur
-   * est redimensionné.
+   * \brief Vector values
+   * \warning the returned view is invalidated as soon as the vector
+   * is resized.
    */
   RealConstArrayView values() const;
-  //! Imprime les valeurs du vecteur
+
+  //! Prints the vector values
   void dump(std::ostream& o) const;
-  //! Clone ce vecteur
+
+  //! Clones this vector
   Vector clone();
+
   /*!
-   * \brief Copie les éléments de \a rhs dans ce vecteur.
+   * \brief Copies the elements of \a rhs into this vector.
    *
-   * Le vecteur peut éventuellement être redimensionné.
+   * The vector may optionally be resized.
    */
   void copy(const Vector& rhs);
+
   /*!
-   * \brief Change le nombre d'éléments du vecteur.
+   * \brief Changes the number of elements in the vector.
    *
-   * Si le nombre d'éléments augmente, les nouveaux éléments ne sont
-   * pas initialisé.
+   * If the number of elements increases, the new elements are not
+   * initialized.
    */
   void resize(Integer new_size);
+
   /*!
-   * \brief Change le nombre d'éléments du vecteur.
+   * \brief Changes the number of elements in the vector.
    *
-   * Si le nombre d'éléments augmente, les nouveaux éléments sont
-   * initialisé avec la valeur \a init_value.
+   * If the number of elements increases, the new elements are
+   * initialized with the value \a init_value.
    */
   void resize(Integer new_size, Real init_value);
 
   Real normInf();
 
-  //! Initialise un vecteur en utilisant un fichier au format Hypre
+  //! Initializes a vector using a Hypre format file.
   static Vector readHypre(const String& file_name);
 
  private:
 
-  //! Représentation interne du groupe.
+  //! Internal representation of the group.
   VectorImpl* m_impl = nullptr;
 };
 

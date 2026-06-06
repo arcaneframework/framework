@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICaseDocument.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une classe gérant un document XML du jeu de données.          */
+/* Interface of a class managing an XML document of the dataset.             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEDOCUMENT_H
 #define ARCANE_CORE_ICASEDOCUMENT_H
@@ -32,9 +32,10 @@ class CaseOptionError;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une partie d'un jeu de données.
+ * \brief Interface of a part of a dataset.
  */
 class ICaseDocumentFragment
 {
@@ -45,124 +46,125 @@ class ICaseDocumentFragment
  public:
 
   /*!
-   * \brief Retourne le document Xml du jeu de données.
-   * Ce pointeur reste la propriété de cette classe et est détruit lorsque cette
-   * instance est détruite.
+   * \brief Returns the XML document of the dataset.
+   * This pointer remains the property of this class and is destroyed when this
+   * instance is destroyed.
    */
   virtual IXmlDocumentHolder* documentHolder() =0;
 
-  //! Retourne le noeud document
+  //! Returns the document node
   virtual XmlNode documentNode() =0;
 
-  //! Retourne l'élément racine.
+  //! Returns the root element.
   virtual XmlNode rootElement() =0;
 
-  //! Langage utilisé dans le jeu de données
+  //! Language used in the dataset
   virtual String language() const =0;
 
-  //! Catégorie utilisée pour les valeurs par défaut.
+  //! Category used for default values.
   virtual String defaultCategory() const =0;
 
-  //! Retourne l'instance contenant les noms des noeuds XML par langage.
+  //! Returns the instance containing the names of XML nodes by language.
   virtual CaseNodeNames* caseNodeNames() =0;
   
  public:
 
-  //! Ajoute une erreur dans le jeu de données
+  //! Adds an error to the dataset
   virtual void addError(const CaseOptionError& case_error) =0;
 
-  //! Ajoute un avertissement dans le jeu de données
+  //! Adds a warning to the dataset
   virtual void addWarning(const CaseOptionError& case_error) =0;
 
-  // Indique si le jeu de données contient des erreurs.
+  // Indicates if the dataset contains errors.
   virtual bool hasError() const =0;
 
-  // Indique si le jeu de données contient des avertissements.
+  // Indicates if the dataset contains warnings.
   virtual bool hasWarnings() const =0;
 
-  //! Ecrit les erreurs dans le flot \a o
+  //! Writes the errors to the stream o
   virtual void printErrors(std::ostream& o) =0;
 
-  //! Ecrit les avertissements dans le flot \a o
+  //! Writes the warnings to the stream o
   virtual void printWarnings(std::ostream& o) =0;
 
-  //! Supprime les messages d'erreurs et d'avertissements enregistrés
+  //! Clears the recorded error and warning messages
   virtual void clearErrorsAndWarnings() =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une classe gérant un document XML du jeu de données.
- * \todo Ne plus hériter de ICaseDocumentFragment (utiliser la méthode fragment() à la place)
+ * \brief Interface of a class managing an XML document of the dataset.
+ * \todo Stop inheriting from ICaseDocumentFragment (use the fragment() method instead)
  */
 class ICaseDocument
 : public ICaseDocumentFragment
 {
  public:
 
-  //! Construit l'instance
+  //! Constructs the instance
   virtual void build() =0;
 
-  //! Clone le document
+  //! Clones the document
   virtual ICaseDocument* clone() =0;
 
  public:
 
-  //! Retourne l'instance contenant les noms des noeuds XML par langage.
+  //! Returns the instance containing the names of XML nodes by language.
   virtual CaseNodeNames* caseNodeNames() =0;
 
-  //! Retourne l'élément des informations pour Arcane
+  //! Returns the information element for Arcane
   virtual XmlNode arcaneElement() =0;
 
-  //! Retourne l'élément des informations de configuration
+  //! Returns the configuration information element
   virtual XmlNode configurationElement() =0;
 
-  //! Retourne l'élément contenant le choix de la boucle en temps
+  //! Returns the element containing the time loop choice
   virtual XmlNode timeloopElement() =0;
-  //! Retourne l'élément contenant le titre du cas
+  //! Returns the element containing the case title
   virtual XmlNode titleElement() =0;
-  //! Retourne l'élément contenant la description du cas
+  //! Returns the element containing the case description
   virtual XmlNode descriptionElement() =0;
-  //! Retourne l'élément contenant la description des modules
+  //! Returns the element containing the module descriptions
   virtual XmlNode modulesElement() =0;
-  //! Retourne l'élément contenant la description des services
+  //! Returns the element containing the service descriptions
   virtual XmlNode servicesElement() =0;
 
-  //! Retourne l'élément racine des fonctions
+  //! Returns the root element of the functions
   virtual XmlNode functionsElement() =0;
 
-  //! Retourne l'élément racine des informations de maillage
+  //! Returns the root element of the mesh information
   virtual const XmlNodeList& meshElements() =0;
 
-  //! Elément contenant la liste des maillages (nouveau mécanisme) (peut être nul)
+  //! Element containing the list of meshes (new mechanism) (can be null)
   virtual XmlNode meshesElement() =0;
 
-  //! Nom de la classe d'utilisation du cas
+  //! Name of the case usage class
   virtual String userClass() const =0;
-  //! Positionne le nom de la classe d'utilisation du cas
+  //! Sets the name of the case usage class
   virtual void setUserClass(const String& value) =0;
 
-  //! Nom du code du cas
+  //! Name of the case code
   virtual String codeName() const =0;
-  //! Positionne le nom du code du cas
+  //! Sets the name of the case code
   virtual void setCodeName(const String& value) =0;
 
-  //! Numéro de version du code correspondant au cas
+  //! Version number of the code corresponding to the case
   virtual String codeVersion() const =0;
-  //! Positionne le numéro de version du code
+  //! Sets the version number of the code
   virtual void setCodeVersion(const String& value) =0;
 
-  //! Nom du système d'unité du document.
+  //! Name of the document's unit system.
   virtual String codeUnitSystem() const =0;
-  //! Positionne le nom du systmème d'unité du document.
+  //! Sets the name of the document's unit system.
   virtual void setCodeUnitSystem(const String& value) =0;
 
-  //! Positionne la catégorie utilisée pour les valeurs par défaut.
+  //! Sets the category used for default values.
   virtual void setDefaultCategory(const String& v) =0;
 
-  //! Fragment correspondant à ce document
+  //! Fragment corresponding to this document
   virtual ICaseDocumentFragment* fragment() =0;
 };
 
@@ -174,4 +176,4 @@ class ICaseDocument
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

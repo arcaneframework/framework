@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayExpressionImpl.h                                       (C) 2000-2005 */
 /*                                                                           */
-/* Expression traitant un tableau.                                           */
+/* Expression handling an array.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_ARRAYEXPRESSIONIMPL_H
 #define ARCANE_EXPR_ARRAYEXPRESSIONIMPL_H

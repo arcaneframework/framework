@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemArray2.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Tableau 2D d'items de types quelconques.                                  */
+/* 2D array of items of arbitrary types.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMARRAY2_H
 #define ARCANE_CORE_ANYITEM_ANYITEMARRAY2_H
@@ -33,11 +33,11 @@ ANYITEM_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Tableau 2D d'items de types quelconques.
+ * \brief 2D array of items of arbitrary types.
  * 
- * Similaire aux variables 2D mais sans les définir
+ * Similar to 2D variables but without defining them
  * 
- * Par exemle :
+ * For example:
  *
  * AnyItem::UniqueArray2<Real> array(family.allItems());
  * array.resize(3);
@@ -48,7 +48,8 @@ ANYITEM_BEGIN_NAMESPACE
  *     array[iitem][i] += variable[iitem];
  * }
  *
- * \TODO : on pourrait améliorer l'implémentation en utilisant le localId dans la AnyItem::Family avec un tableau unique alloué à maxLocalId
+ * \TODO: We could improve the implementation by using localId in
+ * AnyItem::Family with a unique array allocated to maxLocalId
  */
 template<typename DataType>
 class Array2
@@ -67,7 +68,7 @@ public:
     }
   }
   
-  //! Redimensionnement de la deuxième dimension du tableau
+  //! Resizing the second dimension of the array
   inline void resize(Integer size)
   {
     m_size = size;
@@ -76,7 +77,7 @@ public:
     }
   }
 
-  //! Remplissage du tableau 
+  //! Filling the array 
   void fill(const DataType& data) 
   {
     for(Integer i = 0; i < m_values.size(); ++i) {
@@ -84,27 +85,27 @@ public:
     }
   }
   
-  //! Accesseur
+  //! Accessor
   template<typename T>
   inline ArrayView<DataType> operator[](const T& item) {
     return m_values[item.groupIndex()][item.varIndex()];
   }
   
-  // Acceseur
+  // Accessor
   template<typename T>
   inline ConstArrayView<DataType> operator[](const T& item) const {
     return m_values[item.groupIndex()][item.varIndex()];
   }
   
-  //! Retourne la taille du tableau
+  //! Returns the size of the array
   inline Integer size() const { return m_size; }
 
 private:
   
-  //! Taille de la 2ème dimension du tableau
+  //! Size of the array's second dimension
   Integer m_size;
 
-  //! Conteneur des variables génériques
+  //! Container for generic variables
   Arcane::UniqueArray< Arcane::UniqueArray2<DataType> > m_values;
 };
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Item.cc                                                     (C) 2000-2024 */
 /*                                                                           */
-/* Classe de base d'un élément du maillage.                                  */
+/* Base class for a mesh element.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,14 +38,17 @@ std::atomic<int> Item::m_nb_set_from_internal = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \defgroup GroupItem Les éléments du maillage
+ * \defgroup GroupItem Mesh elements
  *
- * Il s'agit de l'ensemble des classes traitant les entités de maillage.
+ * This is the set of classes that handle mesh entities.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Voir Item.h et ItemSharedInfo.h pour les #ifdef associés
+
+// See Item.h and ItemSharedInfo.h for associated #ifdefs
 
 String Item::
 typeName(Integer t)
@@ -110,7 +113,7 @@ resetStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour tester l'instantiation de ces classes
+// For testing the instantiation of these classes
 template class ItemConnectedListViewT<Node>;
 template class ItemConnectedEnumeratorBaseT<Node>;
 template class ItemConnectedEnumeratorT<Node>;

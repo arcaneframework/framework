@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITimeHistoryCurveWriter.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un écrivain d'une courbe d'un historique.                     */
+/* Interface of a historical curve writer.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMEHISTORYCURVEWRITER_H
 #define ARCANE_CORE_ITIMEHISTORYCURVEWRITER_H
@@ -24,29 +24,30 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un écrivain d'une courbe.
+ * \brief Interface of a curve writer.
  *
- * \deprecated Utiliser l'interface ITimeHistoryCurveWriter2 à la place.
+ * \deprecated Use the ITimeHistoryCurveWriter2 interface instead.
  */
 class ITimeHistoryCurveWriter
 {
  public:
 
-  virtual ~ITimeHistoryCurveWriter() = default; //!< Libère les ressources
+  virtual ~ITimeHistoryCurveWriter() = default; //!< Frees resources
 
  public:
 
   virtual void build() = 0;
 
   /*!
-   * \brief Écrit la courbe de nom \a name.
+   * \brief Writes the curve named \a name.
    *
-   * Les valeurs sont dans le tableau \a values. \a times et \a iterations
-   * contiennent respectivement le temps et le numéro de l'itération pour
-   * chaque valeur.
-   * \a path contient le répertoire où seront écrites les courbes
+   * The values are in the \a values array. \a times and \a iterations
+   * contain respectively the time and the iteration number for
+   * each value.
+   * \a path contains the directory where the curves will be written
    */
   virtual void writeCurve(const IDirectory& path,
                           const String& name,
@@ -55,7 +56,7 @@ class ITimeHistoryCurveWriter
                           RealConstArrayView values,
                           Integer sub_size) = 0;
 
-  //! Nom de l'écrivain
+  //! Writer name
   virtual String name() const = 0;
 };
 
@@ -67,4 +68,4 @@ class ITimeHistoryCurveWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

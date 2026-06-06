@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SynchronizerMatrixPrinter.h                                 (C) 2011-2025 */
 /*                                                                           */
-/* Affiche la matrix de synchronization.                                     */
+/* Prints the synchronization matrix.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SYNCHRONIZATIONMATRIXPRINTER_H
 #define ARCANE_CORE_SYNCHRONIZATIONMATRIXPRINTER_H
@@ -27,15 +27,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérations parallèle sur les entités fantômes.
+ * \brief Parallel operations on ghost entities.
  */
 class ARCANE_CORE_EXPORT SynchronizerMatrixPrinter
 {
  public:
 
   explicit SynchronizerMatrixPrinter(IVariableSynchronizer* synchronizer);
-  virtual ~SynchronizerMatrixPrinter() = default; //!< Libère les ressources.
+  virtual ~SynchronizerMatrixPrinter() = default; //!< Frees resources.
 
  public:
 

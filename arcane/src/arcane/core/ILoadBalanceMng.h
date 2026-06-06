@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ILoadBalanceMng.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Interface de description des caracteristiques du probleme pour le module  */
-/* d'equilibrage de charge.                                                  */
+/* Interface describing the problem characteristics for the module           */
+/* for load balancing.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ILOADBALANCEMNG_H
 #define ARCANE_CORE_ILOADBALANCEMNG_H
@@ -28,14 +28,15 @@ class ILoadBalanceMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'enregistrement des variables pour l'equilibrage de charge.
+ * \brief Interface for registering variables for load balancing.
  */
 class ILoadBalanceMng
 {
  public:
 
-  virtual ~ILoadBalanceMng() {} //!< Libère les ressources.
+  virtual ~ILoadBalanceMng() {} //!< Releases resources.
 
  public:
 
@@ -62,7 +63,7 @@ class ILoadBalanceMng
 
  public:
 
-  //! API interne à Arcane
+  //! Internal API for Arcane
   virtual ILoadBalanceMngInternal* _internalApi() { ARCANE_FATAL("Invalid usage"); };
 };
 

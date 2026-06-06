@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionError.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Erreur dans le jeu de données.                                            */
+/* Dataset error.                                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONERROR_H
 #define ARCANE_CORE_CASEOPTIONERROR_H
@@ -33,23 +33,24 @@ class ICaseDocumentFragment;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Erreur dans le jeu de données.
+ * \brief Error in the dataset.
  */
 class ARCANE_CORE_EXPORT CaseOptionError
 {
  public:
 	
-  //! Erreur générique
+  //! Generic error
   CaseOptionError(const TraceInfo& where,const String& node_name,
                   const String& message,bool is_collective=false);
   
  public:
   
   /*!
-   * \brief Erreur lorsqu'une valeur d'une jeu de données n'est pas du bon type.
-   * Cette erreur est collective.
+   * \brief Error when a dataset value is not of the correct type.
+   * This error is collective.
    */
   static void addInvalidTypeError(ICaseDocumentFragment* document,
                                   const TraceInfo& where,
@@ -59,8 +60,8 @@ class ARCANE_CORE_EXPORT CaseOptionError
                                   const String& expected_type);
 
   /*!
-   * \brief Erreur lorsqu'une valeur d'une jeu de données n'est pas du bon type.
-   * Cette erreur est collective.
+   * \brief Error when a dataset value is not of the correct type.
+   * This error is collective.
    */
   static void addInvalidTypeError(ICaseDocumentFragment* document,
                                   const TraceInfo& where,
@@ -71,20 +72,20 @@ class ARCANE_CORE_EXPORT CaseOptionError
                                   StringConstArrayView valid_values);
 
   /*!
-   * \brief Erreur lorsqu'une option du jeu de données n'est pas trouvée.
-   * Cette erreur est collective.
+   * \brief Error when a dataset option is not found.
+   * This error is collective.
    */
   static void addOptionNotFoundError(ICaseDocumentFragment* document,
                                 const TraceInfo& where,
                                 const String& node_name,
                                 const XmlNode& parent);
 
-  //! Erreur générique
+  //! Generic error
   static void addError(ICaseDocumentFragment* document,
                        const TraceInfo& where,const String& node_name,
                        const String& message,bool is_collective=false);
 
-  //! Erreur générique
+  //! Generic error
   static void addWarning(ICaseDocumentFragment* document,
                          const TraceInfo& where,const String& node_name,
                          const String& message,bool is_collective=false);
@@ -115,5 +116,4 @@ class ARCANE_CORE_EXPORT CaseOptionError
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

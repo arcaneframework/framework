@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITimeHistoryMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la classe gérant un historique de valeurs.                   */
+/* Interface of the class managing a history of values.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMEHISTORYMNG_H
 #define ARCANE_CORE_ITIMEHISTORYMNG_H
@@ -28,18 +28,18 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * Classe contenant les arguments pour les méthodes utilisateurs 'addValue'.
+ * Class containing the arguments for the user methods 'addValue'.
  */
 class TimeHistoryAddValueArg
 {
  public:
 
   /*!
-   * \brief Constructeur avec trois paramètres.
+   * \brief Constructor with three parameters.
    *
-   * \param name Le nom de la courbe.
-   * \param end_time Doit-on écrire la valeur à notre itération ou à notre itération-1 ?
-   * \param subdomain_id L'id du sous-domaine qui doit sauver la valeur (-1 pour global).
+   * \param name The name of the curve.
+   * \param end_time Should the value be written at our iteration or at our iteration-1?
+   * \param subdomain_id The ID of the subdomain that must save the value (-1 for global).
    */
   TimeHistoryAddValueArg(const String& name, bool end_time, Integer subdomain_id)
   : m_name(name)
@@ -48,24 +48,24 @@ class TimeHistoryAddValueArg
   {}
 
   /*!
-   * \brief Constructeur avec deux paramètres.
+   * \brief Constructor with two parameters.
    *
-   * La valeur sera sauvegardé globalement, et non sur un sous-domaine en particulier.
+   * The value will be saved globally, and not on a specific subdomain.
    *
-   * \param name Le nom de la courbe.
-   * \param end_time Doit-on écrire la valeur à notre itération ou à notre itération-1 ?
+   * \param name The name of the curve.
+   * \param end_time Should the value be written at our iteration or at our iteration-1?
    */
   TimeHistoryAddValueArg(const String& name, bool end_time)
   : TimeHistoryAddValueArg(name, end_time, NULL_SUB_DOMAIN_ID)
   {}
 
   /*!
-   * \brief Constructeur avec un paramètre.
+   * \brief Constructor with one parameter.
    *
-   * La valeur sera sauvegardé globalement, et non sur un sous-domaine en particulier.
-   * La valeur sera sauvegardé à notre itération.
+   * The value will be saved globally, and not on a specific subdomain.
+   * The value will be saved at our iteration.
    *
-   * \param name Le nom de la courbe.
+   * \param name The name of the curve.
    */
   explicit TimeHistoryAddValueArg(const String& name)
   : TimeHistoryAddValueArg(name, true)
@@ -97,35 +97,32 @@ class ITimeHistoryAdder;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe gérant un historique de valeurs.
+ * \brief Class managing a history of values.
  *
- Le gestionnaire d'historique gère l'historique d'un ensemble de valeur au
- cours du temps.
+ The history manager manages the history of a set of values over time.
  
- L'historique est basée par itération (VariablesCommon::globalIteration()).
- Pour chaque itération, il est possible de sauver une valeur par
- l'intermédiaire des méthodes addValue(). Il n'est pas obligatoire d'avoir
- une valeur pour chaque itération. Lorsqu'on effectue plusieurs addValue()
- pour le même historique à la même itération, seule la dernière valeur
- est prise en compte.
+ The history is based on iterations (VariablesCommon::globalIteration()).
+ For each iteration, it is possible to save a value using the addValue()
+ methods. It is not mandatory to have a value for every iteration. When
+ several addValue() calls are made for the same history at the same
+ iteration, only the last value is taken into account.
 
- Chaque historique est associée à un nom qui est le nom du fichier dans
- lequel la liste des valeurs sera sauvegardée.
+ Each history is associated with a name, which is the name of the file
+ where the list of values will be saved.
 
- Seul l'instance associée au sous-domaine tel que parallelMng()->isMasterIO()
- est vrai enregistre les valeurs. Pour les autres, les appels à addValue()
- sont sans effet.
+ Only the instance associated with the subdomain where
+ parallelMng()->isMasterIO() is true saves the values. For others, calls
+ to addValue() have no effect.
 
- Les valeurs ne sont sauvées que si active() est vrai. Il est possible
- de modifier l'état d'activation en appelant isActive().
+ Values are only saved if active() is true. It is possible to change the
+ activation status by calling isActive().
 
- En mode debug, l'ensemble des historiques est sauvé à chaque pas de temps.
- En exécution normale, cet ensemble est sauvé toute les \a n itérations, \a n
- étant donné par l'option du jeu de donné
- <module-main/time-history-iteration-step>. Dans tous les cas, une sortie
- est effectuée à la fin de l'exécution.
+ In debug mode, all histories are saved at every time step.
+ In normal execution, this set is saved every \a n iterations, \a n being
+ given by the dataset option <module-main/time-history-iteration-step>.
+ In any case, an output is performed at the end of the execution.
 
- Le format de ces fichiers dépend de l'implémentation.
+ The format of these files depends on the implementation.
 
  \since 0.4.38
  */
@@ -133,72 +130,84 @@ class ITimeHistoryMng
 {
  public:
 
-  virtual ~ITimeHistoryMng() = default; //!< Libère les ressources
+  virtual ~ITimeHistoryMng() = default; //!< Frees resources
 
  public:
 
   // TODO Deprecated
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
+  /*! \brief Adds the value \a value to the history \a name.
    *
-   * \deprecated Cette méthode est dépréciée et est remplacée par l'utilisation de l'objet GlobalTimeHistoryAdder.
+   * \deprecated This method is deprecated and is replaced by using the
+   * GlobalTimeHistoryAdder object.
    *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   * The value is that at the end time of the iteration if \a end_time is true,
+   * at the beginning otherwise.
+   * the boolean is_local indicates whether the curve is specific to the
+   * process or not, in order to be able to write curves even by non io_master
+   * procs when the ARCANE_ENABLE_NON_IO_MASTER_CURVES variable is set.
    */
   virtual void addValue(const String& name, Real value, bool end_time = true, bool is_local = false) = 0;
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
+  /*! \brief Adds the value \a value to the history \a name.
    *
-   * \deprecated Cette méthode est dépréciée et est remplacée par l'utilisation de l'objet GlobalTimeHistoryAdder.
+   * \deprecated This method is deprecated and is replaced by using the
+   * GlobalTimeHistoryAdder object.
    *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   * The value is that at the end time of the iteration if \a end_time is true,
+   * at the beginning otherwise.
+   * the boolean is_local indicates whether the curve is specific to the
+   * process or not, in order to be able to write curves even by non io_master
+   * procs when the ARCANE_ENABLE_NON_IO_MASTER_CURVES variable is set.
    */
   virtual void addValue(const String& name, Int32 value, bool end_time = true, bool is_local = false) = 0;
-  /*! Ajoute la valeur \a value à l'historique \a name.
+  /*! Adds the value \a value to the history \a name.
    *
-   * \deprecated Cette méthode est dépréciée et est remplacée par l'utilisation de l'objet GlobalTimeHistoryAdder.
+   * \deprecated This method is deprecated and is replaced by using the
+   * GlobalTimeHistoryAdder object.
    *
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   * The value is that at the end time of the iteration if \a end_time is true,
+   * at the beginning otherwise.
+   * the boolean is_local indicates whether the curve is specific to the process
+   * or not, in order to be able to write curves even by non io_master procs
+   * when the ARCANE_ENABLE_NON_IO_MASTER_CURVES variable is set.
    */
   virtual void addValue(const String& name, Int64 value, bool end_time = true, bool is_local = false) = 0;
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
+  /*! \brief Adds the value \a value to the history \a name.
    *
-   * \deprecated Cette méthode est dépréciée et est remplacée par l'utilisation de l'objet GlobalTimeHistoryAdder.
+   * \deprecated This method is deprecated and is replaced by using the
+   * GlobalTimeHistoryAdder object.
    *
-   * Le nombre d'éléments de \a value doit être constant au cours du temps.
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   * The number of elements of \a value must be constant over time.
+   * The value is that at the end time of the iteration if \a end_time is true,
+   * at the beginning otherwise.
+   * the boolean is_local indicates whether the curve is specific to the process
+   * or not, in order to be able to write curves even by non io_master procs when
+   * the ARCANE_ENABLE_NON_IO_MASTER_CURVES variable is set.
    */
   virtual void addValue(const String& name, RealConstArrayView value, bool end_time = true, bool is_local = false) = 0;
-  /*! \brief Ajoute la valeur \a value à l'historique \a name.
+  /*! \brief Adds the value \a value to the history \a name.
    *
-   * \deprecated Cette méthode est dépréciée et est remplacée par l'utilisation de l'objet GlobalTimeHistoryAdder.
+   * \deprecated This method is deprecated and is replaced by using the
+   * GlobalTimeHistoryAdder object.
    *
-   * Le nombre d'éléments de \a value doit être constant au cours du temps.
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   * The number of elements of \a value must be constant over time.
+   * The value is that at the end time of the iteration if \a end_time is true,
+   * at the beginning otherwise.
+   * the boolean is_local indicates whether the curve is specific to the process
+   * or not, in order to be able to write curves even by non io_master procs when
+   * the ARCANE_ENABLE_NON_IO_MASTER_CURVES variable is set.
    */
   virtual void addValue(const String& name, Int32ConstArrayView value, bool end_time = true, bool is_local = false) = 0;
-  /*! Ajoute la valeur \a value à l'historique \a name.
+  /*! Adds the value \a value to the history \a name.
    *
-   * \deprecated Cette méthode est dépréciée et est remplacée par l'utilisation de l'objet GlobalTimeHistoryAdder.
+   * \deprecated This method is deprecated and is replaced by using the
+   * GlobalTimeHistoryAdder object.
    *
-   * Le nombre d'éléments de \a value doit être constant au cours du temps.
-   * La valeur est celle au temps de fin de l'itération si \a end_time est vrai,
-   * au début sinon.
-   * le booleen is_local indique si la courbe est propre au process ou pas pour pouvoir écrire des courbes meme
-   * par des procs non io_master quand la varariable ARCANE_ENABLE_NON_IO_MASTER_CURVES
+   * The number of elements of \a value must be constant over time.
+   * The value is that at the end time of the iteration if \a end_time is true,
+   * at the beginning otherwise.
+   * the boolean is_local indicates whether the curve is specific to the process
+   * or not, in order to be able to write curves even by non io_master procs when
+   * the ARCANE_ENABLE_NON_IO_MASTER_CURVES variable is set.
    */
   virtual void addValue(const String& name, Int64ConstArrayView value, bool end_time = true, bool is_local = false) = 0;
 
@@ -213,92 +222,92 @@ class ITimeHistoryMng
 
  public:
 
-  //! Ajoute un écrivain
+  //! Adds a writer
   virtual ARCANE_DEPRECATED void addCurveWriter(ITimeHistoryCurveWriter* writer)
   {
     ARCANE_UNUSED(writer);
     ARCANE_FATAL("No longer supported. Use 'ITimeHistoryCurveWriter2' interface");
   }
 
-  //! Supprime un écrivain
+  //! Removes a writer
   virtual ARCANE_DEPRECATED void removeCurveWriter(ITimeHistoryCurveWriter* writer)
   {
     ARCANE_UNUSED(writer);
     ARCANE_FATAL("No longer supported. Use 'ITimeHistoryCurveWriter2' interface");
   }
 
-  //! Ajoute un écrivain
+  //! Adds a writer
   virtual void addCurveWriter(ITimeHistoryCurveWriter2* writer) = 0;
 
-  //! Supprime un écrivain
+  //! Removes a writer
   virtual void removeCurveWriter(ITimeHistoryCurveWriter2* writer) = 0;
 
-  //! Supprime l'écrivain de nom \a name
+  //! Removes the writer with name \a name
   virtual void removeCurveWriter(const String& name) = 0;
 
  public:
 
   /*!
    * \internal
-   * \brief Sauve l'historique.
+   * \brief Saves the history.
    *
-   * Cela consiste à appelé dumpCurves() pour chaque écrivain enregistré.
+   * This consists of calling dumpCurves() for each registered writer.
    */
   virtual void dumpHistory(bool is_verbose) = 0;
 
   /*!
-   * \brief Utilise l'écrivain \a writer pour sortir toutes les courbes.
+   * \brief Uses the writer \a writer to output all curves.
    *
-   * Le chemin de sortie est le répertoire courant.
+   * The output path is the current directory.
    */
   virtual void dumpCurves(ITimeHistoryCurveWriter2* writer) = 0;
 
   /*!
-   * \brief Indique l'état d'activation.
+   * \brief Indicates the activation status.
    *
-   * Les fonctions addValue() ne sont prises en compte que si l'instance
-   * est active. Dans le cas contraire, les appels à addValue() sont
-   * ignorés.
+   * The addValue() functions are only considered if the instance
+   * is active. Otherwise, calls to addValue() are
+   * ignored.
    */
   virtual bool active() const = 0;
 
   /*!
-   * \brief Positionne l'état d'activation.
+   * \brief Sets the activation status.
    * \sa active().
    */
   virtual void setActive(bool is_active) = 0;
 
   /*!
-   * \brief Applique la transformation \a v à l'ensemble des courbes.
+   * \brief Applies the transformation \a v to all curves.
    */
   virtual void applyTransformation(ITimeHistoryTransformer* v) = 0;
 
   /*!
-   * \brief Indique l'état d'activation des sorties.
+   * \brief Indicates the output activation status.
    *
-   * La fonction dumpHistory() est inactives
-   * si isDumpActive() est faux.
+   * The dumpHistory() function is inactive
+   * if isDumpActive() is false.
    */
   virtual bool isDumpActive() const = 0;
 
   /*!
-   * \brief Positionne l'état d'activation des sorties.
+   * \brief Sets the output activation status.
    */
   virtual void setDumpActive(bool is_active) = 0;
 
   /*!
-   * \brief Retourne un booléen indiquant si l'historique est compressé
+   * \brief Returns a boolean indicating if the history is compressed
    */
   virtual bool isShrinkActive() const = 0;
 
   /*!
-   * \brief Positionne le booléen indiquant si l'historique est compressé
+   * \brief Sets the boolean indicating if the history is compressed
    */
   virtual void setShrinkActive(bool is_active) = 0;
 
  public:
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   virtual ITimeHistoryMngInternal* _internalApi() { ARCANE_FATAL("Invalid usage"); };
 };
 

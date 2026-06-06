@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemIndexedSelectionView.h                       (C) 2000-2026 */
 /*                                                                           */
-/* Vue sur un sous ensemble d'un conteneur de ConstituentItem.               */
+/* View over a subset of a ConstituentItem container.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CONSTITUENTITEMINDEXEDSELECTIONVIEW_H
 #define ARCANE_CORE_MATERIALS_CONSTITUENTITEMINDEXEDSELECTIONVIEW_H
@@ -24,13 +24,14 @@ namespace Arcane::Materials::Impl
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristiques pour le conteneur associé à
+ * \brief Characteristics for the container associated with
  * ConstituentItemIndexedSelectionView.
  *
- * Cette classe doit être spécialisée. Elle l'est pour les conteneurs
- * de type ComponentItemVectorView, MatCellVectorView, EnvCellVectorView
- * ou SmallSpan<T>, avec T de type ComponentCell, MatCell ou EnvCell.
+ * This class must be specialized. It is specialized for containers
+ * of type ComponentItemVectorView, MatCellVectorView, EnvCellVectorView
+ * or SmallSpan<T>, where T is of type ComponentCell, MatCell or EnvCell.
  */
 template <typename ContainerType_>
 struct ConstituentItemIndexedSelectionViewTraits;
@@ -77,7 +78,7 @@ struct ConstituentItemIndexedSelectionViewTraits<EnvCellVectorView>
   }
 };
 
-//! Spécialisation partielle pour un SmallSpan<T>
+//! Partial specialization for a SmallSpan<T>
 template <typename ConstituentItemType_>
 class ConstituentItemIndexedSelectionViewTraitsSpanBase
 {
@@ -123,8 +124,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base pour ConstituentItemIndexedSelectionView.
+ * \brief Base class for ConstituentItemIndexedSelectionView.
  */
 class ARCANE_CORE_EXPORT ConstituentItemIndexedSelectionViewBase
 {
@@ -139,33 +141,34 @@ class ARCANE_CORE_EXPORT ConstituentItemIndexedSelectionViewBase
 
  public:
 
-  //! nombre de EnvCell sélectionnées
+  //! number of selected EnvCells
   ARCCORE_HOST_DEVICE Int32 size() const { return m_selection_view.size(); }
 
  protected:
 
   /*!
-   * \brief Sélection.
+   * \brief Selection.
    *
-   * Si ce champ est omis à la construction, le défaut sera une sélection 'pleine'
-   * (i.e. tous les éléments d'origine, dans le même ordre)
+   * If this field is omitted during construction, the default will be a 'full'
+   * selection (i.e., all original elements, in the same order)
    */
   SmallSpan<const Int32> m_selection_view = {};
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur un sous ensemble d'un conteneur de ConstituentItem.
+ * \brief View over a subset of a ConstituentItem container.
  *
- * Le conteneur est l'argument template \a ContainerView_. Il peut
- * s'agit d'un ComponentItemVectorView, MatCellVectorView, EnvCellVectorView
- * ou juste d'un SmallSpan d'un ConstituentItem.
- * La sélection des entités se fait par un tableau d'indices.
- * Si ce tableau n'est pas fourni, la sélection est sur l'ensemble des entités.
+ * The container is the template argument \a ContainerView_. It can
+ * be a ComponentItemVectorView, MatCellVectorView, EnvCellVectorView
+ * or just a SmallSpan of a ConstituentItem.
+ * Entity selection is done by an array of indices.
+ * If this array is not provided, the selection is on all entities.
  *
- * Comme toute vue, les instances de cette classe sont invalidées si les
- * constituants évoluent (ajout ou suppression)
+ * Like any view, instances of this class are invalidated if the
+ * constituents change (addition or deletion)
  */
 template <typename ContainerView_>
 class ConstituentItemIndexedSelectionView
@@ -187,7 +190,7 @@ class ConstituentItemIndexedSelectionView
   {
   }
 
-  //! Constructeur à partir d'une vue de ConstituentCell, de MatCell ou EnvCell
+  //! Constructor from a view of ConstituentCell, MatCell or EnvCell
   explicit ConstituentItemIndexedSelectionView(IMeshComponent* constituent, SmallSpan<const ValueType> ecv)
   requires(IsSpanContainer())
   : ConstituentItemIndexedSelectionViewBase(constituent, TraitsType::size(ecv))
@@ -197,7 +200,7 @@ class ConstituentItemIndexedSelectionView
 
  protected:
 
-  //! Construit une sélection contenant tous les éléments de \view (qui doit dériver de ComponentCellVectorView)
+  //! Constructs a selection containing all elements of \view (which must derive from ComponentCellVectorView)
   explicit ConstituentItemIndexedSelectionView(ItemVecView view)
   : ConstituentItemIndexedSelectionViewBase(view.component(), TraitsType::size(view))
   , m_container_view(view)
@@ -206,13 +209,13 @@ class ConstituentItemIndexedSelectionView
 
  public:
 
-  // nombre total de mailles du milieu
+  // total number of medium meshes
   ARCCORE_HOST_DEVICE Int32 sourceSize() const { return TraitsType::size(m_container_view); }
 
-  // vue sur le vecteur de EnvCell d'origine (toutes les mailles du milieu)
+  // view over the original EnvCell vector (all medium meshes)
   ItemVecView sourceView() const { return m_container_view; }
 
-  // Liste des indices de la sélection.
+  // List of selection indices.
   IndexArrayView selectionView() const
   {
     return m_selection_view.constSmallView();
@@ -231,14 +234,15 @@ class ConstituentItemIndexedSelectionView
 
  private:
 
-  //! Vue sur les éléments d'origine
+  //! View over the original elements
   ItemVecView m_container_view;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur les éléments d'un ConstituentItemIndexedSelectionView.
+ * \brief Enumerator over the elements of a ConstituentItemIndexedSelectionView.
  */
 template <typename ContainerView_>
 class ConstituentItemIndexedSelectionEnumerator
@@ -288,8 +292,9 @@ class ConstituentItemIndexedSelectionEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Selection sur un ComponentCellVectorView.
+ * \brief Selection over a ComponentCellVectorView.
  */
 class ComponentCellVectorSelectionView
 : public ConstituentItemIndexedSelectionView<ComponentCellVectorView>
@@ -303,7 +308,7 @@ class ComponentCellVectorSelectionView
   {
   }
 
-  //! Construit une sélection contenant tous les éléments de \view
+  //! Constructs a selection containing all elements of \view
   explicit ComponentCellVectorSelectionView(ComponentCellVectorView vector_view)
   : BaseClass(vector_view)
   {
@@ -312,8 +317,9 @@ class ComponentCellVectorSelectionView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Selection sur un EnvCellVectorView.
+ * \brief Selection over an EnvCellVectorView.
  */
 class EnvCellVectorSelectionView
 : public ConstituentItemIndexedSelectionView<EnvCellVectorView>
@@ -327,7 +333,7 @@ class EnvCellVectorSelectionView
   {
   }
 
-  //! Construit une sélection contenant tous les éléments de \view
+  //! Constructs a selection containing all elements of \view
   explicit EnvCellVectorSelectionView(EnvCellVectorView vector_view)
   : BaseClass(vector_view)
   {
@@ -336,8 +342,9 @@ class EnvCellVectorSelectionView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Selection sur un MatCellVectorView.
+ * \brief Selection over a MatCellVectorView.
  */
 class MatCellVectorSelectionView
 : public ConstituentItemIndexedSelectionView<MatCellVectorView>
@@ -351,7 +358,7 @@ class MatCellVectorSelectionView
   {
   }
 
-  //! Construit une sélection contenant tous les éléments de \view
+  //! Constructs a selection containing all elements of \view
   explicit MatCellVectorSelectionView(MatCellVectorView vector_view)
   : BaseClass(vector_view)
   {
@@ -361,14 +368,14 @@ class MatCellVectorSelectionView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Enumérateur sur une sélection d'un constituant
+//! Enumerator over a constituent selection
 inline ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>
 arcaneImplCreateConstituentEnumerator(ComponentCell, ComponentCellVectorSelectionView container)
 {
   return ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>::create(container);
 }
 
-//! Enumérateur sur une sélection d'un constituant
+//! Enumerator over a constituent selection
 inline ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>
 arcaneImplCreateConstituentEnumerator(ComponentCell, EnvCellVectorSelectionView container)
 {
@@ -376,7 +383,7 @@ arcaneImplCreateConstituentEnumerator(ComponentCell, EnvCellVectorSelectionView 
   return ConstituentItemIndexedSelectionEnumerator<ComponentCellVectorView>::create(c2);
 }
 
-//! Enumérateur sur une sélection d'un milieu
+//! Enumerator over a medium selection
 inline ConstituentItemIndexedSelectionEnumerator<EnvCellVectorView>
 arcaneImplCreateConstituentEnumerator(EnvCell, EnvCellVectorSelectionView container)
 {

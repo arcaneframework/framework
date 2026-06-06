@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IItemOperationByBasicType.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un opérateur sur des entités rangées par type.                */
+/* Interface of an operator on entities sorted by type.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMOPERATIONBYBASICTYPE_H
 #define ARCANE_CORE_IITEMOPERATIONBYBASICTYPE_H
@@ -26,15 +26,16 @@ class ItemVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'un opérateur sur des entités rangées par type.
+ * \brief Interface of an operator on entities sorted by type.
  */
 class ARCANE_CORE_EXPORT IItemOperationByBasicType
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IItemOperationByBasicType() = default;
 
  public:
@@ -72,5 +73,4 @@ class ARCANE_CORE_EXPORT IItemOperationByBasicType
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

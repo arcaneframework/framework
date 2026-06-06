@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseFunction.cc                                             (C) 2000-2022 */
 /*                                                                           */
-/* Classe gérant une fonction du jeu de données.                             */
+/* Class managing a dataset function.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,7 +32,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! \deprecated Utiliser CaseFunctionBuildInfo(ITraceMng* tm,const String& name)
+//! \deprecated Use CaseFunctionBuildInfo(ITraceMng* tm,const String& name)
 CaseFunctionBuildInfo::
 CaseFunctionBuildInfo(ISubDomain* sd,const String& name)
 : CaseFunctionBuildInfo(sd->traceMng(),name)
@@ -168,8 +168,8 @@ _applyValueComulTransform(bool v,bool comul) const
 template<typename ValueType> void CaseFunction::
 _applyValueTransform2(ValueType& value) const
 {
-  // Applique la transformation...
-  // Pour l'instant, uniquement un coefficient multiplicateur.
+  // Applies the transformation...
+  // For now, only a multiplicative coefficient.
   if (m_transform_value_func.null())
     return;
   ValueType comul = ValueType();
@@ -214,8 +214,8 @@ _applyValueTransform(bool& value) const
 template<typename ParamType> void CaseFunction::
 _applyParamTransform2(ParamType& param) const
 {
-  // Applique la transformation...
-  // Pour l'instant, uniquement un coefficient multiplicateur.
+  // Applies the transformation...
+  // For now, only a multiplicative coefficient.
   if (m_transform_param_func.null())
     return;
   

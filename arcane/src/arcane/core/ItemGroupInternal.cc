@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupInternal.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de ItemGroup.                                     */
+/* Internal part of Arcane's ItemGroup.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -84,8 +84,8 @@ ItemGroupInternal(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 ItemGroupInternal::
 ~ItemGroupInternal()
 {
-  // (HP) TODO: vérifier qu'il n'y a plus d'observer à cet instant
-  // Ceux des sous-groupes n'ont pas été détruits
+  // (HP) TODO: check that there are no more observers at this point
+  // Those of the sub-groups have not been destroyed
   for( const auto& i : m_observers ) {
     delete i.second;
   }
@@ -102,8 +102,8 @@ _init()
   if (m_item_family)
     m_full_name = m_item_family->fullName() + "_" + m_name;
 
-  // Si un maillage est associé et qu'on n'est un groupe enfant alors les données du groupe
-  // sont conservées dans une variable.
+  // If a mesh is associated and we are not a child group, then the group data
+  // is kept in a variable.
   if (m_mesh && !m_parent){
     int property = IVariable::PSubDomainDepend | IVariable::PPrivate;
     VariableBuildInfo vbi(m_mesh,m_variable_name,property);
@@ -244,7 +244,7 @@ notifyInvalidateObservers()
 #ifndef NO_USER_WARNING
 #warning "(HP) Assertion need fix"
 #endif /* NO_USER_WARNING */
-  // Cela peut se produire en cas d'invalidation en cascade
+  // This can happen in case of cascade invalidation
   // ARCANE_ASSERT((!m_need_recompute),("Operation on invalid group"));
   for( const auto& i : m_observers ) {
     IItemGroupObserver * obs = i.second;
@@ -256,8 +256,9 @@ notifyInvalidateObservers()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que les localIds() sont contigüs.
+ * \brief Checks that the localIds() are contiguous.
  */
 void ItemGroupInternal::
 checkIsContiguous()
@@ -294,45 +295,44 @@ applySimdPadding()
     ITraceMng* tm = m_item_family->traceMng();
     tm->info() << "ApplySimdPadding group_name=" << m_name << stack;
   }
-  // Fait un padding des derniers éléments du tableau en recopiant la
-  // dernière valeurs.
+  // Pads the last elements of the array by copying the
+  // last value.
   m_internal_api.notifySimdPaddingDone();
   Arcane::applySimdPadding(mutableItemsLocalId());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les derniers éléments du groupe pour avoir un vecteur
- * SIMD complet.
+ * \brief Fills the last elements of the group to have a complete SIMD vector.
  *
- * Pour que la vectorisation fonctionne il faut que le nombre d'éléments
- * du groupe soit un multiple de la taille d'un vecteur SIMD. Si ce n'est
- * pas le cas, on remplit les dernières valeurs du tableau des localId()
- * avec le dernier élément.
+ * For vectorization to work, the number of elements
+ * in the group must be a multiple of the size of a SIMD vector. If this is
+ * not the case, the last values of the localId() array are filled
+ * with the last element.
  *
- * Par exemple, on supporse une taille d'un vecteur SIMD de 8 (ce qui est le maximum
- * actuellement avec l'AVX512) et un groupe \a grp de 13 éléments. Il faut donc
- * remplit le groupe comme suit:
+ * For example, suppose a SIMD vector size of 8 (which is the maximum
+ * currently with AVX512) and a group \a grp of 13 elements. The group must
+ * therefore be filled as follows:
  * \code
  * Int32 last_local_id = grp[12];
  * grp[13] = grp[14] = grp[15] = last_local_id.
  * \endcode
  *
- * A noter que la taille du groupe reste effectivement de 13 éléments. Le
- * padding supplémentaire n'est que pour les itérations via ENUMERATE_SIMD.
- * Comme le tableau des localId() est alloué avec l'allocateur d'alignement
- * il est garanti que la mémoire allouée est suffisante pour faire le padding.
+ * Note that the group size remains 13 elements. The
+ * additional padding is only for iterations via ENUMERATE_SIMD.
+ * Since the localId() array is allocated with the alignment allocator,
+ * it is guaranteed that the allocated memory is sufficient for padding.
  *
- * \todo Ne pas faire cela dans tous les checkNeedUpdate() mais mettre
- * en place une méthode qui retourne un énumérateur spécifique pour
- * la vectorisation.
+ * \todo Do not do this in all checkNeedUpdate() but implement a method
+ * that returns a specific enumerator for vectorization.
  */
 void ItemGroupInternal::
 checkUpdateSimdPadding()
 {
   if (m_simd_timestamp >= timestamp()){
-    // Vérifie que le padding est bon
+    // Checks if the padding is correct
     if (m_is_check_simd_padding){
       if (m_is_print_check_simd_padding && m_item_family){
         ITraceMng* tm = m_item_family->traceMng();
@@ -371,20 +371,20 @@ _removeItems(SmallSpan<const Int32> items_local_id)
 
   Int32 nb_item_to_remove = items_local_id.size();
 
-  // N'est utile que si on a des observers
+  // Only useful if we have observers
   UniqueArray<Int32> removed_local_ids;
 
-  if (nb_item_to_remove!=0) { // on ne peut tout de même pas faire de retour anticipé à cause des observers
+  if (nb_item_to_remove!=0) { // cannot skip early due to observers
 
     Int32Array& items_lid = mutableItemsLocalId();
     const Int32 old_size = items_lid.size();
     bool has_removed = false;
    
     if (isAllItems()) {
-      // Algorithme anciennement dans DynamicMeshKindInfo
-      // Supprime des items du groupe all_items par commutation avec les 
-      // éléments de fin de ce groupe
-      // ie memoire persistante O(size groupe), algo O(remove items)
+      // Algorithm previously in DynamicMeshKindInfo
+      // Removes items from the all_items group by swapping with the 
+      // end elements of this group
+      // i.e., persistent memory O(group size), algo O(remove items)
       has_removed = true;
       Integer nb_item = old_size;
       for( Integer i=0, n=nb_item_to_remove; i<n; ++i ){
@@ -398,10 +398,10 @@ _removeItems(SmallSpan<const Int32> items_local_id)
       items_lid.resize(nb_item);
     }
     else {
-      // Algorithme pour les autres groupes
-      // Décalage de tableau
-      // ie mémoire locale O(size groupe), algo O(size groupe)
-      // Marque un tableau indiquant les entités à supprimer
+      // Algorithm for other groups
+      // Array shifting
+      // i.e., local memory O(group size), algo O(group size)
+      // Marks an array indicating the entities to be removed
       UniqueArray<bool> remove_flags(maxLocalId(),false);
       for( Int32 i=0; i<nb_item_to_remove; ++i )
         remove_flags[items_local_id[i]] = true;
@@ -450,9 +450,9 @@ checkValid()
     return;
   }
 
-  // Les points suivants sont vérifiés:
-  // - une entité n'est présente qu'une fois dans le groupe
-  // - les entités du groupe ne sont pas détruites
+  // The following points are checked:
+  // - an entity is present only once in the group
+  // - the entities in the group are not destroyed
   UniqueArray<bool> presence_checks(maxLocalId());
   presence_checks.fill(0);
   Integer nb_error = 0;
@@ -524,8 +524,8 @@ _notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining)
   updateTimestamp();
   if (arcaneIsCheck())
     checkValid();
-  // NOTE: la liste \a removed_ids n'est pas forcément dans le même ordre
-  // que celle obtenue via removeItems()
+  // NOTE: the list \a removed_ids is not necessarily in the same order
+  // as the one obtained via removeItems()
   Int32ConstArrayView observation_info(removed_ids.smallView());
   notifyReduceObservers(&observation_info);
 }

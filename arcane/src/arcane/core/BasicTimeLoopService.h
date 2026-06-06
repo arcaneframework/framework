@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicTimeLoopService.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un service opérant lors de la boucle en temps.           */
+/* Base class for a service operating during the time loop.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_BASICTIMELOOPSERVICE_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un service opérant lors de la boucle en temps.
+ * \brief Base class for a service operating during the time loop.
  *
  * \ingroup StandardService
  */

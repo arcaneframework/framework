@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IExpressionImpl.h                                           (C) 2000-2014 */
 /*                                                                           */
-/* Interface pour les différentes implémentations d'une expression.          */
+/* Interface for the different implementations of an expression.             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_IEXPRESSIONIMPL_H
 #define ARCANE_EXPR_IEXPRESSIONIMPL_H
@@ -29,24 +29,25 @@ class Expression;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour les différentes implémentations d'une expression.
+ * \brief Interface for the different implementations of an expression.
  */
 class ARCANE_EXPR_EXPORT IExpressionImpl
 {
  protected:
 
-  //! Libère les ressources. Uniquement appelé par un removeRef()
+  //! Releases resources. Only called by a removeRef()
   virtual ~IExpressionImpl() {}
 
  public:
 
   virtual void assign(IExpressionImpl* expr) = 0;
   virtual void assign(IExpressionImpl* expr, IntegerConstArrayView indices) = 0;
-  /*! \brief Nombre d'éléments du vecteur
+  /*! \brief Number of elements in the vector
    *
-   * Si l'expression est un vecteur et un symbole terminal (une feuille),
-   * retourne son nombre d'éléments. Sinon, retourne 0.
+   * If the expression is a vector and a terminal symbol (a leaf),
+   * it returns its number of elements. Otherwise, it returns 0.
    */
   virtual Integer vectorSize() const =0;
 

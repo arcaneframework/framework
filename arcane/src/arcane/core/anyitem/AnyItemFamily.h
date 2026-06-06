@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemFamily.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Famille d'items de types quelconques.                                     */
+/* Family of items of arbitrary types.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMFAMILY_H
 #define ARCANE_CORE_ANYITEM_ANYITEMFAMILY_H 
@@ -38,8 +38,8 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Famille AnyItem partie interne
- * Aggrégation de groupes pour décrire des variables / variables partielles
+ * \brief AnyItem internal family
+ * Aggregation of groups to describe variables / partial variables
  */
 class FamilyInternal
 { 
@@ -56,7 +56,7 @@ class FamilyInternal
   
  public:
   
-  //! Ajout d'un groupe dans la famille
+  //! Add a group to the family
   FamilyInternal& operator<<(GroupBuilder builder)
   {
     ItemGroup group = builder.group();
@@ -75,18 +75,18 @@ class FamilyInternal
     info.group->attachObserver(this, newItemGroupObserverT(this, &FamilyInternal::_notifyGroupHasChanged));
     // std::cout << "Attach " << this << " observer on group " << group.name() << "\n";
 
-    // On previent les observeurs
+    // Notify observers
     _notifyFamilyIsIncreased();
     return *this;
   }
 
-  //! retroune vrai si la famille contient le groupe
+  //! Returns true if the family contains the group
   inline bool contains(const ItemGroup& group) const 
   {
     return (m_groups.findGroupInfo(group.internal()) != NULL);
   }
   
-  //! retourne vrai si le groupe est associé à une variable partielle
+  //! Returns true if the group is associated with a partial variable
   inline bool isPartial(const ItemGroup& group) const 
   {
     const Private::GroupIndexInfo * info = m_groups.findGroupInfo(group.internal());
@@ -95,13 +95,13 @@ class FamilyInternal
     return info->is_partial;
   }
   
-  //! Groupe de tous les items
-  // Ce groupe n'a pas besoin d'observer la famille car il partage les données
+  //! Group of all items
+  // This group does not need to observe the family because it shares the data
   inline Group allItems() const {
     return m_groups;
   }
   
-  //! Position du groupe dans la famille
+  //! Position of the group in the family
   inline Integer groupIndex(const ItemGroup& group) const {
     const Private::GroupIndexInfo * info = m_groups.findGroupInfo(group.internal());
     if (info == NULL)
@@ -109,7 +109,7 @@ class FamilyInternal
     return info->group_index;
   }
 
-  //! Position dans la famille du premier localId de ce groupe
+  //! Position in the family of the first localId of this group
   inline Integer firstLocalId(const ItemGroup& group) const
   {
     const Private::GroupIndexInfo * info = m_groups.findGroupInfo(group.internal());
@@ -118,12 +118,12 @@ class FamilyInternal
     return info->local_id_offset;
   }
   
-  //! Retoune l'item concret associé à ce AnyItem
+  //! Returns the concrete item associated with this AnyItem
   template<typename AnyItemT>
   Item item(const AnyItemT & any_item) const
   {
-    // NOTE GG: la valeur de group.itemInfoListView() ne change pas au cours
-    // du calcul donc il est possible de la conserver comme champ de la classe.
+    // NOTE GG: the value of group.itemInfoListView() does not change during
+    // calculation, so it is possible to keep it as a class field.
     const Integer group_index = any_item.groupIndex();
     const Private::GroupIndexInfo & info = m_groups[group_index];
     const ItemGroupImpl & group = *(info.group);
@@ -134,36 +134,36 @@ class FamilyInternal
     return item;
   }
 
-  //! Taille de la famille, ie nombre de groupes
+  //! Size of the family, i.e., number of groups
   inline Integer groupSize() const { 
     return m_groups.size();
   }
   
-  //! Nombre d'items dans cette famille
-  /*! Somme de la taille de tous les groupes la composant */
+  //! Number of items in this family
+  /*! Sum of the size of all groups composing it */
   inline Integer maxLocalId() const {
     return m_max_local_id;
   }
 
-  //! Accesseur au i-ème groupe de la famille
+  //! Accessor for the i-th group of the family
   ItemGroup group(Integer i) const {
     return ItemGroup(m_groups[i].group);
   }
 
-  //! Vide la famille
+  //! Clear the family
   void clear() {
     for(Integer igrp=0;igrp<m_groups.size();++igrp) {
       m_groups[igrp].group->detachObserver(this);
       // std::cout << "Detach " << this << " observer on group " << m_groups[igrp].group->name() << "\n";
     }
-    // On efface
+    // Clear
     m_groups.clear();
     m_max_local_id = 0;
-    // On previent les observeurs
+    // Notify observers
     _notifyFamilyIsInvalidate();
   }
 
-  //! Enregistre un observeur
+  //! Register an observer
   void registerObserver(IFamilyObserver& observer) const
   {
     FamilyObservers::const_iterator it = m_observers.find(&observer);
@@ -172,7 +172,7 @@ class FamilyInternal
     m_observers.insert(&observer);
   }
   
-  //! Supprime un observeur
+  //! Remove an observer
   void removeObserver(IFamilyObserver& observer) const
   {
     FamilyObservers::const_iterator it = m_observers.find(&observer);
@@ -204,13 +204,13 @@ private:
 
 private:
   
-  //! Conteneur des groupes
+  //! Container of groups
   Private::GroupIndexMapping m_groups;
   
-  //! Indentifiant maximal (équivalent à la taille de la famille)
+  //! Maximum identifier (equivalent to the size of the family)
   Integer m_max_local_id;
   
-  //! Pour que les objets construits sur la famille ne puissent pas la modifier
+  //! So that objects built on the family cannot modify it
   mutable FamilyObservers m_observers;
 };
 
@@ -218,9 +218,9 @@ private:
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Famille AnyItem (pattern flyweight)
- * Aggrégation de groupes pour décrire des variables / variables partielles
- * Recopie par référence
+ * \brief AnyItem family (flyweight pattern)
+ * Aggregation of groups to describe variables / partial variables
+ * Copy by reference
  */
 class Family
 { 
@@ -232,7 +232,7 @@ public:
   
 public:
   
-  //! Comparaisons
+  //! Comparisons
   bool operator==(const Family& f) const { return m_internal == f.m_internal; }
   bool operator!=(const Family& f) const { return !operator==(f); }
   
@@ -242,74 +242,74 @@ public:
     return *this;
   }
 
-  //! Ajout d'un groupe dans la famille
+  //! Add a group to the family
   Family& operator<<(GroupBuilder builder)
   {
     *m_internal << builder;
     return *this;
   }
 
-  //! retroune vrai si la famille contient le groupe
+  //! Returns true if the family contains the group
   inline bool contains(const ItemGroup& group) const 
   {
     return m_internal->contains(group);
   }
   
-  //! retourne vrai si le groupe est associé à une variable partielle
+  //! Returns true if the group is associated with a partial variable
   inline bool isPartial(const ItemGroup& group) const 
   {
     return m_internal->isPartial(group);
   }
   
-  //! Groupe de tous les items
+  //! Group of all items
   inline Group allItems() {
     return m_internal->allItems();
   }
   
-  //! Position du groupe dans la famille
+  //! Position of the group in the family
   inline Integer groupIndex(const ItemGroup& group) const {
     return m_internal->groupIndex(group);
   }
   
-  //! Position dans la famille du premier localId de ce groupe
+  //! Position in the family of the first localId of this group
   inline Integer firstLocalId(const ItemGroup& group) const {
     return m_internal->firstLocalId(group);
   }
 
-  //! Retoune l'item concret associé à ce AnyItem
+  //! Returns the concrete item associated with this AnyItem
   template<typename AnyItemT>
   Item item(const AnyItemT & any_item) const {
     return m_internal->item(any_item);
   }
 
-  //! Taille de la famille, ie nombre de groupes
+  //! Size of the family, i.e., number of groups
   inline Integer groupSize() const { 
     return m_internal->groupSize();
   }
   
-  //! Nombre d'items dans cette famille
-  /*! Somme de la taille de tous les groupes la composant */
+  //! Number of items in this family
+  /*! Sum of the size of all groups composing it */
   inline Integer maxLocalId() const {
     return m_internal->maxLocalId();
   }
 
-  //! Accesseur au i-ème groupe de la famille
+  //! Accessor for the i-th group of the family
   ItemGroup group(Integer i) const {
     return m_internal->group(i);
   }
 
-  //! Vide la famille
+  //! Clear the family
   void clear() {
     m_internal->clear();
   }
 
-  //! Enregistre un observeur
+  //! Register an observer
   void registerObserver(IFamilyObserver& observer) const
   {
     m_internal->registerObserver(observer);
   }
   
-  //! Supprime un observeur
+  //! Remove an observer
   void removeObserver(IFamilyObserver& observer) const
   {
     m_internal->removeObserver(observer);
@@ -321,7 +321,7 @@ public:
 
 private:
   
-  //! Famille interne
+  //! Internal family
   SharedPtrT<FamilyInternal> m_internal;
 };
 

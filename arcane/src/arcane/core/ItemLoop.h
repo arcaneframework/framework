@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemLoop.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Classes utilitaires pour gérer les boucles sur les entités.               */
+/* Utility classes for managing loops over entities.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMLOOP_H
 #define ARCANE_CORE_ITEMLOOP_H
@@ -18,26 +18,30 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ItemLoop.h
  *
- * \brief Types et macros pour gérer les boucles sur les entités du maillage.
+ * \brief Types and macros for managing loops over mesh entities.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
 /*!
- * \brief Espace de nom contenant les différentes classes gérant les boucles
- * sur les entités.
+ * \brief Namespace containing various classes managing loops
+ * over entities.
  */
 namespace Loop
 {
+
 /*!
  * \internal
- * \brief Fonctor de boucle d'entité permettant de supprimer les
- * indirections si les indices locaux de \a view sont consécutifs.
+ * \brief Entity loop functor that allows for the removal of
+ * indirections if the local indices of a view are consecutive.
  */
 template<typename IterType,typename Lambda> inline void
 _InternalSimpleItemLoop(ItemVectorView view,const Lambda& lambda)
@@ -48,7 +52,7 @@ _InternalSimpleItemLoop(ItemVectorView view,const Lambda& lambda)
   //is_contigous = false;
   if (is_contigous){
     Int32 x0 = view.localIds()[0];
-    // Suppose que les itérations sont indépendantes
+    // Assuming iterations are independent
     ARCANE_PRAGMA_IVDEP
     for( Int32 i=0, n=view.size(); i<n; ++i )
       lambda(IterType(x0+i));
@@ -59,8 +63,9 @@ _InternalSimpleItemLoop(ItemVectorView view,const Lambda& lambda)
     }
   }
 }
-/*!
- * \brief Classe template pour encapsuler une boucle sur les entités.
+
+  /*!
+ * \brief Template class to encapsulate a loop over entities.
  */
 template<typename ItemType>
 class ItemLoopFunctor
@@ -97,17 +102,18 @@ typedef ItemLoopFunctor<Node> ItemLoopFunctorNode;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur une entité via une fonction lambda.
+ * \brief Enumerator over an entity via a lambda function.
  *
- * \param item_type type de l'entité (Arcane::Node, Arcane::Cell, Arcane::Edge, ....)
- * \param iter nom de l'itérateur
- * \param container conteneur associé (de type Arcane::ItemGroup ou Arcane::ItemVectorView).
+ * \param item_type entity type (Arcane::Node, Arcane::Cell, Arcane::Edge, ....)
+ * \param iter name of the iterator
+ * \param container associated container (of type Arcane::ItemGroup or Arcane::ItemVectorView).
  *
- * Cette macro génère une lambda et il faut donc terminer
- * l'expression par un ';'.
+ * This macro generates a lambda and therefore the expression must be terminated
+ * by a ';'.
  *
- * Par exemple, pour itérer sur toutes les mailles:
+ * For example, to iterate over all cells:
  * \code
  * Real gamma = 1.4;
  * ENUMERATE_ITEM_LAMBDA(Cell,icell,allCells()){
@@ -117,16 +123,16 @@ typedef ItemLoopFunctor<Node> ItemLoopFunctorNode;
  *   internal_energy[icell] = pressure / ((gamma-1.0) * density);
  * };
  * \endcode
- * L'itérateur est de type \a item_type :: Index (par exemple Cell::Index
- * pour une maille). Il ne dispose donc pas des méthodes classiques
- * sur les entités (comme par exemple Arcane::Cell::nbNode()). L'itérateur
- * permet uniquement d'accéder aux valeurs des variables.
+ * The iterator is of type \a item_type :: Index (for example Cell::Index
+ * for a cell). It therefore does not have the classic methods
+ * on entities (such as Arcane::Cell::nbNode()). The iterator
+ * only allows access to variable values.
  *
- * La lambda est déclarée avec [=] et il est donc interdit de modifier
- * les variables capturées.
+ * The lambda is declared with [=] and it is therefore forbidden to modify
+ * the captured variables.
  *
- * \warning La syntaxe et la sémantique de cette macro sont expérimentales.
- * Cette macro ne doit être utilisée que pour des tests.
+ * \warning The syntax and semantics of this macro are experimental.
+ * This macro should only be used for testing.
  */
 #define ENUMERATE_ITEM_LAMBDA(item_type,iter,container) \
   Arcane::Loop:: ItemLoopFunctor ## item_type :: create ( (container) ) << [=]( Arcane::Loop:: ItemLoopFunctor ## item_type :: IterType iter)
@@ -137,4 +143,4 @@ typedef ItemLoopFunctor<Node> ItemLoopFunctorNode;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableInternalComparator.h                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface représentant un comparateur de SimpleTableInternal.             */
+/* Interface representing a SimpleTableInternal comparator.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISIMPLETABLEINTERNALCOMPARATOR_H
 #define ARCANE_CORE_ISIMPLETABLEINTERNALCOMPARATOR_H
@@ -28,39 +28,36 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Interface de classe représentant un comparateur de
- * SimpleTableInternal (aka STI).
+ * @brief Class interface representing a SimpleTableInternal comparator
+ * (aka STI).
  * 
- * Le principe est de comparer les valeurs d'un STI avec
- * les valeurs d'un STI de référence, en utilisant un epsilon
- * représentant la marge d'erreur acceptable.
+ * The principle is to compare the values of one STI with the values of a
+ * reference STI, using an epsilon representing the acceptable error margin.
  * 
- * Il existe deux types de manières de configurer ce comparateur :
- * - deux tableaux de String (ligne/colonne),
- * - deux expressions régulières (ligne/colonne).
+ * There are two ways to configure this comparator:
+ * - two arrays of Strings (row/column),
+ * - two regular expressions (row/column).
  * 
- * On peut ajouter des noms de lignes/colonnes dans ces tableaux,
- * préciser si ce sont des lignes/colonnes à inclure dans la
- * comparaison au, au contraire, si ces lignes/colonnes sont
- * à exclure de la comparaison.
+ * You can add row/column names to these arrays,
+ * specify whether these rows/columns should be included in the comparison, or,
+ * conversely, if they should be excluded from the comparison.
  * 
- * Idem pour les expressions régulières, on ajoute une expression
- * régulière lignes/colonnes et on précise si ce sont des 
- * expressions incluant ou excluant des lignes/colonnes.
+ * The same applies to regular expressions: you add a row/column regular
+ * expression and specify whether these expressions include or exclude
+ * rows/columns.
  * 
  * 
- * Si les deux types de manières sont définis, les tableaux
- * priment sur les expressions régulières : d'abord on regarde
- * la présence du nom de la ligne/colonne dans le tableau correspondant.
+ * If both types of methods are defined, the arrays take precedence over the
+ * regular expressions: first, we check for the presence of the row/column
+ * name in the corresponding array.
  * 
- * Si le nom est présent, on inclut/exclut cette ligne/colonne de la 
- * comparaison.
- * Si le nom est absent mais qu'il y a une expression régulière de
- * défini, on recherche une correspondance dedans. 
+ * If the name is present, we include/exclude this row/column from the
+ * comparison.
+ * If the name is absent but a regular expression is defined, we search for
+ * a match within it.
  * 
- * Si aucun des types ne sont défini (tableau vide et expression 
- * régulière vide), on inclut toutes les lignes/colonnes dans
- * la comparaison.
+ * If neither type is defined (empty array and empty regular expression),
+ * all rows/columns are included in the comparison.
  */
 class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
 {
@@ -69,181 +66,172 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
 
  public:
   /**
-   * @brief Méthode permettant de comparer les valeurs des deux STI.
+   * @brief Method allowing comparison of the values of the two STIs.
    * 
-   * @param compare_dimension_too Si l'on doit comparer les dimensions des STI.
-   * @return true S'il n'y a pas de différences.
-   * @return false S'il y a au moins une différence.
+   * @param compare_dimension_too If the STI dimensions must be compared.
+   * @return true If there are no differences.
+   * @return false If there is at least one difference.
    */
   virtual bool compare(bool compare_dimension_too = false) = 0;
 
   /**
-   * @brief Méthode permettant de comparer uniquement un élement.
-   * Les deux SimpleTableInternal sont représentés par des Ref,
-   * donc toujours à jour.
-   * Cette méthode peut être utilisé pendant le calcul, permettant
-   * de comparer les valeurs au fur et à mesure de l'avancement du
-   * calcul, au lieu de faire une comparaison final à la fin (il est
-   * tout de même possible de faire les deux).
+   * @brief Method allowing comparison of a single element.
+   * Both SimpleTableInternals are represented by Refs, so they are always up to date.
+   * This method can be used during calculation, allowing values to be compared as
+   * the calculation progresses, instead of performing a final comparison at the
+   * end (it is still possible to do both).
    * 
-   * @param column_name Le nom de la colonne où se trouve l'élément.
-   * @param row_name Le nom de la ligne où se trouve l'élément.
-   * @return true Si les deux valeurs sont égales.
-   * @return false Si les deux valeurs sont différentes.
+   * @param column_name The name of the column where the element is located.
+   * @param row_name The name of the row where the element is located.
+   * @return true If both values are equal.
+   * @return false If both values are different.
    */
   virtual bool compareElem(const String& column_name, const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant de comparer une valeur avec
-   * une valeur du tableau de référence.
-   * Cette méthode n'utilise pas l'internal 'toCompare'.
+   * @brief Method allowing comparison of a value with a value from the reference table.
+   * This method does not use the internal 'toCompare'.
    * 
-   * @param elem La valeur à comparer.
-   * @param column_name Le nom de la colonne où se trouve l'élément de référence.
-   * @param row_name Le nom de la ligne où se trouve l'élément de référence.
-   * @return true Si les deux valeurs sont égales.
-   * @return false Si les deux valeurs sont différentes.
+   * @param elem The value to compare.
+   * @param column_name The name of the column where the reference element is located.
+   * @param row_name The name of the row where the reference element is located.
+   * @return true If both values are equal.
+   * @return false If both values are different.
    */
   virtual bool compareElem(Real elem, const String& column_name, const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant de vider les tableaux de comparaison
-   * et les expressions régulières. Ne touche pas aux STI.
-   * 
+   * @brief Method allowing the clearing of comparison arrays and regular
+   * expressions. Does not affect the STIs.
    */
   virtual void clearComparator() = 0;
 
   /**
-   * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes
-   * à comparer.
+   * @brief Method allowing the addition of a column to the list of columns to compare.
    * 
-   * @param column_name Le nom de la colonne à comparer.
-   * @return true Si le nom a bien été ajouté.
-   * @return false Sinon.
+   * @param column_name The name of the column to compare.
+   * @return true If the name was successfully added.
+   * @return false Otherwise.
    */
   virtual bool addColumnForComparing(const String& column_name) = 0;
   /**
-   * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
-   * à comparer.
+   * @brief Method allowing the addition of a row to the list of rows to compare.
    * 
-   * @param row_name Le nom de la ligne à comparer.
-   * @return true Si le nom a bien été ajouté.
-   * @return false Sinon.
+   * @param row_name The name of the row to compare.
+   * @return true If the name was successfully added.
+   * @return false Otherwise.
    */
   virtual bool addRowForComparing(const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant de définir si le tableau de
-   * colonnes représente les colonnes à inclure dans la
-   * comparaison (false/par défaut) ou représente les colonnes
-   * à exclure de la comparaison (true).
+   * @brief Method allowing definition of whether the column array represents
+   * columns to include in the comparison (false/default) or columns to exclude
+   * from the comparison (true).
    * 
-   * @param is_exclusive true si les colonnes doivent être
-   *                     exclus.
+   * @param is_exclusive true if the columns must be excluded.
    */
   virtual void isAnArrayExclusiveColumns(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant de définir si le tableau de
-   * lignes représente les lignes à inclure dans la
-   * comparaison (false/par défaut) ou représente les lignes
-   * à exclure de la comparaison (true).
+   * @brief Method allowing definition of whether the row array represents
+   * rows to include in the comparison (false/default) or rows to exclude
+   * from the comparison (true).
    * 
-   * @param is_exclusive true si les lignes doivent être
-   *                     exclus.
+   * @param is_exclusive true if the rows must be excluded.
    */
   virtual void isAnArrayExclusiveRows(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant d'ajouter une expression régulière
-   * permettant de déterminer les colonnes à comparer.
+   * @brief Method allowing the addition of a regular expression to
+   * determine the columns to compare.
    * 
-   * @param regex_column L'expression régulière (format ECMAScript).
+   * @param regex_column The regular expression (ECMAScript format).
    */
   virtual void editRegexColumns(const String& regex_column) = 0;
   /**
-   * @brief Méthode permettant d'ajouter une expression régulière
-   * permettant de déterminer les lignes à comparer.
+   * @brief Method allowing the addition of a regular expression to
+   * determine the rows to compare.
    * 
-   * @param regex_row L'expression régulière (format ECMAScript).
+   * @param regex_row The regular expression (ECMAScript format).
    */
   virtual void editRegexRows(const String& regex_row) = 0;
 
   /**
-   * @brief Méthode permettant de demander à ce que l'expression régulière
-   * exclut des colonnes au lieu d'en inclure.
+   * @brief Method allowing specification that the regular expression
+   * excludes columns instead of including them.
    * 
-   * @param is_exclusive Si l'expression régulière est excluante.
+   * @param is_exclusive If the regular expression is exclusionary.
    */
   virtual void isARegexExclusiveColumns(bool is_exclusive) = 0;
   /**
-   * @brief Méthode permettant de demander à ce que l'expression régulière
-   * exclut des lignes au lieu d'en inclure.
+   * @brief Method allowing specification that the regular expression
+   * excludes rows instead of including them.
    * 
-   * @param is_exclusive Si l'expression régulière est excluante.
+   * @param is_exclusive If the regular expression is exclusionary.
    */
   virtual void isARegexExclusiveRows(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant de définir un epsilon pour une colonne donnée.
-   * Cet epsilon doit être positif pour être pris en compte.
-   * S'il y a confit avec un epsilon de ligne (défini avec addEpsilonRow()),
-   * c'est l'epsilon le plus grand qui est pris en compte.
-   * @note Si un epsilon a déjà été défini sur cette colonne, alors l'ancien
-   * epsilon sera remplacé.
+   * @brief Method allowing the definition of an epsilon for a given column.
+   * This epsilon must be positive to be considered.
+   * If there is a conflict with a row epsilon (defined with addEpsilonRow()),
+   * the largest epsilon is taken into account.
+   * @note If an epsilon has already been defined for this column, the old
+   * epsilon will be replaced.
    * 
-   * @param column_name Le nom de la colonne où l'epsilon sera pris en compte.
-   * @param epsilon La marge d'erreur epsilon.
-   * @return true Si l'epsilon a bien pu être défini.
-   * @return false Si l'epsilon n'a pas pu être défini.
+   * @param column_name The name of the column where the epsilon will be
+   *                    taken into account.
+   * @param epsilon The epsilon error margin.
+   * @return true If the epsilon could be successfully defined.
+   * @return false If the epsilon could not be defined.
    */
   virtual bool addEpsilonColumn(const String& column_name, Real epsilon) = 0;
 
   /**
-   * @brief Méthode permettant de définir un epsilon pour une ligne donnée.
-   * Cet epsilon doit être positif pour être pris en compte.
-   * S'il y a confit avec un epsilon de colonne (défini avec addEpsilonColumn()),
-   * c'est l'epsilon le plus grand qui est pris en compte.
-   * @note Si un epsilon a déjà été défini sur cette ligne, alors l'ancien
-   * epsilon sera remplacé.
+   * @brief Method allowing the definition of an epsilon for a given row.
+   * This epsilon must be positive to be considered.
+   * If there is a conflict with a column epsilon (defined with addEpsilonColumn()),
+   * the largest epsilon is taken into account.
+   * @note If an epsilon has already been defined for this row, the old epsilon
+   * will be replaced.
    * 
-   * @param column_name Le nom de la ligne où l'epsilon sera pris en compte.
-   * @param epsilon La marge d'erreur epsilon.
-   * @return true Si l'epsilon a bien pu être défini.
-   * @return false Si l'epsilon n'a pas pu être défini.
+   * @param row_name The name of the row where the epsilon will be taken into account.
+   * @param epsilon The epsilon error margin.
+   * @return true If the epsilon could be successfully defined.
+   * @return false If the epsilon could not be defined.
    */
   virtual bool addEpsilonRow(const String& row_name, Real epsilon) = 0;
 
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * SimpleTableInternal "de référence" utilisé.
+   * @brief Method allowing retrieval of a reference to the used "reference"
+   * SimpleTableInternal object.
    * 
-   * @return Ref<SimpleTableInternal> Une copie de la référence. 
+   * @return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internalRef() = 0;
 
   /**
-   * @brief Méthode permettant de définir une référence vers un
-   * SimpleTableInternal "de référence".
+   * @brief Method allowing definition of a reference to a "reference"
+   * SimpleTableInternal.
    * 
-   * @param simple_table_internal La référence vers un SimpleTableInternal.
+   * @param simple_table_internal The reference to a SimpleTableInternal.
    */
   virtual void setInternalRef(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * SimpleTableInternal "à comparer" utilisé.
+   * @brief Method allowing retrieval of a reference to the used "to compare"
+   * SimpleTableInternal object.
    * 
-   * @return Ref<SimpleTableInternal> Une copie de la référence. 
+   * @return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internalToCompare() = 0;
 
   /**
-   * @brief Méthode permettant de définir une référence vers
-   * SimpleTableInternal "à comparer".
+   * @brief Method allowing definition of a reference to the "to compare"
+   * SimpleTableInternal.
    * 
-   * @param simple_table_internal La référence vers un SimpleTableInternal.
+   * @param simple_table_internal The reference to a SimpleTableInternal.
    */
   virtual void setInternalToCompare(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
@@ -257,6 +245,3 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

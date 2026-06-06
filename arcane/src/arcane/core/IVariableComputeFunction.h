@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariableComputeFunction.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la classe functor de re-calcul d'une variable.               */
+/* Interface of the functor class for recalculating a variable.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLECOMPUTEFUNCTION_H
 #define ARCANE_CORE_IVARIABLECOMPUTEFUNCTION_H
@@ -24,21 +24,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- \brief Interface de la classe functor de re-calcul d'une variable.
+ * \brief Interface of the functor class for recalculating a variable.
  */
 class IVariableComputeFunction
 {
  public:
 
-  virtual ~IVariableComputeFunction() = default; //!< Libère les ressources
+  virtual ~IVariableComputeFunction() = default; //!< Frees resources
 
  public:
 
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   virtual void execute() = 0;
 
-  //! Informations de trace de la définition de la fonction de calcul
+  //! Trace information of the calculation function definition
   virtual const TraceInfo& traceInfo() const = 0;
 };
 
@@ -50,5 +51,4 @@ class IVariableComputeFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

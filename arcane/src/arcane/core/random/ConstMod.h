@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RandomGlobal.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Namespace pour Random.                                                    */
+/* Namespace for Random.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_CONSTMOD_H
 #define ARCANE_CORE_RANDOM_CONSTMOD_H
@@ -44,12 +44,11 @@ namespace Arcane::random
  */
 
 /*
- * Ce fichier est issu de la bibliotheque boost et est couvert par
- * la licence:
+ * This file is derived from the Boost library and is covered by the license:
  *
  *    Boost Software License - Version 1.0 - August 17th, 2003
  *
- * Le code de ConstMod est issu de boost version 1.57.0
+ * The ConstMod code is derived from boost version 1.57.0
  */
 
 /*---------------------------------------------------------------------------*/
@@ -252,5 +251,4 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

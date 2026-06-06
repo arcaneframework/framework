@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IGraphModifier2.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un outil de modification du graphe d'un maillage              */
+/* Interface for a mesh graph modification tool                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IGRAPHMODIFIER2_H
 #define ARCANE_CORE_IGRAPHMODIFIER2_H
@@ -24,38 +24,39 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un graphe du maillage.
+ * \brief Interface for a mesh graph.
  */
 class ARCANE_CORE_EXPORT IGraphModifier2
 {
  public:
 
-  virtual ~IGraphModifier2() = default; //!< Libère les ressources
+  virtual ~IGraphModifier2() = default; //!< Frees resources
 
  public:
 
-  //! Ajout de liaisons dans le graphe avec un nombre fixe de noeuds dual par liaison
+  //! Adds links to the graph with a fixed number of dual nodes per link
   virtual void addLinks(Integer nb_link,
                         Integer nb_dual_nodes_per_link,
                         Int64ConstArrayView links_infos) = 0;
 
-  //! Ajout de noeuds duaux dans le graphe avec un type fixe d'item dual par noeud
+  //! Adds dual nodes to the graph with a fixed dual item type per node
   virtual void addDualNodes(Integer graph_nb_dual_node,
                             Integer dual_node_kind,
                             Int64ConstArrayView dual_nodes_infos) = 0;
 
-  //! Ajout de noeuds duaux dans le graphe avec le type du noeud dans le tableau infos
+  //! Adds dual nodes to the graph, where the node type is specified in the infos array
   virtual void addDualNodes(Integer graph_nb_dual_node,
                             Int64ConstArrayView dual_nodes_infos) = 0;
 
-  //! Suppression de noeuds duaux dans le graphe
+  //! Removes dual nodes from the graph
   virtual void removeDualNodes(Int32ConstArrayView dual_node_local_ids) = 0;
 
-  //! Suppression de liaisons duaux dans le graphe
+  //! Removes dual links from the graph
   virtual void removeLinks(Int32ConstArrayView link_local_ids) = 0;
 
-  //! Suppression des DualNodes et Links connectés aux mailles qui vont être supprimees
+  //! Removes DualNodes and Links connected to cells that are being deleted
   virtual void removeConnectedItemsFromCells(Int32ConstArrayView cell_local_ids) = 0;
 
   virtual void endUpdate() = 0;

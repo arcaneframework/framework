@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleMaster.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Module maître.                                                            */
+/* Master Module.                                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MODULEMASTER_H
 #define ARCANE_CORE_MODULEMASTER_H
@@ -29,12 +29,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Module principal.
+ * \brief Main module.
  *
- * Ce module est toujours chargé en premier pour que ces points d'entrée encadrent tous ceux des autres modules.
- * Il contient les variables globales du cas, comme le nom de fichier ou le numéro de l'itération.
+ * This module is always loaded first so that these entry points encompass
+ * all those of other modules.
+ * It contains the global case variables, such as the filename or the
+ * iteration number.
  */
 class ARCANE_CORE_EXPORT ModuleMaster
 : public AbstractModule
@@ -43,70 +46,70 @@ class ARCANE_CORE_EXPORT ModuleMaster
 {
  public:
 
-  //! Constructeur
+  //! Constructor
   explicit ModuleMaster(const ModuleBuildInfo&);
 
-  //! Destructeur
+  //! Destructor
   ~ModuleMaster() override;
 
  public:
 
-  //! Version du module
+  //! Module version
   VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 
-  //! Accès aux options du module
+  //! Access to module options
   CaseOptionsMain* caseoptions() override { return m_case_options_main; }
 
-  //! Conversion en \a IModule
+  //! Conversion to \a IModule
   IModule* toModule() override { return this; }
 
-  //! Accès aux variables 'communes' partagées entre tout service et module
+  //! Access to 'common' variables shared between all services and modules
   CommonVariables* commonVariables() override { return this; }
 
   void addTimeLoopService(ITimeLoopService* tls) override;
 
-  //! Sort les courbes classiques (CPUTime, ElapsedTime, ...)
+  //! Dumps standard curves (CPUTime, ElapsedTime, ...)
   void dumpStandardCurves() override;
 
  public:
 
-  //! Point d'entrée auto-chargé en début d'itération de la boucle de calcul
+  //! Auto-loaded entry point at the beginning of the calculation loop iteration
   /*!
     <ul>
-    <li>Au cas où le temps courant est strictement supérieur au temps limite, demande l'arrêt du calcul</li>
-    <li>Ajoute au temps courant le deltat calculé au pas de temps précédent</li>
+    <li>If the current time is strictly greater than the limit time, requests the termination of the calculation</li>
+    <li>Adds the delta calculated in the previous time step to the current time</li>
     </ul>
   */
   void timeLoopBegin();
 
-  //! Point d'entrée auto-chargé en fin d'itération de la boucle de calcul
+  //! Auto-loaded entry point at the end of the calculation loop iteration
   /*!
    <ul>
-   <li>Incrémente le compteur d'itération</li>
+   <li>Increments the iteration counter</li>
    </ul>
   */
   void timeLoopEnd();
 
-  //! Point d'entrée auto-chargé en début d'initialisation
+  //! Auto-loaded entry point at the beginning of initialization
   void masterInit();
 
-  //! Point d'entrée auto-chargé en début d'initialisation d'un nouveau cas
-  /*! N'est pas appelé en cas d'initialisation sur une reprise */
+  //! Auto-loaded entry point at the beginning of a new case initialization
+  /*! Is not called in case of initialization on a restart */
   void masterStartInit();
 
-  //! Point d'entrée auto-chargé en début de reprise d'un nouveau cas
+  //! Auto-loaded entry point at the beginning of a new case restart
   void masterContinueInit();
 
  protected:
 
-  //! Incrémentation du pas de temps surchargeable
-  // nb: IFPEN a une notion d'évènement. On peut connaître le prochain
-  // temps et pas de temps. Si on applique l'incrémentation par défaut,
-  // on a des erreurs d'arrondi...
+  //! Overridable time step incrementation
+  // note: IFPEN has a notion of event. We can know the next
+  // time and time step. If we apply the default incrementation,
+  // we get rounding errors...
   virtual void timeIncrementation();
 
-  //! Affichage surchargeable des informations du pas de temps
-  // nb: IFPEN souhaite des affichages paramétrables par application
+  //! Overridable display of time step information
+  // note: IFPEN desires displays configurable per application
   virtual void timeStepInformation();
 
   void _masterBeginLoop();
@@ -119,22 +122,22 @@ class ARCANE_CORE_EXPORT ModuleMaster
 
  protected:
 
-  //! Instance des options du module
+  //! Instance of module options
   CaseOptionsMain* m_case_options_main = nullptr;
 
-  //! Nombre de boucles de calcul effectuées
+  //! Number of calculation loops performed
   Integer m_nb_loop = 0;
 
-  //! Valeur du temps CPU à la dernière itération
+  //! CPU time value at the last iteration
   Real m_old_cpu_time = 0.0;
 
-  //! Valeur du temps horloge à la dernière itération
+  //! Clock time value at the last iteration
   Real m_old_elapsed_time = 0.0;
 
-  //! Liste des services de boucle en temps
+  //! List of time loop services
   UniqueArray<ITimeLoopService*> m_timeloop_services;
 
-  //! Indique si on est dans la première itération de l'exécution
+  //! Indicates if we are in the first execution loop
   bool m_is_first_loop = true;
 
   Real m_thm_mem_used = 0.0;
@@ -159,5 +162,4 @@ class ARCANE_CORE_EXPORT ModuleMaster
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

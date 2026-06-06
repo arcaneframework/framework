@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParticleExchanger.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un échangeur de particules asynchrone.                        */
+/* Interface of an asynchronous particle exchanger.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IASYNCPARTICLEEXCHANGER_H
 #define ARCANE_CORE_IASYNCPARTICLEEXCHANGER_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un échangeur de particules asynchrone.
+ * \brief Interface of an asynchronous particle exchanger.
  */
 class ARCANE_CORE_EXPORT IAsyncParticleExchanger
 {

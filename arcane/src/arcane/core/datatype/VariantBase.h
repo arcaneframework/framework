@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariantBase.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base pour les types polymorphes.                                */
+/* Base class for polymorphic types.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_VARIANTBASE_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base pour les types polymorphes.
+ * \brief Base class for polymorphic types.
  */
 class ARCANE_DATATYPE_EXPORT VariantBase
 {
@@ -52,11 +53,11 @@ class ARCANE_DATATYPE_EXPORT VariantBase
   virtual ~VariantBase() {}
  public:
   /*!
-    \brief Dimension du variant.
+    \brief Variant dimension.
     
-    Les valeurs possibles sont les suivantes:
-    - 0 pour un scalaire,.
-    - 1 pour un tableau mono-dim ou variable scalaire du maillage.
+    The possible values are as follows:
+    - 0 for a scalar.
+    - 1 for a mono-dimensional array or scalar variable of the mesh.
   */
   Integer dimension() const { return m_dim; }
   eType type() const { return m_type; }
@@ -65,8 +66,8 @@ class ARCANE_DATATYPE_EXPORT VariantBase
   static eType fromDataType(eDataType type);
 
  protected:
-  Integer m_dim; //!< dimension du variant.
-  eType m_type; //!< Type garanti valide de la valeur.
+  Integer m_dim; //!< variant dimension.
+  eType m_type; //!< Guaranteed valid type of the value.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,5 +78,4 @@ class ARCANE_DATATYPE_EXPORT VariantBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

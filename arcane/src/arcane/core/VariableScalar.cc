@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableScalar.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Variable scalaire.                                                        */
+/* Scalar variable.                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,8 +56,7 @@ class ScalarVariableDiff
 
  public:
   //TODO: a simplifier car recopie de ArrayVariableDiff
-  // mais pour les variables scalaires il n'y a qu'une valeur et aucun groupe
-  // associé.
+  // but for scalar variables there is only one value and no associated group.
   VariableComparerResults
   check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
         const VariableComparerArgs& compare_args)
@@ -107,7 +106,7 @@ class ScalarVariableDiff
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << " Unable to compare : elements numbers are different !"
-                   << " pour la variable " << var_name << " ref_size=" << ref_size;
+                   << " for the variable " << var_name << " ref_size=" << ref_size;
         
     }
     if (nb_diff!=0)
@@ -124,8 +123,8 @@ class ScalarVariableDiff
     if (!replica_pm)
       return {};
     const int max_print = compare_args.maxPrint();
-    // Appelle la bonne spécialisation pour être certain que le type template possède
-    // la réduction.
+    // Calls the correct specialization to ensure the template type has
+    // the reduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
       return _checkReplica2(replica_pm, var_value);
@@ -213,9 +212,10 @@ getReference(IVariable* var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Utilise une fonction Helper afin de spécialiser l'appel dans le
-// cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
-// une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
+
+// Use a Helper function to specialize the call in the
+// case of the 'Byte' type because ArrayVariableDiff::checkReplica() uses
+// a Min/Max reduction and this does not exist in MPI for the Byte type.
 namespace
 {
   template <typename T> VariableComparerResults
@@ -226,7 +226,7 @@ namespace
     return csa.checkReplica(var, value, compare_args);
   }
 
-  // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
+  // Specialization for the 'Byte' type which does not support reductions.
   VariableComparerResults
   _checkIfSameOnAllReplicaHelper(IVariable* var, const Byte& value,
                                  const VariableComparerArgs& compare_args)
@@ -286,7 +286,7 @@ print(std::ostream& o) const
 template<typename T> void VariableScalarT<T>::
 synchronize()
 {
-  // Rien à faire pour les variables scalaires
+  // Nothing to do for scalar variables
 }
 
 /*---------------------------------------------------------------------------*/
@@ -295,7 +295,7 @@ synchronize()
 template<typename T> void VariableScalarT<T>::
 synchronize(Int32ConstArrayView local_ids)
 {
-  // Rien à faire pour les variables scalaires
+  // Nothing to do for scalar variables
   ARCANE_UNUSED(local_ids);
 }
 
@@ -366,7 +366,7 @@ swapValues(ThatClass& rhs)
 {
   _checkSwapIsValid(&rhs);
   m_value->swapValues(rhs.m_value);
-  // Il faut mettre à jour les références pour cette variable et \a rhs.
+  // References must be updated for this variable and \a rhs.
   syncReferences();
   rhs.syncReferences();
 }

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlNode.h                                                   (C) 2000-2023 */
 /*                                                                           */
-/* Noeud quelconque d'un arbre DOM.                                          */
+/* Any node in a DOM tree.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLNODE_H
 #define ARCANE_CORE_XMLNODE_H
@@ -39,40 +39,40 @@ class XmlNodeList;
 
 /*!
  * \ingroup Xml
- * \brief Noeud d'un arbre DOM.
+ * \brief Node of a DOM tree.
  *
- * Cette classe sert pour tous les types de noeuds du DOM et permet
- * de les manipuler de manière plus simple qu'avec le DOM sans avoir
- * besoin de faire des conversions de types.
+ * This class is used for all types of DOM nodes and allows
+ * them to be manipulated more simply than with the DOM without having
+ * to perform type conversions.
  *
- * Chaque noeud peut être considéré comme un container au sens de la STL.
+ * Each node can be considered a container in the sense of the STL.
  */
 class ARCANE_CORE_EXPORT XmlNode
 {
  public:
 
-  //! Type des éléments du tableau
+  //! Type of the elements in the array
   typedef XmlNode value_type;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type of the iterator over an element in the array
   typedef XmlNodeIterator iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type of the constant iterator over an element in the array
   typedef XmlNodeConstIterator const_iterator;
-  //! Type pointeur d'un élément du tableau
+  //! Type pointer of an element in the array
   typedef value_type* pointer;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type constant pointer of an element in the array
   typedef const value_type* const_pointer;
-  //! Type référence d'un élément du tableau
+  //! Type reference of an element in the array
   typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
+  //! Type constant reference of an element in the array
   typedef const value_type& const_reference;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between iterator elements in the array
   typedef int difference_type;
 
-  //! Type d'un itérateur sur tout le tableau
+  //! Type of an iterator over the entire array
   typedef IterT<XmlNode> iter;
-  //! Type d'un itérateur constant sur tout le tableau
+  //! Type of a constant iterator over the entire array
   typedef ConstIterT<XmlNode> const_iter;
 
  public:
@@ -112,185 +112,185 @@ class ARCANE_CORE_EXPORT XmlNode
  public:
 
   XmlNode(IRessourceMng* m,const dom::Node& node) : m_rm(m), m_node(node) {}
-  //TODO: à supprimer
+  //TODO: to be removed
   explicit XmlNode(IRessourceMng* m) : m_rm(m), m_node() {}
   XmlNode() : m_rm(nullptr), m_node() {}
 
  public:
 
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Returns an iterator over the first element of the array
   inline iterator begin();
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Returns an iterator over the first element after the end of the array
   inline iterator end();
-  //! Retourne un iterateur constant sur le premier élément du tableau
+  //! Returns a constant iterator over the first element of the array
   inline const_iterator begin() const;
-  //! Retourne un iterateur constant sur le premier élément après la fin du tableau
+  //! Returns a constant iterator over the first element after the end of the array
   inline const_iterator end()   const;
 
  public:
 
-  //! Type du noeud
+  //! Node type
   eType type() const;
 
-  //! Nom du noeud
+  //! Node name
   String name() const;
 
-  /*! \brief Nom XPath du noeud avec ces ancêtres.
-   * \warning Ne fonctionne que pour les éléments.
+  /*! \brief XPath name of the node with its ancestors.
+   * \warning Only works for elements.
    */  
   String xpathFullName() const;
 
-  //! Vrai si le nom de l'élément est \a name
+  //! True if the element name is \a name
   bool isNamed(const String& name) const;
 
-  /*! \brief Valeur du noeud.
+  /*! \brief Node value.
    *
-   * Pour un élément, il s'agit de la concaténation des valeurs de chacun
-   * de ses noeuds fils de type TEXT, CDATA_SECTION ou ENTITY_REFERENCE.
-   * Pour les noeuds autre que les éléments, il s'agit de la valeur de
-   * la méthode Node::nodeValue() du DOM.
+   * For an element, it is the concatenation of the values of each
+   * of its child nodes of type TEXT, CDATA_SECTION or ENTITY_REFERENCE.
+   * For nodes other than elements, it is the value of
+   * the Node::nodeValue() method of the DOM.
    */
   String value() const;
 
-  /*! \brief Valeur du noeud convertie en entier.
+  /*! \brief Node value converted to integer.
    *
-   * Si la conversion échoue, si \a throw_exception
-   * vaut \a false retourne 0, sinon lève une exception.
+   * If conversion fails, if \a throw_exception
+   * is \a false returns 0, otherwise throws an exception.
    */
   Integer valueAsInteger(bool throw_exception=false) const;
 
-  /*! \brief Valeur du noeud convertie en entier 64 bits. 0 si conversion échoue.
+  /*! \brief Node value converted to 64-bit integer. 0 if conversion fails.
    *
-   * Si la conversion échoue, si \a throw_exception
-   * vaut \a false retourne 0, sinon lève une exception.
+   * If conversion fails, if \a throw_exception
+   * is \a false returns 0, otherwise throws an exception.
    */
   Int64 valueAsInt64(bool throw_exception=false) const;
 
-  /*! \brief Valeur du noeud convertie en booléan.
+  /*! \brief Node value converted to boolean.
    *
-   * Une valeur de \c false ou \c 0 correspond à \a false. Une valeur
-   * de \c true ou \c 1 correspond à \a true.
-   * Si la conversion échoue, si \a throw_exception
-   * vaut \a false retourne \a false, sinon lève une exception.
+   * A value of \c false or \c 0 corresponds to \a false. A value
+   * of \c true or \c 1 corresponds to \a true.
+   * If conversion fails, if \a throw_exception
+   * is \a false returns \a false, otherwise throws an exception.
    */
   bool valueAsBoolean(bool throw_exception=false) const;
 
-  /*! \brief Valeur du noeud convertie en réel.
-   * Si la conversion échoue, si \a throw_exception
-   * vaut \a false retourne 0.0, sinon lève une exception.
+  /*! \brief Node value converted to real number.
+   * If conversion fails, if \a throw_exception
+   * is \a false returns 0.0, otherwise throws an exception.
    */
   Real valueAsReal(bool throw_exception=false) const;
 
-  /*! \brief Positionne la valeur du noeud.
+  /*! \brief Sets the node value.
    *
-   * Cette méthode n'est valide que pour les noeuds ELEMENT_NODE ou
-   * ATTRIBUTE_NODE. Pour les éléments, elles supprime tous les fils
-   * et ajoute un seul fils de type TEXT_NODE comportant la valeur \a value
+   * This method is only valid for ELEMENT_NODE or
+   * ATTRIBUTE_NODE. For elements, it deletes all children
+   * and adds a single TEXT_NODE child containing the value \a value
    */
   void setValue(const String& value);
 
-  /*! \brief Valeur de l'attribut \a name.
+  /*! \brief Value of attribute \a name.
    *
-   * Si l'attribut n'existe pas, si \a throw_exception vaut \a false retourne
-   * la chaîne nulle, sinon lève une exception.
+   * If the attribute does not exist, if \a throw_exception is \a false returns
+   * the null string, otherwise throws an exception.
    */
   String attrValue(const String& name,bool throw_exception=false) const;
 
-  //! Positionne l'attribut \a name à la valeur \a value
+  //! Sets the attribute \a name to the value \a value
   void setAttrValue(const String& name,const String& value);
 
   /*!
-   * \brief Retourne l'attribut de nom \a name.
+   * \brief Returns the attribute of name \a name.
    *
-   * Si l'attribut n'existe pas, si \a throw_exception vaut \a false retourne
-   * un noeud nul, sinon lève une exception.
+   * If the attribute does not exist, if \a throw_exception is \a false returns
+   * a null node, otherwise throws an exception.
    */
   XmlNode attr(const String& name,bool throw_exception=false) const;
 
   /*!
-   * \brief Retourne l'attribut de nom \a name.
-   * Si aucun attribut avec ce nom n'existe, un attribut avec comme
-   * valeur la chaîne nul est créé et retourné.
+   * \brief Returns the attribute of name \a name.
+   * If no attribute with this name exists, an attribute with
+   * the null string as value is created and returned.
    */
   XmlNode forceAttr(const String& name);
 
   /*!
-   * \brief Supprime l'attribut de nom \a name de ce noeud.
-   * Si ce noeud n'est pas élément, rien n'est effectué.
+   * \brief Removes the attribute of name \a name from this node.
+   * If this node is not an element, nothing is done.
    */
   void removeAttr(const String& name) const;
 
   /*!
-   * \brief Retourne le noeud élément du document.
+   * \brief Returns the document element.
    * \pre type()==DOCUMENT_NODE
    */
   XmlNode documentElement() const;
 
   /*!
-   * \brief Retourne l'élément propriétaire de cet attribut.
+   * \brief Returns the owning element of this attribute.
    * \pre type()==ATTRIBUTE_NODE
    */
   XmlNode ownerElement() const;
 
-  //! Supprime tous les noeuds fils
+  //! Deletes all child nodes
   void clear();
 
   /*!
-   * \brief Noeud fils de celui-ci de nom \a name
+   * \brief Child node of this node with name \a name
    *
-   * Si plusieurs noeuds portant ce nom existent, retourne le premier.
-   * Si le noeud n'est pas trouvé, retourne un noeud nul
+   * If multiple nodes with this name exist, returns the first one.
+   * If the node is not found, returns a null node
    */
   XmlNode child(const String& name) const;
 
   /*!
-   * \brief Noeud fils de celui-ci de nom \a name
+   * \brief Child node of this node with name \a name
    *
-   * Si plusieurs noeuds portant ce nom existent, retourne le premier.
-   * Si le noeud n'est pas trouvé, lève une exception.
+   * If multiple nodes with this name exist, returns the first one.
+   * If the node is not found, throws an exception.
    */
   XmlNode expectedChild(const String& name) const;
 
-  //! Ensemble des noeuds fils de ce noeud ayant pour nom \a name
+  //! Set of child nodes of this node having the name \a name
   XmlNodeList children(const String& name) const;
 
-  //! Ensemble des noeuds fils de ce noeud
+  //! Set of child nodes of this node
   XmlNodeList children() const;
 
-  //! Parent de ce noeud (null si aucun)
+  //! Parent of this node (null if none)
   XmlNode parent() const { return XmlNode(m_rm,m_node.parentNode()); }
 
-  /*! \brief Ajoute \a child_node comme fils de ce noeud.
+  /*! \brief Adds \a child_node as a child of this node.
    *
-   * Le noeud est ajouté après tous les fils.
+   * The node is added after all children.
    */
   void append(const XmlNode& child_node) { m_node.appendChild(child_node.domNode()); }
-  //! Supprime le noeud fils \a child_node
+  //! Removes the child node \a child_node
   void remove(const XmlNode& child_node);
-  //! Remplace le noeud fils \a ref_node par le noeud \a new_node
+  //! Replaces the child node \a ref_node with the node \a new_node
   void replace(const XmlNode& new_node,XmlNode& ref_node);
-  //! Supprime ce noeud du document
+  //! Removes this node from the document
   void remove();
-  //! Premier fils
+  //! First child
   XmlNode front() const { return XmlNode(m_rm,m_node.firstChild()); }
-  //! Dernier fils
+  //! Last child
   XmlNode last() const { return XmlNode(m_rm,m_node.lastChild()); }
-  //! Noeud suivant (nextSibling())
+  //! Next node (nextSibling())
   XmlNode next() const { return XmlNode(m_rm,m_node.nextSibling()); }
-  //! Noeud précédent (previousSibling())
+  //! Previous node (previousSibling())
   XmlNode prev() const { return XmlNode(m_rm,m_node.previousSibling()); }
-  //! Retourne le noeud suivant ce noeud ayant le nom \a name.
+  //! Returns the next node after this node having the name \a name.
   XmlNode nextWithName(const String& name) const;
-  //! Retourne le noeud précédent ce noeud ayant le nom \a name.
+  //! Returns the previous node before this node having the name \a name.
   XmlNode prevWithName(const String& name) const;
-  //! Retourne le noeud suivant ce noeud ayant le même type.
+  //! Returns the next node of the same type.
   XmlNode nextSameType() const;
-  //! Retourne le noeud précédent ce noeud ayant le même type.
+  //! Returns the previous node of the same type.
   XmlNode prevSameType() const;
   void operator++() { m_node = m_node.nextSibling(); }
   void operator--() { m_node = m_node.previousSibling(); }
 
-  //! Vrai si le noeud est nul
+  //! True if the node is null
   bool null() const { return m_node._null(); }
   bool operator!() const { return null(); }
 
@@ -300,65 +300,65 @@ class ARCANE_CORE_EXPORT XmlNode
   void assignDomNode(const dom::Node& node);
 
   /*!
-   * \brief Insère un noeud.
-   * Insère le noeud \a new_child après le noeud \a ref_node.
-   * Si \a new_child est \c nul, ne fait rien.
-   * Si \a ref_node est \c nul, \a new_child est ajouté à la fin (comme append()). Sinon,
-   * \a ref_node doit être fils de ce noeud et \a new_child est inséré après
+   * \brief Inserts a node.
+   * Inserts the node \a new_child after the node \a ref_node.
+   * If \a new_child is \c null, does nothing.
+   * If \a ref_node is \c null, \a new_child is added to the end (like append()). Otherwise,
+   * \a ref_node must be a child of this node and \a new_child is inserted after
    * \a ref_node.
-   * En cas de succès, retourne le noeud ajouté (\a new_child), sinon le noeud nul.
+   * On success, returns the added node (\a new_child), otherwise the null node.
    */
   XmlNode insertAfter(const XmlNode& new_child,const XmlNode& ref_node);
 
   /*!
-   * \brief Retourne le fils de ce noeud ayant pour nom \a elem_name et
-   * un attribut de nom \a attr_name avec pour valeur \a attr_value.
+   * \brief Returns the child of this node having the name \a elem_name and
+   * an attribute of name \a attr_name with value \a attr_value.
    */
   XmlNode childWithAttr(const String& elem_name,const String& attr_name,
 			const String& attr_value) const;
   /*!
-   * \brief Retourne le fils de ce noeud ayant pour nom \a elem_name et
-   * un attribut de nom \c "name" avec pour valeur \a attr_value.
+   * \brief Returns the child of this node having the name \a elem_name and
+   * an attribute of name \c "name" with value \a attr_value.
    */
   XmlNode childWithNameAttr(const String& elem_name,
 			    const String& attr_value) const;
 
   /*!
-   * \brief Retourne un noeud à partir d'une expression XPath.
-   * \param xpath_expr Expression XPath.
+   * \brief Returns a node from an XPath expression.
+   * \param xpath_expr XPath expression.
    */
   XmlNode xpathNode(const String& xpath_expr) const;
 
   /*!
-   * \brief Créé un noeud d'un type donné.
+   * \brief Creates a node of a given type.
    *
-   * Si type() ne vaut pas DOCUMENT_NODE, utilise ownerDocument() comme
-   * fabrique.
+   * If type() is not DOCUMENT_NODE, it uses ownerDocument() as
+   * factory.
    *
-   * \param type type du noeud.
-   * \param nom du noeud.
-   * \param valeur du noeud.
-   * \return le noeud créé.
+   * \param type type of the node.
+   * \param name of the node.
+   * \param value of the node.
+   * \return the created node.
    * \pre type()==DOCUMENT_NODE
    */
   XmlNode createNode(eType type,const String& name,const String& value);
 
   /*!
-   * \brief Créé un noeud d'un type donné.
+   * \brief Creates a node of a given type.
    *
-   * Si type() ne vaut pas DOCUMENT_NODE, utilise ownerDocument() comme
-   * fabrique.
+   * If type() is not DOCUMENT_NODE, it uses ownerDocument() as
+   * factory.
    *
-   * \param type type du noeud.
-   * \param nom ou valeur du noeud dans le cas ou le noeud n'a pas de nom.
-   * \return le noeud créé.
+   * \param type type of the node.
+   * \param name or value of the node in the case where the node has no name.
+   * \return the created node.
    */
   XmlNode createNode(eType type,const String& name_or_value);
 
   /*!
-   * \brief Créé un noeud texte.
-   * \param value valeur du noeud texte.
-   * \return le noeud créé.
+   * \brief Creates a text node.
+   * \param value value of the text node.
+   * \return the created node.
    */
   XmlNode createText(const String& value);
 
@@ -388,21 +388,22 @@ class ARCANE_CORE_EXPORT XmlNode
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Elément d'un arbre DOM.
+ * \brief Element of a DOM tree.
  */
 class ARCANE_CORE_EXPORT XmlElement
 : public XmlNode
 {
  public:
-  /*! \brief Créé un élément fils de \a parent.
-   * L'élément créé a pour nom \a name et pour valeur \a value. 
-   * Il est ajouté à la fin de la liste des fils de \a parent.
+  /*! \brief Creates a child element of \a parent.
+   * The created element has the name \a name and the value \a value. 
+   * It is added to the end of the list of children of \a parent.
    */
   XmlElement(XmlNode& parent,const String& name,const String& value);
-  /*! \brief Créé un élément fils de \a parent.
-   * L'élément créé a pour nom \a name et pour valeur \a value.
-   * Il est ajouté à la fin de la liste des fils de \a parent.
+  /*! \brief Creates a child element of \a parent.
+   * The created element has the name \a name and the value \a value.
+   * It is added to the end of the list of children of \a parent.
    */
   XmlElement(XmlNode& parent,const String& name);
 };
@@ -430,5 +431,4 @@ operator!=(const XmlNode& n1,const XmlNode& n2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

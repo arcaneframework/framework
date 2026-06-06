@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshItemInternalList.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Tableaux d'indirection sur les entités d'un maillage.                     */
+/* Indirection tables for mesh entities.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHITEMINTERNALLIST_H
 #define ARCANE_CORE_MESHITEMINTERNALLIST_H
@@ -34,9 +34,10 @@ class PolyhedralMesh;
 
 namespace Arcane::impl
 {
+
 /*!
  * \internal
- * \brief Liste des ItemSharedInfo associés à un maillage.
+ * \brief List of ItemSharedInfo associated with a mesh.
  */
 class MeshItemSharedInfoList
 {
@@ -71,14 +72,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Tableaux d'indirection sur les entités d'un maillage.
+ * \brief Indirection tables for mesh entities.
  */
 class ARCANE_CORE_EXPORT MeshItemInternalList
 {
-  // Les deux classes suivantes ont besoin d'accéder aux
-  // méthodes _internalSet*().
+  // The following two classes need access to
+  // the _internalSet*() methods.
   friend class mesh::DynamicMesh;
   friend class mesh::PolyhedralMesh;
 
@@ -102,8 +104,8 @@ class ARCANE_CORE_EXPORT MeshItemInternalList
 
  private:
 
-  // Ne pas modifier directement ces champs.
-  // Utiliser les méthodes _internalSet*() correspondantes
+  // Do not modify these fields directly.
+  // Use the corresponding _internalSet*() methods
   ItemSharedInfo* m_node_shared_info = nullptr;
   ItemSharedInfo* m_edge_shared_info = nullptr;
   ItemSharedInfo* m_face_shared_info = nullptr;
@@ -122,5 +124,4 @@ class ARCANE_CORE_EXPORT MeshItemInternalList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

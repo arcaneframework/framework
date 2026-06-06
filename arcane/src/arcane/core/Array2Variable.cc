@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array2Variable.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Variable tableau 2D.                                                      */
+/* 2D array variable.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -136,8 +136,7 @@ class Array2VariableDiff
     IParallelMng* replica_pm = var->_internalApi()->replicaParallelMng();
     if (!replica_pm)
       return {};
-    // Appelle la bonne spécialisation pour être certain que le type template possède
-    // la réduction.
+    // Calls the correct specialization to ensure the template type has reduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
     if constexpr(std::is_same<TrueType,ReduceType>::value)
       return _checkReplica2(replica_pm, var, var_values, compare_args);
@@ -157,12 +156,12 @@ class Array2VariableDiff
   {
     ITraceMng* msg = pm->traceMng();
     ItemGroup group = var->itemGroup();
-    //TODO: traiter les variables qui ne sont pas sur des éléments du maillage.
+    //TODO: handle variables that are not on mesh elements.
     if (group.null())
       return {};
     GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
-    // Vérifie que tous les réplica ont le même nombre d'éléments dans chaque
-    // dimension pour la variable.
+    // Checks that all replicas have the same number of elements in each
+    // dimension for the variable.
     Integer total_nb_element = var_values.totalNbElement();
     Integer ref_size1 = var_values.dim1Size();
     Integer ref_size2 = var_values.dim2Size();
@@ -397,9 +396,10 @@ allocatedMemory() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Utilise une fonction Helper afin de spécialiser l'appel dans le
-// cas du type 'Byte' car ArrayVariableDiff::checkReplica() utilise
-// une réduction Min/Max et cela n'existe pas en MPI pour le type Byte.
+
+// Uses a Helper function to specialize the call for the 'Byte' type because
+// ArrayVariableDiff::checkReplica() uses a Min/Max reduction, and this is not
+// available in MPI for the Byte type.
 namespace
 {
   template <typename T> VariableComparerResults
@@ -410,7 +410,7 @@ namespace
     return csa.checkReplica(var, values, compare_args);
   }
 
-  // Spécialisation pour le type 'Byte' qui ne supporte pas les réductions.
+  // Specialization for the 'Byte' type which does not support reductions.
   VariableComparerResults
   _checkIfSameOnAllReplicaHelper(IVariable* var, ConstArray2View<Byte> values,
                                  const VariableComparerArgs& compare_args)
@@ -459,7 +459,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
     ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
 
     UniqueArray2<T> ref_array(constValueView());
-    this->synchronize(); // fonctionne pour toutes les variables
+    this->synchronize(); // works for all variables
     Array2VariableDiff<T> csa;
     Array2View<T> from_array(valueView());
     VariableComparerResults results = csa.check(this, ref_array, from_array, compare_args);
@@ -484,9 +484,9 @@ _internalResize(const VariableResizeArgs& resize_args)
   Int32 nb_additional_element = resize_args.nbAdditionalCapacity();
   bool use_no_init = resize_args.isUseNoInit();
 
-  // Exception deplace de ItemGroupImpl::removeItems.
-  // C'est un probleme d'implementation des variables partielles Arcane et non
-  // du concept de variable partielle (cf ItemGroupMap qui l'implemente).
+  // Moved exception from ItemGroupImpl::removeItems.
+  // This is an implementation problem of Arcane partial variables and not of
+  // the partial variable concept (cf ItemGroupMap which implements it).
   //   if (isPartial() && new_size < value().dim1Size())
   //     throw NotSupportedException(A_FUNCINFO,"Cannot remove items to group with partial variables");
 
@@ -506,9 +506,8 @@ _internalResize(const VariableResizeArgs& resize_args)
   }
 
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
-  // Si la nouvelle taille est supérieure à l'ancienne,
-  // initialise les nouveaux éléments suivant
-  // la politique voulue
+  // If the new size is greater than the old one,
+  // initialize the new elements according to the desired policy
   Integer current_size = data_values.dim1Size();
 
   /*info() << "RESIZE INTERNAL " << fullName()
@@ -530,7 +529,7 @@ _internalResize(const VariableResizeArgs& resize_args)
     }
   }
 
-  // Compacte la mémoire si demandé
+  // Compacts the memory if requested
   if (_wantShrink()){
     if (container_ref.totalNbElement() < container_ref.capacity())
       container_ref.shrink();
@@ -604,7 +603,7 @@ compact(Int32ConstArrayView new_to_old_ids)
   if (dim2_size==0)
     return;
 
-  //TODO: eviter le clone
+  //TODO: avoid the clone
   UniqueArray2<T> old_value(current_value);
 
   Integer new_size = new_to_old_ids.size();
@@ -657,10 +656,10 @@ Array2VariableT<DataType>::
 swapValues(ThatClass& rhs)
 {
   _checkSwapIsValid(&rhs);
-  // TODO: regarder s'il faut que les deux variables aient le même nombre
-  // d'éléments mais a priori cela ne semble pas indispensable.
+  // TODO: check if the two variables must have the same number
+  // of elements, but apparently this does not seem essential.
   m_data->swapValues(rhs.m_data);
-  // Il faut mettre à jour les références pour cette variable et \a rhs.
+  // References must be updated for this variable and for rhs.
   syncReferences();
   rhs.syncReferences();
 }
@@ -682,8 +681,8 @@ template<typename DataType> void
 Array2VariableT<DataType>::
 fillShape(ArrayShape& shape_with_item)
 {
-  // TODO: Cette méthode est indépendante du type de donnée.
-  // Il faudrait pouvoir en faire une seule version.
+  // TODO: This method is independent of the data type.
+  // It would be necessary to make a single version of it.
   ArrayShape shape = m_data->shape();
   const Int32 nb_rank = shape_with_item.nbDimension();
   //std::cout << "SHAPE=" << shape.dimensions() << " internal_rank=" << nb_rank << "\n";
@@ -696,8 +695,8 @@ fillShape(ArrayShape& shape_with_item)
     shape_with_item.setDimension(i + 1, shape.dimension(i));
   }
 
-  // Si la forme est plus petite que notre rang, remplit les dimensions
-  // supplémentaires par la valeur 1.
+  // If the shape is smaller than our rank, fill the
+  // additional dimensions with the value 1.
   for (Int32 i = (nb_orig_shape + 1); i < nb_rank; ++i) {
     shape_with_item.setDimension(i, 1);
   }

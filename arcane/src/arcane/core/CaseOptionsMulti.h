@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionsMulti.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Options du jeu de données gérant plusieurs occurences.                    */
+/* Data set options managing multiple occurrences.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONSMULTI_H
 #define ARCANE_CORE_CASEOPTIONSMULTI_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'un tableau d'options complexes du jeu de données.
+ * \brief Base class for an array of complex data set options.
  */
 class ARCANE_CORE_EXPORT CaseOptionsMulti
 : public CaseOptions
@@ -61,4 +62,4 @@ class ARCANE_CORE_EXPORT CaseOptionsMulti
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

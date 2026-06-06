@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RealArrayVariant.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Variant pouvant contenir les types ConstArrayView, Real2 et Real3.        */
+/* Variant that can contain the types ConstArrayView, Real2, and Real3.      */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/datatype/RealArrayVariant.h"

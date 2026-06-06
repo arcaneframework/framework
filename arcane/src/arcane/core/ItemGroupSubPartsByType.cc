@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupSubPartsByType.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des sous-parties d'un groupe suivant le type de ses éléments.     */
+/* Management of group sub-parts based on the type of its elements.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,7 +32,7 @@ ItemGroupSubPartsByType::
 ItemGroupSubPartsByType(ItemGroupInternal* igi)
 : m_group_internal(igi)
 {
-  // Regarde si on utilise la version 2 pour ApplyOperationByBasicType
+  // Checks if version 2 is used for ApplyOperationByBasicType
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_APPLYOPERATION_VERSION", true))
     m_use_v2_for_apply_operation = (v.value() == 2);
 
@@ -69,7 +69,7 @@ _computeChildrenByTypeV2()
   if (is_verbose)
     trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << m_group_internal->name();
 
-  // Si le maillage est cartésien, on sait que toutes les entités ont le même type
+  // If the mesh is Cartesian, we know that all entities have the same type
   if (nb_item > 0 && mesh->meshKind().meshStructure() == eMeshStructure::Cartesian) {
     ItemInfoListView lv(m_group_internal->m_item_family->itemInfoListView());
     m_unique_children_type = ItemTypeId{ lv.typeId(m_group_internal->itemsLocalId()[0]) };
@@ -103,9 +103,9 @@ _computeChildrenByTypeV2()
     trace->info() << "ItemGroupImpl::_computeChildrenByTypeV2 for " << name
                   << " nb_item=" << nb_item << " nb_different_type=" << nb_different_type;
 
-  // Si nb_different_type == 1, cela signifie qu'il n'y a qu'un seul
-  // type d'entité et on conserve juste ce type, car dans ce cas on passera
-  // directement le groupe en argument de applyOperation().
+  // If nb_different_type == 1, this means there is only one
+  // entity type and we keep just that type, because in this case we will pass
+  // the group directly as an argument to applyOperation().
   if (nb_item > 0 && nb_different_type == 1) {
     ItemInfoListView lv(m_group_internal->m_item_family->itemInfoListView());
     m_unique_children_type = ItemTypeId{ lv.typeId(m_group_internal->itemsLocalId()[0]) };

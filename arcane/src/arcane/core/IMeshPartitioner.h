@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshPartitioner.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un partitionneur de maillage.                                 */
+/* Interface of a mesh partitioner.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMESHPARTITIONER_H
 #define ARCANE_IMESHPARTITIONER_H
@@ -24,13 +24,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un partitionneur de maillage.
+ * \brief Interface of a mesh partitioner.
  *
- * Le partitionneur réaffecte les propriétaires des entités.
- * Il n'effectue pas directement l'échange d'entité.
- * Le partitionneur peut utiliser certaines informations comme
- * le timeRatio() ou imbalance() pour calculer un partionnement efficace.
+ * The partitioner reassigns entity owners.
+ * It does not directly perform entity exchange.
+ * The partitioner can use certain information such as
+ * timeRatio() or imbalance() to calculate an efficient partitioning.
  */
 class ARCANE_CORE_EXPORT IMeshPartitioner
 : public IMeshPartitionerBase
@@ -45,59 +46,59 @@ class ARCANE_CORE_EXPORT IMeshPartitioner
 
   virtual void partitionMesh(bool initial_partition, Int32 nb_part) = 0;
 
-  //! Maillage associé au partitionneur
+  //! Mesh associated with the partitioner
   ARCCORE_DEPRECATED_2021("Use primaryMesh() instead")
   virtual IMesh* mesh() const = 0;
 
-  //! Maillage associé
+  //! Associated mesh
   virtual IPrimaryMesh* primaryMesh() override;
 
  public:
 
   /*!{ \name compact
    *
-   * Proportion du temps de calcul de ce sous-domaine par rapport à celui
-   * du sous-domaine qui à le temps de calcul de plus élevé.
+   * Proportion of computation time of this subdomain compared to that
+   * of the subdomain that has the highest computation time.
    */
-  //! Positionne la proportion du temps de calcul
+  //! Sets the proportion of computation time
   //virtual void setTimeRatio(Real v) =0;
-  //! Proportion du temps de calcul
+  //! Proportion of computation time
   //virtual Real timeRatio() const =0;
   //@}
 
-  //! Temps de calcul du sous-domaine le plus chargé
+  //! Computation time of the most heavily loaded subdomain
   virtual ARCANE_DEPRECATED_116 void setMaximumComputationTime(Real v) = 0;
   virtual ARCANE_DEPRECATED_116 Real maximumComputationTime() const = 0;
 
-  /*! \brief Temps de calcul de se sous-domaine.
-   * Le premier élément indique le temps de calcul du sous-domaine
-   * correspondante aux calcul dont le cout est proportionnel aux mailles.
-   * Les suivants doivent être associées à une variable (à faire).
+  /*! \brief Computation time of this subdomain.
+   * The first element indicates the computation time of the subdomain
+   * corresponding to calculations whose cost is proportional to the mesh.
+   * The following must be associated with a variable (to be done).
    */
   virtual ARCANE_DEPRECATED_116 void setComputationTimes(RealConstArrayView v) = 0;
   virtual ARCANE_DEPRECATED_116 RealConstArrayView computationTimes() const = 0;
 
   /*!@{ \name imbalance
    *
-   * Déséquilibre de temps calcul. Il est calculé comme suit
+   * Computation time imbalance. It is calculated as follows
    * imbalance = (max_computation_time - min_computation_time) / min_computation_time;
    */
-  //! Positionne le déséquilibre de temps de calcul
+  //! Sets the computation time imbalance
   virtual void setImbalance(Real v) = 0;
-  //! Déséquilibre de temps de calcul
+  //! Computation time imbalance
   virtual Real imbalance() const = 0;
   //@}
 
-  //! Positionne le déséquilibre maximal autorisé
+  //! Sets the maximum allowed imbalance
   virtual void setMaxImbalance(Real v) = 0;
-  //! Déséquilibre maximal autorisé
+  //! Maximum allowed imbalance
   virtual Real maxImbalance() const = 0;
 
-  //! Permet de définir les poids des objets à partitionner : on doit utiliser le ILoadBalanceMng maintenant.
+  //! Allows defining the weights of objects to be partitioned: ILoadBalanceMng must now be used.
   virtual ARCANE_DEPRECATED_116 void setCellsWeight(ArrayView<float> weights, Integer nb_weight) = 0;
   virtual ARCANE_DEPRECATED_116 ArrayView<float> cellsWeight() const = 0;
 
-  //! Change le ILoadBalanceMng à utiliser.
+  //! Changes the ILoadBalanceMng to use.
   virtual void setILoadBalanceMng(ILoadBalanceMng* mng) = 0;
   virtual ILoadBalanceMng* loadBalanceMng() const = 0;
 };
@@ -110,4 +111,4 @@ class ARCANE_CORE_EXPORT IMeshPartitioner
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnaryExpressionImpl.h                                       (C) 2000-2006 */
 /*                                                                           */
-/* Implémentation d'une expression unaire.                                   */
+/* Implementation of a unary expression.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_UNARYEXPRESSIONIMPL_H
 #define ARCANE_EXPR_UNARYEXPRESSIONIMPL_H
@@ -34,7 +34,7 @@ class UnaryOperator;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Implementation d'une expression unaire
+ * \brief Implementation of a unary expression
  */
 class ARCANE_EXPR_EXPORT UnaryExpressionImpl
 : public ExpressionImpl
@@ -84,7 +84,7 @@ class ARCANE_EXPR_EXPORT UnaryExpressionImpl
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Operateur unaire generique pour les expressions.
+ * \brief Generic unary operator for expressions.
  */
 class UnaryOperator
 {
@@ -106,21 +106,21 @@ class DefaultUnaryOperator
 
   virtual void evaluate(ExpressionResult* res, ArrayVariant* a)
   {
-    // verification de la validite de l'operation
+    // verification of the operation validity
     Integer size = res->size();
     if (size != a->size())
       throw BadOperandException("DefaultUnaryOperator::evaluate");
 
-    // allocation du résultat en fonction du type de a
+    // allocation of the result based on the type of a
     res->allocate(a->type());
 
-    // recuperation des valeurs des operandes
+    // retrieval of operand values
     ArrayView<T> res_val;
     res->data()->value(res_val);
     ArrayView<T> a_val;
     a->value(a_val);
 
-    // evaluation des tableaux
+    // array evaluation
     evaluate(res_val, a_val);
   }
 };

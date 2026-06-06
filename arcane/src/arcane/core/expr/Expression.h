@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Expression.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Référence à une expression.                                               */
+/* Reference to an expression.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_EXPRESSION_H
 #define ARCANE_CORE_EXPR_EXPRESSION_H
@@ -32,26 +32,27 @@ class ExpressionResult;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence à une expression.
+ * \brief Reference to an expression.
  *
- Cette classe sert juste pour maintenir une référence à une expression
- (IExpression). Elle est utilisée dans les wrapper pour garantir qu'une
- expression allouée est bien détruite lorsqu'elle n'est plus utilisée.
+ This class is just used to maintain a reference to an expression
+ (IExpression). It is used in wrappers to ensure that an
+ allocated expression is properly destroyed when it is no longer used.
  */
 class ARCANE_EXPR_EXPORT Expression
 {
  public:
 
-  //! Constructeur par défaut.
+  //! Default constructor.
   Expression();
 
   Expression(IExpressionImpl*);
 
   explicit Expression(Real v);
 
-  /*! \brief Constructeur de recopie.
-   * Le constructeur est protégé pour éviter de dupliquer par erreur une
+  /*! \brief Copy constructor.
+   * The constructor is protected to prevent accidental duplication of a
    * instance.
    */
   Expression(const Expression& expr);

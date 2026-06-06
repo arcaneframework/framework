@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshModifierInternal.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IMeshModifier.                                 */
+/* Internal Arcane component of IMeshModifier.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IMESHMODIFIERINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IMESHMODIFIERINTERNAL_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de IMeshModifier.
+ * \brief Internal part of IMeshModifier.
  */
 class ARCANE_CORE_EXPORT IMeshModifierInternal
 {
@@ -36,55 +37,55 @@ class ARCANE_CORE_EXPORT IMeshModifierInternal
   virtual ~IMeshModifierInternal() = default;
 
   /*!
-   * \brief Suppime les entités marquées avec ItemFlags::II_NeedRemove.
+   * \brief Deletes entities marked with ItemFlags::II_NeedRemove.
    *
-   * Cette méthode est appelée dans MeshExchanger
+   * This method is called in MeshExchanger
    */
   virtual void removeNeedRemoveMarkedItems() = 0;
 
   /*!
-   * \brief Ajoute un nœud.
+   * \brief Adds a node.
    *
-   * Ajoute un nœud de numéro unique \a uid. Si le nœud existe déjà,
-   * il est retournée. Il n'est en général pas utile de créer directement les
-   * nœuds, car ces derniers le sont automatiquement quand on ajoute une arête,
-   * une face ou une maille.
+   * Adds a node with a unique ID \a uid. If the node already exists,
+   * it is returned. It is generally not useful to create nodes directly,
+   * as they are automatically created when an edge,
+   * a face, or a cell is added.
    *
-   * \return Le nœud créé ou le nœud existant avec le numéro unique \a unique_id
-   * s'il existe déjà.
+   * \return The created node or the existing node with the unique ID \a unique_id
+   * if it already exists.
    *
-   * \note Pour des raisons de performance, il est préférable d'appeler addNodes() si
-   * on doit ajouter beaucoup de nœuds.
+   * \note For performance reasons, it is preferable to call addNodes() if
+   * many nodes need to be added.
    */
   virtual NodeLocalId addNode(ItemUniqueId unique_id) = 0;
 
   /*!
-   * \brief Ajoute une face.
+   * \brief Adds a face.
    *
-   * Ajoute une face de numéro unique \a uid, de type \a type_id et contenant
-   * les nœuds dont les numéros uniques sont \a nodes_uids. Si la face
-   * existe déjà, elle est retournée.
+   * Adds a face with a unique ID \a uid, of type \a type_id, and containing
+   * the nodes whose unique IDs are \a nodes_uids. If the face
+   * already exists, it is returned.
    *
-   * \return La face créée ou la face existante avec le numéro unique \a unique_id
-   * si elle existe déjà.
+   * \return The created face or the existing face with the unique ID \a unique_id
+   * if it already exists.
    *
-   * \note Pour des raisons de performance, il est préférable d'appeler addFaces() si
-   * on doit ajouter beaucoup de faces.
+   * \note For performance reasons, it is preferable to call addFaces() if
+   * many faces need to be added.
    */
   virtual FaceLocalId addFace(ItemUniqueId unique_id, ItemTypeId type_id, ConstArrayView<Int64> nodes_uid) = 0;
 
   /*!
-   * \brief Ajoute une maille.
+   * \brief Adds a cell.
    *
-   * Ajoute une maille de numéro unique \a uid, de type \a type_id et contenant
-   * les nœuds dont les numéros uniques sont \a nodes_uids. Si la maille
-   * existe déjà, elle est retournée.
+   * Adds a cell with a unique ID \a uid, of type \a type_id, and containing
+   * the nodes whose unique IDs are \a nodes_uids. If the cell
+   * already exists, it is returned.
    *
-   * \return La maille créée ou la maille existante avec le numéro unique \a unique_id
-   * si elle existe déjà.
+   * \return The created cell or the existing cell with the unique ID \a unique_id
+   * if it already exists.
    *
-   * \note Pour des raisons de performance, il est préférable d'appeler addCells() si
-   * on doit ajouter beaucoup de mailles.
+   * \note For performance reasons, it is preferable to call addCells() if
+   * many cells need to be added.
    */
   virtual CellLocalId addCell(ItemUniqueId unique_id, ItemTypeId type_id, ConstArrayView<Int64> nodes_uid) = 0;
 };

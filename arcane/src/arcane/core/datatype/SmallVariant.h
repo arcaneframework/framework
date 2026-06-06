@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SmallVariant.h                                              (C) 2000-2017 */
 /*                                                                           */
-/* Type de base polymorphe.                                                  */
+/* Polymorphic base type.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DATATYPE_SMALLVARIANT_H
@@ -26,8 +26,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant un type polymorphe.
+ * \brief Class managing a polymorphic type.
  */
 class SmallVariant
 {
@@ -176,12 +177,12 @@ class SmallVariant
 
  private:
 
-  Real m_real_value;     //!< Valeur de type réelle
-  Int32 m_int32_value;  //!< Valeur de type entier
-  Int64 m_int64_value;  //!< Valeur de type entier naturel
-  bool m_bool_value;  //!< Valeur de type entier booléenne
-  String m_string_value;   //!< Valeur de type chaîne de caractère.
-  eType m_sticky_type; //!< Type garanti valide de la valeur.
+  Real m_real_value;     //!< Real type value
+  Int32 m_int32_value;  //!< Integer type value
+  Int64 m_int64_value;  //!< Natural integer type value
+  bool m_bool_value;  //!< Boolean type value
+  String m_string_value;   //!< Character string type value.
+  eType m_sticky_type; //!< Guaranteed valid type of the value.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -205,5 +206,4 @@ ARCANE_END_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshVariableArrayRef.inst.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Variable vectorielle du maillage.                                         */
+/* Mesh variable vector.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -161,11 +161,11 @@ MeshVariableArrayRefT<ItemType,DataType>::
 MeshVariableArrayRefT(const VariableBuildInfo& vb)
 : ItemVariableArrayRefT<DataType>(vb,ItemTraitsT<ItemType>::kind())
 {
-  // Normalement, c'est à cette classe de faire l'initilisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableArrayRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should perform the initialization but
+  // since this class is just a wrapper around ItemVariableArrayRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows a variable to be generically created on
+  // a mesh entity based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -176,11 +176,11 @@ MeshVariableArrayRefT<ItemType,DataType>::
 MeshVariableArrayRefT(IVariable* var)
 : ItemVariableArrayRefT<DataType>(var)
 {
-  // Normalement, c'est à cette classe de faire l'initilisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableArrayRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should perform the initialization but
+  // since this class is just a wrapper around ItemVariableArrayRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows a variable to be generically created on
+  // a mesh entity based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -191,11 +191,11 @@ MeshVariableArrayRefT<ItemType,DataType>::
 MeshVariableArrayRefT(const MeshVariableArrayRefT<ItemType,DataType>& rhs)
 : ItemVariableArrayRefT<DataType>(rhs)
 {
-  // Normalement, c'est à cette classe de faire l'initilisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableArrayRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should perform the initialization but
+  // since this class is just a wrapper around ItemVariableArrayRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows a variable to be generically created on
+  // a mesh entity based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -297,13 +297,14 @@ fill(const DataTypeT& v,RunQueue* queue)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Échange les valeurs de la variable \a rhs avec celles de l'instance.
+ * \brief Swaps the values of the variable \a rhs with those of the instance.
  *
- * Cette méthode est optimisée pour éviter les recopie et donc l'échange
- * se fait en temps constant. Les variables échangées doivent avoir le
- * même maillage, la même famille et le même groupe. Elles doivent aussi
- * être allouées (IVariable::setUsed()==true)
+ * This method is optimized to avoid copies, so the swap
+ * happens in constant time. The swapped variables must have the
+ * same mesh, the same family, and the same group. They must also
+ * be allocated (IVariable::setUsed()==true)
  */
 template<class ItemType,class DataTypeT> void
 MeshVariableArrayRefT<ItemType,DataTypeT>::

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParticleFamily.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une famille de particules.                                    */
+/* Interface of a particle family.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARTICLEFAMILY_H
 #define ARCANE_CORE_IPARTICLEFAMILY_H
@@ -25,63 +25,64 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'une famille de particules.
+ * \brief Interface of a particle family.
  *
- * Une famille de particle est une famille d'entité (IItemFamily).
- * Cette interface ne contient que les méthodes spécifiques aux particules.
- * Pour les opérations génériques aux entités, il faut passer par
- * l'interface IItemFamily via itemFamily().
+ * A particle family is a family of entities (IItemFamily).
+ * This interface only contains methods specific to particles.
+ * For generic entity operations, you must go through
+ * the IItemFamily interface via itemFamily().
  *
- * Il peut y a voir plusieurs famille de particule par maillage.
- * Contrairement aux entités classiques du maillage (noeud, maille, ...),
- * les particules peuvent être créées directement.
+ * There can be several particle families per mesh.
+ * Unlike classical mesh entities (node, cell, ...),
+ * particles can be created directly.
  *
  */
 class ARCANE_CORE_EXPORT IParticleFamily
 {
  public:
 
-  virtual ~IParticleFamily() {} //<! Libère les ressources
+  virtual ~IParticleFamily() {} //<! Releases resources
 
  public:
 
   virtual void build() = 0;
 
-  //! set le flag pour gérer les particules ghost de la famille
+  //! Sets the flag to manage ghost particles for the family.
   virtual void setEnableGhostItems(bool value) = 0;
 
-  //! récupère le flag pour gérer les particules ghost de la famille
+  //! Retrieves the flag to manage ghost particles for the family.
   virtual bool getEnableGhostItems() const = 0;
 
  public:
 
-  //! Nom de la famille
+  //! Name of the family.
   virtual String name() const = 0;
 
-  //! Nom complet de la famille (avec celui du maillage)
+  //! Full name of the family (including the mesh name).
   virtual String fullName() const = 0;
 
-  //! Nombre d'entités
+  //! Number of entities.
   virtual Integer nbItem() const = 0;
 
-  //! Groupe de toutes les particules
+  //! Group of all particles.
   virtual ItemGroup allItems() const = 0;
 
  public:
 
   /*!
-   * \brief Alloue des particules
+   * \brief Allocates particles.
    *
-   * Alloue les particules dont les uniqueId() sont données par le
-   * tablea \a unique_ids.
+   * Allocates particles whose uniqueId() are given by the
+   * array \a unique_ids.
    *
-   * Après appel à cette opération, il faut appeler endUpdate() pour notifier
-   * à l'instance la fin des modifications. Il est possible d'enchaîner plusieurs
-   * allocations avant d'appeler endUpdate(). Attention, la vue retournée 
-   * peut être invalidée après l'appel à endUpdate() si la compression est active.
-   * \a items_local_id doit avoir le même nombre d'éléments que unique_ids.
+   * After calling this operation, you must call endUpdate() to notify
+   * the instance that modifications are finished. It is possible to chain several
+   * allocations before calling endUpdate(). Note that the returned view
+   * may be invalidated after calling endUpdate() if compression is active.
+   * \a items_local_id must have the same number of elements as unique_ids.
    */
   virtual ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
                                           Int32ArrayView items_local_id) = 0;
@@ -90,10 +91,10 @@ class ARCANE_CORE_EXPORT IParticleFamily
                                            Int32ArrayView items) = 0;
 
   /*!
-   * \brief Alloue des particules dans des mailles.
+   * \brief Allocates particles in cells.
    *
-   * Cette méthode est similaire à addParticles() mais permet de spécifier
-   * directement les mailles dans lesquelles seront créées les particules.
+   * This method is similar to addParticles() but allows specifying
+   * directly the cells in which the particles will be created.
    */
   virtual ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
                                           Int32ConstArrayView cells_local_id,
@@ -107,32 +108,32 @@ class ARCANE_CORE_EXPORT IParticleFamily
   virtual void endUpdate() = 0;
 
   /*!
-   * \brief Déplace la particule \a particle dans la maille \a new_cell.
+   * \brief Moves the particle \a particle into the cell \a new_cell.
    */
   virtual void setParticleCell(Particle particle, Cell new_cell) = 0;
 
   /*!
-   * \brief Déplace la list de particules \a particles dans les nouvelles mailles \a new_cells.
+   * \brief Moves the list of particles \a particles into the new cells \a new_cells.
    */
   virtual void setParticlesCell(ParticleVectorView particles, CellVectorView new_cells) = 0;
 
  public:
 
   /*!
-   * \brief Échange des entités.
+   * \brief Exchanging entities.
    *
-   * Cette méthode n'est supportée que pour les familles de particule.
-   * Pour les éléments du maillage comme les noeuds, faces ou maille, il faut utiliser IMesh::exchangeItems().
+   * This method is only supported for particle families.
+   * For mesh elements such as nodes, faces, or cells, you must use IMesh::exchangeItems().
    *
-   * Les nouveaux propriétaires des entités sont données par la itemsNewOwner().
+   * The new owners of the entities are given by itemsNewOwner().
    *
-   * Cette opération est bloquante et collective.
+   * This operation is blocking and collective.
    */
   virtual void exchangeParticles() = 0;
 
  public:
 
-  //! Interface sur la famille
+  //! Interface on the family.
   virtual IItemFamily* itemFamily() = 0;
 };
 
@@ -144,4 +145,4 @@ class ARCANE_CORE_EXPORT IParticleFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

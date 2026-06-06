@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Service.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Fichiers liés à l'utilisation des services.                               */
+/* Files related to service usage.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICE_H
 #define ARCANE_CORE_SERVICE_H

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableComputeFunction.h                       (C) 2000-2022 */
 /*                                                                           */
-/* Classe fonctor de recalcul d'une variable matériau.                       */
+/* Functor class for recalculating a material variable.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLECOMPUTEFUNCTION_H
 #define ARCANE_MATERIALS_MESHMATERIALVARIABLECOMPUTEFUNCTION_H
@@ -27,8 +27,9 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- \brief Interface de la classe fonctor de recalcul d'une variable.
+ \brief Interface for the functor class that recalculates a variable.
  */
 class MeshMaterialVariableComputeFunction
 : public IMeshMaterialVariableComputeFunction
@@ -46,7 +47,7 @@ class MeshMaterialVariableComputeFunction
   {
   }
 
-  //! Libère les ressources
+  //! Releases resources
   ~MeshMaterialVariableComputeFunction() override
   {
     delete m_functor;
@@ -54,7 +55,7 @@ class MeshMaterialVariableComputeFunction
 
  public:
 
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   void execute(IMeshMaterial* mat) override
   {
     m_functor->executeFunctor(mat);
@@ -79,5 +80,4 @@ class MeshMaterialVariableComputeFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

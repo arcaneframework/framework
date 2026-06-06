@@ -7,11 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* StringVariableReplace.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de remplacer les symboles d'une chaine de caractères    */
-/* par une autre chaine de caractères définie dans les arguments de          */
-/* lancement.                                                                */
-/* Un symbole est défini par une chaine de caractères entourée de @.         */
-/* Exemple : @mon_symbole@                                                   */
+/* Class allowing replacement of symbols in a character string with another  */
+/* character string defined in the launch arguments.                         */
+/* A symbol is defined by a character string enclosed in @.                  */
+/* Example: @my_symbol@                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H
 #define ARCANE_CORE_INTERNAL_STRINGVARIABLEREPLACE_H

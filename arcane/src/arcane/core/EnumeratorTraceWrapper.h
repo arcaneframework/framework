@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EnumeratorTraceWrapper.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Enumérateur sur des groupes d'entités du maillage.                        */
+/* Enumerator over groups of mesh entities.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ENUMERATORTRACEWRAPPER_H
 #define ARCANE_ENUMERATORTRACEWRAPPER_H
@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_TRACE_ENUMERATOR
-// Décommenter si on souhaite toujours activer les traces des énumérateurs
+// Uncomment if you want to always enable enumerator traces
 //#define ARCANE_TRACE_ENUMERATOR
 #endif
 
@@ -35,23 +35,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour les traces d'un énumérator.
+ * \brief Information for an enumerator's traces.
  */
 class EnumeratorTraceInfo
 {
  public:
 
-  //! Valeurs de compteurs hardware.
+  //! Hardware counter values.
   Int64ArrayView counters() { return Int64ArrayView(8, m_counters.data()); }
 
-  //! Temps du début en nanoseconde
+  //! Start time in nanoseconds
   Int64 beginTime() const { return m_begin_time; }
 
-  //! Positionne le temps de début
+  //! Sets the start time
   void setBeginTime(Int64 v) { m_begin_time = v; }
 
-  //! Positionne les informations de trace
+  //! Sets the trace information
   void setTraceInfo(const TraceInfo* ti)
   {
     if (ti) {
@@ -62,7 +63,7 @@ class EnumeratorTraceInfo
       m_has_trace_info = false;
   }
 
-  //! Informations de trace (ou nullptr) si aucune
+  //! Trace information (or nullptr) if none
   const TraceInfo* traceInfo() const
   {
     return (m_has_trace_info) ? &m_trace_info : nullptr;
@@ -78,15 +79,16 @@ class EnumeratorTraceInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Wrapper autour d'un énumérator pour les traces.
+ * \brief Wrapper around an enumerator for traces.
  *
- * \a TrueEnumerator est le type du véritable énumérateur et
- * \a TraceInterface celui de l'interface de gestion. Le type \a TraceInterface
- * doit posséder les propriétés suivantes:
- * - une méthode singleton() renvoyant une instance.
- * - une méthode enterEnumerator() et une méthode exitEnumerator() pour
- * chaque type d'énumérateur supporté.
+ * \a TrueEnumerator is the type of the actual enumerator and
+ * \a TraceInterface is that of the management interface. The type \a TraceInterface
+ * must have the following properties:
+ * - a singleton() method returning an instance.
+ * - an enterEnumerator() method and an exitEnumerator() method for
+ * each supported enumerator type.
  */
 template <typename TrueEnumerator, typename TracerInterface>
 class EnumeratorTraceWrapper
@@ -149,4 +151,4 @@ class EnumeratorTraceWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

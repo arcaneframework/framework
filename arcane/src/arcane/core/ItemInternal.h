@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInternal.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Partie interne d'une entité.                                              */
+/* Internal part of an entity.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMINTERNAL_H
 #define ARCANE_CORE_ITEMINTERNAL_H
@@ -62,9 +62,10 @@ class ItemInternalCompatibility;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour construire une instance de ItemBase
+ * \brief Class for building an instance of ItemBase
  */
 class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 {
@@ -79,37 +80,37 @@ class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations de connectivité, pour une famille d'entité,
- * permettant la transition entre les anciennes et nouvelles implémentations
- * des connectivités.
+ * \brief Connectivity information, for an entity family,
+ * allowing transition between old and new connectivity implementations.
  */
 class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 {
-  // IMPORTANT: Cette structure doit avoir le même agencement mémoire
-  // que la structure C# de même nom.
+  // IMPORTANT: This structure must have the same memory layout
+  // as the C# structure of the same name.
 
   friend class ItemBase;
   friend class ItemInternal;
   friend class Item;
 
-  // Pour accès à _setConnectivity*
+  // For access to _setConnectivity*
   friend mesh::IncrementalItemConnectivityBase;
   friend mesh::PolyhedralFamily;
   friend mesh::PolyhedralMeshImpl;
 
-  // Pour accès à m_items
+  // For access to m_items
   friend mesh::ItemFamily;
 
  private:
 
   /*!
-   * \brief Vue spécifique pour gérer les entités nulles.
+   * \brief Specific view to manage null entities.
    *
-   * Pour l'entité nulle, l'index vaut NULL_ITEM_LOCAL_ID (soit (-1)) et il faut
-   * pouvoir accéder à `m_data` avec cet indice ce qui n'est pas possible
-   * avec le ArrayView classique en mode check.
+   * For the null entity, the index is NULL_ITEM_LOCAL_ID (i.e., -1) and it must
+   * be possible to access `m_data` with this index, which is not possible
+   * with the classic ArrayView in check mode.
    */
   struct Int32View
   {
@@ -118,7 +119,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     {
 #ifdef ARCANE_CHECK
       if (index==NULL_ITEM_LOCAL_ID){
-        // Pour l'entité nulle, la taille doit être 0.
+        // For the null entity, the size must be 0.
         if (m_size!=0)
           arcaneRangeError(index,m_size);
       }
@@ -132,8 +133,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
       m_data = v.data();
       m_size = v.size();
     }
-    // Il faut que data[NULL_ITEM_LOCAL_ID] soit valide.
-    // Il faut donc que (data-1) pointe vers une adresse valide
+    // data[NULL_ITEM_LOCAL_ID] must be valid.
+    // Therefore, (data-1) must point to a valid address
     void setNull(const Int32* data)
     {
       m_data = data;
@@ -201,37 +202,37 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  private:
 
   /*!
-   * \brief localId() de la \a index-ème entité de type \a item_kind
-   * connectés à l'entité de de localid() \a lid.
+   * \brief localId() of the \a index-th entity of type \a item_kind
+   * connected to the entity with localid() \a lid.
    */
   constexpr Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
   {
     return m_container[item_kind].itemLocalId(lid,index);
   }
-  //! Nombre d'appel à itemLocalId()
+  //! Number of calls to itemLocalId()
   Int64 nbAccess() const { return 0; }
-  //! Nombre d'appel à itemLocalIds()
+  //! Number of calls to itemLocalIds()
   Int64 nbAccessAll() const { return 0; }
 
  private:
 
-  //! Positionne le tableau d'index des connectivités
+  //! Positions the connectivity index array
   void _setConnectivityIndex(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_container[item_kind].m_indexes = v;
   }
-  //! Positionne le tableau contenant la liste des connectivités
+  //! Positions the array containing the connectivity list
   void _setConnectivityList(Int32 item_kind, ArrayView<Int32> v)
   {
     m_container[item_kind].m_list = v;
     m_container[item_kind].m_offset = ConstArrayView<Int32>{};
   }
-  //! Positionne le tableau contenant le nombre d'entités connectées.
+  //! Positions the array containing the number of connected entities.
   void _setConnectivityNbItem(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_container[item_kind].m_nb_item = v;
   }
-  //! Positionne le nombre maximum d'entités connectées.
+  //! Positions the maximum number of connected entities.
   void _setMaxNbConnectedItem(Int32 item_kind,Int32 v)
   {
     m_kind_info[item_kind].m_max_nb_item = v;
@@ -239,19 +240,19 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
-  //! Tableau d'index des connectivités pour les entités de genre \a item_kind
+  //! Connectivity index array for entities of kind \a item_kind
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityIndex(Int32 item_kind) const
   {
     return m_container[item_kind].m_indexes;
   }
-  //! Tableau contenant la liste des connectivités pour les entités de genre \a item_kind
+  //! Array containing the connectivity list for entities of kind \a item_kind
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityList(Int32 item_kind) const
   {
     return m_container[item_kind].m_list;
   }
-  //! Tableau contenant le nombre d'entités connectées pour les entités de genre \a item_kind
+  //! Array containing the number of connected entities for entities of kind \a item_kind
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityNbItem(Int32 item_kind) const
   {
@@ -260,7 +261,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
-  //! Nombre maximum d'entités connectées.
+  //! Maximum number of connected entities.
   Int32 maxNbConnectedItem(Int32 item_kind) const
   {
     return m_kind_info[item_kind].m_max_nb_item;
@@ -297,8 +298,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  // Ces 4 méthodes sont encore utilisées par ItemBase via internalNodes(), internalEdges(), ...
-  // On pourra les supprimer quand ces méthodes obsolètes seront supprimées
+  // These 4 methods are still used by ItemBase via internalNodes(), internalEdges(), ...
+  // They can be removed when these obsolete methods are removed
   ItemInternalVectorView nodesV2(Int32 lid) const { return { A_INTERNAL_SI(node),_itemLocalIdListView(NODE_IDX,lid) }; }
   ItemInternalVectorView edgesV2(Int32 lid) const { return { A_INTERNAL_SI(edge),_itemLocalIdListView(EDGE_IDX,lid) }; }
   ItemInternalVectorView facesV2(Int32 lid) const { return { A_INTERNAL_SI(face),_itemLocalIdListView(FACE_IDX,lid) }; }
@@ -353,8 +354,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  // NOTE : à terme, il faudra fusionner cette classe avec ItemConnectivityContainerView
-  //! Conteneur des vues pour les informations de connectivité d'une famille
+  // NOTE : eventually, this class will be merged with ItemConnectivityContainerView
+  //! Container of views for the connectivity information of a family
   struct Container
   {
     impl::ItemLocalIdListContainerView itemLocalIdListView(Int32 lid) const
@@ -412,21 +413,22 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base pour les entités du maillage.
+ * \brief Base class for mesh entities.
  *
- * Cette classe est interne à %Arcane.
+ * This class is internal to %Arcane.
  *
- * Cette classe est normalement interne à Arcane et il est préférable d'utiliser
- * les versions spécialisés telles que Item, Node, Face, Edge, Cell, Particle
- * ou DoF.
+ * This class is normally internal to Arcane, and it is preferable to use
+ * specialized versions such as Item, Node, Face, Edge, Cell, Particle,
+ * or DoF.
  *
- * Les instances de cette classe sont des objets temporaires qui ne doivent
- * pas être conservés entre deux modifications topologiques du maillage s'il y
- * a des compressions (IItemFamily::compactItems()) lors de ces modifications.
+ * Instances of this class are temporary objects that should not be retained
+ * between two topological modifications of the mesh if compressions
+ * (IItemFamily::compactItems()) occur during these modifications.
  *
- * L'ensemble des méthodes de cette classe sont en lecture seule et ne
- * permettent pas de modifier une entité.
+ * All methods of this class are read-only and do not allow modification of
+ * an entity.
  */
 class ARCANE_CORE_EXPORT ItemBase
 : public ItemFlags
@@ -437,9 +439,9 @@ class ARCANE_CORE_EXPORT ItemBase
   friend Arcane::Materials::ConstituentItemSharedInfo;
   friend class ::Arcane::ItemEnumerator;
   friend MutableItemBase;
-  // Pour _internalActiveCells2().
+  // For _internalActiveCells2().
   friend class ::Arcane::Node;
-  // Pour _itemInternal()
+  // For _itemInternal()
   friend class ::Arcane::mesh::ItemFamily;
   friend class ::Arcane::mesh::MeshRefinement;
 
@@ -455,74 +457,74 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
-  // TODO: A supprimer à terme
+  // TODO: To be removed eventually
   inline ItemBase(ItemInternal* x);
 
  public:
 
-  //! Numéro local (au sous-domaine) de l'entité
+  //! Local number (in the subdomain) of the entity
   Int32 localId() const { return m_local_id; }
-  //! Numéro local (au sous-domaine) de l'entité
+  //! Local number (in the subdomain) of the entity
   inline ItemLocalId itemLocalId() const;
-  //! Numéro unique de l'entité
+  //! Unique number of the entity
   ItemUniqueId uniqueId() const
   {
 #ifdef ARCANE_CHECK
     if (m_local_id!=NULL_ITEM_LOCAL_ID)
       arcaneCheckAt((Integer)m_local_id,m_shared_info->m_unique_ids.size());
 #endif
-    // Ne pas utiliser l'accesseur normal car ce tableau peut etre utilise pour la maille
-    // nulle et dans ce cas m_local_id vaut NULL_ITEM_LOCAL_ID (qui est negatif)
-    // ce qui provoque une exception pour debordement de tableau.
+    // Do not use the normal accessor because this array can be used for the
+    // null mesh and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
+    // which causes an array overflow exception.
     return ItemUniqueId(m_shared_info->m_unique_ids.data()[m_local_id]);
   }
 
-  //! Numéro du sous-domaine propriétaire de l'entité
+  //! Number of the owning subdomain of the entity
   Int32 owner() const { return m_shared_info->_ownerV2(m_local_id); }
 
-  //! Flags de l'entité
+  //! Flags of the entity
   Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
 
-  //! Nombre de noeuds de l'entité
+  //! Number of nodes of the entity
   Integer nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
-  //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
+  //! Number of edges of the entity or number of edges connected to the entity (for nodes)
   Integer nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
-  //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
+  //! Number of faces of the entity or number of faces connected to the entity (for nodes and edges)
   Integer nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
-  //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
+  //! Number of cells connected to the entity (for nodes, edges, and faces)
   Integer nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
-  //! Nombre de parents pour l'AMR
+  //! Number of parents for AMR
   Int32 nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
-  //! Nombre d'enfants pour l'AMR
+  //! Number of children for AMR
   Int32 nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
-  //! Nombre de parent pour les sous-maillages
+  //! Number of parent for sub-meshes
   Integer nbParent() const { return m_shared_info->nbParent(); }
 
  public:
 
-  //! Type de l'entité
+  //! Type of the entity
   Int16 typeId() const { return m_shared_info->_typeId(m_local_id); }
-  //! Type de l'entité
+  //! Type of the entity
   ItemTypeId itemTypeId() const { return ItemTypeId(typeId()); }
-  //! Type de l'entité.
+  //! Type of the entity.
   ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(typeId()); }
 
-  //! @returns le niveau de raffinement de l'item courant. Si l'item
-  //! parent est \p NULL donc par convention il est au niveau 0,
-  //! sinon il est simplement au niveau que celui de son parent.
+  //! @returns the refinement level of the current item. If the parent item is
+  //\p NULL, it is conventionally at level 0; otherwise, it is simply at the
+  //level of its parent.
   inline Int32 level() const
   {
-    //! si je n'ai pas de parent donc j'ai été crée
-    //! directement à partir d'un fichier ou par l'utilisateur,
-    //! donc je suis un item de niveau 0
+    //! if I do not have a parent, I was created directly from a file
+    //! or by the user, so I am a level 0 item
     if (this->nbHParent() == 0)
       return 0;
-    //! sinon je suis au niveau supérieur que celui de mon parent
+    //! otherwise, I am at a higher level than my parent
     return (this->hParentBase(0).level() + 1);
   }
 
-  //! @returns \p true si l'item est un ancetre (i.e. a un
-  //! enfant actif ou un enfant ancetre), \p false sinon. Renvoie toujours \p false si l'AMR est désactivé.
+  //! @returns \p true if the item is an ancestor (i.e., has an active
+  //! child or an ancestor child), \p false otherwise. Always returns \p false
+  //! if AMR is disabled.
   inline bool isAncestor() const
   {
     if (this->isActive())
@@ -533,19 +535,19 @@ class ARCANE_CORE_EXPORT ItemBase
       return true;
     return this->hChildBase(0).isAncestor();
   }
-  //! @returns \p true si l'item a des enfants (actifs ou non),
-  //! \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
+  //! @returns \p true if the item has children (active or not), \p false
+  //! otherwise. Always returns \p false if AMR is disabled.
   inline bool hasHChildren () const
   {
-    if (this->nbHChildren() == 0) // TODO ? à vérifier !
+    if (this->nbHChildren() == 0) // TODO ? to check!
       return false;
     else
       return true;
   }
 
-  //! @returns \p true si l'item est actif (i.e. n'a pas de
-  //! descendants actifs), \p false  sinon. Notez qu'il suffit de vérifier
-  //! le premier enfant seulement. Renvoie toujours \p true si l'AMR est désactivé.
+  //! @returns \p true if the item is active (i.e., has no active descendants),
+  //! \p false otherwise. Note that it is sufficient to check only the first
+  //! child. Always returns \p true if AMR is disabled.
   inline bool isActive() const
   {
     if ( (flags() & II_Inactive) | (flags() & II_CoarsenInactive))
@@ -554,8 +556,9 @@ class ARCANE_CORE_EXPORT ItemBase
       return true;
   }
 
-  //! @returns \p true si l'item est subactif (i.e. pas actif et n'a pas de
-  //! descendants), \p false  sinon.Renvoie toujours \p false si l'AMR est désactivé.
+  //! @returns \p true if the item is subactive (i.e., not active and has
+  //! no descendants), \p false otherwise. Always returns \p false if AMR
+  //! is disabled.
   inline  bool isSubactive() const
   {
     if (this->isActive())
@@ -565,55 +568,55 @@ class ARCANE_CORE_EXPORT ItemBase
     return this->hChildBase(0).isSubactive();
   }
 
-  //! Famille dont est issue l'entité
+  //! Family the entity belongs to
   IItemFamily* family() const { return m_shared_info->m_item_family; }
-  //! Genre de l'entité
+  //! Kind of the entity
   eItemKind kind() const { return m_shared_info->m_item_kind; }
-  //! Vrai si l'entité est l'entité nulle
+  //! True if the entity is the null entity
   bool null() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
-  //! Vrai si l'entité est l'entité nulle
+  //! True if the entity is the null entity
   bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
-  //! Vrai si l'entité appartient au sous-domaine
+  //! True if the entity belongs to the subdomain
   bool isOwn() const { return ItemFlags::isOwn(flags()); }
   /*!
-   * \brief Vrai si l'entité est partagé d'autres sous-domaines.
+   * \brief True if the entity is shared by other subdomains.
    *
-   * Cette méthode n'est pertinente que si les informations de connectivités
-   * ont été calculées.
+   * This method is only relevant if the connectivity information has
+   * been calculated.
    */
   bool isShared() const { return ItemFlags::isShared(flags()); }
 
-  //! Vrai si l'entité est supprimée
+  //! True if the entity is suppressed
   bool isSuppressed() const { return (flags() & II_Suppressed)!=0; }
-  //! Vrai si l'entité est détachée
+  //! True if the entity is detached
   bool isDetached() const { return (flags() & II_Detached)!=0; }
 
-  //! \a true si l'entité est sur la frontière
+  //! \a true if the entity is on the boundary
   bool isBoundary() const { return ItemFlags::isBoundary(flags()); }
-  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  //! Cell connected to the entity if the entity is a boundary entity (0 if none)
   ItemBase boundaryCell() const { return (flags() & II_Boundary) ? cellBase(0) : ItemBase(); }
-  //! Maille derrière l'entité (nullItem() si aucune)
+  //! Cell behind the entity (nullItem() if none)
   ItemBase backCell() const
   {
     if (flags() & II_HasBackCell)
       return cellBase((flags() & II_BackCellIsFirst) ? 0 : 1);
     return {};
   }
-  //! Maille derrière l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  //! Cell behind the entity (NULL_ITEM_LOCAL_ID if none)
   Int32 backCellId() const
   {
     if (flags() & II_HasBackCell)
       return cellId((flags() & II_BackCellIsFirst) ? 0 : 1);
     return NULL_ITEM_LOCAL_ID;
   }
-  //! Maille devant l'entité (nullItem() si aucune)
+  //! Cell in front of the entity (nullItem() if none)
   ItemBase frontCell() const
   {
     if (flags() & II_HasFrontCell)
       return cellBase((flags() & II_FrontCellIsFirst) ? 0 : 1);
     return {};
   }
-  //! Maille devant l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  //! Cell in front of the entity (NULL_ITEM_LOCAL_ID if none)
   Int32 frontCellId() const
   {
     if (flags() & II_HasFrontCell)
@@ -626,10 +629,10 @@ class ARCANE_CORE_EXPORT ItemBase
       return faceBase(0);
     return {};
   }
-  //! \a true s'il s'agit de la face maître d'une interface
+  //! \a true if it is the master face of an interface
   inline bool isMasterFace() const { return flags() & II_MasterFace; }
 
-  //! \a true s'il s'agit d'une face esclave d'une interface
+  //! \a true if it is a slave face of an interface
   inline bool isSlaveFace() const { return flags() & II_SlaveFace; }
 
   Int32 parentId(Integer index) const { return m_shared_info->_parentLocalIdV2(m_local_id,index); }
@@ -644,14 +647,13 @@ class ARCANE_CORE_EXPORT ItemBase
   //@}
 
   /*!
-   * \brief Méthodes utilisant les nouvelles connectivités pour accéder
-   * aux informations de connectivité. A ne pas utiliser en dehors de Arcane.
+   * \brief Methods using the new connectivities to access connectivity
+   * information. Should not be used outside of Arcane.
    *
-   * \warning Ces méthodes ne doivent être appelées que sur les entités
-   * qui possèdent la connectivité associée ET qui sont au nouveau format.
-   * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
-   * connectivité maille/maille. En cas de mauvaise utilisation, cela
-   * se traduit par un débordement de tableau.
+   * \warning These methods must only be called on entities that possess
+   * the associated connectivity AND are in the new format. For example,
+   * this does not work on Cell->Cell because there is no cell/cell
+   * connectivity. Misuse results in an array overflow.
    */
   //@{
   ARCANE_DEPRECATED_REASON("Y2023: Use nodeList() instead.")
@@ -665,14 +667,13 @@ class ARCANE_CORE_EXPORT ItemBase
   //@}
 
   /*!
-   * \brief Méthodes utilisant les nouvelles connectivités pour accéder
-   * aux informations de connectivité. A ne pas utiliser en dehors de Arcane.
+   * \brief Methods using the new connectivities to access connectivity
+   * information. Should not be used outside of Arcane.
    *
-   * \warning Ces méthodes ne doivent être appelées que sur les entités
-   * qui possèdent la connectivité associée.
-   * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
-   * connectivité maille/maille. En cas de mauvaise utilisation, cela
-   * se traduit par un débordement de tableau.
+   * \warning These methods must only be called on entities that possess
+   * the associated connectivity. For example, this does not work on
+   * Cell->Cell because there is no cell/cell connectivity. Misuse results
+   * in an array overflow.
    */
   //@{
   impl::ItemIndexedListView<DynExtent> nodeList() const { return _connectivity()->nodeList(m_local_id); }
@@ -694,15 +695,15 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   inline ItemBase parentBase(Int32 index) const;
 
-  //! Retourne si les flags \a flags sont positionnées pour l'entité
+  //! Returns whether the flags \a flags are set for the entity
   bool hasFlags(Int32 flags) const { return (this->flags() & flags); }
 
  public:
 
  /*!
-   * @returns le rang de l'enfant \p (iitem).
-   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
-   * m_internal->hChild(rank) serait iitem;
+   * @returns the rank of the child \p (iitem).
+   * example: if rank = m_internal->whichChildAmI(iitem); then
+   * m_internal->hChild(rank) would be iitem;
    */
   Int32 whichChildAmI(Int32 local_id) const;
 
@@ -712,7 +713,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
-  //! Interface modifiable de cette entité
+  //! Mutable interface of this entity
   inline MutableItemBase toMutable();
 
  public:
@@ -733,17 +734,17 @@ class ARCANE_CORE_EXPORT ItemBase
  private:
 
   /*!
-   * \brief Numéro local (au sous-domaine) de l'entité.
+   * \brief Local number (in the subdomain) of the entity.
    *
-   * Pour des raisons de performance, le numéro local doit être
-   * le premier champs de la classe.
+   * For performance reasons, the local number must be
+   * the first field of the class.
    */
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
 
-  //! Champ servant uniquement à gérer explicitement l'alignement
+  //! Field used only to explicitly manage alignment
   Int32 m_padding = 0;
 
-  //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
+  //! Shared info between all entities with the same characteristics
   ItemSharedInfo* m_shared_info = nullptr;
 
  private:
@@ -768,17 +769,18 @@ class ARCANE_CORE_EXPORT ItemBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Méthodes permettant de modifier ItemBase.
+ * \brief Methods allowing modification of ItemBase.
  *
- * Ces méthodes sont internes à Arcane.
+ * These methods are internal to Arcane.
  */
 class ARCANE_CORE_EXPORT MutableItemBase
 : public ItemBase
 {
   friend class ::Arcane::Item;
   friend ItemBase;
-  // Pour _setFaceBackAndFrontCell()
+  // For _setFaceBackAndFrontCell()
   friend Arcane::mesh::FaceFamily;
 
  private:
@@ -796,7 +798,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
 
  public:
 
-  // TODO: A supprimer à terme
+  // TODO: To be removed eventually
   inline MutableItemBase(ItemInternal* x);
 
  public:
@@ -807,19 +809,19 @@ class ARCANE_CORE_EXPORT MutableItemBase
     m_shared_info->m_unique_ids[m_local_id] = uid;
   }
 
-  //! Annule l'uniqueId a la valeur NULL_ITEM_UNIQUE_ID
-  /*! Controle que la valeur à annuler est valid en mode ARCANE_CHECK */
+  //! Nullifies the uniqueId to the value NULL_ITEM_UNIQUE_ID
+  /*! Checks that the value to be canceled is valid in ARCANE_CHECK mode */
   void unsetUniqueId();
 
   /*!
-   * \brief Positionne le numéro du sous-domaine propriétaire de l'entité.
+   * \brief Sets the sub-domain number of the entity owner.
 
-    \a current_sub_domain est le numéro du sous-domaine appelant cette opération.
+    \a current_sub_domain is the sub-domain number calling this operation.
 
-    Après appel à cette fonction, il faut mettre à jour le maillage auquel cette entité
-    appartient en appelant la méthode IMesh::notifyOwnItemsChanged(). Il n'est pas
-    nécessaire de faire appel à cette méthode pour chaque appel de setOwn. Un seul
-    appel après l'ensemble des modification est nécessaire.
+    After calling this function, you must update the mesh to which this entity
+    belongs by calling the IMesh::notifyOwnItemsChanged() method. It is not
+    necessary to call this method for every call to setOwn. Only one
+    call after all modifications is necessary.
   */
   void setOwner(Integer suid,Int32 current_sub_domain)
   {
@@ -832,10 +834,10 @@ class ARCANE_CORE_EXPORT MutableItemBase
     setFlags(f);
   }
 
-  //! Positionne les flags de l'entité
+  //! Sets the entity flags
   void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id,f); }
 
-  //! Ajoute les flags \a added_flags à ceux de l'entité
+  //! Adds the flags \a added_flags to those of the entity
   void addFlags(Int32 added_flags)
   {
     Int32 f = this->flags();
@@ -843,7 +845,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
     this->setFlags(f);
   }
 
-  //! Supprime les flags \a removed_flags de ceux de l'entité
+  //! Removes the flags \a removed_flags from those of the entity
   void removeFlags(Int32 removed_flags)
   {
     Int32 f = this->flags();
@@ -851,7 +853,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
     this->setFlags(f);
   }
 
-  //! Positionne l'état détachée de l'entité
+  //! Sets the detached state of the entity
   void setDetached(bool v)
   {
     int f = flags();
@@ -873,8 +875,8 @@ class ARCANE_CORE_EXPORT MutableItemBase
   {
     m_local_id = local_id;
   }
- 
-  //! Positionne le \a i-ème parent (actuellement aindex doit valoir 0)
+
+  //! Sets the \a i-th parent (currently aindex must be 0)
   void setParent(Int32 aindex,Int32 parent_local_id)
   {
     m_shared_info->_setParentV2(m_local_id,aindex,parent_local_id);
@@ -891,46 +893,45 @@ class ARCANE_CORE_EXPORT MutableItemBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Structure interne d'une entité de maillage.
+ * \brief Internal structure of a mesh entity.
 
- Cette instance contient la structure interne d'une entité de maillage.
- Elle ne doit être manipulée que par ceux qui savent ce qu'il font...
+ This instance contains the internal structure of a mesh entity.
+ It should only be manipulated by those who know what they are doing...
 
- Pour utiliser une entité, il faut utiliser la classe Item ou l'une
- de ces classes dérivées.
+ To use an entity, you must use the Item class or one of its derived classes.
 
- En règle général, le maillage (IMesh) auquel l'entité appartient maintient
- différentes structures permettant de manipuler le maillage. Ces structures
- sont souvent recalculés dynamiquement lorsque cela est nécessaire (lazy
- evaluation). C'est le cas par exemple des groupes d'entités propres
- au sous-domaine ou de la table de conversion des numéros globaux en
- numéros locaux. C'est pourquoi il est primordial lorqu'on effectue
- une série de modifications d'instances de cette classe de notifier
- le maillage des changements effectués.
+ In general, the mesh (IMesh) to which the entity belongs maintains
+ different structures allowing the mesh to be manipulated. These structures
+ are often recalculated dynamically when necessary (lazy evaluation). This is
+ the case, for example, with sub-domain specific entity groups or the table
+ for converting global numbers to local numbers. This is why it is essential
+ when performing a series of modifications to instances of this class to
+ notify the mesh of the changes made.
  */
 class ARCANE_CORE_EXPORT ItemInternal
 : public impl::MutableItemBase
 {
-  // Pour accès à _setSharedInfo()
+  // For access to _setSharedInfo()
   friend class mesh::DynamicMeshKindInfos;
   friend class mesh::ItemFamily;
 
  public:
 
-  //! Entité nulle
+  //! Null entity
   static ItemInternal nullItemInternal;
   static ItemInternal* nullItem() { return &nullItemInternal; }
 
  public:
 
-  // Il faut utiliser la méthode correspondante de ItemBase
+  // You must use the corresponding method from ItemBase
 
-  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  //! Connected mesh to the entity if the entity is a boundary entity (0 if none)
   ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::boundaryCell() instead.")
   ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? _internalCell(0) : nullItem(); }
-  //! Maille derrière l'entité (nullItem() si aucune)
+  //! Mesh behind the entity (nullItem() if none)
   ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::backCell() instead.")
   ItemInternal* backCell() const
   {
@@ -938,7 +939,7 @@ class ARCANE_CORE_EXPORT ItemInternal
       return _internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
     return nullItem();
   }
-  //! Maille devant l'entité (nullItem() si aucune)
+  //! Mesh in front of the entity (nullItem() if none)
   ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::frontCell() instead.")
   ItemInternal* frontCell() const
   {
@@ -956,7 +957,7 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  //! Infos partagées de l'entité.
+  //! Shared information of the entity.
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
   ItemSharedInfo* sharedInfo() const { return m_shared_info; }
 
@@ -1001,33 +1002,33 @@ class ARCANE_CORE_EXPORT ItemInternal
  public:
 
   /*!
-   * \brief Pointeur sur la liste des parents.
+   * \brief Pointer to the list of parents.
    *
-   * Comme actuellement on ne supporte qu'un seul niveau il est uniquement autorisé
-   * de faire parentPtr()[0]. Cela ne permet aucune vérification et il est
-   * donc préférable d'utiliser parentId() ou setParent() à la place.
+   * Since currently only one level is supported, it is only allowed
+   * to call parentPtr()[0]. This does not allow any verification,
+   * so it is preferable to use parentId() or setParent() instead.
    *
-   * Au mois de juillet 2022 cette méthode n'est plus utilisée dans Arcane donc si
-   * aucun code ne l'utilise (ce qui devrait être le cas car il s'agit d'une méthode
-   * interne) on pourra la supprimer rapidement.
+   * As of July 2022, this method is no longer used in Arcane, so if
+   * no code uses it (which should be the case since it is an internal
+   * method), we can quickly remove it.
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use parentId() or setParent() instead")
   Int32* parentPtr() { return m_shared_info->_parentPtr(m_local_id); }
 
   /*!
-   * @returns le rang de l'enfant \p (iitem).
-   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
-   * m_internal->hChild(rank) serait iitem;
+   * @returns the rank of the child \p (iitem).
+   * Example: if rank = m_internal->whichChildAmI(iitem); then
+   * m_internal->hChild(rank) would be iitem;
    */
   Int32 whichChildAmI(const ItemInternal *iitem) const;
 
  public:
 
-  //! Mémoire nécessaire pour stocker les infos de l'entité
+  //! Memory required to store the entity information
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Integer neededMemory() const { return 0; }
 
-  //! Mémoire minimale nécessaire pour stocker les infos de l'entité (sans tampon)
+  //! Minimum memory required to store the entity information (without buffer)
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Integer minimumNeededMemory() const { return 0; }
 
@@ -1108,7 +1109,7 @@ ItemLocalId(ItemInternal* item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: ajouter vérification du bon type
+// TODO: add type check
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemInternal* item)
 : ItemLocalId(item->localId())
@@ -1166,13 +1167,13 @@ itemLocalId() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Méthodes pour conversions entre différentes classes de gestion
- * des entités
+ * \brief Methods for conversions between different entity management classes
  *
- * Cette classe est temporaire et interne à Arcane. Seules les classes 'friend'
- * peuvent l'utiliser.
+ * This class is temporary and internal to Arcane. Only 'friend' classes
+ * can use it.
  */
 class ItemInternalCompatibility
 {

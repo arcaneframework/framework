@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshReader.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service de lecture du maillage.                            */
+/* Interface of a mesh reading service.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHREADER_H
 #define ARCANE_CORE_IMESHREADER_H
@@ -24,50 +24,51 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface du service gérant la lecture d'un maillage.
+ * \brief Interface of the service managing the reading of a mesh.
  */
 class ARCANE_CORE_EXPORT IMeshReader
 {
  public:
 
-  //! Types des codes de retour d'une lecture ou écriture
+  //! Types of return codes for a read or write operation
   enum eReturnType
   {
-    RTOk, //!< Opération effectuée avec succès
-    RTError, //!< Erreur lors de l'opération
-    /*! \brief Non concerné par l'opération.
-     * Cela signifie que le format de fichier ne correspond
-     * pas à ce lecteur ou que le service ne prend pas en compte
-     * cette opération.
+    RTOk, //!< Operation successfully performed
+    RTError, //!< Error during the operation
+    /*! \brief Not relevant to the operation.
+     * This means that the file format does not match
+     * this reader or that the service does not support
+     * this operation.
      */
     RTIrrelevant
   };
 
  public:
 
-  virtual ~IMeshReader() = default; //!< Libère les ressources
+  virtual ~IMeshReader() = default; //!< Frees resources
 
  public:
 
-  //! Vérifie si le service supporte les fichiers avec l'extension \a str
+  //! Checks if the service supports files with the extension \a str
   virtual bool allowExtension(const String& str) = 0;
 
-  /*! \brief Lit un maillage à partir d'un fichier.
+  /*! \brief Reads a mesh from a file.
    *
-   * Lit la géométrie d'un maillage à partir du fichier \a file_name
-   * ainsi que les informations de découpage correspondantes
-   * et construit le maillage correspondant dans \a mesh.
+   * Reads the geometry of a mesh from the file \a file_name
+   * as well as the corresponding partitioning information
+   * and constructs the corresponding mesh in \a mesh.
    *
-   * Si \a use_internal_partition est vrai, cela signifie que le partitionnement
-   * n'est pas encore fait et qu'il sera fait par Arcane. Dans ce cas,
-   * un seul processeur peut lire le maillage. Cependant, les autres
-   * doivent tout de même créer tous les groupes possibles.
-   * Cet argument n'est utile qu'en parallèle.
+   * If \a use_internal_partition is true, it means that the partitioning
+   * has not yet been done and will be done by Arcane. In this case,
+   * only one processor can read the mesh. However, the others
+   * must still create all possible groups.
+   * This argument is only useful in parallel.
 
-   * Si \a dir_name n'est pas nul, ce chemim sert de base pour la lecture
-   * des maillages et informations de découpage.
+   * If \a dir_name is not null, this path serves as the base for reading
+   * meshes and partitioning information.
    */
   virtual eReturnType readMeshFromFile(IPrimaryMesh* mesh,
                                        const XmlNode& mesh_element,
@@ -84,5 +85,4 @@ class ARCANE_CORE_EXPORT IMeshReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemVariableArray.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Variable tableau aggrégée de types quelconques.                           */
+/* Aggregated variable array of arbitrary types.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMVARIABLEARRAY_H
 #define ARCANE_CORE_ANYITEM_ANYITEMVARIABLEARRAY_H
@@ -31,10 +31,10 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Variable tableau aggrégée de types quelconques (pas de variables tableaux)
- * ATTENTION Les variables arcane doivent être retaillées au préalable !!!
+ * \brief Aggregated variable array of arbitrary types (no variable arrays)
+ * WARNING Arcane variables must be resized beforehand!!!
  *
- * Par exemple :
+ * For example:
  *
  * AnyItem::Family family;
  *
@@ -58,7 +58,7 @@ class VariableArray : public IFamilyObserver
 public:
   
   /*!
-   * \brief Outil pour l'ajout de variable à un groupe
+   * \brief Tool for adding a variable to a group
    */
   class VariableAdder
   {
@@ -74,7 +74,7 @@ public:
       ARCANE_ASSERT((m_used == true),("VariableAdder never used"));
     }
     
-    //! Liaison d'un variable 
+    //! Binding of a variable 
     template<typename K, typename T>  
     inline void operator<<(MeshVariableArrayRefT<K,T>& v)
     {
@@ -84,7 +84,7 @@ public:
       m_used = true;
     }
     
-    //! Liaison d'une variable partielle
+    //! Binding of a partial variable
     template<typename K, typename T> 
     inline void operator<<(MeshPartialVariableArrayRefT<K,T>& v)
     {
@@ -95,13 +95,13 @@ public:
     }
   private:
     
-    //! Variable AnyItem
+    //! AnyItem variable
     VariableArray<DataType>& m_variable;
     
-    //! Groupe de la variable
+    //! Variable group
     const ItemGroup& m_group;
     
-    //! Indicateur sur l'utilisation du Adder 
+    //! Indicator of Adder usage 
     bool m_used;
   };
   
@@ -112,7 +112,7 @@ public:
     , m_values(m_family.groupSize())
     , m_variables(m_family.groupSize()) 
   {
-    // la famille enregistre les variables portées
+    // The family registers the carried variables
     m_family.registerObserver(*this);
     for(Integer i = 0; i < m_family.groupSize(); ++i)
       m_variables[i] = NULL;
@@ -123,37 +123,37 @@ public:
     , m_values(v.m_values)
     , m_variables(v.m_variables) 
   {
-    // la famille enregistre les variables portées
+    // The family registers the carried variables
     m_family.registerObserver(*this);
   }
   
   ~VariableArray()
   {
-    // la famille désenregistre la variable
+    // The family deregisters the variable
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
   }
   
-  //! Accesseur direct par un enumerateur AnyItem
+  //! Direct accessor by an AnyItem enumerator
   inline ArrayView<DataType> operator[](const Group::BlockItemEnumerator& item) {
     return m_values[item.groupIndex()][item.varIndex()];
   }
   
-  //! Accesseur direct par un enumerateur AnyItem
+  //! Direct accessor by an AnyItem enumerator
   inline ConstArrayView<DataType> operator[](const Group::BlockItemEnumerator & item) const {
     return m_values[item.groupIndex()][item.varIndex()];
   }
   
-  //! Accesseur direct par un élément de LinkFamily (LinkData)
+  //! Direct accessor by a LinkFamily element (LinkData)
   inline ArrayView<DataType> operator[](const LinkFamily::LinkData & item) {
     return m_values[item.groupIndex()][item.varIndex()];
   }
   
-  //! Accesseur direct par un élément de LinkFamily (LinkData)
+  //! Direct accessor by a LinkFamily element (LinkData)
   inline ConstArrayView<DataType> operator[](const LinkFamily::LinkData & item) const {
     return m_values[item.groupIndex()][item.varIndex()];
   }
 
-  //! Ajout d'une variable pour un groupe
+  //! Addition of a variable for a group
   inline VariableAdder operator[](const ItemGroup& group) 
   {
     return VariableAdder(*this,group);
@@ -165,39 +165,39 @@ public:
     return VariableAdder(*this,group);
   }
 
-  //! Accesseur à la famille
+  //! Accessor to the family
   inline const Family& family() const { return m_family; }
 
-  //! Tableau des variables
+  //! Array of variables
   inline ConstArrayView< IVariable* > variables() const 
   {
     return m_variables;
   } 
   
-  //! Doonnées brutes associées à un groupe identifié relativement à sa famille
+  //! Raw data associated with a group identified relative to its family
   inline Array2View<DataType> valuesAtGroup(const Integer igrp)
   {
     return m_values[igrp];
   }
 
-  //! Doonnées brutes associées à un groupe identifié relativement à sa famille
+  //! Raw data associated with a group identified relative to its family
   inline ConstArray2View<DataType> valuesAtGroup(const Integer igrp) const
   {
     return m_values[igrp];
   }
 
-  //! Notification d'invalidation de la famille
+  //! Notification of family invalidation
   inline void notifyFamilyIsInvalidate() {
-    // Si la famille change, on invalide les variables et on retaille
+    // If the family changes, we invalidate the variables and resize
     m_values.resize(m_family.groupSize());
     m_variables.resize(m_family.groupSize());
     for(Integer i = 0; i < m_family.groupSize(); ++i)
       m_variables[i] = NULL; 
   }
 
-  //! Notification d'aggrandissement de la famille
+  //! Notification of family enlargement
   inline void notifyFamilyIsIncreased() {
-    // Si la famille est agrandie, on retaille simplement
+    // If the family is enlarged, we simply resize
     const Integer old_size = m_values.size();
     ARCANE_ASSERT((old_size < m_family.groupSize()),("Old size greater than new size!"));
     m_values.resize(m_family.groupSize());
@@ -229,13 +229,13 @@ private:
 
 private:
   
-  //! Famille AnyItem des groupes
+  //! AnyItem family of groups
   const Family m_family;
 
-  //! Conteneur des variables génériques
+  //! Container of generic variables
   Arcane::UniqueArray< Array2View<DataType> > m_values;
 
-  //! Conteneur des variables
+  //! Container of variables
   Arcane::UniqueArray< IVariable* > m_variables;
 };
 

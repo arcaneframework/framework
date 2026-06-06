@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshToMeshTransposer.cc                                     (C) 2000-2009 */
 /*                                                                           */
-/* Opérateur de transposition entre sous-maillages.                          */
+/* Operator for transposition between sub-meshes.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,11 +34,11 @@ ARCANE_BEGIN_NAMESPACE
 eItemKind
 MeshToMeshTransposer::
 kindTranspose(eItemKind kindA, IMesh * meshA, IMesh * meshB) {
-  // Cas des noeuds qui sont toujours de dimension fixe
+  // Case of nodes which are always of fixed dimension
   if (kindA == IK_Node) return IK_Node;
 
-  // On garde la hiérarchie Node <= Edge <= Face <= Cell
-  // même si parfois en faible dimension certaines notions collapsent.
+  // We keep the hierarchy Node <= Edge <= Face <= Cell
+  // even if sometimes in low dimensions certain notions collapse.
   Integer dimA = meshA->dimension();
   Integer dimB = meshB->dimension();
 
@@ -56,14 +56,14 @@ kindTranspose(eItemKind kindA, IMesh * meshA, IMesh * meshB) {
     throw FatalErrorException(A_FUNCINFO,"Cannot transpose unknown kind");
   }
 
-  iKind = iKind - dimB + dimA; // transposition numérique (kindA+dimA==kindB+dimB)
+  iKind = iKind - dimB + dimA; // numerical transposition (kindA+dimA==kindB+dimB)
   
   eItemKind i2k_mapper[4] = { IK_Node, IK_Edge, IK_Face, IK_Cell };
   if (iKind < 0 || iKind > 3)
     throw FatalErrorException(A_FUNCINFO,"Cannot transpose unknown dimension");
   eItemKind kindB = i2k_mapper[iKind];
 
-  // Gestion de la condensation de dimension
+  // Handling of dimension condensation
   if (kindB == IK_Edge && dimB < 3) kindB = IK_Node;
   else if (kindB == IK_Face && dimB < 2) kindB = IK_Node;
 
@@ -82,8 +82,8 @@ transpose(IMesh * meshA, IMesh * meshB, ItemVectorView itemsA, bool do_fatal)
   if (itemsA.size() == 0)
     return ItemVector();
 
-  // On doit calculer la transition sur le kind
-  eItemKind kindA = itemsA[0].kind(); // vu que itemsA n'est pas vide
+  // We must calculate the transition on the kind
+  eItemKind kindA = itemsA[0].kind(); // since itemsA is not empty
   eItemKind kindB = kindTranspose(kindA,meshA,meshB);
   IItemFamily * familyA = meshA->itemFamily(kindA);
   IItemFamily * familyB = meshB->itemFamily(kindB);
@@ -115,9 +115,9 @@ _transpose(IItemFamily * familyA, IItemFamily * familyB, const ItemVectorView & 
   IItemFamily * parent_familyA = familyA->parentFamily();
   IItemFamily * parent_familyB = familyB->parentFamily();
 
-  // Ne traite que la transposition sur un seul niveau
+  // Only processes transposition on a single level
   if (parent_familyA == familyB) {
-    // meshA est sous-maillage de meshB
+    // meshA is a sub-mesh of meshB
     UniqueArray<Int32> lidsB(itemsA.size(),NULL_ITEM_LOCAL_ID);
     ENUMERATE_ITEM(iitem,itemsA) {
       const Item & item = *iitem;
@@ -126,10 +126,10 @@ _transpose(IItemFamily * familyA, IItemFamily * familyB, const ItemVectorView & 
     return ItemVector(familyB,lidsB);
   }
   else if (parent_familyB == familyA) {
-    // meshB est sous-maillage de meshA
+    // meshB is a sub-mesh of meshA
     if (kindB==IK_Node || kindB==IK_Face || kindB==IK_Edge || kindB==IK_Cell ) {
-      // Actuellement les uids sont les mêmes entre sous-maillages et maillage parent 
-      // Par transitivité, cela revient à chercher les uids de itemsA dans meshB
+      // Currently the uids are the same between sub-meshes and parent mesh 
+      // By transitivity, this comes down to searching for the uids of itemsA in meshB
       UniqueArray<Int64> uidsA(itemsA.size());
       ENUMERATE_ITEM(iitem,itemsA) {
         uidsA[iitem.index()] = iitem->uniqueId();
@@ -142,13 +142,13 @@ _transpose(IItemFamily * familyA, IItemFamily * familyB, const ItemVectorView & 
       throw NotImplementedException(A_FUNCINFO,"Cannot only transpose item to cell or node");
     }
   } else if (familyA == familyB) {
-    // même maillage
+    // same mesh
     return ItemVector(familyB,itemsA.localIds());
   } else {
     throw NotImplementedException(A_FUNCINFO,String::format("Cannot transpose between families {0}::{1} and {2}::{3}",familyA->mesh()->name(),familyA->name(),familyA->mesh()->name(),familyB->name()));
   }
 
-//   // L'implémentation suppose et vérifie que meshA et meshB ont le même maillage parent
+//   // The implementation assumes and verifies that meshA and meshB have the same parent mesh
 //   {
 //     IMesh * masterSupportA = meshA;
 //     while (masterSupportA->parentMesh()) {

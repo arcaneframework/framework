@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionSimple.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Option du jeu de données de type simple .                                 */
+/* Simple data set option.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -131,15 +131,15 @@ _search(bool is_phase1)
     }
   }
 
-  // Liste des options de la ligne de commande.
+  // List of command line options.
   {
     const ParameterListWithCaseOption& params = caseMng()->_internalImpl()->parameters();
     const ParameterCaseOption pco{ params.getParameterCaseOption(doc->language()) };
 
     String reference_input = pco.getParameterOrNull(String::format("{0}/{1}", rootElement().xpathFullName(), velem_name), 1, false);
     if (!reference_input.null()) {
-      // Si l'utilisateur a spécifié une option qui n'est pas présente dans le
-      // jeu de données, on doit la créer.
+      // If the user specified an option that is not present in the
+      // data set, we must create it.
       if (velem.null()) {
         velem = rootElement().createElement(name());
       }
@@ -159,7 +159,7 @@ _search(bool is_phase1)
   if (!physical_unit.null()){
     _setPhysicalUnit(physical_unit);
     if (_allowPhysicalUnit()){
-      //TODO: VERIFIER QU'IL Y A UNE DEFAULT_PHYSICAL_UNIT.
+      //TODO: CHECK IF THERE IS A DEFAULT_PHYSICAL_UNIT.
       m_unit_converter = caseMng()->physicalUnitSystem()->createConverter(physical_unit,defaultPhysicalUnit());
     }
     else
@@ -196,7 +196,7 @@ _searchFunction(XmlNode& velem)
   if (velem.null())
     return;
 
-  // Recherche une éventuelle fonction associée
+  // Search for a possible associated function
   String fname = caseDocumentFragment()->caseNodeNames()->function_ref;
   String func_name = velem.attrValue(fname);
   if (func_name.null())
@@ -209,7 +209,7 @@ _searchFunction(XmlNode& velem)
                   << ">: no function named <" << func_name << ">";
   }
 
-  // Recherche s'il s'agit d'une fonction standard
+  // Check if it is a standard function
   IStandardFunction* sf = dynamic_cast<IStandardFunction*>(func);
   if (sf){
     msg->info() << "Use standard function: " << func_name;
@@ -274,15 +274,15 @@ visit(ICaseDocumentVisitor* visitor) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Prise en compte du système d'unité mais uniquement pour
- * les options de type 'Real' ou 'RealArray'.
- * TODO: voir si c'est intéressant pour les autres types
- * comme Real2, Real3.
- * Pour les types intégraux comme 'Integer', il ne vaut mieux
- * pas supporter les conversions car cela risque de faire des valeurs
- * trop grandes ou nulle si la conversion donne un nombre inférieur à 1
- * (par exemple, 5 centimètres convertie en mètre donne 0).
+ * Taking into account the unit system but only for
+ * 'Real' or 'RealArray' type options.
+ * TODO: see if it is interesting for other types
+ * like Real2, Real3.
+ * For integer types like 'Integer', it is better not to support conversions because this risks resulting in values
+ * that are too large or zero if the conversion results in a number less than 1
+ * (for example, 5 centimeters converted to meters gives 0).
  */
 template<typename DataType> static void
 _checkPhysicalConvert(IPhysicalUnitConverter* converter,DataType& value)
@@ -304,7 +304,7 @@ static void
 _checkPhysicalConvert(IPhysicalUnitConverter* converter,RealUniqueArray& values)
 {
   if (converter){
-    //TODO utiliser tableau local pour eviter allocation
+    //TODO use local array to avoid allocation
     RealUniqueArray input_values(values);
     converter->convert(input_values,values);
   }
@@ -363,10 +363,10 @@ _allowPhysicalUnit()
 
 namespace
 {
-// Cette classe a pour but de supprimer les blancs en début et fin de
-// chaîne sauf si \a Type est une 'String'.
-// Si le type attendu n'est pas une 'String', on considère que les blancs
-// en début et fin ne sont pas significatifs.
+// This class aims to remove whitespace at the beginning and end of
+// a string unless the Type is a 'String'.
+// If the expected type is not a 'String', we consider that leading and trailing whitespace
+// is not significant.
 template<typename Type>
 class StringCollapser
 {
@@ -389,13 +389,14 @@ class StringCollapser<String>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Cherche la valeur de l'option dans le jeu de données.
+ * \brief Searches for the option value in the data set.
  *
- * La valeur trouvée est stockée dans \a m_value.
+ * The found value is stored in \a m_value.
  *
- * Si la valeur n'est pas présente dans le jeu de données, regarde s'il
- * existe une valeur par défaut et utilise cette dernière.
+ * If the value is not present in the data set, it checks if there is a
+ * default value and uses it.
  */
 template<typename T> void CaseOptionSimpleT<T>::
 _search(bool is_phase1)
@@ -405,8 +406,8 @@ _search(bool is_phase1)
     return;
   ICaseDocumentFragment* doc = caseDocumentFragment();
 
-  // Si l'option n'est pas présente dans le jeu de données, on prend
-  // l'option par défaut, sauf si l'option est facultative
+  // If the option is not present in the data set, we take
+  // the default option, unless the option is optional
   String str_val = (_element().null()) ? _defaultValue() : _element().value();
   bool has_valid_value = true;
   if (str_val.null()){
@@ -441,11 +442,11 @@ _search(bool is_phase1)
 template<typename T> void CaseOptionSimpleT<T>::
 setDefaultValue(const Type& def_value)
 {
-  // Si on a une valeur donnée par l'utilisateur, on ne fait rien.
+  // If a value is provided by the user, we do nothing.
   if (isPresent())
     return;
 
-  // Valeur déjà initialisée. Dans ce cas on remplace aussi la valeur actuelle.
+  // Value already initialized. In this case, we also replace the current value.
   if (_isInitialized())
     m_value = def_value;
 
@@ -645,13 +646,14 @@ _allowPhysicalUnit()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Cherche la valeur de l'option dans le jeu de donnée.
+ * \brief Searches for the option value in the dataset.
  *
- * La valeur trouvée est stockée dans \a m_value.
+ * The found value is stored in \a m_value.
  *
- * Si la valeur n'est pas présente dans le jeu de donnée, regarde s'il
- * existe une valeur par défaut et utilise cette dernière.
+ * If the value is not present in the dataset, it checks if
+ * there is a default value and uses it.
  */
 template <typename T>
 void CaseOptionMultiSimpleT<T>::
@@ -664,7 +666,7 @@ _search(bool is_phase1)
   const ParameterCaseOption pco{ params.getParameterCaseOption(caseDocumentFragment()->language()) };
 
   String full_xpath = String::format("{0}/{1}", rootElement().xpathFullName(), name());
-  // !!! En XML, on commence par 1 et non 0.
+  // !!! In XML, we start at 1 and not 0.
   UniqueArray<Integer> option_in_param;
   pco.indexesInParam(full_xpath, option_in_param, false);
 
@@ -714,9 +716,8 @@ _search(bool is_phase1)
       throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
     }
   }
-  // Il y aura toujours au moins min_occurs options.
-  // S'il n'y a pas assez l'options dans le jeu de données et dans les paramètres de la
-  // ligne de commande, on ajoute des services par défaut (si pas de défaut, il y aura un plantage).
+  // There will always be at least min_occurs options.
+  // If there are not enough options in the dataset and in the command line parameters, we add default values (if there is no default, there will be a crash).
   Integer final_size = std::max(asize, std::max(min_occurs, max_in_param));
 
   const Type* old_value = m_view.data();
@@ -726,22 +727,22 @@ _search(bool is_phase1)
   m_view = ArrayViewType(final_size, ptr_value);
   this->_setArray(ptr_value, final_size);
 
-  // D'abord, on aura les options du jeu de données : comme on ne peut pas définir un indice
-  // pour les options dans le jeu de données, elles seront forcément au début et seront contigües.
-  // Puis, s'il manque des options pour atteindre le min_occurs, on ajoute des options par défaut.
-  // S'il n'y a pas d'option par défaut, il y aura une exception.
-  // Enfin, l'utilisateur peut avoir ajouté des options à partir de la ligne de commande. On les ajoute alors.
-  // Si l'utilisateur souhaite modifier des valeurs du jeu de données à partir de la ligne de commande, on
-  // remplace les options au fur et à mesure de la lecture.
+  // First, we will have the dataset options: since we cannot define an index
+  // for options in the dataset, they will necessarily be at the beginning and will be contiguous.
+  // Then, if options are missing to reach min_occurs, we add default options.
+  // If there is no default option, there will be an exception.
+  // Finally, the user may have added options from the command line. We add them then.
+  // If the user wants to modify dataset values from the command line, we
+  // replace the options as we read them.
   for (Integer i = 0; i < final_size; ++i) {
     String str_val;
 
-    // Partie paramètres de la ligne de commande.
+    // Command line parameters part.
     if (option_in_param.contains(i + 1)) {
       str_val = pco.getParameterOrNull(full_xpath, i + 1, false);
     }
 
-    // Partie jeu de données.
+    // Dataset part.
     else if (i < asize) {
       XmlNode velem = elem_list[i];
       if (!velem.null()) {
@@ -749,17 +750,17 @@ _search(bool is_phase1)
       }
     }
 
-    // Valeur par défaut.
+    // Default value.
     if (str_val.null()) {
       str_val = _defaultValue();
     }
     else {
-      // Dans un else : Le remplacement de symboles ne s'applique pas pour les valeurs par défault du .axl.
+      // In an else: Symbol replacement does not apply to default values in the .axl.
       str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
     }
 
-    // Maintenant, ce plantage concerne aussi le cas où il n'y a pas de valeurs par défaut et qu'il n'y a
-    // pas assez d'options pour atteindre le min_occurs.
+    // Now, this crash also concerns the case where there are no default values and there
+    // are not enough options to reach min_occurs.
     if (str_val.null())
       CaseOptionError::addOptionNotFoundError(caseDocumentFragment(), A_FUNCINFO,
                                               name(), rootElement());

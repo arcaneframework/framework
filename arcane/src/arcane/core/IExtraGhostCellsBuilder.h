@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IExtraGhostCellsBuilder.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un constructeur de mailles fantômes "extraordinaires"         */
+/* Interface of a builder for "extraordinary" ghost cells                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IEXTRAGHOSTCELLSBUILDER_H
 #define ARCANE_CORE_IEXTRAGHOSTCELLSBUILDER_H
@@ -24,37 +24,38 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un constructeur de mailles fantômes "extraordinaires"  
+ * \brief Interface of a builder for "extraordinary" ghost cells
  *
- * Une maille fantôme "extraordinaire" est une maille fantôme ajoutée aux
- * mailles fantômes définies par la connectivité du maillage. En particulier,
- * le calcul des mailles fantômes extraordinaires est effectué à chaque mise
- * à jour du maillage ou équilibrage de charge.
+ * An "extraordinary" ghost cell is a ghost cell added to the
+ * ghost cells defined by the mesh connectivity. Specifically,
+ * the calculation of extraordinary ghost cells is performed at every update
+ * of the mesh or load balancing.
  *
- * \note Rend obsolète le paramètre \a remove_old_ghost de la méthode IMesh::endUpdate().
+ * \note Makes the \a remove_old_ghost parameter of the IMesh::endUpdate() method obsolete.
  */
 class IExtraGhostCellsBuilder
 {
  public:
   
-  virtual ~IExtraGhostCellsBuilder() {} //!< Libère les ressources.
+  virtual ~IExtraGhostCellsBuilder() {} //!< Frees resources.
   
  public:
 
   /*!
-   * \brief Calcul des mailles "extraordinaires" à envoyer.
+   * \brief Calculates the "extraordinary" cells to send.
    *
-   * Effectue le calcul des mailles "extraordinaires" suivant
-   * un algorithme de construction  
+   * Performs the calculation of "extraordinary" cells following
+   * a construction algorithm
    */
   virtual void computeExtraCellsToSend() =0;
 
   /*!
-   * \brief Indices locaux des mailles "extraordinaires" pour envoi.
+   * \brief Local indices of "extraordinary" cells for sending.
    *
-   * Récupère le tableau des mailles "extraordinaires" à destination
-   * du sous-domaine \a sid
+   * Retrieves the array of "extraordinary" cells destined
+   * for subdomain \a sid
    */
   virtual Int32ConstArrayView extraCellsToSend(Int32 rank) const =0;
 };
@@ -67,5 +68,4 @@ class IExtraGhostCellsBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

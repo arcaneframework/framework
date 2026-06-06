@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IPropertyMng.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des propriétés.                                 */
+/* Interface of the property manager.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPROPERTYMNG_H
 #define ARCANE_CORE_IPROPERTYMNG_H
@@ -31,14 +31,15 @@ class IObservable;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire des propriétés.
+ * \brief Interface of the property manager.
  */
 class IPropertyMng
 {
  public:
 
-  virtual ~IPropertyMng() {} //!< Libère les ressources.
+  virtual ~IPropertyMng() {} //!< Frees the resources.
 
  public:
 
@@ -48,51 +49,51 @@ class IPropertyMng
 
   /*!
    * \internal
-   * \brief Récupère la liste de propriétés de nom complet \a full_name.
+   * \brief Retrieves the list of properties by full name \a full_name.
    *
-   * Cette méthode ne doit être appelée que par la classe Properties.
-   * Pour récupérer une instance, il faut utiliser le constructeur de Properties.
+   * This method must only be called by the Properties class.
+   * To retrieve an instance, the Properties constructor must be used.
    */
   virtual PropertiesImpl* getPropertiesImpl(const String& full_name) =0;
 
   /*!
    * \internal
-   * \brief Enregister les propriétés référencées par \a p.
+   * \brief Registers the properties referenced by \a p.
    */
   virtual void registerProperties(const Properties& p) =0;
 
-  //! Supprime les propriétés référencées par \a p
+  //! Deletes the properties referenced by \a p
   virtual void destroyProperties(const Properties& p) =0;
 
-  //! Effectue la sérialisation
+  //! Performs serialization
   virtual void serialize(ISerializer* serializer) =0;
 
-  //! Sérialise les informations de propriété dans \a bytes.
+  //! Serializes property information into \a bytes.
   virtual void writeTo(ByteArray& bytes) =0;
 
   /*!
-   * \brief Relit les informations sérialisées contenues dans \a bytes.
+   * \brief Reads the serialized information contained in \a bytes.
    *
-   * Le tableau \a bytes doit avoir été créé par un appel à writeTo().
+   * The \a bytes array must have been created by a call to writeTo().
    */
   virtual void readFrom(Span<const Byte> bytes) =0;
 
-  //! Affiche les propriétés et leurs valeurs sur le flot \a o
+  //! Prints the properties and their values to the stream \a o
   virtual void print(std::ostream& o) const =0;
 
   /*!
-   * \brief Observable pour l'écriture.
+   * \brief Observable for writing.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * au début de writeTo().
+   * The observers registered in this observable are called
+   * at the beginning of writeTo().
    */
   virtual IObservable* writeObservable() =0;
 
   /*!
-   * \brief Observable pour la lecture.
+   * \brief Observable for reading.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * à la fin de readFrom().
+   * The observers registered in this observable are called
+   * at the end of readFrom().
    */
   virtual IObservable* readObservable() =0;
 };
@@ -105,5 +106,4 @@ class IPropertyMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

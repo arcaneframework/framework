@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimpleProperty.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation basique d'une propriété.                                   */
+/* Basic implementation of a property.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SIMPLEPROPERTY_H
 #define ARCANE_CORE_SIMPLEPROPERTY_H
@@ -49,9 +49,10 @@ class SimplePropertyTraitsT<String>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation basique d'une propriété en lecture seule.
+ * \brief Basic implementation of a read-only property.
  */
 template<class T>
 class SimpleReadOnlyPropertyT
@@ -78,9 +79,10 @@ class SimpleReadOnlyPropertyT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation basique d'une propriété.
+ * \brief Basic implementation of a property.
  */
 template<class T>
 class SimplePropertyT
@@ -112,4 +114,4 @@ class SimplePropertyT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

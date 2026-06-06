@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemPairGroupImpl.cc                                        (C) 2000-2021 */
 /*                                                                           */
-/* Implémentation d'un tableau de listes d'entités.                          */
+/* Implementation of an array of lists of entities.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,9 +30,10 @@ namespace Arcane
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'un groupe nul.
+ * \brief Null group class.
  */
 class ItemPairGroupImplNull
 : public ItemPairGroupImpl
@@ -40,7 +41,7 @@ class ItemPairGroupImplNull
  public:
 
   ItemPairGroupImplNull() : ItemPairGroupImpl() {}
-  virtual ~ItemPairGroupImplNull() {} //!< Libère les ressources
+  virtual ~ItemPairGroupImplNull() {} //!< Frees resources
 
  public:
  private:
@@ -68,15 +69,15 @@ class ItemPairGroupImplPrivate
 
  public:
 
-  IMesh* m_mesh; //!< Gestionnare de groupe associé
-  IItemFamily* m_item_family; //!< Famille associée
-  IItemFamily* m_sub_item_family; //!< Famille associée
+  IMesh* m_mesh; //!< Associated group manager
+  IItemFamily* m_item_family; //!< Associated family
+  IItemFamily* m_sub_item_family; //!< Associated family
   ItemGroup m_item_group;
   ItemGroup m_sub_item_group;
-  bool m_is_null; //!< \a true si le groupe est nul
-  eItemKind m_kind; //!< Genre de entités du groupe
+  bool m_is_null; //!< True if the group is null
+  eItemKind m_kind; //!< Kind of entities in the group
   eItemKind m_sub_kind;
-  bool m_need_recompute; //!< Vrai si le groupe doit être recalculé
+  bool m_need_recompute; //!< True if the group must be recalculated
   
   UniqueArray<Int64> m_indexes;
   UniqueArray<Int32> m_sub_items_local_id;
@@ -201,8 +202,9 @@ ItemPairGroupImpl::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo a supprimer...
+ * \todo To be deleted...
  */
 void ItemPairGroupImpl::
 deleteMe()

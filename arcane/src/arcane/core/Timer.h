@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Timer.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'un timer.                                                       */
+/* Management of a timer.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_TIMER_H
 #define ARCANE_CORE_TIMER_H
@@ -32,79 +32,80 @@ class ITimeStats;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'un timer.
+ * \brief Management of a timer.
 
- * Une instance de cette classe permet de mesurer le temps passé entre son
- * activation par la méthode start() et son arrêt par la méthode stop().
+ * An instance of this class allows measuring the time elapsed between its
+ * activation via the start() method and its stopping via the stop() method.
 
- * Le timer peut être utilisé plusieurs fois et il est possible de
- * connaître à la fois le nombre d'activation (nbActivated()) et le temps
- * total passé dans ses activations successives (totalTime()).
+ * The timer can be used multiple times, and it is possible to
+ * know both the number of activations (nbActivated()) and the total time
+ * spent in its successive activations (totalTime()).
 
- * Il existe deux modes de fonctionnement:
+ * There are two operating modes:
  * <ul>
- * <li>#TimerVirtual: le timer utilise le temps CPU du processus. Ce temps
- * est constant quelle que soit la charge de la machine;</li>
- * <li>#TimerReal: le timer utilise le temps réel. La résolution de ce timer est
- * en général meilleure qu'avec le type précédent mais elle n'est significative
- * que lorsque la machine est dédiée au processus.</li>
+ * <li>#TimerVirtual: the timer uses the CPU time of the process. This time
+ * is constant regardless of the machine load;</li>
+ * <li>#TimerReal: the timer uses real time. The resolution of this timer is
+ * generally better than with the previous type, but it is only significant
+ * when the machine is dedicated to the process.</li>
  * </ul>
  *
- * \note Depuis la version 3.6 de %Arcane, le #TimerVirtual est obsolète et
- * la valeur retournée sera équivalent à #TimerReal.
+ * \note Since version 3.6 of %Arcane, #TimerVirtual is obsolete and
+ * the returned value will be equivalent to #TimerReal.
  *
-* La résolution du timer dépend de la machine. Elle est de l'ordre de la
- * milliseconde pour les timers utilisant le temps CPU et de l'ordre de
- * la microseconde pour les timers utilisant le temps réel.
+* The timer resolution depends on the machine. It is on the order of
+* milliseconds for timers using CPU time and on the order of
+* microseconds for timers using real time.
  */
 class ARCANE_CORE_EXPORT Timer
 {
  public:
 
-  //! Type du timer
+  //! Timer type
   enum eTimerType
   {
     /*!
-     * \brief Timer utilisant le temps CPU (obsolète).
+     * \brief Timer using CPU time (obsolete).
      *
-     * \deprecated Ce timer n'est plus utilisé et se comporte comme
-     * le temps horloge (TimerReal).
+     * \deprecated This timer is no longer used and behaves like
+     * the clock time (TimerReal).
      */
     TimerVirtual,
-    //! Timer utilisant le temps réel
+    //! Timer using real time
     TimerReal
   };
 
  public:
   
   /*!
-   * \brief Sentinelle pour le timer.
-   * La sentinelle associée à un timer permet de déclancher celui-ci
-   * au moment de sa construction et de l'arrêter au moment de sa
-   * destruction. Cela assure que le timer sera bien arrêté en cas
-   * d'exception par exemple.
+   * \brief Sentinel for the timer.
+   * The sentinel associated with a timer allows it to be triggered
+   * upon its construction and stopped upon its
+   * destruction. This ensures that the timer will be properly stopped in case
+   * of an exception, for example.
    */
   class ARCANE_CORE_EXPORT Sentry
   {
    public:
-    //! Associe le timer \a t et le démarre
+    //! Associates the timer \a t and starts it
     Sentry(Timer* t) : m_timer(t)
       { m_timer->start(); }
-    //! Stoppe le timer associé
+    //! Stops the associated timer
     ~Sentry()
       { m_timer->stop(); }
    private:
-    Timer* m_timer; //!< Timer associé
+    Timer* m_timer; //!< Associated timer
   };
 
   /*!
-   * \brief Postionne le nom de l'action en cours d'exécution.
+   * \brief Positions the name of the currently executing action.
    *
-   * Le nom d'une action peut-être n'importe quoi. Il est
-   * juste utilisé pour différencier les différentes partie d'une
-   * exécution et connaître le temps de chacune d'elle.
-   * Les actions doivent s'imbriquent les unes dans les autres
+   * An action name can be anything. It is
+   * just used to differentiate the different parts of a
+   * run and to know the time of each one.
+   * Actions must be nested within each other
    */
   class ARCANE_CORE_EXPORT Action
   {
@@ -122,7 +123,7 @@ class ARCANE_CORE_EXPORT Timer
   };
 
   /*!
-   * \brief Positionne la phase de l'action en cours d'exécution.
+   * \brief Positions the phase of the currently executing action.
    */
   class ARCANE_CORE_EXPORT Phase
   {
@@ -133,18 +134,18 @@ class ARCANE_CORE_EXPORT Timer
     ~Phase();
    public:
    private:
-    ITimeStats* m_stats; //!< Gestionnaire de sous-domaine
+    ITimeStats* m_stats; //!< Sub-domain manager
     eTimePhase m_phase_type;
    private:
     void _init();
   };
 
   /*!
-   * \brief Affiche le temps passé entre l'appel au constructeur et le destructeur.
+   * \brief Displays the time elapsed between the call to the constructor and the destructor.
    *
-   * Cette classe permet de simplement afficher au moment du destructeur,
-   * le temps réel écoulé depuis l'appel au constructeur. L'affichage se fait
-   * via la méthode info() du ITraceMng.
+   * This class allows simply displaying, at the time of the destructor,
+   * the real time elapsed since the call to the constructor. The display is done
+   * via the info() method of ITraceMng.
    * \code
    * {
    *   Timer::SimplePrinter sp(traceMng(),"myFunction");
@@ -170,64 +171,64 @@ class ARCANE_CORE_EXPORT Timer
  public:
 
   /*!
-   * \brief Construit un timer.
+   * \brief Constructs a timer.
    *
-   * Construit un timer lié au sous-domaine \a sd, de nom \a name et de
+   * Constructs a timer linked to the sub-domain \a sd, with name \a name and
    * type \a type.
    */
   Timer(ISubDomain* sd,const String& name,eTimerType type);
 
   /*!
-   * \brief Construit un timer.
+   * \brief Constructs a timer.
    *
-   * Construit un timer lié au gestionnaire \a tm, de nom \a name et de
+   * Constructs a timer linked to the manager \a tm, with name \a name and
    * type \a type.
    */
   Timer(ITimerMng* tm,const String& name,eTimerType type);
 
-  ~Timer(); //!< Libère les ressources
+  ~Timer(); //!< Frees resources
 
  public:
 	
   /*!
-   * \brief Active le timer.
+   * \brief Activates the timer.
    *
-   * Si le timer est déjà actif, cette méthode ne fait rien.
+   * If the timer is already active, this method does nothing.
    */
   void start();
 
   /*!
-   * \brief Désactive le timer.
+   * \brief Deactivates the timer.
    *
-   * Si le timer n'est pas actif au moment de l'appel, cette méthode ne
-   * fait rien.
+   * If the timer is not active at the time of the call, this method does not
+   * do anything.
    *
-   * \return le temps écoulé (en secondes) depuis la dernière activation.
+   * \return the time elapsed (in seconds) since the last activation.
    */
   Real stop();
 
-  //! Retourne l'état d'activation du timer
+  //! Returns the activation status of the timer
   bool isActivated() const { return m_is_activated; }
 
-  //! Retourne le nom du timer
+  //! Returns the name of the timer
   const String& name() const { return m_name; }
 
-  //! Retourne le temps total (en secondes) passé dans le timer
+  //! Returns the total time (in seconds) spent in the timer
   Real totalTime() const { return m_total_time; }
 
-  //! Retourne le temps (en secondes) passé lors de la dernière activation du timer
+  //! Returns the time (in seconds) spent during the last activation of the timer
   Real lastActivationTime() const { return m_activation_time; }
 
-  //! Retourne le nombre de fois que le timer a été activé
+  //! Returns the number of times the timer has been activated
   Integer nbActivated() const { return m_nb_activated; }
 
-  //! Retourne le type du temps utilisé
+  //! Returns the type of time used
   eTimerType type() const { return m_type; }
 
-  //! Remet à zéro les compteurs de temps
+  //! Resets the time counters
   void reset();
 
-  //! Gestionnaire associé à ce timer.
+  //! Manager associated with this timer.
   ITimerMng* timerMng() const { return m_timer_mng; }
  public:
   static TimeMetricAction phaseAction(ITimeStats* s,eTimePhase phase);
@@ -238,14 +239,14 @@ class ARCANE_CORE_EXPORT Timer
   Real _startTime() const { return m_start_time; }
  private:
 
-  ITimerMng* m_timer_mng; //!< Gestionnaire de timer
-  eTimerType m_type; //!< Type du timer
-  Integer m_nb_activated; //!< Nombre de fois que le timer a été activé
-  bool m_is_activated; //!< \a true si le timer est actif
-  Real m_activation_time; //!< Temps passé lors de la dernière activation
-  Real m_total_time; //!< Temps total passé dans le timer
-  String m_name; //!< Nom du timer
-  Real m_start_time; //!< Temps du début de la dernière activation
+  ITimerMng* m_timer_mng; //!< Timer manager
+  eTimerType m_type; //!< Timer type
+  Integer m_nb_activated; //!< Number of times the timer has been activated
+  bool m_is_activated; //!< \a true if the timer is active
+  Real m_activation_time; //!< Time spent during the last activation
+  Real m_total_time; //!< Total time spent in the timer
+  String m_name; //!< Timer name
+  Real m_start_time; //!< Time of the start of the last activation
 };
 
 /*---------------------------------------------------------------------------*/
@@ -256,5 +257,4 @@ class ARCANE_CORE_EXPORT Timer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

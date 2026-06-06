@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemEnumeratorBase.h                                        (C) 2000-2024 */
 /*                                                                           */
-/* Classe de base des énumérateurs sur les entités du maillage.              */
+/* Base class for enumerators over mesh entities.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMENUMERATORBASE_H
 #define ARCANE_CORE_ITEMENUMERATORBASE_H
@@ -31,8 +31,9 @@ class ItemGroupImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Représente un index d'une énumération sur une entité.
+ * \brief Represents an index of an enumeration over an entity.
  */
 class ItemEnumeratorIndex
 {
@@ -52,8 +53,9 @@ class ItemEnumeratorIndex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Représente un index d'une énumération sur une entité \a ItemType.
+ * \brief Represents an index of an enumeration over an entity \a ItemType.
  */
 template <typename ItemType>
 class ItemEnumeratorIndexT
@@ -69,11 +71,11 @@ class ItemEnumeratorIndexT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des énumérateurs sur une liste d'entité.
+ * \brief Base class for enumerators over a list of entities.
  *
- * Les instances de cette classes sont créées soit via ItemEnumerator, soit
- * via ItemEnumeratorT.
+ * Instances of this class are created either via ItemEnumerator or via ItemEnumeratorT.
  */
 class ItemEnumeratorBase
 {
@@ -85,21 +87,21 @@ class ItemEnumeratorBase
 
   ItemEnumeratorBase() = default;
   ItemEnumeratorBase(const ItemInternalPtr*, const Int32* local_ids, Integer n, const ItemGroupImpl* agroup)
-  // TODO: gérer offset
+  // TODO: manage offset
   : m_view(local_ids, n, 0)
   , m_group_impl(agroup)
   {}
   explicit ItemEnumeratorBase(const Int32ConstArrayView& local_ids)
-  // TODO: gérer offset
+  // TODO: manage offset
   : m_view(local_ids, 0)
   , m_group_impl(nullptr)
   {}
   ItemEnumeratorBase(const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup)
-  // TODO: gérer offset
+  // TODO: manage offset
   : m_view(local_ids, 0)
   , m_group_impl(agroup)
   {}
-  // TODO: A supprimer
+  // TODO: To be removed
   ItemEnumeratorBase(const ItemInternalVectorView& view, const ItemGroupImpl* agroup)
   : m_view(view.localIds(), view.m_local_id_offset)
   , m_group_impl(agroup)
@@ -115,36 +117,36 @@ class ItemEnumeratorBase
 
  public:
 
-  //! Incrémente l'index de l'énumérateur
+  //! Increments the enumerator index
   constexpr void operator++() { ++m_index; }
   constexpr bool operator()() { return m_index < m_view.m_size; }
 
-  //! Vrai si on n'a pas atteint la fin de l'énumérateur (index()<count())
+  //! True if the end of the enumerator has not been reached (index()<count())
   constexpr bool hasNext() { return m_index < m_view.m_size; }
 
-  //! Nombre d'éléments de l'énumérateur
+  //! Number of elements in the enumerator
   constexpr Integer count() const { return m_view.m_size; }
 
-  //! Indice courant de l'énumérateur
+  //! Current index of the enumerator
   constexpr Integer index() const { return m_index; }
 
-  //! localId() de l'entité courante.
+  //! localId() of the current entity.
   Int32 itemLocalId() const { return m_view.localId(m_index); }
 
-  //! localId() de l'entité courante.
+  //! localId() of the current entity.
   Int32 localId() const { return m_view.localId(m_index); }
 
   /*!
    * \internal
-   * \brief Indices locaux.
+   * \brief Local indices.
    */
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane")
   constexpr const Int32* unguardedLocalIds() const { return m_view.m_local_ids; }
 
   /*!
-   * \brief Groupe sous-jacent s'il existe (nullptr sinon)
+   * \brief Underlying group if it exists (nullptr otherwise).
    *
-   * \brief Ceci vise à pouvoir tester que les accès par ce énumérateur sur un objet partiel sont licites.
+   * \brief This aims to test that accesses via this enumerator on a partial object are legitimate.
    */
   constexpr const ItemGroupImpl* group() const { return m_group_impl; }
 
@@ -154,11 +156,11 @@ class ItemEnumeratorBase
 
   impl::ItemLocalIdListContainerView m_view;
   Int32 m_index = 0;
-  const ItemGroupImpl* m_group_impl = nullptr; // pourrait être retiré en mode release si nécessaire
+  const ItemGroupImpl* m_group_impl = nullptr; // could be removed in release mode if necessary
 
  protected:
 
-  //! Constructeur seulement utilisé par fromItemEnumerator()
+  //! Constructor only used by fromItemEnumerator()
   ItemEnumeratorBase(const ItemEnumerator& rhs, bool);
 
   ItemEnumeratorBase(const impl::ItemLocalIdListContainerView& view, Int32 index, const ItemGroupImpl* agroup)
@@ -187,11 +189,11 @@ class ItemEnumeratorBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des énumérateurs sur une liste d'entité.
+ * \brief Base class for enumerators over a list of entities.
  *
- * Les instances de cette classes sont créées soit via ItemEnumerator, soit
- * via ItemEnumeratorT.
+ * Instances of this class are created either via ItemEnumerator or via ItemEnumeratorT.
  */
 template <typename ItemType>
 class ItemEnumeratorBaseT
@@ -211,12 +213,12 @@ class ItemEnumeratorBaseT
   : BaseClass()
   , m_item(NULL_ITEM_LOCAL_ID, ItemSharedInfo::nullInstance())
   {}
-  // TODO: gérer offset
+  // TODO: manage offset
   ItemEnumeratorBaseT(ItemSharedInfo* shared_info, const Int32ConstArrayView& local_ids)
   : BaseClass(local_ids)
   , m_item(NULL_ITEM_LOCAL_ID, shared_info)
   {}
-  // TODO: gérer offset
+  // TODO: manage offset
   ItemEnumeratorBaseT(const ItemInfoListView& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup)
   : BaseClass(local_ids, agroup)
   , m_item(NULL_ITEM_LOCAL_ID, items.m_item_shared_info)
@@ -250,34 +252,34 @@ class ItemEnumeratorBaseT
 
  protected:
 
-  // TODO: a supprimer
+  // TODO: to be removed
   ItemEnumeratorBaseT(const ItemInternalPtr* items, const Int32* local_ids, Integer n, const ItemGroupImpl* agroup)
   : BaseClass(items, local_ids, n, agroup)
   {
     _init(items);
   }
-  // TODO: a supprimer
+  // TODO: to be removed
   ItemEnumeratorBaseT(const ItemInternalArrayView& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup)
   : BaseClass(local_ids, agroup)
   {
     _init(items.data());
   }
-  // TODO: a supprimer
+  // TODO: to be removed
   ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs);
 
  public:
 
   /*!
    * \internal
-   * \brief Liste des ItemInternal.
-   * NOTE: Dans Arcane, méthode utilisée uniquement pour le wrapper C#. A supprimer ensuite
+   * \brief List of ItemInternal.
+   * NOTE: In Arcane, this method is used only for the C# wrapper. To be removed later.
    */
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane")
   constexpr const ItemInternalPtr* unguardedItems() const { return _unguardedItems(m_item.m_shared_info); }
 
   /*!
    * \internal
-   * \brief Partie interne (pour usage interne uniquement).
+   * \brief Internal part (for internal use only).
    */
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane")
   constexpr ItemInternal* internal() const { return _internal(m_item.m_shared_info); }
@@ -317,7 +319,7 @@ class ItemEnumeratorBaseT
 
  protected:
 
-  //! Constructeur seulement utilisé par fromItemEnumerator()
+  //! Constructor only used by fromItemEnumerator()
   ItemEnumeratorBaseT(const ItemEnumerator& rhs, bool);
 
   ItemEnumeratorBaseT(const impl::ItemLocalIdListContainerView& view, Int32 index,

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupRangeIterator.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Intervalle d'itération sur les entités d'un groupe du maillage.           */
+/* Iteration range over the entities of a mesh group.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMGROUPRANGEITERATOR_H
 #define ARCANE_CORE_ITEMGROUPRANGEITERATOR_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Iterateur sur les éléments d'un groupe.
+ * \brief Iterator over the elements of a group.
  */
 class ARCANE_CORE_EXPORT ItemGroupRangeIterator
 {
@@ -72,8 +73,9 @@ class ARCANE_CORE_EXPORT ItemGroupRangeIterator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Intervalle d'itération sur un groupe d'entités de maillage.
+ * \brief Iteration range over a group of mesh entities.
  */
 template <typename T>
 class ItemGroupRangeIteratorT

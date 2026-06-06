@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicService.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un service lié à un sous-domaine.                        */
+/* Base class of a service linked to a subdomain.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_BASICSERVICE_H
 #define ARCANE_CORE_BASICSERVICE_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base de service lié à un sous-domaine.
+ * \brief Base class of a service linked to a subdomain.
  *
  * \ingroup Service
  */
@@ -42,7 +43,7 @@ class ARCANE_CORE_EXPORT BasicService
 
  public:
 
-  ~BasicService() override; //!< Libère les ressources.
+  ~BasicService() override; //!< Releases resources.
 
  public:
 
@@ -61,5 +62,4 @@ class ARCANE_CORE_EXPORT BasicService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

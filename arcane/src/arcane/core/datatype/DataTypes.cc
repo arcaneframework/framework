@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataTypes.cc                                                (C) 2000-2024 */
 /*                                                                           */
-/* Définition des types liés aux données.                                    */
+/* Definition of data-related types.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,11 +28,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file DataTypes.h
  *
- * \brief Fichier contenant les définitions des types de données gérés par %Arcane.
+ * \brief File containing the definitions of data types managed by %Arcane.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,7 +53,7 @@ namespace
     DataTypeNames::N_UNKNOWN
   };
 
-  //! Taille d'un élément du type
+  //! Size of an element of the type
   int ALL_SIZEOF[NB_ARCANE_DATA_TYPE] = {
     sizeof(Byte), sizeof(Real),
     sizeof(Int16), sizeof(Int32), sizeof(Int64),
@@ -119,7 +121,7 @@ dataTypeSize(eDataType type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Trouve le type associé à \a name. Envoie une exception en cas d'erreur
+//! Finds the type associated with \a name. Sends an exception in case of error
 extern "C++" ARCANE_DATATYPE_EXPORT eDataType
 dataTypeFromName(const char* name)
 {
@@ -320,4 +322,3 @@ defaultValue() -> Real2x2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

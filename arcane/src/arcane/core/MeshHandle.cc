@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshHandle.cc                                               (C) 2000-2023 */
 /*                                                                           */
-/* Handle sur un maillage.                                                   */
+/* Handle on a mesh.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO rendre ce constructeur privé à IMeshMng pour éviter d'avoir des
-// doublons possibles pour les MeshHandle associés au même nom de maillage.
+
+// TODO make this constructor private to IMeshMng to avoid
+// possible duplicates for MeshHandles associated with the same mesh name.
 MeshHandle::MeshHandleRef::
 MeshHandleRef(ISubDomain* sd,const String& name)
 : m_mesh_name(name)
@@ -74,14 +75,14 @@ _setMesh(IMesh* mesh)
 void MeshHandle::MeshHandleRef::
 _destroyMesh()
 {
-  // TODO: protéger les appels multiples
+  // TODO: protect against multiple calls
   IMesh* mesh = m_mesh_ptr;
   if (!mesh)
     return;
   m_on_destroy_observable->notifyAllObservers();
   m_user_data_list->clear();
-  // Attention à ne mettre à nul que à la fin de cette routine car les
-  // utilisateurs de \a m_user_data peuvent avoir besoin de ce MeshHandle.
+  // Be careful not to set to null until the end of this routine because the
+  // users of \a m_user_data might need this MeshHandle.
   m_mesh_ptr = nullptr;
   delete mesh;
 }
@@ -135,8 +136,8 @@ mesh() const
   IMesh* m = m_ref->mesh();
   if (m)
     return m;
-  // A terme, faire un fatal si le maillage est nul. Pour des raisons de
-  // compatibilité avec l'existant, on retourne 'nullptr'.
+  // Eventually, make a fatal error if the mesh is null. For reasons of
+  // compatibility with the existing code, we return 'nullptr'.
   bool do_fatal = m_ref->isDoFatalInMeshMethod();
   if (do_fatal)
     ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");

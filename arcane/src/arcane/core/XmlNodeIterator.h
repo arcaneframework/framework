@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlNodeIterator.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Iterator sur les noeuds d'un arbre DOM.                                   */
+/* Iterator over the nodes of a DOM tree.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLNODEITERATOR_H
 #define ARCANE_CORE_XMLNODEITERATOR_H
@@ -123,8 +123,9 @@ end() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur sur les fils d'un noeud \a from de nom \a ref_name.
+ * \brief Iterator over the children of a node \a from with name \a ref_name.
  */
 class XmlNodeNameIterator
 {
@@ -158,5 +159,4 @@ class XmlNodeNameIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

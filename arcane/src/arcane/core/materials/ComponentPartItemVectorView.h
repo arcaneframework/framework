@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentPartItemVectorView.h                               (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur un vecteur sur une partie des entités composants.                 */
+/* View over a vector of component entity parts.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTPARTITEMVECTORVIEW_H
 #define ARCANE_CORE_MATERIALS_COMPONENTPARTITEMVECTORVIEW_H
@@ -27,9 +27,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur une partie pure ou partielles des entités d'un composant.
+ * \brief View over pure or partial entities of a component.
  */
 class ARCANE_CORE_EXPORT ComponentPartItemVectorView
 {
@@ -39,11 +40,11 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
  protected:
 
   /*!
-   * \brief Construit une vue sur une partie des entité du composant \a component.
+   * \brief Constructs a view over a part of the component entities \a component.
    *
-   * Ce constructeur n'est en principe pas appelé directement. Pour construire
-   * une telle vue il est préférable de passer par les méthodes
-   * IMeshComponent::pureItems(), IMeshComponent::impureItems() ou
+   * This constructor is generally not called directly. To construct
+   * such a view, it is preferable to use the methods
+   * IMeshComponent::pureItems(), IMeshComponent::impureItems() or
    * IMeshComponent::partItems().
    */
   ComponentPartItemVectorView(IMeshComponent* component, Int32 component_part_index,
@@ -62,60 +63,61 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
 
  public:
 
-  //! Construit une vue non initialisée
+  //! Constructs an uninitialized view
   ComponentPartItemVectorView() = default;
 
  public:
 
-  //! Nombre d'entités dans la vue
+  //! Number of entities in the view
   Integer nbItem() const { return m_value_indexes.size(); }
 
-  //! Composant associé
+  //! Associated component
   IMeshComponent* component() const { return m_component; }
 
-  // Index de la partie de ce composant (équivalent à MatVarIndex::arrayIndex()).
+  // Index of the part of this component (equivalent to MatVarIndex::arrayIndex()).
   Int32 componentPartIndex() const { return m_component_part_index; }
 
-  //! Liste des valueIndex() de la partie
+  //! List of valueIndex() of the part
   Int32ConstArrayView valueIndexes() const { return m_value_indexes; }
 
-  //! Liste des indices dans \a itemsInternal() des entités.
+  //! List of indices into \a itemsInternal() of the entities.
   Int32ConstArrayView itemIndexes() const { return m_item_indexes; }
 
-  //! Partie du composant.
+  //! Part of the component.
   eMatPart part() const { return m_part; }
 
  protected:
 
-  //! Tableau parties internes des entités
+  //! Internal list of constituent items
   const ConstituentItemLocalIdListView& constituentItemListView() const { return m_constituent_list_view; }
 
  private:
 
-  //! Gestionnaire de constituants
+  //! Constituent manager
   IMeshComponent* m_component = nullptr;
 
-  //! Indice du constituant pour l'accès aux valeurs partielles.
+  //! Constituent index for accessing partial values.
   Int32 m_component_part_index = -1;
 
-  //! Liste des valueIndex() de la partie
+  //! List of valueIndex() of the part
   Int32ConstArrayView m_value_indexes;
 
-  //! Liste des indices dans \a m_items_internal de chaque maille matériau.
+  //! List of indices into \a m_items_internal for each material mesh.
   Int32ConstArrayView m_item_indexes;
 
-  //! Liste des ComponentItemInternal* pour ce constituant.
+  //! List of ComponentItemInternal* for this constituent.
   ConstituentItemLocalIdListView m_constituent_list_view;
 
-  //! Partie du constituant
+  //! Part of the constituent
   eMatPart m_part = eMatPart::Pure;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur la partie pure d'un composant.
+ * \brief View over the pure part of a component.
  */
 class ARCANE_CORE_EXPORT ComponentPurePartItemVectorView
 : public ComponentPartItemVectorView
@@ -126,7 +128,7 @@ class ARCANE_CORE_EXPORT ComponentPurePartItemVectorView
 
  private:
 
-  //! Construit une vue sur une partie des entité du composant \a component.
+  //! Constructs a view over a part of the component entities \a component.
   ComponentPurePartItemVectorView(IMeshComponent* component,
                                   Int32ConstArrayView value_indexes,
                                   Int32ConstArrayView item_indexes,
@@ -137,15 +139,16 @@ class ARCANE_CORE_EXPORT ComponentPurePartItemVectorView
 
  public:
 
-  //! Construit une vue non initialisée
+  //! Constructs an uninitialized view
   ComponentPurePartItemVectorView() = default;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur la partie impure d'un composant.
+ * \brief View over the impure part of a component.
  */
 class ARCANE_CORE_EXPORT ComponentImpurePartItemVectorView
 : public ComponentPartItemVectorView
@@ -156,7 +159,7 @@ class ARCANE_CORE_EXPORT ComponentImpurePartItemVectorView
 
  private:
 
-  //! Construit une vue sur une partie des entité du composant \a component.
+  //! Constructs a view over a part of the component entities \a component.
   ComponentImpurePartItemVectorView(IMeshComponent* component,
                                     Int32 component_part_index,
                                     Int32ConstArrayView value_indexes,
@@ -169,7 +172,7 @@ class ARCANE_CORE_EXPORT ComponentImpurePartItemVectorView
 
  public:
 
-  //! Construit une vue non initialisée
+  //! Constructs an uninitialized view
   ComponentImpurePartItemVectorView() = default;
 };
 
@@ -178,23 +181,25 @@ class ARCANE_CORE_EXPORT ComponentImpurePartItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur une partie pure ou partielles des entités d'un matériau.
+ * \brief View over pure or partial entities of a material.
  */
 class ARCANE_CORE_EXPORT MatPartItemVectorView
 : public ComponentPartItemVectorView
 {
  public:
 
-  //! Construit une vue pour le matériau \a material.
+  //! Constructs a view for the material \a material.
   MatPartItemVectorView(IMeshMaterial* material,const ComponentPartItemVectorView& view);
-  //! Construit une vue non initialisée
+
+  //! Constructs an uninitialized view
   MatPartItemVectorView() = default;
 
  public:
 
-  //! Matériau associé
+  //! Associated material
   IMeshMaterial* material() const { return m_material; }
 
  private:
@@ -204,19 +209,21 @@ class ARCANE_CORE_EXPORT MatPartItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur la partie pure des entités d'un matériau.
+ * \brief View over the pure part of the entities of a material.
  */
 class ARCANE_CORE_EXPORT MatPurePartItemVectorView
 : public MatPartItemVectorView
 {
  public:
 
-  //! Construit une vue pour le matériau \a material.
+  //! Constructs a view for the material \a material.
   MatPurePartItemVectorView(IMeshMaterial* material,const ComponentPurePartItemVectorView& view)
   : MatPartItemVectorView(material,view) {}
-  //! Construit une vue non initialisée
+
+  //! Constructs an uninitialized view
   MatPurePartItemVectorView() : MatPartItemVectorView(){}
 
  public:
@@ -230,19 +237,21 @@ class ARCANE_CORE_EXPORT MatPurePartItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur la partie impure des entités d'un matériau.
+ * \brief View over the impure part of the entities of a material.
  */
 class ARCANE_CORE_EXPORT MatImpurePartItemVectorView
 : public MatPartItemVectorView
 {
  public:
 
-  //! Construit une vue pour le matériau \a material.
+  //! Constructs a view for the material \a material.
   MatImpurePartItemVectorView(IMeshMaterial* material,const ComponentImpurePartItemVectorView& view)
   : MatPartItemVectorView(material,view) {}
-  //! Construit une vue non initialisée
+
+  //! Constructs an uninitialized view
   MatImpurePartItemVectorView() : MatPartItemVectorView(){}
 
  public:
@@ -260,23 +269,25 @@ class ARCANE_CORE_EXPORT MatImpurePartItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur une partie pure ou partielles des entités d'un milieu.
+ * \brief View over pure or partial entities of an environment.
  */
 class ARCANE_CORE_EXPORT EnvPartItemVectorView
 : public ComponentPartItemVectorView
 {
  public:
 
-  //! Construit une vue pour le milieu \a env.
+  //! Constructs a view for the environment \a env.
   EnvPartItemVectorView(IMeshEnvironment* env,const ComponentPartItemVectorView& view);
-  //! Construit une vue non initialisée
+
+  //! Constructs an uninitialized view
   EnvPartItemVectorView() = default;
 
  public:
 
-  //! Matériau associé
+  //! Associated environment
   IMeshEnvironment* environment() const { return m_environment; }
 
  private:
@@ -286,19 +297,21 @@ class ARCANE_CORE_EXPORT EnvPartItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur la partie pure des entités d'un milieu.
+ * \brief View over the pure part of the entities of an environment.
  */
 class ARCANE_CORE_EXPORT EnvPurePartItemVectorView
 : public EnvPartItemVectorView
 {
  public:
 
-  //! Construit une vue pour le milieu \a env.
+  //! Constructs a view for the environment \a env.
   EnvPurePartItemVectorView(IMeshEnvironment* env,const ComponentPurePartItemVectorView& view)
   : EnvPartItemVectorView(env,view) {}
-  //! Construit une vue non initialisée
+
+  //! Constructs an uninitialized view
   EnvPurePartItemVectorView() : EnvPartItemVectorView(){}
 
  public:
@@ -312,19 +325,21 @@ class ARCANE_CORE_EXPORT EnvPurePartItemVectorView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Vue sur la partie impure des entités d'un milieu.
+ * \brief View over the impure part of the entities of an environment.
  */
 class ARCANE_CORE_EXPORT EnvImpurePartItemVectorView
 : public EnvPartItemVectorView
 {
  public:
 
-  //! Construit une vue pour le milieu \a env.
+  //! Constructs a view for the environment \a env.
   EnvImpurePartItemVectorView(IMeshEnvironment* env,const ComponentImpurePartItemVectorView& view)
   : EnvPartItemVectorView(env,view) {}
-  //! Construit une vue non initialisée
+
+  //! Constructs an uninitialized view
   EnvImpurePartItemVectorView() : EnvPartItemVectorView(){}
 
  public:
@@ -345,4 +360,4 @@ class ARCANE_CORE_EXPORT EnvImpurePartItemVectorView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

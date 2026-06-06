@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableInfo.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Infos caractérisant une variable.                                         */
+/* Information characterizing a variable.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEINFO_H
 #define ARCANE_CORE_VARIABLEINFO_H
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos caractérisant une variable.
+ * \brief Information characterizing a variable.
  */
 class ARCANE_CORE_EXPORT VariableInfo
 {
@@ -51,41 +52,41 @@ class ARCANE_CORE_EXPORT VariableInfo
 
  public:
 
-  //! Nom de la variable
+  //! Name of the variable
   const String& localName() const { return m_local_name; }
-  //! Nom de la famille d'entité à laquelle la variable est associée
+  //! Name of the entity family to which the variable is associated
   const String& itemFamilyName() const { return m_item_family_name; }
-  //! Nom du groupe d'entité à laquelle la variable est associée
+  //! Name of the entity group to which the variable is associated
   const String& itemGroupName() const { return m_item_group_name; }
-  //! Nom du maillage auquel la variable est associée
+  //! Name of the mesh to which the variable is associated
   const String& meshName() const { return m_mesh_name; }
-  //! Nom complet de la variable (associé à la famille)
+  //! Full name of the variable (associated with the family)
   const String& fullName() const
   {
     if (m_full_name.null())
       _computeFullName();
     return m_full_name;
   }
-  //! Type d'entité de maillage
+  //! Mesh entity type
   eItemKind itemKind() const { return m_variable_type_info.itemKind(); }
   //! Dimension
   Integer dimension() const { return m_variable_type_info.dimension(); }
   //! Multi-tag
   Integer multiTag() const { return m_variable_type_info.multiTag(); }
-  //! Type des éléments
+  //! Element type
   eDataType dataType() const { return m_variable_type_info.dataType(); }
-  //! Indique si la variable est partielle
+  //! Indicates if the variable is partial
   bool isPartial() const { return m_variable_type_info.isPartial(); }
 
   /*!
-   * \brief Si null, change itemGroupName() en le nom du groupe
-   * de toutes les entités de la famille.
+   * \brief If null, changes itemGroupName() to the name of the group of all
+   * entities in the family.
    */
   void setDefaultItemGroupName();
 
-  //! Informations sur le type de la variable.
+  //! Information about the variable type.
   VariableTypeInfo variableTypeInfo() const { return m_variable_type_info; }
-  //! Informations sur le type de conteneur de la variable
+  //! Information about the variable container type
   DataStorageTypeInfo storageTypeInfo() const { return m_storage_type_info; }
 
  public:
@@ -95,19 +96,19 @@ class ARCANE_CORE_EXPORT VariableInfo
 
  private:
 
-  //! Nom de la variable
+  //! Name of the variable
   String m_local_name;
-  //! Nom de la famille d'entité à laquelle la variable est associée
+  //! Name of the entity family to which the variable is associated
   String m_item_family_name;
-  //! Nom du groupe d'entité à laquelle la variable est associée
+  //! Name of the entity group to which the variable is associated
   String m_item_group_name;
-  //! Nom du maillage auquel la variable est associée
+  //! Name of the mesh to which the variable is associated
   String m_mesh_name;
-  //! Nom complet de la variable (associé à la famille)
+  //! Full name of the variable (associated with the family)
   mutable String m_full_name;
-  //! Informations sur le type de la variable.
+  //! Information about the variable type.
   VariableTypeInfo m_variable_type_info;
-  //! Informations sur le conteneur de donnée de la variable
+  //! Information about the variable data container
   DataStorageTypeInfo m_storage_type_info;
 
  private:
@@ -124,5 +125,4 @@ class ARCANE_CORE_EXPORT VariableInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshPartitionConstraintMng.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un gestionnaire de contraintes de partitionnement de maillage.*/
+/* Interface of a mesh partitioning constraint manager.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHPARTITIONCONSTRAINTMNG_H
 #define ARCANE_CORE_IMESHPARTITIONCONSTRAINTMNG_H
@@ -24,97 +24,97 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un gestionnaire de contraintes
- * de partitionnement de maillage.
+ * \brief Interface of a mesh partitioning constraint manager.
  */
 class IMeshPartitionConstraintMng
 {
  public:
 
-  virtual ~IMeshPartitionConstraintMng() = default; //!< Libère les ressources
+  virtual ~IMeshPartitionConstraintMng() = default; //!< Releases resources
 
  public:
 
-  //! Ajoute une contrainte
+  //! Adds a constraint
   virtual void addConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
-   * \brief Supprime une contrainte.
+   * \brief Removes a constraint.
    *
-   * L'appelant devient propriétaire de \a constraint et doit
-   * gérer sa destruction.
+   * The caller becomes the owner of \a constraint and must
+   * manage its destruction.
    */
   virtual void removeConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
-   * \brief Calcule et applique des contraintes.
+   * \brief Computes and applies constraints.
    *
-   * Calcule les contraintes sur le maillage en appliquant
-   * pour chaque contrainte la méthode IMeshPartitionConstraint::addLinkedCell()
-   * et les applique en modifiant la variable IItemFamily::itemsNewOwner()
-   * des mailles. Toutes les mailles qui doivent être liées en elle sont
-   * alors mises dans une même partition.
+   * It computes constraints on the mesh by applying
+   * the IMeshPartitionConstraint::addLinkedCell() method for each constraint
+   * and applies them by modifying the IItemFamily::itemsNewOwner() variable
+   * of the cells. All cells that must be linked in it are then placed
+   * in the same partition.
    *
-   * Cette opération ne garantit pas que les partitions résultantes soient
-   * équilibrées au niveau de la charge. Pour cela,
-   * il faut utiliser un service de re-partionnement (IMeshPartitioner)
-   * qui prennent en compte ces contraintes.
+   * This operation does not guarantee that the resulting partitions are
+   * balanced in terms of load. For this,
+   * a re-partitioning service (IMeshPartitioner) must be used
+   * that takes these constraints into account.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void computeAndApplyConstraints() = 0;
 
   /*!
-   * \brief Calcule les contraintes et retourne une liste d'entités liées.
+   * \brief Computes constraints and returns a list of linked entities.
    *
-   * Calcule les contraintes comme pour computeAndApplyConstraints()
-   * mais ne modifie pas le propriétaire. A la place, retourne une
-   * liste contenant les listes des uniqueId() des entités qui doivent
-   * être liées.
+   * It computes constraints like computeAndApplyConstraints()
+   * but does not modify the owner. Instead, it returns a
+   * list containing lists of the uniqueId() of the entities that must
+   * be linked.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void computeConstraintList(Int64MultiArray2& tied_uids) = 0;
 
-  //! Ajoute une contrainte
+  //! Adds a weak constraint
   virtual void addWeakConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
-   * \brief Supprime une contrainte.
+   * \brief Removes a constraint.
    *
-   * L'appelant devient propriétaire de \a constraint et doit
-   * gérer sa destruction.
+   * The caller becomes the owner of \a constraint and must
+   * manage its destruction.
    */
   virtual void removeWeakConstraint(IMeshPartitionConstraint* constraint) = 0;
 
   /*!
-   * \brief Calcule et applique des contraintes.
+   * \brief Computes and applies constraints.
    *
-   * Calcule les contraintes sur le maillage en appliquant
-   * pour chaque contrainte la méthode IMeshPartitionConstraint::addLinkedCell()
-   * et les applique en modifiant la variable IItemFamily::itemsNewOwner()
-   * des mailles. Toutes les mailles qui doivent être liées en elle sont
-   * alors mises dans une même partition.
+   * It computes constraints on the mesh by applying
+   * the IMeshPartitionConstraint::addLinkedCell() method for each constraint
+   * and applies them by modifying the IItemFamily::itemsNewOwner() variable
+   * of the cells. All cells that must be linked in it are then placed
+   * in the same partition.
    *
-   * Cette opération ne garantit pas que les partitions résultantes soient
-   * équilibrées au niveau de la charge. Pour cela,
-   * il faut utiliser un service de re-partionnement (IMeshPartitioner)
-   * qui prennent en compte ces contraintes.
+   * This operation does not guarantee that the resulting partitions are
+   * balanced in terms of load. For this,
+   * a re-partitioning service (IMeshPartitioner) must be used
+   * that takes these constraints into account.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void computeAndApplyWeakConstraints() = 0;
 
   /*!
-   * \brief Calcule les contraintes et retourne une liste d'entités liées.
+   * \brief Computes constraints and returns a list of linked entities.
    *
-   * Calcule les contraintes comme pour computeAndApplyConstraints()
-   * mais ne modifie pas le propriétaire. A la place, retourne une
-   * liste contenant les listes des uniqueId() des entités qui doivent
-   * être liées.
+   * It computes constraints like computeAndApplyConstraints()
+   * but does not modify the owner. Instead, it returns a
+   * list containing lists of the uniqueId() of the entities that must
+   * be linked.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void computeWeakConstraintList(Int64MultiArray2& tied_uids) = 0;
 };
@@ -127,4 +127,4 @@ class IMeshPartitionConstraintMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshAllocateBuildInfo.cc                           (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour allouer les entités d'un maillage cartésien.            */
+/* Information for allocating entities of a Cartesian mesh.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

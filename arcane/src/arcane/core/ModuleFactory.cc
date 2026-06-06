@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleFactory.cc                                            (C) 2000-2019 */
 /*                                                                           */
-/* Manufacture des modules.                                                  */
+/* Module manufacturing.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -108,9 +108,9 @@ addReference()
 void ModuleFactory::
 removeReference()
 {
-  // Décrémente et retourne la valeur d'avant.
-  // Si elle vaut 1, cela signifie qu'on n'a plus de références
-  // sur l'objet et qu'il faut le détruire.
+  // Decrements and returns the previous value.
+  // If it equals 1, it means there are no more references
+  // to the object and it must be destroyed.
   Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
   if (v==1)
     delete this;
@@ -147,4 +147,3 @@ ModuleFactory2::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

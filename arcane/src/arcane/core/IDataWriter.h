@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataWriter.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'écriture des données d'une variable.                          */
+/* Interface for writing variable data.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAWRITER_H
 #define ARCANE_CORE_IDATAWRITER_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- \brief Interface d'écriture des données d'une variable.
+ \brief Interface for writing variable data.
 
- Lors d'une écriture, l'ordre d'appel est le suivant:
+ During a write operation, the order of calls is as follows:
  \code
  * IDataWriter* writer = ...;
  * writer->beginWrite(vars)
@@ -37,14 +38,14 @@ namespace Arcane
  *   writer->write(var,var_data)
  * writer->endWriter()
  \endcode
- \a vars contient la liste des variables qui vont être sauvées
+ \a vars contains the list of variables that will be saved
   \sa IDataReader
  */
 class ARCANE_CORE_EXPORT IDataWriter
 {
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IDataWriter() = default;
 
  public:
@@ -54,12 +55,12 @@ class ARCANE_CORE_EXPORT IDataWriter
 
  public:
 
-  //! Positionne les infos des méta-données
+  //! Sets the metadata information
   virtual void setMetaData(const String& meta_data) = 0;
 
  public:
 
-  //! Ecrit les données \a data de la variable \a var
+  //! Writes the data \a data of the variable \a var
   virtual void write(IVariable* var, IData* data) = 0;
 };
 
@@ -71,5 +72,4 @@ class ARCANE_CORE_EXPORT IDataWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* LinearCongruential.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Randomiser 'LinearCongruential'.                                          */
+/* Randomize 'LinearCongruential'.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_LINEARCONGRUENTIAL_H
@@ -34,8 +34,8 @@ namespace Arcane::random
 /*!
  * \brief compile-time configurable linear congruential generator.
  *
- * \warning Cette implémentation n'est valide que pour les valeurs (a,c,m)
- * correspondantes à MinstdRand et MinstdRand0.
+ * \warning This implementation is only valid for the values (a,c,m)
+ * corresponding to MinstdRand and MinstdRand0.
  *
  */
 template<typename IntType, IntType a, IntType c, IntType m, IntType val>

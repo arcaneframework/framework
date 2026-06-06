@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInternalEnumerator.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Enumérateur sur une liste de ItemInternal.                                */
+/* Enumerator over a list of ItemInternal.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMINTERNALENUMERATOR_H
 #define ARCANE_CORE_ITEMINTERNALENUMERATOR_H
@@ -30,11 +30,12 @@ class ItemEnumerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Enumérateur sur une liste d'entités.
- * \deprecated Cette classe est obsolète et ne doit plus être utilisée. Il
- * faut utiliser ItemEnumerator à la place.
+ * \brief Enumerator over a list of entities.
+ * \deprecated This class is obsolete and should no longer be used. You
+ * must use ItemEnumerator instead.
  */
 class ItemInternalEnumerator
 {
@@ -78,13 +79,13 @@ class ItemInternalEnumerator
   inline bool operator()() { return m_index < m_count; }
   inline bool hasNext() { return m_index < m_count; }
 
-  //! Nombre d'éléments de l'énumérateur
+  //! Number of elements in the enumerator
   inline Integer count() const { return m_count; }
 
-  //! Indice courant de l'énumérateur
+  //! Current index of the enumerator
   inline Integer index() const { return m_index; }
 
-  //! localId() de l'entité courante.
+  //! localId() of the current entity.
   inline Integer localId() const { return m_local_ids[m_index]; }
 
  protected:

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionEnum.cc                                           (C) 2000-2023 */
 /*                                                                           */
-/* Option du jeu de données de type énuméré.                                 */
+/* Enumerated data set option.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -252,8 +252,8 @@ _search(bool is_phase1)
 
   if (has_valid_value){
     String lang;
-    // La valeur par défaut n'a pas de langage associé. Il ne faut donc
-    // pas essayer de la convertir.
+    // The default value does not have an associated language. Therefore, it
+    // should not be attempted to convert it.
     if (!is_default)
       lang = caseDocumentFragment()->language();
     int value = 0;
@@ -278,15 +278,15 @@ _search(bool is_phase1)
 void CaseOptionEnum::
 _setEnumDefaultValue(int def_value)
 {
-  // Si on a une valeur donnée par l'utilisateur, on ne fait rien.
+  // If a value is provided by the user, do nothing.
   if (isPresent())
     return;
 
-  // Valeur déjà initialisée. Dans ce cas on remplace aussi la valeur actuelle
+  // Value already initialized. In this case, the current value is also replaced
   if (_isInitialized())
     _setOptionValue(def_value);
 
-  // La valeur par défaut n'a pas de langue associée.
+  // The default value does not have an associated language.
   _setDefaultValue(m_enum_values->nameOfValue(def_value,String()));
 }
 
@@ -392,8 +392,7 @@ _search(bool is_phase1)
 
     for( Integer index=0; index<size; ++index ){
       XmlNode velem = elem_list[index];
-      // Si l'option n'est pas présente dans le jeu de donnée, on prend
-      // l'option par défaut.
+      // If the option is not present in the dataset, the default option is taken.
       String str_val = (velem.null()) ? _defaultValue() : velem.value();
       if (str_val.null()) {
         CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,

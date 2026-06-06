@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GlobalTimeHistoryAdder.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Classe permettant d'ajouter un historique de valeur global.               */
+/* Class allowing the addition of a global value history.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_GLOBALTIMEHISTORYADDER_H
 #define ARCANE_CORE_GLOBALTIMEHISTORYADDER_H
@@ -26,30 +26,30 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'ajouter une ou plusieurs valeurs à un
- * historique de valeurs.
+ * \brief Class allowing the addition of one or more values to a
+ * value history.
  *
- * Cette classe enregistrera les courbes de manière globale, sans support.
- * C'est-à-dire que les courbes ne seront liée qu'au domaine complet ou au
- * sous-domaine demandé, par opposition au MeshTimeHistoryAdder qui lie les
- * courbes au maillage désiré.
+ * This class will record the curves globally, without support.
+ * That is, the curves will only be linked to the complete domain or the
+ * requested subdomain, unlike MeshTimeHistoryAdder which links the
+ * curves to the desired mesh.
  *
- * Pour un nom d'historique donné, il ne peut y avoir qu'une courbe de une
- * ou plusieurs valeurs par sous-domaine (et une globale à tous les
- * sous-domaines).
+ * For a given history name, there can only be one curve of one
+ * or more values per subdomain (and one global one for all
+ * subdomains).
  *
- * Exemple : plusieurs courbes de moyennes des pressions (appelons-les
- * "avg_pressure") et deux sous-domaines (0 et 1). Une valeur par itération.
- * - Une courbe "avg_pressure" liée au sous-domaine 0. Chaque valeur est la
- *   moyenne des pressions de chaque maille du sous-domaine 0.
- * - Une courbe "avg_pressure" liée au sous-domaine 1. Chaque valeur est la
- *   moyenne des pressions de chaque maille du sous-domaine 1.
- * - Une courbe "avg_pressure" liée au domaine complet. Chaque valeur est la
- *   moyenne des pressions de chaque sous-domaine.
+ * Example: several curves of pressure averages (let's call them
+ * "avg_pressure") and two subdomains (0 and 1). One value per iteration.
+ * - An "avg_pressure" curve linked to subdomain 0. Each value is the
+ *   average of the pressures of each element in subdomain 0.
+ * - An "avg_pressure" curve linked to subdomain 1. Each value is the
+ *   average of the pressures of each element in subdomain 1.
+ * - An "avg_pressure" curve linked to the complete domain. Each value is the
+ *   average of the pressures of each subdomain.
  *
- * On peut remarquer qu'il est possible d'avoir plusieurs courbes
- * indépendantes avec le même nom mais liée à des sous-domaines différents
- * (+1 courbe globale).
+ * It can be noted that it is possible to have several curves
+ * independent ones with the same name but linked to different subdomains
+ * (+1 global curve).
  */
 class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
 : public ITimeHistoryAdder
@@ -57,9 +57,9 @@ class ARCANE_CORE_EXPORT GlobalTimeHistoryAdder
  public:
 
   /*!
-   * \brief Constructeur.
+   * \brief Constructor.
    *
-   * \param time_history_mng Un pointeur vers une instance de ITimeHistoryMng.
+   * \param time_history_mng A pointer to an instance of ITimeHistoryMng.
    */
   explicit GlobalTimeHistoryAdder(ITimeHistoryMng* time_history_mng);
   ~GlobalTimeHistoryAdder() override = default;

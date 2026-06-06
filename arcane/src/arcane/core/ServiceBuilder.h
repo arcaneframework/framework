@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceBuilder.h                                            (C) 2000-2023 */
 /*                                                                           */
-/* Classe utilitaire pour instantier un service.                             */
+/* Utility class for instantiating a service.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICEBUILDER_H
 #define ARCANE_CORE_SERVICEBUILDER_H
@@ -39,40 +39,42 @@ class Document;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Propriétés pour la création de service.
+ * \brief Properties for service creation.
  *
- * Il s'agit de drapeaux qui s'utilisent avec l'opérateur ou binaire (|)
+ * These are flags used with the binary OR operator (|).
  */
 enum eServiceBuilderProperties
 {
-  //! Aucune propriété particulière
+  //! No specific property.
   SB_None = 0,
-  //! Autorise l'absence du service
+  //! Allows the service to be absent.
   SB_AllowNull = 1,
-  //! Indique que tous les processus font la même opération
+  //! Indicates that all processes perform the same operation.
   SB_Collective = 2
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Service
- * \brief Classe utilitaire pour instantier un service d'une interface donnée.
+ * \brief Utility class for instantiating a service of a given interface.
  *
- * Cette classe permet de rechercher l'ensemble des services disponibles
- * et implémentant l'interface \a InterfaceType passée en paramètre template.
+ * This class allows searching for all available services
+ * implementing the \a InterfaceType interface passed as a template parameter.
  *
- * Cette classe remplace les anciennes classes qui permettaient de créer
- * des services, à savoir ServiceFinderT, ServiceFinder2T et FactoryT.
+ * This class replaces older classes that allowed service creation,
+ * namely ServiceFinderT, ServiceFinder2T, and FactoryT.
  *
- * Il existe trois constructeurs suivant que l'on souhaite instantier
- * un service du sous-domaine, de la session ou de l'application. En général,
- * il s'agit d'un service de sous-domaine, les deux dernières catégories
- * étant plutôt utilisées pour les services internes à Arcane.
+ * There are three constructors depending on whether you want to instantiate
+ * a subdomain, a session, or an application service. Generally,
+ * it is a subdomain service; the last two categories
+ * are rather used for internal Arcane services.
  *
- * L'exemple suivant créé un service de sous-domaine implémentant
- * l'interface \a IMyInterface et de nom \a TOTO:
+ * The following example creates a subdomain service implementing
+ * the \a IMyInterface interface with the name \a TOTO:
  * \code
  * ISubDomain* sd  = ...
  * ServiceBuilder<IMyInterface> builder(sd);
@@ -80,43 +82,43 @@ enum eServiceBuilderProperties
  * ...
  * \endcode
  *
- * L'instance retournée est gérée par compteur de référence et est détruite
- * dès qu'il n'y a plus de référence dessus.
- * Par défaut, createInstance() lève une exception si le service n'est pas
- * trouvé, sauf si la propriété \a SB_AllowNull est spécifiée..
- * Si la propriété \a SB_Collective est vrai, l'exception levée est du type
- * ParallelFatalErrorException, sinon elle du type FatalErrorException.
- * Cela est utile si on est sur
- * que tous les processus vont faire la même opération. Dans ce cas,
- * cela permet de ne générer qu'un seul message d'erreur et d'arrêter
- * le code proprement.
+ * The returned instance is managed by a reference counter and is destroyed
+ * as soon as there are no more references to it.
+ * By default, createInstance() throws an exception if the service is not
+ * found, unless the \a SB_AllowNull property is specified.
+ * If the \a SB_Collective property is true, the exception thrown is of type
+ * ParallelFatalErrorException; otherwise, it is of type FatalErrorException.
+ * This is useful if you are sure
+ * that all processes will perform the same operation. In this case,
+ * this allows only one error message to be generated and the code to stop
+ * cleanly.
  *
- * Il est aussi possible de récupérer une instance singleton d'un service,
- * via getSingleton(). Les instances singletons qui sont disponibles
- * sont référencées dans le fichier de configuration du code (voir \ref arcanedoc_core_types_codeconfig).
+ * It is also possible to retrieve a singleton instance of a service,
+ * via getSingleton(). The available singleton instances
+ * are referenced in the code configuration file (see \ref arcanedoc_core_types_codeconfig).
  */
 template<typename InterfaceType>
 class ServiceBuilder
 {
  public:
 
-  //! Instantiation pour créer un service d'un sous-domaine.
+  //! Instantiation to create a subdomain service.
   ServiceBuilder(ISubDomain* sd)
   : m_service_finder(sd->application(),ServiceBuildInfoBase(sd))
   {}
-  //! Instantiation pour créer un service de sous-domaine associé au maillage \a mesh_handle
+  //! Instantiation to create a subdomain service associated with the \a mesh_handle
   ServiceBuilder(const MeshHandle& mesh_handle)
   : m_service_finder(mesh_handle.application(),ServiceBuildInfoBase(mesh_handle))
   {}
-  //! Instantiation pour créer un service d'une session.
+  //! Instantiation to create a session service.
   ServiceBuilder(ISession* session)
   : m_service_finder(session->application(),ServiceBuildInfoBase(session))
   {}
-  //! Instantiation pour créer un service de l'application.
+  //! Instantiation to create an application service.
   ServiceBuilder(IApplication* app)
   : m_service_finder(app,ServiceBuildInfoBase(app))
   {}
-  //! Instantiation pour créer un service d'option du jeu de données
+  //! Instantiation to create a dataset options service
   ServiceBuilder(IApplication* app,ICaseOptions* opt)
   : m_service_finder(app,ServiceBuildInfoBase(_arcaneDeprecatedGetSubDomain(opt),opt))
   {}
@@ -126,13 +128,13 @@ class ServiceBuilder
  public:
   
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the \a InterfaceType interface.
    *
-   * L'instance est créée avec la fabrique enregistrée sous le nom \a name.
+   * The instance is created using the factory registered under the name \a name.
    *
-   * Par défaut, une exception est levée si le service spécifiée n'est pas trouvé.
-   * Il est possible de changer ce comportement en spécifiant SB_AllowNull dans \a properties
-   * auquel cas la fonction retourne un pointeur nul si le service spécifié n'existe pas.
+   * By default, an exception is thrown if the specified service is not found.
+   * It is possible to change this behavior by specifying SB_AllowNull in \a properties,
+   * in which case the function returns a null pointer if the specified service does not exist.
    */
   Ref<InterfaceType>
   createReference(const String& name,eServiceBuilderProperties properties=SB_None)
@@ -147,18 +149,18 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the \a InterfaceType interface.
    *
-   * L'instance est créée avec la fabrique enregistrée sous le nom \a name.
-   * Le pointeur retourné doit être désalloué par delete.
+   * The instance is created using the factory registered under the name \a name.
+   * The returned pointer must be deallocated using delete.
    *
-   * Il est possible de spécifier le maillage \a mesh sur lequel reposera le service.
-   * Cela n'est utile que pour les services de sous-domaine. Pour les services
-   * de session ou d'application, cet argument n'est pas utilisé.
+   * It is possible to specify the \a mesh on which the service will reside.
+   * This is only useful for subdomain services. For session or application services,
+   * this argument is not used.
    *
-   * Par défaut, une exception est levée si le service spécifiée n'est pas trouvé.
-   * Il est possible de changer ce comportement en spécifiant SB_AllowNull dans \a properties
-   * auquel cas la fonction retourne un pointeur nul si le service spécifié n'existe pas.
+   * By default, an exception is thrown if the specified service is not found.
+   * It is possible to change this behavior by specifying SB_AllowNull in \a properties,
+   * in which case the function returns a null pointer if the specified service does not exist.
    */
   Ref<InterfaceType>
   createReference(const String& name,IMesh* mesh,
@@ -174,10 +176,10 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance de chaque service qui implémente \a InterfaceType.
+   * \brief Creates an instance of every service that implements \a InterfaceType.
    *
-   * Les instances créées sont rangées dans \a instances. L'appelant doit les
-   * détruire via l'opérateur delete une fois qu'elles ne sont plus utiles.
+   * The created instances are stored in \a instances. The caller must
+   * destroy them using the delete operator once they are no longer useful.
    */
   UniqueArray<Ref<InterfaceType>> createAllInstances()
   {
@@ -185,13 +187,13 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Instance singleton du service implémentant l'interface \a InterfaceType.
+   * \brief Singleton instance of the service implementing the \a InterfaceType interface.
    *
-   * L'instance retournée ne doit pas être détruite.
+   * The returned instance must not be destroyed.
    *
-   * Par défaut, une exception est levée si le service spécifiée n'est pas trouvé.
-   * Il est possible de changer ce comportement en spécifiant SB_AllowNull dans \a properties
-   * auquel cas la fonction retourne un pointeur nul si le service spécifié n'existe pas.
+   * By default, an exception is thrown if the specified service is not found.
+   * It is possible to change this behavior by specifying SB_AllowNull in \a properties,
+   * in which case the function returns a null pointer if the specified service does not exist.
    */
   InterfaceType* getSingleton(eServiceBuilderProperties properties=SB_None)
   {
@@ -205,7 +207,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the \a InterfaceType interface.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
@@ -216,7 +218,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the \a InterfaceType interface.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
@@ -232,7 +234,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the \a InterfaceType interface.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
@@ -248,7 +250,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the \a InterfaceType interface.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
@@ -263,7 +265,7 @@ class ServiceBuilder
     return it;
   }
 
-  //! Remplit \a names avec les noms des services disponibles pour instantier cette interface
+  //! Fills \a names with the names of services available to instantiate this interface
   void getServicesNames(Array<String>& names) const
   {
     m_service_finder.getServicesNames(names);
@@ -271,12 +273,12 @@ class ServiceBuilder
 
  public:
   /*!
-   * \brief Créé une instance de chaque service qui implémente \a InterfaceType.
+   * \brief Creates an instance of every service that implements \a InterfaceType.
    *
-   * Les instances créées sont rangées dans \a instances. L'appelant doit les
-   * détruire via l'opérateur delete une fois qu'elles ne sont plus utiles.
+   * The created instances are stored in \a instances. The caller must
+   * destroy them using the delete operator once they are no longer needed.
    *
-   * \deprecated Utilise la surcharge qui retourne un tableau de références.
+   * \deprecated Use the overload that returns an array of references.
    */
   ARCCORE_DEPRECATED_2019("use createAllInstances(Array<Ref<InterfaceType>>) instead")
   void createAllInstances(Array<InterfaceType*>& instances)
@@ -285,16 +287,16 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the interface \a InterfaceType.
    *
-   * L'instance est créée avec la fabrique enregistrée sous le nom \a name.
-   * Le pointeur retourné doit être désalloué par delete.
+   * The instance is created using the factory registered under the name \a name.
+   * The returned pointer must be deallocated using delete.
    *
-   * Par défaut, une exception est levée si le service spécifiée n'est pas trouvé.
-   * Il est possible de changer ce comportement en spécifiant SB_AllowNull dans \a properties
-   * auquel cas la fonction retourne un pointeur nul si le service spécifié n'existe pas.
+   * By default, an exception is thrown if the specified service is not found.
+   * It is possible to change this behavior by specifying SB_AllowNull in \a properties
+   * in which case the function returns a null pointer if the specified service does not exist.
    *
-   * \deprecated Utilise createReference() à la place.
+   * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
   InterfaceType* createInstance(const String& name,eServiceBuilderProperties properties=SB_None)
@@ -309,9 +311,9 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the interface \a InterfaceType.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
-   * \deprecated Utilise createReference() à la place.
+   * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
   static InterfaceType*
@@ -322,20 +324,20 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the interface \a InterfaceType.
    *
-   * L'instance est créée avec la fabrique enregistrée sous le nom \a name.
-   * Le pointeur retourné doit être désalloué par delete.
+   * The instance is created using the factory registered under the name \a name.
+   * The returned pointer must be deallocated using delete.
    *
-   * Il est possible de spécifier le maillage \a mesh sur lequel reposera le service.
-   * Cela n'est utile que pour les services de sous-domaine. Pour les services
-   * de session ou d'application, cet argument n'est pas utilisé.
+   * It is possible to specify the mesh \a mesh on which the service will rely.
+   * This is only useful for subdomain services. For session
+   * or application services, this argument is not used.
    *
-   * Par défaut, une exception est levée si le service spécifiée n'est pas trouvé.
-   * Il est possible de changer ce comportement en spécifiant SB_AllowNull dans \a properties
-   * auquel cas la fonction retourne un pointeur nul si le service spécifié n'existe pas.
+   * By default, an exception is thrown if the specified service is not found.
+   * It is possible to change this behavior by specifying SB_AllowNull in \a properties
+   * in which case the function returns a null pointer if the specified service does not exist.
    *
-   * \deprecated Utilise createReference() à la place.
+   * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
   InterfaceType* createInstance(const String& name,IMesh* mesh,
@@ -351,7 +353,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the interface \a InterfaceType.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
@@ -367,7 +369,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the interface \a InterfaceType.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
@@ -383,7 +385,7 @@ class ServiceBuilder
   }
 
   /*!
-   * \brief Créé une instance implémentant l'interface \a InterfaceType.
+   * \brief Creates an instance implementing the interface \a InterfaceType.
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
@@ -411,7 +413,7 @@ class ServiceBuilder
     if (valid_names.size()!=0)
       return String::format("no service named '{0}' found (valid values = {1})",
                             wanted_name,String::join(", ",valid_names));
-    // Aucun service disponible
+    // No service available
     return String::format("no service named '{0}' found and no implementation available",
                           wanted_name);
   }
@@ -461,11 +463,12 @@ class ARCANE_CORE_EXPORT ServiceBuilderWithOptionsBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour instantier un service d'une interface donnée
- * avec des options.
+ * \brief Utility class for instantiating a service of a given interface
+ * with options.
  *
- * \warning API expérimentale. Ne pas utiliser en dehors de %Arcane
+ * \warning Experimental API. Do not use outside of %Arcane
  */
 template<typename InterfaceType>
 class ServiceBuilderWithOptions
@@ -499,5 +502,4 @@ class ServiceBuilderWithOptions
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

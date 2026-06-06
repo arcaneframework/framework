@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshArea.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Zone du maillage.                                                         */
+/* Mesh area.                                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHAREA_H
 #define ARCANE_CORE_MESHAREA_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Zone du maillage.
+ * \brief Mesh area.
  */
 class ARCANE_CORE_EXPORT MeshArea
 : public IMeshArea
@@ -38,62 +39,62 @@ class ARCANE_CORE_EXPORT MeshArea
 
  public:
 
-  //! Sous-domaine associé
+  //! Associated sub-domain
   ISubDomain* subDomain() override;
 
-  //! Gestionnaire de trace associé
+  //! Associated trace manager
   ITraceMng* traceMng() override;
 
-  //! Maillage auquel appartient la zone
+  //! Mesh to which the area belongs
   IMesh* mesh() override;
 
  public:
 
-  //! Nombre de noeuds du maillage
+  //! Number of mesh nodes
   Integer nbNode() override;
 
-  //! Nombre d'arêtes du maillage
+  //! Number of mesh edges
   virtual Integer nbEdge();
 
-  //! Nombre de faces du maillage
+  //! Number of mesh faces
   virtual Integer nbFace();
 
-  //! Nombre de mailles du maillage
+  //! Number of mesh cells
   Integer nbCell() override;
 
-  //! Nombre d'éléments du genre \a ik
+  //! Number of elements of type \a ik
   virtual Integer nbItem(eItemKind ik);
 
  public:
 
-  //! Groupe de tous les noeuds
+  //! Group of all nodes
   NodeGroup allNodes() override;
 
-  //! Groupe de tous les arêtes
+  //! Group of all edges
   virtual EdgeGroup allEdges();
 
-  //! Groupe de toutes les faces
+  //! Group of all faces
   virtual FaceGroup allFaces();
 
-  //! Groupe de toutes les mailles
+  //! Group of all cells
   CellGroup allCells() override;
 
-  //! Groupe de toutes les entités du genre \a item_kind
+  //! Group of all entities of type \a item_kind
   virtual ItemGroup allItems(eItemKind item_kind);
 
-  //! Groupe de tous les noeuds propres au domaine
+  //! Group of all nodes belonging to the domain
   NodeGroup ownNodes() override;
 
-  //! Groupe de tous les arêtes propres au domaine
+  //! Group of all edges belonging to the domain
   virtual EdgeGroup ownEdges();
 
-  //! Groupe de toutes les faces propres au domaine
+  //! Group of all faces belonging to the domain
   virtual FaceGroup ownFaces();
 
-  //! Groupe de toutes les mailles propres au domaine
+  //! Group of all cells belonging to the domain
   virtual CellGroup ownCells() override;
 
-  //! Groupe de toutes les entités propres au sous-domaine du genre \a item_kind
+  //! Group of all entities belonging to the sub-domain of type \a item_kind
   virtual ItemGroup ownItems(eItemKind item_kind);
 
  public:
@@ -119,5 +120,4 @@ class ARCANE_CORE_EXPORT MeshArea
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICartesianMeshGenerationInfo.h                              (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur la génération des maillages cartésiens.                  */
+/* Cartesian mesh generation information.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICARTESIANMESHGENERATIONINFO_H
 #define ARCANE_CORE_ICARTESIANMESHGENERATIONINFO_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations sur la génération des maillages cartésiens.
+ * \brief Brief: Cartesian mesh generation information.
  */
 class ARCANE_CORE_EXPORT ICartesianMeshGenerationInfo
 {

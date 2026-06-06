@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializeMessage.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Message utilisant un SerializeBuffer.                                     */
+/* Message using a SerializeBuffer.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_SERIALIZEMESSAGE_H
 #define ARCANE_CORE_INTERNAL_SERIALIZEMESSAGE_H
@@ -25,18 +25,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Message utilisant un SerializeBuffer.
+ * \brief Message using a SerializeBuffer.
  *
- * Un message consiste en une série d'octets envoyés d'un rang
- * (origRank()) à un autre (destRank()). Si isSend() est vrai,
- * c'est origRank() qui envoie à destRank(), sinon c'est l'inverse.
- * S'il s'agit d'un message de réception, le serializer() est alloué
- * et remplit automatiquement.
+ * A message consists of a series of bytes sent from one rank
+ * (origRank()) to another (destRank()). If isSend() is true,
+ * origRank() sends to destRank(), otherwise it is the reverse.
+ * If it is a receive message, the serializer() is allocated
+ * and filled automatically.
  *
- * Pour que le parallélisme fonctionne correctement, il faut qu'un message
- * complémentaire à celui-ci soit envoyé par destRank().
+ * For parallelism to work correctly, a complementary message
+ * must be sent by destRank().
  */
 class ARCANE_CORE_EXPORT SerializeMessage
 : public MessagePassing::internal::BasicSerializeMessage
@@ -48,8 +49,8 @@ class ARCANE_CORE_EXPORT SerializeMessage
   ARCCORE_DEPRECATED_2020("Use BasicSerializeMessage::serializer() instead")
   SerializeBuffer& buffer()
   {
-    // Comme c'est cette classe qui a créé le serializer(), on est certain
-    // que la conversion est valide.
+    // Since this class created the serializer(), we are certain
+    // that the conversion is valid.
     Arccore::BasicSerializer& x = MessagePassing::internal::BasicSerializeMessage::buffer();
     return static_cast<SerializeBuffer&>(x);
   }
@@ -63,5 +64,4 @@ class ARCANE_CORE_EXPORT SerializeMessage
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariableReader.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Lecture de variables pour l'initialisation et au cours du calcul.         */
+/* Reading of variables for initialization and during calculation.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLEREADER_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Lecture de variables au cours du calcul.
+ * \brief Brief reading of variables during calculation.
  */
 class IVariableReader
 {
@@ -37,30 +38,30 @@ class IVariableReader
 
  public:
 
-  //! Positionne le chemin du répertoire contenant les données
+  //! Sets the path of the directory containing the data
   virtual void setBaseDirectoryName(const String& path) = 0;
-  //! Positionne le nom du fichier contenant les données.
+  //! Sets the name of the file containing the data.
   virtual void setBaseFileName(const String& filename) = 0;
   /*!
-   * \brief Initialise le lecteur.
+   * \brief Initializes the reader.
    *
-   * \a is_start est vrai si on est au démarrage du calcul.
+   * \a is_start is true if we are at the start of the calculation.
    */
   virtual void initialize(bool is_start) = 0;
   /*!
-   * \brief.Positionne la liste des variables qu'on souhaite relire.
-   * Cet appel doit avoir lieu avant initialize().
+   * \brief Sets the list of variables that we wish to reread.
+   * This call must happen before initialize().
    */
   virtual void setVariables(VariableCollection vars) = 0;
-  //! Mise à jour des variables pour le temps \a wanted_time
+  //! Updates the variables for the time \a wanted_time
   virtual void updateVariables(Real wanted_time) = 0;
   /*!
-   * \brief Interval de temps des valeurs pour la variable \a var.
-   * Les données de la variable \a var existent pour les temps
-   * comprit entre \a a.x et \a a.y avec \a a la valeur
-   * de retour.
+   * \brief Time interval of values for the variable \a var.
+   * The data for the variable \a var exists for the times
+   * included between \a a.x and \a a.y with \a a having the value
+   * returned.
    *
-   * Cet appel est valide uniquement après appel à initialize().
+   * This call is valid only after calling initialize().
    */
   virtual Real2 timeInterval(IVariable* var) = 0;
 };
@@ -73,4 +74,4 @@ class IVariableReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

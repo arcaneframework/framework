@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayExpressionImpl.cc                                      (C) 2000-2005 */
 /*                                                                           */
-/* Expression traitant un tableau.                                           */
+/* Expression handling an array.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,9 @@ ARCANE_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Operateur binaire generique pour les expressions.
+ * \brief Generic binary operator for expressions.
  */
 class ArrayOperator
 {
@@ -54,8 +55,8 @@ class ArrayOperatorT
  public:
   virtual void assign(ExpressionResult* res,ArrayVariant* var)
   {
-    // Notons que la taille de la variable peut être plus importante
-    // que celle du résultat suivant les indices retenus (cf WhereExpression)
+    // Note that the size of the variable may be larger
+    // than that of the result following the retained indices (cf WhereExpression)
     Integer size = res->size();
 
     // recuperation des valeurs du resultat et de la variable
@@ -72,8 +73,8 @@ class ArrayOperatorT
 
   virtual void evaluate(ExpressionResult* res,ArrayVariant* var)
   {
-    // Notons que la taille de la variable peut être plus importante
-    // que celle du résultat suivant les indices retenus (cf WhereExpression)
+    // Note that the size of the variable may be larger
+    // than that of the result following the retained indices (cf WhereExpression)
     Integer size = res->size();
     Integer vsize = var->size();
     cerr << "** SIZE res=" << size << " var=" << vsize << " res=" << res << '\n';
@@ -123,7 +124,7 @@ ArrayExpressionImpl(ArrayVariant* variant)
 ArrayExpressionImpl::
 ~ArrayExpressionImpl()
 {
-  //TODO Le delete fait planter...
+  //TODO The delete crashes...
   //delete m_variant;
   delete m_op;
 }
@@ -175,4 +176,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

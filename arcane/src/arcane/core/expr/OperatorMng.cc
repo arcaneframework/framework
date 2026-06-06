@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OperatorMng.cc                                              (C) 2000-2003 */
 /*                                                                           */
-/* Stocke tous les types d'opérateur possibles sur les expressions.          */
+/* Stores all possible operator types on expressions.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,7 +56,7 @@ OperatorMng()
 : m_unary_op()
 {
   //
-  // construction des opérateurs unaires
+  // construction of unary operators
   //
   UnaryExpressionImpl::eOperationType ut;
   ut = UnaryExpressionImpl::UnarySubstract;
@@ -97,7 +97,7 @@ OperatorMng()
   CREATE_OP(m_unary_op,ut,UnaryOpMap,TReal,Real,Tanh)
 
   //
-  // construction des opérateurs binaires
+  // construction of binary operators
   //
   BinaryExpressionImpl::eOperationType bt;
   // add
@@ -136,14 +136,14 @@ OperatorMng()
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal3,Real3,Divide)
   //CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal2x2,Real2x2,Divide)
   //CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal3x3,Real3x3,Divide)
-  // minimum (operator< defini sur Real2 et Real3)
+  // minimum (operator< defined on Real2 and Real3)
   bt = BinaryExpressionImpl::Minimum;
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal,Real,Minimum)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TInt32,Integer,Minimum)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TInt64,Integer,Minimum)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal2,Real2,Minimum)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal3,Real3,Minimum)
-  // maximum (operator> defini sur Real2 et Real3)
+  // maximum (operator> defined on Real2 and Real3)
   bt = BinaryExpressionImpl::Maximum;
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal,Real,Maximum)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TInt32,Integer,Maximum)
@@ -153,14 +153,14 @@ OperatorMng()
   // pow
   bt = BinaryExpressionImpl::Pow;
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal,Real,Pow)
-  // equal than (defini sur Real2 et Real3)
+  // equal than (defined on Real2 and Real3)
   bt = BinaryExpressionImpl::Equal;
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal,Real,EQ)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TInt32,Integer,EQ)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TInt64,Integer,EQ)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal2,Real2,EQ)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal3,Real3,EQ)
-  // less than (defini sur Real2 et Real3)
+  // less than (defined on Real2 and Real3)
   bt = BinaryExpressionImpl::LessThan;
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TReal,Real,LT)
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TInt32,Integer,LT)
@@ -190,7 +190,7 @@ OperatorMng()
   CREATE_OP(m_binary_op,bt,BinaryOpMap,TBool,bool,And)
 
   //
-  // construction des opérateurs "where"
+  // construction of "where" operators
   //
   CREATE_ALL_OP(m_where_op,Where)
 //%% ARCANE_EXPR_SUPPRESS_BEGIN

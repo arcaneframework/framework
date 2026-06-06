@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICaseFunctionProvider.h                                     (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un service fournissant des fonctions utilisateur pour le JDD. */
+/* Interface of a service providing user functions for the dataset.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ICASEFUNCTIONPROVIDER_H
 #define ARCANE_ICASEFUNCTIONPROVIDER_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service fournissant des fonctions
- * utilisateur pour le JDD.
+ * \brief Interface of a service providing user functions
+ * for the JDD.
  *
  * \ingroup CaseOption
  */
@@ -34,21 +35,22 @@ class ARCANE_CORE_EXPORT ICaseFunctionProvider
 {
  public:
 	
-  virtual ~ICaseFunctionProvider() = default; //!< Libère les ressources
+  virtual ~ICaseFunctionProvider() = default; //!< Releases resources
 
  public:
 
   /*!
-   * \brief Enregistre dans \a cm les fonctions fournies par ce service.
+   * \brief Registers the functions provided by this service in \a cm.
    */
   virtual void registerCaseFunctions(ICaseMng* cm) =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service fournissant des fonctions
- * utilisateur pour le JDD.
+ * \brief Interface of a service providing user functions
+ * for the JDD.
  *
  * \ingroup CaseOption
  */
@@ -56,12 +58,12 @@ class ARCANE_CORE_EXPORT ICaseFunctionDotNetProvider
 {
  public:
 
-  virtual ~ICaseFunctionDotNetProvider() = default; //!< Libère les ressources
+  virtual ~ICaseFunctionDotNetProvider() = default; //!< Releases resources
 
  public:
 
   /*!
-   * \brief Enregistre dans \a cm les fonctions d'une classe '.Net'.
+   * \brief Registers the functions of a '.Net' class in \a cm.
    */
   virtual void registerCaseFunctions(ICaseMng* cm,
                                      const String& assembly_name,
@@ -76,5 +78,4 @@ class ARCANE_CORE_EXPORT ICaseFunctionDotNetProvider
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

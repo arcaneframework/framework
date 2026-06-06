@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshVariableScalarRefTpl1.cc                                (C) 2000-2025 */
 /*                                                                           */
-/* Instanciation des classes templates des variables du maillage.            */
+/* Instantiation of template classes for mesh variables.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

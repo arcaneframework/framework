@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptions.cc                                              (C) 2000-2023 */
 /*                                                                           */
-/* Gestion des options du jeu de données.                                    */
+/* Data set options management.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -83,18 +83,18 @@ class CaseOptionsPrivate
   ICaseOptionList* m_parent = nullptr;
   ICaseMng* m_case_mng;
   ReferenceCounter<ICaseOptionList> m_config_list;
-  IModule* m_module = nullptr;  //!< Module associé ou 0 s'il n'y en a pas.
-  IServiceInfo* m_service_info = nullptr;  //!< Service associé ou 0 s'il n'y en a pas.
+  IModule* m_module = nullptr;  //!< Associated module or 0 if none.
+  IServiceInfo* m_service_info = nullptr;  //!< Associated service or 0 if none.
   String m_name;
   String m_true_name;
   bool m_is_multi = false;
   bool m_is_translated_name_set = false;
   bool m_is_phase1_read = false;
   StringDictionary m_name_translations;
-  ICaseFunction* m_activate_function = nullptr; //!< Fonction indiquand l'état d'activation
+  ICaseFunction* m_activate_function = nullptr; //!< Function indicating activation status
   bool m_is_case_mng_registered = false;
   MeshHandle m_mesh_handle;
-  // non-null si on possède notre propre instance de document
+  // non-null if we own our own document instance
   ICaseDocumentFragment* m_own_case_document_fragment = nullptr;
   Ref<ICaseMng> m_case_mng_ref;
 };
@@ -180,13 +180,13 @@ CaseOptions::
 CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
 : m_p(new CaseOptionsPrivate(cm,"dynamic-options"))
 {
-  // Ce constructeur est pour les options créées dynamiquement
+  // This constructor is for dynamically created options
   IXmlDocumentHolder* xml_doc = xml_content.m_document;
   XmlNode parent_elem = xml_doc->documentNode().documentElement();
   m_p->m_config_list = ICaseOptionListInternal::create(cm,this,parent_elem);
   m_p->m_own_case_document_fragment = cm->_internalImpl()->createDocumentFragment(xml_doc);
-  // Conserve une référence sur le ICaseMng pour le cas où cette option
-  // serait détruite après la fin du calcul et la destruction des sous-domaine.
+  // Keeps a reference to the ICaseMng in case this option
+  // is destroyed after the end of the calculation and the destruction of subdomains.
   m_p->m_case_mng_ref = cm->toReference();
 }
 
@@ -259,11 +259,10 @@ xpathFullName() const
 void CaseOptions::
 addAlternativeNodeName(const String& lang,const String& name)
 {
-  // On ne doit plus modifier les traductions une fois que le nom traduit
-  // a été positionné. Cela peut se produire avec les services si ces
-  // derniers ont une traduction dans leur axl. Dans ce cas, cette
-  // dernière surcharge celle de l'option parente ce qui peut rendre
-  // les noms incohérents.
+  // Translations should not be modified once the translated name
+  // has been set. This can happen with services if they have a translation
+  // in their axl. In this case, this last one overrides the parent option,
+  // which can make the names inconsistent.
   if (m_p->m_is_translated_name_set)
     return;
   m_p->m_name_translations.add(lang,name);
@@ -412,35 +411,35 @@ _setParent(ICaseOptionList* parent)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne le maillage associé à cette option.
+ * \brief Positions the mesh associated with this option.
  *
- * Si \a mesh_name est nul ou vide alors le maillage associé à cette
- * option est celui de l'option parente. Si l'option n'a pas de parent alors
- * c'est le maillage par défaut.
+ * If \a mesh_name is null or empty, the mesh associated with this
+ * option is that of the parent option. If the option has no parent, it is the default mesh.
  *
- * Si \a mesh_name n'est pas nul, il y a deux possibilités:
- * - si le maillage spécifié existe alors l'option sera associée à ce maillage
- * - s'il n'existe pas, alors l'option est désactivée et les éventuelles options
- * filles ne seront pas lues. Ce dernier cas arrive par exemple si un service
- * est associé à un maillage supplémentaire mais que ce dernier est optionnel.
- * Dans ce cas l'option ne doit pas être lue.
+ * If \a mesh_name is not null, there are two possibilities:
+ * - if the specified mesh exists, the option will be associated with that mesh
+ * - if it does not exist, the option is disabled and any potential child options
+ * will not be read. This latter case occurs, for example, if a service
+ * is associated with an additional mesh but that mesh is optional.
+ * In this case, the option must not be read.
  *
- * \retval true si l'option est désactivée suite à cet appel.
+ * \retval true if the option is disabled following this call.
  */
 bool CaseOptions::
 _setMeshHandleAndCheckDisabled(const String& mesh_name)
 {
   if (mesh_name.empty()){
-    // Mon maillage est celui de mon parent
+    // My mesh is that of my parent
     if (m_p->m_parent)
       _setMeshHandle(m_p->m_parent->meshHandle());
   }
   else{
-    // Un maillage différent du maillage par défaut est associé à l'option.
-    // Récupère le MeshHandle associé s'il n'existe. S'il n'y en a pas on
-    // désactive l'option.
-    // Si aucun maillage du nom de celui qu'on cherche n'existe, n'alloue pas le service
+    // A mesh different from the default mesh is associated with the option.
+    // Retrieve the associated MeshHandle if it exists. If it doesn't,
+    // disable the option.
+    // If no mesh with the name we are looking for exists, do not allocate the service
     MeshHandle* handle = caseMng()->meshMng()->findMeshHandle(mesh_name,false);
     if (!handle){
       m_p->m_config_list->disable();
@@ -512,7 +511,7 @@ read(eCaseOptionReadPhase read_phase)
 
   if (is_phase1){
     ICaseDocumentFragment* doc = caseDocumentFragment();
-    // Lit la fonction d'activation (si elle est présente)
+    // Read the activation function (if present)
     XmlNode velem = m_p->m_config_list->rootElement();
     CaseNodeNames* cnn = doc->caseNodeNames();
     String func_activation_name = velem.attrValue(cnn->function_activation_ref);
@@ -539,7 +538,7 @@ read(eCaseOptionReadPhase read_phase)
                     << velem.xpathFullName();
       }
     }
-    // Vérifie que l'élément 'function' n'est pas présent
+    // Check that the 'function' element is not present
     {
       String func_name = velem.attrValue(cnn->function_ref);
       if (!func_name.null())
@@ -553,7 +552,9 @@ read(eCaseOptionReadPhase read_phase)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*! \brief Ajoute à \a nlist les éléments non reconnus.
+
+/*!
+ * \brief Adds unrecognized elements to \a nlist.
  */ 
 void CaseOptions::
 addInvalidChildren(XmlNodeList& nlist)

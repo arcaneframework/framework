@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableWriterHelper.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface représentant un écrivain simple utilisant un                    */
+/* Interface representing a simple writer using an                           */
 /* ISimpleTableReaderWriter.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISIMPLETABLEWRITERHELPER_H
@@ -31,25 +31,24 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Interface de classe permettant d'écrire un fichier
- * avec ISimpleTableReaderWriter.
- * Fournit des méthodes permettant de gérer l'écriture en parallèle
- * et les symboles de noms.
+ * @brief Class interface for writing a file
+ * using ISimpleTableReaderWriter.
+ * Provides methods for managing parallel writing
+ * and name symbols.
  * 
- * Cette classe est, en quelque sorte, une surcouche de 
- * ISimpleTableReaderWriter qui est assez basique.
- * ISimpleTableWriterHelper est là pour simplifier
- * l'utilisation de ISimpleTableReaderWriter.
+ * This class is, in a way, a wrapper around 
+ * ISimpleTableReaderWriter, which is quite basic.
+ * ISimpleTableWriterHelper is here to simplify
+ * the use of ISimpleTableReaderWriter.
  * 
- * Dans la partie SimpleTable, les symboles de noms sont des
- * mots-clefs entourés d'arobases et qui seront replacés
- * par leur signfication lors de l'exécution.
- * Dans l'implémentation SimpleTableWriterHelper, il y a
- * actuellement deux symboles de noms pris en charge :
- * - \@proc_id\@ : Sera remplacé par l'id du processus.
- * - \@num_procs\@ : Sera remplacé par le nombre de processus.
- * Et dans SimpleTableWriterHelper, ces symboles ne sont remplacés
- * que dans le nom du tableau.
+ * In the SimpleTable part, name symbols are keywords surrounded by 
+ * at signs (@) that will be replaced by their meaning during execution.
+ * In the SimpleTableWriterHelper implementation, there are
+ * currently two supported name symbols:
+ * - \@proc_id\@: Will be replaced by the process ID.
+ * - \@num_procs\@: Will be replaced by the number of processes.
+ * And in SimpleTableWriterHelper, these symbols are only replaced
+ * in the table name.
  */
 class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
 {
@@ -58,12 +57,12 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
 
  public:
   /**
-   * @brief Méthode permettant d'initialiser l'objet.
-   * Notamment le nom du tableau et le nom du répertoire qui contiendra
-   * les fichiers (le répertoire des tableaux/directory_name).
+   * @brief Method to initialize the object.
+   * Specifically, the table name and the directory name that will contain
+   * the files (the tables directory/directory_name).
    * 
-   * @param table_name Le nom du tableau (et du fichier de sortie).
-   * @param directory_name Le nom du dossier dans lequel enregistrer les tableaux.
+   * @param table_name The table name (and the output file name).
+   * @param directory_name The folder name where the tables will be saved.
    */
   virtual bool init(const Directory& root_directory, const String& table_name, const String& directory_name) = 0;
 
@@ -71,41 +70,41 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'afficher le tableau.
+   * @brief Method to display the table.
    * 
-   * @param rank L'id du processus devant afficher le tableau (-1 pour 
-   *                  signifier "tous les processus").
+   * @param rank The process ID that should display the table (-1 to 
+   *                  signify "all processes").
    */
   virtual void print(Integer rank = 0) = 0;
 
   /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si rank != -1, les processus autres que rank retournent true.
+   * @brief Method to write the table to a file.
+   * If rank != -1, processes other than rank return true.
    * 
-   * Par exemple, dans l'implémentation SimpleTableWriterHelper,
-   * le ou les fichiers seront écrits dans le répertoire :
+   * For example, in the SimpleTableWriterHelper implementation,
+   * the file(s) will be written in the directory:
    * root_directory/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
    * 
-   * @param root_directory Le répertoire racine où créer le répertoire des tableaux.
-   * @param rank L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
+   * @param root_directory The root directory where the tables directory should be created.
+   * @param rank The process ID that should write the table to a file 
+   *                  (-1 to signify "all processes").
+   * @return true If the file was written correctly.
+   * @return false If the file was not written correctly.
    */
   virtual bool writeFile(const Directory& root_directory, Integer rank) = 0;
 
   /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si rank != -1, les processus autres que rank retournent true.
+   * @brief Method to write the table to a file.
+   * If rank != -1, processes other than rank return true.
    * 
-   * Par exemple, dans l'implémentation SimpleTableWriterHelper,
-   * le ou les fichiers seront écrits dans le répertoire :
+   * For example, in the SimpleTableWriterHelper implementation,
+   * the file(s) will be written in the directory:
    * ./[output]/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
    * 
-   * @param rank L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
+   * @param rank The process ID that should write the table to a file 
+   *                  (-1 to signify "all processes").
+   * @return true If the file was written correctly.
+   * @return false If the file was not written correctly.
    */
   virtual bool writeFile(Integer rank = -1) = 0;
 
@@ -113,209 +112,209 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer la précision actuellement
-   * utilisée pour l'écriture des valeurs.
+   * @brief Method to retrieve the precision currently
+   * used for writing values.
    * 
-   * @return Integer La précision.
+   * @return Integer The precision.
    */
   virtual Integer precision() = 0;
   /**
-   * @brief Méthode permettant de modifier la précision du print.
+   * @brief Method to modify the print precision.
    * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * Applicable to both the 'print()' method and the 'writeFile()' methods.
    * 
-   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
-   *          si le flag "std::fixed" est désactivé, la précision définira le
-   *          nombre de chiffres total (avant et après la virgule) ;
-   *          si le flag "std::fixed" est activé, la précision définira le
-   *          nombre de chiffres après la virgule. Attention donc lors de
-   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
-   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
-   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * @warning The "std::fixed" flag modifies the behavior of "setPrecision()";
+   *          if the "std::fixed" flag is disabled, the precision defines the
+   *          total number of digits (before and after the comma);
+   *          if the "std::fixed" flag is enabled, the precision defines the
+   *          number of digits after the comma. Be careful when using
+   *          "std::numeric_limits<Real>::max_digits10"
+   *          (for writing) or "std::numeric_limits<Real>::digits10"
+   *          (for reading), which should be used without the "std::fixed" flag.
    * 
-   * @param precision La nouvelle précision.
+   * @param precision The new precision.
    */
   virtual void setPrecision(Integer precision) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si le frag 'std::fixed' est
-   * actif ou non pour l'écriture des valeurs.
+   * @brief Method to check if the 'std::fixed' flag is
+   * active for writing values.
    * 
-   * @return true Si oui.
-   * @return false Si non.
+   * @return true If yes.
+   * @return false If no.
    */
   virtual bool isFixed() = 0;
   /**
-   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
+   * @brief Method to set or unset the 'std::fixed' flag.
    * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * Applicable to both the 'print()' method and the 'writeFile()' methods.
    * 
-   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
-   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
-   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
+   * This flag allows 'forcing' the number of digits after the comma to
+   * the desired precision. For example, if 'setPrecision(4)' was called,
+   * and 'setFixed(true)' is called, the print of '6.1' will output '6.1000'.
    * 
-   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
-   *          si le flag "std::fixed" est désactivé, la précision définira le
-   *          nombre de chiffres total (avant et après la virgule) ;
-   *          si le flag "std::fixed" est activé, la précision définira le
-   *          nombre de chiffres après la virgule. Attention donc lors de
-   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
-   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
-   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * @warning The "std::fixed" flag modifies the behavior of "setPrecision()";
+   *          if the "std::fixed" flag is disabled, the precision defines the
+   *          total number of digits (before and after the comma);
+   *          if the "std::fixed" flag is enabled, the precision defines the
+   *          number of digits after the comma. Be careful when using
+   *          "std::numeric_limits<Real>::max_digits10"
+   *          (for writing) or "std::numeric_limits<Real>::digits10"
+   *          (for reading), which should be used without the "std::fixed" flag.
    * 
-   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
+   * @param fixed Whether the 'std::fixed' flag should be set or not.
    */
   virtual void setFixed(bool fixed) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si le frag 'std::scientific' est
-   * actif ou non pour l'écriture des valeurs.
+   * @brief Method to check if the 'std::scientific' flag is
+   * active for writing values.
    * 
-   * @return true Si oui.
-   * @return false Si non.
+   * @return true If yes.
+   * @return false If no.
    */
   virtual bool isForcedToUseScientificNotation() = 0;
   /**
-   * @brief Méthode permettant de définir le flag 'std::scientific' ou non.
+   * @brief Method to set or unset the 'std::scientific' flag.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * Applicable to both the 'print()' method and the 'writetable()' method.
    * 
-   * Ce flag permet de 'forcer' l'affichage des valeurs en écriture
-   * scientifique.
+   * This flag allows 'forcing' the display of values in scientific
+   * notation.
    * 
-   * @param use_scientific Si le flag 'std::scientific' doit être défini ou non.
+   * @param use_scientific Whether the 'std::scientific' flag should be set or not.
    */
   virtual void setForcedToUseScientificNotation(bool use_scientific) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le nom du répertoire tel qu'il
-   * a été donné précédement.
+   * @brief Method to retrieve the directory name as it
+   * was previously provided.
    * 
-   * Ici, les symboles de noms sont toujours présent.
+   * Name symbols are still present here.
    * 
-   * @return String Le répertoire.
+   * @return String The directory.
    */
   virtual String outputDirectoryWithoutComputation() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le nom du répertoire où sera
-   * placé les tableaux.
+   * @brief Method to retrieve the directory name where the tables will be
+   * placed.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * Ici, les symboles de noms ont été résolus.
+   * Name symbols have been resolved here.
    * 
-   * @return String Le répertoire.
+   * @return String The directory.
    */
   virtual String outputDirectory() = 0;
   /**
-   * @brief Méthode permettant de définir le répertoire
-   * dans lequel enregistrer les tableaux.
+   * @brief Method to set the directory
+   * where the tables should be saved.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * @param directory Le répertoire.
+   * @param directory The directory.
    */
   virtual void setOutputDirectory(const String& directory) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le nom du tableau tel qu'il
-   * a été donné précédement.
+   * @brief Method to retrieve the table name as it
+   * was previously provided.
    * 
-   * Ici, les symboles de noms sont toujours présent.
+   * Name symbols are still present here.
    * 
-   * @return String Le nom.
+   * @return String The name.
    */
   virtual String tableNameWithoutComputation() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le nom du tableau.
+   * @brief Method to retrieve the table name.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * Ici, les symboles de noms ont été résolus.
+   * Name symbols have been resolved here.
    * 
-   * @return String Le nom.
+   * @return String The name.
    */
   virtual String tableName() = 0;
   /**
-   * @brief Méthode permettant de définir le nom du tableau.
+   * @brief Method to set the table name.
    * 
-   * @param name Le nom.
+   * @param name The name.
    */
   virtual void setTableName(const String& name) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le nom du fichier.
+   * @brief Method to retrieve the file name.
    * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * May be different for each process (depending on the implementation).
    * 
-   * Ici, les symboles de noms ont été résolus et l'extension est ajoutée.
+   * Name symbols have been resolved and the extension is added here.
    * 
-   * @return String Le nom.
+   * @return String The name.
    */
   virtual String fileName() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le chemin où sera
-   * enregistrés les tableaux. 
+   * @brief Method to retrieve the path where
+   * the tables will be saved. 
    * 
-   * Exemple (relatif) :
+   * Example (relative):
    * ./output/csv/[directory_name]/
    * 
-   * @return String Le chemin.
+   * @return String The path.
    */
   virtual Directory outputPath() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le chemin où l'implémentation
-   * enregistre ces tableaux. 
+   * @brief Method to retrieve the path where the implementation
+   * saves these tables. 
    * 
-   * Exemple (relatif) :
+   * Example (relative):
    * ./output/csv/
    * 
-   * @return String Le chemin.
+   * @return String The path.
    */
   virtual Directory rootPath() = 0;
 
   /**
-   * @brief Méthode permettant de savoir si les paramètres actuellement en possession
-   * de l'implémentation lui permet d'écrire un fichier par processus, notamment 
-   * grâce aux symboles de noms.
+   * @brief Method to check if the parameters currently held
+   * by the implementation allow it to write a file per process, especially 
+   * thanks to name symbols.
    * 
-   * @return true Si oui, l'implémentation peut écrire un fichier par processus.
-   * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
+   * @return true If yes, the implementation can write a file per process.
+   * @return false Otherwise, only one file can be written.
    */
   virtual bool isOneFileByRanksPermited() = 0;
 
   /**
-   * @brief Méthode permettant de connaitre le type de fichier qui sera utilisé.
+   * @brief Method to know the file type that will be used.
    * 
-   * @return String Le type de fichier de sortie (= l'extension).
+   * @return String The output file type (= the extension).
    */
   virtual String fileType() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * SimpleTableInternal utilisé.
+   * @brief Method to retrieve a reference to the
+   * SimpleTableInternal object used.
    * 
-   * @return Ref<SimpleTableInternal> Une copie de la référence. 
+   * @return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * ISimpleTableReaderWriter utilisé.
+   * @brief Method to retrieve a reference to the
+   * ISimpleTableReaderWriter object used.
    * 
-   * @return Ref<ISimpleTableReaderWriter> Une copie de la référence. 
+   * @return Ref<ISimpleTableReaderWriter> A copy of the reference. 
    */
   virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
 
   /**
-   * @brief Méthode permettant de définir une référence vers un
+   * @brief Method to set a reference to an
    * ISimpleTableReaderWriter.
    * 
-   * @param simple_table_reader_writer La référence vers un ISimpleTableReaderWriter.
+   * @param simple_table_reader_writer The reference to an ISimpleTableReaderWriter.
    */
   virtual void setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer) = 0;
 };
@@ -329,6 +328,3 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

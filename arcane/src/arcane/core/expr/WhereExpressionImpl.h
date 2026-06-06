@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* WhereExpressionImpl.h                                       (C) 2000-2004 */
 /*                                                                           */
-/* Implémentation d'une expression conditionnelle.                           */
+/* Implementation of a conditional expression.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_WHEREEXPRESSIONIMPL_H
 #define ARCANE_EXPR_WHEREEXPRESSIONIMPL_H
@@ -33,7 +33,7 @@ class WhereOperator;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Implementation d'une expression binaire
+ * \brief Implementation of a binary expression
  */
 class ARCANE_EXPR_EXPORT WhereExpressionImpl
 : public ExpressionImpl
@@ -50,16 +50,16 @@ class ARCANE_EXPR_EXPORT WhereExpressionImpl
   virtual Integer vectorSize() const { return 0; }
 
  private:
-  Expression m_test;      //!< Expression de test
-  Expression m_iftrue;    //!< Expression évaluée lorsque le test est positif
-  Expression m_iffalse;   //!< Expression évaluée lorsque le test est negatif
+  Expression m_test;      //!< Test expression
+  Expression m_iftrue;    //!< Expression evaluated when the test is positive
+  Expression m_iffalse;   //!< Expression evaluated when the test is negative
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Operateur generique pour les expressions conditionnnelle.
+ * \brief Generic operator for conditional expressions.
  */
 class WhereOperator
 {
@@ -85,7 +85,7 @@ class WhereOperatorT
                         ArrayVariant* iftrue, 
                         ArrayVariant* iffalse)
   {
-    // verification de la validite de l'operation
+    // verification of operation validity
     if (test->type() != ArrayVariant::TBool)
       throw BadOperandException("WhereOperatorT::evaluate");
 
@@ -96,10 +96,10 @@ class WhereOperatorT
     if (iftrue->type() || iffalse->type())
       throw BadOperandException("WhereOperatorT::evaluate");
 
-    // allocation du résultat en fonction du type du résultat du if
+    // allocation of the result based on the type of the if
     res->allocate(iftrue->type());
 
-    // recuperation des valeurs des operandes
+    // retrieval of operand values
     ArrayView<bool> test_val;
     test->value(test_val);
     ArrayView<T> res_val;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemVectorView.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur une liste pour obtenir des informations sur les entités.          */
+/* View over a list to retrieve information about entities.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,10 +76,9 @@ fillLocalIds(Array<Int32>& ids) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Note: ces structures doivent avoir le même layout que la
-// version qui est dans NumericWrapper.h
+// Note: these structures must have the same layout as the version in NumericWrapper.h
 
-// Cette classe sert de type de retour pour wrapper la class ConstArrayView
+// This class serves as a return type to wrap the ConstArrayView class
 template<typename DataType> class ConstArrayViewPOD_T
 {
  public:
@@ -120,4 +119,3 @@ _internalSwigSet(ItemVectorViewPOD* vpod)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

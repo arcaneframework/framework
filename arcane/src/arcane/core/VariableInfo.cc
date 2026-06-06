@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableInfo.cc                                             (C) 2000-2024 */
 /*                                                                           */
-/* Infos caractérisant une variable.                                         */
+/* Information characterizing a variable.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -83,9 +83,9 @@ _internalGetStorageTypeInfo(eDataType data_type,Integer dimension,Integer multi_
      basic_data_type = DataTypeTraitsT<Real3x3>::basicDataType();
      break;
    case DT_String:
-     // Pour les chaînes de caractères, le conteneur contient
-     // des 'Byte' et la dimension est 1 de plus que celle
-     // de la variable.
+     // For strings, the container contains
+     // 'Byte' and the dimension is 1 greater than that
+     // of the variable.
      nb_basic = 0;
      multi_tag = 1;
      dimension += 1;
@@ -129,12 +129,12 @@ VariableInfo(const String& local_name,const String& item_family_name,
 {
   if (m_item_family_name.null())
     m_item_family_name = _defaultFamilyName();
-  // m_item_group_name peut être nul ici. Dans ce cas,
-  // il sera initialisé par la suite via
-  // setDefaultItemGroupName(). Il ne faut pas le faire
-  // ici car mettre a jour le nom entraine des allocations/desallocation
-  // memoire et ce constructeur peut-être appelé souvent si on recherche
-  // des variables.
+  // m_item_group_name can be null here. In this case,
+  // it will be initialized later via
+  // setDefaultItemGroupName(). It should not be done
+  // here because updating the name entails memory allocations/deallocations
+  // and this constructor might be called often when searching
+  // for variables.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -169,12 +169,13 @@ _defaultFamilyName()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcul le nom complet de la variable.
+ * \brief Calculates the full name of the variable.
  *
- * Ce nom nécessite de concaténer des chaînes de caractère et donc
- * de faire des allocations qui peuvent être couteuses.
- * On ne calcule le nom que si fullName() est explicitement demandé.
+ * This name requires concatenating strings and therefore
+ * making allocations which can be costly.
+ * The name is only calculated if fullName() is explicitly requested.
  */
 void VariableInfo::
 _computeFullName() const
@@ -207,7 +208,7 @@ setDefaultItemGroupName()
 {
   if (!m_item_group_name.null())
     return;
-  // Le nom construit ici doit être cohérent avec celui de DynamicMeshKindInfos.cc
+  // The name constructed here must be consistent with that in DynamicMeshKindInfos.cc
   m_item_group_name = "All" + m_item_family_name + "s";
 }
 
@@ -218,4 +219,3 @@ setDefaultItemGroupName()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceFactory.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Manufacture des services.                                                 */
+/* Service manufacturing.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICEFACTORY_H
 #define ARCANE_CORE_SERVICEFACTORY_H
@@ -38,8 +38,9 @@ namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une instance de service en C#.
+ * \brief Base class for a service instance in C#.
  */
 class DotNetServiceInstance
 : public IServiceInstance
@@ -70,9 +71,10 @@ class DotNetServiceInstance
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Instance d'un service.
+ * \brief Service instance.
  */
 template<typename InterfaceType>
 class ServiceInstanceT
@@ -106,9 +108,10 @@ class ServiceInstanceT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Infos sur la fabrication d'un service ou d'un module.
+ * \brief Information about the manufacturing of a service or a module.
  */
 class ARCANE_CORE_EXPORT ServiceFactoryInfo
 : public IServiceFactoryInfo
@@ -152,10 +155,11 @@ class ARCANE_CORE_EXPORT ServiceFactoryInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un fonctor de création d'une instance de service
- * correspondant à l'interface \a InterfaceType.
+ * \brief Interface for a factory function (functor) that creates a service
+ * instance corresponding to the \a InterfaceType interface.
  */
 template<typename InterfaceType>
 class IServiceInterfaceFactory
@@ -163,20 +167,20 @@ class IServiceInterfaceFactory
  public:
   virtual ~IServiceInterfaceFactory() = default;
  public:
-  //! Créé une instance du service .
+  //! Creates an instance of the service.
   virtual Ref<InterfaceType> createReference(const ServiceBuildInfo& sbi) =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fabrique de service.
+ * \brief Service factory.
  *
- * Cette classe implémente IServiceFactory2 et IServiceFactory2T pour
- * l'interface \a InterfaceType.
+ * This class implements IServiceFactory2 and IServiceFactory2T for
+ * the \a InterfaceType interface.
  */
-
 template<typename InterfaceType>
 class ServiceFactory2TV2
 : public IServiceFactory2T<InterfaceType>
@@ -238,9 +242,10 @@ class ServiceFactory2TV2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fabrique pour le service \a ServiceType pour l'interface \a InterfaceType.
+ * \brief Factory for the \a ServiceType service for the \a InterfaceType interface.
  */
 template<typename ServiceType,typename InterfaceType>
 class ServiceInterfaceFactory
@@ -270,11 +275,12 @@ class ARCANE_CORE_EXPORT IServiceInstanceAdder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base des fabriques pour les services singleton.
+ * \brief Base class for factories for singleton services.
  *
- * Il faut dériver de cette classe et implémenter _createInstance().
+ * You must derive from this class and implement _createInstance().
  */
 class ARCANE_CORE_EXPORT SingletonServiceFactoryBase
 : public ISingletonServiceFactory
@@ -285,10 +291,10 @@ class ARCANE_CORE_EXPORT SingletonServiceFactoryBase
   explicit SingletonServiceFactoryBase(IServiceInfo* si) : m_service_info(si){}
  public:
 
-  //! Créé un service singleton
+  //! Creates a singleton service instance
   Ref<ISingletonServiceInstance> createSingletonServiceInstance(const ServiceBuildInfoBase& sbib) override;
 
-  //! Retourne le IServiceInfo associé à cette fabrique.
+  //! Returns the IServiceInfo associated with this factory.
   IServiceInfo* serviceInfo() const override { return m_service_info; }
  protected:
   virtual ServiceInstanceRef _createInstance(const ServiceBuildInfoBase& sbi,IServiceInstanceAdder* instance_adder) =0;
@@ -298,18 +304,19 @@ class ARCANE_CORE_EXPORT SingletonServiceFactoryBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fabrique pour le service singleton de type \a ServiceType implémentant
- * les interfaces \a Interfaces.
+ * \brief Factory for the singleton service of type \a ServiceType
+ * implementing the \a Interfaces interfaces.
  */
 template<typename ServiceType,typename ... Interfaces>
 class SingletonServiceFactory
 : public SingletonServiceFactoryBase
 {
   /*!
-   * \brief Classe utilitaire permettant de créér une instance
-   * de IServiceInstance pour chaque interface de \a Interfaces.
+   * \brief Utility class allowing the creation of an IServiceInstance
+   * for each interface in \a Interfaces.
    */
   class Helper
   {
@@ -317,25 +324,25 @@ class SingletonServiceFactory
     Helper(ServiceType* service,IServiceInfo* si,IServiceInstanceAdder* adder)
     : m_service(service), m_service_info(si), m_adder(adder) {}
    private:
-    //! Surcharge pour 1 interface
+    //! Overload for 1 interface
     template<typename InterfaceType> void _create()
     {
       InterfaceType* x = m_service;
-      // ATTENTION: la référence suivante ne doit pas détruire 'm_service' car
-      // ce dernier a déjà un ServiceReference qui a été construit lors de
-      // l'appel à _createInstance().
+      // ATTENTION: the following reference must not destroy 'm_service' because
+      // the latter already has a ServiceReference that was constructed during
+      // the call to _createInstance().
       auto x_ref = Ref<InterfaceType>::_createNoDestroy(x);
       auto instance = new ServiceInstanceT<InterfaceType>(x_ref,m_service_info);
-      // TODO: indiquer qu'il ne faut pas détruire la référence.
+      // TODO: indicate that the reference should not be destroyed.
       auto instance_ref = ServiceInstanceRef::createRef(instance);
       m_adder->addInstance(instance_ref);
     }
-    //! Surcharge pour 2 interfaces ou plus
+    //! Overload for 2 or more interfaces
     template<typename I1,typename I2,typename ... OtherInterfaces>
     void _create()
     {
       _create<I1>();
-      // Applique la récursivité sur les types restants
+      // Apply recursion to the remaining types
       _create<I2,OtherInterfaces...>();
     }
    public:
@@ -366,10 +373,11 @@ class SingletonServiceFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe permettant d'enregistrer une fabrique pour un service
- * implémentant l'interface \a InterfaceType.
+ * \brief Class allowing the registration of a factory for a service
+ * implementing the \a InterfaceType interface.
  */
 template<typename InterfaceType>
 class ServiceInterfaceRegisterer
@@ -390,7 +398,7 @@ class ServiceInterfaceRegisterer
 
  public:
 
-  //! Enregistre dans \a si une fabrique pour créer une instance du service \a ServiceType
+  //! Registers in \a si a factory to create an instance of the service \a ServiceType
   template<typename ServiceType> void
   registerToServiceInfo(ServiceInfo* si) const
   {
@@ -410,33 +418,34 @@ class ServiceInterfaceRegisterer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe permettant de créer et d'enregistrer les fabriques pour un service.
+ * \brief Class allowing the creation and registration of factories for a service.
  */
 template<typename ServiceType>
 class ServiceAllInterfaceRegisterer
 {
  private:
 
-  //! Surcharge pour 1 interface
+  //! Overload for 1 interface
   template<typename InterfaceType> static void
   _create(ServiceInfo* si,const InterfaceType& i1)
   {
     i1.template registerToServiceInfo<ServiceType>(si);
   }
-  //! Surcharge pour 2 interfaces ou plus
+  //! Overload for 2 or more interfaces
   template<typename I1,typename I2,typename ... OtherInterfaces>
   static void _create(ServiceInfo* si,const I1& i1,const I2& i2,const OtherInterfaces& ... args)
   {
     _create<I1>(si,i1);
-    // Applique la récursivité sur les types restants
+    // Apply recursion to the remaining types
     _create<I2,OtherInterfaces...>(si,i2,args...);
   }
 
  public:
 
-  //! Enregistre dans le service les fabriques pour les interfacs \a Interfaces
+  //! Registers the factories for the \a Interfaces interfaces in the service
   template<typename ... Interfaces> static void
   registerToServiceInfo(ServiceInfo* si, const Interfaces& ... args)
   {
@@ -452,22 +461,21 @@ class ServiceAllInterfaceRegisterer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour déclarer une interface lors de l'enregistrement d'un service.
+ * \brief Macro to declare an interface when registering a service.
  *
- * Cette macro s'utilise dans la macro ARCANE_REGISTER_SERVICE.
+ * This macro is used within the ARCANE_REGISTER_SERVICE macro.
  *
- * L'appel est comme suit:
- *
- \code
+ * The call is as follows:
+ * \code
  * ARCANE_SERVICE_INTERFACE(ainterface)
  \endcode
  *
- * \a ainterface est le nom de l'interface (sans les guillemets). Il
- * peut contenir un namespace.
- * Par exemple:
- *
- \code
+ * \a ainterface is the name of the interface (without quotes). It
+ * may contain a namespace.
+ * For example:
+ * \code
  * ARCANE_SERVICE_INTERFACE(Arcane::IUnitTest);
  \endcode
  *
@@ -475,43 +483,42 @@ class ServiceAllInterfaceRegisterer
 #define ARCANE_SERVICE_INTERFACE(ainterface)\
   Arcane::Internal::ServiceInterfaceRegisterer< ainterface >(#ainterface)
 
-//! Enregistre une interface avec un nom de namespace.
+//! Registers an interface with a namespace name.
 #define ARCANE_SERVICE_INTERFACE_NS(ainterface_ns,ainterface) \
   Arcane::Internal::ServiceInterfaceRegisterer<ainterface_ns :: ainterface>(#ainterface_ns,#ainterface)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Service
- * \brief Macro pour enregistrer un service.
+ * \brief Macro for registering a service.
  *
- * L'appel est comme suit:
- *
- \code
+ * The call is as follows:
+ * \code
  * ARCANE_REGISTER_SERVICE(ClassName,
  *                         ServiceProperty("ServiceName",where),
  *                         ARCANE_SERVICE_INTERFACE(InterfaceName1),);
  *                         ARCANE_SERVICE_INTERFACE(InterfaceName2),...);
  \endcode
 
- * Avec les paramètres suivants:
- * - \a ClassName est le nom de la classe du service,
- * - \a "ServiceName" est le nom du service.
- * - \a where est de type eServiceType et indique où le service peut être créé.
- * - \a InterfaceName est le nom de l'interface implémentée par le service. Il
- * est possible de spécifier plusieurs interfaces pour un même service.
+ * With the following parameters:
+ * - \a ClassName is the name of the service class,
+ * - \a "ServiceName" is the name of the service.
+ * - \a where is of type eServiceType and indicates where the service can be created.
+ * - \a InterfaceName is the name of the interface implemented by the service. It
+ * is possible to specify multiple interfaces for the same service.
  *
- * Par exemple, on peut avoir une utilisation comme suit:
- *
- \code
+ * For example, usage can be as follows:
+ * \code
  * ARCANE_REGISTER_SERVICE(ThreadParallelSuperMng,
  *                         ServiceProperty("ThreadParallelSuperMng",ST_Application),
  *                         ARCANE_SERVICE_INTERFACE(IParallelSuperMng));
  \endcode
  *
- * \note Cette macro utilise un objet global pour enregistrer le service et
- * ne doit donc pas être utilisée dans un fichier qui peut appartenir à plusieurs
- * unités de compilation (par exemple il ne doit pas se trouve dans un fichier d'en-tête).
+ * \note This macro uses a global object to register the service and
+ * should therefore not be used in a file that may belong to multiple
+ * compilation units (for example, it should not be in a header file).
  */
 #define ARCANE_REGISTER_SERVICE(aclass,a_service_property,...) \
 namespace\
@@ -529,11 +536,12 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegis
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Macro pour enregistrer un service issu d'un fichier AXL.
+ * \brief Macro for registering a service derived from an AXL file.
  *
- * Cette macro est interne à Arcane et ne doit pas être utilisée directement
+ * This macro is internal to Arcane and should not be used directly
  */
 #define ARCANE_REGISTER_AXL_SERVICE(aclass,a_service_properties) \
 namespace\
@@ -551,23 +559,26 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalServiceRegis
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Les types et macros suivants sont obsolètes.
+ * The following types and macros are obsolete.
  *
- * A terme, seule la macro ARCANE_REGISTER_SERVICE sera utilisée.
+ * In the future, only the ARCANE_REGISTER_SERVICE macro will be used.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistre un service de fabrique pour la classe \a aclass
+ * \brief Registers a factory service for the class \a aclass
  *
- * Le service est enregistré sous le nom \a aname et implémente
- * l'interface \a ainterface.
+ * The service is registered under the name \a aname and implements
+ * the \a ainterface interface.
  *
- * \deprecated Utiliser ARCANE_REGISTER_SERVICE() à la place.
+ * \deprecated Use ARCANE_REGISTER_SERVICE() instead.
  */
 #define ARCANE_REGISTER_APPLICATION_FACTORY(aclass,ainterface,aname) \
 ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_Application) ,\
@@ -575,13 +586,14 @@ ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_Appl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistre un service de fabrique pour la classe \a aclass
+ * \brief Registers a factory service for the class \a aclass
  *
- * Le service est enregistré sous le nom \a aname et implémente
- * l'interface \a ainterface.
+ * The service is registered under the name \a aname and implements
+ * the \a ainterface interface.
  *
- * \deprecated Utiliser ARCANE_REGISTER_SERVICE() à la place.
+ * \deprecated Use ARCANE_REGISTER_SERVICE() instead.
  */
 #define ARCANE_REGISTER_SUB_DOMAIN_FACTORY(aclass,ainterface,aname)  \
 ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_SubDomain) ,\
@@ -589,13 +601,14 @@ ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_SubD
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistre un service de fabrique pour la classe \a aclass
+ * \brief Registers a factory service for the class \a aclass
  *
- * Le service est enregistré sous le nom \a aname et implémente
- * l'interface \a ainterface du namespace \a ainterface_ns.
+ * The service is registered under the name \a aname and implements
+ * the \a ainterface interface from the namespace \a ainterface_ns.
  *
- * \deprecated Utiliser ARCANE_REGISTER_SERVICE() à la place.
+ * \deprecated Use ARCANE_REGISTER_SERVICE() instead.
  */
 #define ARCANE_REGISTER_SUB_DOMAIN_FACTORY4(aclass,ainterface_ns,ainterface,aname) \
 ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_SubDomain) ,\
@@ -603,13 +616,14 @@ ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_SubD
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistre un service de fabrique pour la classe \a aclass
+ * \brief Registers a factory service for the class \a aclass
  *
- * Le service est enregistré sous le nom \a aname et implémente
- * l'interface \a ainterface.
+ * The service is registered under the name \a aname and implements
+ * the \a ainterface interface.
  *
- * \deprecated Utiliser ARCANE_REGISTER_SERVICE() à la place.
+ * \deprecated Use ARCANE_REGISTER_SERVICE() instead.
  */
 #define ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(aclass,ainterface,aname) \
 ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_CaseOption) , \
@@ -617,13 +631,14 @@ ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_Case
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistre un service de fabrique pour la classe \a aclass
+ * \brief Registers a factory service for the class \a aclass
  *
- * Le service est enregistré sous le nom \a aname et implémente
- * l'interface \a ainterface.
+ * The service is registered under the name \a aname and implements
+ * the \a ainterface interface.
  *
- * \deprecated Utiliser ARCANE_REGISTER_SERVICE() à la place.
+ * \deprecated Use ARCANE_REGISTER_SERVICE() instead.
  */
 #define ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY4(aclass,ainterface_ns,ainterface,aname) \
 ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_CaseOption) ,\
@@ -632,5 +647,4 @@ ARCANE_REGISTER_SERVICE ( aclass, Arcane::ServiceProperty(#aname,Arcane::ST_Case
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

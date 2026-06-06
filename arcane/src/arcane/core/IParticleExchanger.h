@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParticleExchanger.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un échangeur de particules.                                   */
+/* Interface of a particle exchanger.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARTICLEEXCHANGER_H
 #define ARCANE_CORE_IPARTICLEEXCHANGER_H
@@ -25,85 +25,84 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un échangeur de particules.
+ * \brief Interface of a particle exchanger.
  *
- * Cette classe sert à échanger des particules entre sous-domaines en
- * plusieurs étapes et est en général utilisée par des codes
- * de trajectographie. Si l'on souhaite faire un échange en une fois,
- * il faut utiliser IItemFamily::exchangeItems().
+ * This class is used to exchange particles between sub-domains in
+ * several steps and is generally used by trajectory codes. If one wishes to
+ * perform a single exchange,
+ * IItemFamily::exchangeItems() must be used.
  *
- * Avant tout, une instance doit être initialisée avec une famille
- * de particules via initialize().
+ * First of all, an instance must be initialized with a particle family
+ * via initialize().
  *
- * Pour procéder à un échange, il faut d'abord initialiser
- * l'échange via beginNewExchange() avec comme argument le nombre
- * de particules du sous-domaine concernées par l'échange.
- * Il faut ensuite appeler exchangeItems() pour chaque phase
- * d'échange de particules. A chaque appel à exchangeItems(), il
- * faut spécifier le nombre de particules ne participant plus
- * à l'échange. Lorsqu'il n'y a plus de particules concernée,
- * exchangeItems() return true et l'échange est terminé.
- * Il est possible de recommencer tout le processus via
- * un nouvel appel à beginNewExchange().
+ * To proceed with an exchange, you must first initialize
+ * the exchange via beginNewExchange() using the number
+ * of particles in the sub-domain involved in the exchange as an argument.
+ * You must then call exchangeItems() for each phase
+ * of particle exchange. For each call to exchangeItems(), you
+ * must specify the number of particles that no longer participate
+ * in the exchange. When there are no more involved particles,
+ * exchangeItems() returns true and the exchange is finished.
+ * It is possible to restart the entire process via
+ * a new call to beginNewExchange().
  *
- * Entre deux phases d'un échange, il est possible d'indiquer
- * que de nouvelles particules vont participer via
+ * Between two phases of an exchange, it is possible to indicate
+ * that new particles will participate via
  * addNewParticles()
- * 
- * 
  */
 class ARCANE_CORE_EXPORT IParticleExchanger
 {
  public:
 
-  virtual ~IParticleExchanger() = default; //!< Libère les ressources
+  virtual ~IParticleExchanger() = default; //!< Releases resources
 
  public:
 
   virtual void build() = 0;
 
-  //! Initialize l'échangeur pour la famille \a item_family.
+  //! Initializes the exchanger for the item_family \a item_family.
   virtual void initialize(IItemFamily* item_family) = 0;
 
  public:
 
   /*!
-   * \brief Commence un nouvel échange de particules.
+   * \brief Starts a new particle exchange.
    *
-   * \a nb_particule est le nombre de particules du sous-domaine qui vont
-   * prendre part à un éventuel échange.
+   * \a nb_particle is the number of particles in the sub-domain that will
+   * take part in a potential exchange.
    *
-   * Cette méthode est collective et doit être appelée par tout les sous-domaines.
+   * This method is collective and must be called by all sub-domains.
    */
   virtual void beginNewExchange(Integer nb_particle) = 0;
 
   /*!
-   * \brief Échange des particules entre sous-domaines.
+   * \brief Exchanges particles between sub-domains.
    *
-   * Cette opération envoie les particules de la famille \a item_family dont les
-   * indices locaux sont donnés par la liste \a local_ids aux sous-domaines
-   * specifiés par \a sub_domains_to_send, et réceptionne de ces mêmes sous-domaines celles
-   * dont ce sous-domaine est propriétaire. Les particules envoyées sont supprimées
-   * de la famille \a item_family et celles recues ajoutées.
+   * This operation sends the particles from the item_family \a item_family whose
+   * local indices are given by the list \a local_ids to the sub-domains
+   * specified by \a sub_domains_to_send, and receives from these same sub-domains those
+   * that this sub-domain owns. The sent particles are deleted
+   * from the item_family \a item_family and the received ones are added.
    *
-   * Les variables reposant sur la famille \a item_family sont transférées
-   * en même temps que les particules.
+   * Variables associated with the item_family \a item_family are transferred
+   * at the same time as the particles.
    *
-   * Cette opération est collective et bloquante.
+   * This operation is collective and blocking.
    *
-   * Si \a item_group n'est pas nul, il contiendra en retour la liste des
-   * nouvelles entités.
+   * If \a item_group is not null, it will contain the list of
+   * new entities in return.
    *
-   * Si \a wait_functor n'est pas nul, le functor est appelé pendant l'envoie
-   * et la réception des messages. Il est alors possible de faire des opérations.
-   * Les opérations ne doivent pas utiliser de particules, ni des variables sur
-   * les particules de la famille échangée.
+   * If \a wait_functor is not null, the functor is called during the sending
+   * and receiving of messages. It is then possible to perform operations.
+   * Operations must not use particles, nor variables on
+   * the particles of the exchanged family.
    *
-   * \retval \a true si toutes les phases d'échange sont terminés
-   * \retval \a false sinon
+   * \retval \a true if all exchange phases are finished
+   * \retval \a false otherwise
    *
-   * \todo améliorer la doc
+   * \todo improve the documentation
    */
   virtual ARCANE_DEPRECATED bool exchangeItems(Integer nb_particle_finish_exchange,
                                                Int32ConstArrayView local_ids,
@@ -112,31 +111,31 @@ class ARCANE_CORE_EXPORT IParticleExchanger
                                                IFunctor* wait_functor) = 0;
 
   /*!
-   * \brief Échange des particules entre sous-domaines.
+   * \brief Exchanges particles between sub-domains.
    *
-   * Cette opération envoie les particules de la famille \a item_family dont les
-   * indices locaux sont donnés par la liste \a local_ids aux sous-domaines
-   * specifiés par \a sub_domains_to_send, et réceptionne de ces mêmes sous-domaines celles
-   * dont ce sous-domaine est propriétaire. Les particules envoyées sont supprimées
-   * de la famille \a item_family et celles recues ajoutées.
+   * This operation sends the particles from the item_family \a item_family whose
+   * local indices are given by the list \a local_ids to the sub-domains
+   * specified by \a sub_domains_to_send, and receives from these same sub-domains those
+   * that this sub-domain owns. The sent particles are deleted
+   * from the item_family \a item_family and the received ones are added.
    *
-   * Les variables reposant sur la famille \a item_family sont transférées
-   * en même temps que les particules.
+   * Variables associated with the item_family \a item_family are transferred
+   * at the same time as the particles.
    *
-   * Cette opération est collective et bloquante.
+   * This operation is collective and blocking.
    *
-   * Si \a new_particle_local_ids n'est pas nul, il contiendra en retour
-   * le tableau des indices locaux des nouvelles entités.
+   * If \a new_particle_local_ids is not null, it will contain in return
+   * the array of local indices of the new entities.
    *
-   * Si \a wait_functor n'est pas nul, le functor est appelé pendant l'envoie
-   * et la réception des messages. Il est alors possible de faire des opérations.
-   * Les opérations ne doivent pas utiliser de particules, ni des variables sur
-   * les particules de la famille échangée.
+   * If \a wait_functor is not null, the functor is called during the sending
+   * and receiving of messages. It is then possible to perform operations.
+   * Operations must not use particles, nor variables on
+   * the particles of the exchanged family.
    *
-   * \retval \a true si toutes les phases d'échange sont terminés
-   * \retval \a false sinon
+   * \retval \a true if all exchange phases are finished
+   * \retval \a false otherwise
    *
-   * \todo améliorer la doc
+   * \todo improve the documentation
    */
   virtual bool exchangeItems(Integer nb_particle_finish_exchange,
                              Int32ConstArrayView local_ids,
@@ -155,23 +154,23 @@ class ARCANE_CORE_EXPORT IParticleExchanger
                             IFunctor* functor) = 0;
 
   /*!
-   * \brief Ajoute \a nb_particle dans l'échange actuel.
+   * \brief Adds \a nb_particle to the current exchange.
    *
-   * Cette méthode permet d'indiquer que de nouvelles particules
-   * vont participer à l'échanger, par exemple suite à leur création.
+   * This method allows indicating that new particles
+   * will participate in the exchange, for example following their creation.
    */
   virtual void addNewParticles(Integer nb_particle) = 0;
 
-  //! Famille associée.
+  //! Associated family.
   virtual IItemFamily* itemFamily() = 0;
 
-  //! Positionne le niveau de verbosité (0 pour aucune message)
+  //! Sets the verbosity level (0 for no messages)
   virtual void setVerboseLevel(Integer level) = 0;
 
-  //! Niveau de verbosité
+  //! Verbosity level
   virtual Integer verboseLevel() const = 0;
 
-  //! Gestion de l'asynchronisme (retourne nullptr si fonctionnalité non disponible)
+  //! Asynchronism management (returns nullptr if functionality is not available)
   virtual IAsyncParticleExchanger* asyncParticleExchanger() = 0;
 };
 

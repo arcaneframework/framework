@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlNodeList.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Liste de noeuds d'un arbre DOM.                                           */
+/* List of nodes of a DOM tree.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLNODELIST_H
 #define ARCANE_CORE_XMLNODELIST_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Xml
- * \brief Liste de noeuds d'un arbre DOM.
+ * \brief List of nodes of a DOM tree.
  */
 class XmlNodeList
 : public SharedArray<XmlNode>
@@ -49,4 +50,4 @@ class XmlNodeList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

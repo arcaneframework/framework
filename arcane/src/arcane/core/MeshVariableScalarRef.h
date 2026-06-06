@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshVariableScalarRef.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une variable scalaire sur une entité du maillage.           */
+/* Class managing a scalar variable on a mesh entity.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHVARIABLESCALARREF_H
 #define ARCANE_CORE_MESHVARIABLESCALARREF_H
@@ -64,9 +64,10 @@ class ItemNumericOperation<Real>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable scalaire sur un type d'entité du maillage.
+ * \brief Scalar variable on a mesh entity type.
  */
 template<typename DataTypeT>
 class ItemVariableScalarRefT
@@ -86,18 +87,18 @@ class ItemVariableScalarRefT
   
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT ItemVariableScalarRefT(const VariableBuildInfo& b,eItemKind ik);
 
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT ItemVariableScalarRefT(IVariable* var);
    
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT ItemVariableScalarRefT(const ItemVariableScalarRefT<DataTypeT>& rhs);
   
  protected:
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void operator=(const ItemVariableScalarRefT<DataTypeT>& rhs);
 
 #ifdef ARCANE_DOTNET
@@ -106,7 +107,7 @@ class ItemVariableScalarRefT
  protected:
 #endif
 
-  //! Constructeur vide
+  //! Default constructor
   ItemVariableScalarRefT() {}
  
  public:
@@ -157,36 +158,36 @@ class ItemVariableScalarRefT
     ItemNumericOperation<DataTypeT>::power(*this,v,group);
   }
 
-  //! Copie pour les entités de \a group, les valeurs de \a v dans cette variable.
+  //! Copies the values of \a v into this variable for the entities in \a group.
   ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value,const ItemGroup& group);
 
   /*!
-   * \brief Copie les valeurs de \a v dans cette variable via la file \a queue.
+   * \brief Copies the values of \a v into this variable via the \a queue.
    *
-   * \a queue peut être nul.
+   * \a queue may be null.
    */
   ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue);
   /*!
-   * \brief Remplit les valeurs de l'instance par \a value via la file \a queue.
+   * \brief Fills the instance values with \a value via the \a queue.
    *
-   * \a queue peut être nul.
+   * \a queue may be null.
    */
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value,RunQueue* queue);
 
  public:
 
-  //! Valeur non modifiable de l'entité \a item
+  //! Read-only value of entity \a item
   const DataType& operator[](ItemLocalId item) const { return this->_value(item.localId()); }
 
-  //! Valeur modifiable de l'entité \a item
+  //! Read/write value of entity \a item
   DataTypeReturnReference operator[](ItemLocalId item) { return this->_value(item.localId()); }
 
-  //! Valeur non modifiable de l'entité \a item
+  //! Read-only value of entity \a item
   const DataType& operator()(ItemLocalId item) const { return this->_value(item.localId()); }
 
-  //! Valeur modifiable de l'entité \a item
+  //! Read/write value of entity \a item
   DataTypeReturnReference operator()(ItemLocalId item) { return this->_value(item.localId()); }
 
  public:
@@ -197,9 +198,10 @@ class ItemVariableScalarRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable scalaire sur un type d'entité du maillage.
+ * \brief Scalar variable on a mesh entity type.
  */
 template<typename ItemTypeT,typename DataTypeT>
 class MeshVariableScalarRefT
@@ -224,14 +226,14 @@ class MeshVariableScalarRefT
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT MeshVariableScalarRefT(const VariableBuildInfo& vb);
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT MeshVariableScalarRefT(IVariable* var);
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs);
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs);
 
   ThatClass& operator=(const ThatClass& rhs) = delete;
@@ -242,7 +244,7 @@ class MeshVariableScalarRefT
  protected:
 #endif
 
-  //! Constructeur vide
+  //! Default constructor
   MeshVariableScalarRefT(){}
   ThatClass& _Internal() { return *this; }
 
@@ -254,7 +256,7 @@ class MeshVariableScalarRefT
 
   ARCANE_CORE_EXPORT void swapValues(MeshVariableScalarRefT<ItemType,DataType>& rhs);
 
-  //! Groupe associé à la grandeur
+  //! Group associated with the quantity
   ARCANE_CORE_EXPORT GroupType itemGroup() const;
    
   ARCANE_CORE_EXPORT void setIsSynchronized();
@@ -262,19 +264,19 @@ class MeshVariableScalarRefT
 
  public:
 
-  //! Valeur non modifiable de l'entité \a item
+  //! Read-only value of entity \a item
   const DataTypeT& operator[](ItemLocalIdType i) const { return this->_value(i.localId()); }
 
-  //! Valeur modifiable de l'entité \a item
+  //! Read/write value of entity \a item
   DataTypeReturnReference operator[](ItemLocalIdType i) { return this->_value(i.localId()); }
 
-  //! Valeur non modifiable de l'entité \a item
+  //! Read-only value of entity \a item
   const DataTypeT& operator()(ItemLocalIdType i) const { return this->_value(i.localId()); }
 
-  //! Valeur modifiable de l'entité \a item
+  //! Read/write value of entity \a item
   DataTypeReturnReference operator()(ItemLocalIdType i) { return this->_value(i.localId()); }
 
-  //! Valeur modifiable de l'entité \a item
+  //! Read/write value of entity \a item
   DataTypeT& getReference(ItemLocalIdType item)
   {
     return this->_value(item.localId());
@@ -318,4 +320,4 @@ class MeshVariableScalarRefT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

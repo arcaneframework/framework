@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialVariableFactory.h                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une fabrique de variables matériaux.                          */
+/* Interface of a material variable factory.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORY_H
 #define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORY_H
@@ -25,9 +25,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique de variables matériaux.
+ * \brief Interface of a material variable factory.
  */
 class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
 {
@@ -37,11 +38,11 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
 
  public:
 
-  //! Créé une variable matériau
+  //! Create a material variable
   virtual IMeshMaterialVariable*
   createVariable(const MaterialVariableBuildInfo& build_info) =0;
 
-  //! Informations sur le type de variable créée
+  //! Information about the created variable type
   virtual MaterialVariableTypeInfo materialVariableTypeInfo() const =0;
 };
 
@@ -53,4 +54,4 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

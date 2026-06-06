@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PostProcessorWriterBase.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Classe de base d'un écrivain pour les informations de post-traitement.    */
+/* Base class for a writer for post-processing information.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

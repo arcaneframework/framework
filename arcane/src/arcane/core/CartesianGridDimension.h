@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshDimension.h                                    (C) 2000-2023 */
 /*                                                                           */
-/* Informations sur les dimensions d'une grille cartésienne.                 */
+/* Information about the dimensions of a Cartesian grid.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CARTESIANGRIDDIMENSION_H
 #define ARCANE_CORE_CARTESIANGRIDDIMENSION_H
@@ -27,7 +27,7 @@
 namespace Arcane
 {
 
-// Temporaire pour les classes friend
+// Temporary for friend classes
 namespace mesh
 {
   class DynamicMeshCartesian2DBuilder;
@@ -37,12 +37,13 @@ namespace mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur les dimensions d'une grille cartésienne.
+ * \brief Information about the dimensions of a Cartesian grid.
  *
- * Cette classe permet d'obtenir à partir du nombre de mailles dans
- * chaque direction les différentes informations sur les dimensions
- * du maillage.
+ * This class allows obtaining, based on the number of meshes in
+ * each direction, the various information about the dimensions
+ * of the mesh.
  */
 class ARCANE_CORE_EXPORT CartesianGridDimension
 {
@@ -56,8 +57,8 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
  private:
 
   /*!
-   * \brief Classe pour calculer en 2D le uniqueId() d'un noeud en fonction
-   * de sa position dans la grille.
+   * \brief Class for calculating the uniqueId() of a node in 2D based on
+   * its position in the grid.
    */
   class NodeUniqueIdComputer2D
   {
@@ -92,8 +93,8 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   };
 
   /*!
-   * \brief Classe pour calculer en 2D le uniqueId() d'une maille en fonction
-   * de sa position dans la grille.
+   * \brief Class for calculating the uniqueId() of a cell in 2D based on
+   * its position in the grid.
    */
   class CellUniqueIdComputer2D
   {
@@ -125,8 +126,8 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   };
 
   /*!
-   * \brief Classe pour calculer en 2D le uniqueId() d'une face en fonction
-   * de sa position dans la grille.
+   * \brief Class for calculating the uniqueId() of a face in 2D based on
+   * its position in the grid.
    */
   class FaceUniqueIdComputer2D
   {
@@ -141,16 +142,16 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
    public:
 
-    //! Calcule les uniqueIds() des 4 faces de la mailles de coordonnées topologique (x,y)
+    //! Calculates the uniqueIds() of the 4 faces of the topological coordinate mesh (x,y)
     std::array<Int64, 4> computeForCell(Int64 x, Int64 y)
     {
       std::array<Int64, 4> face_uids;
 
-      // Faces selon Y
+      // Faces according to Y
       face_uids[0] = m_base_offset + (x + 0) + ((y + 0) * m_nb_cell_x) + m_nb_face_dir_x;
       face_uids[2] = m_base_offset + (x + 0) + ((y + 1) * m_nb_cell_x) + m_nb_face_dir_x;
 
-      // Faces selon X
+      // Faces according to X
       face_uids[1] = m_base_offset + (x + 1) + (y + 0) * m_nb_face_x;
       face_uids[3] = m_base_offset + (x + 0) + (y + 0) * m_nb_face_x;
 
@@ -166,8 +167,8 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   };
 
   /*!
-   * \brief Classe pour calculer en 3D le uniqueId() d'un noeud en fonction
-   * de sa position dans la grille.
+   * \brief Class for calculating the uniqueId() of a node in 3D based on
+   * its position in the grid.
    */
   class NodeUniqueIdComputer3D
   {
@@ -208,8 +209,8 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   };
 
   /*!
-   * \brief Classe pour calculer en 3D le uniqueId() d'une maille en fonction
-   * de sa position dans la grille.
+   * \brief Class for calculating the uniqueId() of a cell in 3D based on
+   * its position in the grid.
    */
   class CellUniqueIdComputer3D
   {
@@ -223,12 +224,12 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
    public:
 
-    //! Calcul le uniqueId() en fonction des coordonnées
+    //! Calculates the uniqueId() based on coordinates
     Int64 compute(Int64 x, Int64 y, Int64 z)
     {
       return m_base_offset + x + y * m_all_nb_cell_x + z * m_all_nb_cell_xy;
     }
-    //! Calcul les coordonnées en fonction du uniqueId().
+    //! Calculates the coordinates based on the uniqueId().
     Int64x3 compute(Int64 unique_id)
     {
       Int64 uid = unique_id - m_base_offset;
@@ -247,8 +248,8 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
   };
 
   /*!
-   * \brief Classe pour calculer en 2D le uniqueId() d'une face en fonction
-   * de sa position dans la grille.
+   * \brief Class for calculating the uniqueId() of a face in 2D based on
+   * its position in the grid.
    */
   class FaceUniqueIdComputer3D
   {
@@ -266,20 +267,20 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
    public:
 
-    //! Calcule les uniqueIds() des 6 faces de la mailles de coordonnées topologique (x,y,z)
+    //! Calculates the uniqueIds() of the 6 faces of the topological coordinate mesh (x,y,z)
     std::array<Int64, 6> computeForCell(Int64 x, Int64 y, Int64 z)
     {
       std::array<Int64, 6> face_uids;
 
-      // Faces selon Z
+      // Faces according to Z
       face_uids[0] = (x + 0) + ((y + 0) * m_nb_cell_x) + ((z + 0) * m_nb_face_dir.z) + m_total_nb_face_xy;
       face_uids[3] = (x + 0) + ((y + 0) * m_nb_cell_x) + ((z + 1) * m_nb_face_dir.z) + m_total_nb_face_xy;
 
-      // Faces selon X
+      // Faces according to X
       face_uids[1] = (x + 0) + ((y + 0) * m_nb_face_x) + ((z + 0) * m_nb_face_dir.x);
       face_uids[4] = (x + 1) + ((y + 0) * m_nb_face_x) + ((z + 0) * m_nb_face_dir.x);
 
-      // Faces selon Y
+      // Faces according to Y
       face_uids[2] = (x + 0) + ((y + 0) * m_nb_cell_x) + ((z + 0) * m_nb_face_dir.y) + m_total_nb_face_x;
       face_uids[5] = (x + 0) + ((y + 1) * m_nb_cell_x) + ((z + 0) * m_nb_face_dir.y) + m_total_nb_face_x;
 
@@ -302,65 +303,65 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
  public:
 
   CartesianGridDimension() = default;
-  //! Construit une grille 2D de dimension (nb_cell_x,nb_cell_y)
+  //! Constructs a 2D grid of dimension (nb_cell_x,nb_cell_y)
   CartesianGridDimension(Int64 nb_cell_x, Int64 nb_cell_y);
-  //! Construit une grille 3D de dimension (nb_cell_x,nb_cell_y,nb_cell_z)
+  //! Constructs a 3D grid of dimension (nb_cell_x,nb_cell_y,nb_cell_z)
   CartesianGridDimension(Int64 nb_cell_x, Int64 nb_cell_y, Int64 nb_cell_z);
-  //! Construit une grille 2D de dimension \a dims
+  //! Constructs a 2D grid of dimension \a dims
   explicit CartesianGridDimension(const Int64x2& dims);
-  //! Construit une grille 3D de dimension \a dims
+  //! Constructs a 3D grid of dimension \a dims
   explicit CartesianGridDimension(const Int64x3& dims);
-  //! Construit une grille 2D de dimension \a dims
+  //! Constructs a 2D grid of dimension \a dims
   explicit CartesianGridDimension(const Int32x2& dims);
-  //! Construit une grille 3D de dimension \a dims
+  //! Constructs a 3D grid of dimension \a dims
   explicit CartesianGridDimension(const Int32x3& dims);
 
  public:
 
-  //! Nombre de mailles dans chaque direction
+  //! Number of cells in each direction
   constexpr Int64x3 nbCell() const { return m_nb_cell; }
 
-  //! Nombre de noeuds dans chaque direction
+  //! Number of nodes in each direction
   constexpr Int64x3 nbNode() const { return m_nb_node; }
 
-  //! Nombre de faces dans chaque direction
+  //! Number of faces in each direction
   constexpr Int64x3 nbFace() const { return m_nb_face; }
 
-  //! Nombre total de faces parallèles à une direction donnée
+  //! Total number of faces parallel to a given direction
   constexpr Int64x3 nbFaceParallelToDirection() const { return m_nb_face_oriented; }
 
-  //! Nombre total de mailles
+  //! Total number of cells
   constexpr Int64 totalNbCell() const { return m_total_nb_cell; }
 
  private:
 
-  //! Instance pour calculer les uniqueId() des noeuds pour cette grille
+  //! Instance to calculate the uniqueIds() of nodes for this grid
   NodeUniqueIdComputer2D getNodeComputer2D(Int64 offset) const
   {
     return { offset, m_nb_node.x };
   }
-  //! Instance pour calculer les uniqueId() des noeuds pour cette grille
+  //! Instance to calculate the uniqueIds() of nodes for this grid
   NodeUniqueIdComputer3D getNodeComputer3D(Int64 offset) const
   {
     return { offset, m_nb_node.x, m_nb_node.x * m_nb_node.y };
   }
-  //! Instance pour calculer les uniqueId() des mailles pour cette grille
+  //! Instance to calculate the uniqueIds() of cells for this grid
   CellUniqueIdComputer2D getCellComputer2D(Int64 offset) const
   {
     return { offset, m_nb_cell.x };
   }
-  //! Instance pour calculer les uniqueId() des mailles pour cette grille
+  //! Instance to calculate the uniqueIds() of cells for this grid
   CellUniqueIdComputer3D getCellComputer3D(Int64 offset) const
   {
     return { offset, m_nb_cell.x, m_nb_cell.x * m_nb_cell.y };
   }
-  //! Instance pour calculer les uniqueId() des faces pour cette grille
+  //! Instance to calculate the uniqueIds() of faces for this grid
   FaceUniqueIdComputer2D getFaceComputer2D(Int64 offset) const
   {
     Int64x3 nb_face_dir = nbFaceParallelToDirection();
     return { offset, m_nb_cell.x, m_nb_face.x, nb_face_dir.x };
   }
-  //! Instance pour calculer les uniqueId() des faces pour cette grille
+  //! Instance to calculate the uniqueIds() of faces for this grid
   FaceUniqueIdComputer3D getFaceComputer3D(Int64 offset) const
   {
     Int64x3 nb_face_dir = nbFaceParallelToDirection();
@@ -371,13 +372,13 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
  private:
 
-  //! Nombre de mailles dans chaque direction
+  //! Number of cells in each direction
   Int64x3 m_nb_cell;
-  //! Nombre de noeuds dans chaque direction
+  //! Number of nodes in each direction
   Int64x3 m_nb_node;
-  //! Nombre de faces dans chaque direction
+  //! Number of faces in each direction
   Int64x3 m_nb_face;
-  //! Nombre total de faces dans une orientation donnée
+  //! Total number of faces in a given orientation
   Int64x3 m_nb_face_oriented;
 
   Int64 m_nb_cell_xy = 0;

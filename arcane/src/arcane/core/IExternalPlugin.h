@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IExternalPlugin.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du service de plugin externes.                                  */
+/* Interface for external plugin service.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IEXTERNALPLUGIN_H
 #define ARCANE_CORE_IEXTERNALPLUGIN_H
@@ -25,44 +25,45 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du service de chargement de services externes.
- * \warning Cette interface est expérimentale.
+ * \brief Interface for external service loading.
+ * \warning This interface is experimental.
  *
- * Il faut appeler loadFile() (éventuellement avec une chaîne de caractères vide)
- * pour initialiser l'instance.
+ * You must call loadFile() (possibly with an empty string)
+ * to initialize the instance.
  */
 class ARCANE_CORE_EXPORT IExternalPlugin
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IExternalPlugin() = default;
 
  public:
 
  /*!
-  * \brief Charge et exécute un fichier contenant un script externe.
+  * \brief Loads and executes a file containing an external script.
   *
-  * \a filename peut-être nul, auquel cas on ne fait que initialiser l'instance.
+  * \a filename may be null, in which case only the instance is initialized.
   */
   virtual void loadFile(const String& filename) = 0;
 
   /*!
-   * \brief Exécute la fonction \a function_name.
+   * \brief Executes the function \a function_name.
    *
-   * Il faut avoir chargé un script contenant cette fonction (via loadFile())
-   * avant d'appeler cette méthode. La méthode \a function_name ne doit pas
-   * avoir d'arguments.
+   * You must have loaded a script containing this function (via loadFile())
+   * before calling this method. The method \a function_name must not
+   * have arguments.
    */
   virtual void executeFunction(const String& function_name) = 0;
 
   /*!
-   * \brief Exécute la fonction \a function_name avec un contexte
+   * \brief Executes the function \a function_name with a context
    *
-   * Il faut avoir chargé un script contenant cette fonction (via loadFile())
-   * avant d'appeler cette méthode. La méthode spécifiée doit prendre en
-   * argument une instance de PythonSubDomainContext.
+   * You must have loaded a script containing this function (via loadFile())
+   * before calling this method. The specified method must take an
+   * instance of PythonSubDomainContext as an argument.
    */
   virtual void executeContextFunction(const String& function_name) = 0;
 };

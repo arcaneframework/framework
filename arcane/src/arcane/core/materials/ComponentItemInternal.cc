@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItemInternal.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Partie interne d'une maille matériau ou milieu.                           */
+/* Internal part of a material or medium mesh.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,10 +26,11 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur pour l'entité nulle.
+ * \brief Container for the null entity.
  *
- * Cela permet d'utiliser ComponentItemSharedInfo::_nullInstance()
+ * This allows using ComponentItemSharedInfo::_nullInstance()
  */
 class NullComponentItemSharedInfoContainer
 {
@@ -77,8 +78,7 @@ _setNullInstance()
     x->m_global_item_local_id_data = c.m_global_item_local_id_list.data() + 1;
     x->m_var_index_data = c.m_var_index_list.data() + 1;
   };
-  // Garanti que cela ne sera appelé qu'une seule fois et protège des appels
-  // concurrents.
+  // Guarantees that this will be called only once and protects against concurrent calls.
   std::call_once(component_set_null_instance_once_flag, init_func);
 }
 

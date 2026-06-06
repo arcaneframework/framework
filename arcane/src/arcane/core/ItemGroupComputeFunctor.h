@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupComputeFunctor.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Functors de calcul des éléments d'un groupe en fonction d'un autre groupe */
+/* Functors for calculating elements of one group based on another group     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMGROUPCOMPUTEFUNCTOR_H
 #define ARCANE_CORE_ITEMGROUPCOMPUTEFUNCTOR_H
@@ -18,10 +18,12 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * NOTE: ce fichier est interne à Arcane. A terme, il sera dans
+ * NOTE: This file is internal to Arcane. Eventually, it will be in
  * arcane/impl.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

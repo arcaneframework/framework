@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Properties.cc                                               (C) 2000-2024 */
 /*                                                                           */
-/* Liste de propriétés.                                                      */
+/* List of properties.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -392,10 +392,11 @@ class ArrayPropertyType
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * TODO: donner un peu plus d'informations pour les exceptions.
- * TODO: fusionner avec IData
- * TODO: faire un visiteur dessus (utiliser celui de IData)
+ * TODO: give a little more information for exceptions.
+ * TODO: merge with IData
+ * TODO: make a visitor on it (use the one from IData)
  */
 class PropertiesImpl
 : public PropertiesImplBase
@@ -403,9 +404,9 @@ class PropertiesImpl
 {
  public:
 
-  // A modifier si les sérialisations sont modifiées et incompatibles avec les
-  // anciennes versions. La version 2 (décembre 2019) utilise la sérialisation
-  // des chaînes de caractères sur un Int64.
+  // To be modified if serializations are changed and incompatible with
+  // older versions. Version 2 (December 2019) uses string serialization
+  // on an Int64.
   static const Int32 SERIALIZE_VERSION = 2;
 
  public:
@@ -466,7 +467,7 @@ class PropertiesImpl
       SmallVariant* x = v->second->getScalar();
       if (!x)
         throw ArgumentException(A_FUNCINFO,"Bad data dimension for property (expecting scalar but property is array)");
-      // Récupère l'ancienne valeur
+      // Retrieve the old value
       x->value(old_value);
       _setScalarValue(*x,value);
     }
@@ -622,7 +623,7 @@ void PropertiesImpl::
 serializeReserve(ISerializer* serializer)
 {
   serializer->reserveInt32(1); // SERIALIZE_VERSION
-  serializer->reserveInt64(1); // Nombre d'éléments dans la map
+  serializer->reserveInt64(1); // Number of elements in the map
 
   MapType::iterator v = m_property_map.begin();
   MapType::iterator vend = m_property_map.end();
@@ -667,10 +668,10 @@ serializeGet(ISerializer* serializer)
 {
   Int64 version = serializer->getInt32();
   if (version!=SERIALIZE_VERSION){
-    // La relecture se fait avec une protection issue d'une ancienne version de Arcane
-    // et qui n'est pas compatible. Affiche un avertissement et ne fait rien.
-    // (NOTE: cela risque quand même de poser problême pour ceux qui utilisent les
-    // propriétés donc il faudrait peut-être faire un fatal ?)
+    // Reading is done with a protection from an old version of Arcane
+    // which is not compatible. Displays a warning and does nothing.
+    // (NOTE: this still risks causing problems for those who use the
+    // properties, so maybe a fatal error should be thrown?)
     pwarning() << "Can not reading properties from imcompatible checkpoint";
     return;
   }
@@ -681,7 +682,7 @@ serializeGet(ISerializer* serializer)
     Int32 type = serializer->getInt32();
     serializer->get(name);
     //std::cout << "TYPE=" << type << " name=" << name << '\n';
-    //TODO: Verifier validités des valeurs + faire ca proprement sans switch
+    //TODO: Verify value validity + do this cleanly without a switch
     switch(type){
     case PropertyVariant::PV_ScalarReal: setScalarValue(name,serializer->getReal()); break;
     case PropertyVariant::PV_ScalarInt32:setScalarValue(name,serializer->getInt32()); break;

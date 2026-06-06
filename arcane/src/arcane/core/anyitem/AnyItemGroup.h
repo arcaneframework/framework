@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemGroup.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Groupe aggrégée de types quelconques.                                     */
+/* Aggregated group of arbitrary types.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMGROUP_H
 #define ARCANE_CORE_ANYITEM_ANYITEMGROUP_H
@@ -34,12 +34,13 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*
- * NB: Il faut savoir très tôt si on va itérer pour une variable ou une variable partielle
+ * NB: It must be known very early whether we are iterating over a variable
+ * or a partial variable
  *
  */
 
 /*!
- * \brief Outil pour construire un groupe
+ * \brief Tool for building a group
  */
 class GroupBuilder
 {
@@ -55,7 +56,7 @@ protected:
 };
 
 /*!
- * \brief Outil pour construire un groupe pour une variable partielle
+ * \brief Tool for building a group for a partial variable
  */
 class PartialGroupBuilder 
   : public GroupBuilder
@@ -70,9 +71,9 @@ public:
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Groupe AnyItem
- * Agglomération de groupe Arcane + informations {partiel ou non} pour les variables
- * Construction dans les familles AnyItem
+ * \brief AnyItem Group
+ * Aggregation of Arcane group + information {partial or not} for variables
+ * Construction within AnyItem families
  */
 class Group
 {
@@ -84,9 +85,9 @@ class Group
 public:
 
   /*!
-   * \brief Enumérateur d'un bloc d'items
+   * \brief Enumerator of an item block
    *
-   * Enumérateur Arcane enrichi de la position dans la famille
+   * Arcane enumerator enriched with the position in the family
    *
    */
   class BlockItemEnumerator
@@ -105,28 +106,28 @@ public:
       , m_items(e.m_items), m_local_ids(e.m_local_ids)
       , m_index(e.m_index), m_count(e.m_count), m_is_partial(e.m_is_partial) {}
 
-    //! Déréférencement vers l'item Arcane associé
+    //! Dereference to the associated Arcane item
     Item operator*() const { return m_items[ m_local_ids[m_index] ]; }
-    // TODO: retourner un 'Item*' de manière similaire à ItemEnumerator. 
-    //! Déréférencement indirect vers l'item Arcane associé
+    // TODO: return an 'Item*' similar to ItemEnumerator. 
+    //! Indirect dereference to the associated Arcane item
     ItemInternal* operator->() const { return Group::_toInternal(m_items[ m_local_ids[m_index] ]); }
-    //! Avancement de l'énumérateur
+    //! Advancement of the enumerator
     inline void operator++() { ++m_index; }
-    //! Test de fin de l'énumérateur
+    //! Test for end of enumerator
     inline bool hasNext() { return m_index<m_count; }
-    //! Nombre d'éléments de l'énumérateur
+    //! Number of elements in the enumerator
     inline Integer count() const { return m_count; }
     
-    //! localId() de l'entité courante.
+    //! localId() of the current entity.
     inline Integer varIndex() const { return (m_is_partial)?m_index:m_local_ids[m_index]; }
     
-    //! localId() de l'entité courante.
+    //! localId() of the current entity.
     inline Integer localId() const { return m_info.local_id_offset+m_index; }
 
-    //! Index dans la AnyItem::Family du groupe en cours
+    //! Index in the current AnyItem::Family group
     inline Integer groupIndex() const { return m_info.group_index; }
 
-    //! Groupe sous-jacent courant
+    //! Current underlying group
     inline ItemGroup group() const { return ItemGroup(m_info.group); }
     
   private:
@@ -140,7 +141,7 @@ public:
   };
   
   /*!
-   * \brief Enumérateur des blocs d'items
+   * \brief Enumerator of item blocks
    */
   class Enumerator
   {
@@ -153,7 +154,7 @@ public:
       , m_end(e.m_end) {}
     inline bool hasNext() const { return m_current != m_end; }
     inline void operator++() { m_current++; }
-    //! Enumérateur d'un bloc d'items
+    //! Enumerator of an item block
     inline BlockItemEnumerator enumerator() {
       return BlockItemEnumerator(*m_current);
     }
@@ -166,16 +167,16 @@ public:
   
 public:
 
-  //! Construction à partir d'une table Groupe - offset (issue de la famille)
+  //! Construction from a Group - offset table (from the family)
   Group(const Private::GroupIndexMapping& groups) 
     : m_groups(groups) {} 
   
-  //! Enumérateur du groupe
+  //! Enumerator of the group
   inline Enumerator enumerator() const {
     return Enumerator(m_groups);
   }
   
-  //! Nombre de groupes aggrégés
+  //! Number of aggregated groups
   inline Integer size() const { 
     return m_groups.size();
   }
@@ -183,7 +184,7 @@ public:
   //private:
 public:
   
-  //! Table Groupe - offset
+  //! Group - offset table
   const Private::GroupIndexMapping& m_groups;
 };
 

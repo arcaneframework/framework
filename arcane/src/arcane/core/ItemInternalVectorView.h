@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemInternalVectorView.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur un vecteur (tableau indirect) d'entités.                          */
+/* View on a vector (indirect array) of entities.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMINTERNALVECTORVIEW_H
 #define ARCANE_CORE_ITEMINTERNALVECTORVIEW_H
@@ -29,10 +29,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Iterateur d'un ItemInternalVectorView.
- * \deprecated Utiliser un itérateur à partir d'un ItemVectorView.
+ * \brief Iterator for an ItemInternalVectorView.
+ * \deprecated Use an iterator from an ItemVectorView.
  */
 class ItemInternalVectorViewConstIterator
 {
@@ -53,15 +54,15 @@ class ItemInternalVectorViewConstIterator
 
  public:
   typedef std::random_access_iterator_tag iterator_category;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef const ItemInternalPtr* pointer;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef const ItemInternalPtr& reference;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef ItemInternalPtr value_type;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a difference between iterator elements in the array
   typedef Integer difference_type;
  public:
   value_type operator*() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
@@ -90,9 +91,8 @@ class ItemInternalVectorViewConstIterator
   }
   friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
-    // TODO: regarder si cela ne pose pas de problemes de performance
-    // de faire ces trois comparaions. Si c'est le cas on peut
-    // faire uniquement la dernière.
+    // TODO: check if these three comparisons cause performance problems.
+    // If so, we can only use the last one.
     return lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
   }
   friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
@@ -110,12 +110,13 @@ class ItemInternalVectorViewConstIterator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Vue interne sur un tableau d'entités.
+ * \brief Internal view on an array of entities.
  *
- * Celle classe n'est utile que pour construire des listes d'entités utilisées
- * en interne de %Arcane. La version utilisateur de cette classe est
+ * This class is only useful for constructing entity lists used
+ * internally by %Arcane. The user version of this class is
  * ItemVectorView.
  *
  * \sa ItemVectorView
@@ -175,25 +176,25 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 
  public:
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Integer size() const { return m_local_ids.size(); }
 
-  // TODO: à supprimer
-  //! Tableau des numéros locaux des entités
+  // TODO: to be removed
+  //! Array of local entity IDs
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
  public:
 
   /*!
-   * \brief Accède au \a i-ème élément du vecteur.
+   * \brief Accesses the i-th element of the vector.
    *
-   * Cette méthode est obsolète. Il faut construire un 'ItemVectorView' à la place
-   * et utiliser l'opérateur 'operator[]' associé.
+   * This method is obsolete. You must construct an 'ItemVectorView' instead
+   * and use the associated 'operator[]'.
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView::operator[] instead")
   ItemInternal* operator[](Integer index) const { return m_shared_info->m_items_internal[m_local_ids[index]]; }
 
-  //! Tableau des entités
+  //! Array of entities
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this method")
   ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
 

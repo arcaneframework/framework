@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* XmlException.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Exception sur les opérandes des opérations des expressions.               */
+/* Exception regarding expression operation operands.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLEXCEPTION_H
 #define ARCANE_CORE_XMLEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Xml
- * \brief Exception liées aux fichiers XML.
+ * \brief XML file related exceptions.
  */
 class XmlException
 : public Exception
@@ -53,4 +54,4 @@ class XmlException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

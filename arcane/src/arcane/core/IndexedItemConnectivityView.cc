@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndexedItemConnectivityView.cc                              (C) 2000-2026 */
 /*                                                                           */
-/* Vues sur les connectivités utilisant des index.                           */
+/* Views on connectivities using indices.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Fonction utilisée pour tester la compilation avec accès aux connectivités
+
+// Function used to test compilation with access to connectivities
 
 extern "C++" void
 _internalItemTestCompile()

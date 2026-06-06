@@ -9,8 +9,8 @@
 
 // ***********    ATTENTION     ***********
 
-// ATTENTION: CE FICHIER N'EST PLUS UTILISÉ MAIS CONSERVÉ POUR REGARDER
-// L'IMPLÉMENTATION PRÉCÉDENTE
+// ATTENTION: THIS FILE IS NO LONGER USED BUT IS KEPT TO VIEW
+// THE PREVIOUS IMPLEMENTATION
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1404,10 +1404,10 @@ save(ByteArray& bytes)
 String XmlDocumentHolderLibXml2::
 save()
 {
-  // TODO verifier qu'on sauve toujours en UTF8.
+  // TODO verify that saving is always done in UTF8.
   ByteUniqueArray bytes;
   domutils::saveDocument(bytes, documentNode().domNode());
-  // Ajoute le 0 terminal
+  // Adds the null terminator
   bytes.add('\0');
   String new_s = String::fromUtf8(bytes);
   return new_s;
@@ -1630,7 +1630,7 @@ _load(const String& fname, ITraceMng* msg, const String& schemaname)
     throw Arcane::XmlException(A_FUNCINFO, String::format("LIBXML2 XML file not defined '{0}'\n", fname));
   }
   if (_useSchema) {
-    /// Verification de la validité du schema et parse du fichier xml
+    /// Verification of schema validity and XML file parsing
     if (msg)
       msg->info() << "LIBXML2 ---------------- the parser uses schema (1): " << schemaname;
     if ((context = _xmlSchemaValidationAndParsing(fname, msg, XML_PARSE_SCHEMA_FILE, schemaname,
@@ -1690,7 +1690,7 @@ _load(const String& fname, ITraceMng* msg, const String& schemaname)
                                                 format_xml_error(xmlGetLastError())));
     }
   }
-  // We just defined an LIBXML2 document . Convert to our data-structure...
+  // We just defined an LIBXML2 document. Convert it to our data structure...
   LIBXML2_Document* doc =
           static_cast<LIBXML2_Document*>(WrapXML2Node(NULL, reinterpret_cast<xmlNode*>(context->myDoc)));
   xml_doc->assignNode(reinterpret_cast<NodePrv*>(doc));
@@ -1723,7 +1723,7 @@ _load(const String& fname, ITraceMng* msg, const String& schemaname,
     throw Arcane::XmlException(A_FUNCINFO, String::format("LIBXML2 XML file not defined '{0}'\n", fname));
   }
   if (_useSchema) {
-    /// Verification de la validité du schema et parse du fichier xml
+    /// Verification of schema validity and XML file parsing
     if (msg) {
       msg->info() << "LIBXML2 ---------------- the parser uses schema (2): " << schemaname;
     }
@@ -1779,7 +1779,7 @@ _load(const String& fname, ITraceMng* msg, const String& schemaname,
                                                 format_xml_error(xmlGetLastError())));
     }
   }
-  // We just defined an LIBXML2 document . Convert to our data-structure...
+  // We just defined an LIBXML2 document. Convert it to our data structure...
   LIBXML2_Document* doc =
           static_cast<LIBXML2_Document*>(WrapXML2Node(NULL, reinterpret_cast<xmlNode*>(context->myDoc)));
   xml_doc->assignNode(reinterpret_cast<NodePrv*>(doc));
@@ -1808,12 +1808,12 @@ _load(ByteConstArrayView buffer, const String& fname, ITraceMng* trace)
   if (!fname.empty())
     xinclude_baseurl = platform::getFileDirName(fname) + "/"; // Get the test directory
 
-  // lecture en memoire du document
+  // Reading the document from memory
   xmlResetLastError();
   const XMLByte* src = reinterpret_cast<const XMLByte*>(buffer.begin());
   context = xmlCreateMemoryParserCtxt(
           reinterpret_cast<const char*>(src),
-          buffer.size()); // tous les champs non utilisés sont initialisés à 0 lors de la création
+          buffer.size()); // All unused fields are initialized to 0 upon creation
   if (!context) {
     throw Arcane::XmlException(A_FUNCINFO,
                                String::format("LIBXML2 Could not create parser context '{0}'\n{1}", fname,
@@ -1855,7 +1855,7 @@ _load(ByteConstArrayView buffer, const String& fname, ITraceMng* trace)
                                String::format("LIBXML2 xmlParseDocument failed 3 '{0}'{1}\n", fname,
                                               format_xml_error(xmlGetLastError())));
   }
-  // We just defined an LIBXML2 document . Convert to our data-structure...
+  // We just defined an LIBXML2 document. Convert it to our data structure...
   LIBXML2_Document* doc =
           static_cast<LIBXML2_Document*>(WrapXML2Node(NULL, reinterpret_cast<xmlNode*>(context->myDoc)));
   xml_doc->assignNode(reinterpret_cast<NodePrv*>(doc));
@@ -5524,7 +5524,7 @@ getElementById(const String& elementId)
 LIBXML2_Node* LIBXML2_Document::
 shallowCloneNode(LIBXML2_Document* aDoc)
 {
-  // TODO: regarder pourquoi aDoc n'est pas utilisé.
+  // TODO: look into why aDoc is not used.
   LIBXML2_Document* Doc = new LIBXML2_Document();
   if (Doc == NULL)
     throw Arcane::Exception::exception();
@@ -5857,7 +5857,7 @@ void LIBXML2_DOMWriter::
 writeCDATASection(LIBXML2_DOMNamespaceContext* dnc, LIBXML2_CDATASection* cds,
                   StringBuilder& appendTo)
 {
-  //TODO: Regarder pourquoi dnc n'est pas utilisé
+  //TODO: Look into why dnc is not being used
   appendTo += "<![CDATA[";
   appendTo += cds->Data();
   appendTo += "]]>";

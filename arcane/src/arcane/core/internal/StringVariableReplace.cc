@@ -7,11 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* StringVariableReplace.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de remplacer les symboles d'une chaine de caractères    */
-/* par une autre chaine de caractères définie dans les arguments de          */
-/* lancement.                                                                */
-/* Un symbole est défini par une chaine de caractères entourée de @.         */
-/* Exemple : @mon_symbole@                                                   */
+/* Class allowing symbols in a character string to be replaced by another    */
+/* character string defined in the launch arguments.                         */
+/* A symbol is defined by a character string surrounded by @.                */
+/* Example: @mon_symbole@                                                    */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/StringVariableReplace.h"
@@ -45,62 +44,61 @@ replaceWithCmdLineArgs(StringView string_with_symbols, bool fatal_if_not_found, 
 }
 
 /*!
- * \brief Méthode permettant de remplacer les symboles de la chaine de
- * caractères \a string_with_symbols par leurs valeurs définies dans la liste
- * des paramètres.
+ * \brief Method allowing symbols in the character string \a string_with_symbols
+ * to be replaced by their values defined in the parameter list.
  *
- * Un symbole est représenté par une chaine de caractères entourée
- * de deux "\@".
+ * A symbol is represented by a character string surrounded by two "\@".
  *
- * Exemple : "\@mesh_dir\@/cube.msh"
- * avec un paramètre "mesh_dir=~/mesh"
- * donnera : "~/mesh/cube.msh".
+ * Example: "\@mesh_dir\@/cube.msh"
+ * with a parameter "mesh_dir=~/mesh"
+ * results in: "~/mesh/cube.msh".
  *
  *
- * Pour éviter qu'un "\@" soit remplacé, il est possible de mettre un backslash avant.
- * Le backslash sera supprimé par cette méthode.
+ * To prevent a "\@" from being replaced, it is possible to put a backslash before it.
+ * The backslash will be removed by this method.
  *
- * Exemple : "\@mesh_dir\@/cube\\\@.msh"
- * avec un paramètre "mesh_dir=~/mesh"
- * donnera : "~/mesh/cube\@.msh".
- *
- *
- * Si le nombre d'arrobases est incorrect (sans compter les arrobases échappées),
- * une erreur sera déclenchée, sauf si le paramètre \a fatal_if_invalid est à \a false.
- * Dans ce cas, la dernière arrobase sera simplement supprimée.
- *
- * Exemple : "\@mesh_dir\@\@/cube.msh"
- * avec un paramètre "mesh_dir=~/mesh"
- * donnera : "~/mesh/cube.msh".
+ * Example: "\@mesh_dir\@/cube\\\@.msh"
+ * with a parameter "mesh_dir=~/mesh"
+ * results in: "~/mesh/cube\@.msh".
  *
  *
- * Les symboles qui ne sont pas trouvés seront supprimés ou, si le paramètre
- * \a fatal_if_not_found est à \a true, une erreur sera déclenchée.
+ * If the number of at signs is incorrect (excluding escaped at signs),
+ * an error will be triggered, unless the parameter \a fatal_if_invalid is set to \a false.
+ * In this case, the last at sign will simply be removed.
  *
- * Exemple : "\@mesh_dir\@/cube.msh"
- * sans paramètres
- * donnera : "/cube.msh".
+ * Example: "\@mesh_dir\@\@/cube.msh"
+ * with a parameter "mesh_dir=~/mesh"
+ * results in: "~/mesh/cube.msh".
  *
- * Enfin, avoir un paramètre ayant un nom contenant une arrobase sera invalide.
- * (en revanche, la valeur peut contenir des arrobases).
  *
- * Exemple invalide : paramètre "mesh\@_dir=~/mesh"
- * Exemple valide : paramètre "mesh_dir=~/\@/mesh"
+ * Symbols that are not found will be removed or, if the parameter
+ * \a fatal_if_not_found is set to \a true, an error will be triggered.
  *
- * \param parameter_list La liste des paramètres à considérer.
- * \param string_with_symbols La chaine de caractères avec les symboles à remplacer.
- * \param fatal_if_not_found Si un symbole n'est pas trouvé dans la liste des paramètres, une erreur sera déclenchée
- * si ce paramètre vaut true.
- * \param fatal_if_invalid Si la chaine de caractères est incorrecte, une erreur sera déclenchée
- * si ce paramètre vaut true. Sinon, le résultat n'est pas garanti.
- * \return La chaine de caractères avec les symboles remplacés par leurs valeurs.
+ * Example: "\@mesh_dir\@/cube.msh"
+ * without parameters
+ * results in: "/cube.msh".
+ *
+ * Finally, having a parameter whose name contains an at sign will be invalid.
+ * (However, the value may contain at signs).
+ *
+ * Invalid example: parameter "mesh\@_dir=~/mesh"
+ * Valid example: parameter "mesh_dir=~/\@/mesh"
+ *
+ * \param parameter_list The list of parameters to consider.
+ * \param string_with_symbols The character string with symbols to replace.
+ * \param fatal_if_not_found If a symbol is not found in the parameter list, an error
+ * will be triggered
+ * if this parameter is true.
+ * \param fatal_if_invalid If the character string is incorrect, an error will be triggered
+ * if this parameter is true. Otherwise, the result is not guaranteed.
+ * \return The character string with symbols replaced by their values.
  */
 String StringVariableReplace::
 replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list, StringView string_with_symbols,
                        bool fatal_if_not_found, bool fatal_if_invalid)
 {
-  // Si la variable d'environnement ARCANE_REPLACE_SYMBOLS_IN_DATASET n'est pas
-  // définie, on ne touche pas à la chaine de caractères.
+  // If the environment variable ARCANE_REPLACE_SYMBOLS_IN_DATASET is not
+  // defined, we do not modify the character string.
   if (platform::getEnvironmentVariable("ARCANE_REPLACE_SYMBOLS_IN_DATASET").null() &&
       parameter_list.getParameterOrNull("ARCANE_REPLACE_SYMBOLS_IN_DATASET").null()) {
     return string_with_symbols;
@@ -112,25 +110,26 @@ replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list, String
   Integer nb_at = 0;
   Integer nb_at_with_escape = 0;
 
-  // Les arrobases peuvent être échappées. Il est nécessaire de les différencier pour avoir
-  // la taille du tableau des morceaux et pour vérifier la validité de la chaine de caractères.
+  // At signs can be escaped. It is necessary to differentiate them to get
+  // the size of the segments array and to check the validity of the character string.
   _countChar(string_with_symbols, '@', nb_at, nb_at_with_escape);
   if (nb_at == 0 && nb_at_with_escape == 0)
     return string_with_symbols;
 
-  // Si le nombre d'arrobases est impaire, il y a forcément une incohérence.
+  // If the number of at signs is odd, there is necessarily an inconsistency.
   if (fatal_if_invalid && nb_at % 2 == 1) {
     ARCANE_FATAL("Invalid nb of @");
   }
 
-  // Une arrobase sépare la chaine en deux morceaux. Donc le nombre de morceaux sera de "nb_at + 1".
-  // On ajoute les arrobases échappées. Ces arrobases sont considérées comme un symbole spécial et
-  // génèrent deux morceaux (donc "nb_at_with_escape * 2").
+  // An at sign separates the string into two segments. So the number of segments will
+  // be "nb_at + 1".
+  // We add the escaped at signs. These at signs are considered a special symbol and
+  // generate two segments (so "nb_at_with_escape * 2").
   const Integer size_array_w_splits = (nb_at + 1) + (nb_at_with_escape * 2);
 
-  // Dans un cas valide, le nombre de morceaux doit être impaire.
-  // Dans le cas où l'utilisateur désactive le fatal_if_invalid et que le nombre de morceaux est paire,
-  // il ne faut pas qu'on considère le morceau final comme un symbole (voir la boucle plus bas pour comprendre).
+  // In a valid case, the number of segments must be odd.
+  // In the case where the user disables fatal_if_invalid and the number of segments is even,
+  // the final segment should not be considered a symbol (see the loop below to understand).
   const Integer max_index = size_array_w_splits % 2 == 0 ? size_array_w_splits - 1 : size_array_w_splits;
 
   SmallArray<StringView> string_splited(size_array_w_splits);
@@ -138,15 +137,15 @@ replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list, String
 
   StringBuilder combined{};
 
-  // Dans le tableau, les morceaux ayant une position impaire sont les élements entre arrobases
-  // et donc des symboles.
+  // In the array, segments with an odd position are the elements between at signs
+  // and thus symbols.
   for (Integer i = 0; i < max_index; ++i) {
     StringView part{ string_splited[i] };
     if (part.empty())
       continue;
 
-    // Les morceaux avec une position paire ne sont pas des symboles.
-    // On traite aussi le cas particulier des arrobases échappées.
+    // Segments with an even position are not symbols.
+    // We also handle the special case of escaped at signs.
     if (i % 2 == 0 || part.bytes()[0] == '@') {
       combined.append(part);
     }
@@ -163,8 +162,8 @@ replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list, String
     }
   }
 
-  // Dans le cas où l'utilisateur désactive le fatal_if_invalid, le dernier morceau
-  // est à une position impaire mais n'est pas un symbole, donc on le rajoute ici.
+  // In the case where the user disables fatal_if_invalid, the last segment
+  // is at an odd position but is not a symbol, so we add it here.
   if (size_array_w_splits % 2 == 0) {
     combined.append(string_splited[string_splited.size() - 1]);
   }
@@ -176,19 +175,18 @@ replaceWithCmdLineArgs(const ParameterListWithCaseOption& parameter_list, String
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Méthode permettant de splitter la chaine "str_view" en plusieurs morceaux.
- * Les splits seront entre les chars "c".
- * Les morceaux seront ajoutés dans le tableau "str_view_array".
- * Les morceaux ayant une position impaire sont des symboles.
- * Les morceaux ayant une position paire ne sont pas des symboles.
- * Dans le cas où le nombre de morceaux est paire, le dernier morceau ne sera
- * pas un symbole.
- * Dans le cas où une arrobase est échappée, elle sera mise à une position
- * impaire. Ce symbole spécial sera à considérer.
+ * \brief Method allowing the string "str_view" to be split into multiple segments.
+ * The splits will occur between the chars "c".
+ * The segments will be added to the "str_view_array" array.
+ * Segments with an odd position are symbols.
+ * Segments with an even position are not symbols.
+ * In the case where the number of segments is even, the last segment will
+ * not be a symbol.
+ * In the case where an at sign is escaped, it will be placed at an odd position. This special symbol will be considered.
  *
- * \param str_view [IN] La chaine de caractères à split.
- * \param str_view_array [OUT] Le tableau qui contiendra les morceaux.
- * \param c Le char délimitant les morceaux.
+ * \param str_view [IN] The character string to split.
+ * \param str_view_array [OUT] The array that will contain the segments.
+ * \param c The character delimiting the segments.
  */
 void StringVariableReplace::
 _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c)
@@ -215,28 +213,28 @@ _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c)
   bool previous_backslash = false;
 
   for (Int64 i = 0; i < len; ++i) {
-    // Si on trouve une arrobase.
+    // If we find an at sign.
     if (str_span[i] == c) {
-      // Si cette arrobase est précédée par un backslash.
+      // If this at sign is preceded by a backslash.
       if (previous_backslash) {
-        // On enregistre le morceau qu'on parcourait, sans le backslash.
+        // We record the segment we were traversing, without the backslash.
         str_view_array[index++] = str_view.subView(offset, i - 1 - offset);
-        // On rajoute l'arrobase.
+        // We add the at sign.
         str_view_array[index++] = str_view.subView(i, 1);
 
         offset = i + 1;
         previous_backslash = false;
       }
       else {
-        // On enregistre le morceau qu'on parcourait, sans l'arrobase.
+        // We record the segment we were traversing, without the at sign.
         str_view_array[index++] = str_view.subView(offset, i - offset);
 
         offset = i + 1;
       }
     }
-    // Si on trouve un backslash.
+    // If we find a backslash.
     else if (str_span[i] == '\\') {
-      // Et qu'on avait déjà trouvé un backslash, on n'y touche pas.
+      // And if we had already found a backslash, we do nothing.
       if (previous_backslash)
         previous_backslash = false;
       else
@@ -246,7 +244,7 @@ _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c)
       previous_backslash = false;
     }
   }
-  // On ajoute le dernier morceau.
+  // We add the last segment.
   str_view_array[index] = str_view.subView(offset, len - offset);
 }
 
@@ -254,13 +252,13 @@ _splitString(StringView str_view, ArrayView<StringView> str_view_array, char c)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Méthode permettant de compter le nombre de caractères séparateurs
- * dans une chaine de caractères.
+ * \brief Method allowing counting the number of separator characters
+ * in a character string.
  *
- * \param str_view La chaine de caractère.
- * \param c Le caractère séparant les morceaux.
- * \param count_c Le nombre total de caractère \a c
- * \param count_c_with_escape Le nombre de caractères \a c ayant un backslash avant.
+ * \param str_view The character string.
+ * \param c The character separating the segments.
+ * \param count_c The total number of character \a c
+ * \param count_c_with_escape The number of characters \a c preceded by a backslash.
  */
 void StringVariableReplace::
 _countChar(StringView str_view, char c, Integer& count_c, Integer& count_c_with_escape)
@@ -280,7 +278,7 @@ _countChar(StringView str_view, char c, Integer& count_c, Integer& count_c_with_
       }
     }
     else if (byte == '\\') {
-      // On avait déjà trouvé un backslash, on n'y touche pas.
+      // If we had already found a backslash, we do nothing.
       if (previous_backslash)
         previous_backslash = false;
       else

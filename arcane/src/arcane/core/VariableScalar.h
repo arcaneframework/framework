@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableScalar.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Variable scalaire.                                                        */
+/* Scalar variable.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLESCALAR_H
 #define ARCANE_CORE_VARIABLESCALAR_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Variable scalaire.
+ * \brief Scalar variable.
  */
 template<class T>
 class VariableScalarT
@@ -41,7 +42,7 @@ class VariableScalarT
 
  protected:
 
-  //! Construit une variable basée sur la référence \a v
+  //! Constructs a variable based on the reference \a v
   VariableScalarT(const VariableBuildInfo& v,const VariableInfo& vi);
 
  public:
@@ -96,4 +97,4 @@ class VariableScalarT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

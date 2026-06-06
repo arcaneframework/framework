@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemUniqueId.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Type d'un identifiant unique pour une entité.                             */
+/* Type of a unique identifier for an entity.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMUNIQUEID_H
 #define ARCANE_CORE_ITEMUNIQUEID_H
@@ -28,7 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Identifiant unique d'une entité.
+ * \brief Unique identifier of an entity.
  * \ingroup Mesh
  */
 class ARCANE_CORE_EXPORT ItemUniqueId
@@ -197,7 +197,7 @@ class ARCANE_CORE_EXPORT ItemUniqueId
 
 /*!
  * \internal
- * \brief Spécialisation pour les Int64
+ * \brief Specialization for Int64
  */
 template <>
 class HashTraitsT<ItemUniqueId>

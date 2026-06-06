@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseDatasetSource.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Source d'un jeu de données d'un cas.                                      */
+/* Source of a case dataset.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEDATASETSOURCE_H
 #define ARCANE_CORE_CASEDATASETSOURCE_H
@@ -23,14 +23,15 @@ namespace Arcane
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Source d'un jeu de données d'un cas.
+ * \brief Source of a case dataset.
  *
- * Il est possible de positionner soit le nom du fichier (setFileName()) ou
- * directement le contenu (setContent()).
+ * It is possible to set either the file name (setFileName()) or
+ * directly the content (setContent()).
  *
- * Si content() est vide et que fileName() est non nul, le jeu de données
- * sera lu par %Arcane au moment du lancement de l'application.
+ * If content() is empty and fileName() is not null, the dataset
+ * will be read by %Arcane when the application starts.
  */
 class ARCANE_CORE_EXPORT CaseDatasetSource
 {
@@ -41,15 +42,15 @@ class ARCANE_CORE_EXPORT CaseDatasetSource
   CaseDatasetSource& operator=(const CaseDatasetSource& rhs);
   ~CaseDatasetSource();
  public:
-  //! Positionne le nom du fichier du jeu de données.
+  //! Sets the file name of the dataset.
   void setFileName(const String& name);
-  //! Nom du fichier du jeu de données
+  //! File name of the dataset
   String fileName() const;
-  //! Positionne le contenu du jeu de données.
+  //! Sets the content of the dataset.
   void setContent(Span<const std::byte> bytes);
-  //! Positionne le contenu du jeu de données.
+  //! Sets the content of the dataset.
   void setContent(Span<const Byte> bytes);
-  //! Contenu du jeu de données.
+  //! Content of the dataset.
   ByteConstSpan content() const;
  private:
   Impl* m_p;
@@ -63,5 +64,4 @@ class ARCANE_CORE_EXPORT CaseDatasetSource
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

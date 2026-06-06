@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeLoopSingletonServiceInfo.h                              (C) 2000-2022 */
 /*                                                                           */
-/* Infos d'un service singleton d'une boucle en temps.                       */
+/* Info of a time loop singleton service.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TIMELOOPSINGLETONSERVICEINFO_H
 #define ARCANE_TIMELOOPSINGLETONSERVICEINFO_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Infos d'un service singleton d'une boucle en temps.
+ * \brief Info of a time loop singleton service.
  */
 class TimeLoopSingletonServiceInfo
 {
@@ -62,5 +63,4 @@ class TimeLoopSingletonServiceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

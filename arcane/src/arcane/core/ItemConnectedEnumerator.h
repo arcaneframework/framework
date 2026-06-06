@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectedEnumerator.h                                   (C) 2000-2023 */
 /*                                                                           */
-/* Enumérateurs sur les entités connectées du maillage.                      */
+/* Enumerators for connected entities of the mesh.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMCONNECTEDENUMERATOR_H
 #define ARCANE_ITEMCONNECTEDENUMERATOR_H
@@ -19,12 +19,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ItemConnectedEnumerator.h
  *
- * \brief Types et macros pour itérer sur les entités du maillage connectées
- * à une autre entité.
+ * \brief Types and macros for iterating over mesh entities connected
+ * to another entity.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,8 +35,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur une liste d'entités connectées à une autre.
+ * \brief Enumerator over a list of entities connected to another.
  */
 class ItemConnectedEnumerator
 : public ItemConnectedEnumeratorBaseT<Item>
@@ -44,10 +47,10 @@ class ItemConnectedEnumerator
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
   template<int Extent> friend class ItemConnectedListView;
-  // NOTE: Normalement il suffirait de faire cela:
+  // NOTE: Normally, it would suffice to do this:
   //   template<class T> friend class ItemConnectedEnumeratorBase;
-  // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
-  // à la main
+  // but this does not work with GCC 8. So we do the specialization
+  // manually
   friend class ItemConnectedEnumeratorBaseT<Item>;
   friend class ItemConnectedEnumeratorBaseT<Node>;
   friend class ItemConnectedEnumeratorBaseT<ItemWithNodes>;
@@ -89,8 +92,9 @@ class ItemConnectedEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur sur une liste typée d'entités connectées de type \a ItemType
+ * \brief Enumerator over a typed list of connected entities of type \a ItemType
  */
 template<typename ItemType>
 class ItemConnectedEnumeratorT
@@ -116,16 +120,16 @@ class ItemConnectedEnumeratorT
 /*!
  * \def ENUMERATE_CONNECTED_(type,iterator_name,item,connectivity_func)
  *
- * \brief Macro pour itérer sur une liste d'entité connectées à une autre entité.
+ * \brief Macro to iterate over a list of entities connected to another entity.
  *
- * \warning API expérimentale. Ne pas utiliser en dehors de %Arcane.
+ * \warning Experimental API. Do not use outside of %Arcane.
  *
- * \param type type de l'entité connectée (Node, Face, Cell, Edge, Particle, DoF )
- * \param iterator_name nom de l'énumérateur
- * \param item nom de l'entité dont on souhaite avoir les connectivités
- * \param connectivity_func méthode de \a item pour récupérer la connectivité.
+ * \param type type of the connected entity (Node, Face, Cell, Edge, Particle, DoF )
+ * \param iterator_name name of the enumerator
+ * \param item name of the entity whose connectivities are desired
+ * \param connectivity_func method of \a item to retrieve the connectivity.
  *
- * Exemple pour itérer sur les noeuds de la mailles:
+ * Example for iterating over the mesh nodes:
  * \code
  * Arcane::Cell cell = ...;
  * ENUMERATE_CONNECTED_(Node,inode,cell,nodes()){

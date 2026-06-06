@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* Mrg32k3a.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Ce fichier définit le patron de classe TMrg32k3a ainsi que la classe      */
-/* associée Mrg32k3a.                                                        */ 
+/* This file defines the class template TMrg32k3a as well as the associated  */
+/* class Mrg32k3a.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_MRG32K3A_H
 #define ARCANE_CORE_RANDOM_MRG32K3A_H
@@ -28,22 +28,22 @@ namespace Arcane::random
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*! Patron de classe TMrg32k3a. Il permet de définir des classes de 
- * générateurs de type Mrg32k3a. Les nombres pseudo-aléatoires générés sont de  
- * type RealType. L'état du générateur est caractérisé par six valeurs de type 
- * RealType et peut être géré en interne par le membre private _state[i] 0<i<=5.
+/*! Class template TMrg32k3a. It allows defining classes of 
+ * Mrg32k3a type generators. The pseudo-random numbers generated are of 
+ * type RealType. The generator state is characterized by six values of type 
+ * RealType and can be managed internally by the private member _state[i] where 0<i<=5.
  *
- * La génération d'une séquence de nombres pseudo-aléatoires s'effectue :
+ * The generation of a sequence of pseudo-random numbers is performed:
  *
- * - soit par l'appel successif de l'opérateur (). Dans ce cas, la graine peut  
- *   etre initialisée par les différentes méthodes seed ou lors de l'appel au 
- *   constructeur. L'état du générateur est géré en interne par l'intermédiaire
- *   du membre private _state[i] (0<i<=5). Ses composantes i sont accessibles  
- *   via la méthode getState(i).
+ * - either by successive calls to the operator (). In this case, the seed can 
+ *   be initialized by the different seed methods or when calling the 
+ *   constructor. The generator state is managed internally via
+ *   the private member _state[i] (0<i<=5). Its components i are accessible 
+ *   via the getState(i) method.
  *
- * - soit par l'appel de la méthode \c apply(value). L'état du générateur est 
- *   géré à l'extérieur de la classe. Les méthodes \c seed et \c getState n'ont 
- *   pas de sens dans cette utilisation.
+ * - or by calling the \c apply(value) method. The generator state is 
+ *   managed outside the class. The \c seed and \c getState methods are meaningless 
+ *   in this usage.
 */
 template<typename RealType, Int32 val>
 class TMrg32k3a
@@ -54,10 +54,12 @@ class TMrg32k3a
   static const bool has_fixed_range = true;
   static const Int32 min_value=0;
   static const Int32 max_value=1;
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Constructeur avec initialisation du tableau de graines à partir de
-   *         la valeur \c x0. L'appel à la méthode \c seed(x0) est réalisé.
+
+  /*! \brief Constructor initializing the seed array from
+   * the value \c x0. The \c seed(x0) method is called.
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
@@ -66,10 +68,12 @@ class TMrg32k3a
   {
     seed(x0);
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Constructeur avec initialisation du tableau de graines à partir du
-   *         tableau \c state. \c state doit être un tableau de six éléments. 
+
+  /*! \brief Constructor initializing the seed array from
+   * the \c state array. \c state must be an array of six elements. 
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
@@ -79,10 +83,12 @@ class TMrg32k3a
     for(Integer  i=0;i<6;i++)
     _state[i] = state[i];
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief  Initialisation du tableau de graines à partir de la valeur \c x0. 
-   *          Le tableau de graines de ce générateur est composé de six éléments. 
+
+  /*! \brief Initialization of the seed array from the value \c x0.
+   *          The seed array of this generator consists of six elements. 
    *
    * \author  Patrick Rathouit 
    * \date    28/07/2006
@@ -96,20 +102,24 @@ class TMrg32k3a
     _state[4] = _state[3];
     _state[5] = _state[4]; 
 }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Méthode qui retourne l'état du générateur pour l'index \c i. L'état
-   *         complet du générateur est donnée par les valeurs d'index \c i comprises
-   *         entre 0 et 5 ( 0 < \c i <=5 ).
+
+  /*! \brief Method that returns the generator state for index \c i. The complete
+   * state of the generator is given by the index values \c i ranging
+   * between 0 and 5 ( 0 < \c i <=5 ).
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
    */ 
   RealType  getState(Integer i) const { return _state[i]; }
- /*---------------------------------------------------------------------------*/
+
   /*---------------------------------------------------------------------------*/
-  /*! \brief Surdéfinition de l'opérateur \c () qui retourne la valeur pseudo 
-   *         aléatoire du générateur. L'état du générateur est modifié. 
+  /*---------------------------------------------------------------------------*/
+
+  /*! \brief Overloading of the \c () operator which returns the pseudo
+   * random value of the generator. The generator state is modified. 
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
@@ -120,10 +130,12 @@ class TMrg32k3a
     _x = apply(_state);
     return _x;
   }
- /*---------------------------------------------------------------------------*/
+
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur pseudo aléatoire à partir de l'état \c state.
-   *         L'état du générateur state doit être composé de six éléments.
+  /*---------------------------------------------------------------------------*/
+
+  /*! \brief Returns the pseudo-random value from the \c state.
+   * The generator state state must consist of six elements.
    *
    * \author Patrick Rathouit 
    * \date 28/07/2006
@@ -143,33 +155,41 @@ class TMrg32k3a
     if(state[2] <= state[5]) return ((state[2]-state[5]+4294967087.0)/4294967087.0);
     else return ((state[2]-state[5]) / 4294967087.0);
   }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur minimum possible d'une séquence. 
+
+  /*! \brief Returns the minimum possible value of a sequence.
    *
    * \author Patrick Rathouit 
    * \date 28/07/2006
    */
   result_type min() const  { return static_cast<result_type>(min_value); }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Retourne la valeur maximum possible d'une séquence. 
+
+  /*! \brief Returns the maximum possible value of a sequence.
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006
    */
   result_type max() const { return static_cast<result_type>(max_value); }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Fonction de validation (je ne sais pas trop a quoi elle sert!)
+
+  /*! \brief Validation function (I'm not sure what it's for!)
    *
    * \author Patrick Rathouit
    * \date 28/07/2006
    */
   bool validation(RealType x) const { return val == x; }
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
-  /*! \brief Surdéfinition de l'opérateur ==
+
+  /*! \brief Overloading of the == operator
    *
    * \author Patrick Rathouit 
    * \date   28/07/2006

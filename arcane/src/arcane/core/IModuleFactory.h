@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IModuleFactory.h                                            (C) 2000-2019 */
 /*                                                                           */
-/* Interface de la manufacture des modules.                                  */
+/* Module manufacturing interface.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMODULEFACTORY_H
 #define ARCANE_IMODULEFACTORY_H
@@ -27,22 +27,23 @@ class IModuleFactory2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur la fabrique d'un module.
+ * \brief Information about a module factory.
  *
- * Cette interface contient les informations nécessaire sur une fabrique
- * d'un module.
+ * This interface contains the necessary information about a module
+ * factory.
  *
- * On peut directement créer le module via la méthode createModule().
+ * The module can be created directly via the createModule() method.
  *
- * Cette classe utilise un compteur de référence pour gérer sa durée de vie
- * (voir la classe ReferenceCounter).
+ * This class uses a reference counter to manage its lifetime
+ * (see the ReferenceCounter class).
  */
 class ARCANE_CORE_EXPORT IModuleFactoryInfo
 {
  protected:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IModuleFactoryInfo() {}
 
  public:
@@ -50,56 +51,58 @@ class ARCANE_CORE_EXPORT IModuleFactoryInfo
   virtual void addReference() =0;
   virtual void removeReference() =0;
   /*!
-   * \brief Indique si le module et doit être chargé automatiquement.
+   * \brief Indicates if the module should be loaded automatically.
    *
-   * Si cette propriété est vrai, le module sera toujours chargé même
-   * s'il n'apparait pas dans la boucle en temps.
+   * If this property is true, the module will always be loaded even
+   * if it does not appear in the time loop.
    */
   virtual bool isAutoload() const =0;
 
   /*!
-   * \brief Si la fabrique est un pour un module,
-   * l'initialise sur le sous-domaine \a sub_domain.
+   * \brief If the factory is a one-to-one module,
+   * initializes it on the sub-domain \a sub_domain.
    *
-   * Cette méthode est appelée lorsque le sous-domaine est créé, pour
-   * effectuer certaines initialisations spécifiques du module avant
-   * que celui-ci ne soit fabriqué. Par exemple, pour ajouter des boucles
-   * en temps propres au module.
+   * This method is called when the sub-domain is created, to
+   * perform specific module initializations before
+   * it is manufactured. For example, to add time loops
+   * specific to the module.
    */
   virtual void initializeModuleFactory(ISubDomain* sub_domain) =0;
 
   /*!
-   * \brief Créé un module.
+   * \brief Creates a module.
    *
-   * L'implémentation doit appeler parent->moduleMng()->addModule()
-   * pour le module créé.
+   * The implementation must call parent->moduleMng()->addModule()
+   * for the created module.
    *
-   * \param parent Parent de ce module. 
-   * \param mesh maillage associé au module.
-   * \return le module créé
+   * \param parent Parent of this module. 
+   * \param mesh mesh associated with the module.
+   * \return the created module
    */
   virtual Ref<IModule> createModule(ISubDomain* parent,const MeshHandle& mesh_handle) =0;
 
-  //! Nom du module créé par cette fabrique.
+  //! Name of the module created by this factory.
   virtual String moduleName() const =0;
 
   /*!
-   * \brief Informations sur le module pouvant être créé par cette fabrique.
+   * \brief Information about the module that can be created by this
+   * factory.
    *
-   * L'instance retournée reste la propriété de l'application l'ayant créée
-   * et ne doit ni être modifiée, ni être détruite.
+   * The returned instance remains the property of the application that
+   * created it and must neither be modified nor destroyed.
    */
   virtual const IServiceInfo* serviceInfo() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique de module (V2).
+ * \brief Module factory interface (V2).
  *
- * Cette interface est réservée à IModuleFactoryInfo et ne doit pas
- * être utilisée directement.
+ * This interface is reserved for IModuleFactoryInfo and should not
+ * be used directly.
  */
 class ARCANE_CORE_EXPORT IModuleFactory2
 {
@@ -107,35 +110,36 @@ class ARCANE_CORE_EXPORT IModuleFactory2
   virtual ~IModuleFactory2(){}
  public:
   /*!
-   * \brief Créé un module.
+   * \brief Creates a module instance.
    *
-   * \param sd sous-domaine associé.
-   * \param mesh maillage associé au module.
-   * \return le module créé
+   * \param sd associated sub-domain.
+   * \param mesh mesh associated with the module.
+   * \return the created module
    */
   virtual Ref<IModule> createModuleInstance(ISubDomain* sd,const MeshHandle& mesh_handle) =0;
 
   /*!
-   * \brief Initialisation statique du module.
+   * \brief Static initialization of the module.
    *
-   * Cette méthode est appelée lorsque le sous-domaine est créé, pour
-   * effectuer certaines initialisations spécifiques du module avant
-   * que celui-ci ne soit fabriqué. Par exemple, pour ajouter des boucles
-   * en temps propres au module.
+   * This method is called when the sub-domain is created, to
+   * perform specific module initializations before
+   * it is manufactured. For example, to add time loops
+   * specific to the module.
    */
   virtual void initializeModuleFactory(ISubDomain* sd) =0;
 
-  //! Nom du module créé par cette fabrique.
+  //! Name of the module created by this factory.
   virtual String moduleName() const =0;
 
-  //! Informations sur le module pouvant être créé par cette fabrique.
+  //! Information about the module that can be created by this factory.
   virtual const IServiceInfo* serviceInfo() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Compteur de référence sur une fabrique de module.
+ * \brief Reference counter for a module factory.
  */
 class ARCANE_CORE_EXPORT ModuleFactoryReference
 : ReferenceCounter<IModuleFactoryInfo>
@@ -158,4 +162,4 @@ class ARCANE_CORE_EXPORT ModuleFactoryReference
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

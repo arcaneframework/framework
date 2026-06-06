@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableRefArrayLock.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Verrou sur une variable tableau.                                          */
+/* Lock on an array variable.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEREFARRAYLOCK_H
 #define ARCANE_CORE_VARIABLEREFARRAYLOCK_H
@@ -26,10 +26,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Verrou sur une variable tableau.
- * \deprecated Ne plus utiliser
+ * \brief Lock on an array variable.
+ * \deprecated Do not use
  */
 template<typename DataType>
 class VariableRefArrayLockT
@@ -78,4 +79,4 @@ class VariableRefArrayLockT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

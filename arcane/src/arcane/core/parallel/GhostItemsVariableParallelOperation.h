@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GhostItemsVariableParallelOperation.h                       (C) 2000-2025 */
 /*                                                                           */
-/* Opérations parallèles sur les entités fantômes.                           */
+/* Parallel operations on ghost entities.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLEL_GHOSTITEMSVARIABLEPARALLELOPERATION_H
 #define ARCANE_CORE_PARALLEL_GHOSTITEMSVARIABLEPARALLELOPERATION_H
@@ -24,8 +24,9 @@ namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérations parallèle sur les entités fantômes.
+ * \brief Parallel operations on ghost entities.
  */
 class ARCANE_CORE_EXPORT GhostItemsVariableParallelOperation
 : public VariableParallelOperationBase
@@ -33,7 +34,7 @@ class ARCANE_CORE_EXPORT GhostItemsVariableParallelOperation
  public:
 
   explicit GhostItemsVariableParallelOperation(IItemFamily* family);
-  virtual ~GhostItemsVariableParallelOperation() {} //!< Libère les ressources.
+  virtual ~GhostItemsVariableParallelOperation() {} //!< Releases resources.
 
  public:
 
@@ -51,4 +52,3 @@ class ARCANE_CORE_EXPORT GhostItemsVariableParallelOperation
 /*---------------------------------------------------------------------------*/
 
 #endif
-

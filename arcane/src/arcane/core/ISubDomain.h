@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISubDomain.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un sous-domaine.                                              */
+/* Interface of a subdomain.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISUBDOMAIN_H
 #define ARCANE_CORE_ISUBDOMAIN_H
@@ -66,15 +66,16 @@ class MeshHandle;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire d'un sous-domaine.
+ * \brief Interface of the subdomain manager.
  */
 class ARCANE_CORE_EXPORT ISubDomain
 : public IBase
 {
  protected:
 
-  virtual ~ISubDomain() {} //!< Libère les ressources.
+  virtual ~ISubDomain() {} //!< Frees resources.
 
  public:
 
@@ -82,7 +83,7 @@ class ARCANE_CORE_EXPORT ISubDomain
 
  public:
 
-  //! Manufacture principale.
+  //! Main factory.
   virtual IMainFactory* mainFactory() =0;
 
   //! Session
@@ -91,301 +92,300 @@ class ARCANE_CORE_EXPORT ISubDomain
   //! Application
   virtual IApplication* application() =0;
 
-  //! Retourne le gestionnaire de variables
+  //! Returns the variable manager
   virtual IVariableMng* variableMng() =0;
 
-  //! Retourne le gestionnaire de modules
+  //! Returns the module manager
   virtual IModuleMng* moduleMng() =0;
 
-  //! Retourne le gestionnaire de points d'entrée
+  //! Returns the entry point manager
   virtual IEntryPointMng* entryPointMng() =0;
 
-  //! Retourne le gestionnaire de parallélisme
+  //! Returns the parallelism manager
   virtual IParallelMng* parallelMng() =0;
 
   /*!
-   * \brief Retourne le gestionnaire de parallélisme pour tous les réplicats.
+   * \brief Returns the parallelism manager for all replicas.
    *
-   * En règle général, il faut utiliser parallelMng(). Ce gestionnaire
-   * sert essentiellement à effectuer des opérations sur l'ensemble
-   * des sous-domaines et leur réplicats. S'il n'y a pas de réplication,
-   * ce gestionnaire est le même que parallelMng().
+   * Generally, parallelMng() must be used. This manager
+   * is essentially used to perform operations on all
+   * subdomains and their replicas. If there is no replication,
+   * this manager is the same as parallelMng().
    */
   virtual IParallelMng* allReplicaParallelMng() const =0;
 
-  //! Retourne le gestionnaire de thread
+  //! Returns the thread manager
   virtual IThreadMng* threadMng() =0;
 
-  //! Retourne le gestionnaire d'historique
+  //! Returns the history manager
   virtual ITimeHistoryMng* timeHistoryMng() =0;
 
-  //! Retourne le gestionnaire de la boucle en temps
+  //! Returns the time loop manager
   virtual ITimeLoopMng* timeLoopMng() =0;
 
-  //! Retourne le gestionnaire des entrées/sorties.
+  //! Returns the I/O manager.
   virtual IIOMng* ioMng() =0;
 
-  //! Retourne le gestionnaire du jeu de données.
+  //! Returns the dataset manager.
   virtual ICaseMng* caseMng() =0;
 
-  //! Retourne le gestionnaire de timers
+  //! Returns the timer manager
   virtual ITimerMng* timerMng() const =0;
 
-  //! Gestionnaire de protections
+  //! Protection manager
   virtual ICheckpointMng* checkpointMng() const =0;
 
-  //! Gestionnaire de propriétés
+  //! Property manager
   virtual IPropertyMng* propertyMng() const =0;
 
-  //! Statistiques des temps d'exécution
+  //! Execution time statistics
   virtual ITimeStats* timeStats() const =0;
 
-  //! Gestionnaire d'informations mémoire
+  //! Memory information manager
   virtual IMemoryInfo* memoryInfo() const =0;
 
-  //! Système d'unité du sous-domaine.
+  //! Subdomain unit system.
   virtual IPhysicalUnitSystem* physicalUnitSystem() =0;
 
-  //! Retourne le gestionnaire d'équilibrage de charge.
+  //! Returns the load balancing manager.
   virtual ILoadBalanceMng* loadBalanceMng() =0;
 
-  //! Retourne le gestionnaire de maillage.
+  //! Returns the mesh manager.
   virtual IMeshMng* meshMng() const =0;
 
-  //! Interface du module maître.
+  //! Module master interface.
   virtual IModuleMaster* moduleMaster() const =0;
 
-  //! Configuration associée.
+  //! Associated configuration.
   virtual const IConfiguration* configuration() const =0;
 
-  //! Configuration associée.
+  //! Associated configuration.
   virtual IConfiguration* configuration() =0;
 
-  //! Gestionnaire de l'accélérateur associé
+  //! Associated accelerator manager
   virtual IAcceleratorMng* acceleratorMng() =0;
 
  public:
 
-  //! Numéro du sous-domaine associé à ce gestionnaire.
+  //! Subdomain ID associated with this manager.
   virtual Int32 subDomainId() const =0;
 
-  //! Nombre total de sous-domaines
+  //! Total number of subdomains
   virtual Int32 nbSubDomain() const =0;
 
-  //! Lit les informations de maillage du jeu de données
+  //! Reads the mesh information from the dataset
   virtual void readCaseMeshes() =0;
 
   /*!
    * \internal
-   * \brief Positionne un flag indiquant qu'on effectue une
-   * reprise.
+   * \brief Sets a flag indicating that a
+   * restart is being performed.
    *
-   * Cette méthode doit être appelée avant d'allouer le maillage (allocateMeshes()).
+   * This method must be called before allocating the mesh (allocateMeshes()).
    */
   virtual void setIsContinue() =0;
 
-  //! Vrai si on effectue une reprise, faux sinon.
+  //! True if a restart is being performed, false otherwise.
   virtual bool isContinue() const =0;
 
   /*!
    * \internal
-   * \brief Alloue les instances.
+   * \brief Allocates the instances.
    *
-   * Les instances de maillages sont simplements alloués mais ne contiennent pas d'entités.
-   * Cette méthode doit être appelée avant toute autre opération impliquant le maillage,
-   * en particulier avant la lecture des options du jeu de données ou la lecture des protections.
+   * Mesh instances are simply allocated but do not contain entities.
+   * This method must be called before any other operation involving the mesh,
+   * especially before reading dataset options or reading protections.
    */
   virtual void allocateMeshes() =0;
 
   /*!
    * \internal
-   * \brief Lit ou relit les maillages.
+   * \brief Reads or re-reads the meshes.
    *
-   * Au démarrage, les maillages sont relues à partir des informations du jeu de données.
-   * En reprise, les maillages sont rechargés depuis une protection.
-   * Cette méthode doit être appelée après l'appel à allocateMeshes().
+   * At startup, the meshes are re-read from the dataset information.
+   * During restart, the meshes are loaded from a protection.
+   * This method must be called after calling allocateMeshes().
    */
   virtual void readOrReloadMeshes() =0;
 
   /*!
    * \internal
-   * \brief Initialise les variables dont les valeurs sont spécifiées dans
-   * le jeu de données.
+   * \brief Initializes variables whose values are specified in
+   * the dataset.
    */
   virtual void initializeMeshVariablesFromCaseFile() =0;
 
   /*!
    * \internal
-   * \brief Applique le partitionnement de maillage de l'initialisation.
+   * \brief Applies the initialization mesh partitioning.
    */
   virtual void doInitMeshPartition() =0;
 
-  //! Ajoute un maillage au sous-domaine
+  //! Adds a mesh to the subdomain
   ARCCORE_DEPRECATED_2020("Use meshMng()->meshFactoryMng() to create and add mesh")
   virtual void addMesh(IMesh* mesh) =0;
 
-  //! Listes des maillages du sous-domaine
+  //! List of meshes in the subdomain
   virtual ConstArrayView<IMesh*> meshes() const =0;
 
   /*!
    * \internal
-   * \brief Exécution des modules d'initialisation
-   * \deprecated Cette méthode ne fait plus rien.
+   * \brief Executes initialization modules
+   * \deprecated This method does nothing anymore.
    */
   virtual ARCANE_DEPRECATED_2018 void doInitModules() =0;
 
-  //! Exécution des modules de fin d'exécution
+  //! Executes exit modules
   virtual void doExitModules() =0;
 
-  //! Affiche des informations sur l'instance
+  //! Displays information about the instance
   virtual void dumpInfo(std::ostream&) =0;
 
   /*!
-   * \brief Maillage par défaut.
+   * \brief Default mesh.
    *
-   * Le maillage par défaut n'existe pas tant que le jeu
-   * de données n'a pas été lu. Il est en général préférable
-   * d'utiliser defautMeshHandle() à la place.
+   * The default mesh does not exist until the dataset
+   * has been read. It is generally preferable
+   * to use defautMeshHandle() instead.
    */
   virtual IMesh* defaultMesh() =0;
   
   /*!
-   * \brief Handle sur le maillage par défaut.
+   * \brief Handle for the default mesh.
    *
-   * Ce handle existe toujours même si le maillage associé n'a pas
-   * encore été créé.
+   * This handle always exists even if the associated mesh has not
+   * yet been created.
    */
   virtual const MeshHandle& defaultMeshHandle() =0;
 
   virtual ARCANE_DEPRECATED IMesh* mesh() =0;
 
-  /*! \brief Recherche le maillage de nom \a name.
+  /*! \brief Searches for the mesh named \a name.
    *
-   * Si le maillage n'est pas trouvé, la méthode lance une exception
-   * si \a throw_exception vaut \a true ou retourne 0 si \a throw_exception
-   * vaut \a false.
+   If the mesh is not found, the method throws an exception
+   if \a throw_exception is \a true or returns 0 if \a throw_exception
+   is \a false.
    */
   ARCCORE_DEPRECATED_2019("Use meshMng()->findMeshHandle() instead")
   virtual IMesh* findMesh(const String& name,bool throw_exception=true) =0;
   
-  //! Indique si la session a été initialisée.
+  //! Indicates if the session has been initialized.
   virtual bool isInitialized() const =0;
 
   /*!
    * \internal
-   * \brief Indique que le sous-domaine est initialié.
+   * \brief Indicates that the subdomain is initialized.
    */
   virtual void setIsInitialized() =0;
 
-  //! Informations sur l'exécutable
+  //! Executable information
   virtual const ApplicationInfo& applicationInfo() const =0;
 
-  //! Document XML du cas.
+  //! Case XML document.
   virtual ICaseDocument* caseDocument() =0;
 
   /*!
-   * \brief Vérifie qu'un identifiant est valide
+   * \brief Checks if an identifier is valid
    *
-   * \exception ExceptionBadName si \a id n'est pas valide comme identifiant.
+   \exception ExceptionBadName if \a id is not a valid identifier.
    */
   virtual void checkId(const String& where,const String& id) =0;
 
-  //! Chemin complet du fichier contenant le jeu de données
+  //! Full file path of the dataset
   virtual const String& caseFullFileName() const =0;
 
-  //! Nom du cas
+  //! Case name
   virtual const String& caseName() const =0;
 
-  //! Remplit \a bytes avec le contenue du jeu de données.
+  //! Fills \a bytes with the dataset content.
   virtual void fillCaseBytes(ByteArray& bytes) const =0;
 
-  /*! \brief Positionne le nom du cas.
+  /*! \brief Sets the case name.
    *
-   Cette méthode doit être appelée avant l'initialisation.
+   This method must be called before initialization.
   */
   virtual void setCaseName(const String& name) =0;
 
   /*!
-   * \brief Positionne le partitionneur initial.
+   * \brief Sets the initial partitioner.
    *
-   * Si cette méthode n'est pas appelée, le partitionneur
-   * par défaut est utilisé.
+   If this method is not called, the default partitioner
+   is used.
    *
-   * Cette méthode doit être appelée avant l'initialisation des modules,
-   * par exemple dans les points d'entrée de construction.
+   This method must be called before module initialization,
+   for example in construction entry points.
    *
-   * L'instance s'approprie \a partitioner et le détruira par delete
-   * à la fin du calcul.
+   The instance takes ownership of \a partitioner and will destroy it by delete
+   at the end of the calculation.
    */
   virtual void setInitialPartitioner(IInitialPartitioner* partitioner) =0;
 
-  //! Options générales du jeu de donnée.
+  //! General dataset options.
   virtual const CaseOptionsMain* caseOptionsMain() const =0;
 
-  //! Répertoire de base des exportations.
+  //! Base directory for exports.
   virtual const IDirectory& exportDirectory() const =0;
 
-  /*! \brief Positionne le chemin de sortie des exportations (protections et reprises)
+  /*! \brief Sets the output path for exports (protections and restarts)
    
-   Le répertoire correspondant à \a dir doit exister.
+   The directory corresponding to \a dir must exist.
    
-   Cette méthode doit être appelée avant l'initialisation.
+   This method must be called before initialization.
   */
   virtual void setExportDirectory(const IDirectory& dir) =0;
 
-  //! Répertoire de base des exportations nécessitant un archivage.
+  //! Base directory for exports requiring archiving.
   virtual const IDirectory& storageDirectory() const =0;
 
-  /*! \brief Positionne le chemin de sortie des exportations nécessitant un archivage.
+  /*! \brief Sets the output path for exports requiring archiving.
    
-    Ce répertoire permet d'indiquer un répertoire qui peut être archivé automatiquement.
-    S'il est nul, on utilise le exportDirectory().
+    This directory allows specifying a directory that can be automatically archived.
+    If it is null, exportDirectory() is used.
    
-    Cette méthode doit être appelée avant l'initialisation.
+    This method must be called before initialization.
   */
   virtual void setStorageDirectory(const IDirectory& dir) =0;
 
-  //! Répertoire de base des listings (logs, info exécution).
+  //! Base directory for listings (logs, execution info).
   virtual const IDirectory& listingDirectory() const =0;
 
-  /*! \brief Positionne le chemin de sortie des infos listing
+  /*! \brief Sets the output path for listing info
    *
-   Le répertoire correspondant à \a dirname doit exister.
+   The directory corresponding to \a dirname must exist.
 
-   Cette méthode doit être appelée avant l'initialisation.
+   This method must be called before initialization.
   */
   virtual void setListingDirectory(const IDirectory& dir) =0;
 
-  //! Informations sur les variables standards
+  //! Information on standard variables
   virtual const CommonVariables& commonVariables() const =0;
 
   /*!
-   * \brief Sort les informations internes de l'architecture.
-   * Les informations sont stockées dans un arbre XML ayant pour élément
-   * racine \a root.
-   * Ces informations sont à usage interne d'Arcane.
+   * \brief Dumps internal architecture information.
+   * The information is stored in an XML tree with \a root as the root element.
+   * This information is for internal use by Arcane.
    */
   virtual void dumpInternalInfos(XmlNode& elem) =0;
 
-  /*! \brief Dimension du maillage (1D, 2D ou 3D).
+  /*! \brief Mesh dimension (1D, 2D, or 3D).
    *
-   * \deprecated Utiliser mesh()->dimension() à la place.
+   * \deprecated Use mesh()->dimension() instead.
    */
   virtual Integer ARCANE_DEPRECATED meshDimension() const =0;
 
   /*!
-   * \brief Notification avant destruction du sous-domaine
+   * \brief Notification before subdomain destruction
    */
   virtual IObservable* onDestroyObservable() =0;
 
-  //! Service d'exécution directe (ou null)
+  //! Direct execution service (or null)
   virtual IDirectExecution* directExecution() const =0;
 
   /*!
-   * \brief Positionne le service d'exécution directe.
+   * \brief Sets the direct execution service.
    *
-   * Ce service doit être positionné lors de la création des services lors
-   * de la lecture du jeu de donnée.
+   This service must be set during service creation when
+   reading the dataset.
    */
   virtual void setDirectExecution(IDirectExecution* v) =0;
 };
@@ -398,5 +398,4 @@ class ARCANE_CORE_EXPORT ISubDomain
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

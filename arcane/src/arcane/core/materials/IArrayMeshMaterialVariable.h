@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IArrayMeshMaterialVariable.h                               (C) 2000-2022 */
+/* IArrayMeshMaterialVariable.h                                (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'une variable matériau scalaire.                               */
+/* Interface for a scalar material variable.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_IARRAYMESHMATERIALVARIABLE_H
 #define ARCANE_MATERIALS_IARRAYMESHMATERIALVARIABLE_H
@@ -27,9 +27,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'accès pour CellMaterialVariableArrayRef.
+ * \brief Access interface for CellMaterialVariableArrayRef.
  */
 template<typename ItemType,typename DataType>
 class IArrayMeshMaterialVariable

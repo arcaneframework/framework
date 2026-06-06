@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BitonicSort.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Algorithme de tri bi-tonique parallèle.                                   */
+/* Parallel bitonic sort algorithm.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLEL_BITONICSORT_H
 #define ARCANE_CORE_PARALLEL_BITONICSORT_H
@@ -28,9 +28,10 @@ namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fournit les opérations nécessaires pour le tri via la
- * classe \a BitonicSort.
+ * \brief Provides the necessary operations for sorting via the
+ * \a BitonicSort class.
  */
 template <typename KeyType>
 class BitonicSortDefaultTraits
@@ -49,13 +50,13 @@ class BitonicSortDefaultTraits
   {
     return pm->recv(values, rank, false);
   }
-  //! Valeur max possible pour la clé.
+  //! Maximum possible value for the key.
   static KeyType maxValue()
   {
     //return ARCANE_INTEGER_MAX-1;
     return std::numeric_limits<KeyType>::max();
   }
-  // Indique si la clé est valide. Elle doit être invalide si k==maxValue()
+  // Indicates if the key is valid. It must be invalid if k==maxValue()
   static bool isValid(const KeyType& k)
   {
     return k != maxValue();
@@ -66,34 +67,33 @@ class BitonicSortDefaultTraits
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Algorithme de tri bi-tonique parallèle.
+ * \brief Parallel bitonic sort algorithm.
  *
- * Le type de la clé peut être quelconque, mais il doit posséder un opérateur
- * de comparaison. Les caractéristiques nécessaires sont données par la
- * classe KeyTypeTraits. L'implémentation fournit les
- * opérations pour les types Int32, Int64 et Real via la classe
- * \a BitonicSortDefaultTraits. Pour les autres types, il est nécessaire de
- * spécialiser cette classe.
+ * The key type can be arbitrary, but it must possess a comparison operator.
+ * The necessary characteristics are provided by the
+ * KeyTypeTraits class. The implementation provides operations for Int32,
+ * Int64, and Real types via the
+ * \a BitonicSortDefaultTraits class. For other types, it is necessary to
+ * specialize this class.
  *
- * La méthode sort() procède au tri. Après appel à cette méthode, il est
- * possible de récupérer la liste des clés via \a keys() et les rangs
- * et indices dans la liste d'origine de chaque élément de la clé via
- * les méthodes keyRangs() et keyIndexes(). Si ces informations ne sont
- * pas utiles, il est possible d'appeler setNeedIndexAndRank() pour
- * les désactiver ce qui permet d'accélérer quelque peu le tri.
+ * The sort() method performs the sort. After calling this method, it is
+ * possible to retrieve the list of keys via \a keys() and the ranks
+ * and indices in the original list of each key element via
+ * the keyRanks() and keyIndexes() methods. If this information is not
+ * useful, it is possible to call setNeedIndexAndRank() to disable it, which
+ * allows the sort to be slightly accelerated.
  *
- * Le tri se fait de telle sorte que les éléments sont triés dans l'ordre croissant
- * en commençant par le processeur de rang 0, puis de rang 1 et ainsi de
- * suite jusqu'à la fin. Par exemple, pour une liste de 5000 éléments répartis
- * sur 4 rangs, le processeur de rang 0 possédera à la fin du tri les 1250 éléments
- * les plus petits, le processeur de rang 1 les 1250 éléments suivants et ainsi
- * de suite.
+ * The sort is performed such that the elements are sorted in ascending order
+ * starting with rank processor 0, then rank 1, and so on until the end. For
+ * example, for a list of 5000 elements distributed
+ * over 4 ranks, the rank 0 processor will have the 1250 smallest elements
+ * at the end of the sort, the rank 1 processor the next 1250 elements, and so on.
  *
- * Pour accélérer l'algorithme, il est préférable que tous les processeurs
- * aient environ le même nombre d'éléments dans leur liste au départ. A la fin
- * du tri, il est possible que tous les processeurs n'aient pas le même nombre
- * d'éléments dans la liste et notamment les processeurs de rang les plus élevés
- * peuvent ne pas avoir d'éléments.
+ * To accelerate the algorithm, it is preferable that all processors
+ * have approximately the same number of elements in their list initially.
+ * At the end of the sort, it is possible that not all processors have the same
+ * number of elements in the list, and notably the highest-ranked processors
+ * may not have any elements.
  */
 template <typename KeyType, typename KeyTypeTraits = BitonicSortDefaultTraits<KeyType>>
 class BitonicSort
@@ -108,19 +108,19 @@ class BitonicSort
  public:
 
   /*!
-   * \brief Trie en parallèle les éléments de \a keys sur tous les rangs.
+   * \brief Parallelly sorts the elements of \a keys on all ranks.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   inline void sort(ConstArrayView<KeyType> keys) override;
 
-  //! Après un tri, retourne la liste des éléments de ce rang.
+  //! After a sort, returns the list of elements on this rank.
   ConstArrayView<KeyType> keys() const override { return m_keys; }
 
-  //! Après un tri, retourne le tableau des rangs d'origine des éléments de keys().
+  //! After a sort, returns the array of original ranks of the elements of keys().
   Int32ConstArrayView keyRanks() const override { return m_key_ranks; }
 
-  //! Après un tri, retourne le tableau des indices dans la liste d'origine des éléments de keys().
+  //! After a sort, returns the array of indices in the original list of the elements of keys().
   Int32ConstArrayView keyIndexes() const override { return m_key_indexes; }
 
  public:
@@ -139,23 +139,23 @@ class BitonicSort
 
  private:
 
-  //! Variable contenant la cle du tri
+  //! Variable containing the sorting key
   UniqueArray<KeyType> m_keys;
-  //! Tableau contenant le rang du processeur où se trouve la clé
+  //! Array containing the rank of the processor where the key is located
   UniqueArray<Int32> m_key_ranks;
-  //! Tableau contenant l'indice de la clé dans le processeur
+  //! Array containing the index of the key within the processor
   UniqueArray<Int32> m_key_indexes;
-  //! Gestionnaire du parallèlisme
+  //! Parallelism manager
   IParallelMng* m_parallel_mng = nullptr;
-  //! Nombre d'éléments locaux
+  //! Number of local elements
   Int64 m_init_size = 0;
-  //! Nombre d'éléments locaux pour le tri bi-tonique
+  //! Number of local elements for the bitonic sort
   Int64 m_size = 0;
 
-  //! Indique si on souhaite les infos sur les rangs et index
+  //! Indicates whether rank and index information is desired
   bool m_want_index_and_rank = true;
 
-  //! Statistiques sur le nombre de niveaux de messages
+  //! Statistics on the number of message levels
   Integer m_nb_merge = 0;
 
   KeyTypeTraits m_traits;

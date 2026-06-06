@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OutputChecker.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Sorties basées sur un temps (physique ou CPU) ou un nombre d'itérations.  */
+/* Outputs based on time (physical or CPU) or a number of iterations.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_OUTPUTCHECKER_H
 #define ARCANE_CORE_OUTPUTCHECKER_H
@@ -27,23 +27,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère les sorties basées sur un temps physique, temps CPU ou
- * un nombre d'itération.
+ * \brief Manages outputs based on physical time, CPU time, or
+ * a number of iterations.
  *
- * Le temps CPU est exprimé en minutes.
+ * CPU time is expressed in minutes.
  */
 class ARCANE_CORE_EXPORT OutputChecker
 {
  public:
 
-  //! Type de sortie
+  //! Output type
   enum eOutType
   {
-    OutTypeNone, //!< Pas de sorties
-    OutTypeGlobalTime, //!< Sortie basée sur le temps physique
-    OutTypeCPUTime, //!< Sortie basée sur le temps CPU consommé
-    OutTypeIteration //!< Sortie basée sur le nombre d'itérations
+    OutTypeNone, //!< No outputs
+    OutTypeGlobalTime, //!< Output based on physical time
+    OutTypeCPUTime, //!< Output based on consumed CPU time
+    OutTypeIteration //!< Output based on number of iterations
   };
 
  public:
@@ -69,9 +70,9 @@ class ARCANE_CORE_EXPORT OutputChecker
   ISubDomain* m_sub_domain = nullptr;
   String m_name;
   eOutType m_out_type = OutTypeNone;
-  VariableScalarInteger* m_next_iteration = nullptr; //!< Itération de la prochaine sauvegarde
-  VariableScalarReal* m_next_global_time = nullptr; //!< Temps physique de la prochaine sauvegarde
-  VariableScalarInteger* m_next_cpu_time = nullptr; //!< Temps CPU de la prochaine sauvegarde
+  VariableScalarInteger* m_next_iteration = nullptr; //!< Next save iteration
+  VariableScalarReal* m_next_global_time = nullptr; //!< Physical time of the next save
+  VariableScalarInteger* m_next_cpu_time = nullptr; //!< CPU time of the next save
   const CaseOptionInteger* m_step_iteration = nullptr;
   const CaseOptionReal* m_step_global_time = nullptr;
   const CaseOptionInteger* m_step_cpu_time = nullptr;
@@ -91,5 +92,4 @@ class ARCANE_CORE_EXPORT OutputChecker
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

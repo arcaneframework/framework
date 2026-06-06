@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseTableParams.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Paramètres d'une table de marche du jeu de données.                       */
+/* Parameters for a data set walk table.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASETABLEPARAMS_H
 #define ARCANE_CORE_CASETABLEPARAMS_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Paramètre d'une fonction.
+ * \brief Parameter of a function.
  */
 class CaseTableParams
 {
@@ -73,8 +74,4 @@ class CaseTableParams
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
-
-
-
+#endif

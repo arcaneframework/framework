@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupImplInternal.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* API interne à Arcane de ItemGroupImpl.                                    */
+/* Internal API of ItemGroupImpl in Arcane.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_ITEMGROUPIMPLINTERNAL_H
 #define ARCANE_CORE_INTERNAL_ITEMGROUPIMPLINTERNAL_H
@@ -26,8 +26,9 @@ class ItemGroupImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API interne à Arcane de ItemGroupImpl
+ * \brief Internal API of ItemGroupImpl in Arcane
  */
 class ARCANE_CORE_EXPORT ItemGroupImplInternal
 {
@@ -39,24 +40,24 @@ class ARCANE_CORE_EXPORT ItemGroupImplInternal
 
  public:
 
-  //! Indique que le groupe est associé à un constituant.
+  //! Indicates that the group is associated with a constituent.
   void setAsConstituentGroup();
 
-  //! Liste des localId() des entités du groupe.
+  //! List of localId() of the group's entities.
   SmallSpan<Int32> itemsLocalId();
 
   /*!
-   * \brief Notifie l'instance qu'on a directement modifié la liste des entités du groupe.
+   * \brief Notifies the instance that the list of group entities has been directly modified.
    *
-   * \a nb_remaining est le nombre d'entités restantes et \a removed_ids la liste
-   * des entités supprimées.
+   * \a nb_remaining is the number of remaining entities and \a removed_ids is the list
+   * of removed entities.
    */
   void notifyDirectRemoveItems(SmallSpan<const Int32> removed_ids, Int32 nb_remaining);
 
-  //! Indique que le padding SIMD des entités à été effectué
+  //! Indicates that the SIMD padding of the entities has been performed
   void notifySimdPaddingDone();
 
-  //! Change la ressource mémoire utilisée pour conserver les localId() des entités
+  //! Changes the memory resource used to store the localId() of the entities
   void setMemoryRessourceForItemLocalId(eMemoryRessource mem);
 
  private:

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ApplicationBuildInfo.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour construire une instance de IApplication.                */
+/* Information to build an instance of IApplication.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,9 +59,9 @@ class ApplicationBuildInfo::Impl
   , m_nb_processus_sub_domain(0)
   , m_config_file_name("")
   {
-    // Fixe une limite en dur pour éviter d'avoir trop de sous-domaines
-    // en mémoire partagé (le maximum est en général le nombre de coeurs par
-    // noeud)
+    // Sets a hard limit to prevent having too many sub-domains
+    // in shared memory (the maximum is generally the number of cores per
+    // node)
     m_nb_shared_memory_sub_domain.setValidator([](Int32& x){ _clamp(x,0,1024); });
     m_nb_replication_sub_domain.setValidator([](Int32& x){ x = std::max(x,0); });
     m_nb_processus_sub_domain.setValidator([](Int32& x){ x = std::max(x,0); });
@@ -222,7 +222,7 @@ setDefaultServices()
   {
     String def_name = (has_shm) ? "Thread" : "Sequential";
     String default_service_name = def_name+"ParallelSuperMng";
-    // Positionne la valeur par défaut si ce n'est pas déjà fait.
+    // Sets the default value if it hasn't been set already.
     if (m_p->m_default_message_passing_service.null())
       m_p->m_default_message_passing_service = default_service_name;
   }
@@ -483,7 +483,7 @@ addParameter(const String& name,const String& value)
 void ArccoreApplicationBuildInfo::
 parseArgumentsAndSetDefaultsValues(const CommandLineArguments& command_line_args)
 {
-  // On ne récupère que les arguments du style:
+  // We only retrieve arguments of the style:
   //   -A,x=b,y=c
   StringList names;
   StringList values;
@@ -605,4 +605,3 @@ internalDefaultMessagePassingService() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

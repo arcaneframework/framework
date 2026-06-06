@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FaceReorienter.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Vérifie la bonne orientation d'une face et la réoriente le cas échéant.   */
+/* Checks the correct orientation of a face and reorients it if necessary.   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_FACEREORIENTER_H
 #define ARCANE_CORE_FACEREORIENTER_H
@@ -26,46 +26,47 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief  Cette fonction/classe réoriente les faces.
+ * \brief This function/class reorients faces.
  * 
- * Cette classe sert par exemple à s'assurrer de la bonne orientation
- * des faces après un changement de topologie du maillage
+ * This class is used, for example, to ensure the correct orientation
+ * of faces after a mesh topology change.
  */
 class ARCANE_CORE_EXPORT FaceReorienter
 {
  public:
 
-  /*! Constructeur.
-   * \deprecated Utiliser FaceReorienter(IMesh*) à la place.
+  /*! Constructor.
+   * \deprecated Use FaceReorienter(IMesh*) instead.
    */
   ARCANE_DEPRECATED_260 FaceReorienter(ITraceMng* tm);
-  //! Constructeur.
+  //! Constructor.
   explicit FaceReorienter(IMesh* mesh);
 
  public:
 
   /*!
-   * \deprecated Utiliser checkAndChangeOrientation(Face) à la place.
+   * \deprecated Use checkAndChangeOrientation(Face) instead.
    */
   ARCANE_DEPRECATED_260 void checkAndChangeOrientation(ItemInternal* face);
 
   /*!
-   * \deprecated Utiliser checkAndChangeOrientationAMR(Face) à la place.
+   * \deprecated Use checkAndChangeOrientationAMR(Face) instead.
    */
   ARCANE_DEPRECATED_260 void checkAndChangeOrientationAMR(ItemInternal* face);
 
   /*!
-   * \brief Vérifie et éventuellement change l'orientation de la face.
+   * \brief Checks and optionally changes the orientation of the face.
    *
-   * \param face face a réorienter
+   * \param face face to reorient
    */
   void checkAndChangeOrientation(Face face);
 
   /*!
-   * \brief Vérifie et éventuellement change l'orientation de la face.
+   * \brief Checks and optionally changes the orientation of the face.
    *
-   * \param face face a réorienter
+   * \param face face to reorient
    */
   // AMR
   void checkAndChangeOrientationAMR(Face face);

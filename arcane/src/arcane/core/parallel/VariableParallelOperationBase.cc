@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableParallelOperationBase.cc                            (C) 2000-2024 */
 /*                                                                           */
-/* Classe de base des opérations parallèles sur des variables.               */
+/* Base class for parallel operations on variables.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -116,7 +116,7 @@ applyOperation(IDataOperation* operation)
     return;  
 
   ItemInfoListView item_list(m_item_family);
-  // Génère les infos pour chaque processeur à qui on va envoyer des entités
+  // Generates info for each processor to which we will send entities
   for( Integer i=0, is=exchanger->nbSender(); i<is; ++i ){
     ISerializeMessage* comm = exchanger->messageToSend(i);
     Int32 dest_sub_domain = comm->destination().value();
@@ -134,17 +134,17 @@ applyOperation(IDataOperation* operation)
     }
     ISerializer* sbuf = comm->serializer();
 
-    // Réserve la mémoire pour la sérialisation
+    // Reserves memory for serialization
     sbuf->setMode(ISerializer::ModeReserve);
 
-    // Réserve pour le magic number
+    // Reserves for the magic number
     sbuf->reserveInt64(1);
 
-    // Réserve pour la liste uniqueId() des entités transférées
+    // Reserves for the list of uniqueId() of transferred entities
     sbuf->reserveInt64(1);
     sbuf->reserveSpan(dest_items_unique_id);
 
-    // Réserve pour chaque variable
+    // Reserves for each variable
     for( VariableList::Enumerator i_var(m_variables); ++i_var; ){
       IVariable* var = *i_var;
       debug(Trace::High) << "Serialize variable (reserve)" << var->name();
@@ -153,13 +153,13 @@ applyOperation(IDataOperation* operation)
 
     sbuf->allocateBuffer();
 
-    // Sérialise les infos
+    // Serializes the info
     sbuf->setMode(ISerializer::ModePut);
 
-    // Sérialise le magic number
+    // Serializes the magic number
     sbuf->putInt64(SERIALIZE_MAGIC_NUMBER);
 
-    // Sérialise la liste des uniqueId() des entités transférées
+    // Serializes the list of uniqueId() of transferred entities
     sbuf->putInt64(nb_item);
     sbuf->putSpan(dest_items_unique_id);
     for( VariableList::Enumerator i_var(m_variables); ++i_var; ){
@@ -177,20 +177,20 @@ applyOperation(IDataOperation* operation)
     UniqueArray<Int64> items_unique_id;
     UniqueArray<Int32> items_local_id;
     
-    // Récupère les infos pour les variables et les remplit
+    // Retrieves info for variables and fills them
     for( Integer i=0, n=exchanger->nbReceiver(); i<n; ++i ){
       ISerializeMessage* comm = exchanger->messageToReceive(i);
       ISerializer* sbuf = comm->serializer();
 
-      // Désérialize les variables
+      // Deserializes the variables
       {
-        // Sérialise le magic number
+        // Serializes the magic number
         Int64 magic_number = sbuf->getInt64();
         if (magic_number!=SERIALIZE_MAGIC_NUMBER)
           ARCANE_FATAL("Bad magic number actual={0} expected={1}. This is probably due to incoherent messaging",
                        magic_number,SERIALIZE_MAGIC_NUMBER);
 
-        // Récupère la liste des uniqueId() des entités transférées
+        // Retrieves the list of uniqueId() of transferred entities
         Int64 nb_item = sbuf->getInt64();
         items_unique_id.resize(nb_item);
         sbuf->getSpan(items_unique_id);

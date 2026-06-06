@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SharedReference.cc                                          (C) 2000-2022 */
 /*                                                                           */
-/* Compteur de référence.                                                    */
+/* Reference counter.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,8 +37,8 @@ void SharedReference::
 removeRef()
 {
   Int32 r = --m_ref_count;
-  // Cette méthode pouvant être appelé depuis un destructeur, il ne faut
-  // pas qu'elle lève d'exception
+  // Since this method might be called from a destructor, it must not
+  // throw an exception
   if (r<0)
     arcaneNoReferenceErrorCallTerminate(this);
   if (r==0)

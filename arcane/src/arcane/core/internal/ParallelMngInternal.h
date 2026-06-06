@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngInternal.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la partie interne à Arcane de IParallelMng.             */
+/* Implementation of the internal part of IParallelMng in Arcane.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
 #define ARCANE_CORE_INTERNAL_PARALLELMNGINTERNAL_H
@@ -35,7 +35,7 @@ class ParallelMngDispatcher;
 
 /*!
  * \internal
- * \brief Partie interne de IParallelMng.
+ * \brief Internal part of IParallelMng.
  */
 class ARCANE_CORE_EXPORT ParallelMngInternal
 : public IParallelMngInternal

@@ -7,15 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* ConfigurationPropertyReader.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Lecture de propriétés à partir d'un 'IConfiguration'.                     */
+/* Reading properties from an 'IConfiguration'.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_CONFIGURATIONPROPERTYREADER_H
 #define ARCANE_CORE_INTERNAL_CONFIGURATIONPROPERTYREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * NOTE: Les classes de ce fichier sont en cours de mise au point.
- * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
+ * NOTE: The classes in this file are currently under development.
+ * NOTE: The API may change at any time. Do not use outside of Arcane.
  */
 
 #include "arcane/core/IConfiguration.h"
@@ -54,11 +55,12 @@ class ConfigurationPropertyReader
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de \a instance à partir d'une configuration.
+ * \brief Fills the values of \a instance from a configuration.
  *
- * Les valeurs de la propriété doivent être dans une sous-section
- * de \a c dont le nom est celui de la classe \a T.
+ * The property values must be in a subsection
+ * of \a c whose name is that of the class \a T.
  */
 template<typename T> inline void
 readFromConfiguration(IConfiguration* c,T& instance)
@@ -79,4 +81,4 @@ readFromConfiguration(IConfiguration* c,T& instance)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

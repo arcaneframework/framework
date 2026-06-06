@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PreciseOutputChecker.cc                                     (C) 2000-2020 */
 /*                                                                           */
-/* Sorties basées sur un temps (physique ou CPU) ou un nombre d'itération.   */
+/* Outputs based on time (physical or CPU) or a number of iterations.        */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/PreciseOutputChecker.h"
@@ -62,27 +62,27 @@ checkIfOutput(Real old_time, Real current_time, Integer current_iteration)
 {
   bool output_requested = false;
 
-  //Mise à jour de la période de sortie dans le cas d'une table de marche
+  // Update of the output period in the case of a marching table
   if (m_table_values_physical_time != nullptr) {
     m_table_values_physical_time->value(current_time, m_output_period_physical_time);
   }
-  //Contrôle sur le temps exact
+  // Check on exact time
   if (!output_requested) {
     output_requested = _checkTime(old_time, current_time, m_output_period_physical_time);
   }
-  //Contrôle sur l'encadrement du temps
+  // Check on time interval
   if (!output_requested) {
     output_requested = _checkTimeInterval(old_time, current_time, m_output_period_physical_time);
   }
 
-  //Contrôle sur les itérations
+  // Check on iterations
   if (!output_requested) {
-    //Mise a jour de la fréquence de sortie pour les tables de marche
+    // Update of the output frequency for marching tables
     if (m_table_values_iteration != nullptr) {
       m_table_values_iteration->value(current_iteration, m_output_period_iteration);
     }
     if (m_output_period_iteration > 0) {
-      //Contrôle exact
+      // Exact check
       if (current_iteration % m_output_period_iteration == 0) {
         output_requested = true;
       }
@@ -103,9 +103,9 @@ _checkTimeInterval(Real old_time, Real current_time, Real output_period)
     Integer number_of_current_outputs = (int)floor(current_time / output_period);
 
     if (number_of_previous_outputs != number_of_current_outputs) {
-      // Il faut vérifier qu'à cause des erreurs de troncature, on ne se
-      // retrouve pas sur un cas où la sortie aurrait déjà été réalisée sur
-      // une sortie exacte à l'itération précédente.
+      // We must check that due to truncation errors, we do not end up in a
+      // case where the output was already performed at an exact output in
+      // the previous iteration.
       Integer number_of_previous_outputs_ceil = (int)ceil(old_time / output_period);
       Real old_time_reconstruct = number_of_previous_outputs_ceil * output_period;
       if ((old_time_reconstruct - old_time) > 1e-7 * old_time) {
@@ -125,25 +125,25 @@ _checkOldTime(Real old_time, Real output_period, Integer current_number_of_outpu
   bool output_requested = true;
   Integer prev_number_of_outputs_round = (int)floor(old_time / output_period);
   if (prev_number_of_outputs_round == current_number_of_outputs) {
-    // Puis on reconstruit le temps de sortie :
+    // Then we reconstruct the output time:
     Real prev_output_time_round = current_number_of_outputs * output_period;
-    // Et on contrôle si le pas de temps précédent conduit à un output
+    // And we check if the previous time step leads to an output
     bool old_time_output_requested = _compareTime(old_time, prev_output_time_round);
-    // Si oui, on annule l'output
+    // If yes, we cancel the output
     if (old_time_output_requested) {
       output_requested = false;
     }
   }
 
-  // On vérifie la borne sup pour les recouvrements
+  // We check the upper bound for overlaps
   if (output_requested) {
     Integer prev_number_of_outputs_ceil = (int)ceil(old_time / output_period);
     if (prev_number_of_outputs_ceil == current_number_of_outputs) {
-      // Puis on reconstruit le temps de sortie :
+      // Then we reconstruct the output time:
       Real prev_output_time_ceil = prev_number_of_outputs_ceil * output_period;
-      // Et on contrôle si le pas de temps précédent conduit à un output
+      // And we check if the previous time step leads to an output
       bool old_time_output_requested = _compareTime(old_time, prev_output_time_ceil);
-      // Si oui, on annule l'output
+      // If yes, we cancel the output
       if (old_time_output_requested) {
         output_requested = false;
       }
@@ -161,26 +161,26 @@ _checkTime(Real old_time, Real current_time, Real output_period)
   bool output_requested = false;
 
   if (output_period > 0) {
-    // Reconstruction de l'intervalle de temps dans lequel se trouve le code.
-    // Pour connaitre le nombre d'output déjà effectués en période fixe,
-    // on prend la conversion entière inf et sup.
+    // Reconstruction of the time interval in which the code is located.
+    // To know the number of outputs already performed in a fixed period,
+    // we take the floor and ceiling conversion.
     Integer number_of_outputs_round = (int)floor(current_time / output_period);
     Integer number_of_outputs_ceil = (int)ceil(current_time / output_period);
-    // Puis on reconstruit le temps de sortie:
+    // Then we reconstruct the output time:
     Real next_output_time_round = number_of_outputs_round * output_period;
     Real next_output_time_ceil = number_of_outputs_ceil * output_period;
 
     output_requested = _compareTime(current_time, next_output_time_round);
 
-    // Les deux blocs suivants constituent un FIX :
-    // il faut vérifier que le temps précédent ne conduit pas à un temps de sortie
-    // pour annuler la demande de sortie si tel est le cas.
-    // Dans le cas contraire, les erreurs d'arrondis sur la comparaison exacte
-    // peuvent conduire à considérer plusieurs temps
-    // comme faisant parti du temps de sortie demandé (ex : si t=1e-7 et dt=1e-15,
-    // alors la comparaison relative de comparTime donnera plusieurs temps
-    // valides, conduisant à ...). La comparaison est faite sur les bornes sup et
-    // inf pour lever l'incertitude dans le cas ou dt=temps de sortie.
+    // The following two blocks constitute a FIX:
+    // we must check that the previous time does not lead to an output time
+    // to cancel the output request if so.
+    // Otherwise, rounding errors in the exact comparison
+    // can lead to considering several times
+    // as part of the requested output time (e.g., if t=1e-7 and dt=1e-15,
+    // then the relative comparison of comparTime will give several valid times,
+    // leading to...). The comparison is made on the upper and
+    // lower bounds to remove uncertainty in the case where dt=output time.
     if (output_requested) {
       output_requested = _checkOldTime(old_time, output_period, number_of_outputs_round);
     }
@@ -205,9 +205,9 @@ _compareTime(Real current_time, Real compar_time)
 {
   bool output_requested = false;
   if (compar_time > 0.0) {
-    // Si l'écart relatif entre les temps est < à 1e-7 (soit la précision
-    // liée à la division), alors on considère
-    // que le temps demandé correspond à celui de l'output.
+    // If the relative difference between the times is < 1e-7 (i.e., the precision
+    // related to the division), then we consider
+    // that the requested time corresponds to the output time.
     if (((math::abs(current_time - compar_time))) < 1.0e-7 * compar_time) {
       output_requested = true;
     }

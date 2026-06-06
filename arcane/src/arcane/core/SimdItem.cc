@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SimdItem.cc                                                 (C) 2000-2022 */
 /*                                                                           */
-/* Types des entités et des énumérateurs des entités pour la vectorisation.  */
+/* Types of entities and entity enumerators for vectorization.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,7 +23,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour tester la validité de toutes les méthodes templates
+// To test the validity of all template methods
 
 template class SimdItemT<Node>;
 template class SimdItemEnumeratorT<Node>;

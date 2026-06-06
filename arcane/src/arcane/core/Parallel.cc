@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Parallel.cc                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Espace de nom des types gérant le parallélisme.                           */
+/* Namespace for types managing parallelism.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,12 +32,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file Parallel.h
  *
- * \brief Fichier contenant les déclarations concernant le modèle de
- * programmation par échange de message.
+ * \brief File containing declarations concerning the message passing model.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -59,9 +60,9 @@ mpiCommunicator()
 extern "C++" void MessagePassing::
 namedBarrier(IParallelMng* pm,const String& name)
 {
-  // Copie les 1024 premiers caractères de name dans un tableau de Int32
-  // et fait une réduction 'max' sur ce tableau. Si la réduction est différente
-  // de notre valeur c'est qu'un des rang n'a pas la bonne barrière.
+  // Copies the first 1024 characters of name into an Int32 array
+  // and performs a 'max' reduction on this array. If the reduction is different
+  // from our value, it means that one of the ranks does not have the correct barrier.
   ARCANE_CHECK_POINTER(pm);
 
   const int nsize = 256;
@@ -96,7 +97,7 @@ filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
 {
   const Int32 nb_string = input_strings.size();
 
-  // Créé un buffer pour sérialiser les noms des variables dont on dispose
+  // Create a buffer to serialize the names of the variables we have
   SerializeBuffer send_buf;
   send_buf.setMode(ISerializer::ModeReserve);
   send_buf.reserve(DT_Int32,1);
@@ -111,7 +112,7 @@ filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
     send_buf.put(input_strings[i]);
   }
 
-  // Récupère les infos des autres PE.
+  // Retrieve information from other PEs.
   SerializeBuffer recv_buf;
   pm->allGather(&send_buf,&recv_buf);
 
@@ -132,8 +133,8 @@ filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
     }
   }
 
-  // Parcours la liste des chaînes de caractète et range dans \a out_strings
-  // celles qui sont disponibles sur tous les rangs de \a pm
+  // Iterates through the list of characteristic strings and ranges into \a out_strings
+  // those that are available on all ranks of \a pm
   std::set<String> common_set;
   {
     auto end_iter = string_occurences.end();
@@ -141,7 +142,7 @@ filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
       String str = input_strings[i];
       auto i_str = string_occurences.find(str);
       if (i_str==end_iter)
-        // Ne devrait pas arriver
+        // Should not happen
         continue;
       if (i_str->second!=nb_rank)
         continue;
@@ -149,8 +150,8 @@ filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
     }
   }
 
-  // Créé la liste finale en itérant sur \a common_set
-  // qui est trié alphabétiquement.
+  // Create the final list by iterating over \a common_set
+  // which is sorted alphabetically.
   common_strings.clear();
   for( const String& s : common_set )
     common_strings.add(s);

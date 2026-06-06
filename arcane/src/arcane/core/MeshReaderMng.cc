@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshReaderMng.h                                             (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire de lecteurs de maillage.                                     */
+/* Mesh reader manager.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -103,14 +103,15 @@ readMesh(const String& mesh_name,const String& file_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner cette méthode avec cell de ISubDomain.
+
+// TODO: merge this method with ISubDomain::cell.
 IMesh* MeshReaderMng::
 readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_mng)
 {
   m_p->checkInit();
   String extension;
   {
-    // Cherche l'extension du fichier et la conserve dans \a extension
+    // Searches for the file extension and keeps it in \a extension
     std::string_view fview = file_name.toStdStringView();
     std::size_t extension_pos = fview.find_last_of('.');
     if (extension_pos==std::string_view::npos)
@@ -119,14 +120,14 @@ readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_
     extension = fview;
 
   }
-  // TODO: à terme, créer le maillage par le lecteur.
+  // TODO: eventually, create the mesh via the reader.
   ISubDomain* sd = m_p->m_sub_domain;
   IParallelMng* pm = parallel_mng;
   IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
 
-  // Créé le maillage.
-  // Le maillage peut déjà exister.
-  // Dans notre cas, c'est une erreur s'il est déjà alloué.
+  // Mesh created.
+  // The mesh may already exist.
+  // In our case, it is an error if it is already allocated.
   if (mesh->isAllocated())
     ARCANE_FATAL("Mesh '{0}' already exists and is allocated", mesh_name);
 
@@ -190,4 +191,3 @@ isUseMeshUnit() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

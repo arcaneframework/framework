@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Concurrency.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
+/* Classes managing concurrency (tasks, parallel loops, ...)                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CONCURRENCY_H
 #define ARCANE_CORE_CONCURRENCY_H
@@ -46,11 +46,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Concurrency
  *
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur la vue \a items_view avec les options \a options.
+ * \brief Applies the method \a function of the instance
+ * \a instance concurrently on the view \a items_view with the options \a options.
  */
 template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& run_info,
@@ -70,9 +71,10 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& ru
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * \a instance sur la vue \a items_view avec les options \a options
+ * \brief Applies the lambda function \a lambda_function
+ * \a instance concurrently on the view \a items_view with the options \a options
  * \ingroup Concurrency
  */
 template <typename LambdaType> inline void
@@ -97,8 +99,8 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& ru
 /*!
  * \ingroup Concurrency
  *
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur la vue \a items_view avec les options \a options.
+ * \brief Applies the method \a function of the instance
+ * \a instance concurrently on the view \a items_view with the options \a options.
  */
 template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOptions& options,
@@ -110,8 +112,8 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOption
 /*!
  * \ingroup Concurrency
  *
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur le groupe \a items avec les options \a options.
+ * \brief Applies the method \a function of the instance
+ * \a instance concurrently on the group \a items with the options \a options.
  */
 template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemGroup& items, const ForLoopRunInfo& run_info,
@@ -122,8 +124,8 @@ arcaneParallelForeach(const ItemGroup& items, const ForLoopRunInfo& run_info,
 
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur la vue \a items_view.
+ * \brief Applies the method \a function of the instance
+ * \a instance concurrently on the view \a items_view.
  */
 template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view,
@@ -134,8 +136,8 @@ arcaneParallelForeach(const ItemVectorView& items_view,
 
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur le groupe \a items.
+ * \brief Applies the method \a function of the instance
+ * \a instance concurrently on the group \a items.
  */
 template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemGroup& items,
@@ -145,8 +147,8 @@ arcaneParallelForeach(const ItemGroup& items,
 }
 
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * \a instance sur la vue \a items_view avec les options \a options
+ * \brief Applies the lambda function \a lambda_function
+ * \a instance concurrently on the view \a items_view with the options \a options
  * \ingroup Concurrency
  */
 template <typename LambdaType> inline void
@@ -157,8 +159,8 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOption
 }
 
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur le groupe \a items avec les options \a options
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently on the group \a items with the options \a options
  * \ingroup Concurrency
  */
 template <typename LambdaType> inline void
@@ -170,8 +172,8 @@ arcaneParallelForeach(const ItemGroup& items, const ParallelLoopOptions& options
 
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * \a instance sur la vue \a items_view.
+ * \brief Applies the lambda function \a lambda_function
+ * \a instance concurrently on the view \a items_view.
  */
 template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const LambdaType& lambda_function)
@@ -181,8 +183,8 @@ arcaneParallelForeach(const ItemVectorView& items_view, const LambdaType& lambda
 
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur le groupe \a items.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently on the group \a items.
  */
 template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemGroup& items, const LambdaType& lambda_function)
@@ -194,8 +196,8 @@ arcaneParallelForeach(const ItemGroup& items, const LambdaType& lambda_function)
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération [i0,i0+size].
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range [i0,i0+size].
  */
 template <typename InstanceType> inline void
 arcaneParallelFor(Integer i0, Integer size, InstanceType* itype,
@@ -208,8 +210,8 @@ arcaneParallelFor(Integer i0, Integer size, InstanceType* itype,
 
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range [i0,i0+size] with the options \a options.
  */
 template <typename LambdaType> inline void
 arcaneParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
@@ -222,8 +224,8 @@ arcaneParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
 
 /*!
  * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range [i0,i0+size] with the options \a options.
  */
 template <typename LambdaType> inline void
 arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
@@ -233,8 +235,8 @@ arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
 }
 
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération [i0,i0+size]
+ * \brief Applies the lambda function \a lambda_function
+ * concurrently over the iteration range [i0,i0+size]
  */
 template <typename LambdaType> inline void
 arcaneParallelFor(Integer i0, Integer size, const LambdaType& lambda_function)
@@ -246,9 +248,10 @@ arcaneParallelFor(Integer i0, Integer size, const LambdaType& lambda_function)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * \a instance sur les vues des containers \a views avec les options \a options
+ * \brief Applies the lambda function \a lambda_function
+ * \a instance concurrently on the container views \a views with the options \a options
  * \ingroup Concurrency
  */
 template <typename LambdaType, typename... Views> inline void
@@ -267,13 +270,13 @@ arcaneParallelForVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_fun
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de la concurrence.
- *
- * Les méthodes de ce namespace sont obsolètes et doivent être remplacées
- * par les méthodes équivalentes dans le namespace Arcane.
- * Par exemple Arcane::Parallel::For() doit être remplacé par Arcane::arcaneParallelFor()
- * et Arcane::Parallel::Foreach() par Arcane::arcaneParallelForeach().
+ * \brief Concurrency implementation.
+ * * The methods in this namespace are obsolete and must be replaced
+ * by equivalent methods in the Arcane namespace.
+ * For example, Arcane::Parallel::For() must be replaced by Arcane::arcaneParallelFor()
+ * and Arcane::Parallel::Foreach() by Arcane::arcaneParallelForeach().
  */
 namespace Parallel
 {
@@ -370,7 +373,7 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
+   * \deprecated Use the For overload with ParallelLoopOptions as an argument.
    */
   template <typename InstanceType> ARCANE_DEPRECATED_122 inline void
   For(Integer i0, Integer size, Integer grain_size, InstanceType* itype,
@@ -393,7 +396,7 @@ namespace Parallel
   }
 
   /*!
-   * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
+   * \deprecated Use the For overload with ParallelLoopOptions as an argument.
    */
   template <typename LambdaType> ARCANE_DEPRECATED_122 inline void
   For(Integer i0, Integer size, Integer grain_size, const LambdaType& lambda_function)

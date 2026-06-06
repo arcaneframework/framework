@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataReaderWriter.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface de lecture/écriture des données d'une variable.                 */
+/* Interface for reading/writing variable data.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAREADERWRITER_H
 #define ARCANE_CORE_IDATAREADERWRITER_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Interface de lecture/écriture des données d'une variable.
+ * \brief Interface for reading/writing variable data.
  *
  * \sa IDataWriter, IDataReader
  */
@@ -48,5 +49,4 @@ class ARCANE_CORE_EXPORT IDataReaderWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

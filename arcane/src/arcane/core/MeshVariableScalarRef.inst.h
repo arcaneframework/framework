@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshVariableScalarRef.inst.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Variable scalaire du maillage.                                            */
+/* Mesh scalar variable.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -231,11 +231,11 @@ MeshVariableScalarRefT<ItemType,DataTypeT>::
 MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs)
 : ItemVariableScalarRefT<DataTypeT>(rhs)
 {
-  // Normalement, c'est à cette classe de faire l'initilisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableScalarRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableScalarRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows for generic variable creation on a mesh entity
+  // based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -281,13 +281,14 @@ setIsSynchronized()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Échange les valeurs de la variable \a rhs avec celles de l'instance.
+ * \brief Swaps the values of the variable \a rhs with those of the instance.
  *
- * Cette méthode est optimisée pour éviter les recopie et donc l'échange
- * se fait en temps constant. Les variables échangées doivent avoir le
- * même maillage, la même famille et le même groupe. Elles doivent aussi
- * être allouées (IVariable::setUsed()==true)
+ * This method is optimized to avoid copies, so the swap
+ * is done in constant time. The swapped variables must have the
+ * same mesh, the same family, and the same group. They must also
+ * be allocated (IVariable::setUsed()==true)
  */
 template<class ItemType,class DataTypeT> void
 MeshVariableScalarRefT<ItemType,DataTypeT>::

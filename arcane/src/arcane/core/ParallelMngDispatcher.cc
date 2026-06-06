@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParallelMngDispatcher.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Redirection de la gestion des messages suivant le type des arguments.     */
+/* Redirection of message handling based on argument type.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -516,7 +516,7 @@ _doWaitRequests(ArrayView<Request> requests,eWaitType wait_type)
   Integer nb_request = requests.size();
   request_list->add(requests);
   request_list->wait(wait_type);
-  // Ne pas oublier de recopier les requêtes, car elles ont pu être modifiées
+  // Don't forget to copy the requests, as they might have been modified
   for (Integer i=0; i<nb_request; ++i )
     requests[i] = request_list->request(i);
   return request_list->doneRequestIndexes();

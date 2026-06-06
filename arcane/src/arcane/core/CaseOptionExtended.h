@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionExtended.h                                        (C) 2000-2023 */
 /*                                                                           */
-/* Option du jeu de données de type 'Extended'.                              */
+/* Option for the dataset of type 'Extended'.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASEOPTIONEXTENDED_H
 #define ARCANE_CASEOPTIONEXTENDED_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de données de type étendu.
+ * \brief Option for the extended type dataset.
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseOptionExtended
@@ -46,10 +47,10 @@ class ARCANE_CORE_EXPORT CaseOptionExtended
   void visit(ICaseDocumentVisitor* visitor) const override;
 
   /*!
-   * \brief Positionne la valeur par défaut de l'option.
+   * \brief Sets the default value of the option.
    *
-   * Si l'option n'est pas pas présente dans le jeu de données, alors sa valeur sera
-   * celle spécifiée par l'argument \a def_value, sinon l'appel de cette méthode est sans effet.
+   * If the option is not present in the dataset, its value will be
+   * that specified by the argument \a def_value; otherwise, calling this method has no effect.
    */
   void setDefaultValue(const String& def_value);
 
@@ -64,26 +65,27 @@ class ARCANE_CORE_EXPORT CaseOptionExtended
 
  private:
 
-  String m_type_name; //!< Nom du type de l'option
-  String m_value; //!< Valeur de l'option sous forme de chaîne unicode
+  String m_type_name; //!< Name of the option type
+  String m_value; //!< Value of the option in unicode string format
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de donnée de type étendu.
+ * \brief Option for the extended type dataset.
  *
  * \ingroup CaseOption
- * Cette classe se sert d'une fonction externe dont le prototype est:
+ * This class uses an external function with the prototype:
  
  \code
  extern "C++" bool
  _caseOptionConvert(const CaseOption&,const String&,T& obj);
  \endcode
  
- pour retrouver à partir d'une chaine de caractère un objet du type \a T.
- Cette fonction retourne \a true si un tel objet n'est pas trouvé.
- Si l'objet est trouvé, il est stocké dans \a obj.
+ to retrieve an object of type \a T from a character string.
+ This function returns \a true if such an object is not found.
+ If the object is found, it is stored in \a obj.
  */
 #ifndef SWIG
 template<class T>
@@ -97,20 +99,20 @@ class CaseOptionExtendedT
 
  public:
 
-  //! Valeur de l'option
+  //! Option value
   operator const T&() const { return value(); }
 
-  //! Valeur de l'option
+  //! Option value
   const T& value() const
   {
     ARCANE_CASEOPTION_CHECK_IS_INITIALIZED;
     return m_value;
   }
 
-  //! Valeur de l'option
+  //! Option value
   const T& operator()() const { return value(); }
 
-  //! Retourne la valeur de l'option si isPresent()==true ou sinon \a arg_value
+  //! Returns the value of the option if isPresent()==true or otherwise \a arg_value
   const T& valueIfPresentOrArgument(const T& arg_value)
   {
     ARCANE_CASEOPTION_CHECK_IS_INITIALIZED;
@@ -121,22 +123,23 @@ class CaseOptionExtendedT
 	
   virtual bool _tryToConvert(const String& s)
   {
-    // La fonction _caseOptionConvert() doit être déclarée avant
-    // l'instantiation de cette template. Normalement le générateur automatique
-    // de config effectue cette opération.
+    // The _caseOptionConvert() function must be declared before
+    // the instantiation of this template. Normally, the automatic config generator
+    // performs this operation.
     return _caseOptionConvert(*this,s,m_value);
   }
 
  private:
 
-  T m_value; //!< Valeur de l'option
+  T m_value; //!< Value of the option
 };
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de donnée de type liste de types étendus.
+ * \brief Option for the extended list of types dataset.
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseOptionMultiExtended
@@ -156,7 +159,7 @@ class ARCANE_CORE_EXPORT CaseOptionMultiExtended
   void visit(ICaseDocumentVisitor* visitor) const override;
 
  protected:
-  
+
   virtual bool _tryToConvert(const String& s,Integer pos) =0;
   virtual void _allocate(Integer size) =0;
   virtual bool _allowPhysicalUnit() { return false; }
@@ -166,17 +169,17 @@ class ARCANE_CORE_EXPORT CaseOptionMultiExtended
 
  private:
 
-  String m_type_name; //!< Nom du type de l'option
-  UniqueArray<String> m_values; //!< Valeurs sous forme de chaînes unicodes.
+  String m_type_name; //!< Name of the option type
+  UniqueArray<String> m_values; //!< Values in unicode string format.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de donnée de type liste de types étendus.
+ * \brief Option for the extended list of types dataset.
  * \ingroup CaseOption
- * \warning Toutes les méthodes de cette classe doivent être visible dans la
- * déclaration (pour éviter des problèmes d'instanciation de templates).
+ * \warning All methods of this class must be visible in the declaration (to avoid template instantiation problems).
  * \sa CaseOptionExtendedT
  */
 #ifndef SWIG
@@ -187,7 +190,7 @@ class CaseOptionMultiExtendedT
 {
  public:
 
-  typedef T Type; //!< Type de l'option.
+  typedef T Type; //!< Type of the option.
 
  public:
 
@@ -201,9 +204,9 @@ class CaseOptionMultiExtendedT
 
   bool _tryToConvert(const String& s,Integer pos) override
   {
-    // La fonction _caseOptionConvert() doit être déclarée avant
-    // l'instantiation de cette template. Normalement le générateur automatique
-    // d'options (axl2cc) effectue cette opération.
+    // The _caseOptionConvert() function must be declared before
+    // the instantiation of this template. Normally, the automatic config generator
+    // of options (axl2cc) performs this operation.
     T& value = this->operator[](pos);
     return _caseOptionConvert(*this,s,value);
   }
@@ -230,4 +233,4 @@ class CaseOptionMultiExtendedT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

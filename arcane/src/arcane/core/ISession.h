@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISession.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une session.                                                  */
+/* Interface of a session.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISESSION_H
 #define ARCANE_CORE_ISESSION_H
@@ -25,19 +25,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une session d'exécution d'un cas.
+ * \brief Interface for a case execution session.
  *
- * Une session gère l'exécution d'un cas dans un processus.
+ * A session manages the execution of a case in a process.
  *
- * Cette exécution peut être répartie sur plusieurs sous-domaine en multi-threading.
+ * This execution can be distributed across multiple sub-domains using multi-threading.
  */
 class ARCANE_CORE_EXPORT ISession
 : public IBase
 {
  public:
 
-  virtual ~ISession() = default; //!< Libère les ressources
+  virtual ~ISession() = default; //!< Frees resources
 
  public:
 
@@ -45,33 +46,33 @@ class ARCANE_CORE_EXPORT ISession
   virtual IApplication* application() const = 0;
 
   /*!
-    \brief Créé un sous-domaine avec les paramètres contenus dans \a sdbi.
+    \brief Creates a sub-domain with the parameters contained in \a sdbi.
    
-    Le sous-domaine créé est ajouté à la liste des sous-domaines de
-    la session. Le document contenant le jeu de données est ouvert
-    et et sa validité XML est vérifiée mais les options des services
-    et modules ne sont pas lues.
+    The created sub-domain is added to the list of sub-domains of
+    the session. The document containing the dataset is opened
+    and its XML validity is checked, but the options of the services
+    and modules are not read.
   */
   virtual ISubDomain* createSubDomain(const SubDomainBuildInfo& sdbi) = 0;
 
-  //! Termine la session avec le code de retour ret_val
+  //! Ends the session with the return code ret_val
   virtual void endSession(int ret_val) = 0;
 
-  //! Liste des sous-domaines de la session
+  //! List of sub-domains of the session
   virtual SubDomainCollection subDomains() = 0;
 
-  //! Effectue un abort
+  //! Performs an abort
   virtual void doAbort() = 0;
 
   /*!
-   * \brief Vérifie que la version \a version du jeu de données est valide.
+   * \brief Checks if the dataset version \a version is valid.
    *
-   * \retval true si la version est valide
-   * \retval false sinon   
+   * \retval true if the version is valid
+   * \retval false otherwise   
    */
   virtual bool checkIsValidCaseVersion(const String& version) = 0;
 
-  //! Écrit le fichier des informations sur l'exécution
+  //! Writes the execution information file
   virtual void writeExecInfoFile() = 0;
 };
 
@@ -83,5 +84,4 @@ class ARCANE_CORE_EXPORT ISession
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

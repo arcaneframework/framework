@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IInitialPartitioner.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un partitionneur initial.                                     */
+/* Interface of an initial partitioner.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IINITIALPARTITIONER_H
 #define ARCANE_CORE_IINITIALPARTITIONER_H
@@ -24,19 +24,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un partitionneur initial.
+ * \brief Interface of an initial partitioner.
  *
- * Le service implémentant cette interface est responsable du
- * partitionnement initial des maillages du cas. Ce partitionnement a lieu
- * uniquement lors du démarrage du cas, juste avant l'initialisation
- * du cas.
+ * The service implementing this interface is responsible for the
+ * initial partitioning of the case meshes. This partitioning takes place
+ * only when the case starts, just before the case initialization.
  */
 class ARCANE_CORE_EXPORT IInitialPartitioner
 {
  public:
 
-  virtual ~IInitialPartitioner() = default; //!< Libère les ressources.
+  virtual ~IInitialPartitioner() = default; //!< Releases resources.
 
  public:
 
@@ -45,10 +45,10 @@ class ARCANE_CORE_EXPORT IInitialPartitioner
  public:
 
   /*!
-   * \brief Partitionne les maillages.
+   * \brief Partitions the meshes.
    *
-   * Cette opération doit partitionner tous les mailles \a meshes et
-   * les distribuer sur l'ensemble des processeurs.
+   * This operation must partition all \a meshes and
+   * distribute them across all processors.
    */
   virtual void partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes) = 0;
 };
@@ -61,4 +61,4 @@ class ARCANE_CORE_EXPORT IInitialPartitioner
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

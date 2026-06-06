@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ServiceInfo.cc                                              (C) 2000-2019 */
 /*                                                                           */
-/* Informations d'un service.                                                */
+/* Information about a service.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -327,9 +327,9 @@ create(const ServiceProperty& sp,const char* filename,int lineno)
 {
   ARCANE_UNUSED(filename);
   ARCANE_UNUSED(lineno);
-  //TODO: utiliser les infos 'filename' et 'lineno'.
+  //TODO: use the 'filename' and 'lineno' info.
 
-  // Attention à bien copier la chaîne issu de sp car il s'agit d'un const char*.
+  // Attention to properly copy the string from sp because it is a const char*.
   String name = std::string_view(sp.name());
   ServiceInfo* si = new ServiceInfo(name,VersionInfo("0.0"),IServiceInfo::Dim2|IServiceInfo::Dim3);
   ServiceFactoryInfo* sfi = new ServiceFactoryInfo(si);
@@ -356,4 +356,3 @@ create(const String& name,int service_type)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

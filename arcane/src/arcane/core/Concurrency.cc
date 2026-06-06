@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Concurrency.cc                                              (C) 2000-2021 */
 /*                                                                           */
-/* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
+/* Classes managing concurrency (tasks, parallel loops, ...)                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,19 +28,19 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \defgroup Concurrency Concurrence
+ * \defgroup Concurrency Concurrency
  
- \brief Ensemble des classes gérant la concurrence.
+ \brief Set of classes managing concurrency.
 
- Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
+ For more information, refer to the page \ref arcanedoc_parallel_concurrency
 */
 
 /*!
  * \file Concurrency.h
  
- \brief Classes, Types et macros pour gérer la concurrence.
+ \brief Classes, Types, and macros for managing concurrency.
 
- Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
+ For more information, refer to the page \ref arcanedoc_parallel_concurrency
 */
 
 /*---------------------------------------------------------------------------*/

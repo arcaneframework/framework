@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemPrinter.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Ecriture d'Item sur flux.                                                 */
+/* Writing Item to stream.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -23,9 +23,9 @@
 /*---------------------------------------------------------------------------*/
 
 /*
- * TODO: Il faudrait gérer l'affichage de l'entité via IItemFamily.
+ * TODO: We should handle the display of the entity via IItemFamily.
  *
- * Cela permettrait de spécialiser l'affichage par famille.
+ * This would allow specializing the display by family.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -40,15 +40,15 @@ using impl::ItemBase;
 
 struct ARCANE_CORE_EXPORT ItemPrinter::Internal
 {
-  //! Ecrit les informations basiques de l'item
+  //! Writes the basic information of the item
   static void _printBasics(std::ostream& o, ItemBase item);
-  //! Ecrit les flags de l'item de manière explicite
+  //! Writes the item flags explicitly
   static void _printFlags(std::ostream& o, Integer flags);
-  //! Ecrit les infos sur les parents
+  //! Writes information about the parents
   static void _printParents(std::ostream& o, ItemBase item);
-  //! Ecrit les infos sur les parents
+  //! Writes information about the parents
   static void _printErrors(std::ostream& o, ItemBase item);
-  //! Ecrit les informations d'une énumération d'items
+  //! Writes the information of an item enumeration
   static void _printItemSubItems(std::ostream& ostr, String name, const ItemVectorView& enumerator);
 };
 
@@ -281,7 +281,7 @@ _printErrors(std::ostream& o, ItemBase item)
   if (item.isOwn() != (mesh_rank == item.owner()))
     o << ((nerror++ == 0) ? str : "|") << "WRONG ISOWN";
   if (item.nbParent() > 0) {
-    // Les erreurs sont ici exclusives car invalidantes pour l'item
+    // Errors are exclusive here because they invalidate the item
     ItemBase parent = item.parentBase(0);
     if (parent.uniqueId() != item.uniqueId())
       o << ((nerror++ == 0) ? str : "|") << "PARENT UID MISMATCH";

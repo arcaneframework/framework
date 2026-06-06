@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariableFilter.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Functor d'un filtre applicable sur des variables.                         */
+/* Functor of a filter applicable to variables.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLEFILTER_H
 #define ARCANE_CORE_IVARIABLEFILTER_H
@@ -24,24 +24,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Functor d'un filtre applicable sur des variables.
+ * \brief Functor of a filter applicable to variables.
  *
- * Ce functor s'utilise lorsqu'on itère sur des variables. La méthode
- * applyFilter() est appelée pour chaque variable et indique si la
- * variable testée doit ou non être filtrée.
+ * This functor is used when iterating over variables. The applyFilter() method
+ * is called for each variable and indicates whether the tested variable should
+ * or should not be filtered.
  */
 class IVariableFilter
 {
  public:
 
-  virtual ~IVariableFilter() = default; //!< Libère les ressources
+  virtual ~IVariableFilter() = default; //!< Releases resources
 
   /*!
-   * \brief Applique le filtre sur la variable \a var.
-   * \retval true si la variable remplit les conditions du filtre
-   * \retval false sinon.
+   * \brief Applies the filter to the variable \a var.
+   * \retval true if the variable meets the filter conditions
+   * \retval false otherwise.
    */
   virtual bool applyFilter(IVariable& var) = 0;
 };
@@ -54,4 +55,4 @@ class IVariableFilter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

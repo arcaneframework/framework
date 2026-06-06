@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* EnvItemVector.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Vecteur sur les entités d'un milieu.                                      */
+/* Vector over the entities of an environment.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_ENVITEMVECTOR_H
 #define ARCANE_CORE_MATERIALS_ENVITEMVECTOR_H
@@ -24,49 +24,50 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vecteur sur les entités d'un milieu.
+ * \brief Vector over the entities of an environment.
  *
- * \warning Ce vecteur n'est valide que tant que le milieu ne change pas.
+ * \warning This vector is only valid as long as the environment does not change.
  */
 class ARCANE_CORE_EXPORT EnvCellVector
 : public ComponentItemVector
 {
  public:
 
-  //! Construit un vecteur contenant les entités de \a group pour le milieu \a environment
+  //! Constructs a vector containing the entities of \a group for the environment \a environment
   EnvCellVector(const CellGroup& group, IMeshEnvironment* environment);
-  //! Construit un vecteur contenant les entités de \a view pour le milieu \a environment
+  //! Constructs a vector containing the entities of \a view for the environment \a environment
   EnvCellVector(CellVectorView view, IMeshEnvironment* environment);
-  //! Construit un vecteur contenant les entités \a local_ids pour le milieu \a environment
+  //! Constructs a vector containing the entities \a local_ids for the environment \a environment
   EnvCellVector(SmallSpan<const Int32> local_ids, IMeshEnvironment* environment);
-  //! Construit un vecteur sur les entités du milieu \a environment.
+  //! Constructs a vector over the entities of the environment \a environment.
   EnvCellVector(const ConstituentItemVectorBuildInfo& build_info, IMeshEnvironment* environment);
-  //! Constructeur par recopie. L'instance fera référence à \a rhs
+  //! Copy constructor. The instance will reference \a rhs
   EnvCellVector(const EnvCellVector& rhs) = default;
-  //! Constructeur de recopie. Cette instance est une copie de \a rhs.
+  //! Copy constructor. This instance is a copy of \a rhs.
   EnvCellVector(EnvItemVectorView rhs)
   : ComponentItemVector(rhs)
   {}
 
  public:
 
-  //! Conversion vers une vue sur ce vecteur
+  //! Conversion to a view of this vector
   operator EnvCellVectorView() const
   {
     return view();
   }
 
-  //! Vue sur ce vecteur
+  //! View of this vector
   EnvCellVectorView view() const
   {
     return { _component(), _matvarIndexes(), _constituentItemListView(), _localIds() };
   }
 
-  //! Milieu associé
+  //! Associated environment
   IMeshEnvironment* environment() const;
 
-  //! Clone ce vecteur
+  //! Clone this vector
   EnvCellVector clone() const { return { view() }; }
 
  private:
@@ -82,5 +83,4 @@ class ARCANE_CORE_EXPORT EnvCellVector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

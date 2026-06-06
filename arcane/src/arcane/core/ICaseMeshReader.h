@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ICaseMeshReader.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du service de lecture du maillage à partir du jeu de données.   */
+/* Interface for the mesh reading service from the dataset.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEMESHREADER_H
 #define ARCANE_CORE_ICASEMESHREADER_H
@@ -24,16 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations nécessaires pour la lecture d'un fichier de maillage.
+ * \brief Necessary information for reading a mesh file.
  *
- * \a isParallelRead() indique s'il est vrai que tous les rangs sur lequel le maillage
- * est défini vont lire le fichier et qu'il faut donc si possible le distribuer.
- * de manière équilibrée sur l'ensemble des rangs.
+ * \a isParallelRead() indicates whether it is true that all ranks on which the mesh
+ * is defined will read the file and therefore must distribute it if possible.
+ * in a balanced manner across all ranks.
  *
- * \a format() indique le format du fichier. Par défaut il s'agit de l'extension
- * du nom de fichier. Par exemple, si le fichier est 'toto.vtk', alors le format
- * sera 'vtk'.
+ * \a format() indicates the file format. By default, it is the file extension.
+ * For example, if the file is 'toto.vtk', then the format
+ * will be 'vtk'.
  */
 class CaseMeshReaderReadInfo
 {
@@ -55,27 +56,28 @@ class CaseMeshReaderReadInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface du service de lecture du maillage à partir du jeu de données.
+ * \brief Interface for the mesh reading service from the dataset.
  *
- * Cette interface est destinée à remplacer IMeshReader
+ * This interface is intended to replace IMeshReader
  */
 class ARCANE_CORE_EXPORT ICaseMeshReader
 {
  public:
 
-  //! Libère les ressources
+  //! Deallocates resources
   virtual ~ICaseMeshReader() = default;
 
  public:
 
   /*!
-   * \brief Retourne un builder pour créer et lire le maillage dont les
-   * informations sont spécifiées dans \a read_info.
+   * \brief Returns a builder to create and read the mesh whose
+   * information is specified in \a read_info.
    *
-   * Si ce lecteur ne supporte pas le format spécifié dans \a read_info,
-   * retourn nul.
+   * If this reader does not support the format specified in \a read_info,
+   * it returns null.
    */
   virtual Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const =0;
 };
@@ -88,5 +90,4 @@ class ARCANE_CORE_EXPORT ICaseMeshReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

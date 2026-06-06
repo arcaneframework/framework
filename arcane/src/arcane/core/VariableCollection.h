@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableCollection.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Collection de variables.                                                  */
+/* Variable collection.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLECOLLECTION_H
 #define ARCANE_CORE_VARIABLECOLLECTION_H
@@ -72,10 +72,11 @@ class ARCANE_CORE_EXPORT VariableCollectionEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Collection de variables.
+ * \brief Variable collection.
  *
- * Ce type à une sémantique par référence (comme la classe SharedArray).
+ * This type has a reference semantics (like the SharedArray class).
  */
 class ARCANE_CORE_EXPORT VariableCollection
 {
@@ -129,7 +130,7 @@ class ARCANE_CORE_EXPORT VariableCollection
     return _values().size();
   }
 
-  //! Applique le fonctor \a f à tous les éléments de la collection
+  //! Applies the functor \a f to all elements in the collection
   template<class Function> Function
   each(Function f)
   {
@@ -169,7 +170,7 @@ class ARCANE_CORE_EXPORT VariableCollection
     return _values().contains(v.variable());
   }
 
-  //! Trie la liste par ordre croissant ou décroissant des noms des variables
+  //! Sorts the list by ascending or descending variable names
   void sortByName(bool is_ascendent);
 
  private:
@@ -190,5 +191,4 @@ class ARCANE_CORE_EXPORT VariableCollection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

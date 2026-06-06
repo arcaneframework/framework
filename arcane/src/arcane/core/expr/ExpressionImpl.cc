@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExpressionImpl.cc                                           (C) 2000-2014 */
 /*                                                                           */
-/* Implémentation d'une expression.                                          */
+/* Implementation of an expression.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -57,9 +57,10 @@ removeRef()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \warning L'implémentation actuelle considère que toutes les expressions
- * en paramètre sont de type réels, et l'expression de test des booléens.
+ * \warning The current implementation assumes that all expressions * passed
+ * as parameters are of real type, and the test expression is boolean.
  */
 void ExpressionImpl::
 dumpIf(IExpressionImpl* test_expr,Array<Expression>& add_exprs)

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleMaster.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Module maître.                                                            */
+/* Master module.                                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -116,7 +116,7 @@ masterStartInit()
   m_global_elapsed_time = 0.0;
   m_global_old_deltat = 0.0;
 
-  // Met a jour les options du jeu de données qui dépendent d'une table de marche.
+  // Updates the dataset options that depend on a marching table.
   ICaseMng* com = subDomain()->caseMng();
   com->updateOptions(0.0,0.0,0);
 
@@ -137,9 +137,9 @@ masterInit()
 void ModuleMaster::
 masterContinueInit()
 {
-  // En reprise, l'initialisation est considérée comme ayant lieu avant
-  // la prochaine itération, donc avec les anciennes valeurs du pas de temps
-  // et du temps de la simulation.
+  // In recovery, initialization is considered to take place before
+  // the next iteration, thus using the old values for the time step
+  // and the simulation time.
 
   ICaseMng* com = subDomain()->caseMng();
   Int32 opt_iteration = m_global_iteration() - 1;
@@ -186,8 +186,8 @@ timeStepInformation()
 void ModuleMaster::
 timeLoopBegin()
 {
-  // Première boucle, initialise le temps et affiche les infos
-  // sur la consommation
+  // First loop, initializes the time and displays info
+  // on consumption
   if (m_is_first_loop){
     info() << "Information on consumption (unit:second): Con(R=...,I=...,C=...)";
     info() << " R -> consumption in real time (clock) since the beginning of the computation";
@@ -202,7 +202,7 @@ timeLoopBegin()
 
   ++m_nb_loop;
 
-  // Met a jour les options du jeu de données qui dépendent d'une table de marche.
+  // Updates the dataset options that depend on a marching table.
   ICaseMng* com = subDomain()->caseMng();
   com->updateOptions(m_global_time(),m_global_deltat(),m_global_iteration());
 
@@ -212,10 +212,10 @@ timeLoopBegin()
 
   m_global_old_time = m_global_time();
 
-  // Infos pour les courbes
+  // Infos for curves
   m_thm_mem_used = mem_used;
   
-  // Ajoute le deltat au temps courant
+  // Adds the deltat to the current time
   //info() << "[ModuleMaster::timeLoopBegin] Add deltat to the current time";
   timeIncrementation();
 
@@ -225,7 +225,7 @@ timeLoopBegin()
   //info() << "[ModuleMaster::timeLoopBegin] breakpoint_requested?";
   IOnlineDebuggerService* hyoda = platform::getOnlineDebuggerService();
  
-  // Il faut absolument que cette valeur soit la même pour tous les sous-domaines
+  // It is absolutely necessary that this value is the same for all subdomains
   Real cpu_time = (Real)platform::getCPUTime();
   Real elapsed_time = platform::getRealTime();
   {
@@ -267,7 +267,7 @@ timeLoopBegin()
   Int32 mem_min_rank = 0;
   Int32 mem_max_rank = 0;
   pm->computeMinMaxSum(mem_used,mem_min,mem_max,mem_sum,mem_min_rank,mem_max_rank);
-  // Tronque à la milli-seconde
+  // Truncate to millisecond
   Int64 i_elapsed = (Int64)(m_global_elapsed_time() * 1000.0);
   Int64 i_diff_elapsed = (Int64)(diff_elapsed * 1000.0);
   Int64 i_cpu = (Int64)(m_global_cpu_time() * 1000.0);
@@ -296,16 +296,16 @@ timeLoopEnd()
 {
   _masterEndLoop();
 
-  // Effectue les sorties courbes
-  // Comme il est possible de désactiver les sorties courbes
-  // à une itération donnée, il faut faire les sorties en fin d'itération
-  // et non pas au début pour permettre aux autres modules d'activer ou non
-  // les sorties. Il est aussi possible pour un code utilisateur d'appeler
-  // explicitement cette méthode pour qu'il fasse les sorties quand il le
-  // souhaite au cours de l'itération.
+  // Performs curve outputs
+  // Since it is possible to disable curve outputs
+  // at a given iteration, the outputs must be done at the end of the iteration
+  // and not at the beginning to allow other modules to enable or not
+  // the outputs. It is also possible for a user code to call
+  // this method explicitly so that it performs the outputs when it
+  // wishes during the iteration.
   dumpStandardCurves();
  
-  // Incrémente le compteur d'itération
+  // Increments the iteration counter
   m_global_iteration = m_global_iteration() + 1;
 
   if (subDomain()->timeLoopMng()->finalTimeReached()){
@@ -324,14 +324,14 @@ dumpStandardCurves()
   if (m_has_thm_dump_at_iteration)
     return;
 
-  // Si cette méthode est appelée à la fin de l'itération, alors les
-  // temps cpu (m_thm_diff_cpu) et elapsed (m_thm_global_elapsed_time)
-  // ne sont pas bon car ils ont été calculés en début d'itération et donc
-  // ils ne sont pas bon. On les recalcule donc en prenant soin
-  // de ne pas mettre à jour les variables m_global* pour éviter toute
-  // incohérence car ces valeurs ne sont pas synchronisées entre tous
-  // les sous-domaines (et de plus cette méthode n'est pas toujours
-  // appelée)
+  // If this method is called at the end of the iteration, then the
+  // cpu time (m_thm_diff_cpu) and elapsed (m_thm_global_elapsed_time)
+  // are not good because they were calculated at the beginning of the iteration and thus
+  // they are not good. We recalculate them therefore by taking care
+  // not to update the m_global* variables to avoid any
+  // inconsistency because these values are not synchronized between all
+  // subdomains (and furthermore this method is not always
+  // called)
 
   Real cpu_time = (Real)platform::getCPUTime();
   Real elapsed_time = platform::getRealTime();

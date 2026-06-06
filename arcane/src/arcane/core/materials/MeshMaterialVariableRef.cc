@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableRef.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Référence à une variable sur un matériau du maillage.                     */
+/* Reference to a variable on a mesh material.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -374,10 +374,11 @@ envValue(AllEnvCell c,Int32 env_id) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de la variable pour un matériau.
+ * \brief Fills the variable values for a material.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -395,10 +396,11 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de la variable pour un matériau.
+ * \brief Fills the variable values for a material.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -416,10 +418,11 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArray
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit un tableau à partir des valeurs de la variable pour un matériau.
+ * \brief Fills an array from the variable values for a material.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -437,10 +440,11 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit un tableau à partir des valeurs de la variable pour un matériau.
+ * \brief Fills an array from the variable values for a material.
  *
- * Cette méthode effectue l'opération suivante:
+ * This method performs the following operation:
  \code
  * Integer index=0;
  * ENUMERATE_MATCELL(imatcell,mat){
@@ -458,10 +462,11 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView in
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit un tableau à partir des valeurs de la variable pour un matériau.
+ * \brief Fills an array from the variable values for a material.
  *
- * Le tableau \a values est redimensionné si besoin.
+ * The array \a values is resized if necessary.
  */
 template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
@@ -473,10 +478,11 @@ fillToArray(IMeshMaterial* mat,Array<DataType>& values)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit un tableau à partir des valeurs de la variable pour un matériau.
+ * \brief Fills an array from the variable values for a material.
  *
- * Le tableau \a values est redimensionné si besoin.
+ * The array \a values is resized if necessary.
  */
 template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
@@ -488,8 +494,9 @@ fillToArray(IMeshMaterial* mat,Array<DataType>& values,Int32ConstArrayView index
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs partielles et globales de la variable avec la valeur \a value
+ * \brief Fills the partial and global values of the variable with the value \a value
  */
 template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
@@ -501,8 +508,9 @@ fill(const DataType& value)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs partielles de la variable avec la valeur \a value
+ * \brief Fills the partial values of the variable with the value \a value
  */
 template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
@@ -563,7 +571,7 @@ _setContainerView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 : CellMaterialVariableArrayRef(MaterialVariableBuildInfo(nullptr,vb))
@@ -573,7 +581,7 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
@@ -588,8 +596,8 @@ template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(IMeshMaterialVariable* var)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(var))
 {
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference() but here it is not called
   m_private_part->incrementReference();
 
   _init();
@@ -598,14 +606,14 @@ CellMaterialVariableArrayRef(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType>  CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
 , m_value(nullptr)
 {
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference() but here it is not called
   if (m_private_part)
     m_private_part->incrementReference();
 
@@ -615,7 +623,7 @@ CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 _init()
@@ -629,7 +637,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
@@ -643,8 +651,8 @@ refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
   m_value = nullptr;
   m_container_value = {};
 
-  // Il faut incrémenter manuellement le compteur de référence car normalement
-  // cela est fait dans getReference() mais ici on ne l'appelle pas
+  // The reference counter must be manually incremented because normally
+  // this is done in getReference() but here it is not called
   if (m_private_part)
     m_private_part->incrementReference();
   _init();
@@ -653,7 +661,7 @@ refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: fusionner avec la version scalaire
+// TODO: merge with the scalar version
 template<typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 updateFromInternal()

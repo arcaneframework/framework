@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshArea.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une zone du maillage.                                         */
+/* Interface of a mesh area.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHAREA_H
 #define ARCANE_CORE_IMESHAREA_H
@@ -25,51 +25,52 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
  *
- * \brief Interface d'une zone du maillage.
+ * \brief Interface of a mesh area.
  *
- * Une zone du maillage est un sous-ensemble du maillage définit par
- * une liste de maille et de noeuds.
+ * A mesh area is a subset of the mesh defined by
+ * a list of cells and nodes.
  */
 class ARCANE_CORE_EXPORT IMeshArea
 {
  public:
 
-  virtual ~IMeshArea() = default; //!< Libère les ressources
+  virtual ~IMeshArea() = default; //!< Releases resources
 
  public:
 
-  //! Nombre de noeuds du maillage
+  //! Number of mesh nodes
   virtual Integer nbNode() = 0;
 
-  //! Nombre de mailles du maillage
+  //! Number of mesh cells
   virtual Integer nbCell() = 0;
 
  public:
 
-  //! Sous-domaine associé
+  //! Associated sub-domain
   virtual ISubDomain* subDomain() = 0;
 
-  //! Gestionnaire de trace associé
+  //! Associated trace manager
   virtual ITraceMng* traceMng() = 0;
 
-  //! Maillage auquel appartient la zone
+  //! Mesh to which the area belongs
   virtual IMesh* mesh() = 0;
 
  public:
 
-  //! Groupe de tous les noeuds
+  //! Group of all nodes
   virtual NodeGroup allNodes() = 0;
 
-  //! Groupe de toutes les mailles
+  //! Group of all cells
   virtual CellGroup allCells() = 0;
 
-  //! Groupe de tous les noeuds propres au domaine
+  //! Group of all nodes belonging to the domain
   virtual NodeGroup ownNodes() = 0;
 
-  //! Groupe de toutes les mailles propres au domaine
+  //! Group of all cells belonging to the domain
   virtual CellGroup ownCells() = 0;
 };
 
@@ -81,5 +82,4 @@ class ARCANE_CORE_EXPORT IMeshArea
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

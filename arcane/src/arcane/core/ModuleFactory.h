@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ModuleFactory.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Manufacture des modules.                                                  */
+/* Module creation.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MODULEFACTORY_H
 #define ARCANE_CORE_MODULEFACTORY_H
@@ -32,9 +32,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fabrique d'un module.
+ * \brief Module factory.
  */
 class ARCANE_CORE_EXPORT ModuleFactory
 : public IModuleFactoryInfo
@@ -42,13 +43,13 @@ class ARCANE_CORE_EXPORT ModuleFactory
  public:
   
   /*!
-   * \brief Construit une fabrique pour un module.
+   * \brief Constructs a factory for a module.
    *
-   * Ce constructeur est celui utilisé par les macros ARCANE_REGISTER_MODULE
-   * et ARCANE_REGISTER_AXL_MODULE.
+   * This constructor is used by the ARCANE_REGISTER_MODULE
+   * and ARCANE_REGISTER_AXL_MODULE macros.
    *
-   * Cette instance devient propriétaire de \a factory et la détruira
-   * dans le destructeur.
+   * This instance becomes the owner of \a factory and will destroy it
+   * in the destructor.
    */
   ModuleFactory(Ref<IModuleFactory2> factory,bool is_autoload);
   ~ModuleFactory() override;
@@ -73,9 +74,10 @@ class ARCANE_CORE_EXPORT ModuleFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe implémentant IModuleFactory2.
+ * \brief Class implementing IModuleFactory2.
  */
 class ARCANE_CORE_EXPORT ModuleFactory2
 : public IModuleFactory2
@@ -106,11 +108,12 @@ class ARCANE_CORE_EXPORT ModuleFactory2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe template de fabrique de module.
+ * \brief Template class for module factory.
  *
- * Cette classe permet de créer un module implémenté par la classe \a ModuleType.
+ * This class allows creating a module implemented by the class \a ModuleType.
  */
 template<class ModuleType>
 class ModuleFactory2T
@@ -137,31 +140,32 @@ class ModuleFactory2T
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Service
- * \brief Macro pour enregistrer un module.
+ * \brief Macro for registering a module.
  *
- * L'appel est comme suit:
+ * The call is as follows:
  *
  \code
  * ARCANE_REGISTER_MODULE(ClassName,
  *                        Arcane::ModuleProperty("ModuleName"));
  \endcode
 
- * Avec les paramètres suivants:
- * - \a ClassName est le nom de la classe du module,
- * - \a "ModuleName" est le nom du module.
+ * With the following parameters:
+ * - \a ClassName is the name of the module class,
+ * - \a "ModuleName" is the name of the module.
  *
- * Par exemple, on peut avoir une utilisation comme suit:
+ * For example, usage can be as follows:
  *
  \code
  * ARCANE_REGISTER_MODULE(ModuleSimpleHydro,
  *                        ModuleProperty("SimpleHydro"));
  \endcode
  *
- * \note Cette macro sert à enregistrer des modules qui n'ont pas de fichiers
- * \c axl associés. Si ce n'est pas le cas, il faut utiliser la macro
- * définie dans le fichier '.h' généré à partir du fichier \c axl.
+ * \note This macro is used to register modules that do not have associated files
+ * \c axl files. If that is not the case, you must use the macro
+ * defined in the '.h' file generated from the \c axl file.
  */
 #define ARCANE_REGISTER_MODULE(class_name,a_module_properties) \
 extern "C++" ARCANE_EXPORT Arcane::IModuleFactoryInfo*\
@@ -178,11 +182,12 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegist
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Macro pour enregistrer un module issu d'un fichier AXL.
+ * \brief Macro for registering a module derived from an AXL file.
  *
- * Cette macro est interne à Arcane et ne doit pas être utilisée directement
+ * This macro is internal to Arcane and should not be used directly.
  */
 #define ARCANE_REGISTER_AXL_MODULE(class_name,a_module_properties) \
 extern "C++" ARCANE_EXPORT Arcane::IModuleFactoryInfo*\
@@ -200,13 +205,14 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegist
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour définir un module de manière standard.
+ * \brief Macro for defining a module in a standard way.
  *
- * Cette macro permet d'enregistrer automatiquement un module de
- * nom \a module_name en créant une instance de la classe \a class_name.
+ * This macro allows automatically registering a module of
+ * name \a module_name by creating an instance of the class \a class_name.
  *
- * \deprecated Utiliser ARCANE_REGISTER_MODULE à la place.
+ * \deprecated Use ARCANE_REGISTER_MODULE instead.
  */
 #define ARCANE_DEFINE_STANDARD_MODULE(class_name,module_name) \
   ARCANE_REGISTER_MODULE(class_name,Arcane::ModuleProperty(#module_name))
@@ -219,4 +225,4 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegist
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariableWriter.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Écriture de variables pour l'initialisation et au cours du calcul.        */
+/* Writing variables for initialization and during calculation.              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLEWRITER_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Écriture de variables pour l'initialisation et au cours du calcul.
+ * \brief Writing variables for initialization and during calculation.
  */
 class IVariableWriter
 {
@@ -44,4 +45,4 @@ class IVariableWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

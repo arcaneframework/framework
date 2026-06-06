@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneTypes.cc                                              (C) 2000-2012 */
 /*                                                                           */
-/* Définition des types généraux de Arcane.                                  */
+/* Definition of general Arcane types.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,9 +16,9 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
 
-// Les fichiers .h suivant ne sont utiles que pour exporter les symbols
-// qu'ils contiennent. Cela est nécessaire sous Windows et parfois sous
-// unix suivant les options choisies
+// The following .h files are only useful for exporting the symbols
+// they contain. This is necessary under Windows and sometimes under
+// unix depending on the chosen options
 #include "arcane/IParallelExchanger.h"
 #include "arcane/ITransferValuesParallelOperation.h"
 #include "arcane/IMeshFactory.h"
@@ -170,4 +170,3 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshHandle.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Handle sur un maillage.                                                   */
+/* Handle on a mesh.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHHANDLE_H
 #define ARCANE_CORE_MESHHANDLE_H
@@ -31,23 +31,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Handle sur un maillage.
+ * \brief Handle on a mesh.
  *
- * Cette classe utilise la sémantique d'un compteur de référence.
+ * This class uses reference counting semantics.
  *
- * Cette classe permet de gérer une référence à un maillage (IMesh) avant
- * qu'il ne soit explicitement créé. Cela permet aux services et modules
- * de spécifier lors de leur construction à quel maillage ils font référence.
+ * This class allows managing a reference to a mesh (IMesh) before
+ * it is explicitly created. This allows services and modules
+ * to specify which mesh they refer to during their construction.
  *
- * Elle permet aussi d'associer des données utilisateurs au maillage
+ * It also allows associating user data with the mesh
  * via meshUserDataList().
  */
 class ARCANE_CORE_EXPORT MeshHandle
 {
  private:
 
-  // Temporaire: pour accéder au constructeur qui utilise ISubDomain.
+  // Temporary: to access the constructor that uses ISubDomain.
   friend class MeshMng;
 
  private:
@@ -87,7 +88,7 @@ class ARCANE_CORE_EXPORT MeshHandle
     String m_mesh_name;
     IMesh* m_mesh_ptr = nullptr;
     IMeshBase* m_mesh_base_ptr = nullptr;
-    // Pour l'instant on en a besoin mais il faudrait le supprimer
+    // For now we need it, but it should be removed
     ISubDomain* m_sub_domain = nullptr;
     IUserDataList* m_user_data_list = nullptr;
     IMeshMng* m_mesh_mng = nullptr;
@@ -104,64 +105,64 @@ class ARCANE_CORE_EXPORT MeshHandle
 
  private:
 
-  // TODO rendre accessible uniquement aux classes implémentant IMeshMng.
+  // TODO make accessible only to classes implementing IMeshMng.
   MeshHandle(ISubDomain* sd, const String& name);
 
  public:
 
   /*!
-   * \brief Maillage associé.
+   * \brief Associated mesh.
    *
-   * Il est interdit d'appeler cette méthode si le maillage n'a pas encore été
-   * créé. A terme, une exception sera levée dans ce cas.
+   * It is forbidden to call this method if the mesh has not yet been
+   * created. Eventually, an exception will be raised in this case.
    *
-   * Si on n'est pas certain que le maillage existe, on peut tester son
+   * If we are not sure that the mesh exists, we can test its
    * existence via hasMesh().
    *
    * \pre hasMesh() == true
    */
   IMesh* mesh() const;
 
-  //! Indique si le maillage associé a déjà été créé (i.e: mesh() est valide)
+  //! Indicates if the associated mesh has already been created (i.e.: mesh() is valid)
   bool hasMesh() const;
 
   /*!
-   * \brief Retourne le maillage associé à cette instance.
+   * \brief Returns the mesh associated with this instance.
    *
-   * Contrairement à mesh(), cette peut-être appelée si le maillage associé n'a pas
-   * encore été créé. Dans ce cas on retourne un pointeur nul.
+   * Unlike mesh(), this can be called even if the associated mesh has not
+   * yet been created. In this case, a null pointer is returned.
    */
   IMesh* meshOrNull() const;
 
  public:
 
-  //! Sous-domaine associé. Null si isNull() est vrai.
+  //! Associated sub-domain. Null if isNull() is true.
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get ISubDomain from another way")
   ISubDomain* subDomain() const { return m_ref->subDomain(); }
 
  public:
 
-  //! Gestionnaire de maillage associé. nullptr si isNull() est vrai.
+  //! Associated mesh manager. nullptr if isNull() is true.
   IMeshMng* meshMng() const;
 
-  //! Gestionnaire de trace associé. nullptr si isNull() est vrai.
+  //! Associated trace manager. nullptr if isNull() is true.
   ITraceMng* traceMng() const;
 
-  //! Gestionnaire de variable associé. nullptr si isNull() est vrai.
+  //! Associated variable manager. nullptr if isNull() is true.
   IVariableMng* variableMng() const;
 
-  //! Application associée. nullptr si isNull() est vrai.
+  //! Associated application. nullptr if isNull() is true.
   IApplication* application() const;
 
-  //! Données utilisateurs associées
+  //! Associated user data
   IUserDataList* meshUserDataList() const { return m_ref->userDataList(); }
 
   const String& meshName() const { return m_ref->meshName(); }
 
-  //! Indique si le handle est nul (il ne référence aucun maillage existant ou non)
+  //! Indicates if the handle is null (it does not reference any existing mesh or not)
   bool isNull() const { return m_ref->isNull(); }
 
-  //! Observable pour être notifié de la destruction
+  //! Observable to be notified of destruction
   IObservable* onDestroyObservable() const;
 
   //! \internal
@@ -185,35 +186,36 @@ class ARCANE_CORE_EXPORT MeshHandle
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de compatibilité pour contenir un MeshHandle ou un IMesh*.
+ * \brief Compatibility class to hold a MeshHandle or an IMesh*.
  *
- * A terme les constructeurs et convertisseurs vers IMesh* seront supprimés
+ * Eventually, the constructors and converters to IMesh* will be removed.
  */
 class ARCANE_CORE_EXPORT MeshHandleOrMesh
 {
  public:
 
-  // NOTE: Les constructeurs ne doivent pas être explicites
-  // pour autoriser les conversions
+  // NOTE: The constructors must not be explicit
+  // to allow conversions
 
-  //! Construit une instance à partir d'un MeshHandle
+  //! Constructs an instance from a MeshHandle
   MeshHandleOrMesh(const MeshHandle& handle);
 
   /*!
-   * \brief Construit une instance à partir d'un IMesh*.
+   * \brief Constructs an instance from an IMesh*.
    *
-   * Si \a mesh est nul, le MeshHandle associé sera aussi nul.
+   * If \a mesh is null, the associated MeshHandle will also be null.
    */
   MeshHandleOrMesh(IMesh* mesh);
 
-  //! Maillage associé. Peut être nul si le maillage n'a pas encore été créé
+  //! Associated mesh. Can be null if the mesh has not yet been created
   IMesh* mesh() const { return m_handle.meshOrNull(); }
 
-  //! Maillage associé. Peut être nul si le maillage n'a pas encore été créé
+  //! Associated mesh. Can be null if the mesh has not yet been created
   operator IMesh*() const { return mesh(); }
 
-  //! handle associé.
+  //! Associated handle.
   const MeshHandle& handle() const { return m_handle; }
 
  private:
@@ -229,4 +231,4 @@ class ARCANE_CORE_EXPORT MeshHandleOrMesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

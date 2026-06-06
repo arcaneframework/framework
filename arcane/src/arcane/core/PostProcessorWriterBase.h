@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PostProcessorWriterBase.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Classe de base d'un écrivain pour les informations de post-traitement.    */
+/* Base class for a writer for post-processing information.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_POSTPROCESSORWRITERBASE_H
 #define ARCANE_CORE_POSTPROCESSORWRITERBASE_H
@@ -30,8 +30,9 @@ class PostProcessorWriterBasePrivate;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un écrivain pour les informations de post-traitement.
+ * \brief Base class for a writer for post-processing information.
  */
 class ARCANE_CORE_EXPORT PostProcessorWriterCommonBase
 : public IPostProcessorWriter
@@ -60,14 +61,15 @@ class ARCANE_CORE_EXPORT PostProcessorWriterCommonBase
 
  private:
 
-  PostProcessorWriterBasePrivate* m_p = nullptr; //! Implémentation
+  PostProcessorWriterBasePrivate* m_p = nullptr; //! Implementation
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Classe de base d'un service écrivain pour les informations de post-traitement.
+ * \brief Base class for a writer service for post-processing information.
  */
 class ARCANE_CORE_EXPORT PostProcessorWriterBase
 : public BasicService
@@ -90,5 +92,4 @@ class ARCANE_CORE_EXPORT PostProcessorWriterBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

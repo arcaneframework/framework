@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IParallelMngInternal.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Partie interne à Arcane de IParallelMng.                                  */
+/* Internal part of IParallelMng in Arcane.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
@@ -33,9 +33,10 @@ namespace MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de IParallelMng.
+ * \brief Internal part of IParallelMng.
  */
 class ARCANE_CORE_EXPORT IParallelMngInternal
 {
@@ -45,86 +46,86 @@ class ARCANE_CORE_EXPORT IParallelMngInternal
 
  public:
 
-  //! Runner par défaut. Peut être nul
+  //! Default runner. Can be null.
   virtual Runner runner() const = 0;
 
-  //! File par défaut pour les messages. Peut être nul
+  //! Default queue for messages. Can be null.
   virtual RunQueue queue() const = 0;
 
   /*!
-   * \brief Indique si l'implémentation gère les accélérateurs.
+   * \brief Indicates if the implementation handles accelerators.
    *
-   * Si c'est le cas on peut utiliser directement la mémoire de l'accélérateur
-   * dans les appels MPI ce qui permet d'éviter d'éventuelles recopies.
+   * If so, the accelerator memory can be used directly
+   * in MPI calls, which avoids potential re-copies.
    */
   virtual bool isAcceleratorAware() const = 0;
 
-  //! Créé un sous IParallelMng de manière similaire à MPI_Comm_split.
+  //! Creates a sub IParallelMng similar to MPI_Comm_split.
   virtual Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) = 0;
 
   virtual void setDefaultRunner(const Runner& runner) = 0;
 
-  //! Donne l'écrivain dans le cas où l'on peut écrire en parallèle (avec
-  //! MPI-IO par exemple).
+  //! Gives the writer in the case where parallel writing is possible (with
+  //! MPI-IO for example).
   virtual Int32 masterParallelIORank() const = 0;
 
-  //! Donne le nombre de proc qui vont envoyer des données à
+  //! Gives the number of procs that will send data to
   //! masterParallelIORank().
   virtual Int32 nbSendersToMasterParallelIO() const = 0;
 
   /*!
-   * \brief Méthode permettant d'initialiser le windowCreator spécifique à
-   * l'implémentation.
+   * \brief Method allowing the initialization of the windowCreator specific to
+   * the implementation.
    *
-   * Appel collectif.
+   * Collective call.
    */
   virtual void initializeWindowCreator() = 0;
 
   /*!
-   * \brief Méthode permettant de savoir si le mode mémoire partagée est supporté.
+   * \brief Method allowing to know if shared memory mode is supported.
    *
-   * Appel collectif.
+   * Collective call.
    */
   virtual bool isMachineShMemWinAvailable() = 0;
 
   /*!
-   * \brief Méthode permettant de créer une fenêtre mémoire sur le noeud.
+   * \brief Method allowing the creation of a memory window on the node.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \param sizeof_segment La taille de notre segment (en octet).
-   * \param sizeof_type La taille d'un élément du segment (en octet).
-   * \return Une référence vers la nouvelle fenêtre.
+   * \param sizeof_segment The size of our segment (in bytes).
+   * \param sizeof_type The size of a segment element (in bytes).
+   * \return A reference to the new window.
    */
   virtual Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
   /*!
-   * \brief Méthode permettant de créer une fenêtre mémoire dynamique sur le noeud.
+   * \brief Method allowing the creation of a dynamic memory window on the node.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \param sizeof_segment La taille initiale de notre segment (en octet).
-   * \param sizeof_type La taille d'un élément du segment (en octet).
-   * \return Une référence vers la nouvelle fenêtre.
+   * \param sizeof_segment The initial size of our segment (in bytes).
+   * \param sizeof_type The size of a segment element (in bytes).
+   * \return A reference to the new window.
    */
   virtual Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer un allocateur en mémoire partagée.
+   * \brief Method allowing retrieval of a shared memory allocator.
    */
   virtual MemoryAllocationOptions machineShMemWinMemoryAllocator() = 0;
 
   /*!
-   * \brief Méthode permettant de récupérer les rangs des sous-domaines du
-   * noeud de calcul.
+   * \brief Method allowing retrieval of the ranks of the sub-domains of the
+   * computing node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    */
   virtual ConstArrayView<Int32> machineRanks() = 0;
 
   /*!
-   * \brief Méthode permettant de faire une barrière pour les sous-domaines du
-   * noeud de calcul.
+   * \brief Method allowing a barrier for the sub-domains of the
+   * computing node.
    */
   virtual void machineBarrier() = 0;
 };

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableView.h                                              (C) 2000-2023 */
 /*                                                                           */
-/* Classes gérant les vues sur les variables.                                */
+/* Classes managing views on variables.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_VARIABLEVIEW_H
 #define ARCANE_VARIABLEVIEW_H
@@ -21,20 +21,22 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file VariableView.h
  *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues sur les variables du maillage.
+ * This file contains the type declarations to manage
+ * views on the mesh variables.
  *
- * Les types et méthodes de ce fichier sont obsolètes. La nouvelle version
- * des vues avec support des accélérateurs est dans le fichier
+ * The types and methods in this file are obsolete. The new version
+ * of views with accelerator support is in the file
  * 'accelerator/Views.h'.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Faire les vues en ReadWrite pour les accesseurs SIMD
+// TODO: Implement ReadWrite views for SIMD accessors
 
 namespace Arcane
 {
@@ -42,7 +44,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour compatibilité avec le code existant
+// For compatibility with existing code
 template<typename DataType>
 using ViewSetter ARCANE_DEPRECATED_REASON("Use 'DataViewSetter' type instead") = DataViewSetter<DataType>;
 template<typename DataType>
@@ -50,21 +52,23 @@ using ViewGetterSetter ARCANE_DEPRECATED_REASON("Use 'DataViewGetterSetter' type
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues sur les variables.
+ * \brief Base class for views on variables.
  */
 class VariableViewBase
 {
  public:
-  // Pour l'instant n'utilise pas encore \a var
-  // mais il ne faut pas le supprimer
+  // For now, it does not use \a var
+  // but it should not be deleted
   VariableViewBase(IVariable*) {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
+ * \brief Class to access a 1D array of a read/write view.
  */
 template<typename DataType>
 class View1DGetterSetter
@@ -76,8 +80,9 @@ class View1DGetterSetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un tableau 1D d'une vue en lecture/écriture.
+ * \brief Class to access a 1D array of a read/write view.
  */
 template<typename DataType>
 class View1DSetter
@@ -96,8 +101,9 @@ class View1DSetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable scalaire du maillage.
+ * \brief Write view on a scalar mesh variable.
  */
 template<typename ItemType, typename Accessor>
 class ItemVariableScalarOutViewT
@@ -115,33 +121,33 @@ class ItemVariableScalarOutViewT
   : VariableViewBase(var), m_values(v.data()),
     m_size(v.size()){}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values,simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel sans indirection.
+  //! Vector access operator without indirection.
   SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values+simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Accessor operator[](ItemIndexType i) const
   {
     ARCANE_CHECK_AT(i.localId(),m_size);
     return Accessor(this->m_values + i.localId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Accessor value(ItemIndexType i) const
   {
     ARCANE_CHECK_AT(i.localId(),m_size);
     return Accessor(this->m_values + i.localId());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Sets the value for the \a item entity at \a v
   void setValue(ItemIndexType i,const DataType& v) const
   {
     ARCANE_CHECK_AT(i.localId(),m_size);
@@ -155,8 +161,9 @@ class ItemVariableScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
+ * \brief Read view on a scalar mesh variable.
  */
 template<typename ItemType,typename DataType>
 class ItemVariableScalarInViewT
@@ -171,7 +178,7 @@ class ItemVariableScalarInViewT
   ItemVariableScalarInViewT(IVariable* var,Span<const DataType> v)
   : VariableViewBase(var), m_values(v){}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   typename SimdTypeTraits<DataType>::SimdType
   operator[](SimdItemIndexT<ItemType> simd_item) const
   {
@@ -179,7 +186,7 @@ class ItemVariableScalarInViewT
     return SimdType(m_values.data(),simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   typename SimdTypeTraits<DataType>::SimdType
   operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
@@ -187,13 +194,13 @@ class ItemVariableScalarInViewT
     return SimdType(m_values.data()+simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   const DataType& operator[](ItemIndexType i) const
   {
     return this->m_values[i.localId()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   const DataType& value(ItemIndexType i) const
   {
     return this->m_values[i.localId()];
@@ -205,8 +212,9 @@ class ItemVariableScalarInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture sur une variable tableau du maillage.
+ * \brief Read view on an array mesh variable.
  */
 template<typename ItemType,typename DataType>
 class ItemVariableArrayInViewT
@@ -221,13 +229,13 @@ class ItemVariableArrayInViewT
   ItemVariableArrayInViewT(IVariable* var,Span2<const DataType> v)
   : VariableViewBase(var), m_values(v){}
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Span<const DataType> operator[](ItemIndexType i) const
   {
     return this->m_values[i.localId()];
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Span<const DataType> value(ItemIndexType i) const
   {
     return this->m_values[i.localId()];
@@ -239,8 +247,9 @@ class ItemVariableArrayInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable tableau du maillage.
+ * \brief Write view on an array mesh variable.
  */
 template<typename ItemType,typename Accessor>
 class ItemVariableArrayOutViewT
@@ -257,13 +266,13 @@ class ItemVariableArrayOutViewT
   ItemVariableArrayOutViewT(IVariable* var,Span2<DataType> v)
   : VariableViewBase(var), m_values(v){}
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   DataTypeReturnType operator[](ItemIndexType i) const
   {
     return DataTypeReturnType(this->m_values[i.localId()]);
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Span<DataType> value(ItemIndexType i) const
   {
     return DataTypeReturnType(this->m_values[i.localId()]);
@@ -275,12 +284,13 @@ class ItemVariableArrayOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture sur une variable scalaire de type 'RealN' du maillage.
+ * \brief Write view on a mesh scalar variable of type 'RealN'.
  
- Cette classe spécialise les vues modifiable pour les réels 'Real2', 'Real3',
- 'Real2x2' et 'Real3x3'. La spécialisation s'assure qu'on ne puisse pas
- modifier uniquement une composante de ces vecteurs de réels. Par exemple:
+ This class specializes modifiable views for the reals 'Real2', 'Real3',
+ 'Real2x2' and 'Real3x3'. The specialization ensures that only the entire vector
+ of these real numbers can be modified. For example:
 
  \code
  VariableNodeReal3View force_view = ...;
@@ -289,7 +299,7 @@ class ItemVariableArrayOutViewT
  // OK:
  force_view[node] = Real3(x,y,z);
 
- // Interdit:
+ // Forbidden:
  // force_view[node].x = ...;
 
  \endcode
@@ -306,37 +316,37 @@ class ItemVariableRealNScalarOutViewT
 
  public:
 
-  //! Construit la vue
+  //! Constructs the view
   ItemVariableRealNScalarOutViewT(IVariable* var,Span<DataType> v)
   : VariableViewBase(var), m_values(v.data()), m_size(v.size()){}
 
-  //! Opérateur d'accès vectoriel avec indirection.
+  //! Vector access operator with indirection.
   SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values,simd_item.simdLocalIds());
   }
 
-  //! Opérateur d'accès vectoriel sans indirection.
+  //! Vector access operator without indirection.
   SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const
   {
     return SimdDirectSetter<DataType>(m_values+simd_item.baseLocalId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Accessor operator[](ItemIndexType item) const
   {
     ARCANE_CHECK_AT(item.localId(),m_size);
     return Accessor(this->m_values+item.localId());
   }
 
-  //! Opérateur d'accès pour l'entité \a item
+  //! Access operator for the \a item entity
   Accessor value(ItemIndexType item) const
   {
     ARCANE_CHECK_AT(item.localId(),m_size);
     return Accessor(this->m_values+item.localId());
   }
 
-  //! Positionne la valeur pour l'entité \a item à \a v
+  //! Positions the value for the \a item entity at \a v
   void setValue(ItemIndexType item,const DataType& v) const
   {
     ARCANE_CHECK_AT(item.localId(),m_size);
@@ -350,8 +360,9 @@ class ItemVariableRealNScalarOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template<typename ItemType,typename DataType> auto
 viewOut(MeshVariableScalarRefT<ItemType,DataType>& var)
@@ -361,7 +372,7 @@ viewOut(MeshVariableScalarRefT<ItemType,DataType>& var)
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template<typename ItemType> auto
 viewOut(MeshVariableScalarRefT<ItemType,Real3>& var)
@@ -371,7 +382,7 @@ viewOut(MeshVariableScalarRefT<ItemType,Real3>& var)
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template<typename ItemType> auto
 viewOut(MeshVariableScalarRefT<ItemType,Real2>& var)
@@ -381,7 +392,7 @@ viewOut(MeshVariableScalarRefT<ItemType,Real2>& var)
 }
 
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template<typename ItemType,typename DataType> auto
 viewOut(MeshVariableArrayRefT<ItemType,DataType>& var)
@@ -392,8 +403,9 @@ viewOut(MeshVariableArrayRefT<ItemType,DataType>& var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template<typename ItemType,typename DataType> auto
 viewInOut(MeshVariableScalarRefT<ItemType,DataType>& var)
@@ -403,7 +415,7 @@ viewInOut(MeshVariableScalarRefT<ItemType,DataType>& var)
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template<typename ItemType> auto
 viewInOut(MeshVariableScalarRefT<ItemType,Real3>& var)
@@ -413,7 +425,7 @@ viewInOut(MeshVariableScalarRefT<ItemType,Real3>& var)
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template<typename ItemType> auto 
 viewInOut(MeshVariableScalarRefT<ItemType,Real2>& var)
@@ -423,7 +435,7 @@ viewInOut(MeshVariableScalarRefT<ItemType,Real2>& var)
 }
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template<typename ItemType,typename DataType> auto
 viewInOut(MeshVariableArrayRefT<ItemType,DataType>& var)
@@ -434,8 +446,9 @@ viewInOut(MeshVariableArrayRefT<ItemType,DataType>& var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template<typename ItemType,typename DataType> auto
 viewIn(const MeshVariableScalarRefT<ItemType,DataType>& var)
@@ -444,7 +457,7 @@ viewIn(const MeshVariableScalarRefT<ItemType,DataType>& var)
 }
 
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template<typename ItemType,typename DataType> auto
 viewIn(const MeshVariableArrayRefT<ItemType,DataType>& var)
@@ -550,5 +563,4 @@ typedef ItemVariableRealNScalarOutViewT<Particle,DataViewSetter<Real3>> Variable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

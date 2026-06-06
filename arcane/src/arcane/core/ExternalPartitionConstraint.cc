@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExternalPartitionConstraint.cc                              (C) 2000-2024 */
 /*                                                                           */
-/* Informations sur les contraintes pour le partitionnement.                 */
+/* Information on constraints for partitioning.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,24 +33,25 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
 {
   m_mesh->traceMng()->info()<<"ExternalPartitionConstraint::addLinkedCells(...)";
   
-  // mise en place d'un filtre sur les cell pour éviter de les mettre plusieurs fois dans le tableau cells
+  // Setting up a filter on the cells to prevent them from being included
+  // multiple times in the cells array
   UniqueArray<Integer> filtre_cell;
   filtre_cell.resize(m_mesh->allCells().size());
   Integer marque = 0;
   filtre_cell.fill(marque);
 
   for( ItemGroup& group : m_constraints ){
-    // tableau contenant la liste des mailles à maintenir ensemble
-    // cette liste est distribuée sur les processeurs 
-    // et comporte comme éléments communs les mailles fantômes
+    // Array containing the list of meshes to keep together
+    // This list is distributed across the processors 
+    // and includes ghost meshes as common elements
     UniqueArray<Cell> cells;
     if (group.itemKind() == IK_Cell){
       ENUMERATE_CELL(icell,group.cellGroup()){
         cells.add(*icell);
       }
     }
-    // cette méthode permet de récupérer les mailles dans le cas d'une semi-conformité
-    // on filtre les cell pour ne les sélectionner qu'une fois
+    // This method allows retrieving the meshes in the case of semi-conformity
+    // We filter the cells to select them only once
     else if (group.itemKind() == IK_Face){
       marque++;
       ENUMERATE_FACE(iface,group.faceGroup()){
@@ -75,7 +76,7 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
     if (cells.size()==0)
       continue;
 
-    // on renseigne les contraintes sous forme de couples de mailles
+    // We populate the constraints in the form of pairs of meshes
     Cell cell0 = cells[0];
     Int32 owner0 = cell0.owner();
     ItemUniqueId uid0 = cell0.uniqueId();

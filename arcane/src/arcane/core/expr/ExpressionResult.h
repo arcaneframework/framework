@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExpressionResult.h                                          (C) 2000-2005 */
 /*                                                                           */
-/* Contient le résultat de l´évaluation d'une expression.                    */
+/* Contains the result of an expression evaluation.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_EXPRESSIONRESULT_H
 #define ARCANE_CORE_EXPR_EXPRESSIONRESULT_H
@@ -35,7 +35,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Type de base polymorphe d'une expression.
+ * \brief Polymorphic base type of an expression.
  */
 class ARCANE_EXPR_EXPORT ExpressionResult
 {
@@ -66,7 +66,7 @@ class ARCANE_EXPR_EXPORT ExpressionResult
  private:
   ArrayVariant* m_data;
   IntegerConstArrayView m_indices;
-  UniqueArray<Integer> m_own_indices; //!< Tableau des indices alloués par cette instance
+  UniqueArray<Integer> m_own_indices; //!< Array of indices allocated by this instance
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,5 +77,4 @@ class ARCANE_EXPR_EXPORT ExpressionResult
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

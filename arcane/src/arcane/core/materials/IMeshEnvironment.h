@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshEnvironment.h                                          (C) 2000-2023 */
 /*                                                                           */
-/* Interface d'un milieu d'un maillage.                                      */
+/* Interface of a mesh environment.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHENVIRONMENT_H
 #define ARCANE_CORE_MATERIALS_IMESHENVIRONMENT_H
@@ -24,9 +24,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Interface d'un mmilieu utilisateur.
+ * \brief Interface of a user environment.
  */
 class ARCANE_CORE_EXPORT IUserMeshEnvironment
 {
@@ -37,16 +38,17 @@ class ARCANE_CORE_EXPORT IUserMeshEnvironment
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Interface d'un milieu d'un maillage.
+ * \brief Interface of a mesh environment.
  * 
- * Les milieux sont créés via IMeshEnvironmentMng::createEnvironment().
+ * Environments are created via IMeshEnvironmentMng::createEnvironment().
  *
- * Les milieux ne peuvent pas être détruits et tous les milieux et leurs
- * matériaux doivent être créés lors de l'initialisation.
+ * Environments cannot be destroyed, and all environments and their
+ * materials must be created during initialization.
  *
- * Un milieu peut éventuellement être vide.
+ * An environment may optionally be empty.
  */
 class ARCANE_CORE_EXPORT IMeshEnvironment
 : public IMeshComponent
@@ -57,46 +59,46 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
 
  public:
 
-  //! Liste des matériaux de ce milieu
+  //! List of materials in this environment
   virtual ConstArrayView<IMeshMaterial*> materials() =0;
 
-  //! Nombre de matériaux dans le milieu
+  //! Number of materials in the environment
   virtual Integer nbMaterial() const =0;
 
   /*!
-   * \brief Identifiant du milieu.
-   * Il s'agit aussi de l'indice (en commencant par 0) de ce milieu
-   * dans la liste des milieux.
+   * \brief Environment identifier.
+   * It is also the index (starting from 0) of this environment
+   * in the list of environments.
    */
   //virtual Int32 id() const =0;
 
-  //! Milieu utilisateur associé
+  //! Associated user environment
   virtual IUserMeshEnvironment* userEnvironment() const =0;
 
-  //! Positionne le milieu utilisateur associé
+  //! Sets the associated user environment
   virtual void setUserEnvironment(IUserMeshEnvironment* umm) =0;
 
   /*!
-   * \brief Maille de ce milieu pour la maille \a c.
+   * \brief Mesh of this environment for mesh \a c.
    *
-   * Si ce milieu n'est pas présent dans la présent dans la maille,
-   * la maille milieu nulle est retournée.
+   * If this environment is not present in the mesh,
+   * a null environment mesh is returned.
    *
-   * Le coût de cette fonction est proportionnel au nombre de matériaux
-   * présents dans la maille.
+   * The cost of this function is proportional to the number of materials
+   * present in the mesh.
    */   
   virtual EnvCell findEnvCell(AllEnvCell c) const =0;
 
-  //! Vue associée à ce milieu
+  //! View associated with this environment
   virtual EnvItemVectorView envView() const =0;
 
-  //! Vue sur la liste des entités pures (associées à la maille globale) du milieu
+  //! View of the list of pure entities (associated with the global mesh) in the environment
   virtual EnvPurePartItemVectorView pureEnvItems() const =0;
 
-  //! Vue sur la liste des entités impures (partielles) partielles du milieu
+  //! View of the list of impure (partial) entities in the environment
   virtual EnvImpurePartItemVectorView impureEnvItems() const =0;
 
-  //! Vue sur la partie pure ou impure des entités du milieu
+  //! View of the pure or impure part of the environment entities
   virtual EnvPartItemVectorView partEnvItems(eMatPart part) const =0;
 };
 
@@ -108,5 +110,4 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

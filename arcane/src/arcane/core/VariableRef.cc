@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableRef.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Référence à une variable.                                                 */
+/* Reference to a variable.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,19 +35,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe interne pour gérer les fonctor appelés lors de la mise à jour
- * de la variable.
+ * \brief Internal class to manage functors called when the variable is updated.
  *
- * Les fonctors sont en général ceux du wrapper C#. La principale difficulté
- * pour traiter ces fonctor est qu'ils sont gérer par le runtime C# et donc
- * utilisent un garbage collector. Il n'est donc pas possible de savoir
- * exactement quand ces fonctors seront détruits. Une instance de cette
- * classe ne doit donc pas être détruite explicitement. Lorsque la
- * variable possédant une instance de cette classe est détruite, elle
- * appelle destroy() pour signaler que l'objet peut être détruit. Dès
- * qu'il n'y a plus de fonctor référencés, cela signifie que tous les
- * objets C# sont détruits et donc on peut détruire l'instance.
+ * Functors are generally those from the C# wrapper. The main difficulty
+ * in processing these functors is that they are managed by the C# runtime
+ * and thus use a garbage collector. It is therefore not possible to know
+ * exactly when these functors will be destroyed. An instance of this
+ * class should therefore not be explicitly destroyed. When the variable
+ * possessing an instance of this class is destroyed, it calls destroy() to
+ * signal that the object can be destroyed. As soon as no functors are
+ * referenced, it means all C# objects are destroyed and thus the instance
+ * can be destroyed.
  */
 class VariableRef::UpdateNotifyFunctorList
 {
@@ -71,8 +71,8 @@ class VariableRef::UpdateNotifyFunctorList
 
   void destroy()
   {
-    // Indique qu'on detruit.
-    // Mais ne fais pas de delete tant que m_funcs n'est pas vide.
+    // Indicates that we are destroying.
+    // But do not delete until m_funcs is empty.
     m_is_destroyed = true;
     if (m_funcs.empty())
       delete this;
@@ -147,12 +147,13 @@ VariableRef(IVariable* var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Constructeur pour une variable non enregistree.
+ * \brief Constructor for an unregistered variable.
  *
- * Ce constructeur n'est utilise que pour le wrapping C#. En C++,
- * il n'est pas accessible pour être sur que l'utilisateur n'a pas
- * de variables non référencées
+ * This constructor is only used for C# wrapping. In C++,
+ * it is not accessible to ensure that the user does not have
+ * unreferenced variables
  */
 VariableRef::
 VariableRef()
@@ -171,8 +172,8 @@ VariableRef(const VariableRef& from)
   _setAssignmentStackTrace();
   //cout << "** TODO: check variable copy constructor with linked list\n";
   // NOTE:
-  // C'est la variable qui met à jour m_previous_reference et m_next_reference
-  // dans registerVariable.
+  // The variable updates m_previous_reference and m_next_reference
+  // in registerVariable.
   if (from.m_variable)
     registerVariable();
 }
@@ -251,8 +252,8 @@ _internalInit(IVariable* variable)
   m_variable = variable;
   registerVariable();
   updateFromInternal();
-  // Les variables autres que celles sur le maillage sont toujours utilisées
-  // par défaut
+  // Variables other than those on the mesh are always used
+  // by default
   if (variable->itemKind()==IK_Unknown)
     setUsed(true);
 }
@@ -390,8 +391,9 @@ unsetProperty(int property)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Regarde si une propriété peut-être changée dynamiquement.
+ * \brief Checks if a property can be changed dynamically.
  */
 bool VariableRef::
 _checkValidPropertyChanged(int property)
@@ -622,19 +624,20 @@ _internalAssignVariable(const VariableRef& var)
   m_variable = var.m_variable;
   m_reference_property = var.m_reference_property;
   m_has_trace = false;
-  // NE PAS TOUCHER A: m_notify_functor_list
+  // DO NOT TOUCH: m_notify_functor_list
   //NOTE:
-  // C'est la variable qui met à jour m_previous_reference et m_next_reference
-  // dans registerVariable.
+  // It is the variable that updates m_previous_reference and m_next_reference
+  // in registerVariable.
   //cout << "** TODO: check variable operator= with linked list\n";
   registerVariable();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
  * \internal
- * \brief Ajoute un fonctor pour le wrapping C#.
+ * \brief Adds a functor for C# wrapping.
  */ 
 extern "C" ARCANE_CORE_EXPORT void*
 _AddVariableChangedDelegate(VariableRef* var,void (*func)())
@@ -644,7 +647,7 @@ _AddVariableChangedDelegate(VariableRef* var,void (*func)())
 
 /*
  * \internal
- * \brief Supprimer un fonctor pour le wrapping C#.
+ * \brief Removes a functor for C# wrapping.
  */ 
 extern "C" ARCANE_CORE_EXPORT void
 _RemoveVariableChangedDelegate(VariableRef::UpdateNotifyFunctorList* functor_list,

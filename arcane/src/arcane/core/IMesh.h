@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMesh.h                                                     (C) 2000-2024 */
 /*                                                                           */
-/* Interface d'un maillage.                                                  */
+/* Interface of a mesh.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESH_H
 #define ARCANE_CORE_IMESH_H
@@ -53,120 +53,121 @@ enum class eMeshEventType;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//INFO: La doc complete est dans Mesh.dox
+
+//INFO: The complete documentation is in Mesh.dox
 class IMesh
 : public IMeshBase
 {
  public:
 
-  virtual ~IMesh() = default; //<! Libère les ressources
+  virtual ~IMesh() = default; //<! Releases resources
 
  public:
 
   virtual void build() =0;
 
 
-  //! Nom de la fabrique utilisée pour créer le maillage
+  //! Name of the factory used to create the mesh
   virtual String factoryName() const =0;
 
-  //! Tableau interne des éléments du maillage de type \a type
+  //! Internal array of mesh elements of type \a type
   virtual ItemInternalList itemsInternal(eItemKind) =0;
 
-  //! Coordonnées des noeuds
+  //! Node coordinates
   virtual SharedVariableNodeReal3 sharedNodesCoordinates() =0;
 
-  //! Vérification de la validité des structues internes de maillage (interne)
+  //! Check for the validity of internal mesh structures (internal)
   virtual void checkValidMesh() =0;
 
   /*!
-   * \brief Vérification de la validité du maillage.
+   * \brief Mesh validity check.
    *
-   * Il s'agit d'une vérification globale entre tous les sous-domaines.
+   * This is a global check across all subdomains.
    *
-   * Elle vérifie notamment que la connectivité est cohérente entre
-   * les sous-domaines.
+   * It notably checks that connectivity is consistent between
+   * subdomains.
    *
-   * La vérification peut-être assez coûteuse en temps CPU.
-   * Cette méthode est collective.
+   * The check can be quite CPU intensive.
+   * This method is collective.
    */
   virtual void checkValidMeshFull() =0;
 
   /*!
-   * \brief Synchronise tous les groupes et les variables du maillage.
+   * \brief Synchronizes all mesh groups and variables.
    *
-   * Cette opération est collective
+   * This operation is collective
    */
   virtual void synchronizeGroupsAndVariables()=0;
 
  public:
 
-  /*! \brief Vrai si le maillage est allouée.
+  /*! \brief True if the mesh is allocated.
    *
-   * Un maillage est alloué dès qu'une entité a été ajouté, par allocateCells(),
-   *  ou reloadMesh()
+   * A mesh is allocated as soon as an entity has been added, by allocateCells(),
+   *  or reloadMesh()
    */
   virtual bool isAllocated() =0;
 
   /*!
-   * \brief Compteur indiquant le temps de dernière modification du maillage.
+   * \brief Counter indicating the time of the last mesh modification.
    *
-   * Ce compteur augmente à chaque appel à endUpdate(). Il vaut 0 lors
-   * de l'initialisation. Il permet par exemple de vérifier si la topologie
-   * du maillage a évoluée entre deux parties du code.
+   * This counter increases with every call to endUpdate(). It is 0 upon
+   * initialization. It allows, for example, checking if the mesh topology
+   * has changed between two parts of the code.
    */
   virtual Int64 timestamp() =0;
   
  public:
 
-  //! Sous-domaine associé
+  //! Associated subdomain
   ARCANE_DEPRECATED_LONG_TERM("Y2020: Do not use this method. Try to get 'ISubDomain' from another way")
   virtual ISubDomain* subDomain() =0;
 
  public:
 
-  //! Gestionnaire de parallèlisme
+  //! Parallelism manager
   virtual IParallelMng* parallelMng() =0;
 
  public:
 
-  //! Descripteur de connectivité
-  /*! Cet objet permet de lire/modifier la connectivité */
+  //! Connectivity descriptor
+  /*! This object allows reading/modifying connectivity */
   virtual VariableScalarInteger connectivity() = 0;
 
   //! AMR
-  //! Groupe de toutes les mailles actives
-  virtual CellGroup allActiveCells() =0;
+  //! Group of all active meshes
+  virtual CellGroup allActiveCells()=0;
 
-  //! Groupe de toutes les mailles actives et propres au domaine
-  virtual CellGroup ownActiveCells() =0;
+  //! Group of all active meshes specific to the domain
+  virtual CellGroup ownActiveCells()=0;
 
-  //! Groupe de toutes les mailles de niveau \p level
+  //! Group of all meshes of level \p level
   virtual CellGroup allLevelCells(const Integer& level) =0;
 
-  //! Groupe de toutes les mailles propres de niveau \p level
+  //! Group of all meshes specific to the domain of level \p level
   virtual CellGroup ownLevelCells(const Integer& level) =0;
 
-  //! Groupe de toutes les faces actives
-   virtual FaceGroup allActiveFaces() =0;
+  //! Group of all active faces
+   virtual FaceGroup allActiveFaces()=0;
 
-   //! Groupe de toutes les faces actives propres au domaine.
-   virtual FaceGroup ownActiveFaces() =0;
+   //! Group of all active faces specific to the domain.
+   virtual FaceGroup ownActiveFaces()=0;
 
-  //! Groupe de toutes les faces actives
-  virtual FaceGroup innerActiveFaces() =0;
+  //! Group of all active faces
+  virtual FaceGroup innerActiveFaces()=0;
 
-  //! Groupe de toutes les faces actives sur la frontière.
-  virtual FaceGroup outerActiveFaces() =0;
+  //! Group of all active faces on the boundary.
+  virtual FaceGroup outerActiveFaces()=0;
 
  public:
 
-  //! Liste des groupes
-  virtual ItemGroupCollection groups() =0;
+  //! List of groups
+  virtual ItemGroupCollection groups()=0;
 
-  //! Retourne le groupe de nom \a name ou le groupe nul s'il n'y en a pas.
+  //! Returns the group with name \a name or a null group if none exists.
   virtual ItemGroup findGroup(const String& name) =0;
 
-  //! Détruit tous les groupes de toutes les familles.
+  //! Destroys all groups of all families.
   virtual void destroyGroups() =0;
 
  public:
@@ -176,31 +177,32 @@ class IMesh
  public:
 
   virtual void updateGhostLayers(bool remove_old_ghost) =0;
+
   /*!
    * \internal
-   * \deprecated Utiliser IMesh::cellFamily()->policyMng()->createSerializer() à la place.
+   * \deprecated Use IMesh::cellFamily()->policyMng()->createSerializer() instead.
    */
   ARCANE_DEPRECATED_240 virtual void serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id) =0;
 
-  //! Prépare l'instance en vue d'une protection
+  //! Prepares the instance for dumping
   virtual void prepareForDump() =0;
   
-  //! Initialize les variables avec les valeurs du fichier de configuration (interne)
+  //! Initializes variables with values from the configuration file (internal)
   virtual void initializeVariables(const XmlNode& init_node) =0;
 
   /*!
-   * \brief Positionne le niveau de vérification du maillage.
+   * \brief Sets the mesh check level.
    *
-   * 0 - tests désactivés
-   * 1 - tests partiels, après les endUpdate()
-   * 2 - tests complets, après les endUpdate()
+   * 0 - tests disabled
+   * 1 - partial tests, after endUpdate()
+   * 2 - full tests, after endUpdate()
    */
   virtual void setCheckLevel(Integer level) =0;
   
-  //! Niveau actuel de vérification
+  //! Current check level
   virtual Integer checkLevel() const =0;
 
-  //! Indique si le maillage est dynamique (peut évoluer)
+  //! Indicates if the mesh is dynamic (can evolve)
   virtual bool isDynamic() const =0;
 
   //!
@@ -208,130 +210,130 @@ class IMesh
 
  public:
 
-  //! \name Gestions des interfaces semi-conformes
+  //! \name Management of semi-conforming interfaces
   //@{
-  //! Détermine les interfaces de semi-conformités
+  //! Determines the semi-conforming interfaces
   virtual void computeTiedInterfaces(const XmlNode& mesh_node) =0;
 
-  //! Vrai s'il existe des interfaces semi-conformes dans le maillage
+  //! True if semi-conforming interfaces exist in the mesh
   virtual bool hasTiedInterface() =0;
   
-  //! Liste des interfaces semi-conformes
+  //! List of semi-conforming interfaces
   virtual TiedInterfaceCollection tiedInterfaces() =0;
   //@}
 
-  //! Gestionnaire des contraintes de partitionnement associées à ce maillage.
+  //! Manager of partitioning constraints associated with this mesh.
   virtual IMeshPartitionConstraintMng* partitionConstraintMng() =0;
 
  public:
 
-  //! Interface des fonctions utilitaires associée
+  //! Associated utility functions interface
   virtual IMeshUtilities* utilities() =0;
 
-  //! Propriétés associées à ce maillage
+  //! Properties associated with this mesh
   virtual Properties* properties() =0;
 
  public:
 
-  //! Interface de modification associée
+  //! Associated modifier interface
   virtual IMeshModifier* modifier() =0;
 
  public:
 
   /*!
-   * \brief Coordonnées des noeuds.
+   * \brief Node coordinates.
    *
-   * Retourne un tableau natif (non partagé comme SharedVariable) des coordonnées.
-   * Cet appel n'est valide que sur un maillage primaire (non sous-maillage).
+   * Returns a native array (not shared like SharedVariable) of coordinates.
+   * This call is only valid on a primary mesh (not a sub-mesh).
    */
   virtual VariableNodeReal3& nodesCoordinates() =0;
 
-  //@{ @name Interface des sous-maillages
+  //@{ @name Sub-mesh interface
   /*!
-   * \brief Définit les maillage et groupe parents.
+   * \brief Defines the parent mesh and group.
    *
-   *  Doit être positionné sur le maillage en construction _avant_ la phase build()
+   *  Must be set on the mesh being constructed _before_ the build() phase
    */
   virtual void defineParentForBuild(IMesh * mesh, ItemGroup group) =0;
 
   /*!
-   * \brief Accès au maillage parent.
+   * \brief Access to the parent mesh.
    *
-   * Retourne \a nullptr si le maillage nn'a pas de maillage parent.
+   * Returns \a nullptr if the mesh does not have a parent mesh.
    */
   virtual IMesh* parentMesh() const = 0;
 
   /*!
-   * \brief Groupe parent.
+   * \brief Parent group.
    *
-   * Retourne le groupe nul si le maillage n'a pas de parent.
+   * Returns the null group if the mesh has no parent.
    */
   virtual ItemGroup parentGroup() const = 0;
 
-  //! Ajoute un sous-maillage au maillage parent
+  //! Adds a sub-mesh to the parent mesh
   virtual void addChildMesh(IMesh * sub_mesh) = 0;
 
-  //! Liste des sous-maillages du maillage courant
+  //! List of sub-meshes of the current mesh
   virtual MeshCollection childMeshes() const = 0;
   //@}
 
  public:
 
   /*!
-   * \brief Indique si l'instance est un maillage primaire.
+   * \brief Indicates if the instance is a primary mesh.
    *
-   * Pour être un maillage primaire, l'instance doit
-   * pouvoir être convertie en un IPrimaryMesh
-   * et ne pas être un sous-maillage, c'est à dire ne
-   * pas avoir de maillage parent (parentMesh()==nullptr).
+   * To be a primary mesh, the instance must
+   * be convertible to an IPrimaryMesh
+   * and not be a sub-mesh, meaning it
+   * does not have a parent mesh (parentMesh()==nullptr).
    */
   virtual bool isPrimaryMesh() const =0;
 
   /*!
-   * \brief Retourne l'instance sous la forme d'un IPrimaryMesh.
+   * \brief Returns the instance in the form of an IPrimaryMesh.
    *
-   * Renvoie une exception de type BadCastException si l'instance
-   * n'est pas du type IPrimaryMesh et si isPrimaryMesh() est faux.
+   * Throws a BadCastException if the instance
+   * is not of type IPrimaryMesh and if isPrimaryMesh() is false.
    */
   virtual IPrimaryMesh* toPrimaryMesh() =0;
 
  public:
 
-  //! Gestionnnaire de données utilisateurs associé
+  //! Associated user data manager
   virtual IUserDataList* userDataList() =0;
 
-  //! Gestionnnaire de données utilisateurs associé
+  //! Associated user data manager
   virtual const IUserDataList* userDataList() const =0;
 
  public:
 
-  //! Gestionnare de couche fantômes associé
+  //! Associated ghost layer manager
   virtual IGhostLayerMng* ghostLayerMng() const =0;
 
-  //! Gestionnare de la numérotation des identifiants uniques
+  //! Unique ID numbering manager
   virtual IMeshUniqueIdMng* meshUniqueIdMng() const =0;
 
-  //! Interface du vérificateur.
+  //! Checker interface.
   virtual IMeshChecker* checker() const =0;
 
-  //! Informations sur les parties du maillage
+  //! Mesh part information
   virtual const MeshPartInfo& meshPartInfo() const =0;
 
   //! check if the network itemFamily dependencies is activated
   virtual bool useMeshItemFamilyDependencies() const =0;
 
-  //! Interface du réseau de familles (familles connectées)
+  //! Family network interface (connected families)
   virtual IItemFamilyNetwork* itemFamilyNetwork() =0;
 
-  //! Interface du gestionnaire des connectivités incrémentales indexées.
+  //! Interface of the indexed incremental connectivity manager.
   virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() =0;
 
-  //! Caractéristiques du maillage
+  //! Mesh characteristics
   virtual const MeshKind meshKind() const =0;
 
  public:
 
-  //! Observable pour un évènement
+  //! Observable for an event
   virtual EventObservable<const MeshEventArgs&>& eventObservable(eMeshEventType type) =0;
 
  public:
@@ -341,38 +343,37 @@ class IMesh
 
   /*!
    * \internal
-   * \brief Politique d'utilisation des connectivitées
+   * \brief Connectivity usage policy
    */
   virtual InternalConnectivityPolicy _connectivityPolicy() const =0;
 
  public:
 
-  //! Gestionnaire de maillage associé
+  //! Associated mesh manager
   virtual IMeshMng* meshMng() const =0;
 
-  //! Gestionnaire de variable associé
+  //! Associated variable manager
   virtual IVariableMng* variableMng() const =0;
 
-  //! Gestionnaire de types d'entités associé
+  //! Associated entity type manager
   virtual ItemTypeMng* itemTypeMng() const =0;
 
  public:
 
   /*!
-   * \brief Recalcule les informations de synchronisation.
+   * \brief Recalculates synchronization information.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Normalement cela est fait automatiquement par %Arcane lorsque c'est
-   * nécessaire. Néanmoins il peut arriver suite à certaines modifications
-   * internes qu'il faille manuellement mettre à jour les informations pour
-   * les synchronisations.
+   * Normally this is done automatically by %Arcane when it is
+   * necessary. However, it can happen following certain internal modifications
+   * that the information for synchronization needs to be manually updated.
    */
   virtual void computeSynchronizeInfos() =0;
 
  public:
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   virtual IMeshInternal* _internalApi() =0;
 };
 
@@ -384,4 +385,4 @@ class IMesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

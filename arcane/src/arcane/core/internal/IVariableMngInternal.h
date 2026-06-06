@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariableMngInternal.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Partie interne à Arcane de IVariableMng.                                  */
+/* Internal part of IVariableMng in Arcane.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IVARIABLEMNG_H
 #define ARCANE_CORE_INTERNAL_IVARIABLEMNG_H
@@ -27,124 +27,125 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de variables.
+ * \brief Interface of the variable manager.
  *
- * Ce gestionnaire contient la liste des variables déclarées dans le
- * sous-domaine associé \a subDomain(). Il maintient la liste des variables
- * et permet de les lire ou de les écrire.
+ * This manager contains the list of variables declared in the
+ * associated subdomain \a subDomain(). It maintains the list of variables
+ * and allows them to be read or written.
  */
 class ARCANE_CORE_EXPORT IVariableMngInternal
 {
  public:
 
-  virtual ~IVariableMngInternal() = default; //!< Libère les ressources.
+  virtual ~IVariableMngInternal() = default; //!< Releases resources.
 
  public:
 
   /*!
-   * \brief Construit les membres de l'instance.
+   * \brief Constructs the instance members.
    *
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée. Cette méthode doit être appelée avant initialize().
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * The instance is not usable until this method has been
+   * called. This method must be called before initialize().
+   * \warning This method must only be called once.
    */
   virtual void build() = 0;
 
   /*!
-   * \brief Initialise l'instance.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée.
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \brief Initializes the instance.
+   * The instance is not usable until this method has been
+   * called.
+   * \warning This method must only be called once.
    */
   virtual void initialize() = 0;
 
-  //! Supprime et détruit les variables gérées par ce gestionnaire
+  //! Removes and destroys the variables managed by this manager
   virtual void removeAllVariables() = 0;
 
-  //! Supprime et détruit les variables ayant la propriété PInShMem, gérées
-  //! par ce gestionnaire.
+  //! Removes and destroys variables having the PInShMem property, managed
+  //! by this manager.
   virtual void removeAllShMemVariables() = 0;
 
-  //! Détache les variables associées au maillage \a mesh.
+  //! Detaches variables associated with the mesh \a mesh.
   virtual void detachMeshVariables(IMesh* mesh) = 0;
 
  public:
 
   /*!
-   * \brief Ajoute une référence à une variable.
+   * \brief Adds a reference to a variable.
    *
-   * Ajoute la référence \a var au gestionnaire.
+   * Adds the reference \a var to the manager.
    *
    * \pre var != 0
-   * \pre var ne doit pas déjà être référencée.
-   * \return l'implémentation associée à \a var.
+   * \pre var must not already be referenced.
+   * \return the implementation associated with \a var.
    */
   virtual void addVariableRef(VariableRef* var) = 0;
 
   /*!
-   * \brief Supprime une référence à une variable.
+   * \brief Removes a reference to a variable.
    *
-   * Supprime la référence \a var du gestionnaire.
+   * Removes the reference \a var from the manager.
    *
-   * Si \a var n'est pas référencée par le gestionnaire, rien n'est effectué.
+   * If \a var is not referenced by the manager, nothing is done.
    * \pre var != 0
    */
   virtual void removeVariableRef(VariableRef* var) = 0;
 
   /*!
-   * \brief Ajoute une variable.
+   * \brief Adds a variable.
    *
-   * Ajoute la variable \a var.
+   * Adds the variable \a var.
    *
-   * La validité de la variable n'est pas effectuée (void checkVariable()).
+   * The variable validity is not checked (void checkVariable()).
    *
    * \pre var != 0
-   * \pre var ne doit pas déjà être référencée.
-   * \return l'implémentation associée à \a var.
+   * \pre var must not already be referenced.
+   * \return the implementation associated with \a var.
    */
   virtual void addVariable(IVariable* var) = 0;
 
   /*!
-   * \brief Supprime une variable.
+   * \brief Removes a variable.
    *
-   * Supprime la variable \a var.
+   * Removes the variable \a var.
    *
-   * Après appel à cette méthode, la variable ne doit plus être utilisée.
+   * After calling this method, the variable must no longer be used.
    *
    * \pre var != 0
-   * \pre var doit avoir une seule référence.
+   * \pre var must have a single reference.
    */
   virtual void removeVariable(IVariable* var) = 0;
 
   /*!
-   * \brief Initialise les variables.
+   * \brief Initializes the variables.
    *
-   * Parcours la liste des variables et les initialisent.
-   * Seules les variables d'un module utilisé sont initialisées.
+   * Iterates through the list of variables and initializes them.
+   * Only variables from a used module are initialized.
    *
-   * \param is_continue \a true vrai si on est en reprise.
+   * \param is_continue \a true if resuming.
    */
   virtual void initializeVariables(bool is_continue) = 0;
 
   /*!
-   * \brief Ajoute la variable à la liste des variables qui sont conservées
-   * jusqu'à la fin de l'exécution.
+   * \brief Adds the variable to the list of variables that are kept
+   * until the end of execution.
    *
-   * La variable sera détruite par l'appel à l'opérateur operator delete()
-   * lors de l'appel à IVariableMng::removeAllVariables().
+   * The variable will be destroyed by calling the operator delete()
+   * when calling IVariableMng::removeAllVariables().
    */
   virtual void addAutoDestroyVariable(VariableRef* var) =0;
 
  public:
 
-  //! Fonction interne temporaire pour récupérer le sous-domaine.
+  //! Temporary internal function to retrieve the subdomain.
   virtual ISubDomain* internalSubDomain() const = 0;
 
-  //! Gestionnaire pour les accélérateurs
+  //! Manager for accelerators
   virtual IAcceleratorMng* acceleratorMng() const = 0;
 
-  //! Positionne le gestionnaire des accélérateurs
+  //! Sets the accelerator manager
   virtual void setAcceleratorMng(Ref<IAcceleratorMng> v) = 0;
 };
 
@@ -156,4 +157,4 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

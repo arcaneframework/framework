@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemGroupObserver.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface et implémentation basique des observeurs de groupe.             */
+/* Interface and basic implementation of group observers.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMGROUPOBSERVER_H
 #define ARCANE_CORE_ITEMGROUPOBSERVER_H
@@ -32,63 +32,63 @@ class IItemGroupObserver
   template <typename T>
   struct FuncTraits
   {
-    //! Type du pointeur sur la méthode avec Infos
+    //! Type of the pointer to the method with Info
     typedef void (T::*FuncPtrWithInfo)(const Int32ConstArrayView* info);
 
-    //! Type du pointeur sur la méthode sans Infos
+    //! Type of the pointer to the method without Info
     typedef void (T::*FuncPtr)();
   };
 
  public:
 
-  //! Destructeur
+  //! Destructor
   virtual ~IItemGroupObserver() = default;
 
   /*!
-   * \brief Execute l'action associée à l'extension.
+   * \brief Execute the action associated with the extension.
    *
-   * \param info liste des localIds ajoutés
-   * Suppose qu'il n'y a pas de changement d'ordre ou de renumérotation.
+   * \param info list of added localIds
+   * Assumes there is no change in order or renumbering.
    *
-   * Cette méthode ne peut pas être parallèle.
+   * This method cannot be parallel.
    */
   virtual void executeExtend(const Int32ConstArrayView* info) = 0;
 
   /*!
-   * \brief Execute l'action associée à l'extension.
+   * \brief Execute the action associated with the extension.
    *
-   * \param info liste des positions supprimées dans l'ancien groupe
-   * Suppose qu'il n'y a pas de changement d'ordre ou de renumérotation
-   * Cette approche par rapport à la liste des localIds est motivée par
-   * la contrainte dans PartialVariable qui n'a pas connaissance des localIds
-   * qu'il héberge.
-   * \param info2 liste des localIds des éléments supprimés. Potentiellement redondant
-   * avec \a info, mais inévitable pour certaines structures changeant l'ordre par rapport
-   * au groupe de référence (ex: ItemGroupDynamicMeshObserver) (DEPRECATED)
+   * \param info list of positions removed in the old group
+   * Assumes there is no change in order or renumbering
+   * This approach compared to the list of localIds is motivated by
+   * the constraint in PartialVariable which is unaware of the localIds
+   * it hosts.
+   * \param info2 list of localIds of deleted elements. Potentially redundant
+   * with \a info, but inevitable for certain structures changing the order relative to
+   * the reference group (e.g.: ItemGroupDynamicMeshObserver) (DEPRECATED)
    *
-   * Cette méthode ne peut pas être parallèle.
+   * This method cannot be parallel.
    */
   virtual void executeReduce(const Int32ConstArrayView* info) = 0;
 
   /*!
-   * \brief Éxecute l'action associée au compactage.
+   * \brief Executes the action associated with compaction.
    *
-   * \param info liste des permutations dans le sens old->new
-   * Suppose qu'il n'y a pas de changement de taille.
+   * \param info list of permutations in the old->new direction
+   * Assumes there is no change in size.
    */
   virtual void executeCompact(const Int32ConstArrayView* info) = 0;
 
   /*!
-   * \brief Execute l'action associée à l'invalidation.
+   * \brief Execute the action associated with invalidation.
    *
-   * Aucune information de transition disponible.
+   * No transition information available.
    */
   virtual void executeInvalidate() = 0;
 
   /*!
-   * \brief Indique si l'observer aura besoin d'information de transition
+   * \brief Indicates whether the observer will need transition information
    *
-   * Cette information ne doit pas changer après le premier appel à cet fonction
+   * This information must not change after the first call to this function
    */
   virtual bool needInfo() const = 0;
 };
@@ -140,11 +140,11 @@ class ItemGroupObserverWithInfoT
 
  private:
 
-  T* m_object = nullptr; //!< Objet associé.
-  typename FuncTraits<T>::FuncPtrWithInfo m_extend_function = nullptr; //!< Pointeur vers la méthode associée.
-  typename FuncTraits<T>::FuncPtrWithInfo m_reduce_function = nullptr; //!< Pointeur vers la méthode associée.
-  typename FuncTraits<T>::FuncPtrWithInfo m_compact_function = nullptr; //!< Pointeur vers la méthode associée.
-  typename FuncTraits<T>::FuncPtr m_invalidate_function = nullptr; //!< Pointeur vers la méthode associée.
+  T* m_object = nullptr; //!< Associated object.
+  typename FuncTraits<T>::FuncPtrWithInfo m_extend_function = nullptr; //!< Pointer to the associated method.
+  typename FuncTraits<T>::FuncPtrWithInfo m_reduce_function = nullptr; //!< Pointer to the associated method.
+  typename FuncTraits<T>::FuncPtrWithInfo m_compact_function = nullptr; //!< Pointer to the associated method.
+  typename FuncTraits<T>::FuncPtr m_invalidate_function = nullptr; //!< Pointer to the associated method.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ class ItemGroupObserverWithoutInfoT
 {
  public:
 
-  //! Constructeur à partir d'une unique fonction sans argument
+  //! Constructor from a single argument-less function
   ItemGroupObserverWithoutInfoT(T* object, typename FuncTraits<T>::FuncPtr funcptr)
   : m_object(object)
   , m_function(funcptr)
@@ -191,14 +191,14 @@ class ItemGroupObserverWithoutInfoT
 
  private:
 
-  T* m_object = nullptr; //!< Objet associé.
-  typename FuncTraits<T>::FuncPtr m_function = nullptr; //!< Pointeur vers la méthode associée.
+  T* m_object = nullptr; //!< Associated object.
+  typename FuncTraits<T>::FuncPtr m_function = nullptr; //!< Pointer to the associated method.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Utilitaire pour création simplifié de ItemGroupObserverT
+//! Utility for simplified creation of ItemGroupObserverT
 template <typename T>
 inline IItemGroupObserver* newItemGroupObserverT(T* object,
                                                  typename IItemGroupObserver::FuncTraits<T>::FuncPtr funcptr)
@@ -209,7 +209,7 @@ inline IItemGroupObserver* newItemGroupObserverT(T* object,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Utilitaire pour création simplifié de ItemGroupObserverT
+//! Utility for simplified creation of ItemGroupObserverT
 template <typename T> inline IItemGroupObserver*
 newItemGroupObserverT(T* object,
                       typename IItemGroupObserver::FuncTraits<T>::FuncPtrWithInfo extend_funcptr,

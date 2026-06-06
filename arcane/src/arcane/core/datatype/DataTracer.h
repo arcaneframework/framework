@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataTracer.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Traceur d'une donnée.                                                     */
+/* Data tracer for a data item.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_DATATRACER_H
 #define ARCANE_CORE_DATATYPE_DATATRACER_H
@@ -31,9 +31,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief DataTracer pour une donées d'un type \a DataType.
+ * \brief DataTracer for a data of type \a DataType.
  */
 template<typename DataType>
 class DataTracerT
@@ -81,5 +82,4 @@ class DataTracerT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

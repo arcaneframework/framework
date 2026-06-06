@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AxlOptionsBuilder.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Classes pour créer dynamiquement des options du jeu de données.           */
+/* Classes for dynamically creating data set options.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_AXLOPTIONSBUILDER_H
 #define ARCANE_CORE_AXLOPTIONSBUILDER_H
@@ -32,8 +32,9 @@ class DocumentJSONWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste d'options du jeu de données.
+ * \brief Data set option list.
  */
 class ARCANE_CORE_EXPORT OptionList
 {
@@ -44,9 +45,9 @@ class ARCANE_CORE_EXPORT OptionList
 
  public:
 
-  //! Construit un jeu d'options vide.
+  //! Constructs an empty set of options.
   OptionList();
-  //! Construit une liste d'options
+  //! Constructs a list of options
   explicit OptionList(const std::initializer_list<OneOption>& options);
 
  public:
@@ -66,8 +67,9 @@ class ARCANE_CORE_EXPORT OptionList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une option dynamique.
+ * \brief Base class for a dynamic option.
  */
 class ARCANE_CORE_EXPORT OneOption
 {
@@ -103,17 +105,18 @@ class ARCANE_CORE_EXPORT OneOption
  protected:
 
   Type m_type = Type::CO_Simple;
-  String m_name; //! Nom de l'option
-  String m_value; //! Valeur de l'option (si option CO_Simple)
-  String m_service_name; //!< Nom du service (si option de type CO_ServiceInstance)
-  String m_function_name; //<! Nom de la fonction (ICaseFunction)
+  String m_name; //! Option name
+  String m_value; //! Option value (if CO_Simple option)
+  String m_service_name; //!< Service name (if CO_ServiceInstance type option)
+  String m_function_name; //<! Function name (ICaseFunction)
   std::shared_ptr<OneOptionImpl> m_sub_option;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option 'Simple' du jeu de données.
+ * \brief Data set 'Simple' option.
  */
 class ARCANE_CORE_EXPORT Simple
 : public OneOption
@@ -150,8 +153,9 @@ class ARCANE_CORE_EXPORT Simple
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option 'Enumeration' du jeu de données.
+ * \brief Data set 'Enumeration' option.
  */
 class ARCANE_CORE_EXPORT Enumeration
 : public OneOption
@@ -166,8 +170,9 @@ class ARCANE_CORE_EXPORT Enumeration
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option 'Extended' du jeu de données.
+ * \brief Data set 'Extended' option.
  */
 class ARCANE_CORE_EXPORT Extended
 : public OneOption
@@ -182,8 +187,9 @@ class ARCANE_CORE_EXPORT Extended
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option 'Complex' du jeu de données.
+ * \brief Data set 'Complex' option.
  */
 class ARCANE_CORE_EXPORT Complex
 : public OneOption
@@ -196,8 +202,9 @@ class ARCANE_CORE_EXPORT Complex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option 'ServiceInstance' du jeu de données.
+ * \brief Data set 'ServiceInstance' option.
  */
 class ARCANE_CORE_EXPORT ServiceInstance
 : public OneOption
@@ -215,7 +222,7 @@ class ARCANE_CORE_EXPORT ServiceInstance
 /*---------------------------------------------------------------------------*/
 
 /*!
-* \brief Option 'ServiceInstance' du jeu de données.
+* \brief Data set 'ServiceInstance' option.
  */
 class ARCANE_CORE_EXPORT Document
 {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VarRefEnumerator.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Classe parcourant les références d'une Variable.                          */
+/* Class iterating over a Variable's references.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARREFENUMERATOR_H
 #define ARCANE_CORE_VARREFENUMERATOR_H

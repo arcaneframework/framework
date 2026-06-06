@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinBase.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
-/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
-/* être redimensionnées.                                                     */
+/* Class allowing the creation of memory windows for a computing node.       */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/MachineShMemWinBase.h"

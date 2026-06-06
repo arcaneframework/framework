@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IVariable.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Interface de la classe Variable.                                          */
+/* Interface of the Variable class.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLE_H
 #define ARCANE_CORE_IVARIABLE_H
@@ -27,19 +27,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une variable.
+ * \brief Interface of a variable.
  *
- * L'implémentation de cette interface est la classe Variable.
+ * The implementation of this interface is the Variable class.
  *
- * En général cette interface n'est pas utilisée directement. Les variables
- * sont gérées par la classe VariableRef et les classes qui en dérive.
+ * Generally, this interface is not used directly. Variables are managed by
+ * the VariableRef class and its derived classes.
  */
 class ARCANE_CORE_EXPORT IVariable
 {
  public:
 
-  //! Type des dépendances
+  //! Dependency Type
   enum eDependType
   {
     DPT_PreviousTime,
@@ -49,132 +50,129 @@ class ARCANE_CORE_EXPORT IVariable
  public:
 
   /*!
-   * \brief Propriétés d'une variable.
+   * \brief Properties of a variable.
    */
   enum
   {
     /*!
-     * \brief Indique que la variable ne doit pas être sauvegardée.
+     * \brief Indicates that the variable should not be saved.
      *
-     * Cette propriété est collective : elle doit être positionnée sur tous
-     * les sous-domaines (ou sur aucun).
+     * This property is collective: it must be set on all subdomains (or on none).
      */
     PNoDump = (1 << 0),
 
     /*!
-     * \brief Indique que la variable n'est pas nécessairement synchronisée.
+     * \brief Indicates that the variable is not necessarily synchronized.
      *
-     * Cela signifie qu'il est normal que les valeurs de la variable soient
-     * différentes d'un processeur à l'autre sur les mailles fantômes
+     * This means it is normal for the variable values to be different from
+     * one processor to another on ghost meshes
      */
     PNoNeedSync = (1 << 1),
 
-    //! Indique que la variable est tracée (uniquement en mode trace)
+    //! Indicates that the variable is traced (only in trace mode)
     PHasTrace = (1 << 2),
 
-    /*! \brief Indique que la valeur de la variable est dépendante du sous-domaine.
+    /*! \brief Indicates that the variable value is dependent on the subdomain.
      *
-     * Cela signifie entre autre que la valeur de la variable est différente
-     * dès que le nombre de sous-domaines varie. C'est par exemple le cas
-     * de la variable contenant le numéro du sous-domaine propriétaire d'une entité.
+     * This means, among other things, that the variable value is different
+     * as soon as the number of subdomains changes. This is, for example, the case
+     * of the variable containing the number of the subdomain owning an entity.
      */
     PSubDomainDepend = (1 << 3),
 
-    /*! \brief Indique que la variable est privée au sous-domaine.
+    /*! \brief Indicates that the variable is private to the subdomain.
      *
-     * Cela signifie que la variable est dépendante du sous-domaine et notamment
-     * qu'elle n'existe pas forcément sur tout les sous-domaines. Cette
-     * propriété ne peut pas être positionnée pour les variables du maillage.
+     * This means that the variable is dependent on the subdomain and specifically
+     * that it does not necessarily exist on all subdomains. This
+     * property cannot be set for mesh variables.
      */
     PSubDomainPrivate = (1 << 4),
 
-    /*! \brief Indique que la valeur de la variable est dépendante de l'exécution
+    /*! \brief Indicates that the variable value is dependent on the execution
      *
-     * Les valeurs de ces variables changent entre deux exécutions. C'est par
-     * exemple le cas d'une variable contenant le temps CPU utilisé.
+     * The values of these variables change between two executions. This is, for
+     * example, the case of a variable containing the CPU time used.
      */
     PExecutionDepend = (1 << 5),
 
-    /*! \brief Indique que la variable est privée
+    /*! \brief Indicates that the variable is private
      *
-     * Une variable privée ne peut pas posséder plus d'une référence.
-     * Cette propriété ne peut être positionner que lors de la création de la
-     * variable
+     * A private variable cannot possess more than one reference.
+     * This property can only be set when the variable is created
      */
     PPrivate = (1 << 6),
 
-    /*! \brief Indique que la variable est temporaire
+    /*! \brief Indicates that the variable is temporary
      *
-     * Une variable temporaire est comme son nom l'indique temporaire. Elle
-     * ne peut pas être sauvée, n'est pas transférée en cas d'équilibrage
-     * du maillage (mais peut être synchronisée) et n'est pas sauvée en
-     * cas de retour arrière.
+     * A temporary variable is temporary, as its name suggests. It
+     * cannot be saved, is not transferred during mesh balancing (but can be
+     * synchronized), and is not saved during rollback.
      *
-     * Une variable temporaire qui n'est plus utilisée (aucune référence dessus)
-     * peut être désallouée.
+     * A temporary variable that is no longer used (no references to it)
+     * can be deallocated.
      */
     PTemporary = (1 << 7),
 
-    /*! \brief Indique que la variable ne doit pas être restaurée.
+    /*! \brief Indicates that the variable should not be restored.
      *
-     * Une variable de ce type n'est pas sauvegardée ni restorée en cas
-     * de retour-arrière.
+     * A variable of this type is neither saved nor restored during rollback.
      */
     PNoRestore = (1 << 8),
 
-    /*! \brief Indique que la variable ne doit pas être échangée.
+    /*! \brief Indicates that the variable should not be exchanged.
      *
-     * Une variable de ce type n'est pas échangée lors d'un repartitionnement
-     * de maillage par exemple. Cela permet d'éviter l'envoie de données
-     * inutiles si cette variable n'est utilisée que temporairement ou
-     * qu'elle est recalculée dans un des points d'entrée appelé
-     * suite à un repartitionnement.
+     * A variable of this type is not exchanged during mesh repartitioning, for
+     * example. This prevents the sending of unnecessary data
+     * if this variable is only used temporarily or
+     * if it is recalculated in one of the entry points called
+     * following a repartitioning.
      */
     PNoExchange = (1 << 9),
 
     /*!
-     * \brief Indique que la variable est persistante.
+     * \brief Indicates that the variable is persistent.
      *
-     * Une variable persistante n'est pas détruite s'il n'existe plus de référence dessus.
+     * A persistent variable is not destroyed even if there are no references
+     * to it anymore.
      */
     PPersistant = (1 << 10),
 
     /*!
-     * \brief Indique que la variable n'a pas forcément la même valeur
-     * entre les réplicas.
+     * \brief Indicates that the variable does not necessarily have the same value
+     * across replicas.
      *
-     * Cela signifie qu'il est normal que les valeurs de la variable soient
-     * différentes sur les mêmes sous-domaines des autres réplicas.
+     * This means it is normal for the variable values to be different on the same
+     * subdomains of other replicas.
      */
     PNoReplicaSync = (1 << 11),
 
     /*!
-     * \brief Indique que la variable doit être alloué en mémoire partagée.
+     * \brief Indicates that the variable must be allocated in shared memory.
      *
-     * L'allocateur MachineShMemWinMemoryAllocator sera utilisé.
-     * La classe MachineShMemWinVariable pourra être utilisé avec
-     * cette variable.
+     * The MachineShMemWinMemoryAllocator will be used.
+     * The MachineShMemWinVariable class can be used with
+     * this variable.
      */
     PInShMem = (1 << 12),
 
     /*!
-     * \brief Indique que la sauvegarde sera nulle pour cette variable et pour
-     * ce sous-domaine.
+     * \brief Indicates that the save will be null for this variable and for
+     * this subdomain.
      *
-     * Une sauvegarde sera effectuée, mais avec une valeur par défaut
-     * (valeur = 0 pour un scalaire, tableau vide pour un tableau).
+     * A save will be performed, but with a default value
+     * (value = 0 for a scalar, empty array for an array).
      *
-     * Ne fonctionne que pour les variables sans support.
+     * Only works for unsupported variables.
      */
     PDumpNull = (1 << 13)
   };
 
  public:
 
-  //! Tag utilisé pour indiquer si une variable sera post-traitée
+  //! Tag used to indicate if a variable will be post-processed
   static const char* TAG_POST_PROCESSING;
 
-  //! Tag utilisé pour indiquer si une variable sera post-traitée à cette itération
+  //! Tag used to indicate if a variable will be post-processed at this iteration
   static const char* TAG_POST_PROCESSING_AT_THIS_ITERATION;
 
  public:
@@ -183,102 +181,102 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
 
-  virtual ~IVariable() = default; //!< Libère les ressources
+  virtual ~IVariable() = default; //!< Frees resources
 
  public:
 
-  //! Sous-domaine associé à la variable (TODO rendre obsolète fin 2023)
+  //! Subdomain associated with the variable (TODO deprecate end of 2023)
   virtual ISubDomain* subDomain() = 0;
 
  public:
 
-  //! Gestionnaire de variable associé à la variable
+  //! Variable manager associated with the variable
   virtual IVariableMng* variableMng() const = 0;
 
-  //! Taille mémoire (en Koctet) utilisée par la variable
+  //! Memory size (in Bytes) used by the variable
   virtual Real allocatedMemory() const = 0;
 
-  //! Nom de la variable
+  //! Variable name
   virtual String name() const = 0;
 
-  //! Nom complet de la variable (avec le préfixe de la famille)
+  //! Full variable name (with family prefix)
   virtual String fullName() const = 0;
 
-  //! Type de la donnée gérée par la variable (Real, Integer, ...)
+  //! Data type managed by the variable (Real, Integer, ...)
   virtual eDataType dataType() const = 0;
 
   /*!
-   * \brief Genre des entités du maillage sur lequel repose la variable.
+   * \brief Kind of mesh entities on which the variable is based.
    *
-   * Pour les variables scalaire ou tableau, il n'y a pas de genre et la
-   * méthode retourne #IK_Unknown.
-   * Pour les autres variables, retourne le genre de l'élément de
-   * maillage (Node, Cell, ...), à savoir:
-   * - #IK_Node pour les noeuds
-   * - #IK_Edge pour les arêtes
-   * - #IK_Face pour les faces
-   * - #IK_Cell pour les mailles
-   * - #IK_Particle pour les particules
-   * - #IK_DoF pour les degrés de liberté
+   * For scalar or array variables, there is no kind, and the
+   * method returns #IK_Unknown.
+   * For other variables, it returns the kind of the mesh element (Node, Cell, ...), namely:
+   * - #IK_Node for nodes
+   * - #IK_Edge for edges
+   * - #IK_Face for faces
+   * - #IK_Cell for cells
+   * - #IK_Particle for particles
+   * - #IK_DoF for degrees of freedom
    */
   virtual eItemKind itemKind() const = 0;
 
   /*!
-   * \brief Dimension de la variable.
+   * \brief Dimension of the variable.
    *
-   * Les valeurs possibles sont les suivantes:
-   * - 0 pour une variable scalaire,.
-   * - 1 pour une variable tableau mono-dim ou variable scalaire du maillage.
-   * - 2 pour une variable tableau bi-dim ou variable tableau du maillage.
+   * The possible values are as follows:
+   * - 0 for a scalar variable.
+   * - 1 for a mono-dimensional array variable or a mesh scalar variable.
+   * - 2 for a bi-dimensional array variable or a mesh array variable.
    */
   virtual Integer dimension() const = 0;
 
   /*!
-   * \brief Indique si la variable est un tableau à taille multiple.
+   * \brief Indicates if the variable is a multi-sized array.
    *
-   * Cette valeur n'est utile que pour les tableaux 2D ou plus.
-   * - 0 pour une variable scalaire ou tableau 2D standard.
-   * - 1 pour une variable tableau 2D à taille multiple.
-   * - 2 pour une variable tableau 2D ancient format (obsolète).
+   * This value is only useful for 2D or higher arrays.
+   * - 0 for a scalar variable or standard 2D array.
+   * - 1 for a multi-sized 2D array variable.
+   * - 2 for an ancient format 2D array variable (obsolete).
    */
   virtual Integer multiTag() const = 0;
 
   /*!
-   * \brief Nombre d'éléments de la variable.
+   * \brief Number of elements of the variable.
    *
-   * Les valeurs retournées dépendent de la dimension de la variable:
-   * - pour une dimension 0, retourne 1,
-   * - pour une dimension 1, retourne le nombre d'éléments du tableau
-   * - pour une dimension 2, retourne le nombre total d'éléments en sommant
-   * le nombre d'éléments par dimension.
+   * The returned values depend on the dimension of the variable:
+   * - for dimension 0, returns 1,
+   * - for dimension 1, returns the number of elements in the array
+   * - for dimension 2, returns the total number of elements by summing
+   * the number of elements per dimension.
    */
   virtual Integer nbElement() const = 0;
 
-  //! Retourne les propriétés de la variable
+  //! Returns the properties of the variable
   virtual int property() const = 0;
 
-  //! Indique que les propriétés d'une des références à cette variable ont changé (interne)
+  //! Indicates that the properties of one of the references to this
+  //! variable have changed (internal)
   virtual void notifyReferencePropertyChanged() = 0;
 
   /*!
-   * \brief Ajoute une référence à cette variable
+   * \brief Adds a reference to this variable
    *
-   * \pre \a var_ref ne doit pas déjà référencer une variable.
+   * \pre \a var_ref must not already reference a variable.
    */
   virtual void addVariableRef(VariableRef* var_ref) = 0;
 
   /*!
-   * \brief Supprime une référence à cette variable
+   * \brief Removes a reference to this variable
    *
-   * \pre \a var_ref doit référencer cette variable (un appel à addVariableRef()
-   * doit avoir été effectué sur cette variable).
+   * \pre \a var_ref must reference this variable (an call to addVariableRef()
+   * must have been made on this variable).
    */
   virtual void removeVariableRef(VariableRef* var_ref) = 0;
 
-  //! Première réference (ou null) sur cette variable
+  //! First reference (or null) on this variable
   virtual VariableRef* firstReference() const = 0;
 
-  //! Nombre de références sur cette variable
+  //! Number of references on this variable
   virtual Integer nbReference() const = 0;
 
  public:
@@ -289,134 +287,131 @@ class ARCANE_CORE_EXPORT IVariable
  public:
 
   /*!
-   * \brief Positionne le nombre d'éléments pour une variable tableau.
+   * \brief Sets the number of elements for an array variable.
    *
-   * Lorsque la variable est du type tableau 1D ou 2D, positionne le nombre
-   * d'éléments du tableau à \a new_size. Pour un tableau 2D, c'est le
-   * nombre d'éléments de la première dimension qui est modifié.
+   * When the variable is a 1D or 2D array type, it sets the number
+   * of array elements to \a new_size. For a 2D array, the number
+   * of elements in the first dimension is modified.
    *
-   * Cette opération ne doit pas être appelée pour les variables du maillage
-   * car le nombre d'éléments est déterminé automatiquement en fonction du nombre
-   * d'entités du groupe sur lequel elle s'appuie. Pour ce type de variable,
-   * il faut appeler resizeFromGroup().
+   * This operation must not be called for mesh variables
+   * because the number of elements is determined automatically based on the number
+   * of entities in the group it relies on. For this type of variable,
+   * resizeFromGroup() must be called.
    *
-   * Cette opération synchronise les références (syncReferences()).
+   * This operation synchronizes the references (syncReferences()).
    */
   virtual void resize(Integer new_size) = 0;
 
   /*!
-   * \brief Positionne le nombre d'éléments pour une variable du maillage.
+   * \brief Sets the number of elements for a mesh variable.
    *
-   * Réalloue la taille de la variable du maillage à partir du groupe
-   * sur laquelle elle s'appuie.
+   * Reallocates the size of the mesh variable based on the group
+   * it relies on.
    *
-   * Cette opération n'a d'effet que pour les variables du maillage.
-   * Pour les autres, aucun action n'est effectuée.
+   * This operation only has an effect on mesh variables.
+   * For others, no action is performed.
    *
-   * Cette opération synchronise les références (syncReferences()).
+   * This operation synchronizes the references (syncReferences()).
    */
   virtual void resizeFromGroup() = 0;
 
   /*!
-   * \brief Libère l'éventuelle mémoire supplémentaire allouée pour
-   * les données.
+   * \brief Frees any additional memory allocated for the data.
    *
-   * Cette méthode n'est utilie que pour les variables non scalaires
+   * This method is only useful for non-scalar variables
    */
   virtual void shrinkMemory() = 0;
 
-  //! Positionne les informations sur l'allocation
+  //! Sets allocation information
   virtual void setAllocationInfo(const DataAllocationInfo& v) = 0;
 
-  //! Informations sur l'allocation
+  //! Allocation information
   virtual DataAllocationInfo allocationInfo() const = 0;
 
  public:
 
   /*!
-   * \brief Initialise la variable sur un groupe.
+   * \brief Initializes the variable on a group.
    *
-   * Initialise la variable avec la valeur \a value pour tous les éléments du
-   * groupe \a group.
+   * Initializes the variable with the value \a value for all elements of the
+   * group \a group.
 	 *
-   * Cette opération n'est utilisable qu'avec les variables de maillage.
+   * This operation is only usable with mesh variables.
 	 *
-   * \param group_name groupe. Il doit correspondre à un groupe existant
-   * du type de la variable (par exemple CellGroup pour une variable au maille).
-   * \param value valeur d'initialisation. La chaîne doit pouvoir être convertie
-   * en le type de la variable.
+   * \param group_name group. It must correspond to an existing group
+   * of the variable's type (e.g., CellGroup for a mesh variable).
+   * \param value initialization value. The string must be convertible
+   * to the variable's type.
    *
-   * \retval true en cas d'erreur ou si la variable n'est pas une variable du
-   * maillage.
-   * \retval false si l'initialisation est un succès.
+   * \retval true in case of error or if the variable is not a mesh variable.
+   * \retval false if the initialization is successful.
   */
   virtual bool initialize(const ItemGroup& group, const String& value) = 0;
 
-  //! @name Opérations de vérification
+  //! @name Verification Operations
   //@{
-  /*! \brief Vérifie si la variable est bien synchronisée.
+  /*! \brief Checks if the variable is properly synchronized.
    *
-   * Cette opération ne fonctionne que pour les variables de maillage.
+   * This operation only works for mesh variables.
    *
-   * Un variable est synchronisée lorsque ses valeurs sont les mêmes
-   * sur tous les sous-domaines à la fois sur les éléments propres et
-   * les éléments fantômes.
+   * A variable is synchronized when its values are the same
+   * across all subdomains, both on owned elements and ghost elements.
    *
-   * Pour chaque élément non synchronisé, un message est affiché.
+   * For each unsynchronized element, a message is displayed.
    * 
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
+   * \param max_print maximum number of messages to display.
+   * If 0, no element is displayed. If positive, display at most
+   * \a max_print elements. If negative, all elements are displayed.
    *
-   * \return le nombre de valeurs différentes de la référence
+   * \return the number of different reference values.
    */
   virtual Int32 checkIfSync(Integer max_print = 0) = 0;
 
-  /*! \brief Vérifie que la variable est identique à une valeur de référence
+  /*! \brief Checks that the variable is identical to a reference value
    *
-   * Cette opération vérifie que les valeurs de la variable sont identique
-   * à une valeur de référence qui est lu à partir du lecteur \a reader.
+   * This operation checks that the variable values are identical
+   * to a reference value read from the reader \a reader.
    *
-   * Pour chaque valeur différente de la référence, un message est affiché.
+   * For each value different from the reference, a message is displayed.
    *
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
-   * \param compare_ghost si vrai, compare les valeurs à la fois sur les entités
-   * propres et les entités fantômes. Sinon, ne fait la comparaison que sur les
-   * entités propres.
+   * \param max_print maximum number of messages to display.
+   * If 0, no element is displayed. If positive, display at most
+   * \a max_print elements. If negative, all elements are displayed.
+   * \param compare_ghost if true, compares values both on owned entities
+   * and ghost entities. Otherwise, it only compares on owned entities.
    *
-   * \return le nombre de valeurs différentes de la référence
+   * \return the number of different reference values.
    */
   virtual Int32 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost) = 0;
 
   /*!
-   * \brief Vérifie si la variable a les mêmes valeurs sur tous les réplicas.
+   * \brief Checks if the variable has the same values on all replicas.
+
    *
-   * Compare les valeurs de la variable avec celle du même sous-domaine
-   * des autres réplicas. Pour chaque élément différent,
-   * un message est affiché.
+   * Compare the variable's values with those of the same subdomain
+   * of other replicas. For each different element,
+   * a message is displayed.
    *
-   * Cette méthode est collective sur le même sous-domaine des autres réplica.
-   * Il ne faut donc l'appeler que si la variable existe sur tous les sous-domaines
-   * sinon cela provoque un blocage.
+   * This method is collective across the same subdomain as other replicas.
+   * Therefore, it should only be called if the variable exists on all subdomains
+   * otherwise it causes a blocking.
    *
-   * Cette méthode ne fonctionne que pour les variables sur les types numériques.
-   * Dans ce cas, elle renvoie une exception de type NotSupportedException.
+   * This method only works for variables of numeric types.
+   * In this case, it throws a NotSupportedException.
    *
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
-   * Pour chaque élément différent est affiché la valeur minimale et
-   * maximale.
+   * \param max_print maximum number of messages to display.
+   * If 0, no elements are displayed. If positive, displays at most
+   * \a max_print elements. If negative, all elements are displayed.
+   * For each different element, the minimum and
+   * maximum value is displayed.
    *
-   * \return le nombre de valeurs différentes de la référence.
+   * \return the number of different values of the reference.
    */
   virtual Int32 checkIfSameOnAllReplica(Integer max_print = 0) = 0;
   //@}
 
   /*!
-   * \brief Synchronise la variable.
+   * \brief Synchronizes the variable.
    *
    La synchronisation ne peut se faire que sur les variables du maillage.
    */
@@ -424,190 +419,190 @@ class ARCANE_CORE_EXPORT IVariable
 
   // TODO: à rendre virtuelle pure (décembre 2024)
   /*!
-   * \brief Synchronise la variable sur une liste d'entités.
+   * \brief Synchronizes the variable on a list of entities.
    *
-   * La synchronisation ne peut se faire que sur les variables du maillage.
-   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
-   * une entité présente dans cette liste sur un sous-domaine doit être présente
-   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   * Synchronization can only be performed on mesh variables.
+   * Only the entities listed in \a local_ids will be synchronized. Note:
+   * an entity present in this list on one subdomain must be present
+   * in this list for any other subdomain that possesses this entity.
    */
   virtual void synchronize(Int32ConstArrayView local_ids);
 
   /*!
-   * \brief Maillage auquel est associé la variable.
+   * \brief Mesh associated with the variable.
    *
-   * Cette opération n'est significative que pour les variables sur des
-   * entités du maillage.
+   * This operation is only meaningful for variables on
+   * mesh entities.
    */
   ARCCORE_DEPRECATED_2020("Use meshHandle() instead")
   virtual IMesh* mesh() const = 0;
 
   /*!
-   * \brief Maillage auquel est associé la variable.
+   * \brief Mesh associated with the variable.
    *
-   * Cette opération n'est significative que pour les variables sur des
-   * entités du maillage.
+   * This operation is only meaningful for variables on
+   * mesh entities.
    */
   virtual MeshHandle meshHandle() const = 0;
 
   /*!
-   * \brief Groupe du maillage associé.
+   * \brief Associated mesh group.
    *
-   * \return le groupe du maillage associé si pour une variable du maillage
-   * ou le groupe nul si la variable n'est pas une variable du maillage.
+   * \return the associated mesh group if for a mesh variable
+   * or the null group if the variable is not a mesh variable.
    *
-   * Si une variable n'est pas utilisée ou pas encore allouée,
-   * la valeur retournée est le group nul.
-   * Cependant, la variable peut quand même être associée à un groupe.
-   * Dans ce cas, il faut utiliser la fonction itemGroupName() pour
-   * récupérer le nom de ce groupe.
+   * If a variable is not used or not yet allocated,
+   * the returned value is the null group.
+   * However, the variable can still be associated with a group.
+   * In this case, you must use the itemGroupName() function to
+   * retrieve the name of this group.
    */
   virtual ItemGroup itemGroup() const = 0;
 
-  //! Nom du groupe d'entité associée.
+  //! Name of the associated entity group.
   virtual String itemGroupName() const = 0;
 
   /*!
-   * \brief Famille d'entité associée.
+   * \brief Associated entity family.
    *
-   * \return la famille associée à la variable ou 0
-   * si la variable n'a pas de famille.
+   * \return the family associated with the variable or 0
+   * if the variable has no family.
    *
-   * Si une variable n'est pas utilisée ou pas encore allouée,
-   * la valeur retournée est nulle.
-   * Cependant, la variable peut quand même être associée à une famille.
-   * Dans ce cas, il faut utiliser la fonction itemFamilyName() pour
-   * récupérer le nom de cette famille.
+   * If a variable is not used or not yet allocated,
+   * the returned value is null.
+   * However, the variable can still be associated with a family.
+   * In this case, you must use the itemFamilyName() function to
+   * retrieve the name of this family.
    */
   virtual IItemFamily* itemFamily() const = 0;
 
-  //! Nom de la famille associée (nul si aucune).
+  //! Name of the associated family (null if none).
   virtual String itemFamilyName() const = 0;
 
-  //! Nom du maillage associé (nul si aucun).
+  //! Name of the associated mesh (null if none).
   virtual String meshName() const = 0;
 
   /*!
-   * \brief Créé une instance contenant les meta-données de la variable.
+   * \brief Creates an instance containing the variable's metadata.
    *
-   * L'instance retournée doit être détruite par l'appel à l'opérateur delete.
+   * The returned instance must be destroyed by calling the delete operator.
    */
   ARCANE_DEPRECATED_REASON("Y2024: Use createMetaDataRef() instead")
   virtual VariableMetaData* createMetaData() const = 0;
 
-  //! Créé une instance contenant les meta-données de la variable.
+  //! Creates an instance containing the variable's metadata.
   virtual Ref<VariableMetaData> createMetaDataRef() const = 0;
 
   /*!
-   * \brief Synchronise les références.
+   * \brief Synchronizes references.
    *
-   * Synchronise les valeurs des références (VariableRef) à cette variable
-   * avec la valeur actuelle de la variable. Cette méthode est appelé
-   * automatiquement lorsqu'une variable scalaire est modifiée ou
-   * le nombre d'éléments d'une variable tableau change.
+   * Synchronizes the values of references (VariableRef) to this variable
+   * with the variable's current value. This method is called
+   * automatically when a scalar variable is modified or
+   * the number of elements of an array variable changes.
    */
   virtual void syncReferences() = 0;
 
  public:
 
   /*!
-   * \brief Positionne l'état d'utilisation de la variable
+   * \brief Sets the usage state of the variable
    *
-   * Si \v est faux, la variable devient inutilisable
-   * et toutes les ressources associées sont libérées.
+   * If \v is false, the variable becomes unusable
+   * and all associated resources are released.
    *
-   * Si \v est vrai, la variable est considérée comme utilisée et s'il s'agit
-   * d'une variable du maillage et que setItemGroup() n'a pas été appelé, la
-   * variable est allouée sur le groupe de toutes les entités.
+   * If \v is true, the variable is considered used and if it is
+   * a mesh variable and setItemGroup() has not been called, the
+   * variable is allocated to the group of all entities.
    */
   virtual void setUsed(bool v) = 0;
 
-  //! Etat d'utilisation de la variable
+  //! Usage state of the variable
   virtual bool isUsed() const = 0;
 
   /*!
-   * \brief Indique si la variable est partielle.
+   * \brief Indicates if the variable is partial.
    *
-   * Une variable est partielle lorsqu'elle n'est pas définie sur toutes les
-   * entités d'une famille. Dans ce cas, group()!=itemFamily()->allItems().
+   * A variable is partial when it is not defined on all
+   * entities of a family. In this case, group()!=itemFamily()->allItems().
    */
   virtual bool isPartial() const = 0;
 
  public:
 
   /*!
-   * \brief Copie les valeurs des entités numéros @a source dans les entités
-   * numéro @a destination
+   * \brief Copies the values of entities numbered @a source into entities
+   * numbered @a destination
    * 
-   * @note Cette opération est interne à Arcane et doit se faire en
-   * conjonction avec la famille d'entité correspondant à cette
+   * @note This operation is internal to Arcane and must be done in
+   * conjunction with the entity family corresponding to this
    * variable.
    * 
-   * @param source liste des @b localId source
-   * @param destination liste des @b localId destination
+   * @param source list of @b source localIds
+   * @param destination list of @b destination localIds
    */
   virtual void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) = 0;
 
   /*!
-   * \brief Copie les moyennes des valeurs des entités numéros
-   * @a first_source et @a second_source dans les entités numéros
+   * \brief Copies the mean values of entities numbered
+   * @a first_source and @a second_source into entities numbered
    * @a destination
    * 
-   * @param first_source liste des @b localId de la 1ère source
-   * @param second_source  liste des @b localId de la 2ème source
-   * @param destination  liste des @b localId destination
+   * @param first_source list of @b localIds of the 1st source
+   * @param second_source list of @b localIds of the 2nd source
+   * @param destination list of @b destination localIds
    */
   virtual void copyItemsMeanValues(Int32ConstArrayView first_source,
                                    Int32ConstArrayView second_source,
                                    Int32ConstArrayView destination) = 0;
 
   /*!
-   * \brief Compacte les valeurs de la variable.
+   * \brief Compresses the variable's values.
    *
-   * Cette opération est interne à Arcane et doit se faire en
-   * conjonction avec la famille d'entité correspondant à cette
+   * This operation is internal to Arcane and must be done in
+   * conjunction with the entity family corresponding to this
    * variable.
    */
   virtual void compact(Int32ConstArrayView new_to_old_ids) = 0;
 
-  //! pH : EXPERIMENTAL
+  //! pH: EXPERIMENTAL
   virtual void changeGroupIds(Int32ConstArrayView old_to_new_ids) = 0;
 
  public:
 
-  //! Données associées à la variable
+  //! Data associated with the variable
   virtual IData* data() = 0;
 
-  //! Données associées à la variable
+  //! Data associated with the variable
   virtual const IData* data() const = 0;
 
-  //! Fabrique de données associées à la variable
+  //! Data factory associated with the variable
   virtual IDataFactoryMng* dataFactoryMng() const = 0;
 
-  //! @name Opérations de sérialisation
+  //! @name Serialization operations
   //@{
-  /*! Sérialize la variable.
+  /*! Serializes the variable.
    *
-   * L'opération \a opération n'est significative qu'en lecture (ISerializer::ModeGet)
+   * The \a operation is only meaningful in read mode (ISerializer::ModeGet)
    */
   virtual void serialize(ISerializer* sbuffer, IDataOperation* operation = 0) = 0;
 
   /*!
-   * \brief Sérialize la variable pour les identifiants \a ids.
+   * \brief Serializes the variable for identifiers \a ids.
    *
-   * La sérialisation dépend de la dimension de la variable.
-   * Pour les variables scalaires (dimension=0), rien n'est fait.
-   * Pour les variables tableaux ou du maillage, \a ids correspond a un tableau
-   * d'indirection de la première dimension.
+   * Serialization depends on the variable's dimension.
+   * For scalar variables (dimension=0), nothing is done.
+   * For array or mesh variables, \a ids corresponds to an array
+   * of first dimension indirection.
    *
-   * L'opération \a opération n'est significative qu'en lecture (ISerializer::ModeGet)
+   * The \a operation is only meaningful in read mode (ISerializer::ModeGet)
    */
   virtual void serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operation = 0) = 0;
 
   /*!
-   * \brief Sauve la variable
+   * \brief Saves the variable
    *
-   * \deprecated A remplacer par le code suivant:
+   * \deprecated Should be replaced by the following code:
    * \code
    * IVariable* var;
    * var->notifyBeginWrite();
@@ -617,9 +612,9 @@ class ARCANE_CORE_EXPORT IVariable
   virtual ARCANE_DEPRECATED_2018 void write(IDataWriter* writer) = 0;
 
   /*!
-   * Relit la variable.
+   * Reads the variable.
    *
-   * \deprecated A remplacer par le code suivant:
+   * \deprecated Should be replaced by the following code:
    * \code
    * IVariable* var;
    * reader->read(var,var->data());
@@ -629,77 +624,77 @@ class ARCANE_CORE_EXPORT IVariable
   virtual ARCANE_DEPRECATED_2018 void read(IDataReader* reader) = 0;
 
   /*!
-   * \brief Notifie de la modification externe de data().
+   * \brief Notifies of external modification of data().
    *
-   * Signale à l'instance la fin d'une opération de lecture qui a modifié
-   * data(). Cette méthode doit donc être appelée dès qu'on a effectué
-   * une modication de data(). Cette méthode déclenche les observables enregistrés
-   * dans readObservable().
+   * Signals to the instance the end of a read operation that modified
+   * data(). This method must therefore be called as soon as a modification of
+   * data() has been performed. This method triggers the observables registered
+   * in readObservable().
    */
   virtual void notifyEndRead() = 0;
 
   /*!
-   * \brief Notifie du début d'écriture de data().
+   * \brief Notifies of the start of writing data().
    *
-   * Cette méthode déclenche les observables enregistrés
-   * dans writeObservable().
+   * This method triggers the observables registered
+   * in writeObservable().
    */
   virtual void notifyBeginWrite() = 0;
 
   /*!
-   * \brief Observable en écriture.
+   * \brief Write observable.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * avant d'écrire la variable (opération write()).
+   * The observers registered in this observable are called
+   * before writing the variable (write operation).
    */
   virtual IObservable* writeObservable() = 0;
 
-  /*! \brief Observable en lecture.
+  /*! \brief Read observable.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * après avoir lu la variable (opération read).
+   * The observers registered in this observable are called
+   * after reading the variable (read operation).
    */
   virtual IObservable* readObservable() = 0;
 
-  /*! \brief Observable en redimensionnement.
+  /*! \brief Size change observable.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * lorsque le nombre d'éléments de la variable change.
-   * C'est le cas par exemple après un remaillage pour une variable aux mailles
+   * The observers registered in this observable are called
+   * when the number of elements of the variable changes.
+   * This is the case, for example, after a remeshing for a mesh variable
    */
   virtual IObservable* onSizeChangedObservable() = 0;
   //@}
 
-  //@{ @name Gestion des tags
-  //! Ajoute le tag \a tagname avev la valeur \a tagvalue
+  //@{ @name Tag Management
+  //! Adds the tag \a tagname with the value \a tagvalue
   virtual void addTag(const String& tagname, const String& tagvalue) = 0;
-  /*! \brief Supprime le tag \a tagname
+  /*! \brief Removes the tag \a tagname
    *
-   * Si le tag \a tagname n'est pas dans la liste, rien ne se passe.
+   * If the tag \a tagname is not in the list, nothing happens.
    */
   virtual void removeTag(const String& tagname) = 0;
-  //! \a true si la variable possède le tag \a tagname
+  //! \a true if the variable has the tag \a tagname
   virtual bool hasTag(const String& tagname) = 0;
-  //! Valeur du tag \a tagname. La chaîne est nulle si le tag n'existe pas.
+  //! Value of the tag \a tagname. The string is null if the tag does not exist.
   virtual String tagValue(const String& tagname) = 0;
   //@}
 
  public:
 
-  //! Imprime les valeurs de la variable sur le flot \a o
+  //! Prints the variable's values to the stream \a o
   virtual void print(std::ostream& o) const = 0;
 
  public:
 
-  //! @name Gestion des dépendances
+  //! @name Dependency Management
   //@{
   /*!
-   * \brief Recalcule la variable si nécessaire
+   * \brief Recalculates the variable if necessary
    *
-   * Par le mécanisme de dépendances, cette opération est appelée récursivement
-   * sur toutes les variables dont dépend l'instance. La fonction de recalcul
-   * computeFunction() est ensuite appelée s'il s'avère qu'une des variables
-   * dont elle dépend a été modifiée plus récemment.
+   * Through the dependency mechanism, this operation is called recursively
+   * on all variables that the instance depends on. The recalculation function
+   * computeFunction() is then called if it turns out that one of the variables
+   * it depends on has been modified more recently.
    *
    * \pre computeFunction() != 0
    */
@@ -707,43 +702,42 @@ class ARCANE_CORE_EXPORT IVariable
 
   virtual void update(Real wanted_time) = 0;
 
-  /*! \brief Indique que la variable vient d'être mise à jour.
+  /*! \brief Indicates that the variable has just been updated.
    *
-   * Pour une gestion correcte des dépendances, il faut que cette propriété
-   * soit appelée toutes les fois où la mise à jour d'une variable a été
-   * effectuée.
+   * For correct dependency management, this property
+   * must be called every time a variable has been updated.
    */
   virtual void setUpToDate() = 0;
 
-  //! Temps auquel la variable a été mise à jour
+  //! Time when the variable was updated
   virtual Int64 modifiedTime() = 0;
 
-  //! Ajoute \a var à la liste des dépendances
+  //! Adds \a var to the list of dependencies
   virtual void addDepend(IVariable* var, eDependType dt) = 0;
 
-  //! Ajoute \a var à la liste des dépendances avec les infos de trace \a tinfo
+  //! Adds \a var to the list of dependencies with trace info \a tinfo
   virtual void addDepend(IVariable* var, eDependType dt, const TraceInfo& tinfo) = 0;
 
-  /*! \brief Supprime \a var de la liste des dépendances
+  /*! \brief Removes \a var from the list of dependencies
    */
   virtual void removeDepend(IVariable* var) = 0;
 
   /*!
-   * \brief Positionne la fonction de recalcul de la variable.
+   * \brief Sets the variable's recalculation function.
    *
-   * La fonction spécifiée \a v doit être allouée via l'opérateur new.
-   * Si une fonction de recalcule existait déjà, elle est détruite
-   * (via l'opérateur delete) et remplacée par celle-ci.
+   * The specified function \a v must be allocated via the new operator.
+   * If a recalculation function already existed, it is destroyed
+   * (via the delete operator) and replaced by this one.
    */
   virtual void setComputeFunction(IVariableComputeFunction* v) = 0;
 
-  //! Fonction utilisée pour mettre à jour la variable
+  //! Function used to update the variable
   virtual IVariableComputeFunction* computeFunction() = 0;
 
   /*!
-   * \brief Infos de dépendances.
+   * \brief Dependency information.
    *
-   * Remplit le tableau \a infos avec les infos de dépendance.
+   * Fills the array \a infos with dependency information.
    */
   virtual void dependInfos(Array<VariableDependInfo>& infos) = 0;
   //@}
@@ -754,27 +748,27 @@ class ARCANE_CORE_EXPORT IVariable
   virtual IMemoryAccessTrace* memoryAccessTrace() const = 0;
 
   /*!
-   * \brief Indique que la variable est synchronisée.
+   * \brief Indicates that the variable is synchronized.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void setIsSynchronized() = 0;
 
   /*!
-   * \brief Indique que la variable est synchronisée sur le group \a item_group
+   * \brief Indicates that the variable is synchronized on the group \a item_group
    *
-   * Cette opération est collective.
+   * This operation is collective.
    */
   virtual void setIsSynchronized(const ItemGroup& item_group) = 0;
 
  public:
 
-  //! Incrémente le compteur de modification et retourne sa valeur avant modification
+  //! Increments the modification counter and returns its value before modification
   static Int64 incrementModifiedTime();
 
  public:
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   virtual IVariableInternal* _internalApi() = 0;
 };
 
@@ -786,4 +780,4 @@ class ARCANE_CORE_EXPORT IVariable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

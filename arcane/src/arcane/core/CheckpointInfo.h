@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CheckpointInfo.h                                            (C) 2000-2018 */
 /*                                                                           */
-/* Informations sur une protection.                                          */
+/* Checkpoint information.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CHECKPOINTINFO_H
 #define ARCANE_CHECKPOINTINFO_H
@@ -27,8 +27,9 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une protection.
+ * \brief Information about a checkpoint.
  */
 class ARCANE_CORE_EXPORT CheckpointInfo
 {
@@ -65,7 +66,7 @@ class ARCANE_CORE_EXPORT CheckpointInfo
   Int32 replicationRank() const { return m_replication_rank; }
   void setReplicationRank(Int32 v) { m_replication_rank = v; }
 
-  //! Indique s'il s'agit d'une reprise
+  //! Indicates if it is a restart
   bool isRestart() const { return m_is_restart; }
   void setIsRestart(bool v) { m_is_restart = v; }
 
@@ -85,8 +86,9 @@ class ARCANE_CORE_EXPORT CheckpointInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de relecture d'une protection.
+ * \brief Checkpoint reading information.
  */
 class CheckpointReadInfo
 {
@@ -113,5 +115,4 @@ class CheckpointReadInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

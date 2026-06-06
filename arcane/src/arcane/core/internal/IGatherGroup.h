@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IGatherGroup.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Interface pour gérer les regroupements sur un nombre restreint de         */
-/* sous-domaines.                                                            */
+/* Interface for managing groupings across a limited number of subdomains.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,8 +29,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Interface de classe permettant de regrouper les données de certains
- * sous-domaines sur d'autres sous-domaines.
+ * \brief Interface class allowing the grouping of data from certain
+ * subdomains onto other subdomains.
  */
 class ARCANE_CORE_EXPORT IGatherGroup
 {
@@ -43,27 +42,23 @@ class ARCANE_CORE_EXPORT IGatherGroup
  public:
 
   /*!
-   * \brief Méthode permettant de savoir si l'on doit effectuer le
-   * regroupement ou si l'on peut directement écrire les données.
+   * \brief Method allowing determination of whether the grouping needs to be performed or if the data can be written directly.
    *
-   * Appel non collectif, mais la valeur retournée sera la même pour tous les
-   * appelants.
+   * Non-collective call, but the returned value will be the same for all callers.
    *
-   * L'appel à gatherToMasterIO() peut tout de même être effectué, le tableau
-   * \a in sera simplement copié dans le tableau \a out.
+   * The call to gatherToMasterIO() can still be made; the array \a in will simply be copied into the array \a out.
    */
   virtual bool isNeedGather() = 0;
 
   /*!
-   * \brief Méthode permettant de regrouper les données de plusieurs
-   * sous-domaines sur un ou plusieurs sous-domaines.
+   * \brief Method allowing the grouping of data from multiple
+   * subdomains onto one or more subdomains.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \param sizeof_elem La taille d'un élément.
-   * \param in Notre tableau que l'on souhaite regrouper.
-   * \param out Le tableau regroupé. Si l'on n'est pas écrivain, il n'y aura
-   * aucune modification.
+   * \param sizeof_elem The size of an element.
+   * \param in Our array that we wish to group.
+   * \param out The grouped array. If we are not a writer, there will be no modification.
    */
   virtual void gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out) = 0;
 };
@@ -72,8 +67,8 @@ class ARCANE_CORE_EXPORT IGatherGroup
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Interface de classe permettant de calculer et de conserver les
- * informations de regroupements.
+ * \brief Interface class allowing the calculation and storage of grouping
+ * information.
  */
 class ARCANE_CORE_EXPORT IGatherGroupInfo
 {
@@ -84,53 +79,52 @@ class ARCANE_CORE_EXPORT IGatherGroupInfo
  public:
 
   /*!
-   * \brief Méthode permettant de calculer les informations de regroupements.
+   * \brief Method allowing the calculation of grouping information.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Un second appel à cette méthode n'aura pas d'effet, sauf en cas d'appel à
-   * la méthode \a needRecompute() avant.
+   * A second call to this method will have no effect, unless the method
+   * \a needRecompute() was called beforehand.
    *
-   * \param nb_elem_in Le nombre d'éléments que notre sous-domaine souhaite
-   * envoyer au maitre.
+   * \param nb_elem_in The number of elements that our subdomain wishes to
+   * send to the master.
    */
   virtual void computeSize(Int32 nb_elem_in) = 0;
 
   /*!
-   * \brief Méthode permettant de demander un recalcul des informations de
-   * regroupements. Pour cela, il faudra rappeler la méthode \a computeSize().
+   * \brief Method allowing a request for recalculation of grouping information.
+   * To do this, the method \a computeSize() must be called again.
    */
   virtual void setNeedRecompute() = 0;
 
   /*!
-   * \brief Méthode permettant de savoir si la méthode \a computeSize() a déjà
-   * été appelée.
+   * \brief Method allowing determination of whether the method \a computeSize()
+   * has already been called.
    */
   virtual bool isComputed() = 0;
 
   /*!
-   * \brief Méthode permettant de connaitre le nombre d'éléments que notre
-   * sous-domaine devra traiter après réception.
+   * \brief Method allowing knowledge of the number of elements that our
+   * subdomain must process after reception.
    */
   virtual Int32 nbElemOutput() = 0;
 
   /*!
-   * \brief Méthode permettant de connaitre la taille, en octet, de l'ensemble
-   * des éléments que notre sous-domaine devra traiter après réception.
+   * \brief Method allowing knowledge of the size, in bytes, of the set of
+   * elements that our subdomain must process after reception.
    *
-   * \param sizeof_type La taille d'un élément.
+   * \param sizeof_type The size of an element.
    */
   virtual Int32 sizeOfOutput(Int32 sizeof_type) = 0;
 
   /*!
-   * \brief Méthode permettant de connaitre le nombre d'éléments que vont nous
-   * envoyer chaque sous-domaine tier.
+   * \brief Method allowing knowledge of the number of elements that each
+   * third-party subdomain will send to us.
    */
   virtual SmallSpan<Int32> nbElemRecvGatherToMasterIO() = 0;
 
   /*!
-   * \brief Méthode pemettant de connaitre le nombre de sous-domaines
-   * écrivains.
+   * \brief Method allowing knowledge of the number of writing subdomains.
    */
   virtual Int32 nbWriterGlobal() = 0;
 };

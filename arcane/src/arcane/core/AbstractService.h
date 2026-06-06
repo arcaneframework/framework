@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AbstractService.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un service.                                              */
+/* Base class of a service.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ABSTRACTSERVICE_H
 #define ARCANE_CORE_ABSTRACTSERVICE_H
@@ -27,10 +27,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un service.
+ * \brief Base class of a service.
  *
- * Cette classe est LA classe d'implémentation bas niveau de l'interface \a IService.
+ * This class is THE low-level implementation class for the \a IService interface.
  *
  * \ingroup Service
  */
@@ -40,32 +41,32 @@ class ARCANE_CORE_EXPORT AbstractService
 {
  protected:
 
-  //! Constructeur à partir d'un \a ServiceBuildInfo
+  //! Constructor from a \a ServiceBuildInfo
   explicit AbstractService(const ServiceBuildInfo&);
 
  public:
 
-  //! Destructeur
+  //! Destructor
   ~AbstractService() override;
 
  public:
 
   /*!
-   * \brief Construction de niveau \a build du service.
+   * \brief Build-level construction of the service.
    *
-   * Cette méthode est appelé juste après le constructeur.
+   * This method is called right after the constructor.
    */
   virtual void build() {}
 
  public:
 
-  //! Accès aux informations du service.  Voir \a IServiceInfo pour les détails
+  //! Access to service information. See \a IServiceInfo for details
   IServiceInfo* serviceInfo() const override { return m_service_info; }
 
-  //! Accès à l'interface de base des principaux objets Arcane
+  //! Access to the base interface of main Arcane objects
   IBase* serviceParent() const override { return m_parent; }
 
-  //! Retourne l'interface bas niveau \a IService du service
+  //! Returns the low-level \a IService interface of the service
   IService* serviceInterface() override { return this; }
 
  private:

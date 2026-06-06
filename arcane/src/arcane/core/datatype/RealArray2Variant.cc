@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RealArray2Variant.cc                                        (C) 2000-2023 */
 /*                                                                           */
-/* Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.   */
+/* Variant that can contain the types ConstArray2View, Real2x2, and Real3x3. */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,7 +32,7 @@ namespace Arcane
 extern "C++" ARCANE_CORE_EXPORT void
 _arcaneTestRealArray2Variant()
 {
-  // NOTE: Les dimensions max pour un RealArray2Variant sont 3x3.
+  // NOTE: The max dimensions for a RealArray2Variant are 3x3.
   Real data[4] = {2.4, 5.6,3.3, 4.4};
   ConstArray2View<Real> a(data, 2, 2);
   Real2x2 a22{ Real2{ -1.0, -2.5 }, Real2{ -2.0, 3.7 } };

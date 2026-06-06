@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NodesOfItemReorderer.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Classe utilitaire pour réordonner les noeuds d'une entité.                */
+/* Utility class for reordering the nodes of an entity.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,24 +26,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner avec la version d'ordre 1
-// Seulement implémenté pour les arêtes
+
+// TODO: merge with the order 1 version
+// Only implemented for edges
 bool NodesOfItemReorderer::
 _reorderOrder3(ConstArrayView<Int64> nodes_uid,
                ArrayView<Int64> sorted_nodes_uid,
                [[maybe_unused]] bool has_center_node)
 {
-  // \a true s'il faut réorienter les faces pour que leur orientation
-  // soit indépendante du partitionnement du maillage initial.
+  // \a true if faces need to be reoriented so that their orientation
+  // is independent of the initial mesh partitioning.
 
   Int32 nb_node = nodes_uid.size();
 
-  // Traite uniquement le cas des arêtes d'ordre 3 qui ont donc 4 noeuds
+  // Only handles the case of order 3 edges, which therefore have 4 nodes
   if (nb_node != 4)
     ARCANE_THROW(NotImplementedException, "Node reordering for 2D type of order 3 or more");
 
   if (nodes_uid[0] < nodes_uid[1]) {
-    // Rien à faire
+    // Nothing to do
     sorted_nodes_uid[0] = nodes_uid[0];
     sorted_nodes_uid[1] = nodes_uid[1];
     sorted_nodes_uid[2] = nodes_uid[2];
@@ -59,19 +60,20 @@ _reorderOrder3(ConstArrayView<Int64> nodes_uid,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner avec la version d'ordre 1
+
+// TODO: merge with the order 1 version
 bool NodesOfItemReorderer::
 _reorderOrder2(ConstArrayView<Int64> nodes_uid,
                ArrayView<Int64> sorted_nodes_uid, bool has_center_node)
 {
-  // \a true s'il faut réorienter les faces pour que leur orientation
-  // soit indépendante du partitionnement du maillage initial.
+  // \a true if faces need to be reoriented so that their orientation
+  // is independent of the initial mesh partitioning.
   bool need_swap_orientation = false;
   Int32 min_node_index = 0;
 
   Int32 nb_node = nodes_uid.size();
 
-  // Traite directement le cas des arêtes d'ordre 2
+  // Directly handles the case of order 2 edges
   if (nb_node == 3) {
     if (nodes_uid[0] < nodes_uid[1]) {
       sorted_nodes_uid[0] = nodes_uid[0];
@@ -84,28 +86,28 @@ _reorderOrder2(ConstArrayView<Int64> nodes_uid,
     sorted_nodes_uid[2] = nodes_uid[2];
     return true;
   }
-  // S'il y a un nœud central, c'est le dernier nœud de la liste
-  // et il ne faut pas le trier
-  // NOTE : Dans ce cas le nombre de noeuds de l'entité est impair.
+  // If there is a center node, it is the last node in the list
+  // and it should not be sorted
+  // NOTE: In this case, the number of nodes in the entity is odd.
   if (has_center_node)
     sorted_nodes_uid[nb_node - 1] = nodes_uid[nb_node - 1];
 
-  // A l'ordre 2, si on a N noeuds, il ne faut tester les N/2 premiers noeuds
-  // TODO: utiliser les informations de type.
+  // For order 2, if we have N nodes, we only need to test the first N/2 nodes
+  // TODO: use type information.
   nb_node = nb_node / 2;
 
-  // L'algorithme suivant oriente les faces en tenant compte uniquement
-  // de l'ordre de la numérotation de ces noeuds. Si cet ordre est
-  // conservé lors du partitionnement, alors l'orientation des faces
-  // sera aussi conservée.
+  // The following algorithm orients the faces by taking into account only
+  // the order of the numbering of these nodes. If this order is
+  // preserved during partitioning, then the orientation of the faces
+  // will also be preserved.
 
-  // L'algorithme est le suivant:
-  // - Recherche le noeud n de plus petit indice.
-  // - Recherche n-1 et n+1 les indices de ses 2 noeuds voisins.
-  // - Si (n+1) est inférieur à (n-1), l'orientation n'est pas modifiée.
-  // - Si (n+1) est supérieur à (n-1), l'orientation est inversée.
+  // The algorithm is as follows:
+  // - Finds node n with the smallest index.
+  // - Finds n-1 and n+1, the indices of its 2 neighboring nodes.
+  // - If (n+1) is less than (n-1), the orientation n is not modified.
+  // - If (n+1) is greater than (n-1), the orientation is inverted.
 
-  // Recherche le noeud de plus petit indice
+  // Finds the node with the smallest index
 
   Int64 min_node = INT64_MAX;
   for (Integer k = 0; k < nb_node; ++k) {
@@ -119,9 +121,9 @@ _reorderOrder2(ConstArrayView<Int64> nodes_uid,
   Int64 prev_node = nodes_uid[(min_node_index + (nb_node - 1)) % nb_node];
   Integer incr = 0;
   Integer incr2 = 0;
-  // Teste le cas où les noeuds précédents ou suivant
-  // sont les mêmes que le noeud de plus petit uniqueId().
-  // (dans ce cas l'entité est semi-dégénérée)
+  // Tests the case where the previous or next nodes
+  // are the same as the node with the smallest uniqueId().
+  // (in this case, the entity is semi-degenerate)
   {
     if (next_node == min_node) {
       next_node = nodes_uid[(min_node_index + (nb_node + 2)) % nb_node];

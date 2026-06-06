@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* UnstructuredMeshConnectivity.h                              (C) 2000-2025 */
 /*                                                                           */
-/* Informations de connectivité d'un maillage non structuré.                 */
+/* Connectivity information for an unstructured mesh.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_UNSTRUCTUREDMESHCONNECTIVITY_H
 #define ARCANE_CORE_UNSTRUCTUREDMESHCONNECTIVITY_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les connectivités standards d'un maillage non structuré.
+ * \brief View of the standard connectivities of an unstructured mesh.
  *
- * Il faut appeler setMesh() avant d'utiliser les méthodes de cette classe.
- * La méthode setMesh() doit être appelée si la cardinalité du maillage évolue.
+ * setMesh() must be called before using the methods of this class.
+ * The setMesh() method must be called if the mesh cardinality changes.
  */
 class ARCANE_CORE_EXPORT UnstructuredMeshConnectivityView
 {
@@ -104,4 +105,4 @@ class ARCANE_CORE_EXPORT UnstructuredMeshConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

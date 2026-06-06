@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivityContainerView.cc                            (C) 2000-2022 */
 /*                                                                           */
-/* Vues sur les conteneurs contenant les connectivités.                      */
+/* Views on containers containing connectivities.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ checkSame(ItemConnectivityContainerView rhs) const
 void ItemConnectivityContainerView::
 _checkSize(Int32 indexes_size, Int32 nb_connected_item_size)
 {
-  // La valeur de 'nb_connected_item_size' doit être égale à 'indexes_size'
+  // The value of 'nb_connected_item_size' must be equal to 'indexes_size'
   if (indexes_size!=nb_connected_item_size)
     ARCANE_FATAL("Bad sizes indexes_size={0} nb_connected_item_size={1}",
                  indexes_size,nb_connected_item_size);

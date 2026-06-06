@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinVariable.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Classes permettant d'exploiter l'objet MachineShMemWinVariable pointé de  */
-/* la zone mémoire des variables en mémoire partagée.                        */
+/* Classes enabling the use of the MachineShMemWinVariable object pointed    */
+/* to by the shared memory variable area.                                    */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/core/MachineShMemWinVariable.h"
@@ -411,7 +411,7 @@ updateVariable()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Macro pour instantier une classe template pour tous les types numériques, tous les items.
+// Macro to instantiate a template class for all numeric data types, all items.
 #define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE_WITH_ITEM1(class_name, item) \
   template class ARCANE_TEMPLATE_EXPORT class_name<item, Real>; \
   template class ARCANE_TEMPLATE_EXPORT class_name<item, Real3>; \
@@ -452,7 +452,7 @@ template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDD
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim2>;
 template class ARCANE_TEMPLATE_EXPORT MachineShMemWinMDVariableT<Cell, Real, MDDim3>;
 
-// Instantie explicitement pour vérifier la compilation
+// Explicit instantiation to check compilation
 template class MachineShMemWinMeshMDVariableT<Cell, Real, MDDim1>;
 template class MachineShMemWinMeshMDVariableT<Cell, Real, MDDim2>;
 template class MachineShMemWinMeshMDVariableT<Cell, Real, MDDim3>;

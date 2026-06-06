@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemEnumerator.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Enumérateur sur des groupes d'entités du maillage.                        */
+/* Enumerator over groups of mesh entities.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -70,7 +70,7 @@ arcaneSetSingletonItemEnumeratorTracer(Ref<IItemEnumeratorTracer> tracer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Pour tester la validité des instantiations
+// For testing the validity of instantiations
 
 template class ItemVectorViewConstIteratorT<Cell>;
 template class ItemVectorViewT<Cell>;

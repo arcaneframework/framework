@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemRefinementPattern.cc                                    (C) 2000-2020 */
 /*                                                                           */
-/* Fonctions utilitaires pour AMR.                                           */
+/* Utility functions for AMR.                                                */
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemRefinementPattern.h"
@@ -21,7 +21,7 @@ namespace Arcane
 const Real Quad4RefinementPattern4Quad::
 _refine_matrix[4][4][4] =
   { /* const */
-    // matrice pour l'enfant 0
+    // matrix for child 0
     {
       // 0 1 2 3
       {1.0, 0.0, 0.0, 0.0}, // 0
@@ -29,7 +29,7 @@ _refine_matrix[4][4][4] =
       {.25, .25, .25, .25}, // 2
       {0.5, 0.0, 0.0, 0.5} // 3
     },
-    // matrice pour l'enfant 1
+    // matrix for child 1
     {
       // 0 1 2 3
       {0.5, 0.5, 0.0, 0.0}, // 0
@@ -37,7 +37,7 @@ _refine_matrix[4][4][4] =
       {0.0, 0.5, 0.5, 0.0}, // 2
       {.25, .25, .25, .25} // 3
     },
-    // matrice pour l'enfant 2
+    // matrix for child 2
     {
       // 0 1 2 3
       {0.5, 0.0, 0.0, 0.5}, // 0
@@ -45,7 +45,7 @@ _refine_matrix[4][4][4] =
       {0.0, 0.0, 0.5, 0.5}, // 2
       {0.0, 0.0, 0.0, 1.0} // 3
     },
-    // matrice pour l'enfant 3
+    // matrix for child 3
     {
       // 0 1 2 3
       {.25, .25, .25, .25}, // 0
@@ -55,7 +55,7 @@ _refine_matrix[4][4][4] =
     }
   };
 
-// TODO: à vérifier car non testé
+// TODO: to be checked because it is not tested
 const Integer Quad4RefinementPattern4Quad::
 _face_mapping[4][4] =
   {
@@ -80,13 +80,13 @@ _face_mapping_topo[4][4] =
 /*---------------------------------------------------------------------------*/
 
 const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
-		// Les 8 enfants de type Hexa peuvent être considérés comme étant associé
-		// aux 8 sommets du Hexa.  Certains des enfants sont numérotés comme
-		// leur sommet correspondant, alors que les autres ne le sont pas.
-		// Les enfants qui sont numérotés différemment ont été marqués avec **
-		// dans les commentaires ci-dessous.
+		// The 8 Hexa-type children can be considered associated with the 8
+		// vertices of the Hexahedron. Some of the children are numbered
+		// according to their corresponding vertex, while others are not.
+		// Children that are numbered differently have been marked with ** in
+		// the comments below.
 
-		// refine_matrix pour l'enfant 0 (l'enfant 0 is associé au noeud 0)
+		// refine_matrix for child 0 (child 0 is associated with node 0)
 		{
 				//  0     1     2     3     4     5     6     7
 				{ 1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0}, // 0
@@ -99,7 +99,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{ .25,  0.0,  0.0,  .25,  .25,  0.0,  0.0,  .25}  // 7
 		},
 
-		// refine_matrix pour l'enfant 1 (enfant 1 est associé au noeud 1)
+		// refine_matrix for child 1 (child 1 is associated with node 1)
 		{
 				//  0     1     2     3     4     5     6     7
 				{ 0.5,  0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0}, // 0
@@ -112,7 +112,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{.125, .125, .125, .125, .125, .125, .125, .125}  // 7
 		},
 
-		// refine_matrix pour l'enfant 2 (enfant 2 est associé au noeud 3**)
+		// refine_matrix for child 2 (child 2 is associated with node 3**)
 		{
 				//  0      1    2     3     4     5     6     7
 				{ 0.5,  0.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0}, // 0
@@ -125,7 +125,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{ 0.0,  0.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.5}  // 7
 		},
 
-		// refine_matrix pour l'enfant 3 (enfant 3 est associé au noeud 2**)
+		// refine_matrix for child 3 (child 3 is associated with node 2**)
 		{
 				//  0      1    2     3     4     5     6     7
 				{ .25,  .25,  .25,  .25,  0.0,  0.0,  0.0,  0.0}, // 0
@@ -138,7 +138,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{ 0.0,  0.0,  .25,  .25,  0.0,  0.0,  .25,  .25}  // 7
 		},
 
-		// refine_matrix pour enfant 4 (enfant 4 est associé au neoud 4)
+		// refine_matrix for child 4 (child 4 is associated with node 4)
 		{
 				//  0      1    2     3     4     5     6     7
 				{ 0.5,  0.0,  0.0,  0.0,  0.5,  0.0,  0.0,  0.0}, // 0
@@ -151,7 +151,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{ 0.0,  0.0,  0.0,  0.0,  0.5,  0.0,  0.0,  0.5}  // 7
 		},
 
-		// refine_matrix pour enfant 5 (enfant 5 est associé au noeud 5)
+		// refine_matrix for child 5 (child 5 is associated with node 5)
 		{
 				//  0      1    2     3     4     5     6     7
 				{ .25,  .25,  0.0,  0.0,  .25,  .25,  0.0,  0.0}, // 0
@@ -164,7 +164,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{ 0.0,  0.0,  0.0,  0.0,  .25,  .25,  .25,  .25}  // 7
 		},
 
-		// refine_matrix pour enfant 6 (enfant 6 est associé au noeud 7**)
+		// refine_matrix for child 6 (child 6 is associated with node 7**)
 		{
 				//  0      1    2     3     4     5     6     7
 				{ .25,  0.0,  0.0,  .25,  .25,  0.0,  0.0,  .25}, // 0
@@ -177,7 +177,7 @@ const Real HexRefinementPattern8Hex ::_refine_matrix[8][8][8] = { /* const */
 				{ 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0}  // 7
 		},
 
-		// refine_matrix pour l'enfant 7 (enfant 7 est associé au noeud 6**)
+		// refine_matrix for child 7 (child 7 is associated with node 6**)
 		{
 				//  0      1    2     3     4     5     6     7
 				{.125, .125, .125, .125, .125, .125, .125, .125}, // 0
@@ -219,7 +219,7 @@ const Integer HexRefinementPattern8Hex ::_face_mapping_topo[8][6] = {
 /*---------------------------------------------------------------------------*/
 
 const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const */
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 			{ 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 0
 			{ 0.666, 0.333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 8
@@ -230,7 +230,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.296, 0.148, 0.074, 0.148, 0.148, 0.074, 0.037, 0.074}, // 48
 			{ 0.444, 0.0, 0.0, 0.222, 0.222, 0.0, 0.0, 0.111}, // 46
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 			{ 0.666, 0.333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 8
 			{ 0.333, 0.666, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 9
@@ -241,7 +241,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.148, 0.296, 0.148, 0.074, 0.074, 0.148, 0.074, 0.037}, // 49
 			{ 0.296, 0.148, 0.074, 0.148, 0.148, 0.074, 0.037, 0.074}, // 48
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 			{ 0.333, 0.666, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 9
 			{ 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 1
@@ -252,7 +252,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.444, 0.222, 0.0, 0.0, 0.222, 0.111, 0.0 }, //  42
 			{ 0.148, 0.296, 0.148, 0.074, 0.074, 0.148, 0.074, 0.037}, // 49
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 			{ 0.666, 0.0, 0.0, 0.333, 0.0, 0.0, 0.0, 0.0 }, // 14
 			{ 0.444, 0.222, 0.111, 0.222, 0.0, 0.0, 0.0, 0.0 }, // 16
@@ -263,7 +263,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.148, 0.074, 0.148, 0.296, 0.074, 0.037, 0.074, 0.148}, // 50
 			{ 0.222, 0.0, 0.0, 0.444, 0.111, 0.0, 0.0, 0.222}, // 47
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 			{ 0.444, 0.222, 0.111, 0.222, 0.0, 0.0, 0.0, 0.0 }, // 16
 			{ 0.222, 0.444, 0.222, 0.111, 0.0, 0.0, 0.0, 0.0 }, // 17
@@ -274,7 +274,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.074, 0.148, 0.296, 0.148, 0.037, 0.074, 0.148, 0.074}, // 51
 			{ 0.148, 0.074, 0.148, 0.296, 0.074, 0.037, 0.074, 0.148}, // 50
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 			{ 0.222, 0.444, 0.222, 0.111, 0.0, 0.0, 0.0, 0.0 }, // 17
 			{ 0.0, 0.666, 0.333, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 10
@@ -285,7 +285,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.222, 0.444, 0.0, 0.0, 0.111, 0.222, 0.0 }, // 43
 			{ 0.074, 0.148, 0.296, 0.148, 0.037, 0.074, 0.148, 0.074}, // 51
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 			{ 0.333, 0.0, 0.0, 0.666, 0.0, 0.0, 0.0, 0.0 }, // 15
 			{ 0.222, 0.111, 0.222, 0.444, 0.0, 0.0, 0.0, 0.0 }, // 18
@@ -296,7 +296,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.222, 0.444, 0.0, 0.0, 0.111, 0.222}, // 45
 			{ 0.0, 0.0, 0.0, 0.666, 0.0, 0.0, 0.0,	 0.333 }, // 36
 		},
-		// refine_matrix pour l'enfant 8
+		// refine_matrix for child 8
 		{
 			{ 0.222, 0.111, 0.222, 0.444, 0.0, 0.0, 0.0, 0.0 }, // 18
 			{ 0.111, 0.222, 0.444, 0.222, 0.0, 0.0, 0.0, 0.0 }, // 19
@@ -307,7 +307,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.444, 0.222, 0.0, 0.0, 0.222, 0.111}, //  44
 			{ 0.0, 0.0, 0.222, 0.444, 0.0, 0.0, 0.111, 0.222}, // 45
 		},
-		// refine_matrix pour l'enfant 9
+		// refine_matrix for child 9
 		{
 			{ 0.111, 0.222, 0.444, 0.222, 0.0, 0.0, 0.0, 0.0 }, // 19
 			{ 0.0, 0.333, 0.666, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 11
@@ -318,7 +318,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.666, 0.0, 0.0, 0.0, 0.333, 0.0    }, // 38
 			{ 0.0, 0.0, 0.444, 0.222, 0.0, 0.0, 0.222, 0.111}, //  44
 		},
-		// refine_matrix pour l'enfant 10
+		// refine_matrix for child 10
 		{
 			{ 0.666, 0.0, 0.0, 0.0, 0.333, 0.0, 0.0, 0.0 }, // 32
 			{ 0.444, 0.222, 0.0, 0.0, 0.222, 0.111, 0.0, 0.0  }, //  40
@@ -329,7 +329,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.148, 0.074, 0.037, 0.074, 0.296, 0.148, 0.074, 0.148}, // 60
 			{ 0.222, 0.0, 0.0, 0.111, 0.444, 0.0, 0.0, 0.222}, // 58
 		},
-		// refine_matrix pour l'enfant 11
+		// refine_matrix for child 11
 		{
 			{ 0.444, 0.222, 0.0, 0.0, 0.222, 0.111, 0.0, 0.0  }, //  40
 			{ 0.222, 0.444, 0.0, 0.0, 0.111, 0.222, 0.0, 0.0  }, // 41
@@ -340,7 +340,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.074, 0.148, 0.074, 0.037, 0.148, 0.296, 0.148, 0.074}, // 61
 			{ 0.148, 0.074, 0.037, 0.074, 0.296, 0.148, 0.074, 0.148}, // 60
 		},
-		// refine_matrix pour l'enfant 12
+		// refine_matrix for child 12
 		{
 			{ 0.222, 0.444, 0.0, 0.0, 0.111, 0.222, 0.0, 0.0  }, // 41
 			{ 0.0, 0.666, 0.0, 0.0, 0.0, 0.333, 0.0, 0.0 }, // 34
@@ -351,7 +351,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.222, 0.111, 0.0, 0.0, 0.444, 0.222, 0.0}, // 54
 			{ 0.074, 0.148, 0.074, 0.037, 0.148, 0.296, 0.148, 0.074}, // 61
 		},
-		// refine_matrix pour l'enfant 13
+		// refine_matrix for child 13
 		{
 			{ 0.444, 0.0, 0.0, 0.222, 0.222, 0.0, 0.0, 0.111}, // 46
 			{ 0.296, 0.148, 0.074, 0.148, 0.148, 0.074, 0.037, 0.074}, // 48
@@ -362,7 +362,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.074, 0.037, 0.074, 0.148, 0.148, 0.074, 0.148, 0.296}, // 62
 			{ 0.111, 0.0, 0.0, 0.222, 0.222, 0.0, 0.0, 0.444}, // 59
 		},
-		// refine_matrix pour l'enfant 14
+		// refine_matrix for child 14
 		{
 			{ 0.296, 0.148, 0.074, 0.148, 0.148, 0.074, 0.037, 0.074}, // 48
 			{ 0.148, 0.296, 0.148, 0.074, 0.074, 0.148, 0.074, 0.037}, // 49
@@ -373,7 +373,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.037, 0.074, 0.148, 0.074, 0.074, 0.148, 0.296, 0.148}, // 63
 			{ 0.074, 0.037, 0.074, 0.148, 0.148, 0.074, 0.148, 0.296}, // 62
 		},
-		// refine_matrix pour l'enfant 15
+		// refine_matrix for child 15
 		{
 			{ 0.148, 0.296, 0.148, 0.074, 0.074, 0.148, 0.074, 0.037}, // 49
 			{ 0.0, 0.444, 0.222, 0.0, 0.0, 0.222, 0.111, 0.0 }, //  42
@@ -384,7 +384,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.111, 0.222, 0.0, 0.0, 0.222, 0.444, 0.0}, // 55
 			{ 0.037, 0.074, 0.148, 0.074, 0.074, 0.148, 0.296, 0.148}, // 63
 		},
-		// refine_matrix pour l'enfant 16
+		// refine_matrix for child 16
 		{
 			{ 0.222, 0.0, 0.0, 0.444, 0.111, 0.0, 0.0, 0.222}, // 47
 			{ 0.148, 0.074, 0.148, 0.296, 0.074, 0.037, 0.074, 0.148}, // 50
@@ -395,7 +395,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.111, 0.222, 0.0, 0.0, 0.222, 0.444}, // 57
 			{ 0.0, 0.0, 0.0, 0.333, 0.0, 0.0, 0.0, 0.666 }, // 37
 		},
-		// refine_matrix pour l'enfant 17
+		// refine_matrix for child 17
 		{
 			{ 0.148, 0.074, 0.148, 0.296, 0.074, 0.037, 0.074, 0.148}, // 50
 			{ 0.074, 0.148, 0.296, 0.148, 0.037, 0.074, 0.148, 0.074}, // 51
@@ -406,7 +406,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.222, 0.111, 0.0, 0.0, 0.444, 0.222}, // 56
 			{ 0.0, 0.0, 0.111, 0.222, 0.0, 0.0, 0.222, 0.444}, // 57
 		},
-		// refine_matrix pour l'enfant 18
+		// refine_matrix for child 18
 		{
 			{ 0.074, 0.148, 0.296, 0.148, 0.037, 0.074, 0.148, 0.074}, // 51
 			{ 0.0, 0.222, 0.444, 0.0, 0.0, 0.111, 0.222, 0.0 }, // 43
@@ -417,7 +417,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.333, 0.0, 0.0, 0.0, 0.666, 0.0    }, // 39
 			{ 0.0, 0.0, 0.222, 0.111, 0.0, 0.0, 0.444, 0.222}, // 56
 		},
-		// refine_matrix pour l'enfant 19
+		// refine_matrix for child 19
 		{
 			{ 0.333, 0.0, 0.0, 0.0, 0.666, 0.0, 0.0, 0.0 }, // 33
 			{ 0.222, 0.111, 0.0, 0.0, 0.444, 0.222, 0.0, 0.0}, // 52
@@ -428,7 +428,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.444, 0.222, 0.111, 0.222  }, //  28
 			{ 0.0, 0.0, 0.0, 0.0, 0.666, 0.0, 0.0, 0.333 }, //  26
 		},
-		// refine_matrix pour l'enfant 20
+		// refine_matrix for child 20
 		{
 			{ 0.222, 0.111, 0.0, 0.0, 0.444, 0.222, 0.0, 0.0}, // 52
 			{ 0.111, 0.222, 0.0, 0.0, 0.222, 0.444, 0.0, 0.0}, // 53
@@ -439,7 +439,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.222, 0.444, 0.222, 0.111 }, // 29
 			{ 0.0, 0.0, 0.0, 0.0, 0.444, 0.222, 0.111, 0.222  }, //  28
 		},
-		// refine_matrix pour l'enfant 21
+		// refine_matrix for child 21
 		{
 			{ 0.111, 0.222, 0.0, 0.0, 0.222, 0.444, 0.0, 0.0}, // 53
 			{ 0.0, 0.333, 0.0, 0.0, 0.0, 0.666, 0.0, 0.0 }, // 35
@@ -450,7 +450,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.666, 0.333, 0.0 }, // 22
 			{ 0.0, 0.0, 0.0, 0.0, 0.222, 0.444, 0.222, 0.111 }, // 29
 		},
-		// refine_matrix pour l'enfant 22
+		// refine_matrix for child 22
 		{
 			{ 0.222, 0.0, 0.0, 0.111, 0.444, 0.0, 0.0, 0.222}, // 58
 			{ 0.148, 0.074, 0.037, 0.074, 0.296, 0.148, 0.074, 0.148}, // 60
@@ -461,7 +461,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.222, 0.111, 0.222, 0.444}, //  30
 			{ 0.0, 0.0, 0.0, 0.0, 0.333, 0.0, 0.0, 0.666  }, // 27
 		},
-		// refine_matrix pour l'enfant 23
+		// refine_matrix for child 23
 		{
 			{ 0.148, 0.074, 0.037, 0.074, 0.296, 0.148, 0.074, 0.148}, // 60
 			{ 0.074, 0.148, 0.074, 0.037, 0.148, 0.296, 0.148, 0.074}, // 61
@@ -472,7 +472,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.111, 0.222, 0.444, 0.222}, // 31
 			{ 0.0, 0.0, 0.0, 0.0, 0.222, 0.111, 0.222, 0.444}, //  30
 		},
-		// refine_matrix pour l'enfant 24
+		// refine_matrix for child 24
 		{
 			{ 0.074, 0.148, 0.074, 0.037, 0.148, 0.296, 0.148, 0.074}, // 61
 			{ 0.0, 0.222, 0.111, 0.0, 0.0, 0.444, 0.222, 0.0}, // 54
@@ -483,7 +483,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.333, 0.666, 0.0 }, // 23
 			{ 0.0, 0.0, 0.0, 0.0, 0.111, 0.222, 0.444, 0.222}, // 31
 		},
-		// refine_matrix pour l'enfant 25
+		// refine_matrix for child 25
 		{
 			{ 0.111, 0.0, 0.0, 0.222, 0.222, 0.0, 0.0, 0.444}, // 59
 			{ 0.074, 0.037, 0.074, 0.148, 0.148, 0.074, 0.148, 0.296}, // 62
@@ -494,7 +494,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.333, 0.666 }, // 25
 			{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 }, // 7
 		},
-		// refine_matrix pour l'enfant 26
+		// refine_matrix for child 26
 		{
 			{ 0.074, 0.037, 0.074, 0.148, 0.148, 0.074, 0.148, 0.296}, // 62
 			{ 0.037, 0.074, 0.148, 0.074, 0.074, 0.148, 0.296, 0.148}, // 63
@@ -505,7 +505,7 @@ const double HexRefinementPattern27Hex ::_refine_matrix_1[27][8][8] = { /* const
 			{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.666, 0.333 }, //  24
 			{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.333, 0.666 }, // 25
 		},
-		// refine_matrix pour l'enfant 27
+		// refine_matrix for child 27
 		{
 			{ 0.037, 0.074, 0.148, 0.074, 0.074, 0.148, 0.296, 0.148}, // 63
 			{ 0.0, 0.111, 0.222, 0.0, 0.0, 0.222, 0.444, 0.0}, // 55
@@ -648,7 +648,7 @@ const Integer TetraRefinementPattern2Hex_2Penta_2Py_2Tetra ::_face_mapping_topo_
 
 const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3
 				{ 1.0, 0.0, 0.0, 0.0 }, // 0
@@ -656,7 +656,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.5, 0.0, 0.5, 0.0 }, // 4
 				{ 0.5, 0.0, 0.0, 0.5 }, // 9
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3
 				{ 0.5, 0.5, 0.0, 0.0 }, // 6
@@ -664,7 +664,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.0, 0.5, 0.5, 0.0 }, // 5
 				{ 0.0, 0.5, 0.0, 0.5 }, // 8
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3
 				{ 0.5, 0.0, 0.5, 0.0 }, // 4
@@ -672,7 +672,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.0, 0.0, 1.0, 0.0 }, // 2
 				{ 0.0, 0.0, 0.5, 0.5 }, // 7
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3
 				{ 0.5, 0.0, 0.0, 0.5 }, // 9
@@ -680,7 +680,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.0, 0.0, 0.5, 0.5 }, // 7
 				{ 0.0, 0.0, 0.0, 1.0 }, // 3
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 				//  0   1    2    3
 				{ 0.5, 0.5, 0.0, 0.0 }, // 6
@@ -688,7 +688,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.5, 0.0, 0.5, 0.0 }, // 4
 				{ 0.0, 0.5, 0.0, 0.5 }, // 8
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 				//  0   1    2    3
 				{ 0.5, 0.0, 0.5, 0.0 }, // 4
@@ -696,7 +696,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.5, 0.5, 0.0, 0.0 }, // 6
 				{ 0.0, 0.5, 0.0, 0.5 }, // 8
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 				//  0   1    2    3
 				{ 0.5, 0.0, 0.5, 0.0 }, // 4
@@ -704,7 +704,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 				{ 0.0, 0.0, 0.5, 0.5 }, // 7
 				{ 0.0, 0.5, 0.0, 0.5 }, //	8
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 				//  0   1    2    3
 				{ 0.5, 0.0, 0.0, 0.5 }, // 9
@@ -719,7 +719,7 @@ const double TetraRefinementPattern8T ::_refine_matrix_1[8][4][4] = { /* const *
 
 const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3
 			    {1.0, 0.0, 0.0, 0.0 }, // 0
@@ -727,7 +727,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.75, 0.0, 0.25, 0.0 }, // 12
 				{0.75, 0.0, 0.0, 0.25 }, // 14
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3
 				{0.25, 0.75, 0.0, 0.0 }, // 9
@@ -735,7 +735,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0, 0.75, 0.25, 0.0 }, // 10
 				{0.0, 0.75, 0.0, 0.25 }, // 16
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3
 				{0.25, 0.0, 0.75, 0.0 }, // 13
@@ -743,7 +743,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0, 0.0, 1.0, 0.0 }, // 2
 				{0.0, 0.0, 0.75, 0.25 }, // 18
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3
 				{0.25, 0.0, 0.0, 0.75 }, // 15
@@ -751,7 +751,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0, 0.0, 0.25, 0.75 }, // 19
 				{0.0, 0.0, 0.0, 1.0 }, // 3
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 				//  0   1    2    3
 			    {0.75, 0.0, 0.0, 0.25 }, // 14
@@ -759,7 +759,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.0,  0.33 }, // 5
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 				//  0   1    2    3
 				{0.75, 0.25, 0.0,  0.0 }, // 8
@@ -767,7 +767,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.0,  0.33 }, // 5
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 				//  0   1    2    3
 				{0.25, 0.75, 0.0, 0.0 }, // 9
@@ -775,7 +775,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.0,  0.33 }, // 5
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 				//  0   1    2    3
 				{0.0, 0.75, 0.0, 0.25 }, // 16
@@ -783,7 +783,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.0,  0.33 }, // 5
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 8
+		// refine_matrix for child 8
 		{
 				//  0   1    2    3
 				{0.0, 0.25, 0.0, 0.75 }, // 17
@@ -791,7 +791,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.0,  0.33 }, // 5
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 9
+		// refine_matrix for child 9
 		{
 				//  0   1    2    3
 				{0.25, 0.0, 0.0, 0.75 }, // 15
@@ -799,7 +799,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.0,  0.33 }, // 5
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 10
+		// refine_matrix for child 10
 		{
 				//  0   1    2    3
 				{0.0, 0.75, 0.0, 0.25 }, // 16
@@ -807,7 +807,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.33, 0.33, 0.33 }, // 6
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 11
+		// refine_matrix for child 11
 		{
 				//  0   1    2    3
 				{0.0, 0.75, 0.25, 0.0 }, // 10
@@ -815,7 +815,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.33, 0.33, 0.33 }, // 6
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 12
+		// refine_matrix for child 12
 		{
 				//  0   1    2    3
 				{0.0, 0.25, 0.75, 0.0 }, // 11
@@ -823,7 +823,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.33, 0.33, 0.33 }, // 6
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 13
+		// refine_matrix for child 13
 		{
 				//  0   1    2    3
 				{0.0, 0.0, 0.75, 0.25 }, // 18
@@ -831,7 +831,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.33, 0.33, 0.33 }, // 6
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 14
+		// refine_matrix for child 14
 		{
 				//  0   1    2    3
 				{0.0, 0.0, 0.25, 0.75 }, // 19
@@ -839,7 +839,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.33, 0.33, 0.33 }, // 6
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 15
+		// refine_matrix for child 15
 		{
 				//  0   1    2    3
 				{0.0, 0.25, 0.0, 0.75 }, // 17
@@ -847,7 +847,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.33, 0.33, 0.33 }, // 6
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 16
+		// refine_matrix for child 16
 		{
 				//  0   1    2    3
 				{0.75, 0.25, 0.0,  0.0 }, // 8
@@ -855,7 +855,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.33, 0.0 }, // 4
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 17
+		// refine_matrix for child 17
 		{
 				//  0   1    2    3
 				{0.25, 0.75, 0.0, 0.0 }, // 9
@@ -863,7 +863,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.33, 0.0 }, // 4
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 18
+		// refine_matrix for child 18
 		{
 				//  0   1    2    3
 			    {0.0, 0.75, 0.25, 0.0 }, // 10
@@ -871,7 +871,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.33, 0.0 }, // 4
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 19
+		// refine_matrix for child 19
 		{
 				//  0   1    2    3
 				{0.0, 0.25, 0.75, 0.0 }, // 11
@@ -879,7 +879,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.33, 0.0 }, // 4
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 20
+		// refine_matrix for child 20
 		{
 				//  0   1    2    3
 				{0.25, 0.0, 0.75, 0.0 }, // 13
@@ -887,7 +887,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.33, 0.0 }, // 4
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 21
+		// refine_matrix for child 21
 		{
 				//  0   1    2    3
 				{0.75, 0.0, 0.25, 0.0 }, // 12
@@ -895,7 +895,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.33, 0.33, 0.0 }, // 4
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 22
+		// refine_matrix for child 22
 		{
 				//  0   1    2    3
 				{0.75, 0.0, 0.0, 0.25 }, // 14
@@ -903,7 +903,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.0,  0.33, 0.33 }, // 7
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 23
+		// refine_matrix for child 23
 		{
 				//  0   1    2    3
 			    {0.75, 0.0, 0.25, 0.0 }, // 12
@@ -911,7 +911,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.0,  0.33, 0.33 }, // 7
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 24
+		// refine_matrix for child 24
 		{
 				//  0   1    2    3
 			    {0.25, 0.0, 0.75, 0.0 }, // 13
@@ -919,7 +919,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.0,  0.33, 0.33 }, // 7
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 25
+		// refine_matrix for child 25
 		{
 				//  0   1    2    3
 			    {0.0, 0.0, 0.75, 0.25 }, // 18
@@ -927,7 +927,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.0, 0.33, 0.33 }, // 7
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-			// refine_matrix pour l'enfant 26
+			// refine_matrix for child 26
 		{
 				//  0   1    2    3
 				{0.0, 0.0, 0.25, 0.75 }, // 19
@@ -935,7 +935,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.0, 0.33, 0.33 }, // 7
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 27
+		// refine_matrix for child 27
 		{
 				//  0   1    2    3
 			    {0.25, 0.0, 0.0, 0.75 }, // 15
@@ -943,7 +943,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.33, 0.0, 0.33, 0.33 }, // 7
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 		},
-		// refine_matrix pour l'enfant 28
+		// refine_matrix for child 28
 		{
 				//  0   1    2    3
 				{0.75, 0.0,  0.0,  0.25 }, // 14
@@ -951,7 +951,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.75, 0.0,  0.25, 0.0 }, // 12
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 				},
-		// refine_matrix pour l'enfant 29
+		// refine_matrix for child 29
 		{
 				//  0   1    2    3
 				{0.0,  0.0,  0.25, 0.75 }, // 19
@@ -959,7 +959,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.25, 0.0,  0.75 }, // 17
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 				},
-		// refine_matrix pour l'enfant 30
+		// refine_matrix for child 30
 		{
 				//  0   1    2    3
 				{0.25, 0.75, 0.0,  0.0 }, // 9
@@ -967,7 +967,7 @@ const double TetraRefinementPattern32T ::_refine_matrix_1[32][4][4] = { /* const
 				{0.0,  0.75, 0.25, 0.0 }, // 10
 				{0.25, 0.25, 0.25, 0.25 }, // 20
 				},
-		// refine_matrix pour l'enfant 31
+		// refine_matrix for child 31
 		{
 				//  0   1    2    3
 				{0.0,  0.25, 0.75, 0.0 }, // 11
@@ -1099,7 +1099,7 @@ const Integer PrismRefinementPattern4Hex_4Pr ::_face_mapping_topo_2[4][5] = {
 
 const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3    4    5
 				{ 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -1109,7 +1109,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.25, 0.25, 0.0, 0.25, 0.25, 0.0 }, // 13
 				{ 0.25, 0.0, 0.25, 0.25, 0.0, 0.25 },// 17
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3    4    5
 				{ 0.5, 0.5, 0.0, 0.0, 0.0, 0.0 }, // 7
@@ -1119,7 +1119,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.0, 0.5, 0.0, 0.0, 0.5, 0.0 }, // 14
 				{ 0.0, 0.25, 0.25, 0.0, 0.25, 0.25 }, // 15
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3    4    5
 				{ 0.0,	0.0, 1.0, 0.0, 0.0, 0.0 }, // 2
@@ -1129,7 +1129,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.25, 0.0, 0.25, 0.25, 0.0, 0.25 },// 17
 				{ 0.0, 0.25, 0.25, 0.0, 0.25, 0.25 }, // 15
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1     2    3     4    5
 				{ 0.25, 0.0, 0.25, 0.25, 0.0, 0.25 },// 17
@@ -1139,7 +1139,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 }, // 3
 				{ 0.0, 0.0, 0.0, 0.5, 0.5, 0.0 }, // 10
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 				//  0   1     2     3    4     5
 				{ 0.0, 0.25, 0.25, 0.0, 0.25, 0.25 }, // 15
@@ -1149,7 +1149,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.0, 0.0, 0.0, 0.5, 0.5, 0.0 }, // 10
 				{ 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 				//  0   1    2    3    4    5
 				{ 0.0, 0.0, 0.5, 0.0, 0.0, 0.5 }, // 16
@@ -1159,7 +1159,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.0, 0.0, 0.0, 0.5, 0.0, 0.5 }, // 9
 				{ 0.0, 0.0, 0.0, 0.0, 0.5, 0.5 }, // 11
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 				//  0   1    2    3    4    5
 				{ 0.5, 0.0, 0.5, 0.0, 0.0, 0.0 }, // 6
@@ -1169,7 +1169,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 				{ 0.25, 0.25, 0.0, 0.25, 0.25, 0.0 }, // 13
 				{ 0.0, 0.25, 0.25, 0.0, 0.25, 0.25 }, // 15
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 				//  0   1    2      3    4     5
 				{ 0.25, 0.0, 0.25, 0.25, 0.0, 0.25 },// 17
@@ -1186,7 +1186,7 @@ const double PrismRefinementPattern8Pr ::_refine_matrix_1[8][6][6] = { /* const 
 
 const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* const */
 
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3    4    5
 				{ 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -1196,7 +1196,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.444, 0.222, 0.0, 0.222, 0.111, 0.0 }, // 26
 				{ 0.444, 0.0, 0.222, 0.222, 0.0, 0.111 }, // 35
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0     1      2    3    4    5
 				{ 0.666, 0.333, 0.0, 0.0, 0.0, 0.0 }, // 6
@@ -1206,7 +1206,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.444, 0.0, 0.111, 0.222, 0.0 }, // 27
 				{ 0.222, 0.222, 0.222, 0.111, 0.111, 0.111 }, // 38
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 			    //  0     1      2    3    4    5
 				{ 0.333, 0.666, 0.0, 0.0, 0.0, 0.0 }, //  7
@@ -1216,7 +1216,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.666, 0.0, 0.0, 0.333, 0.0 }, // 22
 				{ 0.0, 0.444, 0.222, 0.0, 0.222, 0.111 }, // 30
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 			    //  0     1      2    3    4    5
 				{ 0.666, 0.0, 0.333, 0.0, 0.0, 0.0 }, // 10
@@ -1226,7 +1226,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.444, 0.222, 0.0, 0.222, 0.111, 0.0 }, // 26
 				{ 0.222, 0.222, 0.222, 0.111, 0.111, 0.111 }, // 38
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 			    //  0     1      2     3     4    5
                 { 0.333, 0.333, 0.333, 0.0, 0.0, 0.0 }, // 12
@@ -1236,7 +1236,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.444, 0.0, 0.111, 0.222, 0.0 }, // 27
 				{ 0.0, 0.444, 0.222, 0.0, 0.222, 0.111 }, // 30
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 			    //  0     1      2    3    4    5
 				{ 0.666, 0.0, 0.333, 0.0, 0.0, 0.0 }, // 10
@@ -1246,7 +1246,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.222, 0.222, 0.111, 0.111, 0.111 }, // 38
 				{ 0.222, 0.0, 0.444, 0.111, 0.0, 0.222 }, // 34
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 			    //  0     1      2      3    4    5
 				{ 0.333, 0.333, 0.333, 0.0, 0.0, 0.0 }, // 12
@@ -1257,7 +1257,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.222, 0.444, 0.0, 0.111, 0.222 }, // 31
 
 		},
-        // refine_matrix pour l'enfant 8
+        // refine_matrix for child 8
 		{
 			    //  0     1      2    3    4    5
 				{ 0.333, 0.0, 0.666, 0.0, 0.0, 0.0 }, // 11
@@ -1267,7 +1267,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.222, 0.222, 0.111, 0.111, 0.111 }, // 38
 				{ 0.0, 0.222, 0.444, 0.0, 0.111, 0.222 }, // 31
         },
-		// refine_matrix pour l'enfant 9
+		// refine_matrix for child 9
 		{
 			    //  0   1    2    3    4    5
 				{ 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 }, // 2
@@ -1277,7 +1277,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.0, 0.444, 0.111, 0.0, 0.222 }, // 34
 				{ 0.0, 0.222, 0.444, 0.0, 0.111, 0.222 }, // 31
 		},
-		// refine_matrix pour l'enfant 10
+		// refine_matrix for child 10
 		{
 			    //  0     1      2    3    4    5
 				{ 0.666, 0.0, 0.0, 0.333, 0.0, 0.0 }, // 20
@@ -1287,7 +1287,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.111, 0.0, 0.444, 0.222, 0.0 }, // 28
 				{ 0.222, 0.0, 0.111, 0.444, 0.0, 0.222 }, // 37
 		},
-		// refine_matrix pour l'enfant 11
+		// refine_matrix for child 11
 		{
 			    //  0     1      2    3      4     5
 				{ 0.444, 0.222, 0.0, 0.222, 0.111, 0.0 }, // 26
@@ -1297,7 +1297,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.111, 0.222, 0.0, 0.222, 0.444, 0.0 }, // 29
 				{ 0.111, 0.111, 0.111, 0.222, 0.222, 0.222 }, // 39
 		},
-		// refine_matrix pour l'enfant 12
+		// refine_matrix for child 12
 		{
 			    //  0     1      2    3      4     5
 				{ 0.222, 0.444, 0.0, 0.111, 0.222, 0.0 }, // 27
@@ -1307,7 +1307,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.333, 0.0, 0.0, 0.666, 0.0 }, // 23
 				{ 0.0, 0.222, 0.111, 0.0, 0.444, 0.222 }, // 32
 		},
-		// refine_matrix pour l'enfant 13
+		// refine_matrix for child 13
 		{
 			    //  0     1      2     3    4     5
 				{ 0.444, 0.0, 0.222, 0.222, 0.0, 0.111 }, // 35
@@ -1317,7 +1317,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.222, 0.111, 0.0, 0.444, 0.222, 0.0 }, // 28
 				{ 0.111, 0.111, 0.111, 0.222, 0.222, 0.222 }, // 39
 		},
-		// refine_matrix pour l'enfant 14
+		// refine_matrix for child 14
 		{
 			    //  0     1       2      3      4     5
 				{ 0.222, 0.222, 0.222, 0.111, 0.111, 0.111 }, // 38
@@ -1327,7 +1327,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.111, 0.222, 0.0, 0.222, 0.444, 0.0 }, // 29
 				{ 0.0, 0.222, 0.111, 0.0, 0.444, 0.222 }, // 32
 		},
-		// refine_matrix pour l'enfant 15
+		// refine_matrix for child 15
 		{
 			    //  0     1      2     3     4     5
 				{ 0.444, 0.0, 0.222, 0.222, 0.0, 0.111 }, // 35
@@ -1337,7 +1337,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.111, 0.111, 0.111, 0.222, 0.222, 0.222 }, // 39
 				{ 0.111, 0.0, 0.222, 0.222, 0.0, 0.444 }, // 36
 		},
-		// refine_matrix pour l'enfant 16
+		// refine_matrix for child 16
 		{
 			    //  0     1      2      3      4      5
 				{ 0.222, 0.222, 0.222, 0.111, 0.111, 0.111 }, // 38
@@ -1347,7 +1347,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.222, 0.111, 0.0, 0.444, 0.222 }, // 32
 				{ 0.0, 0.111, 0.222, 0.0, 0.222, 0.444 }, // 33
 		},
-		// refine_matrix pour l'enfant 17
+		// refine_matrix for child 17
 		{
 			    //  0     1      2      3    4     5
 				{ 0.222, 0.0, 0.444, 0.111, 0.0, 0.222 }, // 34
@@ -1357,7 +1357,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.111, 0.111, 0.111, 0.222, 0.222, 0.222 }, // 39
 				{ 0.0, 0.111, 0.222, 0.0, 0.222, 0.444 }, // 33
 		},
-		// refine_matrix pour l'enfant 18
+		// refine_matrix for child 18
 		{
 			    //  0     1      2      3    4     5
 				{ 0.222, 0.0, 0.444, 0.111, 0.0, 0.222 }, // 34
@@ -1367,7 +1367,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.111, 0.222, 0.0, 0.222, 0.444 }, // 33
 				{ 0.0, 0.0, 0.333, 0.0, 0.0, 0.666 }, // 25
 		},
-		// refine_matrix pour l'enfant 19
+		// refine_matrix for child 19
 		{
 			    //  0     1      2    3    4    5
 			    { 0.333, 0.0, 0.0, 0.666, 0.0, 0.0 }, // 21
@@ -1377,7 +1377,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.666, 0.333, 0.0 }, //  13
 				{ 0.0, 0.0, 0.0, 0.666, 0.0, 0.333 }, //
 		},
-		// refine_matrix pour l'enfant 20
+		// refine_matrix for child 20
 		{
 			    //  0     1      2      3     4     5
 			    { 0.222, 0.111, 0.0, 0.444, 0.222, 0.0 }, // 28
@@ -1387,7 +1387,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.333, 0.666, 0.0 }, // 14
 				{ 0.0, 0.0, 0.0, 0.333, 0.333, 0.333 }, // 19
 		},
-		// refine_matrix pour l'enfant 21
+		// refine_matrix for child 21
 		{
 			    //  0     1      2    3      4     5
 				{ 0.111, 0.222, 0.0, 0.222, 0.444, 0.0 }, // 29
@@ -1397,7 +1397,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 }, // 4
 				{ 0.0, 0.0, 0.0, 0.0, 0.666, 0.333 }, //  15
 		},
-		// refine_matrix pour l'enfant 22
+		// refine_matrix for child 22
 		{
 			    //  0     1      2    3      4     5
 				{ 0.222, 0.0, 0.111, 0.444, 0.0, 0.222 }, // 37
@@ -1407,7 +1407,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.666, 0.333, 0.0 }, //  13
 				{ 0.0, 0.0, 0.0, 0.333, 0.333, 0.333 }, // 19
 		},
-		// refine_matrix pour l'enfant 23
+		// refine_matrix for child 23
 		{
 			    //  0     1      2      3      4      5
 				{ 0.111, 0.111, 0.111, 0.222, 0.222, 0.222 }, // 39
@@ -1417,7 +1417,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.333, 0.666, 0.0 }, // 14
 				{ 0.0, 0.0, 0.0, 0.0, 0.666, 0.333 }, //  15
 		},
-		// refine_matrix pour l'enfant 24
+		// refine_matrix for child 24
 		{
 			    //  0     1      2      3    4      =5
 				{ 0.222, 0.0, 0.111, 0.444, 0.0, 0.222 }, // 37
@@ -1427,7 +1427,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.333, 0.333, 0.333 }, // 19
 				{ 0.0, 0.0, 0.0, 0.333, 0.0, 0.666 }, // 18
 		},
-		// refine_matrix pour l'enfant 25
+		// refine_matrix for child 25
 		{
 			    //  0     1      2      3      4      5
 				{ 0.111, 0.111, 0.111, 0.222, 0.222, 0.222 }, // 39
@@ -1437,7 +1437,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.0, 0.666, 0.333 }, //  15
 				{ 0.0, 0.0, 0.0, 0.0, 0.333, 0.666 }, // 16
 		},
-		// refine_matrix pour l'enfant 26
+		// refine_matrix for child 26
 		{
 			    //  0     1      2      3    4     5
 				{ 0.111, 0.0, 0.222, 0.222, 0.0, 0.444 }, // 36
@@ -1447,7 +1447,7 @@ const double PrismRefinementPattern27Pr ::_refine_matrix_1[27][6][6] = { /* cons
 				{ 0.0, 0.0, 0.0, 0.333, 0.333, 0.333 }, // 19
 				{ 0.0, 0.0, 0.0, 0.0, 0.333, 0.666 }, // 16
 		},
-		// refine_matrix pour l'enfant 27
+		// refine_matrix for child 27
 		{
 			    //  0     1      2     3     4     5
 				{ 0.111, 0.0, 0.222, 0.222, 0.0, 0.444 }, // 36
@@ -1577,7 +1577,7 @@ const Integer PyramidRefinementPattern4Hex_4Py ::_face_mapping_topo_2[4][5] = {
 
 const double PyramidRefinementPattern4Py8T ::_refine_matrix_1[4][5][5] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3   4
 				{ 1.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -1586,7 +1586,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_1[4][5][5] = { /* co
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.5, 0.0, 0.0, 0.0 }, // 5
@@ -1595,7 +1595,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_1[4][5][5] = { /* co
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 				{ 0.0, 0.5, 0.0, 0.0, 0.5 }, // 11
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3   4
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
@@ -1604,7 +1604,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_1[4][5][5] = { /* co
 				{ 0.0, 0.0, 0.5, 0.5, 0.0 }, // 7
 				{ 0.0, 0.0, 0.5, 0.0, 0.5 }, // 12
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
@@ -1617,7 +1617,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_1[4][5][5] = { /* co
 
 const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1625,7 +1625,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.5, 0.5, 0.0, 0.0, 0.0 }, // 5
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3   4
 				{ 0.0, 0.5, 0.0, 0.0, 0.5 }, // 11
@@ -1633,7 +1633,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.0, 0.5, 0.5, 0.0, 0.0 }, // 6
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3   4
 				{ 0.0, 0.0, 0.5, 0.0, 0.5 }, // 12
@@ -1641,7 +1641,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.0, 0.0, 0.5, 0.5, 0.0 }, // 7
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3   4
 				{ 0.0, 0.0, 0.0, 0.5, 0.5 }, // 13
@@ -1649,7 +1649,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1657,7 +1657,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.0, 0.5, 0.0, 0.0, 0.5 }, //  11
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1665,7 +1665,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.0, 0.0, 0.5, 0.0, 0.5 }, //	12
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1673,7 +1673,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 				{ 0.0, 0.0, 0.5, 0.0, 0.5 }, //	12
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1688,7 +1688,7 @@ const double PyramidRefinementPattern4Py8T ::_refine_matrix_2[8][4][5] = { /* co
 
 const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3   4
 				{ 1.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -1697,7 +1697,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* co
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.5, 0.0, 0.0, 0.0 }, // 5
@@ -1706,7 +1706,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* co
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 				{ 0.0, 0.5, 0.0, 0.0, 0.5 }, // 11
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3   4
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
@@ -1715,7 +1715,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* co
 				{ 0.0, 0.0, 0.5, 0.5, 0.0 }, // 7
 				{ 0.0, 0.0, 0.5, 0.0, 0.5 }, // 12
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
@@ -1724,7 +1724,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* co
 				{ 0.0, 0.0, 0.0, 1.0, 0.0 }, // 3
 				{ 0.0, 0.0, 0.0, 0.5, 0.5 }, // 13
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1733,7 +1733,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* co
 				{ 0.0, 0.0, 0.0, 0.5, 0.5 }, // 13
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1746,7 +1746,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_1[6][5][5] = { /* co
 
 const double PyramidRefinementPattern6Py4T ::_refine_matrix_2[4][4][5] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.0, 0.5 }, // 10
@@ -1754,7 +1754,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_2[4][4][5] = { /* co
 				{ 0.5, 0.5, 0.0, 0.0, 0.0 }, // 5
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3   4
 				{ 0.0, 0.5, 0.0, 0.0, 0.5 }, // 11
@@ -1762,7 +1762,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_2[4][4][5] = { /* co
 				{ 0.0, 0.5, 0.5, 0.0, 0.0 }, // 6
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3   4
 				{ 0.0, 0.0, 0.5, 0.0, 0.5 }, // 12
@@ -1770,7 +1770,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_2[4][4][5] = { /* co
 				{ 0.0, 0.0, 0.5, 0.5, 0.0 }, // 7
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3   4
 				{ 0.0, 0.0, 0.0, 0.5, 0.5 }, // 13
@@ -1785,7 +1785,7 @@ const double PyramidRefinementPattern6Py4T ::_refine_matrix_2[4][4][5] = { /* co
 
 const double PyramidRefinementPattern4Py ::_refine_matrix_1[4][5][5] = { /* const */
 
-		// refine_matrix pour l'enfant 0
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3   4
 				{ 1.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -1794,7 +1794,7 @@ const double PyramidRefinementPattern4Py ::_refine_matrix_1[4][5][5] = { /* cons
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.5, 0.0, 0.0, 0.0 }, // 5
@@ -1803,7 +1803,7 @@ const double PyramidRefinementPattern4Py ::_refine_matrix_1[4][5][5] = { /* cons
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3   4
 				{ 0.25, 0.25, 0.25, 0.25, 0.0 }, // 9
@@ -1812,7 +1812,7 @@ const double PyramidRefinementPattern4Py ::_refine_matrix_1[4][5][5] = { /* cons
 				{ 0.0, 0.0, 0.5, 0.5, 0.0 }, // 7
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3   4
 				{ 0.5, 0.0, 0.0, 0.5, 0.0 }, // 8
@@ -1837,7 +1837,7 @@ const double PyramidRefinementPattern19Py12T ::_refine_matrix_1[19][5][5] = { /*
 				{ 0.0, 0.0, 0.0, 0.333, 0.666 }, // 8
 				{ 0.0, 0.0, 0.0, 0.0, 1.0 }, //  4
 		},
-		// Pyramide inversée, niveau moyen
+		// Inverted pyramid, middle level
 		{
 				//  0     1     2     3    4
 				{ 0.333, 0.0, 0.0, 0.0, 0.666 }, // 5
@@ -1846,7 +1846,7 @@ const double PyramidRefinementPattern19Py12T ::_refine_matrix_1[19][5][5] = { /*
 				{ 0.0, 0.333, 0.0, 0.0, 0.666 }, // 6
 				{ 0.1665,0.1665,0.1665,0.1665,0.333 }, // 17
 		},
-		// 4 pyramides dirigées vers le haut, niveau intermédiaire
+		// 4 upward-pointing pyramids, intermediate level
 		{
 				//  0     1     2     3    4
 				{ 0.666, 0.0, 0.0, 0.0, 0.333 }, // 9
@@ -1881,7 +1881,7 @@ const double PyramidRefinementPattern19Py12T ::_refine_matrix_1[19][5][5] = { /*
 				{ 0.0, 0.0, 0.333, 0.0, 0.666 }, // 7
 
 		},
-		// 4 pyramides inversées, premier niveau
+		// 4 inverted pyramids, first level
 		{
 			    //  0     1     2     3    4
 				{ 0.666, 0.0, 0.0, 0.0, 0.333 }, // 9
@@ -1914,7 +1914,7 @@ const double PyramidRefinementPattern19Py12T ::_refine_matrix_1[19][5][5] = { /*
 				{ 0.1665,0.1665,0.1665,0.1665,0.333 }, // 17
 				{ 0.222, 0.111, 0.222, 0.444, 0.0 }, //  29
 		},
-                // Pyramides dirigées vers le haut, premier niveau
+                // Upward-pointing pyramids, first level
 		{
 			//  0     1     2     3    4
 			{ 1.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -1991,7 +1991,7 @@ const double PyramidRefinementPattern19Py12T ::_refine_matrix_1[19][5][5] = { /*
 
 const double PyramidRefinementPattern19Py12T ::_refine_matrix_2[12][4][5] = { /* const */
 
-		// Tetraèdres, niveau intermédiaire
+		// Tetrahedrons, intermediate level
 		{
 			    //  0     1     2     3    4
 				{ 0.333, 0.0, 0.0, 0.0, 0.666 }, // 5
@@ -2020,7 +2020,7 @@ const double PyramidRefinementPattern19Py12T ::_refine_matrix_2[12][4][5] = { /*
 				{ 0.333, 0.0, 0.0, 0.0, 0.666 }, // 5
 				{ 0.1665,0.1665,0.1665,0.1665,0.333 }, // 17
 		},
-		// Tetraèdres, premier niveau
+		// Tetrahedrons, first level
 		{
 			    //  0     1     2     3    4
 				{ 0.666, 0.0, 0.0, 0.0, 0.333 }, // 9
@@ -3127,7 +3127,7 @@ const double HemiHex7RefinementPattern4HHex7_4Pr_2HHex5_1Hex ::_refine_matrix_4[
 /*---------------------------------------------------------------------------*/
 
 const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_1[8][7][7] = {
-				// haut
+				// top
 		{
 				// 0     1     2     3     4     5     6
 				{0.333, 0.0, 0.0, 0.0, 0.666, 0.0, 0.0 }, // 12
@@ -3158,7 +3158,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_1
 				{0.222, 0.148, 0.296, 0.148, 0.074, 0.037, 0.074, }, // 51
 				{0.0, 0.222, 0.444, 0.222, 0.0, 0.0, 0.111 }, // 47
 		},
-				// milieu
+				// middle
 		{
 				// 0     1     2     3     4     5     6
 				{0.333, 0.0, 0.0, 0.0, 0.333, 0.333, 0.0 }, // 30
@@ -3179,7 +3179,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_1
 				{0.222, 0.296, 0.148, 0.074, 0.037, 0.074, 0.148 }, // 44
 				{0.0, 0.444, 0.222, 0.111, 0.0, 0.0, 0.222 }, // 39
 		},
-				// bas
+				// bottom
 		{
 				// 0     1     2     3     4     5     6
 				{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, // 0
@@ -3214,7 +3214,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_1
 
 //
 const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_2[14][6][7] = { /* const */
-				// milieu: 2
+				// middle: 2
 	{
 				// 0     1     2     3     4     5     6
 				{0.666, 0.0, 0.0, 0.0, 0.333, 0.0, 0.0 }, // 11
@@ -3224,7 +3224,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_2
 				{0.222, 0.037, 0.074, 0.148, 0.296, 0.148, 0.074 }, // 52
 				{0.222, 0.074, 0.037, 0.074, 0.148, 0.296, 0.148 }, // 45
 		},
-				// bas: 12
+				// bottom: 12
 		{
 				// 0     1     2     3     4     5     6
 				{0.444, 0.148, 0.074, 0.037, 0.074, 0.148, 0.074 }, // 43
@@ -3346,7 +3346,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_2
 
 //
 const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_3[9][5][7] = { /* const */
-				// haut: 2
+				// top: 2
 		{
 				// 0     1     2     3     4     5     6
 				{0.444, 0.0, 0.222, 0.111, 0.222, 0.0, 0.0 }, // 35
@@ -3363,7 +3363,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_3
 				{0.444, 0.0, 0.222, 0.111, 0.222, 0.0, 0.0 }, // 35
 				{0.666, 0.0, 0.333, 0.0, 0.0, 0.0, 0.0 }, // 9
 		},
-				// milieu: 5
+				// middle: 5
 		{
 				// 0     1     2     3     4     5     6
 				{0.222, 0.037, 0.074, 0.148, 0.296, 0.148, 0.074 }, // 52
@@ -3427,7 +3427,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_3
 
 //
 const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_4[7][8][7] = { /* const */
-//				haut: 3
+//				top: 3
 		{
 				// 0     1     2     3     4     5     6
 				{0.0, 0.0, 0.0, 0.222, 0.444, 0.222, 0.111}, // 49
@@ -3461,7 +3461,7 @@ const double HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex ::_refine_matrix_4
 				{0.0, 0.0, 0.666, 0.333, 0.0, 0.0, 0.0 }, // 19
 				{0.0, 0.0, 0.333, 0.666, 0.0, 0.0, 0.0 }, // 20
 		},
-				// milieu: 4
+				// middle: 4
 		{
 				// 0     1     2     3     4     5     6
 				{0.0, 0.0, 0.0, 0.111, 0.222, 0.444, 0.222 }, // 41
@@ -4708,8 +4708,8 @@ const double DiTetra5RefinementPattern7DT_2T ::_refine_matrix_2[2][4][5] = { /* 
 /*---------------------------------------------------------------------------*/
 
 const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* const */
-	    // sommets du tétraèdre supérieur
-		// refine_matrix pour l'enfant 0
+	    // vertices of the upper tetrahedron
+		// refine_matrix for child 0
 		{
 				//  0   1    2    3   4
 			    {1.0,  0.0,  0.0,  0.0, 0.0 }, // 0
@@ -4717,7 +4717,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.75, 0.0, 0.25, 0.0, 0.0 }, // 13
 				{0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0,  0.0,  0.25, 0.0 }, // 15
@@ -4725,7 +4725,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.75, 0.0,  0.25, 0.0, 0.0 }, // 13
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 2
+		// refine_matrix for child 2
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
@@ -4733,7 +4733,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0, 0.75, 0.25, 0.0, 0.0 }, // 11
 				{0.0, 0.75, 0.0, 0.25, 0.0 }, // 17
 		},
-		// refine_matrix pour l'enfant 3
+		// refine_matrix for child 3
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0,  0.0, 0.0 }, // 10
@@ -4741,7 +4741,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.75, 0.25, 0.0, 0.0 }, // 11
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 4
+		// refine_matrix for child 4
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
@@ -4749,7 +4749,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0, 0.0, 1.0, 0.0, 0.0 }, // 2
 				{0.0, 0.0, 0.75, 0.25, 0.0 }, // 19
 		},
-		// refine_matrix pour l'enfant 5
+		// refine_matrix for child 5
 		{
 				//  0   1    2    3   4
 				{0.0,  0.25, 0.75, 0.0, 0.0 }, // 12
@@ -4757,7 +4757,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.25, 0.0,  0.75, 0.0, 0.0  }, // 14
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 6
+		// refine_matrix for child 6
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0, 0.0, 0.75, 0.0 }, // 16
@@ -4765,7 +4765,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
 				{0.0, 0.0, 0.0, 1.0, 0.0 }, // 3
 		},
-		// refine_matrix pour l'enfant 7
+		// refine_matrix for child 7
 		{
 				//  0   1    2    3   4
 				{0.0,  0.0,  0.25, 0.75, 0.0 }, // 20
@@ -4773,8 +4773,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.25, 0.0,  0.0,  0.75, 0.0 }, // 16
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// hexagone 1
-		// refine_matrix pour l'enfant 8
+		// hexagon 1
+		// refine_matrix for child 8
 		{
 				//  0   1    2    3   4
 			    {0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
@@ -4782,7 +4782,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 9
+		// refine_matrix for child 9
 		{
 				//  0   1    2    3   4
 				{0.75, 0.25, 0.0,  0.0, 0.0 }, // 9
@@ -4790,7 +4790,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 10
+		// refine_matrix for child 10
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
@@ -4798,7 +4798,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 11
+		// refine_matrix for child 11
 		{
 				//  0   1    2    3   4
 				{0.0, 0.75, 0.0, 0.25, 0.0 }, // 17
@@ -4806,7 +4806,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 12
+		// refine_matrix for child 12
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25, 0.0, 0.75, 0.0 }, // 18
@@ -4814,7 +4814,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 13
+		// refine_matrix for child 13
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0, 0.0, 0.75, 0.0 }, // 16
@@ -4822,8 +4822,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// hexagone 2
-		// refine_matrix pour l'enfant 14
+		// hexagon 2
+		// refine_matrix for child 14
 		{
 				//  0   1    2    3   4
 				{0.0, 0.75, 0.0, 0.25, 0.0 }, // 17
@@ -4831,7 +4831,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 15
+		// refine_matrix for child 15
 		{
 				//  0   1    2    3   4
 				{0.0, 0.75, 0.25, 0.0, 0.0 }, // 11
@@ -4839,7 +4839,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 16
+		// refine_matrix for child 16
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
@@ -4847,7 +4847,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 17
+		// refine_matrix for child 17
 		{
 				//  0   1    2    3   4
 				{0.0, 0.0, 0.75, 0.25, 0.0 }, // 19
@@ -4855,7 +4855,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 18
+		// refine_matrix for child 18
 		{
 				//  0   1    2    3   4
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
@@ -4863,7 +4863,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 19
+		// refine_matrix for child 19
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25, 0.0, 0.75, 0.0 }, // 18
@@ -4871,8 +4871,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// hexagone 3
-		// refine_matrix pour l'enfant 20
+		// hexagon 3
+		// refine_matrix for child 20
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
@@ -4880,7 +4880,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.33, 0.0 }, // 8
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 21
+		// refine_matrix for child 21
 		{
 				//  0   1    2    3   4
 			    {0.75, 0.0, 0.25, 0.0, 0.0 }, // 13
@@ -4888,7 +4888,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.33, 0.0 }, // 8
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 22
+		// refine_matrix for child 22
 		{
 				//  0   1    2    3   4
 			    {0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
@@ -4896,7 +4896,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.33, 0.0 }, // 8
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 23
+		// refine_matrix for child 23
 		{
 				//  0   1    2    3   4
 			    {0.0, 0.0, 0.75, 0.25, 0.0 }, // 19
@@ -4904,7 +4904,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0, 0.33, 0.33, 0.0 }, // 8
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-			// refine_matrix pour l'enfant 24
+			// refine_matrix for child 24
 		{
 				//  0   1    2    3   4
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
@@ -4912,7 +4912,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0, 0.33, 0.33, 0.0 }, // 8
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 25
+		// refine_matrix for child 25
 		{
 				//  0   1    2    3   4
 			    {0.25, 0.0, 0.0, 0.75, 0.0 }, // 16
@@ -4920,8 +4920,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0, 0.33, 0.33, 0.0 }, // 8
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// hexagone 4 (interne)
-		// refine_matrix pour l'enfant 26
+		// hexagon 4 (internal)
+		// refine_matrix for child 26
 		{
 				//  0   1    2    3   4
 				{0.75, 0.25, 0.0,  0.0, 0.0 }, // 9
@@ -4929,7 +4929,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.33, 0.0, 0.0 }, // 5
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 27
+		// refine_matrix for child 27
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
@@ -4937,7 +4937,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.33, 0.0, 0.0 }, // 5
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 28
+		// refine_matrix for child 28
 		{
 				//  0   1    2    3   4
 			    {0.0, 0.75, 0.25, 0.0, 0.0 }, // 11
@@ -4945,7 +4945,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.33, 0.0, 0.0 }, // 5
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 29
+		// refine_matrix for child 29
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
@@ -4953,7 +4953,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.33, 0.0, 0.0 }, // 5
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 30
+		// refine_matrix for child 30
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
@@ -4961,7 +4961,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.33, 0.0, 0.0 }, // 5
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 31
+		// refine_matrix for child 31
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0, 0.25, 0.0, 0.0 }, // 13
@@ -4969,8 +4969,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.33, 0.0, 0.0 }, // 5
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// hexagone 5 (interne)
-		// refine_matrix pour l'enfant 32
+		// hexagon 5 (internal)
+		// refine_matrix for child 32
 		{
 				//  0   1    2    3   4
 				{0.75, 0.25, 0.0,  0.0, 0.0 }, // 9
@@ -4978,7 +4978,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 33
+		// refine_matrix for child 33
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
@@ -4986,7 +4986,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0, 0.75, 0.25, 0.0, 0.0 }, // 11
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 34
+		// refine_matrix for child 34
 		{
 				//  0   1    2    3   4
 			    {0.0, 0.75, 0.25, 0.0, 0.0 }, // 11
@@ -4994,7 +4994,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 35
+		// refine_matrix for child 35
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
@@ -5002,7 +5002,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 36
+		// refine_matrix for child 36
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
@@ -5010,7 +5010,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.75, 0.0, 0.25, 0.0, 0.0 }, // 13
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 37
+		// refine_matrix for child 37
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0, 0.25, 0.0, 0.0 }, // 13
@@ -5018,8 +5018,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.75, 0.25, 0.0,  0.0, 0.0 }, // 9
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// hexagone 6
-		// refine_matrix pour l'enfant 38
+		// hexagon 6
+		// refine_matrix for child 38
 		{
 				//  0   1    2    3   4
 				{0.75, 0.25, 0.0,  0.0, 0.0  }, // 9
@@ -5027,7 +5027,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 39
+		// refine_matrix for child 39
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0,  0.0, 0.0, 0.25  },  // 22
@@ -5035,7 +5035,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 40
+		// refine_matrix for child 40
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0,  0.0, 0.0, 0.75  },  // 23
@@ -5043,7 +5043,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 41
+		// refine_matrix for child 41
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
@@ -5051,7 +5051,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 42
+		// refine_matrix for child 42
 		{
 				//  0   1    2    3   4
 				{0.0, 0.75,  0.0, 0.0, 0.25  },  // 24
@@ -5059,7 +5059,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 43
+		// refine_matrix for child 43
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0,  0.0, 0.0  }, // 10
@@ -5067,8 +5067,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// hexagone 7
-		// refine_matrix pour l'enfant 44
+		// hexagon 7
+		// refine_matrix for child 44
 		{
 				//  0   1    2    3   4
 				{0.0,  0.75, 0.25, 0.0, 0.0  }, // 11
@@ -5076,7 +5076,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 45
+		// refine_matrix for child 45
 		{
 				//  0   1    2    3   4
 				{0.0, 0.75,  0.0, 0.0, 0.25  },  // 24
@@ -5084,7 +5084,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 46
+		// refine_matrix for child 46
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
@@ -5092,7 +5092,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 47
+		// refine_matrix for child 47
 		{
 				//  0   1    2    3   4
 				{0.0,  0.0, 0.25, 0.0, 0.75  },  // 27
@@ -5100,7 +5100,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 48
+		// refine_matrix for child 48
 		{
 				//  0   1    2    3   4
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
@@ -5108,7 +5108,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 49
+		// refine_matrix for child 49
 		{
 				//  0   1    2    3   4
 				{0.0,  0.25, 0.75, 0.0, 0.0  }, // 12
@@ -5116,8 +5116,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// hexagone 8
-		// refine_matrix pour l'enfant 50
+		// hexagon 8
+		// refine_matrix for child 50
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0,  0.25, 0.0, 0.0  }, // 13
@@ -5125,7 +5125,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 51
+		// refine_matrix for child 51
 		{
 				//  0   1    2    3   4
 				{0.75, 0.0,  0.0, 0.0, 0.25  },  // 22
@@ -5133,7 +5133,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 52
+		// refine_matrix for child 52
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0,  0.0, 0.0, 0.75  },  // 23
@@ -5141,7 +5141,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 53
+		// refine_matrix for child 53
 		{
 				//  0   1    2    3   4
 				{0.0,  0.0, 0.25, 0.0, 0.75  },  // 27
@@ -5149,7 +5149,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 54
+		// refine_matrix for child 54
 		{
 				//  0   1    2    3   4
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
@@ -5157,7 +5157,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 55
+		// refine_matrix for child 55
 		{
 				//  0   1    2    3   4
 				{0.25, 0.0,  0.75, 0.0, 0.0  }, // 14
@@ -5165,8 +5165,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-        // sommets du tétraèdre inférieur
-        // refine_matrix pour l'enfant 56
+        // vertices of the lower tetrahedron
+        // refine_matrix for child 56
 		{
 				//  0   1    2    3   4
 				{1.0,  0.0,  0.0,  0.0, 0.0 }, // 0
@@ -5174,7 +5174,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.75, 0.25, 0.0,  0.0, 0.0  }, // 9
 				{0.75, 0.0,  0.0, 0.0, 0.25  },  // 22
 		},
-		// refine_matrix pour l'enfant 57
+		// refine_matrix for child 57
 		{
 				//  0   1    2    3   4
 				{0.75, 0.25, 0.0,  0.0, 0.0  }, // 9
@@ -5182,7 +5182,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.75, 0.0,  0.25, 0.0, 0.0  }, // 13
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 58
+		// refine_matrix for child 58
 		{
 				//  0   1    2    3   4
 				{0.0,  0.25, 0.75, 0.0, 0.0  }, // 12
@@ -5190,7 +5190,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.25, 0.0,  0.75, 0.0, 0.0  }, // 14
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
 		},
-		// refine_matrix pour l'enfant 59
+		// refine_matrix for child 59
 		{
 				//  0   1    2    3   4
 				{0.0,  0.25, 0.75, 0.0, 0.0  }, // 12
@@ -5198,7 +5198,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 60
+		// refine_matrix for child 60
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0,  0.0, 0.0  }, // 10
@@ -5206,7 +5206,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  1.0,  0.0,  0.0, 0.0 }, // 1
 				{0.0, 0.75,  0.0, 0.0, 0.25  },  // 24
 		},
-		// refine_matrix pour l'enfant 61
+		// refine_matrix for child 61
 		{
 				//  0   1    2    3   4
 				{0.25, 0.75, 0.0,  0.0, 0.0  }, // 10
@@ -5214,7 +5214,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.75, 0.25, 0.0, 0.0  }, // 11
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 62
+		// refine_matrix for child 62
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
@@ -5222,7 +5222,7 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 				{0.0,  0.0, 0.25, 0.0, 0.75  },  // 27
 				{0.0,  0.0,  0.0,  0.0, 1.0 }, // 4
 		},
-		// refine_matrix pour l'enfant 63
+		// refine_matrix for child 63
 		{
 				//  0   1    2    3   4
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
@@ -5236,8 +5236,8 @@ const double DiTetra5RefinementPattern64T ::_refine_matrix_1[64][4][5] = { /* co
 /*---------------------------------------------------------------------------*/
 
 const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* const */
-		// sommets du tétraèdre supérieur
-		// refine_matrix pour l'enfant 0
+		// vertices of the upper tetrahedron
+		// refine_matrix for child 0
 		{
 				// 0    1     2     3    4
 				{0.75, 0.25, 0.0,  0.0, 0.0 }, // 9
@@ -5246,7 +5246,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{1.0,  0.0,  0.0,  0.0, 0.0 }, // 0
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.75, 0.0,  0.25, 0.0 }, // 17
@@ -5255,7 +5255,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 1.0, 0.0, 0.0, 0.0 }, // 1
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0, 0.0, 0.75, 0.25, 0.0 }, // 19
@@ -5264,7 +5264,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.0, 1.0, 0.0, 0.0 }, // 2
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.25, 0.0, 0.0, 0.75, 0.0 }, // 16
@@ -5273,8 +5273,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.0, 0.0, 1.0, 0.0 }, // 3
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 		},
-		// hexagone 1
-		// refine_matrix pour l'enfant 1
+		// hexagon 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
@@ -5283,7 +5283,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
 				{0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
@@ -5292,7 +5292,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.25, 0.0, 0.75, 0.0 }, // 18
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.33, 0.0,  0.33, 0.0 }, // 6
@@ -5301,8 +5301,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
 				{0.0, 0.25, 0.0, 0.75, 0.0 }, // 18
 		},
-		// hexagone 2
-		// refine_matrix pour l'enfant 1
+		// hexagon 2
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
@@ -5311,7 +5311,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
 				{0.0, 0.75, 0.0, 0.25, 0.0 }, // 17
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
@@ -5320,7 +5320,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.33, 0.33, 0.33, 0.0 }, // 7
@@ -5329,8 +5329,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.75, 0.0, 0.25, 0.0 }, // 17
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
 		},
-		// hexagone 3
-		// refine_matrix pour l'enfant 1
+		// hexagon 3
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.0,  0.33, 0.33, 0.0 }, // 8
@@ -5339,7 +5339,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.0,  0.33, 0.33, 0.0 }, // 8
@@ -5348,7 +5348,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
 				{0.75, 0.0, 0.0, 0.25, 0.0 }, // 15
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.0,  0.33, 0.33, 0.0 }, // 8
@@ -5357,8 +5357,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
 				{0.0, 0.0, 0.25, 0.75, 0.0 }, // 20
 		},
-		//hexagones 4 et 5
-		// refine_matrix pour l'enfant 1
+		// hexagons 4 and 5
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.75, 0.25, 0.0,  0.0, 0.0 }, // 9
@@ -5367,7 +5367,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.25, 0.75, 0.0, 0.0, 0.0 }, // 10
@@ -5376,7 +5376,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0, 0.75, 0.25, 0.0, 0.0 }, // 11
@@ -5385,7 +5385,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0, 0.25, 0.75, 0.0, 0.0 }, // 12
@@ -5394,7 +5394,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.25, 0.0, 0.75, 0.0, 0.0 }, // 14
@@ -5403,7 +5403,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.75, 0.0, 0.25, 0.0, 0.0 }, // 13
@@ -5412,8 +5412,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.25, 0.25, 0.25, 0.0 }, // 21
 				{0.25, 0.25, 0.25, 0.0, 0.25 }, // 31
 		},
-		// hexagone 6
-		// refine_matrix pour l'enfant 1
+		// hexagon 6
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
@@ -5422,7 +5422,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.0,  0.0, 0.0, 0.75  },  // 23
 				{0.75, 0.25, 0.0,  0.0, 0.0  }, // 9
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
@@ -5431,7 +5431,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.75,  0.0, 0.0, 0.25  },  // 24
 				{0.25, 0.0,  0.0, 0.0, 0.75  },  // 23
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.33, 0.0, 0.0,  0.33  }, // 28
@@ -5440,8 +5440,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.75, 0.25, 0.0,  0.0, 0.0  }, // 9
 				{0.0, 0.75,  0.0, 0.0, 0.25  },  // 24
 		},
-		// hexagone 7
-		// refine_matrix pour l'enfant 1
+		// hexagon 7
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
@@ -5450,7 +5450,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
 				{0.0,  0.75, 0.25, 0.0, 0.0  }, // 11
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
@@ -5459,7 +5459,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.33, 0.33, 0.0, 0.33  }, // 29
@@ -5468,8 +5468,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0,  0.75, 0.25, 0.0, 0.0  }, // 11
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
 		},
-		// hexagone 8
-		// refine_matrix pour l'enfant 1
+		// hexagon 8
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
@@ -5478,7 +5478,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.75, 0.0,  0.25, 0.0, 0.0  }, // 13
 				{0.25, 0.0,  0.0, 0.0, 0.75  },  // 23
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
@@ -5487,7 +5487,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
 				{0.75, 0.0,  0.25, 0.0, 0.0  }, // 13
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.33, 0.0,  0.33, 0.0, 0.33  }, // 30
@@ -5496,8 +5496,8 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.25, 0.0,  0.0, 0.0, 0.75  },  // 23
 				{0.0,  0.0, 0.75, 0.0, 0.25  },  // 26
 		},
-		// sommets du tétraèdre inférieur
-		// refine_matrix pour l'enfant 1
+		// vertices of the lower tetrahedron
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.75, 0.25, 0.0,  0.0, 0.0  }, // 9
@@ -5506,7 +5506,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{1.0,  0.0,  0.0,  0.0, 0.0 }, // 0
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0,  0.25, 0.75, 0.0, 0.0  }, // 12
@@ -5515,7 +5515,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0,  0.0,  1.0,  0.0, 0.0 }, // 2
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.25, 0.75, 0.0,  0.0, 0.0  }, // 10
@@ -5524,7 +5524,7 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 				{0.0,  1.0,  0.0,  0.0, 0.0 }, // 1
 				{0.25, 0.25, 0.25, 0.0, 0.25  }, // 31
 		},
-		// refine_matrix pour l'enfant 1
+		// refine_matrix for child 1
 		{
 				// 0     1     2     3     4
 				{0.0, 0.25,  0.0, 0.0, 0.75  },  // 25
@@ -5542,4 +5542,3 @@ const double DiTetra5RefinementPattern32DT ::_refine_matrix_1[32][5][5] = { /* c
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

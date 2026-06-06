@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CaseOptionTypes.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Définition des types liés aux options du jeu de données.                  */
+/* Definition of types related to dataset options.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONTYPES_H
 #define ARCANE_CORE_CASEOPTIONTYPES_H
@@ -24,15 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file CaseOptionTypes.h
  *
- * \brief Déclarations des types liés aux options du jeu de données.
+ * \brief Declarations of types related to dataset options.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Phases de la lecture
+//! Reading phases
 enum class eCaseOptionReadPhase
 {
   Phase1,

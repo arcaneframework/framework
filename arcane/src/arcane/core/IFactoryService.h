@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IFactoryService.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service de fabrique.                                       */
+/* Factory service interface.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IFACTORYSERVICE_H
 #define ARCANE_CORE_IFACTORYSERVICE_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une fabrique sur une classe implémentant \a InterfaceType.
+ * \brief Factory interface for a class implementing \a InterfaceType.
  */
 template <typename InterfaceType>
 class IFactoryServiceT
@@ -40,25 +41,25 @@ class IFactoryServiceT
  public:
 
   /*!
-   * \brief Créé une instance.
+   * \brief Create an instance.
    *
-   * L'objet retourné est garanti ne pas être nul.
+   * The returned object is guaranteed not to be null.
    */
   virtual InterfaceType* createInstance() = 0;
 
   /*!
-   * \brief Créé une instance pour le maillage \a mesh.
+   * \brief Create an instance for the mesh \a mesh.
    *
-   * Seuls les service de sous-domaine supporte ce type de création.
+   * Only subdomain services support this type of creation.
    *
-   * L'objet retourné est garanti ne pas être nul.
+   * The returned object is guaranteed not to be null.
    */
   virtual InterfaceType* createInstance(IMesh* mesh) = 0;
 
-  /*! \brief Créé une instance singleton.
+  /*! \brief Create a singleton instance.
    *
-   * L'objet retourné est garanti ne pas être nul. L'instance retournée
-   * est toujours la même.
+   * The returned object is guaranteed not to be null. The returned instance
+   * is always the same.
    */
   virtual InterfaceType* singletonInstance() = 0;
 };
@@ -71,5 +72,4 @@ class IFactoryServiceT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

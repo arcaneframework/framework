@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDataFactoryMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de fabrique de données.                         */
+/* Interface of the data factory manager.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAFACTORYMNG_H
 #define ARCANE_CORE_IDATAFACTORYMNG_H
@@ -26,15 +26,16 @@ class IDataFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du gestionnaire de fabrique d'une donnée.
+ * \brief Interface of the data factory manager.
  *
- * \note Cette interface remplace 'IDataFactory'
+ * \note This interface replaces 'IDataFactory'
  *
- * Cette interface permet d'enregistrer des fabriques pour créér des 'IData'
- * (via registerDataStorageFactory()) et de construire la bonne instance de
- * IData via l'appel à createSimpleDataRef().
+ * This interface allows registering factories to create 'IData'
+ * (via registerDataStorageFactory()) and to construct the correct IData instance
+ * by calling createSimpleDataRef().
  */
 class IDataFactoryMng
 {
@@ -44,39 +45,39 @@ class IDataFactoryMng
 
  public:
 
-  //! Construit l'instance
+  //! Builds the instance
   virtual void build() =0;
 
-  //! Gestionnaire de trace associé
+  //! Associated trace manager
   virtual ITraceMng* traceMng() const =0;
 
-  //! Enregistre la fabrique \a factory.
+  //! Registers the factory \a factory.
   virtual void registerDataStorageFactory(Ref<IDataStorageFactory> factory) =0;
 
   /*
-   * \brief Créé une donnée.
+   * \brief Creates a data object.
    *
-   * La fabrique utilisée pour créér la donnée est issu d'une instance de DataStorageTypeInfo via
-   * l'utilisation de la méthode DataStorageTypeInfo::fullName().
+   * The factory used to create the data is derived from a DataStorageTypeInfo instance using
+   * the DataStorageTypeInfo::fullName() method.
    */
   virtual Ref<IData>
   createSimpleDataRef(const String& storage_type,const DataStorageBuildInfo& build_info) =0;
 
   /*!
-   * \brief Créé une opération effectuant une réduction de type \a rt.
+   * \brief Creates an operation performing a reduction of type \a rt.
    */
   virtual IDataOperation* createDataOperation(Parallel::eReduceType rt) =0;
 
   /*!
-   * \brief Créé des données sérialisées.
+   * \brief Creates serialized data.
    *
-   * les tableaux \a dimensions et \a values ne sont pas dupliqués et ne doivent
-   * pas être modifiés tant que l'objet sérialisé est utilisé.
+   * The arrays \a dimensions and \a values are not duplicated and must not
+   * be modified while the serialized object is in use.
    *
-   * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int16, \a DT_Int32,
-   * \a DT_Int64 ou DT_Real.
+   * The \a data_type must be one of the types: \a DT_Byte, \a DT_Int16, \a DT_Int32,
+   * \a DT_Int64, or DT_Real.
    *
-   * \deprecated Utiliser arcaneCreateSerializedDataRef() à la place
+   * \deprecated Use arcaneCreateSerializedDataRef() instead
    */
   ARCCORE_DEPRECATED_2021("Use global method arcaneCreateSerializedDataRef() instead")
   virtual Ref<ISerializedData>
@@ -86,17 +87,17 @@ class IDataFactoryMng
                           Int64ConstArrayView dimensions) =0;
 
   /*!
-   * \brief Créé des données sérialisées.
+   * \brief Creates serialized data.
    *
-   * la donnée sérialisée est vide. Elle ne pourra être utilisée qu'après un
-   * appel à ISerializedData::serialize() en mode ISerializer::ModePut.
+   * The serialized data is empty. It can only be used after calling an
+   * ISerializedData::serialize() in ISerializer::ModePut mode.
    *
-   * \deprecated Utiliser arcaneCreateEmptySerializedDataRef() à la place.
+   * \deprecated Use arcaneCreateEmptySerializedDataRef() instead.
    */
   ARCCORE_DEPRECATED_2021("Use global method arcaneCreateEmptySerializedDataRef() instead")
   virtual Ref<ISerializedData> createEmptySerializedDataRef() =0;
 
-  //! Récupère l'ancienne fabrique (obsolète)
+  //! Retrieves the old factory (obsolete)
   ARCCORE_DEPRECATED_2021("Do not use deprecated interface 'IDataFactory'")
   virtual IDataFactory* deprecatedOldFactory() const =0;
 };
@@ -109,4 +110,4 @@ class IDataFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

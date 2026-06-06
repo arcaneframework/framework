@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemBase.h                                       (C) 2000-2024 */
 /*                                                                           */
-/* Informations génériques sur une entité d'un constituant.                  */
+/* General information about a constituent entity.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CONSTITUENTITEMBASE_H
 #define ARCANE_CORE_MATERIALS_CONSTITUENTITEMBASE_H
@@ -27,14 +27,15 @@ namespace Arcane::Materials::matimpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations génériques sur une entité d'un constituant.
+ * \brief General information about a constituent entity.
  *
- * Cette classe est le pendant de ItemInternal pour la gestion des matériaux
- * et des milieux. Elle ne doit en principe pas être utilisée directement, sauf
- * par les classes de Arcane. Il vaut mieux utiliser les
- * classes ComponentCell,  MatCell, EnvCell ou AllEnvCell.
+ * This class is the counterpart of ItemInternal for managing materials
+ * and environments. In principle, it should not be used directly, except
+ * by Arcane classes. It is better to use the
+ * ComponentCell, MatCell, EnvCell, or AllEnvCell classes.
  */
 class ARCANE_CORE_EXPORT ConstituentItemBase
 {
@@ -60,7 +61,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
  public:
 
-  //! Indexeur dans les variables matériaux
+  //! Indexer in material variables
   ARCCORE_HOST_DEVICE MatVarIndex variableIndex() const
   {
     return m_shared_info->_varIndex(m_constituent_item_index);
@@ -71,36 +72,36 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
     return m_constituent_item_index;
   }
 
-  //! Identifiant du composant
+  //! Component identifier
   ARCCORE_HOST_DEVICE Int32 componentId() const
   {
     return m_shared_info->_componentId(m_constituent_item_index);
   }
 
-  //! Indique s'il s'agit de la maille nulle.
+  //! Indicates if it is the null mesh.
   inline ARCCORE_HOST_DEVICE constexpr bool null() const
   {
     return m_constituent_item_index.isNull();
   }
 
   /*!
-   * \brief Composant associé.
+   * \brief Associated component.
    *
-   * Cet appel n'est valide que pour les mailles matériaux ou milieux. Si on souhaite
-   * un appel valide pour toutes les 'ComponentItem', il faut utiliser componentId().
+   * This call is only valid for material or environment meshes. If you want
+   * a valid call for all 'ComponentItem's, you must use componentId().
    */
   inline IMeshComponent* component() const
   {
     return m_shared_info->_component(m_constituent_item_index);
   }
 
-  //! Nombre de sous-composants.
+  //! Number of sub-components.
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const
   {
     return m_shared_info->_nbSubConstituent(m_constituent_item_index);
   }
 
-  //! Entité globale correspondante.
+  //! Corresponding global entity.
   inline impl::ItemBase globalItemBase() const
   {
     return m_shared_info->_globalItemBase(m_constituent_item_index);
@@ -111,7 +112,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
     return m_shared_info->m_level;
   }
 
-  //! Numéro unique de l'entité component
+  //! Unique ID of the component entity
   inline Int64 componentUniqueId() const
   {
     return m_shared_info->_componentUniqueId(m_constituent_item_index);
@@ -132,13 +133,13 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
  private:
 
-  //! Positionne l'indexeur dans les variables matériaux.
+  //! Positions the indexer in material variables.
   ARCCORE_HOST_DEVICE inline void _setVariableIndex(MatVarIndex index)
   {
     m_shared_info->_setVarIndex(m_constituent_item_index, index);
   }
 
-  //! Composant supérieur (0 si aucun)
+  //! Parent component (0 if none)
   ARCCORE_HOST_DEVICE inline matimpl::ConstituentItemBase _superItemBase() const;
 
   ARCCORE_HOST_DEVICE inline void _setSuperAndGlobalItem(ConstituentItemIndex cii, ItemLocalId ii)
@@ -152,7 +153,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
     m_shared_info->_setGlobalItem(m_constituent_item_index, ii);
   }
 
-  //! Première entité sous-composant.
+  //! First sub-component entity.
   inline ARCCORE_HOST_DEVICE ConstituentItemIndex _firstSubItemLocalId() const
   {
     return m_shared_info->_firstSubConstituentLocalId(m_constituent_item_index);
@@ -160,13 +161,13 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
 
   inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase _subItemBase(Int32 i) const;
 
-  //! Positionne le nombre de sous-composants.
+  //! Positions the number of sub-components.
   ARCCORE_HOST_DEVICE void _setNbSubItem(Int16 nb_sub_item)
   {
     m_shared_info->_setNbSubConstituent(m_constituent_item_index, nb_sub_item);
   }
 
-  //! Positionne le premier sous-composant.
+  //! Positions the first sub-component.
   ARCCORE_HOST_DEVICE void _setFirstSubItem(ConstituentItemIndex first_sub_item)
   {
     m_shared_info->_setFirstSubConstituentLocalId(m_constituent_item_index, first_sub_item);
@@ -239,10 +240,10 @@ _subItemBase(Int32 i) const
 
 /*!
  * \internal
- * \brief Vue sur une instance de ConstituentItemLocalIdList.
+ * \brief View of a ConstituentItemLocalIdList instance.
  *
- * Les instances de ces classes sont notamment utilisées pour les énumérateurs
- * sur les constituants.
+ * Instances of these classes are notably used for enumerators
+ * over constituents.
  */
 class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 {
@@ -281,7 +282,7 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
   {
     return { m_component_shared_info, m_ids.subView(begin, size) };
   }
-  //! Pour les tests, vérifie que les vues pointent vers les mêmes données
+  //! For tests, verifies that the views point to the same data
   bool _isSamePointerData(const ConstituentItemLocalIdListView& rhs) const
   {
     return (m_ids.data() == rhs.m_ids.data());
@@ -301,9 +302,9 @@ class ARCANE_CORE_EXPORT ConstituentItemLocalIdListView
 
  private:
 
-  // NOTE: Cette classe est wrappé directement en C#.
-  // Si on modifie les champs de cette classe il faut modifier le type correspondant
-  // dans le wrappeur.
+  // NOTE: This class is wrapped directly in C#.
+  // If the fields of this class are modified, the corresponding type must be modified
+  // in the wrapper.
   ComponentItemSharedInfo* m_component_shared_info = nullptr;
   ConstArrayView<ConstituentItemIndex> m_ids;
 

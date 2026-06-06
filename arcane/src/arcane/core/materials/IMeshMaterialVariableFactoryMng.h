@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialVariableFactoryMng.h                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de fabrique de variables matériaux.             */
+/* Interface of the material variable factory manager.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
 #define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
@@ -25,9 +25,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du gestionnaire de fabrique de variables matériaux.
+ * \brief Interface of the material variable factory manager.
  */
 class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 {
@@ -37,16 +38,16 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 
  public:
 
-  //! Construit l'instance
+  //! Builds the instance
   virtual void build() =0;
 
-  //! Gestionnaire de trace associé
+  //! Associated trace manager
   virtual ITraceMng* traceMng() const =0;
 
-  //! Enregistre la fabrique \a factory.
+  //! Registers the factory \a factory.
   virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
 
-  //! Créé une variable matériau.
+  //! Creates a material variable.
   virtual IMeshMaterialVariable*
   createVariable(const String& storage_type,
                  const MaterialVariableBuildInfo& build_info) =0;
@@ -60,4 +61,4 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

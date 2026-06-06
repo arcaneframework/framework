@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPartialVariableScalarRef.inst.h                         (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des classes dérivant de MeshPartialVariableScalarRef.      */
+/* Implementation of classes deriving from MeshPartialVariableScalarRef.     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -170,11 +170,11 @@ MeshPartialVariableScalarRefT<ItemType,DataType>::
 MeshPartialVariableScalarRefT(const VariableBuildInfo& vb)
 : ItemPartialVariableScalarRefT<DataType>(vb,ItemTraitsT<ItemType>::kind())
 {
-  // Normalement, c'est à cette classe de faire l'initialisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableScalarRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableScalarRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows for generic variable creation on a mesh entity
+  // based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
@@ -185,11 +185,11 @@ MeshPartialVariableScalarRefT<ItemType,DataType>::
 MeshPartialVariableScalarRefT(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs)
 : ItemPartialVariableScalarRefT<DataType>(rhs)
 {
-  // Normalement, c'est à cette classe de faire l'initialisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableScalarRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableScalarRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows for generic variable creation on a mesh entity
+  // based on its type.
 }
 
 /*---------------------------------------------------------------------------*/

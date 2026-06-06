@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IServiceMng.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des services.                                   */
+/* Service manager interface.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERVICEMNG_H
 #define ARCANE_CORE_ISERVICEMNG_H
@@ -24,30 +24,31 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de services.
+ * \brief Service manager interface.
  */
 class IServiceMng
 {
  public:
 
-  virtual ~IServiceMng() = default; //!< Libère les ressources.
+  virtual ~IServiceMng() = default; //!< Releases resources.
 
  public:
 
-  //! Gestionnaire de trace associé
+  //! Associated trace manager
   virtual ITraceMng* traceMng() const =0;
 
-  //! Ajoute une référence au service \a sv
+  //! Adds a reference to the service \a sv
   virtual void addSingletonInstance(SingletonServiceInstanceRef sv) =0;
 
-  //! Retourne la liste des services singleton
+  //! Returns the list of singleton services
   virtual SingletonServiceInstanceCollection singletonServices() const =0;
 
   /*!
-   * Service singleton de nom \a name.
+   * Singleton service named \a name.
    *
-   * Retourne une référence nulle si aucune instance de nom \a name n'existe.
+   * Returns a null reference if no instance of name \a name exists.
    */
   virtual SingletonServiceInstanceRef singletonServiceReference(const String& name) const =0;
 };
@@ -60,5 +61,4 @@ class IServiceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

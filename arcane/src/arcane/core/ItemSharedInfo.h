@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Informations communes à plusieurs entités.                                */
+/* Common information for multiple entities.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMSHAREDINFO_H
 #define ARCANE_CORE_ITEMSHAREDINFO_H
@@ -41,15 +41,16 @@ class ItemInternalConnectivityList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Structure interne partagée d'une entité de maillage.
+ * \brief Internal shared structure of a mesh entity.
  *
- * Cette classe renferme des informations communes à plusieurs entités.
+ * This class holds common information for multiple entities.
  *
- * Comme une instance de cette classe est partagée par plusieurs entités, il
- * ne faut en cas la modifier directement. C'est à l'implémentation (Mesh)
- * de fournir un mécanisme gérant les instances de cette classe.
+ * Since an instance of this class is shared by multiple entities, it
+ * should not be modified directly. It is up to the implementation (Mesh)
+ * to provide a mechanism managing instances of this class.
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
@@ -78,8 +79,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  // TODO: Rendre privé. Il faut passer maintenant passer par nullInstance()
-  //! Pour l'entité nulle
+  // TODO: Make private. Access must now go through nullInstance()
+  //! For the null entity
   static ItemSharedInfo nullItemSharedInfo;
 
  private:
@@ -96,7 +97,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  // Seule ItemFamily peut créer des instances de cette classe autre que l'instance nulle.
+  // Only ItemFamily can create instances of this class other than the null instance.
   ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity);
 
@@ -177,13 +178,13 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   ItemInternal* _parentV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
   {
-    // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
+    // Currently only one parent is supported, so \a aindex must be 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
     return _parent(m_parent_item_ids[local_id]);
   }
   Int32 _parentLocalIdV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
   {
-    // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
+    // Currently only one parent is supported, so \a aindex must be 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
     return m_parent_item_ids[local_id];
   }
@@ -263,9 +264,9 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  private:
 
   // ATTENTION:
-  // Toute modification de la liste ou du type des champs doit être
-  // reportée dans le wrapper C# (tools/wrapper/core/csharp) et
-  // dans le proxy pour totalview (src/arcane/totalview)
+  // Any modification to the list or the type of fields must be
+  // reported in the C# wrapper (tools/wrapper/core/csharp) and
+  // in the proxy for totalview (src/arcane/totalview)
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
@@ -277,7 +278,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int16ArrayView m_type_ids;
   eItemKind m_item_kind = IK_Unknown;
   Int32 m_nb_parent = 0;
-  ConstArrayView<ItemInternal*> m_items_internal; //!< ItemInternal des entités
+  ConstArrayView<ItemInternal*> m_items_internal; //!< ItemInternal of entities
 
  public:
 
@@ -302,14 +303,14 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  // TODO: a supprimer
+  // TODO: to be removed
   ARCANE_DEPRECATED_REASON("Y2022: COMMON_BASE_MEMORY is always 0")
   static const Int32 COMMON_BASE_MEMORY = 0;
 
  private:
 
   void _init(eItemKind ik);
-  //! Version non optimisée mais robuste d'accès à l'ItemInternalArrayView parent
+  //! Non-optimized but robust version of accessing the parent ItemInternalArrayView
   ItemInternal* _parent(Int32 id) const;
 };
 
