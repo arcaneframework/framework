@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshPartitionConstraint.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une contrainte de partitionnement d'un maillage.              */
+/* Interface of a mesh partitioning constraint.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHPARTITIONCONSTRAINT_H
 #define ARCANE_CORE_IMESHPARTITIONCONSTRAINT_H
@@ -24,49 +24,50 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une contrainte de partitionnement d'un maillage.
+ * \brief Interface of a mesh partitioning constraint.
  *
- * Les instances de cette interface sont gérées par un
+ * Instances of this interface are managed by an
  * IMeshPartitionConstraintMng.
  */
 class IMeshPartitionConstraint
 {
  public:
 
-  virtual ~IMeshPartitionConstraint() = default; //!< Libère les ressources
+  virtual ~IMeshPartitionConstraint() = default; //!< Releases resources
 
  public:
 
   /*!
-   * \brief Ajoute un ensemble de contraintes sur les mailles.
+   * \brief Adds a set of constraints on the meshes.
    *
-   * Ajoute dans le tableau \a linked_cells un ensemble de couples de
-   * uniqueId() de mailles qui doivent rester dans la même partition.
-   * Par exemple, si les mailles 25 et 23 doivent rester connectées, il
-   * suffit d'appeler:
+   * Adds to the \a linked_cells array a set of pairs of
+   * uniqueId() of meshes that must remain in the same partition.
+   * For example, if meshes 25 and 23 must remain connected, it
+   * is enough to call:
    * \code
    * linked_cells.add(23);
    * linked_cells.add(25);
    * \endcode
    *
-   * Il faut toujours ajouter des couples de uniqueId(), en répétant
-   * éventuellement les mailles. Par exemple, si on souhaite
-   * que les mailles 35, 37 et 39,il faut faire comme suit:
+   * You must always add pairs of uniqueId(), potentially repeating
+   * the meshes. For example, if one wishes
+   * that meshes 35, 37, and 39, one must do as follows:
    * \code
    * linked_cells.add(35);
    * linked_cells.add(37);
    * linked_cells.add(35);
    * linked_cells.add(39);
    * \endcode
-   * Le tableau \a linked_cells doit avoir une taille multiple de 2.
-   * Le tableau \a linked owners indique pour chaque couple à quel sous-domaine
-   * il doit appartenir.
+   * The \a linked_cells array must have a size that is a multiple of 2.
+   * The \a linked owners array indicates for each pair which subdomain
+   * it must belong to.
    *
-   * TODO: Supprimer \a linked_owners
+   * TODO: Remove \a linked_owners
    *
-   * \warning : chaque paire doit commencer par la cellule d'uid le plus petit.
-   * Le "owner" indicate for every couple that correspond to the first cell.
+   * \warning: each pair must start with the cell having the smallest uid.
+   * The "owner" indicates for every couple that corresponds to the first cell.
    */
   virtual void addLinkedCells(Int64Array& linked_cells, Int32Array& linked_owners) = 0;
 };
@@ -79,4 +80,4 @@ class IMeshPartitionConstraint
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

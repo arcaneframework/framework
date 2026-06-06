@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IServiceAndModuleFactoryMng.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un gestionnaire de fabriques de services et modules.          */
+/* Interface of a service and module factory manager.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERVICEANDMODULEFACTORYMNG_H
 #define ARCANE_CORE_ISERVICEANDMODULEFACTORYMNG_H
@@ -24,47 +24,47 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un gestionnaire de fabriques de services et modules.
+ * \brief Interface of a service and module factory manager.
  */
 class ARCANE_CORE_EXPORT IServiceAndModuleFactoryMng
 {
  public:
 
-  virtual ~IServiceAndModuleFactoryMng() = default; //!< Libère les ressources.
+  virtual ~IServiceAndModuleFactoryMng() = default; //!< Releases resources.
 
  public:
 
   /*!
-   * \brief Créé toutes les fabriques associées à des ServiceRegisterer.
+   * \brief Creates all factories associated with a ServiceRegisterer.
    *
-   * Cette méthode peut être appelée plusieurs fois si on souhaite
-   * enregistrer les nouveaux services disponibles par exemple
-   * après un chargement dynamique de bibliothèque.
+   * This method can be called multiple times if you wish to register new available services, for example,
+   * after a dynamic library load.
    */
   virtual void createAllServiceRegistererFactories() = 0;
 
  public:
 
-  //! Liste des informations sur les fabriques des services
+  //! List of information about service factories
   virtual ServiceFactoryInfoCollection serviceFactoryInfos() const = 0;
-  //! Liste des informations sur les fabriques des modules
+  //! List of information about module factories
   virtual ServiceFactory2Collection serviceFactories2() const = 0;
-  //! Liste des fabriques de service.
+  //! List of service factories.
   virtual ModuleFactoryInfoCollection moduleFactoryInfos() const = 0;
 
   /*!
-   * \brief Ajoute la fabrique de service \a sfi.
-   * \a sfi ne doit pas être détruit tant que cette instance est utilisée.
-   * Si \a sfi est déjà enregistréé, aucune opération n'est effectuée.
+   * \brief Adds the service factory \a sfi.
+   * \a sfi must not be destroyed while this instance is in use.
+   * If \a sfi is already registered, no operation is performed.
    */
   virtual void addGlobalFactory(IServiceFactoryInfo* sfi) = 0;
 
   /*!
-   * \brief Ajoute la fabrique de module \a mfi.
-   * \a mfi ne doit pas être détruit tant que cette instance est utilisée.
-   * Si \a mfi est déjà enregistréé, aucune opération n'est effectuée.
+   * \brief Adds the module factory \a mfi.
+   * \a mfi must not be destroyed while this instance is in use.
+   * If \a mfi is already registered, no operation is performed.
    */
   virtual void addGlobalFactory(IModuleFactoryInfo* mfi) = 0;
 };
@@ -77,4 +77,4 @@ class ARCANE_CORE_EXPORT IServiceAndModuleFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IVariableSynchronizerMng.h                                  (C) 2000-2023 */
 /*                                                                           */
-/* Interface du gestionnaire de synchronisation des variables.               */
+/* Interface of the variable synchronization manager.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLESYNCHRONIZERMNG_H
@@ -26,8 +26,9 @@ class IVariableSynchronizerMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de synchronisation des variables.
+ * \brief Interface of the variable synchronization manager.
  */
 class ARCANE_CORE_EXPORT IVariableSynchronizerMng
 {
@@ -37,46 +38,46 @@ class ARCANE_CORE_EXPORT IVariableSynchronizerMng
 
  public:
 
-  //! Gestionnaire de parallélisme associé
+  //! Associated parallelism manager
   virtual IParallelMng* parallelMng() const = 0;
 
   /*!
-   * \brief Évènement envoyé en début et fin de synchronisation.
+   * \brief Event sent at the beginning and end of synchronization.
    *
-   * Cet évènement est envoyé lors des appels aux méthodes
-   * de synchronisation IVariableSynchronizer::synchronize(IVariable* var)
-   * et IVariableSynchronizer::synchronize(VariableCollection vars) pour toutes
-   * les instances de IVariableSynchronizer.
+   * This event is sent when calling the methods
+   * IVariableSynchronizer::synchronize(IVariable* var)
+   * and IVariableSynchronizer::synchronize(VariableCollection vars) for all
+   * instances of IVariableSynchronizer.
    */
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 
   /*!
-   * \brief Positionne le niveau de comparaison entre les valeurs avant et après synchronisations.
+   * \brief Sets the comparison level between values before and after synchronization.
    *
-   * Le niveau doit être le même sur l'ensemble des rangs de parallelMng().
+   * The level must be the same across all ranks of parallelMng().
    */
   virtual void setSynchronizationCompareLevel(Int32 v) = 0;
 
-  //! Niveau de comparaison des valeurs avant et après synchronisation
+  //! Comparison level of values before and after synchronization
   virtual Int32 synchronizationCompareLevel() const = 0;
 
-  //! Indique si on effectue les comparaisons des valeurs avant et après synchronisation
+  //! Indicates whether comparisons of values before and after synchronization are performed.
   virtual bool isSynchronizationComparisonEnabled() const = 0;
 
   /*!
-   * \brief Affiche les statistiques sur le flot \a ostr.
+   * \brief Prints statistics to the stream \a ostr.
    *
-   * Il faut avoir traiter les statistiques via l'appel à flushPendingStats()
-   * avant d'appeler cette méthode
+   * Statistics must be processed via the call to flushPendingStats()
+   * before calling this method.
    */
   virtual void dumpStats(std::ostream& ostr) const = 0;
 
   /*!
-   * \brief Traite les statistiques en cours.
+   * \brief Processes pending statistics.
    *
-   * Cette méthode ne fait rien si isComparisonEnabled() vaut \a false.
+   * This method does nothing if isComparisonEnabled() is \a false.
    *
-   * Cette méthode est collective sur parallelMng().
+   * This method is collective on parallelMng().
    */
   virtual void flushPendingStats() = 0;
 

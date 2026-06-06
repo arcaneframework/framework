@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* LitteralExpressionImpl.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une expression littérale contenant un scalaire.          */
+/* Implementation of a literal expression containing a scalar.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_LITTERALEXPRESSIONIMPL_H
 #define ARCANE_CORE_EXPR_LITTERALEXPRESSIONIMPL_H
@@ -33,15 +33,16 @@ class LitteralOperator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implementation d'une expression litterale contenant un scalaire.
+ * \brief Implementation of a literal expression containing a scalar.
  */
 class LitteralExpressionImpl
 : public ExpressionImpl
 {
  public:
 
-  explicit LitteralExpressionImpl (const ScalarVariant& value);
+  explicit LitteralExpressionImpl(const ScalarVariant& value);
 
  public:
 
@@ -52,13 +53,14 @@ class LitteralExpressionImpl
 
  private:
 
-  ScalarVariant m_value; 
+  ScalarVariant m_value;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Operateur de cast generique pour les litteraux.
+ * \brief Generic cast operator for literals.
  */
 class LitteralOperator
 {
@@ -68,13 +70,13 @@ class LitteralOperator
 
  public:
 
-  virtual void evaluate(ExpressionResult* res, ScalarVariant& a)=0;
+  virtual void evaluate(ExpressionResult* res, ScalarVariant& a) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class LitteralOperatorT
 : public LitteralOperator
 {
@@ -82,17 +84,17 @@ class LitteralOperatorT
 
   void evaluate(ExpressionResult* res, ScalarVariant& a) override
   {
-    // allocation du résultat en fonction du type du variant
+    // Allocate the result based on the variant type
     res->allocate(a.type());
 
-    // recuperation des valeurs des operandes
+    // Retrieve the operand values
     ArrayView<T> res_val;
     res->data()->value(res_val);
     T a_val;
     a.value(a_val);
 
     Integer size = res->data()->size();
-    for( Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       res_val[i] = a_val;
   }
 };

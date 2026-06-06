@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshUtils2.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur le maillage.                           */
+/* Various utility functions on the mesh.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -53,7 +53,7 @@ namespace
 
     void addCurrentNodeSetToNode(NodeLocalId node_lid)
     {
-      // Ajoute les entités au nœud.
+      // Adds the entities to the node.
       {
         Int32 nb_node = CheckedConvert::toInt32(node_set.size());
         if (nb_node == 0)
@@ -74,14 +74,14 @@ namespace
     IItemFamily* node_family = nullptr;
     Ref<IIndexedIncrementalItemConnectivity> connectivity_ref;
 
-    // Ensemble des nœuds connectés à un nœud
-    // On utilise un 'std::set' car on veut trier par localId() croissant
-    // pour avoir toujours le même ordre.
+    // Set of nodes connected to a node
+    // We use a 'std::set' because we want to sort by increasing localId()
+    // to always have the same order.
     std::set<Int32> node_set;
 
    private:
 
-    //! Tableau de travail des noeuds connectés à un autre noeud
+    //! Working array of nodes connected to another node
     SmallArray<Int32> connected_items_ids;
 
     IIncrementalItemConnectivity* item_connectivity = nullptr;
@@ -97,10 +97,10 @@ computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
   ARCANE_CHECK_POINTER(mesh);
   NodeNodeConnectivityHelper helper(mesh, connectivity_name);
 
-  // Pour créer la connectivité, parcours l'ensemble des mailles connectées
-  // nœud et ensuite l'ensemble des arêtes de cette maille.
-  // Si un des deux nœuds de l'arête est mon nœud, l'ajoute
-  // à la connectivité.
+  // To create the connectivity, iterate over all connected meshes
+  // nodes and then the set of edges of this mesh.
+  // If one of the two nodes of the edge is my node, add it
+  // to the connectivity.
   ENUMERATE_ (Node, inode, helper.node_family->allItems()) {
     Node node = *inode;
     NodeLocalId node_lid(node.localId());
@@ -116,7 +116,7 @@ computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
           helper.node_set.insert(node0_lid);
       }
     }
-    // Ajoute les entités au nœud.
+    // Adds the entities to the node.
     helper.addCurrentNodeSetToNode(node_lid);
   }
 
@@ -135,16 +135,16 @@ computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivi
 
   Arcane::impl::HashTableMap2<Int32, bool> boundary_node_map;
   Int32 my_rank = mesh->parallelMng()->commRank();
-  // D'abord, ajoute dans \a boundary_node_map la liste des noeuds
-  // situés sur les faces au de bord.
+  // First, add to boundary_node_map the list of nodes
+  // located on the boundary faces.
   ENUMERATE_ (Face, iface, mesh->allFaces()) {
     Face face = *iface;
     Int32 nb_cell = face.nbCell();
     if (nb_cell == 2) {
       Int32 nb_own = 0;
-      // Si deux mailles connectées, il faut que l'un seulement des propriétaires
-      // de ces deux mailles soit le mien (sinon c'est une face interne et donc on
-      // ne la traite pas).
+      // If two connected meshes, only one of the owners
+      // of these two meshes is mine (otherwise it is an internal face and thus we
+      // do not process it).
       if (face.cell(0).owner() == my_rank)
         ++nb_own;
       if (face.cell(1).owner() == my_rank)
@@ -152,16 +152,16 @@ computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivi
       if (nb_own != 1)
         continue;
     }
-    // Si une seule maille, il faut que la face m'appartienne.
+    // If only one mesh, the face must belong to me.
     if (!face.isOwn())
       continue;
     for (NodeLocalId node_id : face.nodeIds())
       boundary_node_map.add(node_id, true);
   }
-  // Maintenant, parcours les noeuds du bord.
-  // Pour chacun parcours les arêtes des mailles connectées à ce nœud
-  // et ajoute le nœud correspondant s'il est aussi sur la frontière
-  // (dans ce cas, il est aussi dans boundary_node_map).
+  // Now, iterate over the boundary nodes.
+  // For each one, iterate over the edges of the meshes connected to this node
+  // and add the corresponding node if it is also on the boundary
+  // (in this case, it is also in boundary_node_map).
   NodeLocalIdToNodeConverter nodes(helper.node_family);
   for (auto [node_lid, _] : boundary_node_map) {
     Node node = nodes[node_lid];

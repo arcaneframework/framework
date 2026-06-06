@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemPairGroupImpl.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un tableau de listes d'entités.                          */
+/* Implementation of an array of lists of entities.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMPAIRGROUPIMPL_H
 #define ARCANE_CORE_ITEMPAIRGROUPIMPL_H
@@ -26,9 +26,10 @@ class ItemPairGroupImplPrivate;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'un tableau de listes d'entités.
+ * \brief Implementation of an array of lists of entities.
  */
 class ARCANE_CORE_EXPORT ItemPairGroupImpl
 : public SharedReference
@@ -37,7 +38,7 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 
   ItemPairGroupImpl();
   ItemPairGroupImpl(const ItemGroup& group, const ItemGroup& sub_group);
-  ~ItemPairGroupImpl() override; //!< Libère les ressources
+  ~ItemPairGroupImpl() override; //!< Releases resources
 
  public:
 
@@ -50,56 +51,56 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 
  public:
 
-  //! Nom du groupe
+  //! Group name
   const String& name() const;
 
-  //! Nombre de références sur le groupe.
+  //! Number of references on the group.
   virtual Integer nbRef() const { return refCount(); }
 
-  //! Retourne \a true si le groupe est nul.
+  //! Returns true if the group is null.
   bool null() const;
 
-  //! Maillage auquel appartient le groupe (0 pour le groupe nul).
+  //! Mesh to which the group belongs (0 for the null group).
   IMesh* mesh() const;
 
-  //! Genre du groupe. Il s'agit du genre de ses éléments.
+  //! Group kind. This is the kind of its elements.
   eItemKind itemKind() const;
 
-  //! Genre du groupe. Il s'agit du genre de ses éléments.
+  //! Group kind. This is the kind of its elements.
   eItemKind subItemKind() const;
 
-  //! Famille à laquelle appartient le groupe (ou 0 si aucune)
+  //! Family to which the group belongs (or 0 if none)
   IItemFamily* itemFamily() const;
 
-  //! Famille à laquelle appartient le groupe (ou 0 si aucune)
+  //! Family to which the group belongs (or 0 if none)
   IItemFamily* subItemFamily() const;
 
-  //! Groupe des entités
+  //! Group of entities
   const ItemGroup& itemGroup() const;
 
-  //! Groupe des sous-entités
+  //! Group of sub-entities
   const ItemGroup& subItemGroup() const;
 
-  //! Nombre d'entités du groupe
+  //! Number of entities in the group
   Integer size() const;
 
-  //! Invalide le groupe
+  //! Invalidates the group
   void invalidate(bool force_recompute);
 
-  //! Vérifie que le groupe est valide.
+  //! Checks that the group is valid.
   void checkValid();
 
   /*!
-   * \brief Réactualise le groupe si nécessaire.
+   * \brief Updates the group if necessary.
    *
-   * Un groupe doit être réactualisée lorsqu'il est devenu invalide, par exemple
-   * suite à un appel à invalidate().
-   * \retval true si le groupe a été réactualisé,
-   * \retval false sinon.
+   * A group must be updated when it becomes invalid, for example
+   * following a call to invalidate().
+   * \retval true if the group was updated,
+   * \retval false otherwise.
    */
   bool checkNeedUpdate();
 
-  //! Change les indices des entités du groupe
+  //! Changes the indices of the group's entities
   void changeIds(IntegerConstArrayView old_to_new_ids);
 
   /*!
@@ -123,7 +124,7 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 
  private:
 
-  ItemPairGroupImplPrivate* m_p = nullptr; //!< Implémentation du groupe
+  ItemPairGroupImplPrivate* m_p = nullptr; //!< Group implementation
 
  public:
 
@@ -143,4 +144,4 @@ class ARCANE_CORE_EXPORT ItemPairGroupImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

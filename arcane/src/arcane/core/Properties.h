@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Properties.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Liste de propriétés.                                                      */
+/* List of properties.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PROPERTIES_H
 #define ARCANE_CORE_PROPERTIES_H
@@ -38,179 +38,180 @@ class PropertiesImplBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste de propriétés.
+ * \brief List of properties.
  *
- * Cette classe gère une liste de propriétés. Une propriété est
- * caractérisée par un nom et une valeur d'un type donnée.
- * Le nom ne doit pas contenir le caractère '.' qui sert de délimiteur
- * pour les hiérarchies de propriétés.
+ * This class manages a list of properties. A property is
+ * characterized by a name and a value of a given type.
+ * The name must not contain the character '.' which serves as a delimiter
+ * for property hierarchies.
  *
- * Les fonctions set*() permettent de positionner une propriété. Les
- * fonctions get*() permettent de récupérer la valeur.
+ * The set*() functions allow positioning a property. The
+ * get*() functions allow retrieving the value.
  *
- * Pour les propriétés scalaires, il existe trois manière de récupérer une
- * valeur. Ces trois méthodes sont équivalentes sauf si la propriété n'a pas été positionnée.
- * - via une surcharge de la méthode get(). Dans le cas où la propriété n'est pas positionnée,
- * la valeur passée en argument est inchangée et la méthode retourne false.
- * - via un appel explicite (par exemple getBool()). Dans le cas où la propriété n'est pas positionnée,
- * c'est la valeur obtenue avec le constructeur par défaut pour le type concerné qui est utilisée.
- * - via un appel explicite avec valeur par défaut possible (par exemple getBoolWithDefault()).
- * Dans le cas où la propriété n'est pas positionnée, c'est la valeur par défaut passée en argument qui
- * est utilisée.
+ * For scalar properties, there are three ways to retrieve a
+ * value. These three methods are equivalent unless the property has not been set.
+ * - via an overload of the get() method. If the property has not been set,
+ * the passed argument value is unchanged and the method returns false.
+ * - via an explicit call (e.g., getBool()). If the property has not been set,
+ * the value obtained with the default constructor for the relevant type is used.
+ * - via an explicit call with a possible default value (e.g., getBoolWithDefault()).
+ * If the property has not been set, the default value passed as an argument is
+ * used.
  *
  */
 class ARCANE_CORE_EXPORT Properties
 {
  public:
-	
-  //! Créé ou récupère une liste de propriétés de nom \a name
-  Properties(IPropertyMng* pm,const String& name);
 
-  //! Créé ou récupère une liste de propriétés de nom \a name et fille de \a parent_property 
-  Properties(const Properties& parent_property,const String& name);
+  //! Creates or retrieves a list of properties with name \a name
+  Properties(IPropertyMng* pm, const String& name);
 
-  //! Constructeur par recopie
+  //! Creates or retrieves a list of properties with name \a name and child of \a parent_property
+  Properties(const Properties& parent_property, const String& name);
+
+  //! Copy constructor
   Properties(const Properties& rhs);
-  //! Opérateur de recopie
+  //! Copy assignment operator
   const Properties& operator=(const Properties& rhs);
-  //! Détruit la référence à cette propriété
+  //! Destroys the reference to this property
   virtual ~Properties();
 
  public:
 
-  //! Positionne une propriété de type bool de nom \a name et de valeur \a value.
-  void setBool(const String& name,bool value);
+  //! Sets a boolean property of name \a name and value \a value.
+  void setBool(const String& name, bool value);
 
-  //! Positionne une propriété de type bool de nom \a name et de valeur \a value.
-  void set(const String& name,bool value);
-  
-  //! Valeur de la propriété de nom \a name.
+  //! Sets a boolean property of name \a name and value \a value.
+  void set(const String& name, bool value);
+
+  //! Value of the property named \a name.
   bool getBool(const String& name) const;
 
-  //! Valeur de la propriété de nom \a name.
-  bool getBoolWithDefault(const String& name,bool default_value) const;
+  //! Value of the property named \a name.
+  bool getBoolWithDefault(const String& name, bool default_value) const;
 
-  //! Valeur de la propriété de nom \a name.
-  bool get(const String& name,bool& value) const;
+  //! Value of the property named \a name.
+  bool get(const String& name, bool& value) const;
 
-  //! Positionne une propriété de type Int32 de nom \a name et de valeur \a value.
-  void setInt32(const String& name,Int32 value);
+  //! Sets an Int32 property of name \a name and value \a value.
+  void setInt32(const String& name, Int32 value);
 
-  //! Positionne une propriété de type Int32 de nom \a name et de valeur \a value.
-  void set(const String& name,Int32 value);
-  
-  //! Valeur de la propriété de nom \a name.
+  //! Sets an Int32 property of name \a name and value \a value.
+  void set(const String& name, Int32 value);
+
+  //! Value of the property named \a name.
   Int32 getInt32(const String& name) const;
 
-  //! Valeur de la propriété de nom \a name.
-  Int32 getInt32WithDefault(const String& name,Int32 default_value) const;
+  //! Value of the property named \a name.
+  Int32 getInt32WithDefault(const String& name, Int32 default_value) const;
 
-  //! Valeur de la propriété de nom \a name.
-  bool get(const String& name,Int32& value) const;
+  //! Value of the property named \a name.
+  bool get(const String& name, Int32& value) const;
 
-  //! Positionne une propriété de type Int64 de nom \a name et de valeur \a value.
-  void setInt64(const String& name,Int64 value);
-  
-  //! Positionne une propriété de type Int64 de nom \a name et de valeur \a value.
-  void set(const String& name,Int64 value);
+  //! Sets an Int64 property of name \a name and value \a value.
+  void setInt64(const String& name, Int64 value);
 
-  //! Valeur de la propriété de nom \a name.
+  //! Sets an Int64 property of name \a name and value \a value.
+  void set(const String& name, Int64 value);
+
+  //! Value of the property named \a name.
   Int64 getInt64(const String& name) const;
 
-  //! Valeur de la propriété de nom \a name.
-  Int64 getInt64WithDefault(const String& name,Int64 default_value) const;
+  //! Value of the property named \a name.
+  Int64 getInt64WithDefault(const String& name, Int64 default_value) const;
 
-  //! Valeur de la propriété de nom \a name.
-  bool get(const String& name,Int64& value) const;
+  //! Value of the property named \a name.
+  bool get(const String& name, Int64& value) const;
 
-  //! Positionne une propriété de type Integer de nom \a name et de valeur \a value.
-  void setInteger(const String& name,Integer value);
-  
-  //! Valeur de la propriété de nom \a name.
+  //! Sets an Integer property of name \a name and value \a value.
+  void setInteger(const String& name, Integer value);
+
+  //! Value of the property named \a name.
   Integer getInteger(const String& name) const;
 
-  //! Valeur de la propriété de nom \a name.
-  Integer getIntegerWithDefault(const String& name,Integer default_value) const;
+  //! Value of the property named \a name.
+  Integer getIntegerWithDefault(const String& name, Integer default_value) const;
 
-  //! Positionne une propriété de type Real de nom \a name et de valeur \a value.
-  void setReal(const String& name,Real value);
+  //! Sets a Real property of name \a name and value \a value.
+  void setReal(const String& name, Real value);
 
-  //! Positionne une propriété de type Real de nom \a name et de valeur \a value.
-  void set(const String& name,Real value);
-  
-  //! Valeur de la propriété de nom \a name.
+  //! Sets a Real property of name \a name and value \a value.
+  void set(const String& name, Real value);
+
+  //! Value of the property named \a name.
   Real getReal(const String& name) const;
 
-  //! Valeur de la propriété de nom \a name.
-  Real getRealWithDefault(const String& name,Real default_value) const;
+  //! Value of the property named \a name.
+  Real getRealWithDefault(const String& name, Real default_value) const;
 
-  //! Valeur de la propriété de nom \a name.
-  bool get(const String& name,Real& value) const;
+  //! Value of the property named \a name.
+  bool get(const String& name, Real& value) const;
 
-  //! Positionne une propriété de type String de nom \a name et de valeur \a value.
-  void setString(const String& name,const String& value);
+  //! Sets a String property of name \a name and value \a value.
+  void setString(const String& name, const String& value);
 
-  //! Positionne une propriété de type String de nom \a name et de valeur \a value.
-  void set(const String& name,const String& value);
-  
-  //! Valeur de la propriété de nom \a name.
+  //! Sets a String property of name \a name and value \a value.
+  void set(const String& name, const String& value);
+
+  //! Value of the property named \a name.
   String getString(const String& name) const;
 
-  //! Valeur de la propriété de nom \a name.
-  String getStringWithDefault(const String& name,const String& default_value) const;
+  //! Value of the property named \a name.
+  String getStringWithDefault(const String& name, const String& default_value) const;
 
-  //! Valeur de la propriété de nom \a name.
-  bool get(const String& name,String& value) const;
+  //! Value of the property named \a name.
+  bool get(const String& name, String& value) const;
 
-  //! Positionne une propriété de type BoolUniqueArray de nom \a name et de valeur \a value.
-  void set(const String& name,BoolConstArrayView value);
-  
-  //! Valeur de la propriété de nom \a name.
-  void get(const String& name,BoolArray& value) const;
+  //! Sets a BoolUniqueArray property of name \a name and value \a value.
+  void set(const String& name, BoolConstArrayView value);
 
-  //! Positionne une propriété de type Int32UniqueArray de nom \a name et de valeur \a value.
-  void set(const String& name,Int32ConstArrayView value);
-  
-  //! Valeur de la propriété de nom \a name.
-  void get(const String& name,Int32Array& value) const;
+  //! Value of the property named \a name.
+  void get(const String& name, BoolArray& value) const;
 
-  //! Positionne une propriété de type Int64UniqueArray de nom \a name et de valeur \a value.
-  void set(const String& name,Int64ConstArrayView value);
-  
-  //! Valeur de la propriété de nom \a name.
-  void get(const String& name,Int64Array& value) const;
+  //! Sets an Int32UniqueArray property of name \a name and value \a value.
+  void set(const String& name, Int32ConstArrayView value);
 
-  //! Positionne une propriété de type RealUniqueArray de nom \a name et de valeur \a value.
-  void set(const String& name,RealConstArrayView value);
-  
-  //! Valeur de la propriété de nom \a name.
-  void get(const String& name,RealArray& value) const;
+  //! Value of the property named \a name.
+  void get(const String& name, Int32Array& value) const;
 
-  //! Positionne une propriété de type StringUniqueArray de nom \a name et de valeur \a value.
-  void set(const String& name,StringConstArrayView value);
-  
-  //! Valeur de la propriété de nom \a name.
-  void get(const String& name,StringArray& value) const;
+  //! Sets an Int64UniqueArray property of name \a name and value \a value.
+  void set(const String& name, Int64ConstArrayView value);
+
+  //! Value of the property named \a name.
+  void get(const String& name, Int64Array& value) const;
+
+  //! Sets a RealUniqueArray property of name \a name and value \a value.
+  void set(const String& name, RealConstArrayView value);
+
+  //! Value of the property named \a name.
+  void get(const String& name, RealArray& value) const;
+
+  //! Sets a StringUniqueArray property of name \a name and value \a value.
+  void set(const String& name, StringConstArrayView value);
+
+  //! Value of the property named \a name.
+  void get(const String& name, StringArray& value) const;
 
  public:
 
-  //! Sort les propriétés et leurs valeurs sur le flot \a o
+  //! Prints the properties and their values to the stream \a o
   void print(std::ostream& o) const;
 
-  //! Effectue la sérialisation des propriétés
+  //! Performs the serialization of the properties
   void serialize(ISerializer* serializer);
 
-  //! Nom de la propriété.
+  //! Name of the property.
   const String& name() const;
 
-  //! Nom complet de la propriété.
+  //! Full name of the property.
   const String& fullName() const;
 
   IPropertyMng* propertyMng() const;
 
   /*!
-   * \brief Supprime les valeurs associées des propriétés associées à cette référence.
+   * \brief Destroys the associated values of properties linked to this reference.
    */
   void destroy();
 
@@ -238,5 +239,4 @@ class ARCANE_CORE_EXPORT Properties
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

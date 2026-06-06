@@ -1,19 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ExpressionImpl.h                                            (C) 2000-2014 */
 /*                                                                           */
-/* Implémentation d'une expression.                                          */
+/* Implementation of an expression.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_EXPRESSIONIMPL_H
 #define ARCANE_EXPR_EXPRESSIONIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcaneGlobal.h"
 
@@ -23,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,21 +32,23 @@ class OperatorMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base de l'implémentation d'une expression.
+ * \brief Base class for the expression implementation.
  */
 class ARCANE_EXPR_EXPORT ExpressionImpl
 : public IExpressionImpl
 {
  public:
+
   ExpressionImpl();
 
  public:
 
   virtual void addRef();
   virtual void removeRef();
-  virtual void setTrace(bool v){ m_do_trace = v; }
-  virtual void dumpIf(IExpressionImpl* test_expr,Array<Expression>& exprs);
+  virtual void setTrace(bool v) { m_do_trace = v; }
+  virtual void dumpIf(IExpressionImpl* test_expr, Array<Expression>& exprs);
 
  protected:
 
@@ -55,14 +57,14 @@ class ARCANE_EXPR_EXPORT ExpressionImpl
 
  private:
 
-  Integer m_nb_reference; //!< Nombre de références
+  Integer m_nb_reference; //!< Number of references
   bool m_do_trace;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

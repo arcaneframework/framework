@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableInternalMng.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface représentant un gestionnaire de SimpleTableInternal.            */
+/* Interface representing a manager for SimpleTableInternal.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISIMPLETABLEINTERNALMNG_H
 #define ARCANE_CORE_ISIMPLETABLEINTERNALMNG_H
@@ -31,45 +31,47 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Interface de classe représentant un gestionnaire
- * de SimpleTableInternal (aka STI). 
+ * \brief Class interface representing a manager
+ * for SimpleTableInternal (aka STI). 
  * 
- * Ce gestionnaire permet de faire plusieurs types d'opérations
- * sur le STI : ajout de lignes, de colonnes, de valeurs, &c.
+ * This manager allows for several types of operations
+ * on the STI: adding rows, columns, values, etc.
  * 
- * Il y a deux modes d'exploitations (qui peuvent être mélangés) : 
- * - en utilisant les noms ou positions des lignes/colonnes,
- * - en utilisant un pointeur de position dans le tableau.
+ * There are two modes of operation (which can be mixed): 
+ * - using the names or positions of rows/columns,
+ * - using a position pointer within the array.
  * 
- * Le premier mode est le plus simple à utiliser et est suffisant
- * pour la plupart des utilisateurs. On donne un nom (ou une position)
- * de ligne ou de colonne et une valeur, et cette valeur est placée
- * à la suite des autres valeurs sur la ligne ou sur la colonne.
+ * The first mode is the easiest to use and is sufficient
+ * for most users. You provide a name (or position)
+ * of a row or column and a value, and this value is placed
+ * after the other values in the row or column.
  * 
- * Le second mode est plus avancé et sert surtout à remplacer des
- * élements déjà présent ou à optimiser les performances (s'il y a 
- * 40 lignes, 40 valeurs à ajouter à la suite et qu'on utilise les 
- * noms des colonnes 40 fois, cela fait 40 recherches de String dans un 
- * StringUniqueArray, ce qui n'est pas top niveau optimisation).
- * Un pointeur représentant le dernier élement ajouté est présent dans
- * STI. On peut modifier les élements autour de ce pointeur (haut, bas
- * gauche, droite) avec les méthodes présentes.
- * Ce pointeur peut être placé n'importe où grâce au méthodes element().
- * Ce pointeur n'est pas lu par les méthodes du premier mode mais est
- * mis à jour par ces dernières.
+ * The second mode is more advanced and is mainly used to replace
+ * elements already present or to optimize performance (if there are 
+ * 40 rows, 40 values to add sequentially, and you use the 
+ * column names 40 times, this results in 40 String searches in a 
+ * StringUniqueArray, which is not optimal performance).
+ * A pointer representing the last added element is present in
+ * STI. You can modify elements around this pointer (top, bottom,
+ * left, right) using the available methods.
+ * This pointer can be placed anywhere using the element() methods.
+ * This pointer is not read by the methods of the first mode but is
+ * updated by them.
  */
 class ARCANE_CORE_EXPORT ISimpleTableInternalMng
 {
  public:
+
   virtual ~ISimpleTableInternalMng() = default;
 
  public:
+
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'effacer le contenu
-   * du SimpleTableInternal.
+   * \brief Method to clear the content
+   * of the SimpleTableInternal.
    */
   virtual void clearInternal() = 0;
 
@@ -77,32 +79,34 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter une ligne.
+   * \brief Method to add a row.
    * 
-   * @param row_name Le nom de la ligne. Doit être non vide.
-   * @return Integer La position de la ligne dans le tableau 
-   *                 (-1 si le nom donné est incorrect).
+   * \param row_name The name of the row. Must not be empty.
+   * \return Integer The position of the row in the array 
+   *                 (-1 if the given name is incorrect).
    */
   virtual Integer addRow(const String& row_name) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter une ligne.
+   * \brief Method to add a row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés).
+   * If the number of elements in 'elements' is greater than the
+   * number of columns, the addition still takes place (but the
+   * extra elements will not be added).
    * 
-   * @param row_name Le nom de la ligne. Doit être non vide.
-   * @param elements Les éléments à insérer sur la ligne.
-   * @return Integer La position de la ligne dans le tableau.
-   *                 (-1 si le nom donné est incorrect).
+   * \param row_name The name of the row. Must not be empty.
+   * \param elements The elements to insert into the row.
+   * \return Integer The position of the row in the array.
+   *                 (-1 if the given name is incorrect).
    */
   virtual Integer addRow(const String& row_name, ConstArrayView<Real> elements) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter plusieurs lignes.
+   * \brief Method to add multiple rows.
    * 
-   * @param rows_names Les noms des lignes. Chaque nom doit être non vide.
-   * @return true Si toutes les lignes ont été créées.
-   * @return false Si toutes les lignes n'ont pas été créées.
+   * \param rows_names The names of the rows. Each name must not be empty.
+   * \return true If all rows were created.
+   * \return false If not all rows were created.
    */
   virtual bool addRows(StringConstArrayView rows_names) = 0;
 
@@ -110,32 +114,34 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter une colonne.
+   * \brief Method to add a column.
    * 
-   * @param column_name Le nom de la colonne. Doit être non vide.
-   * @return Integer La position de la colonne dans le tableau.
-   *                 (-1 si le nom donné est incorrect).
+   * \param column_name The name of the column. Must not be empty.
+   * \return Integer The position of the column in the array.
+   *                 (-1 if the given name is incorrect).
    */
   virtual Integer addColumn(const String& column_name) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter une colonne.
+   * \brief Method to add a column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés).
+   * If the number of elements in 'elements' is greater than the
+   * number of rows, the addition still takes place (but the
+   * extra elements will not be added).
    * 
-   * @param column_name Le nom de la colonne. Doit être non vide.
-   * @param elements Les éléments à ajouter sur la colonne.
-   * @return Integer La position de la colonne dans le tableau.
-   *                 (-1 si le nom donné est incorrect).
+   * \param column_name The name of the column. Must not be empty.
+   * \param elements The elements to add to the column.
+   * \return Integer The position of the column in the array.
+   *                 (-1 if the given name is incorrect).
    */
   virtual Integer addColumn(const String& column_name, ConstArrayView<Real> elements) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter plusieurs colonnes.
+   * \brief Method to add multiple columns.
    * 
-   * @param rows_names Les noms des colonnes. Chaque nom doit être non vide.
-   * @return true Si toutes les colonnes ont été créées.
-   * @return false Si toutes les colonnes n'ont pas été créées.
+   * \param rows_names The names of the columns. Each name must not be empty.
+   * \return true If all columns were created.
+   * \return false If not all columns were created.
    */
   virtual bool addColumns(StringConstArrayView columns_names) = 0;
 
@@ -143,36 +149,38 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter un élément à une ligne.
+   * \brief Method to add an element to a row.
    * 
-   * @param position La position de la ligne.
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * \param position The position of the row.
+   * \param element The element to add.
+   * \return true If the element was successfully added.
+   * \return false If the element could not be added.
    */
   virtual bool addElementInRow(Integer position, Real element) = 0;
+
   /**
-   * @brief Méthode permettant l'ajouter un élément sur une ligne.
+   * \brief Method to add an element to a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @param element L'élément à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la 
-   *                            ligne si elle n'existe pas encore.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * \param row_name The name of the row.
+   * \param element The element to add.
+   * \param create_if_not_exist To specify whether the row should be created
+   *                            if it does not already exist.
+   * \return true If the element was successfully added.
+   * \return false If the element could not be added.
    */
   virtual bool addElementInRow(const String& row_name, Real element, bool create_if_not_exist = true) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter un élément sur la ligne 
-   * dernièrement manipulée.
+   * \brief Method to add an element to the row 
+   * most recently manipulated.
    * 
-   * Cette méthode diffère de 'editElementRight()' car ici, on ajoute 
-   * un élément à la fin de la ligne, pas forcement après le
-   * dernier élement ajouté.
+   * This method differs from 'editElementRight()' because here, an element is added
+   * to the end of the row, not necessarily after the
+   * last added element.
    * 
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a été ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * \param element The element to add.
+   * \return true If the element was added.
+   * \return false If the element could not be added.
    */
   virtual bool addElementInSameRow(Real element) = 0;
 
@@ -180,48 +188,50 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une ligne.
+   * \brief Method to add multiple elements to a row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available columns, the addition still takes place (but the
+   * extra elements will not be added) and a return value of false will be returned.
    * 
-   * @param position La position de la ligne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * \param position The position of the row.
+   * \param elements The array of elements to add.
+   * \return true If all elements were added.
+   * \return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInRow(Integer position, ConstArrayView<Real> elements) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une ligne.
+   * \brief Method to add multiple elements to a row.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available columns, the addition still takes place (but the
+   * extra elements will not be added) and a return value of false will be returned.
    * 
-   * @param row_name Le nom de la ligne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la ligne
-   *                            si elle n'existe pas encore.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * \param row_name The name of the row.
+   * \param elements The array of elements to add.
+   * \param create_if_not_exist To specify whether the row should be created
+   *                            if it does not already exist.
+   * \return true If all elements were added.
+   * \return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist = true) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur la 
-   * ligne dernièrement manipulée.
+   * \brief Method to add multiple elements to the 
+   * row most recently manipulated.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de colonnes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available columns, the addition still takes place (but the
+   * extra elements will not be added) and a return value of false will be returned.
    * 
-   * Mis à part le fait qu'ici, on manipule un tableau, cette méthode diffère
-   * de 'editElementRight()' car ici, on ajoute des éléments à la fin de la ligne,
-   * pas forcement après le dernier élement ajouté.
+   * Apart from the fact that we are manipulating an array here, this method differs
+   * from 'editElementRight()' because here, elements are added to the end of the row,
+   * not necessarily after the last added element.
    * 
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * \param elements The array of elements to add.
+   * \return true If all elements were added.
+   * \return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInSameRow(ConstArrayView<Real> elements) = 0;
 
@@ -229,35 +239,37 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter un élément à une colonne.
+   * \brief Method to add an element to a column.
    * 
-   * @param position La position de la colonne.
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * \param position The position of the column.
+   * \param element The element to add.
+   * \return true If the element was successfully added.
+   * \return false If the element could not be added.
    */
   virtual bool addElementInColumn(Integer position, Real element) = 0;
+
   /**
-   * @brief Méthode permettant l'ajouter un élément sur une colonne.
+   * \brief Method to add an element to a column.
    * 
-   * @param column_name Le nom de la colonne.
-   * @param element L'élément à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la colonne
-   *                            si elle n'existe pas encore.
-   * @return true Si l'élément a pu être ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * \param column_name The name of the column.
+   * \param element The element to add.
+   * \param create_if_not_exist To specify whether the column should be created
+   *                            if it does not already exist.
+   * \return true If the element was successfully added.
+   * \return false If the element could not be added.
    */
   virtual bool addElementInColumn(const String& column_name, Real element, bool create_if_not_exist = true) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter un élément sur la colonne
-   * dernièrement manipulée.
+   * \brief Method to add an element to the column
+   * most recently manipulated.
    * 
-   * Cette méthode diffère de 'editElementDown()' car ici, on ajoute un élément
-   * à la fin de la colonne, pas forcement après le dernier élement ajouté.
+   * This method differs from 'editElementDown()' because here, an element is added
+   * to the end of the column, not necessarily after the last added element.
    * 
-   * @param element L'élément à ajouter.
-   * @return true Si l'élément a été ajouté.
-   * @return false Si l'élément n'a pas pu être ajouté.
+   * \param element The element to add.
+   * \return true If the element was added.
+   * \return false If the element could not be added.
    */
   virtual bool addElementInSameColumn(Real element) = 0;
 
@@ -265,48 +277,50 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une colonne.
+   * \brief Method to add multiple elements to a column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available rows, the addition still takes place (but the
+   * extra elements will not be added) and a return value of false will be returned.
    * 
-   * @param position La position de la colonne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * \param position The position of the column.
+   * \param elements The array of elements to add.
+   * \return true If all elements were added.
+   * \return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInColumn(Integer position, ConstArrayView<Real> elements) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur une colonne.
+   * \brief Method to add multiple elements to a column.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available rows, the addition still takes place (but the
+   * extra elements will not be added) and a return value of false will be returned.
    * 
-   * @param column_name Le nom de la colonne.
-   * @param elements Le tableau d'élement à ajouter.
-   * @param create_if_not_exist Pour savoir si l'on doit créer la colonne si
-   *                            elle n'existe pas encore.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * \param column_name The name of the column.
+   * \param elements The array of elements to add.
+   * \param create_if_not_exist To specify whether the column should be created if
+   *                            it does not already exist.
+   * \return true If all elements were added.
+   * \return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist = true) = 0;
+
   /**
-   * @brief Méthode permettant d'ajouter plusieurs éléments sur la
-   * colonne dernièrement manipulée.
+   * \brief Method to add multiple elements to the
+   * column most recently manipulated.
    * 
-   * Si le nombre d'élements dans 'elements' est plus grand que le
-   * nombre de lignes disponibles, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés) et on aura un return false.
+   * If the number of elements in 'elements' is greater than the
+   * number of available rows, the addition still takes place (but the
+   * extra elements will not be added) and a return value of false will be returned.
    * 
-   * Mis à part le fait qu'ici, on manipule un tableau, cette méthode diffère
-   * de 'editElementDown()' car ici, on ajoute des éléments à la fin de la colonne,
-   * pas forcement après le dernier élement ajouté.
+   * Apart from the fact that we are manipulating an array here, this method differs
+   * from 'editElementDown()' because here, elements are added to the end of the column,
+   * not necessarily after the last added element.
    * 
-   * @param elements Le tableau d'élement à ajouter.
-   * @return true Si tous les éléments ont été ajoutés.
-   * @return false Si [0;len(elements)[ éléments ont été ajoutés.
+   * \param elements The array of elements to add.
+   * \return true If all elements were added.
+   * \return false If [0;len(elements)[ elements were added.
    */
   virtual bool addElementsInSameColumn(ConstArrayView<Real> elements) = 0;
 
@@ -314,63 +328,66 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'éditer un élément au-dessus du dernier
-   * élement dernièrement manipulé (ligne du dessus/même colonne).
+   * \brief Method to edit an element above the last
+   * element most recently manipulated (row above/same column).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * \param element The element to modify.
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return true If the element was modified.
+   * \return false If the element could not be modified.
    */
   virtual bool editElementUp(Real element, bool update_last_position = true) = 0;
+
   /**
-   * @brief Méthode permettant d'éditer un élément en-dessous du dernier 
-   * élement dernièrement manipulé (ligne du dessous/même colonne).
+   * \brief Method to edit an element below the last 
+   * element most recently manipulated (row below/same column).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié 
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element 
+   * at the end of this method (if update_last_position = true).
    * 
-   * Cette méthode diffère de 'addElementInSameColumn()' car ici, on ajoute 
-   * (ou modifie) un élement sous le dernier élement manipulé, qui n'est
-   * pas forcement à la fin de la colonne.
+   * This method differs from 'addElementInSameColumn()' because here, an element is added
+   * (or modified) below the last manipulated element, which is not
+   * necessarily at the end of the column.
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * \param element The element to modify.
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return true If the element was modified.
+   * \return false If the element could not be modified.
    */
   virtual bool editElementDown(Real element, bool update_last_position = true) = 0;
+
   /**
-   * @brief Méthode permettant d'éditer un élément à gauche du dernier
-   * élement dernièrement manipulé (même ligne/colonne à gauche).
+   * \brief Method to edit an element to the left of the last
+   * element most recently manipulated (same row/column to the left).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * \param element The element to modify.
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return true If the element was modified.
+   * \return false If the element could not be modified.
    */
   virtual bool editElementLeft(Real element, bool update_last_position = true) = 0;
+
   /**
-   * @brief Méthode permettant d'éditer un élément à droite du dernier
-   * élement dernièrement manipulé (même ligne/colonne à droite).
+   * \brief Method allowing editing an element to the right of the last
+   * element recently manipulated (same row/column to the right).
    * 
-   * L'élement que l'on modifie devient donc le dernier élement modifié
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element being modified thus becomes the last modified element
+   * at the end of this method (if update_last_position = true).
    * 
-   * Cette méthode diffère de 'addElementInSameRow()' car ici, on ajoute 
-   * (ou modifie) un élement à la droite du dernier élement manipulé, 
-   * qui n'est pas forcement à la fin de la colonne.
+   * This method differs from 'addElementInSameRow()' because here, we add 
+   * (or modify) an element to the right of the last manipulated element, 
+   * which is not necessarily at the end of the column.
    * 
-   * @param element L'élement à modifier.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return true Si l'élément a été modifié.
-   * @return false Si l'élément n'a pas pu être modifié.
+   * \param element The element to modify.
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return true If the element was modified.
+   * \return false If the element could not be modified.
    */
   virtual bool editElementRight(Real element, bool update_last_position = true) = 0;
 
@@ -378,47 +395,50 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer un élément au-dessus du dernier
-   * élement dernièrement manipulé (ligne du dessus/même colonne).
+   * \brief Method allowing retrieval of an element above the last
+   * element recently manipulated (row above/same column).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return Real The found element (0 if not found).
    */
   virtual Real elementUp(bool update_last_position = false) = 0;
+
   /**
-   * @brief Méthode permettant de récupérer un élément en-dessous du dernier
-   * élement dernièrement manipulé (ligne du dessous/même colonne).
+   * \brief Method allowing retrieval of an element below the last
+   * element recently manipulated (row below/same column).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return Real The found element (0 if not found).
    */
   virtual Real elementDown(bool update_last_position = false) = 0;
+
   /**
-   * @brief Méthode permettant de récupérer un élément à gauche du dernier
-   * élement dernièrement manipulé (même ligne/colonne à gauche).
+   * \brief Method allowing retrieval of an element to the left of the last
+   * element recently manipulated (same row/column to the left).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return Real The found element (0 if not found).
    */
   virtual Real elementLeft(bool update_last_position = false) = 0;
+
   /**
-   * @brief Méthode permettant de récupérer un élément à droite du dernier
-   * élement dernièrement manipulé (même ligne/colonne à droite).
+   * \brief Method allowing retrieval of an element to the right of the last
+   * element recently manipulated (same row/column to the right).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié"
-   * à la fin de cette méthode (si update_last_position = true).
+   * The element retrieved thus becomes the last "modified" element
+   * at the end of this method (if update_last_position = true).
    * 
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return Real The found element (0 if not found).
    */
   virtual Real elementRight(bool update_last_position = false) = 0;
 
@@ -426,37 +446,39 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de modifier un élement dans le tableau.
+   * \brief Method allowing modification of an element in the table.
    * 
-   * Les positions x et y correspondent à l'emplacement du dernier
-   * élement manipulé.
+   * The x and y positions correspond to the location of the last
+   * manipulated element.
    * 
-   * Cette méthode a de l'intéret après l'utilisation de
-   * 'elemUDLR(true)' par exemple.
+   * This method is useful after using
+   * 'elemUDLR(true)', for example.
    * 
-   * @param element L'élement remplaçant.
-   * @return true Si l'élement a bien été remplacé.
-   * @return false Si l'élement n'a pas été remplacé.
+   * \param element The replacement element.
+   * \return true If the element was successfully replaced.
+   * \return false If the element was not replaced.
    */
   virtual bool editElement(Real element) = 0;
+
   /**
-   * @brief Méthode permettant de modifier un élement dans le tableau.
+   * \brief Method allowing modification of an element in the table.
    * 
-   * @param position_x La position de la colonne à modifier.
-   * @param position_y La position de la ligne à modifier.
-   * @param element L'élement remplaçant.
-   * @return true Si l'élement a bien été remplacé.
-   * @return false Si l'élement n'a pas été remplacé.
+   * \param position_x The position of the column to modify.
+   * \param position_y The position of the row to modify.
+   * \param element The replacement element.
+   * \return true If the element was successfully replaced.
+   * \return false If the element was not replaced.
    */
   virtual bool editElement(Integer position_x, Integer position_y, Real element) = 0;
+
   /**
-   * @brief Méthode permettant de modifier un élement dans le tableau.
+   * \brief Method allowing modification of an element in the table.
    * 
-   * @param column_name Le nom de la colonne où se trouve l'élement.
-   * @param row_name Le nom de la ligne où se trouve l'élement.
-   * @param element L'élement remplaçant.
-   * @return true Si l'élement a bien été remplacé.
-   * @return false Si l'élement n'a pas pu être remplacé.
+   * \param column_name The name of the column where the element is located.
+   * \param row_name The name of the row where the element is located.
+   * \param element The replacement element.
+   * \return true If the element was successfully replaced.
+   * \return false If the element could not be replaced.
    */
   virtual bool editElement(const String& column_name, const String& row_name, Real element) = 0;
 
@@ -464,29 +486,31 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'obtenir une copie d'un élement.
+   * \brief Method allowing retrieval of a copy of an element.
    * 
-   * Les positions x et y correspondent à l'emplacement du dernier élement manipulé.
+   * The x and y positions correspond to the location of the last manipulated element.
    * 
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \return Real The found element (0 if not found).
    */
   virtual Real element() = 0;
+
   /**
-   * @brief Méthode permettant d'obtenir une copie d'un élement.
+   * \brief Method allowing retrieval of a copy of an element.
    * 
-   * @param position_x La position de la colonne où se trouve l'élement.
-   * @param position_y La position de la ligne où se trouve l'élement.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \param position_x The position of the column where the element is located.
+   * \param position_y The position of the row where the element is located.
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return Real The found element (0 if not found).
    */
   virtual Real element(Integer position_x, Integer position_y, bool update_last_position = false) = 0;
+
   /**
-   * @brief Méthode permettant d'obtenir une copie d'un élement.
+   * \brief Method allowing retrieval of a copy of an element.
    * 
-   * @param column_name Le nom de la colonne où se trouve l'élement.
-   * @param row_name Le nom de la ligne où se trouve l'élement.
-   * @param update_last_position Doit-on déplacer le curseur "dernier élement modifié" ?
-   * @return Real L'élement trouvé (0 si non trouvé).
+   * \param column_name The name of the column where the element is located.
+   * \param row_name The name of the row where the element is located.
+   * \param update_last_position Should the "last modified element" cursor be moved?
+   * \return Real The found element (0 if not found).
    */
   virtual Real element(const String& column_name, const String& row_name, bool update_last_position = false) = 0;
 
@@ -494,32 +518,34 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une ligne.
+   * \brief Method allowing retrieval of a copy of a row.
    * 
-   * @param position La position de la ligne.
-   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
+   * \param position The position of the row.
+   * \return RealUniqueArray The copy of the row (empty array if not found).
    */
   virtual RealUniqueArray row(Integer position) = 0;
+
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une ligne.
+   * \brief Method allowing retrieval of a copy of a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
+   * \param row_name The name of the row.
+   * \return RealUniqueArray The copy of the row (empty array if not found).
    */
   virtual RealUniqueArray row(const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une colonne.
+   * \brief Method allowing retrieval of a copy of a column.
    * 
-   * @param position La position de la colonne.
-   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
+   * \param position The position of the column.
+   * \return RealUniqueArray The copy of the column (empty array if not found).
    */
   virtual RealUniqueArray column(Integer position) = 0;
+
   /**
-   * @brief Méthode permettant d'obtenir une copie d'une colonne.
+   * \brief Method allowing retrieval of a copy of a column.
    * 
-   * @param column_name Le nom de la colonne.
-   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
+   * \param column_name The name of the column.
+   * \return RealUniqueArray The copy of the column (empty array if not found).
    */
   virtual RealUniqueArray column(const String& column_name) = 0;
 
@@ -527,36 +553,38 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une ligne.
-   * Incluant les hypothétiques 'trous' dans la ligne.
+   * \brief Method allowing retrieval of the size of a row.
+   * Including hypothetical 'gaps' in the row.
    * 
-   * @param position La position de la ligne.
-   * @return Integer La taille de la ligne (0 si non trouvée).
+   * \param position The position of the row.
+   * \return Integer The size of the row (0 if not found).
    */
   virtual Integer rowSize(Integer position) = 0;
+
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une ligne.
-   * Incluant les hypotétiques 'trous' dans la ligne.
+   * \brief Method allowing retrieval of the size of a row.
+   * Including hypothetical 'gaps' in the row.
    * 
-   * @param position Le nom de la ligne.
-   * @return Integer La taille de la ligne (0 si non trouvée).
+   * \param position The name of the row.
+   * \return Integer The size of the row (0 if not found).
    */
   virtual Integer rowSize(const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une colonne.
-   * Incluant les hypotétiques 'trous' dans la colonne.
+   * \brief Method allowing retrieval of the size of a column.
+   * Including hypothetical 'gaps' in the column.
    * 
-   * @param position La position de la colonne.
-   * @return Integer La taille de la colonne (0 si non trouvée).
+   * \param position The position of the column.
+   * \return Integer The size of the column (0 if not found).
    */
   virtual Integer columnSize(Integer position) = 0;
+
   /**
-   * @brief Méthode permettant d'obtenir la taille d'une colonne.
-   * Incluant les hypotétiques 'trous' dans la colonne.
+   * \brief Method allowing retrieval of the size of a column.
+   * Including hypothetical 'gaps' in the column.
    * 
-   * @param position Le nom de la colonne.
-   * @return Integer La taille de la colonne (0 si non trouvée).
+   * \param position The name of the column.
+   * \return Integer The size of the column (0 if not found).
    */
   virtual Integer columnSize(const String& column_name) = 0;
 
@@ -564,17 +592,18 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer la position d'une ligne.
+   * \brief Method allowing retrieval of the position of a row.
    * 
-   * @param row_name Le nom de la ligne.
-   * @return Integer La position de la ligne (-1 si non trouvée).
+   * \param row_name The name of the row.
+   * \return Integer The position of the row (-1 if not found).
    */
   virtual Integer rowPosition(const String& row_name) = 0;
+
   /**
-   * @brief Méthode permettant de récupérer la position d'une colonne.
+   * \brief Method allowing retrieval of the position of a column.
    * 
-   * @param row_name Le nom de la colonne.
-   * @return Integer La position de la colonne (-1 si non trouvée).
+   * \param row_name The name of the column.
+   * \return Integer The position of the column (-1 if not found).
    */
   virtual Integer columnPosition(const String& column_name) = 0;
 
@@ -582,17 +611,18 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer le nombre de lignes dans le tableau.
-   * C'est, en quelque sorte, le nombre max d'élements que peut contenir une colonne.
+   * \brief Method allowing retrieval of the number of rows in the table.
+   * This is, in a sense, the maximum number of elements a column can contain.
    * 
-   * @return Integer Le nombre de lignes du tableau.
+   * \return Integer The number of rows in the table.
    */
   virtual Integer numberOfRows() = 0;
+
   /**
-   * @brief Méthode permettant de récupérer le nombre de colonnes dans le tableau.
-   * C'est, en quelque sorte, le nombre max d'élements que peut contenir une ligne.
+   * \brief Method allowing retrieval of the number of columns in the table.
+   * This is, in a sense, the maximum number of elements a row can contain.
    * 
-   * @return Integer Le nombre de colonnes du tableau.
+   * \return Integer The number of columns in the table.
    */
   virtual Integer numberOfColumns() = 0;
 
@@ -600,22 +630,22 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer le nom d'une ligne
-   * à partir de sa position.
+   * \brief Method allowing retrieval of the name of a row
+   * from its position.
    * 
-   * @param position La position de la ligne.
-   * @return String Le nom de la ligne 
-   *         (chaine vide si la ligne n'a pas été trouvé).
+   * \param position The position of the row.
+   * \return String The name of the row 
+   *         (empty string if the row was not found).
    */
   virtual String rowName(Integer position) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le nom d'une colonne
-   * à partir de sa position.
+   * \brief Method allowing retrieval of the name of a column
+   * from its position.
    * 
-   * @param position La position de la colonne.
-   * @return String Le nom de la colonne 
-   *         (chaine vide si la colonne n'a pas été trouvé).
+   * \param position The position of the column.
+   * \return String The name of the column 
+   *         (empty string if the column was not found).
    */
   virtual String columnName(Integer position) = 0;
 
@@ -623,40 +653,42 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de changer le nom d'une ligne.
+   * \brief Method allowing changing the name of a row.
    * 
-   * @param position La position de la ligne.
-   * @param new_name Le nouveau nom de la ligne. Doit être non vide.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * \param position The position of the row.
+   * \param new_name The new name of the row. Must not be empty.
+   * \return true If the change occurred.
+   * \return false If the change did not occur.
    */
   virtual bool editRowName(Integer position, const String& new_name) = 0;
+
   /**
-   * @brief Méthode permettant de changer le nom d'une ligne.
+   * \brief Method allowing changing the name of a row.
    * 
-   * @param row_name Le nom actuel de la ligne.
-   * @param new_name Le nouveau nom de la ligne. Doit être non vide.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * \param row_name The current name of the row.
+   * \param new_name The new name of the row. Must not be empty.
+   * \return true If the change occurred.
+   * \return false If the change did not occur.
    */
   virtual bool editRowName(const String& row_name, const String& new_name) = 0;
 
   /**
-   * @brief Méthode permettant de changer le nom d'une colonne.
+   * \brief Method allowing changing the name of a column.
    * 
-   * @param position La position de la colonne.
-   * @param new_name Le nouveau nom de la colonne. Doit être non vide.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * \param position The position of the column.
+   * \param new_name The new name of the column. Must not be empty.
+   * \return true If the change occurred.
+   * \return false If the change did not occur.
    */
   virtual bool editColumnName(Integer position, const String& new_name) = 0;
+
   /**
-   * @brief Méthode permettant de changer le nom d'une colonne.
+   * \brief Method allowing changing the name of a column.
    * 
-   * @param column_name Le nom actuel de la colonne.
-   * @param new_name Le nouveau nom de la colonne. Doit être non vide.
-   * @return true Si le changement a eu lieu.
-   * @return false Si le changement n'a pas eu lieu.
+   * \param column_name The current name of the column.
+   * \param new_name The new name of the column. Must not be empty.
+   * \return true If the change occurred.
+   * \return false If the change did not occur.
    */
   virtual bool editColumnName(const String& column_name, const String& new_name) = 0;
 
@@ -664,27 +696,27 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de créer une colonne contenant la moyenne des
-   * éléments de chaque ligne.
+   * \brief Method allowing creation of a column containing the average of
+   * elements of each row.
    * 
-   * @param column_name Le nom de la nouvelle colonne. Doit être non vide.
-   * @return Integer La position de la colonne.
+   * \param column_name The name of the new column. Must not be empty.
+   * \return Integer The position of the column.
    */
   virtual Integer addAverageColumn(const String& column_name) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * SimpleTableInternal utilisé.
+   * \brief Method allowing retrieval of a reference to the object
+   * SimpleTableInternal used.
    * 
-   * @return Ref<SimpleTableInternal> Une copie de la référence. 
+   * \return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de définir une référence vers un
+   * \brief Method allowing setting a reference to a
    * SimpleTableInternal.
    * 
-   * @param simple_table_internal La référence vers un SimpleTableInternal.
+   * \param simple_table_internal The reference to a SimpleTableInternal.
    */
   virtual void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
@@ -698,6 +730,3 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

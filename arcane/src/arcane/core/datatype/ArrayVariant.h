@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArrayVariant.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Type de base polymorphe pour les tableaux mono-dim (dimension 1).         */
+/* Polymorphic base type for mono-dimensional arrays (dimension 1).          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPE_ARRAYVARIANT_H
 #define ARCANE_CORE_DATATYPE_ARRAYVARIANT_H
@@ -35,17 +35,19 @@ class Real3x3;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Type de base polymorphe pour les tableaux (dimension 1).
+ * \brief Polymorphic base type for arrays (dimension 1).
  *
  */
 class ARCANE_DATATYPE_EXPORT ArrayVariant
 : public VariantBase
 {
  public:
-  ArrayVariant(eType type,Integer size);
+
+  ArrayVariant(eType type, Integer size);
   ArrayVariant(ArrayView<Real> data);
   ArrayVariant(ArrayView<Real2> data);
   ArrayVariant(ArrayView<Real3> data);
@@ -93,19 +95,18 @@ class ARCANE_DATATYPE_EXPORT ArrayVariant
   ConstArrayView<String> asString() const { return m_string_value; }
 
  public:
-
-
  private:
-  ArrayView<Real> m_real_value; //!< Valeur de type tableau de reels
-  ArrayView<Real2> m_real2_value; //!< Valeur de type tableau de Real2
-  ArrayView<Real3> m_real3_value; //!< Valeur de type tableau de Real3
-  ArrayView<Real2x2> m_real2x2_value; //!< Valeur de type tableau de Real2x2
-  ArrayView<Real3x3> m_real3x3_value; //!< Valeur de type tableau de Real3x3
-  ArrayView<Int32> m_int32_value; //!< Valeur de type tableau d'entiers 32 bits
-  ArrayView<Int64> m_int64_value; //!< Valeur de type tableau d'entiers 64 bits
-  ArrayView<bool> m_bool_value; //!< Valeur de type tableau de booleens
-  ArrayView<String> m_string_value; //!< Valeur de type tableau de chaines
-  void* m_allocated_array; //!< Non nul si tableau alloué par le variant
+
+  ArrayView<Real> m_real_value; //!< Value of array type of reals
+  ArrayView<Real2> m_real2_value; //!< Value of array type of Real2
+  ArrayView<Real3> m_real3_value; //!< Value of array type of Real3
+  ArrayView<Real2x2> m_real2x2_value; //!< Value of array type of Real2x2
+  ArrayView<Real3x3> m_real3x3_value; //!< Value of array type of Real3x3
+  ArrayView<Int32> m_int32_value; //!< Value of array type of 32-bit integers
+  ArrayView<Int64> m_int64_value; //!< Value of array type of 64-bit integers
+  ArrayView<bool> m_bool_value; //!< Value of array type of booleans
+  ArrayView<String> m_string_value; //!< Value of array type of strings
+  void* m_allocated_array; //!< Non-null if array allocated by the variant
 
   void _destroy();
 };
@@ -116,9 +117,9 @@ operator<<(std::ostream& s, const ArrayVariant& x);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

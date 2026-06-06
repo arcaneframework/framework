@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseOptionEnum.h                                            (C) 2000-2023 */
 /*                                                                           */
-/* Option du jeu de données de type énuméré.                                 */
+/* Enumerated data set option.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASEOPTIONENUM_H
 #define ARCANE_CASEOPTIONENUM_H
@@ -24,53 +24,54 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Nom d'une option du jeu de données.
- * Cette classe permet de stocker le nom d'une option dans plusieurs
- * langues.
+ * \brief Name of a data set option.
+ * This class allows storing the name of an option in multiple languages.
  */
 class ARCANE_CORE_EXPORT CaseOptionName
 {
  public:
 
-  //! Construit une option de nom \a true_name
+  //! Constructs a name option \a true_name
   CaseOptionName(const String& true_name);
-  //! Constructeur de recopie
+  //! Copy constructor
   CaseOptionName(const CaseOptionName& rhs);
-  //! Libère les ressources
+  //! Releases resources
   virtual ~CaseOptionName();
 
  public:
 
-  /*! \brief retourne le nom de l'option dans le langage \a lang.
-   * Si aucune traduction n'est disponible dans le langage \a lang,
-   * c'est trueName() qui est retourné.
+  /*! \brief returns the name of the option in the language \a lang.
+   * If no translation is available in the language \a lang,
+   * trueName() is returned.
    */
   String name(const String& lang) const;
-  //! Retourne le vrai nom (non traduit) de l'option
+  //! Returns the true name (non-translated) of the option
   String trueName() const { return m_true_name; }
   /*!
-    \brief Ajoute une traduction pour le nom de l'option.
-    Ajoute le nom \a tname correspondant au langage \a lang.
-    Si une traduction existe déjà pour ce langage, elle est remplacée par
-    celle-ci.
-    \param tname traduction du nom
-    \param lang langue de la traduction
+    \brief Adds a translation for the option name.
+    Adds the name \a tname corresponding to the language \a lang.
+    If a translation already exists for this language, it is replaced by
+    this one.
+    \param tname translation of the name
+    \param lang language of the translation
   */
   void addAlternativeNodeName(const String& lang, const String& tname);
 
  private:
 
-  String m_true_name; //!< Nom de l'option
-  StringDictionary* m_translations; //!< Traductions.
+  String m_true_name; //!< Option name
+  StringDictionary* m_translations; //!< Translations.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Nom et valeur d'une énumération du jeu de données.
+ * \brief Name and value of a data set enumeration.
  */
 class ARCANE_CORE_EXPORT CaseOptionEnumValue
 : public CaseOptionName
@@ -78,7 +79,7 @@ class ARCANE_CORE_EXPORT CaseOptionEnumValue
  public:
 
   CaseOptionEnumValue(const String& name, int value);
-  //! Constructeur de recopie
+  //! Copy constructor
   CaseOptionEnumValue(const CaseOptionEnumValue& rhs);
   ~CaseOptionEnumValue();
 
@@ -93,67 +94,69 @@ class ARCANE_CORE_EXPORT CaseOptionEnumValue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Ensemble des valeurs d'une énumération.
+ * \brief Set of values for an enumeration.
  */
 class ARCANE_CORE_EXPORT CaseOptionEnumValues
 {
  public:
 
-  //! Type de la liste des valeurs
+  //! Type of the value list
   typedef UniqueArray<CaseOptionEnumValue*> EnumValueList;
 
  public:
 
-  //! Contruit l'instance
+  //! Constructs the instance
   CaseOptionEnumValues();
-  ~CaseOptionEnumValues(); //!< Libère les ressources
+  ~CaseOptionEnumValues(); //!< Releases resources
 
  public:
 
-  /*! \brief Ajoute la valeur d'énumération \a value.
-   * L'instance devient propriétaire de \a value qui est détruite
-   * lorsqu'elle n'est plus utilisée.
-   * Cette fonction ne doit être appelée qu'à l'initialisation.
-   * Si \a do_clone est vrai, c'est une copie de \a value qui est utilisée
+  /*! \brief Adds the enumeration value \a value.
+   * The instance becomes the owner of \a value, which is destroyed
+   * when it is no longer used.
+   * This function should only be called during initialization.
+   * If \a do_clone is true, a copy of \a value is used
    */
   void addEnumValue(CaseOptionEnumValue* value, bool do_clone);
 
-  //! Retourne le nombre de valeurs de l'énumération
+  //! Returns the number of enumeration values
   Integer nbEnumValue() const;
 
-  //! Retourne la ième valeur
+  //! Returns the i-th value
   CaseOptionEnumValue* enumValue(Integer index) const;
 
-  /*! \brief Retourne la valeur de l'énumération ayant le nom \a name
+  /*! \brief Returns the value of the enumeration having the name \a name
    *
-   * La valeur est retournée dans \a index.
-   * \param name nom de l'énumération
-   * \param lang est le langage du jeu de données
-   * \param value est la valeur de l'énumération (en retour)
-   * \retval true en cas d'erreur,
-   * \retval false en cas de succès.
+   * The value is returned in \a index.
+   * \param name name of the enumeration
+   * \param lang is the language of the data set
+   * \param value is the enumeration value (returned)
+   * \retval true in case of error,
+   * \retval false in case of success.
    */
   bool valueOfName(const String& name, const String& lang, int& value) const;
 
-  //! Retourne le nom de correspondant à la valeur \a value pour le langage \a lang
+  //! Returns the name corresponding to the value \a value for the language \a lang
   String nameOfValue(int value, const String& lang) const;
 
   /*!
-   * \brief Remplit \a names avec les noms valides pour la langue \a lang.
+   * \brief Fills \a names with valid names for the language \a lang.
    */
   void getValidNames(const String& lang, StringArray& names) const;
 
  private:
 
-  EnumValueList* m_enum_values; //!< Valeurs de l'énumération
+  EnumValueList* m_enum_values; //!< Enumeration values
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de donnée de type énumération.
+ * \brief Enumerated data set option.
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseOptionEnum
@@ -188,9 +191,9 @@ class ARCANE_CORE_EXPORT CaseOptionEnum
   virtual void _search(bool is_phase1);
   virtual bool _allowPhysicalUnit() { return false; }
 
-  //! Positionne à \a v la valeur de l'option
+  //! Sets the option value to \a v
   virtual void _setOptionValue(int v) = 0;
-  //! Retourne la valeur de l'option
+  //! Returns the option value
   virtual int _optionValue() const = 0;
 
  protected:
@@ -199,18 +202,19 @@ class ARCANE_CORE_EXPORT CaseOptionEnum
 
  private:
 
-  String m_type_name; //!< Nom de l'énumération
+  String m_type_name; //!< Enumeration name
   CaseOptionEnumValues* m_enum_values;
   void _updateFromFunction(Real current_time, Integer current_iteration);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Option du jeu de données de type énuméré.
+ * \brief Enumerated data set option.
  *
- * \a T est le type informatique de l'énumération.
+ * \a T is the computer type of the enumeration.
  */
 template <class EnumType>
 class CaseOptionEnumT
@@ -225,31 +229,31 @@ class CaseOptionEnumT
 
  public:
 
-  //! Valeur de l'option
+  //! Option value
   EnumType value() const
   {
     ARCANE_CASEOPTION_CHECK_IS_INITIALIZED;
     return m_value;
   }
 
-  //! Valeur de l'option
+  //! Option value
   operator EnumType() const { return value(); }
 
-  //! Valeur de l'option
+  //! Option value
   EnumType operator()() const { return value(); }
 
   /*!
-   * \brief Positionne la valeur par défaut de l'option.
+   * \brief Sets the default value of the option.
    *
-   * Si l'option n'est pas pas présente dans le jeu de données, alors sa valeur sera
-   * celle spécifiée par l'argument \a def_value, sinon l'appel de cette méthode est sans effet.
+   * If the option is not present in the data set, its value will be
+   * that specified by the argument \a def_value; otherwise, calling this method has no effect.
    */
   void setDefaultValue(EnumType def_value)
   {
     _setEnumDefaultValue(static_cast<int>(def_value));
   }
 
-  //! Retourne la valeur de l'option si isPresent()==true ou sinon \a arg_value
+  //! Returns the option value if isPresent()==true, otherwise \a arg_value
   EnumType valueIfPresentOrArgument(EnumType arg_value)
   {
     ARCANE_CASEOPTION_CHECK_IS_INITIALIZED;
@@ -258,7 +262,7 @@ class CaseOptionEnumT
 
  private:
 
-  EnumType m_value; //!< Valeur de l'option
+  EnumType m_value; //!< Option value
 
  public:
  protected:
@@ -275,8 +279,9 @@ class CaseOptionEnumT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de données de type liste d'énumération.
+ * \brief Multi-enumeration data set option.
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseOptionMultiEnum
@@ -308,27 +313,28 @@ class ARCANE_CORE_EXPORT CaseOptionMultiEnum
   virtual void _search(bool is_phase1);
   virtual bool _allowPhysicalUnit() { return false; }
 
-  //! Alloue un tableau pour \a size éléments
+  //! Allocates an array for \a size elements
   virtual void _allocate(Integer size) = 0;
-  //! Retourne le nombre d'éléments du tableau.
+  //! Returns the number of elements in the array.
   virtual Integer _nbElem() const = 0;
-  /*! Positionne la valeur de l'option à la valeur \a v.
-   * \a v est directement convertie en la valeur de l'énumération.
+  /*! Sets the option value to the value \a v.
+   * \a v is directly converted to the enumeration value.
    */
   virtual void _setOptionValue(Integer index, int v) = 0;
-  //! Retourne la valeur de l'énumération pour l'indice \a index.
+  //! Returns the enumeration value for index \a index.
   virtual int _optionValue(Integer index) const = 0;
 
  private:
 
-  String m_type_name; //!< Nom de l'énumération
+  String m_type_name; //!< Enumeration name
   CaseOptionEnumValues* m_enum_values;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Option du jeu de données de type liste de types énumérés.
+ * \brief Multi-enumeration data set option.
  * \ingroup CaseOption
  */
 template <class T>
@@ -338,7 +344,7 @@ class CaseOptionMultiEnumT
 {
  public:
 
-  typedef T Type; //!< Type de l'option.
+  typedef T Type; //!< Option type.
 
  public:
 

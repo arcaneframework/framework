@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IBase.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un objet de base.                                             */
+/* Interface of a base object.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IBASE_H
 #define ARCANE_CORE_IBASE_H
@@ -24,56 +24,57 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de la classe de base des objets principaux arcane
+ * \brief Interface of the base class for main arcane objects
  */
 class ARCANE_CORE_EXPORT IBase
 {
  public:
 
-  virtual ~IBase() = default; //!< Libère les ressources
+  virtual ~IBase() = default; //!< Frees resources
 
  public:
 
   /*!
-   * \brief Construit les membres de l'instance.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée. Cette méthode doit être appelée avant initialize().
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \brief Constructs the instance members.
+   * The instance is not usable until this method has been
+   * called. This method must be called before initialize().
+   * \warning This method must only be called once.
    */
   virtual void build() = 0;
 
   /*!
-   * \brief Initialise l'instance.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée.
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \brief Initializes the instance.
+   * The instance is not usable until this method has been
+   * called.
+   * \warning This method must only be called once.
    */
   virtual void initialize() = 0;
 
  public:
 
-  //! Parent de cet objet
+  //! Parent of this object
   virtual IBase* objectParent() const = 0;
 
-  //! Namespace de l'objet.
+  //! Namespace of the object.
   virtual String objectNamespaceURI() const = 0;
 
-  //! Nom local de l'objet.
+  //! Local name of the object.
   virtual String objectLocalName() const = 0;
 
-  //! Numéro de version du service.
+  //! Service version number.
   virtual VersionInfo objectVersion() const = 0;
 
  public:
 
-  //! Gestionnaire de traces
+  //! Trace manager
   virtual ITraceMng* traceMng() const = 0;
 
-  //! Gestionnaire de ressources
+  //! Resource manager
   virtual IRessourceMng* ressourceMng() const = 0;
 
-  //! Gestionnaire de services
+  //! Service manager
   virtual IServiceMng* serviceMng() const = 0;
 
  public:
@@ -93,5 +94,4 @@ arcaneNamespaceURI();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

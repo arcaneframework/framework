@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableDataTypeTraits.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Classes spécialisées pour caractériser les types de données.              */
+/* Specialized classes for characterizing data types.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEDATATYPETRAITS_H
 #define ARCANE_CORE_VARIABLEDATATYPETRAITS_H
@@ -33,8 +33,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecriture dans la chaine \a s d'un type basique de valeur \a v.
+ * \brief Writing a basic value type \a v into the string \a s.
  */
 template <typename DataType> inline void
 builtInDumpValue(String& s, const DataType& v)
@@ -46,11 +47,12 @@ builtInDumpValue(String& s, const DataType& v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe template d'informations sur un type d'une variable.
+ * \brief Template class for information about a variable type.
  *
- * Cette classe doit être spécialisée pour chaque type.
+ * This class must be specialized for each type.
  */
 template <typename DataType>
 class VariableDataTypeTraitsT
@@ -65,28 +67,29 @@ class VariableDataTypeTraitsT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>byte</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the <tt>byte</tt> type.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Byte Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and read back
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Byte BasicType;
@@ -97,16 +100,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Byte"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Byte; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -143,28 +146,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Byte>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Real.
+ * \brief Specialization of VariableDataTypeTraitsT for the \c Real type.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Real Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and read back
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Real BasicType;
@@ -175,16 +179,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Real"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Real; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -211,14 +215,14 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
       if (std::isnan(v1) && std::isnan(v2))
         return false;
     }
-    // Vérifie avant de les comparer que les deux nombres sont valides
-    // pour éviter une exception flottante sur certaines plates-formes
+    // Checks before comparing that both numbers are valid
+    // to avoid a floating point exception on certain platforms
     if (platform::isDenormalized(v1) || platform::isDenormalized(v2)) {
       diff = 1.0;
       return true;
     }
     if (v1 != v2) {
-      if (divider < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+      if (divider < 1.e-100) // TH: crashed for very small v1(math::isZero(v1))
         diff = v1 - v2;
       else
         diff = (v1 - v2) / divider;
@@ -230,28 +234,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Real.
+ * \brief Specialization of VariableDataTypeTraitsT for the \c Float128 type.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Float128 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and read back
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef FalseType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Float128 BasicType;
@@ -262,16 +267,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Float128"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Float128; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -295,7 +300,7 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
   static bool _verifDifferent(Type v1, Type v2, Type& diff, Type divider)
   {
     if (v1 != v2) {
-      if (divider < 1.e-100) // TH: plantait pour v1 tres petit(math::isZero(v1))
+      if (divider < 1.e-100) // TH: crashed for very small v1(math::isZero(v1))
         diff = v1 - v2;
       else
         diff = (v1 - v2) / divider;
@@ -307,28 +312,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float128>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int8</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the <tt>Int8</tt> type.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Int8 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and read back
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Int8 BasicType;
@@ -339,16 +345,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Int8"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Int8; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
   static bool verifDifferent(Int8 v1, Int8 v2, Int8& diff,
@@ -377,28 +383,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int8>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int16</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the <tt>Int16</tt> type.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Int16 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and read back
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Int16 BasicType;
@@ -409,16 +416,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Int16"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Int16; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
   static bool verifDifferent(Int16 v1, Int16 v2, Int16& diff,
@@ -449,26 +456,26 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int16>
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int32</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Int32</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Int32 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Int32 BasicType;
@@ -479,16 +486,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Int32"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Int32; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type into \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
   static bool verifDifferent(Int32 v1, Int32 v2, Int32& diff,
@@ -518,28 +525,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int32>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int64</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Int64</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Int64 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Int64 BasicType;
@@ -550,16 +558,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Int64"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Int64; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type into \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -591,28 +599,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int64>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Int128</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Int128</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Int128 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef FalseType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Int128 BasicType;
@@ -623,16 +632,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Int128"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Int128; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type into \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -664,49 +673,50 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Int128>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>String</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>String</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef String Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef FalseType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef FalseType IsNumeric;
 
   typedef String BasicType;
 
-  // Uniquement utilisé pour compiler les routines de comparaison de valeurs.
+  // Only used to compile value comparison routines.
   using NormType = String;
 
   static constexpr Integer nbBasicType() { return 1; }
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "String"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_String; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { s = v; }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type into \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -726,28 +736,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<String>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c BFloat16.
+ * \brief Specialization of VariableDataTypeTraitsT for the type \c BFloat16.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef BFloat16 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef FalseType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef FalseType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef BFloat16 BasicType;
@@ -758,16 +769,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "BFloat16"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_BFloat16; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type into \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -807,28 +818,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<BFloat16>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Float16.
+ * \brief Specialization of VariableDataTypeTraitsT for the type \c Float16.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Float16 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef FalseType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef FalseType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef FalseType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Float16 BasicType;
@@ -839,16 +851,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Float16"; }
-  //! Retourne le type de la variable
+  //! Returns the type of the variable
   static constexpr eDataType type() { return DT_Float16; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into the #Type into \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -888,28 +900,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float16>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type \c Float32.
+ * \brief Specialization of VariableDataTypeTraitsT for the type \c Float32.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Float32 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef FalseType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Real BasicType;
@@ -920,16 +933,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Float32"; }
-  //! Retourne le type de la variable
+  //! Returns the variable type
   static constexpr eDataType type() { return DT_Float32; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type& v) { builtInDumpValue(s, v); }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into type #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -956,8 +969,8 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
       if (std::isnan(v1) && std::isnan(v2))
         return false;
     }
-    // Vérifie avant de les comparer que les deux nombres sont valides
-    // pour éviter une exception flottante sur certaines plates-formes
+    // Checks before comparing that both numbers are valid
+    // to avoid a floating point exception on certain platforms
     if (platform::isDenormalized(v1) || platform::isDenormalized(v2)) {
       diff = 1.0;
       return true;
@@ -975,28 +988,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Float32>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Real2</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Real2</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Real2 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Real BasicType;
@@ -1011,16 +1025,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Real2"; }
-  //! Retourne le type de la variable
+  //! Returns the variable type
   static constexpr eDataType type() { return DT_Real2; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into type #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -1057,28 +1071,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Real3</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Real3</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Real3 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Real BasicType;
@@ -1093,16 +1108,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Real3"; }
-  //! Retourne le type de la variable
+  //! Returns the variable type
   static constexpr eDataType type() { return DT_Real3; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into type #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type& v, const String& s) { return builtInGetValue(v, s); }
 
@@ -1143,28 +1158,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Real3x3</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Real3x3</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Real2x2 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Real BasicType;
@@ -1179,16 +1195,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Real2x2"; }
-  //! Retourne le type de la variable
+  //! Returns the variable type
   static constexpr eDataType type() { return DT_Real2x2; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into type #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type&, const String&) { return true; }
 
@@ -1231,28 +1247,29 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real2x2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Spécialisation de VariableDataTypeTraitsT pour le type <tt>Real3x3</tt>.
+ * \brief Specialization of VariableDataTypeTraitsT for the type <tt>Real3x3</tt>.
  */
 template <>
 class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
 {
  public:
 
-  //! Type du paramètre template
+  //! Template parameter type
   typedef Real3x3 Type;
 
-  //! Indique si le type peut être sauvé et relu
+  //! Indicates if the type can be saved and loaded
   typedef TrueType HasDump;
 
-  //! Indique si le type peut être subir une réduction
+  //! Indicates if the type can undergo reduction
   typedef TrueType HasReduce;
 
-  //! Indique si le type peut être subir une réduction Min/Max
+  //! Indicates if the type can undergo Min/Max reduction
   typedef TrueType HasReduceMinMax;
 
-  //! Indique si le type est numérique
+  //! Indicates if the type is numeric
   typedef TrueType IsNumeric;
 
   typedef Real BasicType;
@@ -1267,16 +1284,16 @@ class ARCANE_CORE_EXPORT VariableDataTypeTraitsT<Real3x3>
 
  public:
 
-  //! Retourne le nom du type de la variable
+  //! Returns the name of the variable type
   static constexpr const char* typeName() { return "Real3x3"; }
-  //! Retourne le type de la variable
+  //! Returns the variable type
   static constexpr eDataType type() { return DT_Real3x3; }
-  //! Ecrit dans la chaîne \a s la valeur de \a v
+  //! Writes the value of \a v into the string \a s
   static void dumpValue(String& s, const Type&) { s = "N/A"; }
   /*!
-   * \brief Stocke la conversion de la chaîne \a s en le type #Type dans \a v
-   * \retval true en cas d'échec,
-   * \retval false si la conversion est un succès
+   * \brief Stores the conversion of the string \a s into type #Type in \a v
+   * \retval true in case of failure,
+   * \retval false if the conversion is successful
    */
   static bool getValue(Type&, const String&) { return true; }
 

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshPartialVariableScalarRef.inst.h                         (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des classes dérivant de MeshPartialVariableScalarRef.      */
+/* Implementation of classes deriving from MeshPartialVariableScalarRef.     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,33 +27,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableTypeInfo
+template <typename DataType> VariableTypeInfo
 ItemPartialVariableScalarRefT<DataType>::
 _buildVariableTypeInfo(eItemKind ik)
 {
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return VariableTypeInfo(ik,dt,1,0,true);
+  return VariableTypeInfo(ik, dt, 1, 0, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableInfo
+template <typename DataType> VariableInfo
 ItemPartialVariableScalarRefT<DataType>::
-_buildVariableInfo(const VariableBuildInfo& vbi,eItemKind ik)
+_buildVariableInfo(const VariableBuildInfo& vbi, eItemKind ik)
 {
   VariableTypeInfo vti = _buildVariableTypeInfo(ik);
   DataStorageTypeInfo sti = vti._internalDefaultDataStorage();
-  return VariableInfo(vbi.name(),vbi.itemFamilyName(),vbi.itemGroupName(),vbi.meshName(),vti,sti);
+  return VariableInfo(vbi.name(), vbi.itemFamilyName(), vbi.itemGroupName(), vbi.meshName(), vti, sti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 ItemPartialVariableScalarRefT<DataType>::
-ItemPartialVariableScalarRefT(const VariableBuildInfo& vbi,eItemKind ik)
-: PrivateVariableScalarT<DataType>(vbi,_buildVariableInfo(vbi,ik))
+ItemPartialVariableScalarRefT(const VariableBuildInfo& vbi, eItemKind ik)
+: PrivateVariableScalarT<DataType>(vbi, _buildVariableInfo(vbi, ik))
 {
   this->_internalInit();
   internalSetUsed(this->isUsed());
@@ -62,7 +62,7 @@ ItemPartialVariableScalarRefT(const VariableBuildInfo& vbi,eItemKind ik)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 ItemPartialVariableScalarRefT<DataType>::
 ItemPartialVariableScalarRefT(IVariable* var)
 : PrivateVariableScalarT<DataType>(var)
@@ -74,7 +74,7 @@ ItemPartialVariableScalarRefT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 ItemPartialVariableScalarRefT<DataType>::
 ItemPartialVariableScalarRefT(const ItemPartialVariableScalarRefT<DataType>& rhs)
 : PrivateVariableScalarT<DataType>(rhs)
@@ -85,7 +85,7 @@ ItemPartialVariableScalarRefT(const ItemPartialVariableScalarRefT<DataType>& rhs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemPartialVariableScalarRefT<DataType>::
 internalSetUsed(bool v)
 {
@@ -98,7 +98,7 @@ internalSetUsed(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 ItemPartialVariableScalarRefT<DataType>::
 operator=(const ItemPartialVariableScalarRefT<DataType>& rhs)
 {
@@ -110,7 +110,7 @@ operator=(const ItemPartialVariableScalarRefT<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 ItemPartialVariableScalarRefT<DataType>::
 fill(const DataType& v)
 {
@@ -120,12 +120,12 @@ fill(const DataType& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 ItemPartialVariableScalarRefT<DataType>::
 copy(const ItemPartialVariableScalarRefT<DataType>& v)
 {
   //TODO: utiliser memcpy()
-  ENUMERATE_ITEM(iitem,this->itemGroup()){
+  ENUMERATE_ITEM (iitem, this->itemGroup()) {
     operator[](iitem) = v[iitem];
   }
 }
@@ -136,27 +136,27 @@ copy(const ItemPartialVariableScalarRefT<DataType>& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> VariableFactoryRegisterer
-MeshPartialVariableScalarRefT<ItemType,DataType>::
-m_auto_registerer(_autoCreate,_buildVariableTypeInfo());
+template <class ItemType, class DataType> VariableFactoryRegisterer
+MeshPartialVariableScalarRefT<ItemType, DataType>::
+m_auto_registerer(_autoCreate, _buildVariableTypeInfo());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType> VariableTypeInfo
-MeshPartialVariableScalarRefT<ItemType,DataType>::
+template <typename ItemType, typename DataType> VariableTypeInfo
+MeshPartialVariableScalarRefT<ItemType, DataType>::
 _buildVariableTypeInfo()
 {
   eItemKind ik = ItemTraitsT<ItemType>::kind();
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return VariableTypeInfo(ik,dt,1,0,true);
+  return VariableTypeInfo(ik, dt, 1, 0, true);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> 
-VariableRef* MeshPartialVariableScalarRefT<ItemType,DataType>::
+template <class ItemType, class DataType>
+VariableRef* MeshPartialVariableScalarRefT<ItemType, DataType>::
 _autoCreate(const VariableBuildInfo& vb)
 {
   return new ThatClass(vb);
@@ -165,39 +165,39 @@ _autoCreate(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> 
-MeshPartialVariableScalarRefT<ItemType,DataType>::
+template <class ItemType, class DataType>
+MeshPartialVariableScalarRefT<ItemType, DataType>::
 MeshPartialVariableScalarRefT(const VariableBuildInfo& vb)
-: ItemPartialVariableScalarRefT<DataType>(vb,ItemTraitsT<ItemType>::kind())
+: ItemPartialVariableScalarRefT<DataType>(vb, ItemTraitsT<ItemType>::kind())
 {
-  // Normalement, c'est à cette classe de faire l'initialisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableScalarRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableScalarRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows for generic variable creation on a mesh entity
+  // based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> 
-MeshPartialVariableScalarRefT<ItemType,DataType>::
-MeshPartialVariableScalarRefT(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs)
+template <class ItemType, class DataType>
+MeshPartialVariableScalarRefT<ItemType, DataType>::
+MeshPartialVariableScalarRefT(const MeshPartialVariableScalarRefT<ItemType, DataType>& rhs)
 : ItemPartialVariableScalarRefT<DataType>(rhs)
 {
-  // Normalement, c'est à cette classe de faire l'initialisation mais
-  // comme cette classe est juste un wrapper autour de ItemVariableScalarRefT
-  // et ne fait rien d'autre, on laisse l'initialisation à la classe de base,
-  // ce qui permet de fabriquer de manière générique une variable sur
-  // une entité du maillage à partir de son genre.
+  // Normally, this class should handle the initialization, but
+  // since this class is just a wrapper around ItemVariableScalarRefT
+  // and does nothing else, we leave the initialization to the base class,
+  // which allows for generic variable creation on a mesh entity
+  // based on its type.
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> void
-MeshPartialVariableScalarRefT<ItemType,DataType>::
-refersTo(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs)
+template <class ItemType, class DataType> void
+MeshPartialVariableScalarRefT<ItemType, DataType>::
+refersTo(const MeshPartialVariableScalarRefT<ItemType, DataType>& rhs)
 {
   ItemPartialVariableScalarRefT<DataType>::operator=(rhs);
 }
@@ -205,8 +205,8 @@ refersTo(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> auto
-MeshPartialVariableScalarRefT<ItemType,DataType>::
+template <class ItemType, class DataType> auto
+MeshPartialVariableScalarRefT<ItemType, DataType>::
 itemGroup() const -> GroupType
 {
   return GroupType(this->m_private_part->itemGroup());

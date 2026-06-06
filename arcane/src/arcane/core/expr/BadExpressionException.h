@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BadExpressionException.h                                    (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une expression n'est pas valide.                         */
+/* Exception when an expression is not valid.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_EXPR_BADEXPRESSIONEXCEPTION_H
 #define ARCANE_EXPR_BADEXPRESSIONEXCEPTION_H
@@ -19,24 +19,26 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception lorsqu'une expression n'est pas valide.
+ * \brief Exception when an expression is not valid.
  */
 class BadExpressionException
 : public Exception
 {
  public:
-	
+
   BadExpressionException(const String& where);
-  BadExpressionException(const String& where,const String& msg);
+  BadExpressionException(const String& where, const String& msg);
   ~BadExpressionException() ARCANE_NOEXCEPT override {}
 
  public:
-	
+
   void explain(std::ostream& m) const override;
 
  private:
@@ -47,10 +49,9 @@ class BadExpressionException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

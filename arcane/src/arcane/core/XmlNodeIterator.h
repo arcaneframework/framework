@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* XmlNodeIterator.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Iterator sur les noeuds d'un arbre DOM.                                   */
+/* Iterator over the nodes of a DOM tree.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLNODEITERATOR_H
 #define ARCANE_CORE_XMLNODEITERATOR_H
@@ -123,8 +123,9 @@ end() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur sur les fils d'un noeud \a from de nom \a ref_name.
+ * \brief Iterator over the children of a node \a from with name \a ref_name.
  */
 class XmlNodeNameIterator
 {
@@ -158,5 +159,4 @@ class XmlNodeNameIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

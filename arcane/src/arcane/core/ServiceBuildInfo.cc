@@ -1,30 +1,31 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ServiceBuildInfo.cc                                         (C) 2000-2020 */
 /*                                                                           */
-/* Informations d'un service.                                                */
+/* Service information.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/ServiceBuildInfo.h"
-#include "arcane/ISession.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IMesh.h"
-#include "arcane/ICaseOptions.h"
+#include "arcane/core/ServiceBuildInfo.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ICaseOptions.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -52,7 +53,7 @@ ServiceBuildInfoBase(ISession* session)
 
 ServiceBuildInfoBase::
 ServiceBuildInfoBase(IMesh* mesh)
-: ServiceBuildInfoBase(mesh->subDomain(),mesh->handle())
+: ServiceBuildInfoBase(mesh->subDomain(), mesh->handle())
 {
 }
 
@@ -60,8 +61,8 @@ ServiceBuildInfoBase(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 ServiceBuildInfoBase::
-ServiceBuildInfoBase(ISubDomain* sd,IMesh* mesh)
-: ServiceBuildInfoBase(sd,mesh->handle())
+ServiceBuildInfoBase(ISubDomain* sd, IMesh* mesh)
+: ServiceBuildInfoBase(sd, mesh->handle())
 {
 }
 
@@ -69,7 +70,7 @@ ServiceBuildInfoBase(ISubDomain* sd,IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 ServiceBuildInfoBase::
-ServiceBuildInfoBase(ISubDomain* sd,const MeshHandle& mesh_handle)
+ServiceBuildInfoBase(ISubDomain* sd, const MeshHandle& mesh_handle)
 : m_sub_domain(sd)
 , m_mesh_handle(mesh_handle)
 , m_service_parent(m_sub_domain)
@@ -82,7 +83,7 @@ ServiceBuildInfoBase(ISubDomain* sd,const MeshHandle& mesh_handle)
 
 ServiceBuildInfoBase::
 ServiceBuildInfoBase(const MeshHandle& mesh_handle)
-: ServiceBuildInfoBase(mesh_handle.subDomain(),mesh_handle)
+: ServiceBuildInfoBase(mesh_handle.subDomain(), mesh_handle)
 {
 }
 
@@ -102,7 +103,7 @@ ServiceBuildInfoBase(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 
 ServiceBuildInfoBase::
-ServiceBuildInfoBase(ISubDomain* sd,ICaseOptions* co)
+ServiceBuildInfoBase(ISubDomain* sd, ICaseOptions* co)
 : m_sub_domain(sd)
 , m_mesh_handle(co->meshHandle())
 , m_case_options(co)
@@ -116,7 +117,7 @@ ServiceBuildInfoBase(ISubDomain* sd,ICaseOptions* co)
 
 ServiceBuildInfoBase::
 ServiceBuildInfoBase(ICaseOptions* co)
-: ServiceBuildInfoBase(co->subDomain(),co)
+: ServiceBuildInfoBase(co->subDomain(), co)
 {
 }
 
@@ -149,4 +150,3 @@ ServiceBuildInfo(IServiceInfo* service_info, const ServiceBuildInfoBase& sbib)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

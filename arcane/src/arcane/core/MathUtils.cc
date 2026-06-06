@@ -1,44 +1,46 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MathUtils.cc                                                (C) 2000-2005 */
 /*                                                                           */
-/* Fonctions mathématiques diverses.                                         */
+/* Various mathematical functions.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/MathUtils.h"
-#include "arcane/StdNum.h"
+#include "arcane/core/MathUtils.h"
+#include "arcane/core/StdNum.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MathUtils.h
  *
- * \brief Fonctions mathématiques diverses.
+ * \brief Various mathematical functions.
  */
+
 /*!
- * \defgroup GroupMathUtils fonctions mathématiques.
+ * \defgroup GroupMathUtils mathematical functions.
  *
- * Ensemble de fonctions mathématiques.
+ * Set of mathematical functions.
  */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

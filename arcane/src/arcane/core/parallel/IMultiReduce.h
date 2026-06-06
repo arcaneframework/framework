@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMultiReduce.h                                              (C) 2000-2016 */
 /*                                                                           */
-/* Gestion de réductions multiples.                                          */
+/* Management of multiple reductions.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_IMULTIREDUCE_H
 #define ARCANE_PARALLEL_IMULTIREDUCE_H
@@ -19,18 +19,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe gérant une réduction d'une somme de valeur.
+ * \brief Class managing a reduction of a sum of values.
  *
- * Les instances de cette classe doivent être créés via IMultiReduce::getSumOfReal().
- * L'utilisateur doit accumuler les valeurs via l'appel à add(). Après exécution
- * de la réduction via IMultiReduce::execute(), il est possible
- * de récupérer la valeur réduite via reducedValue().
+ * Instances of this class must be created via IMultiReduce::getSumOfReal().
+ * The user must accumulate values via the call to add(). After execution
+ * of the reduction via IMultiReduce::execute(), it is possible
+ * to retrieve the reduced value via reducedValue().
  * \sa IMultiReduce
  */
 class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
@@ -38,7 +39,8 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
  public:
 
   ReduceSumOfRealHelper(bool is_strict)
-  : m_reduced_value(0.0), m_is_strict(is_strict)
+  : m_reduced_value(0.0)
+  , m_is_strict(is_strict)
   {
     if (!m_is_strict)
       m_values.add(0.0);
@@ -46,7 +48,7 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
 
  public:
 
-  //! Ajoute la valeur \a v
+  //! Adds the value \a v
   void add(Real v)
   {
     if (m_is_strict)
@@ -54,23 +56,24 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
     else
       m_values[0] += v;
   }
-  
-  //! Supprime les valeurs accumulées.
+
+  //! Clears the accumulated values.
   void clear()
   {
     m_values.clear();
   }
-  
-  //! Liste des valeurs accumulées.
+
+  //! List of accumulated values.
   RealConstArrayView values() const { return m_values; }
-  
-  //! Valeur réduite
+
+  //! Reduced value
   Real reducedValue() const { return m_reduced_value; }
 
-  //! Positionne la valeur réduite.
+  //! Positions the reduced value.
   void setReducedValue(Real v) { m_reduced_value = v; }
 
  private:
+
   SharedArray<Real> m_values;
   Real m_reduced_value;
   bool m_is_strict;
@@ -78,62 +81,62 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion de réductions multiples.
+ * \brief Management of multiple reductions.
  *
- * Pour l'instant, seule les réductions de type 'somme' sur des réels
- * est supporté.
+ * For now, only 'sum' type reductions on reals
+ * are supported.
  *
- * Il est possible de spécifier un mode strict, via setStrict(), qui
- * permet que ces sommes soient identiques quelles que soit l'ordre
- * des opérations. Cela nécessite cependant de stocker toutes les valeurs
- * intermédiaire et donc est couteux en mémoire et non extensible car
- * un seul processeur se chargera du calcul de la somme.
+ * It is possible to specify a strict mode, via setStrict(), which
+ * allows these sums to be identical regardless of the order
+ * of the operations. However, this requires storing all intermediate values
+ * and is therefore memory-intensive and not scalable because
+ * a single processor will handle the sum calculation.
  *
- * Le mode strict doit être spécifié avant la création des réductions.
- * Le mode strict est automatiquement actif si la variable d'environnement
- * ARCANE_STRICT_REDUCE est positionnée.
+ * The strict mode must be specified before creating the reductions.
+ * The strict mode is automatically active if the environment variable
+ * ARCANE_STRICT_REDUCE is set.
  */
 class ARCANE_CORE_EXPORT IMultiReduce
 {
  public:
 
-  virtual ~IMultiReduce(){} //!< Libère les ressources
+  virtual ~IMultiReduce() {} //!< Frees resources
 
  public:
 
   static IMultiReduce* create(IParallelMng* pm);
 
  public:
-  
-  //! Exécute les réductions
-  virtual void execute() =0;
 
-  //! Indique si on utilise le mode strict
-  virtual bool isStrict() const =0;
+  //! Executes the reductions
+  virtual void execute() = 0;
 
-  //! Positionne le mode strict
-  virtual void setStrict(bool is_strict) =0;
+  //! Indicates if strict mode is used
+  virtual bool isStrict() const = 0;
+
+  //! Sets the strict mode
+  virtual void setStrict(bool is_strict) = 0;
 
  public:
 
   /*!
-   * \brief Retourne le gestionnaire de nom \a name.
-   * S'il n'existe pas de gestionnaire de nom \a name il est créé.
-   * L'objet retourné reste la propriété de cette instance et ne doit pas
-   * être détruit explicitement. Il le sera lorsque cette instance sera
-   * détruite.
+   * \brief Returns the name manager \a name.
+   * If a name manager \a name does not exist, it is created.
+   * The returned object remains the property of this instance and must not
+   * be explicitly destroyed. It will be when this instance is
+   * destroyed.
    */
-  virtual ReduceSumOfRealHelper* getSumOfReal(const String& name) =0;
+  virtual ReduceSumOfRealHelper* getSumOfReal(const String& name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

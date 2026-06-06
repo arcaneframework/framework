@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableRefScalar.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une référence sur une variable scalaire.                    */
+/* Class managing a reference to a scalar variable.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEREFSCALAR_H
 #define ARCANE_CORE_VARIABLEREFSCALAR_H
@@ -28,24 +28,24 @@ class VariableFactoryRegisterer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence à une variable scalaire.
+ * \brief Reference to a scalar variable.
  *
- * L'opérateur operator()() permet d'accéder à la valeur de la variable en
- * lecture seulement. Pour modifier la valeur de la variable, il faut
- * utiliser la méthode assign() ou l'opérateur operator=(). A noter que
- * l'affectation provoque une mise à jour des références et peut s'avérer
- * coûteuse.
+ * The operator operator()() allows access to the variable's value for
+ * read-only purposes. To modify the variable's value, you must
+ * use the assign() method or the operator operator=(). Note that
+ * assignment triggers a reference update and can be costly.
  */
-template<typename DataType>
+template <typename DataType>
 class VariableRefScalarT
 : public VariableRef
 {
  public:
 
-  //! Type des éléments de la variable
+  //! Type of the variable elements
   typedef DataType ElementType;
-  //! Type de la classe de base
+  //! Type of the base class
   typedef VariableRef BaseClass;
 
   typedef VariableScalarT<DataType> PrivatePartType;
@@ -54,23 +54,26 @@ class VariableRefScalarT
 
  public:
 
-  //! Construit une référence à une variable scalaire spécifiée dans \a vb
+  //! Constructs a reference to a scalar variable specified in \a vb
   explicit ARCANE_CORE_EXPORT VariableRefScalarT(const VariableBuildInfo& b);
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT VariableRefScalarT(const VariableRefScalarT<DataType>& rhs);
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT VariableRefScalarT(IVariable* var);
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance's reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const VariableRefScalarT<DataType>& rhs);
 
 #ifdef ARCANE_DOTNET
  public:
+
 #else
  protected:
 #endif
 
-  //! Constructeur vide
-  VariableRefScalarT() : m_private_part(nullptr) {}
+  //! Default constructor
+  VariableRefScalarT()
+  : m_private_part(nullptr)
+  {}
 
  public:
 
@@ -80,11 +83,11 @@ class VariableRefScalarT
 
  public:
 
-  ArrayView<DataType> asArray() { return ArrayView<DataType>(1,&(m_private_part->value())); }
-  ConstArrayView<DataType> asArray() const { return ConstArrayView<DataType>(1,&(m_private_part->value())); }
+  ArrayView<DataType> asArray() { return ArrayView<DataType>(1, &(m_private_part->value())); }
+  ConstArrayView<DataType> asArray() const { return ConstArrayView<DataType>(1, &(m_private_part->value())); }
 
  public:
-	
+
   void operator=(const DataType& v) { assign(v); }
   VariableRefScalarT<DataType>& operator=(const VariableRefScalarT<DataType>& v)
   {
@@ -92,53 +95,60 @@ class VariableRefScalarT
     return (*this);
   }
 
-  //! Réinitialise la variable avec sa valeur par défaut
+  //! Resets the variable to its default value
   void reset() { assign(DataType()); }
 
-  //! Valeur du scalaire
+  //! Scalar value
   const DataType& operator()() const { return m_private_part->value(); }
 
-  //! Valeur du scalaire
+  //! Scalar value
   const DataType& value() const { return m_private_part->value(); }
 
   /*!
-   * \brief Compare la variable avec la valeur \a v.
+   * \brief Compares the variable with the value \a v.
    */
   bool isEqual(const DataType& v) const
-    { return math::isEqual(m_private_part->value(),v); }
+  {
+    return math::isEqual(m_private_part->value(), v);
+  }
 
   /*!
-   * \brief Compare la variable avec la valeur 0.
+   * \brief Compares the variable with the value 0.
    * \sa isEqual().
    */
   bool isZero() const
-    { return math::isZero(m_private_part->value()); }
+  {
+    return math::isZero(m_private_part->value());
+  }
 
   /*!
-   * \brief Compare la variable avec la valeur \a v.
+   * \brief Compares the variable with the value \a v.
    *
-   * Pour un type flottant, la comparaison se fait à un epsilon près,
-   * défini dans float_info<T>::nearlyEpsilon().
+   * For a floating-point type, the comparison is done within an epsilon,
+   * defined in float_info<T>::nearlyEpsilon().
    */
   bool isNearlyEqual(const DataType& v) const
-    { return math::isNearlyEqual(m_private_part->value(),v); }
+  {
+    return math::isNearlyEqual(m_private_part->value(), v);
+  }
   /*!
-   * \brief Compare la variable avec la valeur 0.
+   * \brief Compares the variable with the value 0.
    * \sa isEqual().
    */
   bool isNearlyZero() const
-    { return math::isNearlyZero(m_private_part->value()); }
+  {
+    return math::isNearlyZero(m_private_part->value());
+  }
 
-  //! Affecte à la variable la valeur \a v
+  //! Assigns the value \a v to the variable
   ARCANE_CORE_EXPORT void assign(const DataType& v);
 
-  //! Effectue une réduction de type \a type sur la variable
+  //! Performs a type \a type reduction on the variable
   ARCANE_CORE_EXPORT void reduce(Parallel::eReduceType type);
 
   ARCANE_CORE_EXPORT void swapValues(VariableRefScalarT<DataType>& rhs);
 
  protected:
-  
  private:
 
   PrivatePartType* m_private_part;
@@ -159,4 +169,4 @@ class VariableRefScalarT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

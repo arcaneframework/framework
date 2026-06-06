@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AnyItemLinkVariableArray.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Variable 2D de liens d'items de types quelconques.                        */
+/* 2D variable of links of arbitrary types.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMLINKVARIABLEARRAY_H
 #define ARCANE_CORE_ANYITEM_ANYITEMLINKVARIABLEARRAY_H
@@ -26,12 +26,12 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*
- * \brief Variable de liens d'items de types quelconques.
+ * \brief Variable of links of arbitrary types.
  * 
- * Par exemple :
+ * For example:
  *
- * AnyItem::Variable<Real> variable(family);                    // Remplie
- * AnyItem::LinkVariableArray<Real> link_variable(link_family); // Remplie de taille 3
+ * AnyItem::Variable<Real> variable(family);                    // Filled
+ * AnyItem::LinkVariableArray<Real> link_variable(link_family); // Filled with size 3
  *
  * Real value = 0;
  * ENUMERATE_ANY_ITEM_LINK(ilink, link_family) {
@@ -49,74 +49,78 @@ namespace Arcane::AnyItem
  * }
  *
  */
-template<typename DataType>
+template <typename DataType>
 class LinkVariableArray
-  : public ILinkFamilyObserver
+: public ILinkFamilyObserver
 {
-public:
+ public:
 
   LinkVariableArray(const LinkFamily& family)
-    : m_size(0)
-    , m_family(family)
-    , m_values(m_family.capacity(),m_size)
+  : m_size(0)
+  , m_family(family)
+  , m_values(m_family.capacity(), m_size)
   {
     m_family.registerObserver(*this);
   }
 
   LinkVariableArray(const LinkVariableArray& v)
-    : m_size(v.m_size)
-    , m_family(v.m_family)
-    , m_values(v.m_values) 
+  : m_size(v.m_size)
+  , m_family(v.m_family)
+  , m_values(v.m_values)
   {
     m_family.registerObserver(*this);
   }
-  
+
   ~LinkVariableArray()
   {
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
   }
 
-  //! Accesseur
-  inline ArrayView<DataType> operator[](const LinkFamily::LinkIndex& item) {
+  //! Accessor
+  inline ArrayView<DataType> operator[](const LinkFamily::LinkIndex& item)
+  {
     return m_values[item.index()];
   }
-  
-  //! Accesseurmake
-  inline ConstArrayView<DataType> operator[](const LinkFamily::LinkIndex& item) const {
+
+  //! Accessor const
+  inline ConstArrayView<DataType> operator[](const LinkFamily::LinkIndex& item) const
+  {
     return m_values[item.index()];
   }
- 
-  //! Action si la famille est invalidée : on retaille
-  inline void notifyFamilyIsInvalidate() {
-    // Si la famille change, on retaille
-    m_values.resize(m_family.capacity(),m_size);
+
+  //! Action if the family is invalidated: we resize
+  inline void notifyFamilyIsInvalidate()
+  {
+    // If the family changes, we resize
+    m_values.resize(m_family.capacity(), m_size);
   }
-  
-  //! Action si la famille est reservée : on retaille
-  inline void notifyFamilyIsReserved() {
-    // Si la famille est reservée, on retaille simplement
-    m_values.resize(m_family.capacity(),m_size);
+
+  //! Action if the family is reserved: we resize
+  inline void notifyFamilyIsReserved()
+  {
+    // If the family is reserved, we simply resize
+    m_values.resize(m_family.capacity(), m_size);
   }
-  
-  //! Redimensionnement de la deuxième dimension du tableau
+
+  //! Resizing of the second dimension of the array
   inline void resize(Integer size)
   {
     m_size = size;
-    m_values.resize(m_family.capacity(),m_size);
+    m_values.resize(m_family.capacity(), m_size);
   }
 
-  //! Retourne la taille du tableau
+  //! Returns the size of the array
   inline Integer size() const { return m_size; }
 
-private:
-  
-  //! Taille de la 2ème dimension du tableau
+ private:
+
+  //! Size of the 2nd dimension of the array
   Integer m_size;
 
-  //! Famille de liens
+  //! Link family
   const LinkFamily m_family;
-  
-  //! Valeurs
+
+  //! Values
   Arcane::UniqueArray2<DataType> m_values;
 };
 
@@ -127,5 +131,5 @@ private:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-    
-#endif /* ARCANE_ANYITEM_ANYITEMLINKVARIABLEARRAY_H */
+
+#endif

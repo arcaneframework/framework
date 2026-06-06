@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MaterialVariableTypeInfo.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations caractérisants le type d'une variable matériaux.             */
+/* Information characterizing the type of a material variable.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATERIALVARIABLETYPEINFO_H
 #define ARCANE_CORE_MATERIALS_MATERIALVARIABLETYPEINFO_H
@@ -25,12 +25,13 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations caractérisant le type d'une variable matériau.
+ * \brief Information characterizing the type of a material variable.
  *
- * Les instances de cette classes peuvent être utilisées dans les
- * constructeurs statiques. Pour éviter tout problème cette classe ne doit
- * pas utiliser d'allocation dynamique.
+ * Instances of this class can be used in
+ * static constructors. To avoid any issues, this class must not
+ * use dynamic allocation.
  */
 class ARCANE_CORE_EXPORT MaterialVariableTypeInfo
 {
@@ -44,13 +45,13 @@ class ARCANE_CORE_EXPORT MaterialVariableTypeInfo
 
  public:
 
-  //! Type d'entité de maillage
+  //! Mesh entity type
   constexpr eItemKind itemKind() const { return m_variable_type_info.itemKind(); }
   //! Dimension
   constexpr Integer dimension() const { return m_variable_type_info.dimension(); }
-  //! Type des données de la variable
+  //! Data type of the variable
   constexpr eDataType dataType() const { return m_variable_type_info.dataType(); }
-  //! Nom complet du type de la variable
+  //! Full name of the variable type
   String fullName() const;
 
  private:

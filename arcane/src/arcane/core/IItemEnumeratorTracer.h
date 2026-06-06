@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemEnumeratorTracer.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface de trace des appels aux énumérateur sur les entités.            */
+/* Interface for tracing calls to enumerators on entities.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMENUMERATORTRACER_H
 #define ARCANE_CORE_IITEMENUMERATORTRACER_H
@@ -24,17 +24,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un traceur d'énumérateur sur les entités.
+ * \brief Interface for an enumerator tracer on entities.
  *
- * Cette interface fournit des méthodes qui sont appelées automatiquement
- * lors de l'utilisation des macros permettant d'itérer sur les entités
- * comme ENUMERATE_CELL ou ENUMERATE_SIMD_CELL. Pour des raisons de performance,
- * ces macros ne sont tracées  que si le fichier source qui les utilise est
- * compilé avec la macro ARCANE_TRACE_ENUMERATOR.
+ * This interface provides methods that are called automatically
+ * when using the macros that allow iteration over entities
+ * such as ENUMERATE_CELL or ENUMERATE_SIMD_CELL. For performance reasons,
+ * these macros are only traced if the source file using them is
+ * compiled with the ARCANE_TRACE_ENUMERATOR macro.
  *
- * La méthode singleton() permet de récupérer l'implémentation actuelle.
+ * The singleton() method allows retrieving the current implementation.
  *
  */
 class ARCANE_CORE_EXPORT IItemEnumeratorTracer
@@ -49,16 +50,16 @@ class ARCANE_CORE_EXPORT IItemEnumeratorTracer
 
  public:
 
-  //! Méthode appelée lors avant d'exécuter un ENUMERATE_
+  //! Method called before executing an ENUMERATE_
   virtual void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) = 0;
 
-  //! Méthode appelée lors après l'exécution d'un ENUMERATE_
+  //! Method called after executing an ENUMERATE_
   virtual void exitEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) = 0;
 
-  //! Méthode appelée lors avant d'exécuter un ENUMERATE_SIMD_
+  //! Method called before executing an ENUMERATE_SIMD_
   virtual void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) = 0;
 
-  //! Méthode appelée lors après l'exécution d'un ENUMERATE_SIMD_
+  //! Method called after executing an ENUMERATE_SIMD_
   virtual void exitEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) = 0;
 
  public:

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialVariableFactoryMng.h                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de fabrique de variables matériaux.             */
+/* Interface of the material variable factory manager.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
 #define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
@@ -25,31 +25,32 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du gestionnaire de fabrique de variables matériaux.
+ * \brief Interface of the material variable factory manager.
  */
 class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 {
  public:
-  
+
   virtual ~IMeshMaterialVariableFactoryMng() = default;
 
  public:
 
-  //! Construit l'instance
-  virtual void build() =0;
+  //! Builds the instance
+  virtual void build() = 0;
 
-  //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng() const =0;
+  //! Associated trace manager
+  virtual ITraceMng* traceMng() const = 0;
 
-  //! Enregistre la fabrique \a factory.
-  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
+  //! Registers the factory \a factory.
+  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) = 0;
 
-  //! Créé une variable matériau.
+  //! Creates a material variable.
   virtual IMeshMaterialVariable*
   createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info) =0;
+                 const MaterialVariableBuildInfo& build_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -60,4 +61,4 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

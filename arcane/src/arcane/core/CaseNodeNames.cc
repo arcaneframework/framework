@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseCodeNames.cc                                            (C) 2000-2020 */
 /*                                                                           */
-/* Noms des noeuds XML d'un jeu de donnée Arcane.                            */
+/* Names of XML nodes in an Arcane dataset.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/CaseNodeNames.h"
+#include "arcane/core/CaseNodeNames.h"
 
 #include "arcane/utils/String.h"
 
-#include "arcane/StringDictionary.h"
+#include "arcane/core/StringDictionary.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,8 +29,11 @@ namespace Arcane
 class CaseNodeNames::Impl
 {
  public:
+
   Impl(const String& lang);
+
  public:
+
   String tr(const char* str) const
   {
     String ustr(str);
@@ -39,11 +42,13 @@ class CaseNodeNames::Impl
       s = ustr;
     return s;
   }
+
  public:
+
   StringDictionary m_dict;
-  void _add(const char* str,const char* value)
+  void _add(const char* str, const char* value)
   {
-    m_dict.add(String(str),String(value));
+    m_dict.add(String(str), String(value));
   }
 };
 
@@ -53,44 +58,44 @@ class CaseNodeNames::Impl
 CaseNodeNames::Impl::
 Impl(const String& lang)
 {
-  if (lang==String("fr")){
-    _add("case","cas");
-    _add("timeloop","boucle-en-temps");
-    _add("title","titre");
-    _add("description","description");
-    _add("modules","modules");
-    _add("services","services");
-    _add("mesh","maillage");
-    _add("meshes","meshes");
-    _add("file","fichier");
-    _add("partitioner","partitionneur");
-    _add("userclass","userclass");
-    _add("codename","codename");
-    _add("codeversion","codeversion");
-    _add("initialisation","initialisation");
-    _add("tied-interfaces","interfaces-liees");
-    _add("semi-conform","semi-conforme");
-    _add("slave","esclave");
-    _add("not-structured","non-structure");
-    _add("functions","fonctions");
-    _add("table","table");
-    _add("script","script");
-    _add("parameter","parametre");
-    _add("value","valeur");
-    _add("deltat-coef","deltat-coef");
-    _add("function","fonction");
-    _add("activation","activation");
-    _add("interpolation","interpolation");
-    _add("constant","constant-par-morceaux");
-    _add("linear","lineaire");
-    _add("name","nom");
-    _add("real","reel");
-    _add("real3","reel3");
-    _add("bool","bool");
-    _add("integer","entier");
-    _add("time","temps");
-    _add("iteration","iteration");
-    _add("language","langage");
+  if (lang == String("fr")) {
+    _add("case", "cas");
+    _add("timeloop", "boucle-en-temps");
+    _add("title", "titre");
+    _add("description", "description");
+    _add("modules", "modules");
+    _add("services", "services");
+    _add("mesh", "maillage");
+    _add("meshes", "meshes");
+    _add("file", "fichier");
+    _add("partitioner", "partitionneur");
+    _add("userclass", "userclass");
+    _add("codename", "codename");
+    _add("codeversion", "codeversion");
+    _add("initialisation", "initialisation");
+    _add("tied-interfaces", "interfaces-liees");
+    _add("semi-conform", "semi-conforme");
+    _add("slave", "esclave");
+    _add("not-structured", "non-structure");
+    _add("functions", "fonctions");
+    _add("table", "table");
+    _add("script", "script");
+    _add("parameter", "parametre");
+    _add("value", "valeur");
+    _add("deltat-coef", "deltat-coef");
+    _add("function", "fonction");
+    _add("activation", "activation");
+    _add("interpolation", "interpolation");
+    _add("constant", "constant-par-morceaux");
+    _add("linear", "lineaire");
+    _add("name", "nom");
+    _add("real", "reel");
+    _add("real3", "reel3");
+    _add("bool", "bool");
+    _add("integer", "entier");
+    _add("time", "temps");
+    _add("iteration", "iteration");
+    _add("language", "langage");
   }
 }
 
@@ -104,8 +109,8 @@ CaseNodeNames::
 CaseNodeNames(const String& lang)
 : m_p(new Impl(lang))
 {
-  // Doit être indépendant du langage puisque sert à initialiser
-  // la langue.
+  // Must be language independent since it is used to initialize
+  // the language.
   lang_attribute = String("xml:lang");
   _init();
 }
@@ -125,8 +130,8 @@ CaseNodeNames::
 void CaseNodeNames::
 _init()
 {
-  // NOTE: Si on ajoute ou change des noms de cette liste, il faut mettre
-  // à jour la conversion correspondante dans CaseDocumentLangTranslator.
+  // NOTE: If you add or change names in this list, you must update
+  // the corresponding conversion in CaseDocumentLangTranslator.
 
   root = m_p->tr("case");
   timeloop = m_p->tr("timeloop");
@@ -149,11 +154,11 @@ _init()
   tied_interfaces_slave = m_p->tr("slave");
   tied_interfaces_not_structured = m_p->tr("not-structured");
   tied_interfaces_planar_tolerance = m_p->tr("planar-tolerance");
-  
+
   functions = m_p->tr("functions");
   function_table = m_p->tr("table");
   function_script = m_p->tr("script");
-         
+
   function_parameter = m_p->tr("parameter");
   function_value = m_p->tr("value");
   function_deltat_coef = m_p->tr("deltat-coef");
@@ -169,7 +174,7 @@ _init()
   bool_type = m_p->tr("bool");
   integer_type = m_p->tr("integer");
   string_type = m_p->tr("string");
-         
+
   time_type = m_p->tr("time");
   iteration_type = m_p->tr("iteration");
 

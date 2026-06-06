@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AbstractCaseOptionVisitor.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Visiteur abstrait pour une option du jeu de données.                      */
+/* Abstract visitor for a dataset option.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ABSTRACTCASEDOCUMENTVISITOR_H
 #define ARCANE_CORE_ABSTRACTCASEDOCUMENTVISITOR_H
@@ -21,13 +21,15 @@
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée scalaire.
+ * \brief Abstract visitor for a scalar data point.
  *
- * Ce visiteur lève une exception pour chaque fonction applyVisitor()
- * non réimplémentée.
+ * This visitor raises an exception for every applyVisitor() function
+ * that is not re-implemented.
  */
 class ARCANE_CORE_EXPORT AbstractCaseDocumentVisitor
 : public ICaseDocumentVisitor
@@ -38,8 +40,8 @@ class ARCANE_CORE_EXPORT AbstractCaseDocumentVisitor
   void endVisit(const ICaseOptions* opt) override;
   void beginVisit(const CaseOptionServiceImpl* opt) override;
   void endVisit(const CaseOptionServiceImpl* opt) override;
-  void beginVisit(const CaseOptionMultiServiceImpl* opt,Integer index) override;
-  void endVisit(const CaseOptionMultiServiceImpl* opt,Integer index) override;
+  void beginVisit(const CaseOptionMultiServiceImpl* opt, Integer index) override;
+  void endVisit(const CaseOptionMultiServiceImpl* opt, Integer index) override;
   void applyVisitor(const CaseOptionSimple* opt) override;
   void applyVisitor(const CaseOptionMultiSimple* opt) override;
   void applyVisitor(const CaseOptionExtended* opt) override;
@@ -60,5 +62,4 @@ class ARCANE_CORE_EXPORT AbstractCaseDocumentVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

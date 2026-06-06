@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemPairGroupImpl.cc                                        (C) 2000-2021 */
 /*                                                                           */
-/* Implémentation d'un tableau de listes d'entités.                          */
+/* Implementation of an array of lists of entities.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,31 +16,35 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/IFunctor.h"
 
-#include "arcane/ItemGroupObserver.h"
-#include "arcane/ItemPairGroupImpl.h"
-#include "arcane/ItemPairGroup.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/ItemGroupObserver.h"
+#include "arcane/core/ItemPairGroupImpl.h"
+#include "arcane/core/ItemPairGroup.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'un groupe nul.
+ * \brief Null group class.
  */
 class ItemPairGroupImplNull
 : public ItemPairGroupImpl
 {
  public:
 
-  ItemPairGroupImplNull() : ItemPairGroupImpl() {}
-  virtual ~ItemPairGroupImplNull() {} //!< Libère les ressources
+  ItemPairGroupImplNull()
+  : ItemPairGroupImpl()
+  {}
+  virtual ~ItemPairGroupImplNull() {} //!< Frees resources
 
  public:
  private:
@@ -56,7 +60,7 @@ class ItemPairGroupImplPrivate
  public:
 
   ItemPairGroupImplPrivate();
-  ItemPairGroupImplPrivate(const ItemGroup& group,const ItemGroup& sub_group);
+  ItemPairGroupImplPrivate(const ItemGroup& group, const ItemGroup& sub_group);
   ~ItemPairGroupImplPrivate();
 
  public:
@@ -68,16 +72,16 @@ class ItemPairGroupImplPrivate
 
  public:
 
-  IMesh* m_mesh; //!< Gestionnare de groupe associé
-  IItemFamily* m_item_family; //!< Famille associée
-  IItemFamily* m_sub_item_family; //!< Famille associée
+  IMesh* m_mesh; //!< Associated group manager
+  IItemFamily* m_item_family; //!< Associated family
+  IItemFamily* m_sub_item_family; //!< Associated family
   ItemGroup m_item_group;
   ItemGroup m_sub_item_group;
-  bool m_is_null; //!< \a true si le groupe est nul
-  eItemKind m_kind; //!< Genre de entités du groupe
+  bool m_is_null; //!< True if the group is null
+  eItemKind m_kind; //!< Kind of entities in the group
   eItemKind m_sub_kind;
-  bool m_need_recompute; //!< Vrai si le groupe doit être recalculé
-  
+  bool m_need_recompute; //!< True if the group must be recalculated
+
   UniqueArray<Int64> m_indexes;
   UniqueArray<Int32> m_sub_items_local_id;
   IFunctor* m_compute_functor;
@@ -87,7 +91,7 @@ class ItemPairGroupImplPrivate
   void invalidate() { m_need_recompute = true; }
 
  private:
-  
+
   void _init();
 };
 
@@ -107,12 +111,12 @@ ItemPairGroupImplPrivate()
 {
   _init();
 }
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemPairGroupImplPrivate::
-ItemPairGroupImplPrivate(const ItemGroup& group,const ItemGroup& sub_group)
+ItemPairGroupImplPrivate(const ItemGroup& group, const ItemGroup& sub_group)
 : m_mesh(group.mesh())
 , m_item_family(group.itemFamily())
 , m_sub_item_family(sub_group.itemFamily())
@@ -150,7 +154,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemPairGroupImpl* ItemPairGroupImpl::shared_null= 0;
+ItemPairGroupImpl* ItemPairGroupImpl::shared_null = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -161,7 +165,7 @@ ItemPairGroupImpl* ItemPairGroupImpl::shared_null= 0;
 ItemPairGroupImpl* ItemPairGroupImpl::
 checkSharedNull()
 {
-  if (!shared_null){
+  if (!shared_null) {
     shared_null = new ItemPairGroupImplNull();
     shared_null->addRef();
   }
@@ -172,11 +176,11 @@ checkSharedNull()
 /*---------------------------------------------------------------------------*/
 
 ItemPairGroupImpl::
-ItemPairGroupImpl(const ItemGroup& group,const ItemGroup& sub_group)
-: m_p (new ItemPairGroupImplPrivate(group,sub_group))
+ItemPairGroupImpl(const ItemGroup& group, const ItemGroup& sub_group)
+: m_p(new ItemPairGroupImplPrivate(group, sub_group))
 {
-  m_p->m_item_group.internal()->attachObserver(this,newItemGroupObserverT(m_p,&ItemPairGroupImplPrivate::invalidate));
-  m_p->m_sub_item_group.internal()->attachObserver(this,newItemGroupObserverT(m_p,&ItemPairGroupImplPrivate::invalidate));
+  m_p->m_item_group.internal()->attachObserver(this, newItemGroupObserverT(m_p, &ItemPairGroupImplPrivate::invalidate));
+  m_p->m_sub_item_group.internal()->attachObserver(this, newItemGroupObserverT(m_p, &ItemPairGroupImplPrivate::invalidate));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,7 +188,7 @@ ItemPairGroupImpl(const ItemGroup& group,const ItemGroup& sub_group)
 
 ItemPairGroupImpl::
 ItemPairGroupImpl()
-: m_p (new ItemPairGroupImplPrivate())
+: m_p(new ItemPairGroupImplPrivate())
 {
 }
 
@@ -201,8 +205,9 @@ ItemPairGroupImpl::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo a supprimer...
+ * \todo To be deleted...
  */
 void ItemPairGroupImpl::
 deleteMe()
@@ -268,7 +273,7 @@ null() const
 /*---------------------------------------------------------------------------*/
 
 eItemKind ItemPairGroupImpl::
-itemKind() const 
+itemKind() const
 {
   return m_p->kind();
 }
@@ -277,7 +282,7 @@ itemKind() const
 /*---------------------------------------------------------------------------*/
 
 eItemKind ItemPairGroupImpl::
-subItemKind() const 
+subItemKind() const
 {
   return m_p->subKind();
 }
@@ -316,7 +321,7 @@ invalidate(bool force_recompute)
 {
   m_p->m_need_recompute = true;
   if (force_recompute)
-    checkNeedUpdate();    
+    checkNeedUpdate();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -325,7 +330,7 @@ invalidate(bool force_recompute)
 bool ItemPairGroupImpl::
 checkNeedUpdate()
 {
-  if (m_p->m_need_recompute){
+  if (m_p->m_need_recompute) {
     m_p->m_need_recompute = false;
     if (m_p->m_compute_functor)
       m_p->m_compute_functor->executeFunctor();

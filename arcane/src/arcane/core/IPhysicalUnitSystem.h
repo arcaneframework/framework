@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IPhysicalUnitSystemService.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un système d'unité.                                           */
+/* Interface of a unit system.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPHYSICALUNITSYSTEM_H
 #define ARCANE_CORE_IPHYSICALUNITSYSTEM_H
@@ -24,29 +24,30 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un système d'unité.
+ * \brief Interface of a unit system.
  */
 class ARCANE_CORE_EXPORT IPhysicalUnitSystem
 {
  public:
 
-  virtual ~IPhysicalUnitSystem() = default; //!< Libère les ressources.
+  virtual ~IPhysicalUnitSystem() = default; //!< Releases resources.
 
  public:
 
   /*!
-   * \brief Créé un convertisseur entre deux unités.
-   * L'appelant doit détruire le convertisseur retourné.
-   * Les unités \a from et \a to doivent avoir été créées par ce
-   * système d'unité.
+   * \brief Creates a converter between two units.
+   * The caller must destroy the returned converter.
+   * The units \a from and \a to must have been created by this
+   * unit system.
    */
   virtual IPhysicalUnitConverter* createConverter(IPhysicalUnit* from, IPhysicalUnit* to) = 0;
 
   /*!
-   * \brief Créé un convertisseur entre deux unités.
-   * L'appelant doit détruire le convertisseur retourné.
+   * \brief Creates a converter between two units.
+   * The caller must destroy the returned converter.
    */
   virtual IPhysicalUnitConverter* createConverter(const String& from, const String& to) = 0;
 };

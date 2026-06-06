@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,38 +24,37 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un constructeur d'item fantômes "extraordinaires"
+ * \brief Interface for an "extraordinary" ghost item builder
  *
- * Un item fantôme "extraordinaire" est un item fantôme ajoutée aux
- * item fantômes définies par la connectivité du maillage. En particulier,
- * le calcul des items fantômes extraordinaires est effectué à chaque mise
- * à jour du maillage ou équilibrage de charge. Cette interface est en particulier
- * utilisé pour les degrés de liberté.
+ * An "extraordinary" ghost item is a ghost item added to the ghost items
+ * defined by the mesh connectivity. Specifically, the calculation of
+ * extraordinary ghost items is performed during every mesh update or load
+ * balancing. This interface is particularly used for degrees of freedom.
  *
- * NB : rend obsolète le paramètre remove_old_ghost de la méthode endUpdate de IMesh
- *
+ * NOTE: makes the remove_old_ghost parameter of the IMesh::endUpdate method obsolete
  */
 class ARCANE_CORE_EXPORT IExtraGhostItemsBuilder
 {
  public:
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IExtraGhostItemsBuilder() = default;
 
  public:
 
   /*!
-   * \brief Calcul des items "extraordinaires" à envoyer
-   * Effectue le calcul des items "extraordinaires" suivant
-   * un algorithme de construction
+   * \brief Calculation of "extraordinary" items to send
+   * Performs the calculation of "extraordinary" items following
+   * a construction algorithm
    */
   virtual void computeExtraItemsToSend() = 0;
 
   /*!
-   * \brief Indices locaux des items "extraordinaires" pour envoi
-   * Récupère le tableau des items "extraordinaires" à destination
-   * du sous-domaine \a sid
+   * \brief Local indices of "extraordinary" items for sending
+   * Retrieves the array of "extraordinary" items destined for
+   * subdomain \a sid
    */
   virtual ConstArrayView<Int32> extraItemsToSend(Int32 sid) const = 0;
 };
@@ -68,4 +67,4 @@ class ARCANE_CORE_EXPORT IExtraGhostItemsBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* IEXTRAGHOSTITEMSBUILDER_H_ */
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AbstractDataVisitor.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Visiteur abstrait pour une donnée.                                        */
+/* Abstract visitor for a data item.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ABSTRACTDATAVISITOR_H
 #define ARCANE_CORE_ABSTRACTDATAVISITOR_H
@@ -32,11 +32,11 @@ class IArray2Data;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée scalaire.
+ * \brief Abstract visitor for a scalar data item.
  *
- * Ce visiteur lève une exception pour chaque fonction applyVisitor()
- * non réimplémentée.
+ * This visitor raises an exception for every unimplemented applyVisitor() function.
  */
 class ARCANE_CORE_EXPORT AbstractScalarDataVisitor
 : public IScalarDataVisitor
@@ -59,17 +59,17 @@ class ARCANE_CORE_EXPORT AbstractScalarDataVisitor
   virtual void applyVisitor(IScalarDataT<String>* data);
 
  protected:
-  
+
   void _throwException(eDataType dt);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée tableau.
+ * \brief Abstract visitor for an array data item.
  *
- * Ce visiteur lève une exception pour chaque fonction applyVisitor()
- * non réimplémentée.
+ * This visitor raises an exception for every unimplemented applyVisitor() function.
  */
 class ARCANE_CORE_EXPORT AbstractArrayDataVisitor
 : public IArrayDataVisitor
@@ -92,17 +92,17 @@ class ARCANE_CORE_EXPORT AbstractArrayDataVisitor
   virtual void applyVisitor(IArrayDataT<String>* data);
 
  protected:
-  
+
   void _throwException(eDataType dt);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée tableau 2D.
+ * \brief Abstract visitor for a 2D array data item.
  *
- * Ce visiteur lève une exception pour chaque fonction applyVisitor()
- * non réimplémentée.
+ * This visitor raises an exception for every unimplemented applyVisitor() function.
  */
 class ARCANE_CORE_EXPORT AbstractArray2DataVisitor
 : public IArray2DataVisitor
@@ -124,17 +124,17 @@ class ARCANE_CORE_EXPORT AbstractArray2DataVisitor
   virtual void applyVisitor(IArray2DataT<Float32>* data);
 
  protected:
-  
+
   void _throwException(eDataType dt);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée tableau 2D à taille variable.
+ * \brief Abstract visitor for a variable-sized 2D array data item.
  *
- * Ce visiteur lève une exception pour chaque fonction applyVisitor()
- * non réimplémentée.
+ * This visitor raises an exception for every unimplemented applyVisitor() function.
  */
 class ARCANE_CORE_EXPORT AbstractMultiArray2DataVisitor
 : public IMultiArray2DataVisitor
@@ -144,11 +144,11 @@ class ARCANE_CORE_EXPORT AbstractMultiArray2DataVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visiteur abstrait pour une donnée.
+ * \brief Abstract visitor for a data item.
  *
- * Ce visiteur se contente de rediriger vers le visiteur scalaire,
- * tableau 1D ou tableau 2D concerné.
+ * This visitor simply redirects to the relevant scalar, 1D array, or 2D array visitor.
  */
 class ARCANE_CORE_EXPORT AbstractDataVisitor
 : public AbstractScalarDataVisitor
@@ -167,10 +167,9 @@ class ARCANE_CORE_EXPORT AbstractDataVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

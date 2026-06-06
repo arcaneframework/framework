@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemConnectedListView.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur une liste d'entités connectés à une autre entité.                 */
+/* View of a list of entities connected to another entity.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMCONNECTEDLISTVIEW_H
 #define ARCANE_CORE_ITEMCONNECTEDLISTVIEW_H
@@ -26,11 +26,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Itérateur pour la classe ItemConnectedListView.
+ * \brief Iterator for the ItemConnectedListView class.
  *
- * Cette classe est interne à Arcane. Elle s'utilise via le for-range:
+ * This class is internal to Arcane. It is used via the for-range:
  *
  * \code
  * Node node;
@@ -58,11 +59,11 @@ class ItemConnectedListViewConstIterator
 
   typedef ItemConnectedListViewConstIterator ThatClass;
   typedef std::random_access_iterator_tag iterator_category;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Item value_type;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between iterator elements of the array
   typedef std::ptrdiff_t difference_type;
 
  public:
@@ -114,7 +115,7 @@ class ItemConnectedListViewConstIterator
   {
     return lhs.m_local_id_ptr <= rhs.m_local_id_ptr;
   }
-  //! Compare les indices d'itération de deux instances
+  //! Compare the iteration indices of two instances
   friend bool operator==(const ThatClass& lhs, const ThatClass& rhs)
   {
     return lhs.m_local_id_ptr == rhs.m_local_id_ptr;
@@ -214,12 +215,13 @@ class ItemConnectedListViewConstIteratorT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur une liste d'entités connectées à une autre entité.
+ * \brief View of a list of entities connected to another entity.
  *
- * \warning la vue n'est valide que tant que le tableau associé n'est
- * pas modifié et que la famille d'entité associée à ce tableau n'est
- * elle même pas modifiée.
+ * \warning the view is only valid as long as the associated array is not
+ * modified and the entity family associated with this array is not
+ * modified itself.
  */
 template <int Extent>
 class ItemConnectedListView
@@ -237,7 +239,7 @@ class ItemConnectedListView
   using value_type = Item;
   using reference_type = Item&;
   using const_reference_type = const Item&;
-  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  // TODO: Create the 'Sentinel' type when we are in C++20
   using SentinelType = const_iterator;
 
  public:
@@ -247,38 +249,38 @@ class ItemConnectedListView
  protected:
 
   ItemConnectedListView(const impl::ItemIndexedListView<DynExtent>& view)
-  : m_index_view(view.m_local_ids,view.m_local_id_offset,0)
+  : m_index_view(view.m_local_ids, view.m_local_id_offset, 0)
   , m_shared_info(view.m_shared_info)
   {}
   ItemConnectedListView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
-  : m_index_view(local_ids,local_id_offset,0)
+  : m_index_view(local_ids, local_id_offset, 0)
   , m_shared_info(shared_info)
   {}
 
  public:
 
-  //! \a index-ème entité connectée
+  //! \a index-th connected entity
   Item operator[](Integer index) const
   {
     return Item(m_index_view[index], m_shared_info);
   }
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Int32 size() const { return m_index_view.size(); }
 
-  //! Itérateur sur la première entité connectée
+  //! Iterator over the first connected entity
   const_iterator begin() const
   {
     return const_iterator(m_shared_info, m_index_view._data(), _localIdOffset());
   }
 
-  //! Itérateur sur après la dernière entité connectée
+  //! Iterator after the last connected entity
   SentinelType end() const
   {
     return endIterator();
   }
 
-  //! Itérateur sur après la dernière entité connectée
+  //! Iterator after the last connected entity
   const_iterator endIterator() const
   {
     return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
@@ -300,24 +302,24 @@ class ItemConnectedListView
  public:
 #endif
 
-  // Temporaire pour rendre les sources compatibles
+  // Temporary to make sources compatible
   operator ItemInternalVectorView() const
   {
     return ItemInternalVectorView(m_shared_info, m_index_view._localIds(), _localIdOffset());
   }
 
-  // TODO: rendre obsolète
+  // TODO: deprecate
   inline ItemEnumerator enumerator() const;
 
  private:
 
-  //! Vue sur le tableau des indices
+  //! View of the index array
   ItemIndexArrayView indexes() const
   {
     return m_index_view;
   }
 
-  //! Vue sur le tableau des indices
+  //! View of the index array
   Int32ConstArrayView _localIds() const
   {
     return m_index_view._localIds();
@@ -336,8 +338,9 @@ class ItemConnectedListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur une liste d'entités connectées à une autre.
+ * \brief View of a list of entities connected to another.
  */
 template <typename ItemType, int Extent>
 class ItemConnectedListViewT
@@ -365,7 +368,7 @@ class ItemConnectedListViewT
   using const_iterator = ItemConnectedListViewConstIteratorT<ItemType>;
   using difference_type = std::ptrdiff_t;
   using value_type = ItemType;
-  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  // TODO: Create the 'Sentinel' type when we are in C++20
   using SentinelType = const_iterator;
 
  private:
@@ -386,7 +389,7 @@ class ItemConnectedListViewT
 
  public:
 
-  //! \a index-ème entité connectée
+  //! \a index-th connected entity
   ItemType operator[](Integer index) const
   {
     return ItemType(m_index_view[index], m_shared_info);
@@ -394,17 +397,17 @@ class ItemConnectedListViewT
 
  public:
 
-  //! Itérateur sur la première entité connectée
+  //! Iterator over the first connected entity
   inline const_iterator begin() const
   {
     return const_iterator(m_shared_info, this->_localIdsData(), this->_localIdOffset());
   }
-  //! Itérateur sur après la dernière entité connectée
+  //! Iterator after the last connected entity
   inline SentinelType end() const
   {
     return endIterator();
   }
-  //! Itérateur sur après la dernière entité connectée
+  //! Iterator after the last connected entity
   inline const_iterator endIterator() const
   {
     return const_iterator(m_shared_info, (this->_localIdsData() + this->size()), this->_localIdOffset());
@@ -417,7 +420,7 @@ class ItemConnectedListViewT
  public:
 #endif
 
-  // TODO: rendre obsolète
+  // TODO: deprecate
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
     return ItemEnumeratorT<ItemType>(m_shared_info, m_index_view.m_view);

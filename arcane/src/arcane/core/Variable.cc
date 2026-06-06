@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Variable.cc                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant une variable.                                               */
+/* Class managing a variable.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_VARIABLE_CC
@@ -79,8 +79,9 @@ const char* IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION = "PostProcessingAt
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Partie privée d'une variable.
+ * \brief Private part of a variable.
  */
 class VariablePrivate
 : public IVariableInternal
@@ -97,37 +98,37 @@ class VariablePrivate
 
   ISubDomain* m_sub_domain = nullptr;
   IDataFactoryMng* m_data_factory_mng = nullptr;
-  MeshHandle m_mesh_handle; //!< Maillage (peut être nul)
-  Ref<IData> m_data; //!< Données de la variable
-  ItemGroup m_item_group; //!< Groupe d'entité sur lequel est associé la variable
-  IItemFamily* m_item_family = nullptr; //!< Familly d'entité (peut être nul)
-  VariableInfo m_infos; //!< Infos caractéristiques de la variable
-  int m_property = 0; //!< Propriétés de la variable
-  bool m_is_partial = false; //!< Vrai si la variable est partielle
+  MeshHandle m_mesh_handle; //!< Mesh (can be null)
+  Ref<IData> m_data; //!< Variable data
+  ItemGroup m_item_group; //!< Entity group to which the variable is associated
+  IItemFamily* m_item_family = nullptr; //!< Entity family (can be null)
+  VariableInfo m_infos; //!< Characteristic information of the variable
+  int m_property = 0; //!< Properties of the variable
+  bool m_is_partial = false; //!< True if the variable is partial
   bool m_need_property_update = false;
-  bool m_is_used = false; //!< Etat d'utilisation de la variable
-  bool m_has_valid_data = false; //!< Vrai si les données sont valide
-  Real m_last_update_time = 0.0; //!< Temps physique de la dernière mise à jour
-  VariableRef* m_first_reference = nullptr; //! Première référence sur la variable
+  bool m_is_used = false; //!< Usage status of the variable
+  bool m_has_valid_data = false; //!< True if the data is valid
+  Real m_last_update_time = 0.0; //!< Physical time of the last update
+  VariableRef* m_first_reference = nullptr; //! First reference on the variable
   Integer m_nb_reference = 0;
-  UniqueArray<VariableDependInfo> m_depends; //!< Liste des dépendances de cette variable
-  Int64 m_modified_time = 0; //!< Tag de la dernière modification
-  ScopedPtrT<IVariableComputeFunction> m_compute_function; //!< Fonction de calcul
-  AutoDetachObservable m_write_observable; //!< Observable en écriture
-  AutoDetachObservable m_read_observable; //!< Observable en lecture
-  AutoDetachObservable m_on_size_changed_observable; //!< Observable en redimensionnement
-  std::map<String, String> m_tags; //!< Liste des tags
-  bool m_has_recursive_depend = true; //!< Vrai si les dépendances sont récursives
+  UniqueArray<VariableDependInfo> m_depends; //!< List of dependencies for this variable
+  Int64 m_modified_time = 0; //!< Tag of the last modification
+  ScopedPtrT<IVariableComputeFunction> m_compute_function; //!< Calculation function
+  AutoDetachObservable m_write_observable; //!< Write observable
+  AutoDetachObservable m_read_observable; //!< Read observable
+  AutoDetachObservable m_on_size_changed_observable; //!< Resize observable
+  std::map<String, String> m_tags; //!< List of tags
+  bool m_has_recursive_depend = true; //!< True if dependencies are recursive
   bool m_want_shrink = false;
-  Variable* m_variable = nullptr; //!< Variable associée
+  Variable* m_variable = nullptr; //!< Associated variable
 
  public:
 
   /*!
-   * \brief Sérialise le `hashid`.
+   * \brief Serializes the `hashid`.
    *
-   * Lors de la désérialisation, vérifie que le `hashid` est correctement
-   * et si ce n'est pas le cas renvoie une exception.
+   * During deserialization, verifies that the `hashid` is correct
+   * and throws an exception if not.
    */
   void serializeHashId(ISerializer* sbuf)
   {
@@ -156,7 +157,7 @@ class VariablePrivate
 
  public:
 
-  //!@{ \name Implémentation de IVariableInternal
+  //!@{ \name Implementation of IVariableInternal
   String computeComparisonHashCollective(IHashAlgorithm* hash_algo, IData* sorted_data) override;
   void changeAllocator(const MemoryAllocationOptions& alloc_info) override;
   void resize(const VariableResizeArgs& resize_args) override;
@@ -168,11 +169,11 @@ class VariablePrivate
 
   static const int HASHID_SIZE = 64;
   /*!
-   * \brief hash de la variable pour vérifier la cohérence de la sérialisation.
+   * \brief Hash of the variable to check serialization consistency.
    *
-   * Les 16 premiers octets sont le hash du nom au format hexadécimal (issu d'un Int64)
-   * et les suivants sont le nom complet (fullName()), éventuellement tronqué, de la variable.
-   * Les éventuels caractères restants sont des '~'.
+   * The first 16 bytes are the hash of the name in hexadecimal format (derived from an Int64)
+   * and the following are the full name (fullName()), possibly truncated, of the variable.
+   * Any remaining characters are '~'.
    */
   Byte m_hash_id[HASHID_SIZE];
 
@@ -225,11 +226,11 @@ VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* va
   _setHashId();
   m_infos.setDefaultItemGroupName();
 
-  // Pour test uniquement
+  // For testing only
   if (!platform::getEnvironmentVariable("ARCANE_NO_RECURSIVE_DEPEND").null())
     m_has_recursive_depend = false;
 
-  // Pour teste de libération mémoire.
+  // For memory release testing.
   {
     String str = platform::getEnvironmentVariable("ARCANE_VARIABLE_SHRINK_MEMORY");
     if (str == "1")
@@ -240,7 +241,7 @@ VariablePrivate(const VariableBuildInfo& v, const VariableInfo& vi, Variable* va
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Observer des évènements sur ItemGroup sous-jacent.
+//! Observer events on the underlying ItemGroup.
 class ItemGroupPartialVariableObserver
 : public IItemGroupObserver
 {
@@ -266,14 +267,14 @@ class ItemGroupPartialVariableObserver
     const Integer old_size = id_to_index->size();
     const Integer group_size = group.size();
     if (group_size != (old_size + new_ids.size()))
-      ARCANE_FATAL("Inconsitent extended size");
+      ARCANE_FATAL("Inconsistent extended size");
     m_var->resizeFromGroup();
     //id_to_index->update();
   }
 
   void executeReduce(const Int32ConstArrayView* info) override
   {
-    // contient la liste des localids des items supprimés dans l'ancien groupe
+    // Contains the list of local IDs of items removed from the old group
     const Int32ConstArrayView& removed_lids = *info;
     if (removed_lids.empty())
       return;
@@ -284,7 +285,7 @@ class ItemGroupPartialVariableObserver
     const Integer group_size = group.size();
 
     if (group_size != (old_size - removed_lids.size()))
-      ARCANE_FATAL("Inconsitent reduced size {0} vs {1}", group_size, old_size);
+      ARCANE_FATAL("Inconsistent reduced size {0} vs {1}", group_size, old_size);
     [[maybe_unused]] ItemVectorView view = group.view();
     Int32UniqueArray source;
     Int32UniqueArray destination;
@@ -352,8 +353,8 @@ Variable(const VariableBuildInfo& v, const VariableInfo& vi)
 Variable::
 ~Variable()
 {
-  //NOTE: si la variable possède un groupe, c'est le IVariableMng
-  // qui supprime la référence de cette variable sur le groupe
+  //NOTE: if the variable has a group, it is the IVariableMng
+  // that removes the reference of this variable from the group
   delete m_p;
 }
 
@@ -402,16 +403,16 @@ removeVariableRef(VariableRef* ref)
     if (m_p->m_first_reference == tmp)
       m_p->m_first_reference = m_p->m_first_reference->nextReference();
   }
-  // La référence peut être utilisée par la suite donc il ne faut pas oublier
-  // de supprimer le précédent et le suivant.
+  // The reference may be used later, so we must remember to clear the
+  // previous and next references.
   ref->setNextReference(0);
   ref->setPreviousReference(0);
 
   --m_p->m_nb_reference;
   _checkSetProperty(ref);
 
-  // Lorsqu'il n'y a plus de références sur cette variable, le signale au
-  // gestionnaire de variable, sauf s'il s'agit d'une variable persistante
+  // When there are no more references on this variable, it signals the
+  // variable manager, unless it is a persistent variable
   if (!_hasReference()) {
     bool is_persistant = property() & IVariable::PPersistant;
     if (!is_persistant) {
@@ -439,8 +440,8 @@ firstReference() const
 void Variable::
 _checkSetProperty(VariableRef* ref)
 {
-  // Garantie que la propriété est correctement mise à jour avec la valeur
-  // de la seule référence.
+  // Guarantees that the property is correctly updated with the value
+  // of the single reference.
   if (!_hasReference()) {
     m_p->m_property = ref->referenceProperty();
     m_p->m_need_property_update = false;
@@ -532,8 +533,9 @@ dataType() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \todo traiter le cas PSubDomainPrivate.
+ * \todo handle the PSubDomainPrivate case.
  */
 int Variable::
 property() const
@@ -541,11 +543,10 @@ property() const
   if (!m_p->m_need_property_update)
     return m_p->m_property;
 
-  // Les propriétés de la variable dépendent de ce que chaque
-  // référence souhaite et il faut les remettre à jour lorsque ces
-  // dernières changent.
-  // Par exemple, si toutes les références sont PNoDump et qu'une seule
-  // ne l'est pas, la variable ne doit pas l'être.
+  // The variable's properties depend on what each
+  // reference wants, and they must be updated when they change.
+  // For example, if all references are PNoDump but only one is not,
+  // the variable should not be.
   m_p->m_need_property_update = false;
 
   bool want_dump = false;
@@ -650,8 +651,8 @@ setUsed(bool is_used)
       if (m_p->m_data->_commonInternal()->numericData() == nullptr) {
         ARCANE_FATAL("Variable without NumericData cannot change allocator");
       }
-      // TODO : Même si changeAllocator() avec le même allocateur déjà en
-      //        place fait simplement un return, ça reste moche...
+      // TODO: Even if changeAllocator() with the same allocator already in
+      // place just returns, it's still messy...
       IParallelMng* pm{};
       if (m_p->m_mesh_handle.hasMesh()) {
         pm = m_p->m_mesh_handle.mesh()->parallelMng();
@@ -665,17 +666,16 @@ setUsed(bool is_used)
     if (m_p->m_item_group.null() && ik != IK_Unknown) {
       _checkSetItemFamily();
       _checkSetItemGroup();
-      // Attention à ne pas reinitialiser les valeurs lorsque ces dernières
-      // sont valides, ce qui est le cas par exemple après une protection.
+      // Be careful not to reset the values when they are valid, which
+      // is the case for example after a protection.
       if (!m_p->m_has_valid_data) {
         resizeFromGroup();
-        // Historiquement on remplissait dans tous les cas la variable avec le
-        // constructeur par défaut
-        // de la donnée en appelant systématiquement fillDefautt(). Cependant,
-        // ce n'était pas le comportement souhaité qui doit être celui défini par
-        // getGlobalDataInitialisationPolicy() (dans DataTypes.h).
-        // On ne le fait maintenant que si le mode d'initialisation est égal
-        // à DIP_Legacy. Ce mode doit à terme disparaître.
+        // Historically, we filled the variable with the default constructor
+        // of the data by systematically calling fillDefautt(). However,
+        // this was not the desired behavior, which should be defined by
+        // getGlobalDataInitialisationPolicy() (in DataTypes.h).
+        // We only do this now if the initialization mode is equal
+        // to DIP_Legacy. This mode must eventually disappear.
         if (getGlobalDataInitialisationPolicy() == DIP_Legacy)
           m_p->m_data->fillDefault();
         m_p->m_has_valid_data = true;
@@ -688,7 +688,7 @@ setUsed(bool is_used)
       resize(0);
     else
       resizeFromGroup();
-    // Indique que les valeurs ne sont plus valides
+    // Indicates that the values are no longer valid
     m_p->m_has_valid_data = false;
   }
 
@@ -745,7 +745,7 @@ namespace
     return full_type_b.toString();
   }
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -791,8 +791,8 @@ syncReferences()
     //cout << "** SYNC REFERENCE V=" << ref << '\n';
     ref->updateFromInternal();
   }
-  // Il faut le faire après la mise à jour des références
-  // car les observateurs peuvent lire les valeurs via une référence
+  // It must be done after updating references
+  // because observers may read values via a reference
   onSizeChangedObservable()->notifyAllObservers();
 }
 
@@ -971,7 +971,7 @@ serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operati
   debug(Trace::High) << "Serialize (partial) variable name=" << fullName();
   m_p->serializeHashId(sbuffer);
   m_p->m_data->serialize(sbuffer, ids, operation);
-  // En mode lecture, les données sont modifiées
+  // In read mode, data is modified
   if (sbuffer->mode() == ISerializer::ModeGet)
     syncReferences();
 }
@@ -986,7 +986,7 @@ serialize(ISerializer* sbuffer, IDataOperation* operation)
 
   m_p->serializeHashId(sbuffer);
   m_p->m_data->serialize(sbuffer, operation);
-  // En mode lecture, les données sont modifiées
+  // In read mode, data is modified
   if (sbuffer->mode() == ISerializer::ModeGet)
     syncReferences();
 }
@@ -1111,7 +1111,7 @@ _checkSetItemGroup()
     m_p->m_item_group = m_p->m_item_family->findGroup(group_name, true);
 
   ItemGroupImpl* internal = m_p->m_item_group.internal();
-  // (HP) TODO: faut il garder ce controle hérité de l'ancienne implémentation de addVariable
+  // (HP) TODO: should we keep this check inherited from the old addVariable implementation
   if (internal->parent() && (mesh()->parallelMng()->isParallel() && internal->isOwn()))
     ARCANE_FATAL("Cannot add variable ({0}) on a own group (name={1})",
                  fullName(), internal->name());
@@ -1380,16 +1380,16 @@ changeGroupIds(Int32ConstArrayView old_to_new_ids)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie qu'il est possible d'échanger les valeurs de l'instance
- * avec celle de \a rhs.
+ * \brief Checks if it is possible to swap the values of the instance
+ * with those of \a rhs.
  *
- * Cette méthode étant appelée par une classe dérivée, on est sur que \a rhs
- * est du même type C++ que l'instance et donc il n'y a pas besoin de
- * vérifier par exemple que les dimensions ou le type des données sont les
- * mêmes. Pour que l'échange soit valide, il faut que le maillage, la famille
- * et le groupe soit les mêmes. Pour cela, il suffit de vérifier que le
- * groupe est le même.
+ * Since this method is called by a derived class, we are sure that \a rhs
+ * is the same C++ type as the instance and therefore there is no need to
+ * check, for example, that the dimensions or the data type are the same. For the
+ * swap to be valid, the mesh, the family and the group must be the same. To do
+ * this, it is sufficient to check that the group is the same.
  */
 void Variable::
 _checkSwapIsValid(Variable* rhs)
@@ -1420,8 +1420,8 @@ void Variable::
 setAllocationInfo(const DataAllocationInfo& v)
 {
   data()->setAllocationInfo(v);
-  // Il est possible que le changement d'allocation modifie les données
-  // allouées. Il faut donc synchroniser les références.
+  // It is possible that the allocation change modifies the * allocated
+  // data. Therefore, references must be synchronized.
   syncReferences();
 }
 
@@ -1517,9 +1517,9 @@ compareVariable(const VariableComparerArgs& compare_args)
 IParallelMng* VariablePrivate::
 replicaParallelMng() const
 {
-  //TODO: regarder si la variable est utilisée.
+  //TODO: check if the variable is used.
   IMesh* mesh = m_variable->mesh();
-  // TODO: faut-il prendre le sous-domaine dans ce cas ?
+  // TODO: should we take the subdomain in this case?
   IParallelMng* pm = (mesh) ? mesh->parallelMng() : m_variable->subDomain()->parallelMng();
   IParallelReplication* pr = pm->replication();
   if (!pr->hasReplication())

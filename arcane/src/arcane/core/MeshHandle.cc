@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshHandle.cc                                               (C) 2000-2023 */
 /*                                                                           */
-/* Handle sur un maillage.                                                   */
+/* Handle on a mesh.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshHandle.h"
+#include "arcane/core/MeshHandle.h"
 
 #include "arcane/utils/UserDataList.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Observable.h"
 #include "arcane/utils/ValueConvert.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshBase.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,10 +30,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO rendre ce constructeur privé à IMeshMng pour éviter d'avoir des
-// doublons possibles pour les MeshHandle associés au même nom de maillage.
+
+// TODO make this constructor private to IMeshMng to avoid
+// possible duplicates for MeshHandles associated with the same mesh name.
 MeshHandle::MeshHandleRef::
-MeshHandleRef(ISubDomain* sd,const String& name)
+MeshHandleRef(ISubDomain* sd, const String& name)
 : m_mesh_name(name)
 , m_sub_domain(sd)
 , m_is_null(name.null())
@@ -45,8 +46,8 @@ MeshHandleRef(ISubDomain* sd,const String& name)
   m_mesh_mng = sd->meshMng();
   m_variable_mng = sd->variableMng();
   m_on_destroy_observable = new Observable();
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DO_FATAL_IN_MESHHANDLE",true))
-    m_do_fatal_in_mesh_method = v.value()!=0;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DO_FATAL_IN_MESHHANDLE", true))
+    m_do_fatal_in_mesh_method = v.value() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -74,14 +75,14 @@ _setMesh(IMesh* mesh)
 void MeshHandle::MeshHandleRef::
 _destroyMesh()
 {
-  // TODO: protéger les appels multiples
+  // TODO: protect against multiple calls
   IMesh* mesh = m_mesh_ptr;
   if (!mesh)
     return;
   m_on_destroy_observable->notifyAllObservers();
   m_user_data_list->clear();
-  // Attention à ne mettre à nul que à la fin de cette routine car les
-  // utilisateurs de \a m_user_data peuvent avoir besoin de ce MeshHandle.
+  // Be careful not to set to null until the end of this routine because the
+  // users of \a m_user_data might need this MeshHandle.
   m_mesh_ptr = nullptr;
   delete mesh;
 }
@@ -93,8 +94,8 @@ _destroyMesh()
 /*---------------------------------------------------------------------------*/
 
 MeshHandle::
-MeshHandle(ISubDomain* sd,const String& name)
-: m_ref(new MeshHandleRef(sd,name))
+MeshHandle(ISubDomain* sd, const String& name)
+: m_ref(new MeshHandleRef(sd, name))
 {
 }
 
@@ -135,8 +136,8 @@ mesh() const
   IMesh* m = m_ref->mesh();
   if (m)
     return m;
-  // A terme, faire un fatal si le maillage est nul. Pour des raisons de
-  // compatibilité avec l'existant, on retourne 'nullptr'.
+  // Eventually, make a fatal error if the mesh is null. For reasons of
+  // compatibility with the existing code, we return 'nullptr'.
   bool do_fatal = m_ref->isDoFatalInMeshMethod();
   if (do_fatal)
     ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");
@@ -196,7 +197,8 @@ onDestroyObservable() const
 
 MeshHandleOrMesh::
 MeshHandleOrMesh(const MeshHandle& handle)
-: m_handle(handle){}
+: m_handle(handle)
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

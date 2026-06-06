@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshPartialVariableScalarRef.h                              (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une variable partielle scalaire sur une entité du maillage. */
+/* Class managing a partial scalar variable on a mesh entity.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHPARTIALVARIABLESCALARREF_H
 #define ARCANE_CORE_MESHPARTIALVARIABLESCALARREF_H
@@ -31,11 +31,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable partielle scalaire sur un type d'entité du maillage.
+ * \brief Partial scalar variable on a mesh entity type.
  */
-template<typename DataTypeT>
+template <typename DataTypeT>
 class ItemPartialVariableScalarRefT
 : public PrivateVariableScalarT<DataTypeT>
 {
@@ -51,40 +52,40 @@ class ItemPartialVariableScalarRefT
   typedef PrivateVariableScalarT<DataType> BaseClass;
   typedef typename BaseClass::PrivatePartType PrivatePartType;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
-  
+
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
-  ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(const VariableBuildInfo& vb,eItemKind ik);
-  //! Construit une référence à partir de \a var
-  explicit ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(IVariable* var);  
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference to the variable specified in \a vb
+  ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(const VariableBuildInfo& vb, eItemKind ik);
+  //! Constructs a reference from \a var
+  explicit ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(IVariable* var);
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT ItemPartialVariableScalarRefT(const ItemPartialVariableScalarRefT<DataType>& rhs);
-  
+
  protected:
-  
-  //! Opérateur de recopie
+
+  //! Copy operator
   ARCANE_CORE_EXPORT void operator=(const ItemPartialVariableScalarRefT<DataType>& rhs);
-  
+
  public:
-	
-  ARCANE_CORE_EXPORT void fill(const DataType& value);  
+
+  ARCANE_CORE_EXPORT void fill(const DataType& value);
   ARCANE_CORE_EXPORT void copy(const ItemPartialVariableScalarRefT<DataType>& v);
   ARCANE_CORE_EXPORT void internalSetUsed(bool v);
 
  public:
-  
+
   const DataType& operator[](const Item& i) const
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
+    ARCANE_ASSERT((m_table.isUsed()), ("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
     return this->_value(table[i.localId()]);
   }
   DataTypeReturnReference operator[](const Item& i)
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
+    ARCANE_ASSERT((m_table.isUsed()), ("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
     return this->_value(table[i.localId()]);
   }
@@ -97,7 +98,7 @@ class ItemPartialVariableScalarRefT
   const DataType& operator[](const ItemEnumerator& i) const
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
+    ARCANE_CHECK_ENUMERATOR(i, this->itemGroup());
     return this->_value(i.index());
   }
   const DataType& operator[](ItemEnumeratorIndex i) const
@@ -109,7 +110,7 @@ class ItemPartialVariableScalarRefT
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->_value(i.index());
   }
-  
+
   DataTypeReturnReference operator[](const ItemGroupRangeIterator& i)
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
@@ -118,7 +119,7 @@ class ItemPartialVariableScalarRefT
   DataTypeReturnReference operator[](const ItemEnumerator& i)
   {
     ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
+    ARCANE_CHECK_ENUMERATOR(i, this->itemGroup());
     return this->_value(i.index());
   }
   DataTypeReturnReference operator[](ItemEnumeratorIndex i)
@@ -133,7 +134,7 @@ class ItemPartialVariableScalarRefT
 
  public:
 
-  //! Vue sur table d'indirection du groupe.
+  //! View of the group's redirection table.
   GroupIndexTableView tableView() const { return m_table->view(); }
 
  protected:
@@ -142,22 +143,23 @@ class ItemPartialVariableScalarRefT
 
  protected:
 
-  static VariableInfo _buildVariableInfo(const VariableBuildInfo& vbi,eItemKind ik);
+  static VariableInfo _buildVariableInfo(const VariableBuildInfo& vbi, eItemKind ik);
   static VariableTypeInfo _buildVariableTypeInfo(eItemKind ik);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Variable
- * \brief Variable scalaire sur un type d'entité du maillage.
+ * \brief Scalar variable on a mesh entity type.
  */
-template<typename ItemTypeT,typename DataTypeT>
+template <typename ItemTypeT, typename DataTypeT>
 class MeshPartialVariableScalarRefT
 : public ItemPartialVariableScalarRefT<DataTypeT>
 {
  public:
- 
+
   typedef DataTypeT DataType;
   typedef ItemTypeT ItemType;
   typedef UniqueArray<DataType> ValueType;
@@ -169,18 +171,18 @@ class MeshPartialVariableScalarRefT
 
   typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
 
-  typedef MeshPartialVariableScalarRefT<ItemType,DataType> ThatClass;
+  typedef MeshPartialVariableScalarRefT<ItemType, DataType> ThatClass;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   ARCANE_CORE_EXPORT MeshPartialVariableScalarRefT(const VariableBuildInfo& vb);
-  //! Construit une référence à partir de \a rhs
-  ARCANE_CORE_EXPORT MeshPartialVariableScalarRefT(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs);
-  //! Positionne la référence de l'instance à la variable \a rhs.
-  ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableScalarRefT<ItemType,DataType>& rhs);
-  
+  //! Constructs a reference from \a rhs
+  ARCANE_CORE_EXPORT MeshPartialVariableScalarRefT(const MeshPartialVariableScalarRefT<ItemType, DataType>& rhs);
+  //! Positions the instance reference to the variable \a rhs.
+  ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableScalarRefT<ItemType, DataType>& rhs);
+
  public:
 
   const DataType& operator[](const ItemLocalIdType& i) const
@@ -206,7 +208,7 @@ class MeshPartialVariableScalarRefT
   }
   const DataType& operator[](const ItemEnumeratorT<ItemType>& i) const
   {
-    ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
+    ARCANE_CHECK_ENUMERATOR(i, this->itemGroup());
     return this->_value(i.index());
   }
   const DataType& operator[](ItemEnumeratorIndexT<ItemType> i) const
@@ -215,7 +217,7 @@ class MeshPartialVariableScalarRefT
   }
   DataTypeReturnReference operator[](const ItemEnumeratorT<ItemType>& i)
   {
-    ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
+    ARCANE_CHECK_ENUMERATOR(i, this->itemGroup());
     return this->_value(i.index());
   }
   DataTypeReturnReference operator[](ItemEnumeratorIndexT<ItemType> i)
@@ -231,9 +233,9 @@ class MeshPartialVariableScalarRefT
     return this->_value(i.index());
   }
 
-  //! Groupe associé à la grandeur
+  //! Group associated with the quantity
   ARCANE_CORE_EXPORT GroupType itemGroup() const;
-  
+
  private:
 
   static VariableFactoryRegisterer m_auto_registerer;
@@ -250,4 +252,4 @@ class MeshPartialVariableScalarRefT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

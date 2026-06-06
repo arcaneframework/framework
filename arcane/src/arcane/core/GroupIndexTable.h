@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GroupIndexTable.h                                           (C) 2000-2024 */
 /*                                                                           */
-/* Table de hachage entre un item et sa position dans la table.              */
+/* Hash table between an item and its position in the table.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_GROUPINDEXTABLE_H
 #define ARCANE_CORE_GROUPINDEXTABLE_H
@@ -49,7 +49,7 @@ class ARCANE_CORE_EXPORT GroupIndexTableView
 
  private:
 
-  //! Recherche d'une clef dans toute la table
+  //! Search for a key in the entire table
   ARCCORE_HOST_DEVICE Int32 _lookup(KeyTypeConstRef id) const
   {
     return _lookupBucket(_hash(id), id);
@@ -70,14 +70,15 @@ class ARCANE_CORE_EXPORT GroupIndexTableView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'une table de hachage entre les items d'un groupe 
- * et leurs positions dans la table
+ * \brief Base class of a hash table between group items
+ * and their positions in the table.
  *
- * Cette table est utilisée pour les variables partielles : la position des
- * données d'une entité n'est pas son localId()  mais sa position dans
- * l'énumerateur du groupe (i.e: dans la table).         
+ * This table is used for partial variables: the position of
+ * an entity's data is not its localId() but its position in
+ * the group enumerator (i.e.: in the table).         
  */
 class ARCANE_CORE_EXPORT GroupIndexTable
 : public HashTableBase
@@ -117,45 +118,45 @@ class ARCANE_CORE_EXPORT GroupIndexTable
  private:
 
   /*!
-   * \brief Fonction de hachage.
+   * \brief Hashing function.
    *
-   * Utilise la fonction de hachage de Arcane même si quelques
-   * collisions sont constatées avec les petites valeurs
+   * Uses the Arcane hash function even if some
+   * collisions are observed with small values.
    */
   Int32 _hash(KeyTypeConstRef id) const
   {
     ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
     return m_view._hash(id);
   }
-  //! \a true si une valeur avec la clé \a id est présente
+  //! \a true if a value with key \a id is present
   bool _hasKey(KeyTypeConstRef id) const;
 
-  //! Recherche d'une clef dans un bucket
+  //! Search for a key in a bucket
   Int32 _lookupBucket(Int32 bucket, KeyTypeConstRef id) const
   {
     ARCANE_ASSERT((_initialized()), ("GroupIndexTable not initialized"));
     return m_view._lookupBucket(bucket, id);
   }
 
-  //! Recherche d'une clef dans toute la table
+  //! Search for a key in the entire table
   Int32 _lookup(KeyTypeConstRef id) const
   {
     ARCANE_ASSERT((_checkIntegrity(false)), ("GroupIndexTable integrity failed"));
     return _lookupBucket(_hash(id), id);
   }
 
-  //! Teste l'initialisation de l'objet
+  //! Tests the initialization of the object
   bool _initialized() const;
 
-  //! Test l'intégrité de la table relativement à son groupe
+  //! Tests the integrity of the table relative to its group
   bool _checkIntegrity(bool full = true) const;
 
  private:
 
   ItemGroupImpl* m_group_impl = nullptr;
-  UniqueArray<KeyTypeValue> m_key_buffer; //! Table des clés associées
-  UniqueArray<Int32> m_next_buffer; //! Table des index suivant associés
-  UniqueArray<Int32> m_buckets; //! Tableau des buckets
+  UniqueArray<KeyTypeValue> m_key_buffer; //! Associated keys table
+  UniqueArray<Int32> m_next_buffer; //! Associated next index table
+  UniqueArray<Int32> m_buckets; //! Bucket array
   bool m_disable_check_integrity = false;
   GroupIndexTableView m_view;
 

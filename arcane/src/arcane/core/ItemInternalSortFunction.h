@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemInternalSortFunction.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Fonction de tri des entités.                                              */
+/* Entity sorting function.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMINTERNALSORTFUNCTION_H
 #define ARCANE_CORE_ITEMINTERNALSORTFUNCTION_H
@@ -27,17 +27,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'une fonction de tri des entités.
+ * \brief Interface for an entity sorting function.
  *
- * Cette classe est utilisée pour trier des entités.
- * Il faut spécifier comme paramètre template un functor
- * ayant le prototype suivant:
+ * This class is used to sort entities.
+ * A functor must be specified as a template parameter
+ * having the following prototype:
  * \code
  * bool operator()(const ItemInternal* item1,const ItemInternal* item2) const
  * \endcode
- * et qui retourne \a true si \a item1 est avant \a item2.
+ * and which returns true if item1 comes before item2.
  */
 template <typename SortFunction>
 class ItemInternalSortFunction
@@ -56,7 +57,7 @@ class ItemInternalSortFunction
  public:
 
   /*!
-   * \brief Trie les entités du tableau \a items.
+   * \brief Sorts the entities in the array \a items.
    */
   void sortItems(ItemInternalMutableArrayView items) override
   {
@@ -76,4 +77,4 @@ class ItemInternalSortFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

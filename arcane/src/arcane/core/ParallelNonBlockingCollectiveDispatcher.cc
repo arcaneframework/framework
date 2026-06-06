@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelNonBlockingCollectiveDispatcher.cc                  (C) 2000-2016 */
 /*                                                                           */
-/* Redirection de la gestion des messages suivant le type des arguments.     */
+/* Redirection of message handling based on argument type.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,16 +21,17 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/HPReal.h"
 
-#include "arcane/ParallelNonBlockingCollectiveDispatcher.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/Timer.h"
+#include "arcane/core/ParallelNonBlockingCollectiveDispatcher.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/Timer.h"
 
 #include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -153,96 +154,96 @@ timeStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_PARALLEL_MANAGER_DISPATCH(field,type)\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
-allGather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->allGather(send_buf,recv_buf);       \
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-gather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer rank) \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->gather(send_buf,recv_buf,rank);                \
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-allGatherVariable(ConstArrayView<type> send_buf,Array<type>& recv_buf)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->allGatherVariable(send_buf,recv_buf);\
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-gatherVariable(ConstArrayView<type> send_buf,Array<type>& recv_buf,Integer rank) \
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->gatherVariable(send_buf,recv_buf,rank);        \
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-scatterVariable(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer root)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->scatterVariable(send_buf,recv_buf,root);\
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-allReduce(eReduceType rt,ConstArrayView<type> send_buf,ArrayView<type> v)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->allReduce(rt,send_buf,v);\
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-broadcast(ArrayView<type> send_buf,Integer id)\
-{ \
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->broadcast(send_buf,id);\
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-allToAll(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer count)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->allToAll(send_buf,recv_buf,count);  \
-}\
-Parallel::Request ParallelNonBlockingCollectiveDispatcher::\
-allToAllVariable(ConstArrayView<type> send_buf,Int32ConstArrayView send_count,\
-                 Int32ConstArrayView send_index,ArrayView<type> recv_buf,\
-                 Int32ConstArrayView recv_count,Int32ConstArrayView recv_index)\
-{\
-  Timer::Phase tphase(timeStats(),TP_Communication);\
-  return field->allToAllVariable(send_buf,send_count,send_index,recv_buf,recv_count,recv_index);\
-}\
-IParallelNonBlockingCollectiveDispatchT<type>* ParallelNonBlockingCollectiveDispatcher::\
-dispatcher(type*)\
-{\
-  return field;\
-}\
+#define ARCANE_PARALLEL_MANAGER_DISPATCH(field, type) \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  allGather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->allGather(send_buf, recv_buf); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  gather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer rank) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->gather(send_buf, recv_buf, rank); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  allGatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->allGatherVariable(send_buf, recv_buf); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  gatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf, Integer rank) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->gatherVariable(send_buf, recv_buf, rank); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  scatterVariable(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer root) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->scatterVariable(send_buf, recv_buf, root); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  allReduce(eReduceType rt, ConstArrayView<type> send_buf, ArrayView<type> v) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->allReduce(rt, send_buf, v); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  broadcast(ArrayView<type> send_buf, Integer id) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->broadcast(send_buf, id); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  allToAll(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer count) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->allToAll(send_buf, recv_buf, count); \
+  } \
+  Parallel::Request ParallelNonBlockingCollectiveDispatcher:: \
+  allToAllVariable(ConstArrayView<type> send_buf, Int32ConstArrayView send_count, \
+                   Int32ConstArrayView send_index, ArrayView<type> recv_buf, \
+                   Int32ConstArrayView recv_count, Int32ConstArrayView recv_index) \
+  { \
+    Timer::Phase tphase(timeStats(), TP_Communication); \
+    return field->allToAllVariable(send_buf, send_count, send_index, recv_buf, recv_count, recv_index); \
+  } \
+  IParallelNonBlockingCollectiveDispatchT<type>* ParallelNonBlockingCollectiveDispatcher:: \
+  dispatcher(type*) \
+  { \
+    return field; \
+  }
 
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_char,char)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_char,unsigned char)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_signed_char,signed char)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_short,short)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_short,unsigned short)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_int,int)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_int,unsigned int)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_long,long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long,unsigned long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_long,long long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long_long,unsigned long long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_float,float)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_double,double)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_double,long double)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_char, char)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_char, unsigned char)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_signed_char, signed char)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_short, short)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_short, unsigned short)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_int, int)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_int, unsigned int)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_long, long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long, unsigned long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_long, long long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long_long, unsigned long long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_float, float)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_double, double)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_double, long double)
 #ifdef ARCANE_REAL_NOT_BUILTIN
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real,Real)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real, Real)
 #endif
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2,Real2)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3,Real3)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2x2,Real2x2)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3x3,Real3x3)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_hpreal,HPReal)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2, Real2)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3, Real3)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2x2, Real2x2)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3x3, Real3x3)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_hpreal, HPReal)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

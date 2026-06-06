@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IIncrementalItemConnectivity.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Interface de connectivité incrémentale des entités.                       */
+/* Incremental entity connectivity interface.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IINCREMENTALITEMCONNECTIVITY_H
 #define ARCANE_CORE_IINCREMENTALITEMCONNECTIVITY_H
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de la source d'une connectivité incrémentale
+ * \brief Interface for the source of an incremental connectivity
  */
 class ARCANE_CORE_EXPORT IIncrementalItemSourceConnectivity
 {
@@ -40,48 +41,49 @@ class ARCANE_CORE_EXPORT IIncrementalItemSourceConnectivity
 
  public:
 
-  //! Famille source
+  //! Source family
   virtual IItemFamily* sourceFamily() const = 0;
 
-  //TODO: utiliser un mécanisme par évènement.
-  //! Notifie la connectivité que la famille source est compactée.
+  //TODO: use an event-based mechanism.
+  //! Notifies the connectivity that the source family has been compacted.
   virtual void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) = 0;
 
-  //! Notifie la connectivité qu'une entité a été ajoutée à la famille source.
+  //! Notifies the connectivity that an entity has been added to the source family.
   virtual void notifySourceItemAdded(ItemLocalId item) = 0;
 
   /*!
-   * \brief Réserve la mémoire pour \a n entités sources.
+   * \brief Reserves memory for \a n source entities.
    *
-   * L'appel à cette méthode est optionnel mais permet d'éviter de multiples
-   * réallocations lors d'appels successifs à notifySourceItemAdded().
+   * Calling this method is optional but prevents multiple
+   * reallocations during successive calls to notifySourceItemAdded().
    *
-   * Si \a pre_alloc_connectivity est vrai, pré-alloue aussi les la liste des
-   * connectivités en fonction de la valeur de preAllocatedSize(). Par exemple
-   * si preAllocatedSize() vaut 4 et si \a n vaut 10000, on va pré-allouer
-   * pour 40000 connectivités. Pour éviter une surconsommation mémoire inutile,
-   * il ne faut pré-allouer les connectivités que si on est sur qu'on va les utiliser.
+   * If \a pre_alloc_connectivity is true, it also pre-allocates the list of
+   * connectivities based on the value of preAllocatedSize(). For example,
+   * if preAllocatedSize() is 4 and \a n is 10000, we will pre-allocate
+   * for 40000 connectivities. To avoid unnecessary memory overconsumption,
+   * connectivities should only be pre-allocated if we are sure we will use them.
    */
   virtual void reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity);
 
-  //! Notifie la connectivité qu'on a effectué une relecture à partir d'une protection
+  //! Notifies the connectivity that a read has been performed from a dump
   virtual void notifyReadFromDump() = 0;
 
-  //! Retourne une référence sur l'instance
+  //! Returns a reference to the instance
   virtual Ref<IIncrementalItemSourceConnectivity> toSourceReference() = 0;
 
  private:
 
-  // Interfaces réservées à Arcane
+  // Interfaces reserved to Arcane
 
-  //! Notifie la connectivité que les entités \a items ont été ajoutées à la famille source
+  //! Notifies the connectivity that the entities \a items have been added to the source family
   virtual void _internalNotifySourceItemsAdded(Int32ConstArrayView items);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de la cible d'une connectivité incrémentale
+ * \brief Interface for the target of an incremental connectivity
  */
 class ARCANE_CORE_EXPORT IIncrementalItemTargetConnectivity
 {
@@ -93,21 +95,22 @@ class ARCANE_CORE_EXPORT IIncrementalItemTargetConnectivity
 
  public:
 
-  //TODO: utiliser un mécanisme par évènement.
-  //! Notifie la connectivité que la famille cible est compactée.
+  //TODO: use an event-based mechanism.
+  //! Notifies the connectivity that the target family has been compacted.
   virtual void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) = 0;
 
-  //! Retourne une référence sur l'instance
+  //! Returns a reference to the instance
   virtual Ref<IIncrementalItemTargetConnectivity> toTargetReference() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour gérer une connectivité incrémentale.
+ * \brief Interface for managing an incremental connectivity.
  *
- * Une connectivité relie deux familles, une source (sourceFamily()) et
- * une cible (targetFamily()).
+ * A connectivity links two families: a source (sourceFamily()) and
+ * a target (targetFamily()).
  */
 class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
 : public IItemConnectivityAccessor
@@ -118,30 +121,30 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
 
  public:
 
-  //TODO rendre 'protected' une fois que tout le monde utilisera le compteur de référence
+  //TODO make 'protected' once everyone uses the reference counter
   ~IIncrementalItemConnectivity() = default;
 
  public:
 
-  //! Nom de la connectivité
+  //! Name of the connectivity
   virtual String name() const = 0;
 
-  //! Liste des familles (sourceFamily() + targetFamily())
+  //! List of families (sourceFamily() + targetFamily())
   virtual ConstArrayView<IItemFamily*> families() const = 0;
 
-  //! Famille cible
+  //! Target family
   virtual IItemFamily* targetFamily() const = 0;
 
-  //! Ajoute l'entité de localId() \a target_local_id à la connectivité de \a source_item
+  //! Adds the entity with localId() \a target_local_id to the connectivity of \a source_item
   virtual void addConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) = 0;
 
   /*!
-   * \brief Alloue et positionne les entités connectées à \a source_item.
+   * \brief Allocates and positions entities connected to \a source_item.
    *
-   * S'il y avait des déjà des entités connectées à \a source_item, elles sont supprimées.
-   * \a target_local_ids contient la liste des numéros locaux des entités à ajouter.
-   * Cette méthode est équivalente à appeler le code suivant mais permet des optimisations sur la
-   * gestion mémoire:
+   * If there were already entities connected to \a source_item, they are removed.
+   * \a target_local_ids contains the list of local IDs of entities to add.
+   * This method is equivalent to calling the following code but allows for memory
+   * management optimizations:
    * \code
    * IIncrementalItemConnectivity* c = ...;
    * c->removeConnectedItems(source_item);
@@ -151,39 +154,39 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
    */
   virtual void setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids);
 
-  //! Supprime l'entité de localId() \a target_local_id à la connectivité de \a source_item
+  //! Removes the entity with localId() \a target_local_id from the connectivity of \a source_item
   virtual void removeConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) = 0;
 
-  //! Supprime toute les entités connectées à \a source_item
+  //! Removes all entities connected to \a source_item
   virtual void removeConnectedItems(ItemLocalId source_item) = 0;
 
-  //! Remplace l'entité d'index \a index de \a source_item par l'entité de localId() \a target_local_id
+  //! Replaces the entity at index \a index of \a source_item with the entity with localId() \a target_local_id
   virtual void replaceConnectedItem(ItemLocalId source_item, Integer index, ItemLocalId target_local_id) = 0;
 
-  //! Remplace les entités de \a source_item par les entités de localId() \a target_local_ids
+  //! Replaces the entities of \a source_item with the entities with localId() \a target_local_ids
   virtual void replaceConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids) = 0;
 
-  //! Test l'existence d'un connectivité entre \a source_item et l'entité de localId() \a target_local_id
+  //! Tests the existence of a connectivity between \a source_item and the entity with localId() \a target_local_id
   virtual bool hasConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) const = 0;
 
   /*!
-   * \brief Nombre maximum d'entités connectées à une entité source.
+   * \brief Maximum number of entities connected to a source entity.
    *
-   * Cette valeur peut être supérieure au nombre maximum actuel d'entités
-   * connectées s'il y a eu des appels à removeConnectedItem() et removeConnectedItems().
+   * This value may be greater than the current maximum number of connected entities
+   * if removeConnectedItem() and removeConnectedItems() have been called.
    */
   virtual Int32 maxNbConnectedItem() const = 0;
 
-  //! Nombre d'entités pré-alloués pour la connectivité de chaque entité
+  //! Number of entities pre-allocated for the connectivity of each entity
   virtual Integer preAllocatedSize() const = 0;
 
-  //! Positionne le nombre d'entités à pré-allouer pour la connectivité de chaque entité
+  //! Sets the number of entities to pre-allocate for the connectivity of each entity
   virtual void setPreAllocatedSize(Integer value) = 0;
 
-  //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
+  //! Dumps statistics on usage and memory used to the stream \a out
   virtual void dumpStats(std::ostream& out) const = 0;
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   virtual IIncrementalItemConnectivityInternal* _internalApi() = 0;
 };
 

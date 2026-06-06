@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICaseMeshMasterService.h                                    (C) 2000-2024 */
 /*                                                                           */
-/* Interface du service gérant les maillages du jeu de données.              */
+/* Interface of the service managing the meshes of the dataset.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEMESHMASTERSERVICE_H
 #define ARCANE_CORE_ICASEMESHMASTERSERVICE_H
@@ -24,28 +24,28 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du service gérant les maillages du jeu de données.
+ * \brief Interface of the service managing the meshes of the dataset.
  *
- * Ce service gère les différents services de création/lecture de maillage.
+ * This service manages the different mesh creation/reading services.
  *
- * Cela se fait en deux phases:
- * - une première phase lors de l'appel à createMeshes() où l'ensemble des
- *   maillages issus du jeu de données est créée. Dans cette phase, seule
- *   la classe gérant les maillage est créé mais ces derniers ne sont pas
- *   encore utilisables.
- * - une deuxième phase lors de l'appel à allocateMeshes() où les maillages
- *   sont effectivement alloués. Cela correspond soit à la lecture des maillage,
- *   soit à la création effective des entités qu'ils gèrent.
+ * This is done in two phases:
+ * - a first phase when calling createMeshes() where all the
+ *   meshes derived from the dataset are created. In this phase, only
+ *   the class managing the meshes is created, but they are not yet
+ *   usable.
+ * - a second phase when calling allocateMeshes() where the meshes
+ *   are actually allocated. This corresponds either to reading the meshes,
+ *   or to the effective creation of the entities they manage.
  *
- * Il existe une troisième phase optionnelle qui n'est effectuée que en
- * parallèle et qui consiste à partitionner les maillages, via l'appel
- * à partitionMeshes().
+ * There is a third optional phase which is only performed
+ * in parallel and consists of partitioning the meshes, via the call
+ * to partitionMeshes().
  *
- * Enfin, il est possible d'appliquer à la fin de la création du maillage
- * un traitement supplémentaire sur le maillage. Par exemple, il est possible
- * de subdiviser le maillage actuel. Cela se fait par l'appel à
+ * Finally, it is possible to apply an additional treatment at the end of mesh creation.
+ * For example, it is possible to subdivide the current mesh. This is done by calling
  * applyAdditionalOperationsOnMeshes().
  */
 class ICaseMeshMasterService
@@ -56,13 +56,13 @@ class ICaseMeshMasterService
 
  public:
 
-  //! Créé les maillages
-  virtual void createMeshes() =0;
-  //! Créé les maillages
-  virtual void allocateMeshes() =0;
-  //! Partitionne les maillages
-  virtual void partitionMeshes() =0;
-  //! Applique les éventuelles opérations additionnelles sur le maillage crée.
+  //! Creates the meshes
+  virtual void createMeshes() = 0;
+  //! Creates the meshes
+  virtual void allocateMeshes() = 0;
+  //! Partitions the meshes
+  virtual void partitionMeshes() = 0;
+  //! Applies any additional operations on the created mesh.
   virtual void applyAdditionalOperationsOnMeshes() {}
 
  public:
@@ -78,4 +78,4 @@ class ICaseMeshMasterService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseOptionTypes.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Définition des types liés aux options du jeu de données.                  */
+/* Definition of types related to dataset options.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONTYPES_H
 #define ARCANE_CORE_CASEOPTIONTYPES_H
@@ -24,15 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file CaseOptionTypes.h
  *
- * \brief Déclarations des types liés aux options du jeu de données.
+ * \brief Declarations of types related to dataset options.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Phases de la lecture
+//! Reading phases
 enum class eCaseOptionReadPhase
 {
   Phase1,

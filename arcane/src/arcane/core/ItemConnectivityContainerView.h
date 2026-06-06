@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemConnectivityContainerView.h                             (C) 2000-2026 */
 /*                                                                           */
-/* Vues sur les conteneurs contenant les connectivités.                      */
+/* Views of containers holding connectivity.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMCONNECTIVITYCONTAINERVIEW_H
 #define ARCANE_CORE_ITEMCONNECTIVITYCONTAINERVIEW_H
@@ -33,16 +33,17 @@ class ItemInternalConnectivityList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Vues sur les conteneurs contenant les connectivités.
- * Cette classe permet de rendre opaque en dehors d'Arcane les conteneurs utilisés
- * pour faciliter leur changement éventuel.
+ * \brief Views of containers holding connectivity.
+ * This class allows the containers used to be opaque outside of Arcane
+ * to facilitate their eventual change.
  */
 class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 {
-  // Liste des classes qui ont le droit de créer ou de récupérer directement
-  // des instances de cette classe
+  // List of classes that have the right to create or directly retrieve
+  // instances of this class
   friend ItemInternalConnectivityList;
   friend IndexedItemConnectivityViewBase;
   friend IndexedItemConnectivityViewBase2;
@@ -70,15 +71,15 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
  public:
 
   /*!
-   * \brief Vérifie que les deux instances \a this et \a rhs ont les mêmes valeurs.
+   * \brief Checks that the two instances \a this and \a rhs have the same values.
    *
-   * Lance un FatalErrorException si ce n'est pas le cas.
+   * Throws a FatalErrorException if not.
    */
   void checkSame(ItemConnectivityContainerView rhs) const;
 
  private:
 
-  //! Liste des entités connectées à l'entité de localId() \a lid
+  //! List of entities connected to the entity with localId() \a lid
   template <typename ItemType> constexpr ARCCORE_HOST_DEVICE
   ItemLocalIdListViewT<ItemType>
   itemsIds(ItemLocalId lid) const
@@ -91,7 +92,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
     return { p, m_nb_connected_items[lid], 0 };
   }
 
-  //! \a index-ème entité connectée à l'entité de localId() \a lid
+  //! \a index-th entity connected to the entity with localId() \a lid
   template <typename ItemLocalIdType> constexpr ARCCORE_HOST_DEVICE
   ItemLocalIdType
   itemId(ItemLocalId lid, Int32 index) const
@@ -102,15 +103,15 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
     return ItemLocalIdType(m_list_data[x]);
   }
 
-  //! Tableau des indices dans la table de connectivités
+  //! Array of indices in the connectivity table
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32>
   indexes() const { return { m_indexes, m_nb_item }; }
 
-  //! Tableau du nombre d'entités connectées à une autre entité.
+  //! Array of the number of entities connected to another entity.
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32>
   nbConnectedItems() const { return { m_nb_connected_items, m_nb_item }; }
 
-  //! Nombre d'entités
+  //! Number of entities
   constexpr ARCCORE_HOST_DEVICE Int32 nbItem() const { return m_nb_item; }
 
  private:
@@ -128,7 +129,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
  private:
 
   friend class MutableIndexedParticleCellConnectivityView;
-  // Uniquement pour positionner la maille à laquelle appartient une particule
+  // Only to position the mesh a particle belongs to
   ARCCORE_HOST_DEVICE void _setParticleCellId(ItemLocalId particle_lid, CellLocalId cell_lid) const
   {
     ARCANE_CHECK_AT(particle_lid.localId(), m_nb_item);

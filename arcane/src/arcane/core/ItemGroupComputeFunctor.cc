@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemGroupComputeFunctor.cc                                  (C) 2000-2023 */
 /*                                                                           */
-/* Functors de calcul des éléments d'un groupe en fonction d'un autre groupe */
+/* Functors for calculating elements of one group based on another group     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/Item.h"
-#include "arcane/ItemGroupComputeFunctor.h"
-#include "arcane/ItemGroupImpl.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/Properties.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/ItemGroupComputeFunctor.h"
+#include "arcane/core/ItemGroupImpl.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/Properties.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Calcul des entités propres du groupe
+
+//! Calculation of the group's own entities
 void OwnItemGroupComputeFunctor::
 executeFunctor()
 {
@@ -40,7 +41,7 @@ executeFunctor()
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
 
-  ENUMERATE_ITEM(iitem,parent){
+  ENUMERATE_ITEM (iitem, parent) {
     Item item = *iitem;
     if (item.isOwn())
       items_lid.add(iitem.itemLocalId());
@@ -67,12 +68,12 @@ executeFunctor()
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
 
-  ENUMERATE_ITEM(iitem,parent){
+  ENUMERATE_ITEM (iitem, parent) {
     Item item = *iitem;
     if (!item.isOwn())
       items_lid.add(iitem.itemLocalId());
   }
-  
+
   m_group->setItems(items_lid);
   m_group->endTransaction();
 
@@ -94,7 +95,7 @@ executeFunctor()
   IItemFamily* family = m_group->itemFamily();
   ItemGroup parent(m_group->parent());
 
-  if (family->itemKind() != IK_Face){
+  if (family->itemKind() != IK_Face) {
     trace->fatal() << "InterfaceGroupComputeFunctor::executeFunctor()"
                    << " Incoherent family expected=" << IK_Face << " current=" << family->itemKind();
   }
@@ -102,15 +103,14 @@ executeFunctor()
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
 
-
-  ENUMERATE_FACE(iface,parent) {
+  ENUMERATE_FACE (iface, parent) {
     Face face = *iface;
     Cell bcell = face.backCell();
     Cell fcell = face.frontCell();
-    if ( !bcell.null() && !fcell.null() ) {
+    if (!bcell.null() && !fcell.null()) {
       const bool isBackOwn = bcell.isOwn();
       const bool isFrontOwn = fcell.isOwn();
-      if ( isBackOwn != isFrontOwn ) {
+      if (isBackOwn != isFrontOwn) {
         items_lid.add(face.localId());
       }
     }
@@ -127,14 +127,14 @@ executeFunctor()
                  << " mysize=" << m_group->size();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Fonctor pour calculer un groupe contenant les entités connectées
- * aux entités du groupe parent.
+ * \brief Functor to calculate a group containing entities connected
+ * to the entities of the parent group.
  */
-template<typename ItemType> void
+template <typename ItemType> void
 ItemItemGroupComputeFunctor<ItemType>::
 executeFunctor()
 {
@@ -144,9 +144,9 @@ executeFunctor()
   ItemGroup parent(m_group->parent());
 
   eItemKind ik = ItemTraitsT<ItemType>::kind();
-  if (ik!=family->itemKind()){
+  if (ik != family->itemKind()) {
     ARCANE_FATAL("Incoherent family wanted={0} current={1} v={2}",
-                 ik,family->itemKind(),m_group->itemKind());
+                 ik, family->itemKind(), m_group->itemKind());
   }
 
   m_group->beginTransaction();
@@ -154,19 +154,19 @@ executeFunctor()
   Int32UniqueArray markers(family->maxLocalId());
   markers.fill(0);
   ItemType* null_type = 0;
-  ENUMERATE_ITEM(iitem,parent){
+  ENUMERATE_ITEM (iitem, parent) {
     impl::ItemBase i = (*iitem).itemBase();
-    for( ItemEnumerator iitem2(i.itemList(null_type)); iitem2.hasNext(); ++iitem2 ){
+    for (ItemEnumerator iitem2(i.itemList(null_type)); iitem2.hasNext(); ++iitem2) {
       Int32 lid = iitem2.localId();
-      if (markers[lid]==0){
+      if (markers[lid] == 0) {
         markers[lid] = 1;
         items_lid.add(lid);
       }
     }
   }
-  bool do_sort = mesh->properties()->getBoolWithDefault("sort-subitemitem-group",false);
+  bool do_sort = mesh->properties()->getBoolWithDefault("sort-subitemitem-group", false);
 
-  m_group->setItems(items_lid,do_sort);
+  m_group->setItems(items_lid, do_sort);
   m_group->endTransaction();
 
   trace->debug() << "ItemItemGroupComputeFunctor::execute()"
@@ -192,7 +192,7 @@ executeFunctor()
   Int32UniqueArray items_lid;
 
   if (parent.isAllItems()) {
-    ENUMERATE_FACE(iface,family->allItems()){
+    ENUMERATE_FACE (iface, family->allItems()) {
       const Face& face = *iface;
       if (!face.isSubDomainBoundary())
         items_lid.add(face.localId());
@@ -201,10 +201,10 @@ executeFunctor()
   else {
     BoolUniqueArray markers(parent_family->maxLocalId());
     markers.fill(false);
-    ENUMERATE_CELL(icell,parent) {
+    ENUMERATE_CELL (icell, parent) {
       markers[icell.localId()] = true;
     }
-    ENUMERATE_FACE(iface,family->allItems()) {
+    ENUMERATE_FACE (iface, family->allItems()) {
       Face face = *iface;
       Cell bcell = face.backCell();
       Cell fcell = face.frontCell();
@@ -239,7 +239,7 @@ executeFunctor()
   Int32UniqueArray items_lid;
 
   if (parent.isAllItems()) {
-    ENUMERATE_FACE(iface,family->allItems()){
+    ENUMERATE_FACE (iface, family->allItems()) {
       const Face& face = *iface;
       if (face.isSubDomainBoundary())
         items_lid.add(face.localId());
@@ -248,10 +248,10 @@ executeFunctor()
   else {
     BoolUniqueArray markers(parent_family->maxLocalId());
     markers.fill(false);
-    ENUMERATE_CELL(icell,parent) {
+    ENUMERATE_CELL (icell, parent) {
       markers[icell.localId()] = true;
     }
-    ENUMERATE_FACE(iface,family->allItems()) {
+    ENUMERATE_FACE (iface, family->allItems()) {
       Face face = *iface;
       Cell bcell = face.backCell();
       Cell fcell = face.frontCell();
@@ -282,16 +282,16 @@ executeFunctor()
   IItemFamily* family = m_group->itemFamily();
   ItemGroup parent(m_group->parent());
 
-  if (family->itemKind() != IK_Cell){
+  if (family->itemKind() != IK_Cell) {
     trace->fatal() << "AllActiveCellGroupComputeFunctor::executeFunctor()"
                    << " Incoherent family expected=" << IK_Cell << " current=" << family->itemKind();
   }
 
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
-  ENUMERATE_CELL(iitem,parent){
+  ENUMERATE_CELL (iitem, parent) {
     Cell item = *iitem;
-    if(item.isActive())
+    if (item.isActive())
       items_lid.add(item.localId());
   }
   m_group->setItems(items_lid);
@@ -315,7 +315,7 @@ executeFunctor()
   IItemFamily* family = m_group->itemFamily();
   ItemGroup parent(m_group->parent());
 
-  if (family->itemKind() != IK_Cell){
+  if (family->itemKind() != IK_Cell) {
     trace->fatal() << "OwnActiveCellGroupComputeFunctor::executeFunctor()"
                    << " Incoherent family expected=" << IK_Cell << " current=" << family->itemKind();
   }
@@ -323,9 +323,9 @@ executeFunctor()
   m_group->beginTransaction();
 
   Int32UniqueArray items_lid;
-  ENUMERATE_CELL(iitem,parent){
+  ENUMERATE_CELL (iitem, parent) {
     Cell item = *iitem;
-    if(item.isOwn() && item.isActive())
+    if (item.isOwn() && item.isActive())
       items_lid.add(item.localId());
   }
   m_group->setItems(items_lid);
@@ -349,7 +349,7 @@ executeFunctor()
   IItemFamily* family = m_group->itemFamily();
   ItemGroup parent(m_group->parent());
 
-  if (family->itemKind() != IK_Cell){
+  if (family->itemKind() != IK_Cell) {
     trace->fatal() << "LevelCellGroupComputeFunctor::executeFunctor()"
                    << " Incoherent family expected=" << IK_Cell << " current=" << family->itemKind();
   }
@@ -357,9 +357,9 @@ executeFunctor()
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
 
-  ENUMERATE_CELL(iitem,parent){
+  ENUMERATE_CELL (iitem, parent) {
     Cell item = *iitem;
-    if(item.level() == m_level)
+    if (item.level() == m_level)
       items_lid.add(item.localId());
   }
   m_group->setItems(items_lid);
@@ -385,11 +385,11 @@ executeFunctor()
 
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
-  if (family->itemKind() != IK_Cell){
+  if (family->itemKind() != IK_Cell) {
     trace->fatal() << "LevelCellGroupComputeFunctor::executeFunctor()"
                    << " Incoherent family expected=" << IK_Cell << " current=" << family->itemKind();
   }
-  ENUMERATE_CELL(iitem,parent){
+  ENUMERATE_CELL (iitem, parent) {
     Cell item = *iitem;
     if (item.isOwn() && (item.level() == m_level))
       items_lid.add(item.localId());
@@ -417,22 +417,22 @@ executeFunctor()
   IItemFamily* parent_family = parent.itemFamily();
   m_group->beginTransaction();
   Int32UniqueArray items_lid;
-  Integer counter_0=0;
-  Integer counter_1=0;
-  Integer counter_2=0;
+  Integer counter_0 = 0;
+  Integer counter_1 = 0;
+  Integer counter_2 = 0;
   Integer counter = 0;
   if (parent.isAllItems()) {
-    ENUMERATE_FACE(iface,family->allItems()){
+    ENUMERATE_FACE (iface, family->allItems()) {
       Face face = *iface;
       counter++;
       if (face.isSubDomainBoundary()) {
         counter_0++;
-        if (face.boundaryCell().isActive()){
+        if (face.boundaryCell().isActive()) {
           items_lid.add(face.localId());
           counter_1++;
         }
       }
-      else if (face.backCell().isActive() && face.frontCell().isActive()){
+      else if (face.backCell().isActive() && face.frontCell().isActive()) {
         items_lid.add(face.localId());
         counter_2++;
       }
@@ -441,24 +441,24 @@ executeFunctor()
   else {
     BoolUniqueArray markers(parent_family->maxLocalId());
     markers.fill(false);
-    ENUMERATE_CELL(icell,parent) {
+    ENUMERATE_CELL (icell, parent) {
       markers[icell.localId()] = true;
     }
-    ENUMERATE_FACE(iface,family->allItems()) {
-      const Face & face = *iface;
+    ENUMERATE_FACE (iface, family->allItems()) {
+      const Face& face = *iface;
       if (face.isSubDomainBoundary()) {
         if (face.boundaryCell().isActive() && markers[face.boundaryCell().localId()])
           items_lid.add(face.localId());
       }
-      else if ( (face.backCell().isActive() && face.frontCell().isActive())  &&
-                (markers[face.backCell().localId()] || markers[face.frontCell().localId()]))
+      else if ((face.backCell().isActive() && face.frontCell().isActive()) &&
+               (markers[face.backCell().localId()] || markers[face.frontCell().localId()]))
         items_lid.add(face.localId());
     }
   }
   trace->debug() << "NUMBER OF ALL FACES= " << counter
-    		         <<  "\n NUNMBER OF BOUNDARY FACES= "  << counter_0
-    		         << "\n NUMBER OF ACTIVE BOUNDARY FACES= "  << counter_1
-    		         << "\n NUMBER OF ACTIVE INTERIOR FACES= " << counter_2 << "\n";
+                 << "\n NUNMBER OF BOUNDARY FACES= " << counter_0
+                 << "\n NUMBER OF ACTIVE BOUNDARY FACES= " << counter_1
+                 << "\n NUMBER OF ACTIVE INTERIOR FACES= " << counter_2 << "\n";
   m_group->setItems(items_lid);
   m_group->endTransaction();
 
@@ -484,24 +484,25 @@ executeFunctor()
   Int32UniqueArray items_lid;
 
   if (parent.isAllItems()) {
-    ENUMERATE_FACE(iface,family->allItems()){
+    ENUMERATE_FACE (iface, family->allItems()) {
       const Face& face = *iface;
       if (face.isSubDomainBoundary()) {
         if (face.isOwn() && face.boundaryCell().isActive())
           items_lid.add(face.localId());
       }
-      else if (face.isOwn() && face.backCell().isActive() && face.frontCell().isActive()){
+      else if (face.isOwn() && face.backCell().isActive() && face.frontCell().isActive()) {
         items_lid.add(face.localId());
       }
     }
-  } else {
+  }
+  else {
     BoolUniqueArray markers(parent_family->maxLocalId());
     markers.fill(false);
-    ENUMERATE_CELL(icell,parent) {
+    ENUMERATE_CELL (icell, parent) {
       markers[icell.localId()] = true;
     }
-    ENUMERATE_FACE(iface,family->allItems()) {
-      const Face & face = *iface;
+    ENUMERATE_FACE (iface, family->allItems()) {
+      const Face& face = *iface;
       if (face.isSubDomainBoundary()) {
         if (face.isOwn() && face.boundaryCell().isActive() && markers[face.boundaryCell().localId()])
           items_lid.add(face.localId());
@@ -538,7 +539,7 @@ executeFunctor()
   Int32UniqueArray items_lid;
 
   if (parent.isAllItems()) {
-    ENUMERATE_FACE(iface,family->allItems()){
+    ENUMERATE_FACE (iface, family->allItems()) {
       Face face = *iface;
       if (face.isSubDomainBoundary())
         continue;
@@ -550,10 +551,10 @@ executeFunctor()
   else {
     BoolUniqueArray markers(parent_family->maxLocalId());
     markers.fill(false);
-    ENUMERATE_CELL(icell,parent) {
+    ENUMERATE_CELL (icell, parent) {
       markers[icell.localId()] = true;
     }
-    ENUMERATE_FACE(iface,family->allItems()) {
+    ENUMERATE_FACE (iface, family->allItems()) {
       Face face = *iface;
       if (face.isSubDomainBoundary())
         continue;
@@ -591,7 +592,7 @@ executeFunctor()
   Int32UniqueArray items_lid;
 
   if (parent.isAllItems()) {
-    ENUMERATE_FACE(iface,family->allItems()){
+    ENUMERATE_FACE (iface, family->allItems()) {
       const Face& face = *iface;
       if (face.isSubDomainBoundary() && face.boundaryCell().isActive())
         items_lid.add(face.localId());
@@ -600,14 +601,14 @@ executeFunctor()
   else {
     BoolUniqueArray markers(parent_family->maxLocalId());
     markers.fill(false);
-    ENUMERATE_CELL(icell,parent) {
+    ENUMERATE_CELL (icell, parent) {
       markers[icell.localId()] = true;
     }
-    ENUMERATE_FACE(iface,family->allItems()) {
+    ENUMERATE_FACE (iface, family->allItems()) {
       Face face = *iface;
-      if (face.isSubDomainBoundary()){
-        Cell bcell= face.boundaryCell();
-        if(bcell.isActive() && markers[bcell.localId()])
+      if (face.isSubDomainBoundary()) {
+        Cell bcell = face.boundaryCell();
+        if (bcell.isActive() && markers[bcell.localId()])
           items_lid.add(face.localId());
       }
     }
@@ -635,7 +636,7 @@ template class ItemItemGroupComputeFunctor<Cell>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* UniformOnSphere.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Randomiser 'Uniform0nSphere'.                                             */
+/* Randomize 'Uniform0nSphere'.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_RANDOM_UNIFORMONSPHERE_H
@@ -51,36 +51,39 @@ namespace Arcane::random
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class UniformRandomNumberGenerator>
+template <class UniformRandomNumberGenerator>
 class UniformOnSphere
 {
  public:
+
   typedef UniformRandomNumberGenerator base_type;
   typedef Real3 result_type;
 
-  explicit UniformOnSphere(base_type & rng)
-    : _rng(rng) { }
+  explicit UniformOnSphere(base_type& rng)
+  : _rng(rng)
+  {}
 
   typedef typename base_type::result_type base_result;
   Real3 applyDim3()
-    {
-      Real results[3];
-      Real sqsum = 0;
-      for( Integer i=0; i<3; ++i ){
-        Real val = _rng();
-        val += 1.0e-16;
-        results[i] = val;
-	//cout << " VAL " << i << " =" << val << '\n';
-        sqsum += val * val;
-      }
-      //cout << " SQSUM " << sqsum << '\n';
-      Real inv_sqrt_sqsum = 1. / math::sqrt(sqsum);
-      //cout << " INV_SQSUM " << inv_sqrt_sqsum << '\n';
-      for( Integer i=0; i<3; ++i ){
-        results[i] *= inv_sqrt_sqsum;
-      }
-      return Real3(results[0],results[1],results[2]);
+  {
+    Real results[3];
+    Real sqsum = 0;
+    for (Integer i = 0; i < 3; ++i) {
+      Real val = _rng();
+      val += 1.0e-16;
+      results[i] = val;
+      //cout << " VAL " << i << " =" << val << '\n';
+      sqsum += val * val;
     }
+    //cout << " SQSUM " << sqsum << '\n';
+    Real inv_sqrt_sqsum = 1. / math::sqrt(sqsum);
+    //cout << " INV_SQSUM " << inv_sqrt_sqsum << '\n';
+    for (Integer i = 0; i < 3; ++i) {
+      results[i] *= inv_sqrt_sqsum;
+    }
+    return Real3(results[0], results[1], results[2]);
+  }
+
  private:
 
   NormalDistribution<base_type> _rng;
@@ -89,7 +92,7 @@ class UniformOnSphere
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* FaceReorienter.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Vérifie la bonne orientation d'une face et la réoriente le cas échéant.   */
+/* Checks the correct orientation of a face and reorients it if necessary.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -95,7 +95,7 @@ checkAndChangeOrientation(Face face)
     face_topology_modifier->replaceNode(face, i_node, node_lid);
   }
 
-  // On cherche le plus petit uid de la face
+  // We look for the smallest uid of the face
   std::pair<Int64, Int64> face_smallest_node_uids = std::make_pair(face.node(0).uniqueId(),
                                                                    face.node(1).uniqueId());
   if (face.node(0).uniqueId() == face.node(1).uniqueId())
@@ -106,7 +106,7 @@ checkAndChangeOrientation(Face face)
   Integer local_face_number = -1;
   for (Integer i_face = 0; i_face < cell.nbFace(); ++i_face) {
     if (cell.face(i_face) == face) {
-      // On a trouvé la bonne face
+      // We found the correct face
       local_face_number = i_face;
       break;
     }
@@ -150,10 +150,10 @@ checkAndChangeOrientation(Face face)
   }
 
   Int32 cell1_lid = (face.nbCell() == 2) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
-  // Paire contenant la back_cell et front_cell de la face.
+  // Pair containing the back_cell and front_cell of the face.
   std::pair<Int32, Int32> face_cells(cell1_lid, cell0_lid);
   if (cell0_is_back_cell) {
-    // Si on arrive ici c'est que la maille 0 est la back_cell
+    // If we arrive here, it means mesh 0 is the back_cell
     std::swap(face_cells.first, face_cells.second);
   }
   face_topology_modifier->setBackAndFrontCells(face, CellLocalId(face_cells.first), CellLocalId(face_cells.second));
@@ -185,7 +185,7 @@ checkAndChangeOrientationAMR(Face face)
     face_topology_modifier->replaceNode(face, i_node, node_lid);
   }
 
-  // On cherche le plus petit uid de la face
+  // We look for the smallest uid of the face
   std::pair<Int64, Int64> face_smallest_node_uids = std::make_pair(face.node(0).uniqueId(),
                                                                    face.node(1).uniqueId());
 
@@ -218,7 +218,7 @@ checkAndChangeOrientationAMR(Face face)
   Integer local_face_number = -1;
   for (Integer i_face = 0; i_face < cell.nbFace(); ++i_face) {
     if (cell.face(i_face) == face) {
-      // On a trouvé la bonne face
+      // We found the correct face
       local_face_number = i_face;
       break;
     }
@@ -263,36 +263,36 @@ checkAndChangeOrientationAMR(Face face)
     }
   }
 
-  // Paire contenant la back_cell et front_cell de la face.
+  // Pair containing the back_cell and front_cell of the face.
   std::pair<Int32, Int32> face_cells(NULL_ITEM_LOCAL_ID, NULL_ITEM_LOCAL_ID);
   bool face_has_two_cell = (face.nbCell() == 2);
 
   if (cell_0) {
     Int32 cell1_lid = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
     if (cell_is_back_cell) {
-      // Si on arrive ici, c'est que la maille 0 est la back_cell
-      // La front cell est toujours cell1_lid (qui peut être nulle).
+      // If we arrive here, it means mesh 0 is the back_cell
+      // The front cell is always cell1_lid (which may be null).
       face_cells = { face.cell(0).localId(), cell1_lid };
     }
     else {
-      // Si on arrive ici, c'est que la maille 0 est la front_cell
-      // La back cell est toujours cell1_lid (qui peut être nulle)
+      // If we arrive here, it means mesh 0 is the front_cell
+      // The back cell is always cell1_lid (which may be null)
       face_cells.first = cell1_lid;
       face_cells.second = (face_has_two_cell) ? cell.localId() : face.cell(0).localId();
     }
   }
   else if (cell_1) {
     if (cell_is_back_cell) {
-      // Si on arrive ici, c'est que la maille 0 est la front_cell
-      // On met à jour les infos d'orientation
+      // If we arrive here, it means mesh 0 is the front_cell
+      // We update the orientation info
       face_cells.second = face.cell(0).localId();
-      // GG Attention, si ici, cela signifie qu'il faut échanger la front cell
-      // et la back cell car la back cell doit toujours être la première
+      // WARNING, if here, it means we must swap the front cell
+      // and the back cell because the back cell must always be the first
       face_cells.first = (face_has_two_cell) ? cell.localId() : NULL_ITEM_LOCAL_ID;
     }
     else {
-      // Si on arrive ici, c'est que la maille 0 est la back_cell
-      // On met à jour les infos d'orientation
+      // If we arrive here, it means mesh 0 is the back_cell
+      // We update the orientation info
       face_cells.first = face.cell(0).localId();
       face_cells.second = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
     }
@@ -303,7 +303,7 @@ checkAndChangeOrientationAMR(Face face)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialVariable.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface des variables matériaux.                                        */
+/* Material variable interface.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename TrueType> MaterialVariableTypeInfo
+template <typename TrueType> MaterialVariableTypeInfo
 MeshMaterialVariableBuildTraits<TrueType>::
 _buildVarTypeInfo(MatVarSpace space)
 {
@@ -43,20 +43,21 @@ _buildVarTypeInfo(MatVarSpace space)
   int dim = TrueType::dimension();
   eItemKind ik = ItemTraitsT<ItemType>::kind();
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return MaterialVariableTypeInfo(ik,dt,dim,space);
+  return MaterialVariableTypeInfo(ik, dt, dim, space);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne une variable associée à un constituant.
+ * \brief Returns a variable associated with a constituent.
  *
- * Retourne la variable constituant à partir des informations données par
- * \a v \et \a mvs. Si la variable n'existe pas encore, elle est créée.
+ * Returns the constituent variable based on the information provided by
+ * \a v and \a mvs. If the variable does not yet exist, it is created.
  */
 template <typename TrueType> TrueType*
 MeshMaterialVariableBuildTraits<TrueType>::
-getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+getVariableReference(const MaterialVariableBuildInfo& v, MatVarSpace mvs)
 {
   MaterialVariableTypeInfo x = _buildVarTypeInfo(mvs);
 
@@ -64,14 +65,14 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
   if (mesh_handle.isNull())
     ARCANE_FATAL("No mesh handle for material variable");
 
-  // Si le gestionnaire de matériaux n'existe pas encore, on le créé.
+  // If the material manager does not yet exist, we create it.
   IMeshMaterialMng* mat_mng = v.materialMng();
-  // TODO: regarder si verrou necessaire
+  // TODO: check if a lock is necessary
   if (!mat_mng)
-    mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
+    mat_mng = IMeshMaterialMng::getReference(mesh_handle, true);
 
   IMeshMaterialVariableFactoryMng* vm = mat_mng->variableFactoryMng();
-  IMeshMaterialVariable* var = vm->createVariable(x.fullName(),v);
+  IMeshMaterialVariable* var = vm->createVariable(x.fullName(), v);
 
   auto* true_var = dynamic_cast<TrueType*>(var);
   ARCANE_CHECK_POINTER(true_var);
@@ -80,11 +81,12 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le type concret d'une variable constituant.
+ * \brief Returns the concrete type of a constituent variable.
  *
- * Converti \a var en le type \a TrueType. Si ce n'est pas possible, lève
- * une exception.
+ * Converts \a var to the \a TrueType. If this is not possible, it throws
+ * an exception.
  */
 template <typename TrueType> TrueType*
 MeshMaterialVariableBuildTraits<TrueType>::
@@ -101,8 +103,8 @@ getVariableReference(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IScalarMeshMaterialVariable<Cell,type>>; \
-  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IArrayMeshMaterialVariable<Cell,type>>
+  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IScalarMeshMaterialVariable<Cell, type>>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IArrayMeshMaterialVariable<Cell, type>>
 
 ARCANE_INSTANTIATE_MAT(Byte);
 ARCANE_INSTANTIATE_MAT(Int8);

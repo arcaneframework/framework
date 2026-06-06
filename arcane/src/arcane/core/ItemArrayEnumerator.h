@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemArrayEnumerator.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Énumérateur sur un tableau d'entités du maillage.                         */
+/* Enumerator over an array of mesh entities.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMARRAYENUMERATOR_H
 #define ARCANE_CORE_ITEMARRAYENUMERATOR_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Énumérateur sur un tableau d'entités du maillage.
+ * \brief Enumerator over an array of mesh entities.
  */
 class ARCANE_CORE_EXPORT ItemArrayEnumerator
 {
@@ -84,8 +85,9 @@ class ARCANE_CORE_EXPORT ItemArrayEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Énumérateur sur un tableau d'entités du maillage de genre \a ItemType.
+ * \brief Enumerator over an array of mesh entities of type \a ItemType.
  */
 template <typename ItemType>
 class ItemArrayEnumeratorT
@@ -115,4 +117,4 @@ class ItemArrayEnumeratorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

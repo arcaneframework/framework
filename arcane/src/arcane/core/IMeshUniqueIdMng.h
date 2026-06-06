@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshUniqueIdMng.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire de numérotation des uniqueId() d'un maillage.   */
+/* Interface of the uniqueId() numbering manager of a mesh.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMESHUNIQUEIDMNG_H
 #define ARCANE_IMESHUNIQUEIDMNG_H
@@ -24,74 +24,74 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * Interface du gestionnaire de numérotation des uniqueId() des entités
- * d'un maillage.
+ * Interface of the uniqueId() numbering manager for mesh entities.
  *
- * Ce gestionnaire permet de gérer le calcul des uniqueId() des entités
- * du maillages qui sont implicitement créées comme les faces ou les arêtes.
+ * This manager allows managing the calculation of uniqueIds() for entities
+ * of the mesh that are implicitly created as faces or edges.
  */
 class ARCANE_CORE_EXPORT IMeshUniqueIdMng
 {
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IMeshUniqueIdMng() = default;
 
  public:
 
   /*!
-   * \brief Positionne la version de la numérotation des faces.
+   * \brief Sets the face numbering version.
    *
-   * Les valeurs valides sont 0, 1, 2 et 3. La valeur par défaut est 1.
-   * Si la version vaut 0 alors il n'y a pas de renumérotation. En parallèle,
-   * il faut alors que les uniqueId() des faces soient cohérents entre
-   * les sous-domaines.
+   * Valid values are 0, 1, 2, and 3. The default value is 1.
+   * If the version is 0, there is no renumbering. In parallel,
+   * the uniqueIds() of the faces must be consistent between
+   * subdomains.
    */
   virtual void setFaceBuilderVersion(Integer n) = 0;
 
-  //! Version de la numérotation des faces.
+  //! Face numbering version.
   virtual Integer faceBuilderVersion() const = 0;
 
   /*!
-   * \brief Positionne la version de la numérotation des arêtes.
+   * \brief Sets the edge numbering version.
    *
-   * Les valeurs valides sont 0, 1 et 2. La valeur 1 fonctionne quel que
-   * soit le nombre de mailles mais il faut que le maillage soit lu par
-   * un seul processeur. La valeur 2 ne fonctionne que si le maximum des
-   * uniqueId() des noeuds ne dépasse pas 2^31.
+   * Valid values are 0, 1, and 2. Value 1 works regardless of
+   * the number of meshes, but the mesh must be read by
+   * a single processor. Value 2 only works if the maximum of the
+   * node uniqueIds() does not exceed 2^31.
    *
-   * Si la version vaut 0 alors il n'y a pas de renumérotation. En parallèle,
-   * il faut alors que les uniqueId() des faces soient cohérents entre
-   * les sous-domaines.
+   * If the version is 0, there is no renumbering. In parallel,
+   * the uniqueIds() of the faces must be consistent between
+   * subdomains.
    */
   virtual void setEdgeBuilderVersion(Integer n) = 0;
 
-  //! Version de la numérotation des arêtes
+  //! Edge numbering version.
   virtual Integer edgeBuilderVersion() const = 0;
 
   /*!
-   * \brief Indique si on détermine les uniqueId() des arêtes et des faces en
-   * fonction des uniqueId() des noeuds qui les constituent.
+   * \brief Indicates whether the uniqueIds() of edges and faces
+   * are determined based on the uniqueIds() of the nodes they consist of.
    *
-   * Cette méthode doit être appelée avant de positionner la dimension
-   * du maillage (IPrimaryMesh::setDimension()).
+   * This method must be called before setting the mesh dimension
+   * (IPrimaryMesh::setDimension()).
    *
-   * Si actif, lors de la création à la volée d'une arête ou d'une face
-   * on utilise MeshUtils::generateHashUniqueId() pour générer le uniqueId()
-   * de l'entité. Cela permet en parallèle de créer automatiquement
-   * les arêtes ou les faces.
+   * If active, when an edge or face is created on the fly,
+   * MeshUtils::generateHashUniqueId() is used to generate the
+   * uniqueId() of the entity. This allows automatically creating
+   * edges or faces in parallel.
    *
-   * \warning Si ce mécanisme est utilisé, il ne faut pas le mélanger
-   * avec la création manuelle des arêtes ou des faces (via IMeshModifier)
-   * ou alors il faut utiliser MeshUtils::generateHashUniqueId() pour générer
-   * le même identifiant que celui créé à la volée.
+   * \warning If this mechanism is used, it should not be mixed
+   * with the manual creation of edges or faces (via IMeshModifier)
+   * or you must use MeshUtils::generateHashUniqueId() to generate
+   * the same identifier as the one created on the fly.
    */
   virtual void setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v) = 0;
 
-  //! Indique le mécanisme utilisé pour numéroter les arêtes ou les faces
+  //! Indicates the mechanism used to number edges or faces
   virtual bool isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId() const = 0;
 };
 

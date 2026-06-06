@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IUnitTest.h                                                 (C) 2000-2024 */
 /*                                                                           */
-/* Interface d'un service de test unitaire.                                  */
+/* Interface of a unit test service.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IUNITTEST_H
@@ -26,9 +26,10 @@ class XmlNode;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un service de test unitaire.
+ * \brief Interface of a unit test service.
  */
 class IUnitTest
 {
@@ -38,25 +39,26 @@ class IUnitTest
 
  public:
 
-  //! Méthode appelée après lecture du jeu de données mais avant de lire le maillage
+  //! Method called after reading the dataset but before reading the mesh
   virtual void buildInitializeTest() {}
 
-  //! Méthode appelée après lecture du jeu de données pour initialiser le test
-  virtual void initializeTest() =0;
+  //! Method called after reading the dataset to initialize the test
+  virtual void initializeTest() = 0;
 
-  //! Méthode appelée pour exécuter le test
-  virtual void executeTest() =0;
+  //! Method called to execute the test
+  virtual void executeTest() = 0;
 
-  //! Méthode appelée pour libérer les ressources en fin d'exécution
-  virtual void finalizeTest() =0;
+  //! Method called to release resources at the end of execution
+  virtual void finalizeTest() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un service de test unitaire fournissant
- * un rapport de test sous forme d'un noeud XML.
+ * \brief Interface of a unit test service providing
+ * a test report in the form of an XML node.
  */
 class IXmlUnitTest
 {
@@ -67,15 +69,15 @@ class IXmlUnitTest
  public:
 
   virtual void buildInitializeTest() {}
-  virtual void initializeTest() =0;
+  virtual void initializeTest() = 0;
   /*!
-   * \brief Exécute le test et remplit le noeud XML fournit en paramètre.
+   * \brief Executes the test and fills the provided XML node parameter.
    *
-   * Retourne false pour que le code s'arrête en erreur, true sinon
-   * (utile pour avoir une erreur dans CMake test...).
+   * Returns false for the code to stop in error, true otherwise
+   * (useful for having an error in CMake tests...).
    */
   virtual bool executeTest(XmlNode& report) = 0;
-  virtual void finalizeTest() =0;
+  virtual void finalizeTest() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -86,4 +88,4 @@ class IXmlUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

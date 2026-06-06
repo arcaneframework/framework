@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemFamilySerializer.h                                     (C) 2011-2024 */
 /*                                                                           */
-/* Gère la sérialisation/désérialisation des entités d'une famille.          */
+/* Manages the serialization/deserialization of entities in a family.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILYSERIALIZER_H
 #define ARCANE_CORE_IITEMFAMILYSERIALIZER_H
@@ -27,8 +27,9 @@ class IItemFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère la sérialisation/désérialisation des entités d'une famille.
+ * \brief Manages the serialization/deserialization of entities in a family.
  */
 class ARCANE_CORE_EXPORT IItemFamilySerializer
 {
@@ -39,38 +40,38 @@ class ARCANE_CORE_EXPORT IItemFamilySerializer
  public:
 
   /*!
-   * \brief Sérialise dans \a buf les entités de la famille \a family().
+   * \brief Serializes the entities of the family \a family() into \a buf.
    *
-   * En mode 'Put' ou 'Reserve', \a items contient les numéros locaux des mailles.
-   * En mode 'Get', appelle \a deserializeItems() et \a items est inutilisé.
+   * In 'Put' or 'Reserve' mode, \a items contains the local mesh numbers.
+   * In 'Get' mode, it calls \a deserializeItems() and \a items is unused.
    */
   virtual void serializeItems(ISerializer* buf, Int32ConstArrayView items) = 0;
 
   /*!
-   * \brief Désérialise depuis \a buf les entités de la famille \a family().
+   * \brief Deserializes the entities of the family \a family() from \a buf.
    *
-   * Si \a items_lid n'est pas nul, contient en retour les numéros locaux
-   * des mailles désérialisées.
+   * If \a items_lid is not null, it contains the local numbers
+   * of the deserialized meshes in return.
    */
   virtual void deserializeItems(ISerializer* buf, Int32Array* items_lid) = 0;
 
   /*!
-   * \brief Sérialise dans \a buf les relations des entités de la famille \a family().
+   * \brief Serializes the relations of the entities of the family \a family() into \a buf.
    *
-   * En mode 'Put' ou 'Reserve', \a items contient les numéros locaux des mailles.
-   * En mode 'Get', appelle \a deserializeItemRelations() et \a items est inutilisé.
+   * In 'Put' or 'Reserve' mode, \a items contains the local mesh numbers.
+   * In 'Get' mode, it calls \a deserializeItemRelations() and \a items is unused.
    */
   virtual void serializeItemRelations(ISerializer* buf, Int32ConstArrayView items) = 0;
 
   /*!
-   * \brief Désérialise les relations depuis \a buf les entités de la famille \a family().
+   * \brief Deserializes the relations of the entities of the family \a family() from \a buf.
    *
-   * Si \a items_lid n'est pas nul, contient en retour les numéros locaux
-   * des mailles dont les relations ont été désérialisées.
+   * If \a items_lid is not null, it contains the local numbers
+   * of the meshes whose relations have been deserialized in return.
    */
   virtual void deserializeItemRelations(ISerializer* buf, Int32Array* items_lid) = 0;
 
-  //! Famille associée
+  //! Associated family
   virtual IItemFamily* family() const = 0;
 };
 
@@ -83,4 +84,3 @@ class ARCANE_CORE_EXPORT IItemFamilySerializer
 /*---------------------------------------------------------------------------*/
 
 #endif
-

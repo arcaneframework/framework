@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemGroupImpl.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un groupe d'entités du maillage.                         */
+/* Implementation of a mesh entity group.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMGROUPIMPL_H
 #define ARCANE_ITEMGROUPIMPL_H
@@ -28,7 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Macro pour détecter les modifications de conception de ItemGroupImpl
+// Macro to detect design changes in ItemGroupImpl
 #define ITEMGROUP_USE_OBSERVERS
 
 /*---------------------------------------------------------------------------*/
@@ -46,27 +46,28 @@ class ItemGroupImplInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'un groupe d'entités de maillage.
+ * \brief Brief: Implementation of a mesh entity group.
 
- Un groupe est un ensemble d'entité du maillage (noeuds, faces, mailles,...)
- de même genre.
+ A group is a set of mesh entities (nodes, faces, cells, etc.)
+ of the same type.
 
- Une instance de cette classe ne doit pas s'utiliser directement, mais
- par l'intermédiaire d'une instance de ItemGroup.
+ An instance of this class should not be used directly, but
+ through an instance of ItemGroup.
 
- Une entité élément ne peut être présente qu'une seule fois.
+ An element entity can only be present once.
 
- Le développeur ne doit pas conserver directement des instances de cette
- class mais passer par un ItemGroup. Certains groupes étant déterminés
- dynamiquement suivant le contenu d'un autre groupe (par exemple, les groupes
- d'entités propres aux sous-domaines sont calculés à partir du groupe de
- toutes les entités du sous-domaine), ceci garantit que les mises à jour
- des groupes se font correctement.
+ The developer should not directly keep instances of this
+ class but go through an ItemGroup. Since some groups are determined
+ dynamically based on the content of another group (for example, the groups
+ of entities specific to subdomains are calculated from the group of
+ all entities of the subdomain), this ensures that group updates
+ are performed correctly.
 
- Cette instance est géré par un compteur de référence et est détruite
- automatiquement lorsqu'il arrive à zéro.
+ This instance is managed by a reference counter and is destroyed
+ automatically when it reaches zero.
  */
 class ARCANE_CORE_EXPORT ItemGroupImpl
 : public SharedReference
@@ -79,21 +80,21 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
  public:
 
-  //! Construit un groupe nul
+  //! Constructs a null group.
   ItemGroupImpl();
 
-  /*! \brief Construit un groupe.
-   * Construit un groupe vide de nom \a name, associé à la famille \a family.
+  /*! \brief Brief: Constructs a group.
+   * Constructs an empty group named \a name, associated with the family \a family.
    */
-  ItemGroupImpl(IItemFamily* family,const String& name);
+  ItemGroupImpl(IItemFamily* family, const String& name);
 
-  /*! \brief Construit un groupe fils d'un autre groupe.
-   * Construit un groupe de nom \a name fils du groupe \a parent. Le genre de ce
-   * groupe est le même que celui de la famille à laquelle il appartient.
+  /*! \brief Brief: Constructs a child group of another group.
+   * Constructs a group named \a name which is a child of group \a parent. The type of this
+   * group is the same as that of the family it belongs to.
    */
-  ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name);
+  ItemGroupImpl(IItemFamily* family, ItemGroupImpl* parent, const String& name);
 
-  virtual ~ItemGroupImpl(); //!< Libère les ressources
+  virtual ~ItemGroupImpl(); //!< Releases resources.
 
  private:
 
@@ -109,28 +110,28 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
  public:
 
-  //! Nom du groupe
+  //! Group name.
   const String& name() const;
 
-  //! Nom complet du groupe (avec maillage + famille)
+  //! Full group name (with mesh + family).
   const String& fullName() const;
 
-  //! Nombre de références sur le groupe.
+  //! Number of references on the group.
   virtual Integer nbRef() const { return refCount(); }
 
-  //! Groupe parent (0 si aucun)
+  //! Parent group (0 if none).
   ItemGroupImpl* parent() const;
 
-  //! Retourne \a true si le groupe est nul.
+  //! Returns \a true if the group is null.
   bool null() const;
 
-  //! Retourne si le groupe contient uniquement des éléments propres au sous-domaine
+  //! Returns whether the group contains only elements specific to the subdomain.
   bool isOwn() const;
 
-  //! Positionne la propriété de groupe local ou non.
+  //! Sets whether the group property is local or not.
   void setOwn(bool v);
 
-  //! Groupe des entité propres des entités de ce groupe
+  //! Group of entities owned by the entities of this group.
   ItemGroupImpl* ownGroup();
 
   //! Items in the group not owned by the subdomain
@@ -140,356 +141,357 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   // Implemented for faces only
   ItemGroupImpl* interfaceGroup();
 
-  //! Groupe des noeuds des éléments de ce groupe
+  //! Group of nodes of the elements of this group.
   ItemGroupImpl* nodeGroup();
 
-  //! Groupe des arêtes des éléments de ce groupe
+  //! Group of edges of the elements of this group.
   ItemGroupImpl* edgeGroup();
 
-  //! Groupe des faces des éléments de ce groupe
+  //! Group of faces of the elements of this group.
   ItemGroupImpl* faceGroup();
 
-  //! Groupe des mailles des éléments de ce groupe
+  //! Group of cells of the elements of this group.
   ItemGroupImpl* cellGroup();
 
-  //! Crée un sous-groupe calculé
-  /*! Le gestion mémoire du functor est alors délégué au groupe */
+  //! Creates a calculated subgroup
+  /*! The memory management of the functor is then delegated to the group */
   ItemGroupImpl* createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFunctor* functor);
 
-  //! Accède à un sous-groupe calculé
-  /*! Le gestion mémoire du functor est alors délégué au groupe */
+  //! Accesses a calculated subgroup
+  /*! The memory management of the functor is then delegated to the group */
   ItemGroupImpl* findSubGroup(const String& suffix);
 
   /*!
-   *  \brief Groupe des faces internes des éléments de ce groupe
+   *  \brief Brief: Group of internal faces of the elements of this group.
    *
-   * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
-   * Une face est interne si elle connectée à deux mailles de ce groupe.
+   * This group only exists for a cell group (itemKind()==IK_Cell).
+   * A face is internal if it is connected to two cells of this group.
    */
   ItemGroupImpl* innerFaceGroup();
 
   /*!
-   *  \brief Groupe des faces externes des éléments de ce groupe
+   *  \brief Brief: Group of external faces of the elements of this group.
    *
-   * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
-   * Une face est externe si elle n'est connectée qu'à une maille de ce groupe.
+   * This group only exists for a cell group (itemKind()==IK_Cell).
+   * A face is external if it is connected to only one cell of this group.
    */
   ItemGroupImpl* outerFaceGroup();
 
   //! AMR
   /*!
-   *  \brief Groupe des mailles actives de ce groupe
+   *  \brief Brief: Group of active cells of this group.
    *
-   * Une maille active est une maille feuille dans l'arbre AMR.
+   * An active cell is a leaf cell in the AMR tree.
    */
   ItemGroupImpl* activeCellGroup();
 
   /*!
-   *  \brief Groupe des mailles propres actives de ce groupe
+   *  \brief Brief: Group of own active cells of this group.
    */
   ItemGroupImpl* ownActiveCellGroup();
 
   /*!
-   *  \brief Groupe des mailles actives de ce groupe
+   *  \brief Brief: Group of active cells of this group.
    *
-   * Une maille active est une maille feuille dans l'arbre AMR.
+   * An active cell is a leaf cell in the AMR tree.
    */
   ItemGroupImpl* levelCellGroup(const Integer& level);
 
   /*!
-   *  \brief Groupe des mailles propres actives de ce groupe
+   *  \brief Brief: Group of own active cells of this group.
    */
   ItemGroupImpl* ownLevelCellGroup(const Integer& level);
 
   /*!
-   *  \brief Groupe des faces actives propres au domaine
+   *  \brief Brief: Group of domain-specific active faces.
    *
-   * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
-   * Une face est interne active si elle connectée à deux mailles actives de ce groupe.
+   * This group only exists for a cell group (itemKind()==IK_Cell).
+   * An active face is internal if it is connected to two active
+   * cells of this group.
    */
   ItemGroupImpl* activeFaceGroup();
 
   /*!
-   *  \brief Groupe des faces externes actives des éléments de ce groupe
+   *  \brief Brief: Group of active external faces of the elements of this group.
    *
-   * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
-   * Une face est externe active si elle n'est connectée qu'à une maille de ce groupe et est active.
+   * This group only exists for a cell group (itemKind()==IK_Cell).
+   * An active face is external if it is connected to only one cell
+   * of this group and is active.
    */
   ItemGroupImpl* ownActiveFaceGroup();
 
   /*!
-   *  \brief Groupe des faces internes actives des éléments de ce groupe
+   *  \brief Brief: Group of active internal faces of the elements of this group.
    *
-   * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
-   * Une face est interne active si elle connectée à deux mailles actives de ce groupe.
+   * This group only exists for a cell group (itemKind()==IK_Cell).
+   * An active face is internal if it is connected to two active cells of this group.
    */
   ItemGroupImpl* innerActiveFaceGroup();
 
   /*!
-   * \brief Groupe des faces externes actives des éléments de ce groupe
+   * \brief Brief: Group of active external faces of the elements of this group.
    *
-   * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
-   * Une face est externe active si elle n'est connectée qu'à une maille de ce groupe et est active.
+   * This group only exists for a cell group (itemKind()==IK_Cell).
+   * An active face is external if it is connected to only one cell of this
+   * group and is active.
    */
   ItemGroupImpl* outerActiveFaceGroup();
 
   //! AMR OFF
 
-  //! Vrai si le groupe est local au sous-domaine
+  //! True if the group is local to the subdomain.
   bool isLocalToSubDomain() const;
 
-  //! Positionne le booléen indiquant si le groupe est local au sous-domaine.
+  //! Sets the boolean indicating if the group is local to the subdomain.
   void setLocalToSubDomain(bool v);
 
-  //! Maillage auquel appartient le groupe (0 pour le groupe nul).
+  //! Mesh to which the group belongs (0 for the null group).
   IMesh* mesh() const;
 
-  //! Genre du groupe. Il s'agit du genre de ses éléments.
+  //! Type of the group. It is the type of its elements.
   eItemKind itemKind() const;
 
-  //! Familly à laquelle appartient le groupe (ou 0 si aucune)
+  //! Family to which the group belongs (or 0 if none)
   IItemFamily* itemFamily() const;
 
-  //! Nombre d'entités du groupe
+  //! Number of entities in the group
   Integer size() const;
 
-  //! Vrai si le groupe est vide
+  //! True if the group is empty
   bool empty() const;
 
-  //! Supprime les entités du groupe
+  //! Removes the entities from the group
   void clear();
 
-  //! Groupe parent
+  //! Parent group
   ItemGroup parentGroup();
 
   /*!
-   * \brief Invalide le groupe
+   * \brief Invalidates the group
    *
-   * Opération très violente qui induit une invalidation de toutes les
-   * dépendances autant des observers que des sous-groupes construits.
+   * A very aggressive operation that causes the invalidation of all dependencies,
+   * both of observers and constructed sub-groups.
    */
   void invalidate(bool force_recompute);
 
   /*!
-   * \brief  Ajoute les entités de numéros locaux \a items_local_id.
+   * \brief Adds entities with local IDs \a items_local_id.
    * \sa ItemGroup::addItems()
    */
-  void addItems(Int32ConstArrayView items_local_id,bool check_if_present);
+  void addItems(Int32ConstArrayView items_local_id, bool check_if_present);
 
-  //! Positionne les entités du groupe à \a items_local_id
+  //! Positions the group entities at \a items_local_id
   void setItems(Int32ConstArrayView items_local_id);
 
-  //! Positionne les entités du groupe à \a items_local_id en les triant éventuellement.
-  void setItems(Int32ConstArrayView items_local_id,bool do_sort);
+  //! Positions the group entities at \a items_local_id, optionally sorting them.
+  void setItems(Int32ConstArrayView items_local_id, bool do_sort);
 
-  //! Supprime les entités \a items_local_id du groupe
-  void removeItems(Int32ConstArrayView items_local_id,bool check_if_present);
- 
-  //! Supprime et ajoute les entités \a removed_local_id et \a added_local_id du groupe
+  //! Removes the entities \a items_local_id from the group
+  void removeItems(Int32ConstArrayView items_local_id, bool check_if_present);
+
+  //! Removes and adds the entities \a removed_local_id and \a added_local_id from the group
   void removeAddItems(Int32ConstArrayView removed_local_id,
                       Int32ConstArrayView added_local_id,
                       bool check_if_present);
 
   /*!
-   * \brief Supprime du groupe les entités dont le flag isSuppressed() est vrai
+   * \brief Removes entities from the group whose isSuppressed() flag is true
    */
   void removeSuppressedItems();
 
-  //! Vérifie que le groupe est valide.
+  //! Checks that the group is valid.
   void checkValid();
 
-  /*! \brief Réactualise le groupe si nécessaire.
+  /*! \brief Updates the group if necessary.
    *
-   Un groupe doit être réactualisée lorsqu'il est devenu invalide, par exemple
-   suite à un appel à invalidate().
-   \retval true si le groupe a été réactualisé,
-   \retval false sinon.
+   A group must be updated when it becomes invalid, for example
+   after calling invalidate().
+   \retval true if the group was updated,
+   \retval false otherwise.
    */
   bool checkNeedUpdate();
 
-  //! Liste des numéros locaux des entités de ce groupe.
+  //! List of local IDs of the entities in this group.
   Int32ConstArrayView itemsLocalId() const;
 
   /*!
-   * \brief Débute une transaction.
+   * \brief Starts a transaction.
    *
-   * Une transaction permet d'accèder en écriture à des groupes protégés.
-   * L'utilisation de ce mécanisme indique a Arcane que l'utilisateur 
-   * a conscience qu'il modifie 'à ses risques' un groupe.
-   */ 
+   * A transaction allows write access to protected groups.
+   * Using this mechanism indicates to Arcane that the user 
+   * is aware that they are modifying a group 'at their own risk'.
+   */
   void beginTransaction();
 
-  //! Termine une transaction
+  //! Ends a transaction
   void endTransaction();
 
   ARCANE_DEPRECATED_REASON("Y2022: Use itemInfoListView() instead")
-  //! Liste des entités sur lesquelles s'appuie le groupe
+  //! List of entities that the group relies on
   ItemInternalList itemsInternal() const;
 
-  //! Liste des entités sur lesquelles s'appuie le groupe
+  //! List of entities that the group relies on
   ItemInfoListView itemInfoListView() const;
 
   /*!
    * \internal
-   * \brief Indique à ce groupe qu'il s'agit du groupe de toutes les
-   * entités de la famille.
+   * \brief Indicates to this group that it is the group of all entities
+   * in the family.
    */
   void setIsAllItems();
 
-  //! Indique si le groupe est celui de toutes les entités
+  //! Indicates if the group is the group of all entities
   bool isAllItems() const;
 
-  //! Change les indices des entités du groupe
+  //! Changes the indices of the group entities
   void changeIds(Int32ConstArrayView old_to_new_ids);
 
-  //! Applique l'opération \a operation sur les entités du groupe.
+  //! Applies the operation \a operation to the group entities.
   void applyOperation(IItemOperationByBasicType* operation);
 
-  //! Indique si le groupe a structurellement besoin d'une synchro parallèle
+  //! Indicates if the group structurally needs parallel synchronization
   bool needSynchronization() const;
 
-  //! Retourne le temps du groupe. Ce temps est incrémenté après chaque modification.
+  //! Returns the group's timestamp. This time is incremented after every modification.
   Int64 timestamp() const;
 
   /*!
-   * \brief Attache un observer.
+   * \brief Attaches an observer.
    *
-   * \param ref référence de l'émetteur de l'observer
+   * \param ref reference of the observer emitter
    * \param obs Observer
    */
-  void attachObserver(const void * ref, IItemGroupObserver * obs);
+  void attachObserver(const void* ref, IItemGroupObserver* obs);
 
   /*!
-   * \brief Détache un observer.
+   * \brief Detaches an observer.
    *
-   * \param ref référence de l'émetteur de l'observer
+   * \param ref reference of the observer emitter
    */
-  void detachObserver(const void * ref);
+  void detachObserver(const void* ref);
 
   /*!
-   * \brief Indique si le contenu de ce groupe est observé.
+   * \brief Indicates if the content of this group is observed.
    *
-   * Ceci a pour effet d'embrayer des mécanismes de modification incrémentaux.
+   * This has the effect of enabling incremental modification mechanisms.
    * 
-   *  Un groupe peut n'être observé que pour sa structure 
-   *  par des objets recalculés non incrémentalement.
+   *  A group may only be observed for its structure 
+   *  by non-incrementally recalculated objects.
    */
   bool hasInfoObserver() const;
 
-  //! Définit une fonction de calcul de groupe
+  //! Defines a group calculation function
   void setComputeFunctor(IFunctor* functor);
 
-  //! Indique si le groupe est calculé
+  //! Indicates if the group is calculated
   bool hasComputeFunctor() const;
 
   /*!
-   * \brief Détruit le groupe. Après cet appel, le groupe devient un groupe nul.
+   * \brief Destroys the group. After this call, the group becomes a null group.
    *
-   * \warning Cette méthode ne doit être appelé qu'avec une extrème précaution
-   * même dans le code bas niveau de Arcane. S'il reste des références sur ce groupe
-   * le comportement est indéfini.
+   * \warning This method should only be called with extreme caution
+   * even in Arcane's low-level code. If references remain on this group
+   * the behavior is undefined.
    */
   void destroy();
 
-  //! Table des local ids vers une position pour toutes les entités du groupe
+  //! Table of local IDs to a position for all entities in the group
   SharedPtrT<GroupIndexTable> localIdToIndex();
- 
-  //! Synchronizer du groupe
+
+  //! Group synchronizer
   IVariableSynchronizer* synchronizer();
-  
-  //! Indique si ce groupe possède un synchroniser
+
+  //! Indicates if this group has a synchronizer
   bool hasSynchronizer();
 
   /*!
-   * \brief Vérifie et retourne si le groupe est trié par uniqueId() croissants.
+   * \brief Checks and returns whether the group is sorted by increasing uniqueId().
    */
   bool checkIsSorted() const;
 
-  //! \deprecated Utiliser isContiguousLocalIds() à la place
+  //! \deprecated Use isContiguousLocalIds() instead
   bool isContigousLocalIds() const { return isContiguousLocalIds(); }
 
-  //! Indique si les entités du groupe ont des localIds() contigüs.
+  //! Indicates if the group entities have contiguous localIds().
   bool isContiguousLocalIds() const;
 
-  //! \deprecated Utiliser checkLocalIdsAreContiguous() à la place
+  //! \deprecated Use checkLocalIdsAreContiguous() instead
   void checkLocalIdsAreContigous() const { return checkLocalIdsAreContiguous(); }
 
   /*!
-   * \brief Vérifie si les entités du groupe ont des localIds() contigüs.
+   * \brief Checks if the group entities have contiguous localIds().
    *
-   * Si c'est le cas, alors \a isContiguousLocalIds() retournera \a vrai.
+   * If so, \a isContiguousLocalIds() will return \a true.
    */
   void checkLocalIdsAreContiguous() const;
 
   /*!
-   * \brief Limite au maximum la mémoire utilisée par le groupe.
+   * \brief Limits the maximum memory used by the group.
    *
-   * Si le groupe est un groupe calculé, il est invalidé et toute sa mémoire
-   * allouée est libérée.
+   * If the group is a calculated group, it is invalidated and all its
+   * allocated memory is released.
    *
-   * Si le groupe est un groupe créé par l'utilisateur (donc persistant),
-   * s'assure que la mémoire consommée est minimale. Normalement %Arcane alloue
-   * un peu plus d'éléments que nécessaire pour éviter de faire des réallocations
-   * trop souvent.
+   * If the group is a user-created group (i.e., persistent),
+   * it ensures that the consumed memory is minimal. Normally, %Arcane allocates
+   * a few more elements than necessary to avoid frequent reallocations.
    */
   void shrinkMemory();
 
-  //! Nombre d'éléments alloués
+  //! Number of allocated elements
   Int64 capacity() const;
 
-  //! API interne à Arcane
+  //! Internal Arcane API
   ItemGroupImplInternal* _internalApi() const;
 
  public:
 
   /*!
    * \internal
-   * \brief Liste des numéros locaux des entités de ce groupe.
-   * \warning a utiliser avec moult précaution, en général
-   * uniquement par le functor de recalcul.
+   * \brief List of local IDs of the entities in this group.
+   * \warning Use with extreme caution, generally
+   * only by the recalculation functor.
    */
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
 
-
  public:
 
-  //! \internal
+  //! Internal
   static void _buildSharedNull();
-  //! \internal
+  //! Internal
   static void _destroySharedNull();
 
  private:
 
-  //! Méthode de calcul des sous-groupes par type
+  //! Method for calculating sub-groups by type
   void _computeChildrenByType();
-  //! Invalidation des sous-groupes
-  void _executeExtend(const Int32ConstArrayView * info);
-  //! Invalidation des sous-groupes
-  void _executeReduce(const Int32ConstArrayView * info);
-  //! Invalidation des sous-groupes
-  void _executeCompact(const Int32ConstArrayView * info);
-  //! Invalidation des sous-groupes
-  void _executeReorder(const Int32ConstArrayView * info);
-  //! Invalidation des sous-groupes
+  //! Sub-group invalidation
+  void _executeExtend(const Int32ConstArrayView* info);
+  //! Sub-group invalidation
+  void _executeReduce(const Int32ConstArrayView* info);
+  //! Sub-group invalidation
+  void _executeCompact(const Int32ConstArrayView* info);
+  //! Sub-group invalidation
+  void _executeReorder(const Int32ConstArrayView* info);
+  //! Sub-group invalidation
   void _executeInvalidate();
-  //! Mise à jour forcée du flag d'information de restructuration
+  //! Forced update of the restructuring information flag
   void _updateNeedInfoFlag(const bool flag);
-  //! Invalidate forcée récursive
-  /*! Ne notifie pas les observers. Devra être suivi d'un invalidate() normal */
+  //! Recursive forced invalidation
+  /*! Does not notify observers. Must be followed by a normal invalidate() */
   void _forceInvalidate(const bool self_invalidate);
 
   void _checkUpdateSimdPadding();
-  //! Notification de SharedReference indiquant qu'il faut détruire l'instance.
+  //! Notification from SharedReference indicating that the instance must be destroyed.
   virtual void deleteMe();
 
  private:
 
- ItemGroupInternal* m_p = nullptr; //!< Implémentation du groupe
+  ItemGroupInternal* m_p = nullptr; //!< Group implementation
 
  private:
 
-  //! Supprime les entités \a items_local_id du groupe
+  //! Removes the entities \a items_local_id from the group
   void _removeItems(SmallSpan<const Int32> items_local_id);
   bool _checkNeedUpdateNoPadding();
   bool _checkNeedUpdateWithPadding();

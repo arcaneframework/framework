@@ -14,25 +14,23 @@ ARCANE_BEGIN_NAMESPACE
 
   \class IMesh
   
-  Interface d'un maillage.
+  Interface of a mesh.
 
-  Il existe deux sortes de maillages qui implémentent cette interface
-  - les maillages dits primaires, qui implémentent aussi l'interface IPrimaryMesh
-  et qui peuvent être créés dynamiquements ou par lecture de fichier
-  - les maillages secondaires qui dépendent d'un maillage primaire
-  et qui représentent un sous-ensemble du maillage primaire.
+  There are two types of meshes that implement this interface:
+  - primary meshes, which also implement the IPrimaryMesh interface
+    and which can be created dynamically or by reading a file
+  - secondary meshes which depend on a primary mesh
+    and which represent a subset of the primary mesh.
 
-  Un maillage est composé d'un ensemble d'entités (Item), comme les
-  noeuds (Node), les arêtes (Edge), les faces (Face) ou les mailles (Cell).
-  Il est aussi possible d'y associer d'autres type d'entités comme les particules (Particle)
+  A mesh is composed of a set of entities (Item), such as nodes (Node), edges (Edge), faces (Face), or cells (Cell).
+  It is also possible to associate other types of entities, such as particles (Particle).
 
-  Les entités du même genre sont gérées dans une famille (IItemFamily).
+  Entities of the same type are managed in a family (IItemFamily).
 
-  Un maillage possède une dimension, récupérable via dimension(), qui
-  peut être 1, 2 ou 3. La dimension est seulement utilisé pour indiquer
-  la dimension des éléments Cell, à savoir 1D, 2D ou 3D.
+  A mesh has a dimension, retrievable via dimension(), which can be 1, 2, or 3. The
+  dimension is only used to indicate the dimension of Cell elements, i.e., 1D, 2D, or 3D.
 
-  Pour créer un maillage, il faut se référer à l'interface IPrimaryMesh.
+  To create a mesh, you must refer to the IPrimaryMesh interface.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -43,16 +41,15 @@ ARCANE_BEGIN_NAMESPACE
 
   \class IPrimaryMesh
   
-  Interface d'un maillage primaire.
+  Interface of a primary mesh.
 
-  Les instances de maillage primaire sont créées soit lors de la lecture du
-  jeu de données, soit par programmation, par appel à l'une des méthodes
-  IMainFactory::createMesh(). Actuellement, il n'est pas possible
-  de supprimer un maillage primaire
+  Primary mesh instances are created either when reading the dataset, or by
+  programming, by calling one of the IMainFactory::createMesh() methods.
+  Currently, it is not possible to delete a primary mesh.
 
-  Par exemple, pour créer un maillage 2D vide, de nom \a "Mesh2":
+  For example, to create an empty 2D mesh named "Mesh2":
   \code
-  * // sd est le sous-domaine courant.
+  * // sd is the current subdomain.
   * ISubDomain* sd = ...;
   * IParallelMng* pm = sd->parallelMng();
   * IMainFactory* mf = sd->application()->mainFactory();
@@ -61,15 +58,14 @@ ARCANE_BEGIN_NAMESPACE
   * new_mesh->allocateCells(0,Int64ConstArrayView(),false);
   * new_mesh->endAllocate();
   \endcode
-  Le maillage créé existe sur l'ensemble des rangs du IParallelMng passé en argument.
-  Pour créér un maillage sur un seul processeur, on peut utiliser
+  The created mesh exists across all ranks of the IParallelMng passed as an
+  argument. To create a mesh on a single processor, you can use
   IParallelMng::sequentialParallelMng().
 
-  Il est aussi possible de lire directement un maillage à partir d'un fichier
-  en utilisant une implémentation de IMeshReader. Par exemple, pour lire
-  un fichier au format Vtk historique:
+  It is also possible to read a mesh directly from a file using an implementation
+  of IMeshReader. For example, to read a file in the historical Vtk format:
   \code
-  * // sd est le sous-domaine courant.
+  * // sd is the current subdomain.
   * ISubDomain* sd = ...;
   * IParallelMng* pm = sd->parallelMng();
   * IMainFactory* mf = sd->application()->mainFactory();
@@ -80,36 +76,34 @@ ARCANE_BEGIN_NAMESPACE
   * delete reader;
   \endcode
 
-  Il est possible par la suite de modifier le maillage via l'interface
-  IMeshModifier récupérable par modifier(). Une fois les modifications
-  effectuées, il faut impérativement appeler la méthode endUpdate().
+  It is possible to modify the mesh later via the IMeshModifier interface,
+  which can be retrieved by modifier(). Once modifications are made, you
+  must call the endUpdate() method.
   
-  Un maillage possède certaines propriétés, accessibles par properties().
-  Les propriétés suivantes sont valides:
-  - \b "sort", booléen, vrai par défaut. Cette propriété indique que
-  les entités doivent être triées après modification du maillage
-  pour qu'elles soient rangées par numéro unique croissant. Cela
-  n'est utile que pour permettre de garantir que les opérations
-  se font toujours dans le même ordre en parallèle quel que
-  soit le nombre de sous-domaines et que le maillage évolue.
-  - \b "compact", booléen, vrai par défaut. Cette propriété indique que
-  les entités doivent être compactées après modification du maillage.
-  Cela signifie qu'il n'y a pas de trou dans la numérotation et que
-  les indices locaux localId() des entités seront numérotés de 0
-  au nombre d'entités de ce type. Le compactage est une
-  opération coûteuse car elle nécessite de remettre à jour toutes les
-  variables pour supprimer les trous dans la numérotation.
-  - \b "dump", booléen, vrai par défaut. Cette propriété indique
-  que le maillage doit être sauvegardé lors d'une protection.
-  - \b "edges", booléen, faux par défaut. Cette propriété indique
-  qu'il faut créer les arêtes dans un maillage 3D. NOTE: cette propriété
-  n'est pas implémentée actuellement.
-  - \b "sort-subitemitem-group", booléen, faux par défaut. Cette propriété indique
-  s'il faut trier les groupes (créés dynamiquement) contenant les entités connectées
-  à une liste d'entités (par exemple allCells().nodes()). Le tri ne s'applique
-  que pour les prochains recalculs et donc si on veut que tous les groupes
-  de ce genre soient créés il faut positionner cette propriété lors de
-  la création du maillage.
+  A mesh has certain properties, accessible via properties().
+  The following properties are valid:
+  - \b "sort", boolean, true by default. This property indicates that
+  entities must be sorted after mesh modification so that they are
+  arranged by increasing unique number. This is only useful to ensure that
+  operations always happen in the same parallel order, regardless of the
+  number of subdomains, and that the mesh evolves.
+  - \b "compact", boolean, true by default. This property indicates that
+  entities must be compacted after mesh modification. This means there are
+  no gaps in the numbering and that the local indices localId() of the
+  entities will be numbered from 0 to the number of entities of this type.
+  Compacting is a costly operation because it requires updating all
+  variables to remove gaps in the numbering.
+  - \b "dump", boolean, true by default. This property indicates that the
+  mesh must be saved during a checkpoint.
+  - \b "edges", boolean, false by default. This property indicates that
+  edges must be created in a 3D mesh. NOTE: this property is not currently
+  implemented.
+  - \b "sort-subitemitem-group", boolean, false by default. This property
+  indicates whether groups (dynamically created) containing entities
+  connected to a list of entities (e.g., allCells().nodes()) should be
+  sorted. The sorting only applies to subsequent recalculations, and
+  therefore, if you want all groups of this type to be created, you must
+  set this property during mesh creation.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -118,26 +112,23 @@ ARCANE_BEGIN_NAMESPACE
 /*!
   \fn void IPrimaryMesh::exchangeItems();
   
-  Cette méthode est appelé lorsqu'on souhaite effectuer un équilibrage
-  de charge et redistribuer le maillage entre processeurs. La méthode
-  suppose que les variables IItemsFamily::itemsOwner() de chaque genre
-  d'entité du maillage (noeud, arête, face et maille) contienne le
-  numéro du nouveau sous-domaine propriétaire de chaque entité. Ces
-  variables doivent être synchronisées.
+  This method is called when load balancing and redistributing the mesh
+  between processors is desired. The method assumes that the
+  IItemsFamily::itemsOwner() variables for each type of mesh entity
+  (node, edge, face, and cell) contain the number of the new owning
+  subdomain for each entity. These variables must be synchronized.
 
-  L'instance se charge ensuite de donner aux autres processeurs les
-  mailles qui lui vont lui appartenir et de recevoir des autres ses nouvelles
-  mailles, puis de faire de même pour les noeuds, arêtes, faces et
-  particules. Les valeurs des variables et des groupes d'entités sont
-  sont aussi échangés.
+  The instance then takes care of giving the cells that belong to it to
+  other processors and receiving new cells from them, and then doing the
+  same for nodes, edges, faces, and particles. The values of the variables
+  and entity groups are also exchanged.
 
-  Après appel à cette méthode, il faut éventuellement appeler
-  les points d'entrées de changement de maillage
-  (ITimeLoopMng::execMeshChangedEntryPoints).
+  After calling this method, you may need to call the mesh change entry
+  points (ITimeLoopMng::execMeshChangedEntryPoints).
 
-  Pour appeler cette méthode, il faut que isDynamic() soit vrai.
+  To call this method, isDynamic() must be true.
 
-  L'appel à cette méthode provoque un appel implicite à endUpdate().
+  Calling this method triggers an implicit call to endUpdate().
   
 */
 
@@ -147,49 +138,46 @@ ARCANE_BEGIN_NAMESPACE
 /*!
   \fn void IPrimaryMesh::allocateCells(Integer nb_cell,Int64ConstArrayView cells_infos,bool one_alloc=true);
 
-  \brief Création d'un maillage quelconque.
+  \brief Creation of an arbitrary mesh.
    
-  Cette méthode est la plus générique des méthodes de création d'un maillage.
-  Elle est utilisé lorsqu'on connait uniquement les mailles et la liste
-  de leurs noeuds à partir de leur numéro global unique.
+  This method is the most generic of the mesh creation methods. It is used
+  when you only know the cells and the list of their nodes based on their
+  unique global number.
    
-  Cette opération alloue les structures pour le maillage contenant un nombre
-  de mailles égal à \a nb_cell, les mailles étant
-  décrites par le  tableau \a cells_infos. 
+  This operation allocates the structures for the mesh containing a number
+  of cells equal to \a nb_cell, the cells being described by the array
+  \a cells_infos.
 
-  Comme les numéros des noeuds sont les numéros uniques, leur valeur peut être
-  quelconque: il n'est pas nécessaire de commencer à zéro, ni que les numéros soient
-  consécutifs. L'implémentation se charge de déterminer le nombre de noeuds
-  du maillage.
+  Since the node numbers are unique numbers, their value can be arbitrary:
+  it is not necessary to start at zero, nor must the numbers be consecutive.
+  The implementation handles determining the number of nodes in the mesh.
 
-  Par exemple, si on a deux mailles, la première de type IT_Hexaedron8, portant
-  le numéro unique 23 et la deuxième de type IT_Tetraedron4 portant le
-  numéro unique 45, le tableau \a cells_infos contiendra 16 éléments,
-  répartis comme suit:
+  For example, if we have two cells, the first of type IT_Hexaedron8, with
+  unique number 23, and the second of type IT_Tetraedron4 with unique number
+  45, the array \a cells_infos will contain 16 elements, distributed as
+  follows:
   \code
   * cells_infos[0] = IT_Hexaedron8
   * cells_infos[1] = 23
-  * cells_infos[2...9] = Les 8 noeuds de la maille
+  * cells_infos[2...9] = The 8 nodes of the cell
   * cells_infos[10] = IT_Tetraedron4
   * cells_infos[11] = 45
-  * cells_infos[12...15] = Les 4 noeuds de la maille
+  * cells_infos[12...15] = The 4 nodes of the cell
   \endcode
 
-  Si \a nb_cell vaut zéro et que \a cells_infos n'est pas vide, le nombre
-  de mailles est déterminée dynamiquement. Le tableau \a cells_infos est
-  parcouru jusqu'à ce qu'on arrive à la fin du tableau ou qu'on rencontre
-  une maille de type IT_NullType.
+  If \a nb_cell is zero and \a cells_infos is not empty, the number of cells
+  is determined dynamically. The array \a cells_infos is iterated until the
+  end of the array is reached or a cell of type IT_NullType is encountered.
    
-  Si \a one_alloc est vrai, l'opération endAllocate() est appelée pour
-  indiquer qu'il n'y aura pas d'autres mailles ajoutées. Il est possible
-  d'allouer le maillage en plusieurs étapes en mettant \a one_alloc à faux
-  et d'appeler à la fin endAllocate().
+  If \a one_alloc is true, the endAllocate() operation is called to indicate
+  that no other cells will be added. It is possible to allocate the mesh in
+  several steps by setting \a one_alloc to false and calling endAllocate()
+  at the end.
 
-  \warning Lors de l'appel à cette fonction, le maillage actuel et tous les
-  groupes sont détruits. Cette méthode ne doit être utilisée que pour créer
-  le maillage initiale. Si on souhaite ajouter ou supprimer des mailles,
-  il faut utiliser les méthodes IMeshModifier::addCells() ou
-  IMeshModifier::removeCells().
+  \warning When calling this function, the current mesh and all groups are
+  destroyed. This method should only be used to create the initial mesh. If
+  you want to add or remove cells, you must use the
+  IMeshModifier::addCells() or IMeshModifier::removeCells() methods.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -197,17 +185,17 @@ ARCANE_BEGIN_NAMESPACE
 /*!
  * \fn void IPrimaryMesh::endUpdate()
  
-  Cette méthode est collective.
+  This method is collective.
  
-  Si la propriété "sort" est vrai, les entités sont triées par
-  uniqueId() croissant.
-  Si la propriété "compact" est vrai, les entités sont compactées
-  pour qu'il n'y ait pas de trou dans la numérotation locale.
+  If the "sort" property is true, the entities are sorted by increasing
+  uniqueId().
+  If the "compact" property is true, the entities are compacted so that
+  there are no gaps in the local numbering.
  
-  <strong>Le tri ou le compactage des entités modifie tous les
-  localId() des entités géométriques de ce maillage. </strong> Il ne faut
-  donc pas conserver d'entité via la classe Item (ou une classe dérivée) ou
-  leur localId() après un appel à cette méthode. 
+  <strong >Sorting or compacting the entities modifies all localId() of
+  the geometric entities of this mesh. </strong > Therefore, you must not
+  retain an entity via the Item class (or a derived class) or its localId()
+  after calling this method.
  */
 
 /*---------------------------------------------------------------------------*/

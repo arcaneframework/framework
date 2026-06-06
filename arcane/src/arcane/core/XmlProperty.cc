@@ -1,16 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* XmlProperty.cc                                              (C) 2000-2005 */
 /*                                                                           */
-/* Propriétés liée à un noeud XML.                                           */
+/* Properties linked to an XML node.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcanePrecomp.h"
 
@@ -19,14 +18,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-  
+
 XmlPropertyValue::
-XmlPropertyValue(const XmlNode& node,IPropertyType* type,
-		 IPropertyTypeInstance* type_instance)
+XmlPropertyValue(const XmlNode& node, IPropertyType* type,
+                 IPropertyTypeInstance* type_instance)
 : m_node(node)
 , m_type(type)
 , m_type_instance(type_instance)
@@ -122,8 +122,7 @@ setNode(const XmlNode& node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

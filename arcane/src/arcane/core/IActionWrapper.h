@@ -1,1 +1,1 @@
-#error "Do not include 'IActionWrapper.h'"
+﻿#error "Do not include 'IActionWrapper.h'"

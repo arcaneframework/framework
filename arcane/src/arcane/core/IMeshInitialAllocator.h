@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshInitialAllocator.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'allocation des entités du maillage.                           */
+/* Interface for allocating mesh entities.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHINITIALALLOCATOR_H
 #define ARCANE_CORE_IMESHINITIALALLOCATOR_H
@@ -26,8 +26,9 @@ class ItemAllocationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur pour les maillages non structurés.
+ * \brief Allocator for unstructured meshes.
  */
 class ARCANE_CORE_EXPORT IUnstructuredMeshInitialAllocator
 {
@@ -42,8 +43,9 @@ class ARCANE_CORE_EXPORT IUnstructuredMeshInitialAllocator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur pour les maillages cartésiens.
+ * \brief Allocator for Cartesian meshes.
  */
 class ARCANE_CORE_EXPORT ICartesianMeshInitialAllocator
 {
@@ -58,8 +60,9 @@ class ARCANE_CORE_EXPORT ICartesianMeshInitialAllocator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur pour les maillages polyédriques.
+ * \brief Allocator for polyhedral meshes.
  */
 class ARCANE_CORE_EXPORT IPolyhedralMeshInitialAllocator
 {
@@ -74,8 +77,9 @@ class ARCANE_CORE_EXPORT IPolyhedralMeshInitialAllocator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'allocation des entités du maillage.
+ * \brief Interface for allocating mesh entities.
  */
 class ARCANE_CORE_EXPORT IMeshInitialAllocator
 {
@@ -85,19 +89,19 @@ class ARCANE_CORE_EXPORT IMeshInitialAllocator
 
  public:
 
-  //! Allocateur pour les maillages non structurés
+  //! Allocator for unstructured meshes
   virtual IUnstructuredMeshInitialAllocator* unstructuredMeshAllocator()
   {
     return nullptr;
   }
 
-  //! Allocateur pour les maillages polyédriques
+  //! Allocator for polyhedral meshes
   virtual IPolyhedralMeshInitialAllocator* polyhedralMeshAllocator()
   {
     return nullptr;
   }
 
-  //! Allocateur pour les maillages cartésiens
+  //! Allocator for Cartesian meshes
   virtual ICartesianMeshInitialAllocator* cartesianMeshAllocator()
   {
     return nullptr;
@@ -112,5 +116,4 @@ class ARCANE_CORE_EXPORT IMeshInitialAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

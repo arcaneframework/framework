@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DomDeclaration.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations du DOM.                                                      */
+/* DOM Declarations.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DOMDECLARATION_H
 #define ARCANE_CORE_DOMDECLARATION_H
@@ -19,15 +19,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_BEGIN_NAMESPACE_DOM namespace dom {
-#define ARCANE_END_NAMESPACE_DOM   }
+#define ARCANE_BEGIN_NAMESPACE_DOM \
+  namespace dom \
+  {
+#define ARCANE_END_NAMESPACE_DOM }
 
-#define ARCANE_BEGIN_NAMESPACE_DOMUTILS namespace domutils {
-#define ARCANE_END_NAMESPACE_DOMUTILS   }
+#define ARCANE_BEGIN_NAMESPACE_DOMUTILS \
+  namespace domutils \
+  {
+#define ARCANE_END_NAMESPACE_DOMUTILS }
 
 /*
- * Ces deux macros ne sont plus utilisées par Arcane, mais on les laisse
- * pour compatibilité avec les applications qui pourraient les utiliser.
+ * These two macros are no longer used by Arcane, but we keep them
+ * for compatibility with applications that might use them.
  */
 #define ARCANE_HAVE_DOM2
 #define ARCANE_HAVE_DOM3
@@ -112,5 +116,4 @@ class XPathNamespace;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

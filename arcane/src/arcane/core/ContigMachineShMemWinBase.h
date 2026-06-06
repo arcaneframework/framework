@@ -7,13 +7,11 @@
 /*---------------------------------------------------------------------------*/
 /* ContigMachineShMemWinBase.h                                 (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire partagée entre les         */
-/* processus d'un même noeud.                                                */
+/* Class allowing the creation of a shared memory window between the         */
+/* processes of the same node.                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_CONTIGMACHINESHMEMWINBASE_H
 #define ARCANE_CORE_CONTIGMACHINESHMEMWINBASE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,9 +40,9 @@ namespace MessagePassing
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
- * sous-domaines d'un même noeud.
- * Les segments de cette fenêtre seront contigüs en mémoire.
+ * \brief Class allowing the creation of a shared memory window between the
+ * subdomains of the same node.
+ * The segments of this window will be contiguous in memory.
  */
 class ARCANE_CORE_EXPORT ContigMachineShMemWinBase
 {
@@ -52,89 +50,88 @@ class ARCANE_CORE_EXPORT ContigMachineShMemWinBase
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param pm Le ParallelMng contenant les processus du noeud.
-   * \param sizeof_segment La taille du segment de ce sous-domaine (en octet).
-   * \param sizeof_elem La taille d'un élément (en octet).
+   * \brief Constructor.
+   * \param pm The ParallelMng containing the node's processes.
+   * \param sizeof_segment The size of the segment for this subdomain (in bytes).
+   * \param sizeof_elem The size of an element (in bytes).
    */
   ContigMachineShMemWinBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
 
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment de fenêtre
-   * mémoire.
+   * \brief Method allowing retrieval of a view on our window segment
+   * memory.
    *
-   * \return Une vue.
+   * \return A view.
    */
   Span<std::byte> segmentView();
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment de fenêtre
-   * mémoire d'un autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a view on the window segment
+   * memory of another subdomain of the node.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   Span<std::byte> segmentView(Int32 rank);
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre mémoire.
+   * \brief Method allowing retrieval of a view on the entire memory window.
    *
-   * \return Une vue.
+   * \return A view.
    */
   Span<std::byte> windowView();
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur notre segment
-   * de fenêtre mémoire.
+   * \brief Method allowing retrieval of a constant view on our segment
+   * memory window.
    *
-   * \return Une vue constante.
+   * \return A constant view.
    */
   Span<const std::byte> segmentConstView() const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur le segment de
-   * fenêtre mémoire d'un autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a constant view on the segment of
+   * memory window of another subdomain of the node.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue constante.
+   * \param rank The rank of the subdomain.
+   * \return A constant view.
    */
   Span<const std::byte> segmentConstView(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue constante sur toute la fenêtre
-   * mémoire.
+   * \brief Method allowing retrieval of a constant view on the entire window
+   * memory.
    *
-   * \return Une vue constante.
+   * \return A constant view.
    */
   Span<const std::byte> windowConstView() const;
 
   /*!
-   * \brief Méthode permettant de redimensionner les segments de la fenêtre.
-   * Appel collectif.
+   * \brief Method allowing resizing of the window segments.
+   * Collective call.
    *
-   * La taille totale de la fenêtre doit être inférieure ou égale à la taille
-   * d'origine.
+   * The total size of the window must be less than or equal to the original size.
    *
-   * \param new_size La nouvelle taille de notre segment (en octet).
+   * \param new_size The new size of our segment (in bytes).
    */
   void resizeSegment(Integer new_size);
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method allowing retrieval of the ranks that possess a segment
+   * in the window.
    *
-   * L'ordre des processus de la vue retournée correspond à l'ordre des
-   * segments dans la fenêtre.
+   * The order of the processes in the returned view corresponds to the order of
+   * segments in the window.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method allowing waiting until all processes/threads
+   * of the node call this method to continue execution.
    */
   void barrier() const;
 

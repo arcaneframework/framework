@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemVectorView.h                                            (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur un vecteur (tableau indirect) d'entités.                          */
+/* View on a vector (indirect array) of entities.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMVECTORVIEW_H
 #define ARCANE_CORE_ITEMVECTORVIEW_H
@@ -24,19 +24,20 @@
 
 namespace Arcane
 {
-// Pour le wrapper C#
+// For the C# wrapper
 class ItemVectorViewPOD;
 namespace mesh
 {
-class IndexedItemConnectivityAccessor;
+  class IndexedItemConnectivityAccessor;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Itérateur pour la classe ItemVectorView.
+ * \brief Iterator for the ItemVectorView class.
  *
- * Cette classe est interne à Arcane. Elle s'utilise via le for-range:
+ * This class is internal to Arcane. It is used via the for-range:
  *
  * \code
  * ItemVectorView view;
@@ -65,7 +66,7 @@ class ItemVectorViewConstIterator
 
  public:
 
-  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  // Temporary (01/2023) for conversion with the new ItemConnectedListView type
   ItemVectorViewConstIterator(const ItemConnectedListViewConstIterator& v)
   : m_shared_info(v.m_shared_info)
   , m_local_id_ptr(v.m_local_id_ptr)
@@ -76,18 +77,18 @@ class ItemVectorViewConstIterator
 
   typedef ItemVectorViewConstIterator ThatClass;
   typedef std::random_access_iterator_tag iterator_category;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Item value_type;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between iterator elements of the array
   typedef std::ptrdiff_t difference_type;
 
  public:
 
-  //TODO A supprimer avec le C++20
+  //TODO To be removed with C++20
   typedef const Item* pointer;
-  //TODO A supprimer avec le C++20
+  //TODO To be removed with C++20
   typedef const Item& reference;
 
  public:
@@ -124,7 +125,7 @@ class ItemVectorViewConstIterator
   {
     return lhs.m_local_id_ptr <= rhs.m_local_id_ptr;
   }
-  //! Compare les indices d'itération de deux instances
+  //! Compare the iteration indices of two instances
   friend bool operator==(const ThatClass& lhs, const ThatClass& rhs)
   {
     return lhs.m_local_id_ptr == rhs.m_local_id_ptr;
@@ -154,7 +155,7 @@ class ItemVectorViewConstIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType>
+template <typename ItemType>
 class ItemVectorViewConstIteratorT
 : public ItemVectorViewConstIterator
 {
@@ -163,17 +164,20 @@ class ItemVectorViewConstIteratorT
 
  private:
 
-  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr,
+  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info, const Int32* ARCANE_RESTRICT local_id_ptr,
                                Int32 local_id_offset)
-  : ItemVectorViewConstIterator(shared_info,local_id_ptr,local_id_offset){}
-  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr)
-  : ItemVectorViewConstIterator(shared_info,local_id_ptr){}
+  : ItemVectorViewConstIterator(shared_info, local_id_ptr, local_id_offset)
+  {}
+  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info, const Int32* ARCANE_RESTRICT local_id_ptr)
+  : ItemVectorViewConstIterator(shared_info, local_id_ptr)
+  {}
 
  public:
 
-  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  // Temporary (01/2023) for conversion with the new ItemConnectedListView type
   ItemVectorViewConstIteratorT(const ItemConnectedListViewConstIteratorT<ItemType>& v)
-  : ItemVectorViewConstIterator(v){}
+  : ItemVectorViewConstIterator(v)
+  {}
 
  public:
 
@@ -182,17 +186,25 @@ class ItemVectorViewConstIteratorT
 
  public:
 
-  //TODO A supprimer avec le C++20
+  //TODO To be removed with C++20
   typedef const Item* pointer;
-  //TODO A supprimer avec le C++20
+  //TODO To be removed with C++20
   typedef const Item& reference;
 
  public:
 
   ItemType operator*() const { return ItemType(m_local_id_offset + (*m_local_id_ptr), m_shared_info); }
 
-  ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
-  ThatClass& operator--() { --m_local_id_ptr; return (*this); }
+  ThatClass& operator++()
+  {
+    ++m_local_id_ptr;
+    return (*this);
+  }
+  ThatClass& operator--()
+  {
+    --m_local_id_ptr;
+    return (*this);
+  }
   difference_type operator-(const ThatClass& b) const
   {
     return this->m_local_id_ptr - b.m_local_id_ptr;
@@ -216,17 +228,18 @@ class ItemVectorViewConstIteratorT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur un vecteur d'entités.
+ * \brief View on a vector of entities.
  *
- * \warning la vue n'est valide que tant que le tableau associé n'est
- * pas modifié et que la famille d'entité associée à ce tableau n'est
- * elle même pas modifiée.
+ * \warning the view is only valid as long as the associated array is not
+ * modified and the entity family associated with this array is not
+ * modified itself.
  */
 class ARCANE_CORE_EXPORT ItemVectorView
 {
-  // NOTE: Cette classe est mappée en C# et si on change sa structure il
-  // faut mettre à jour la version C# correspondante.
+  // NOTE: This class is mapped to C# and if its structure changes,
+  // the corresponding C# version must be updated.
 
   friend ItemVector;
   friend ItemEnumeratorBase;
@@ -239,7 +252,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   using value_type = Item;
   using reference_type = Item&;
   using const_reference_type = const Item&;
-  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  // TODO: Create the 'Sentinel' type when we are in C++20
   using SentinelType = const_iterator;
 
  public:
@@ -261,14 +274,14 @@ class ARCANE_CORE_EXPORT ItemVectorView
  public:
 
   ItemVectorView() = default;
-  // TODO Rendre obsolète (3.11+)
+  // TODO Deprecate (3.11+)
   ItemVectorView(const ItemInternalVectorView& view)
-  : m_index_view(view.localIds(),view.m_local_id_offset,0)
+  : m_index_view(view.localIds(), view.m_local_id_offset, 0)
   , m_shared_info(view.m_shared_info)
   {}
-  // TODO A supprimer
+  // TODO To be removed
   ItemVectorView(ItemInfoListView item_info_list_view, ConstArrayView<Int32> local_ids)
-  : m_index_view(local_ids,0,0)
+  : m_index_view(local_ids, 0, 0)
   , m_shared_info(item_info_list_view.m_item_shared_info)
   {}
   ItemVectorView(ItemInfoListView item_info_list_view, ItemIndexArrayView indexes)
@@ -278,11 +291,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
   ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids);
   ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes);
   ItemVectorView(const impl::ItemIndexedListView<DynExtent>& view)
-  : m_index_view(view.constLocalIds(),view.m_local_id_offset,0)
+  : m_index_view(view.constLocalIds(), view.m_local_id_offset, 0)
   , m_shared_info(view.m_shared_info)
   {}
 
-  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  // Temporary (01/2023) for conversion with the new ItemConnectedListView type
   ItemVectorView(const ItemConnectedListView<DynExtent>& v)
   : m_index_view(v.m_index_view)
   , m_shared_info(v.m_shared_info)
@@ -296,20 +309,20 @@ class ARCANE_CORE_EXPORT ItemVectorView
   {}
 
   ItemVectorView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
-  : m_index_view(local_ids,local_id_offset,0)
+  : m_index_view(local_ids, local_id_offset, 0)
   , m_shared_info(shared_info)
   {}
 
-  // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
-  // constructeur obsolète de ItemVectorViewT
+  // Temporary to avoid a compilation warning when using the
+  // deprecated constructor of ItemVectorViewT
   ItemVectorView(const ItemInternalArrayView& aitems, const Int32ConstArrayView& local_ids, bool)
   : m_index_view(local_ids)
   {
     _init(aitems);
   }
 
-  // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
-  // constructeur obsolète de ItemVectorViewT
+  // Temporary to avoid a compilation warning when using the
+  // deprecated constructor of ItemVectorViewT
   ItemVectorView(ItemInternalArrayView aitems, ItemIndexArrayView indexes, bool)
   : m_index_view(indexes)
   {
@@ -318,36 +331,36 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  public:
 
-  // TODO: a supprimer
+  // TODO to be removed
   operator ItemInternalVectorView() const
   {
     return ItemInternalVectorView(m_shared_info, m_index_view._localIds(), _localIdOffset());
   }
 
-  //! Accède au \a i-ème élément du vecteur
+  //! Access the i-th element of the vector
   Item operator[](Integer index) const { return Item(m_index_view[index], m_shared_info); }
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Int32 size() const { return m_index_view.size(); }
 
-  //! Tableau des entités
+  //! Array of entities
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this method")
   ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
 
-  // TODO Rendre obsolète (3.11+)
+  // TODO Deprecate (3.11+)
   /*!
-   * \brief Tableau des numéros locaux des entités.
+   * \brief Array of local IDs of entities.
    *
-   * \deprecated Ne pas récupérer directement la liste des entités.
-   * Il est préférable de passer par des itérateurs ou par la méthode
-   * fillLocalIds() si on souhaite récupérer la liste des localId().
+   * \deprecated Do not retrieve the list of entities directly.
+   * It is preferable to use iterators or the method
+   * fillLocalIds() if you want to retrieve the list of localIds().
    */
   Int32ConstArrayView localIds() const { return m_index_view._localIds(); }
 
-  //! Ajoute à \a ids la liste des localIds() du vecteur.
+  //! Adds the list of localIds() of the vector to ids.
   void fillLocalIds(Array<Int32>& ids) const;
 
-  //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
+  //! Sub-view starting from element abegin and containing asize elements
   ItemVectorView subView(Integer abegin, Integer asize) const
   {
     return ItemVectorView(m_shared_info, m_index_view.subView(abegin, asize)._localIds(), _localIdOffset());
@@ -364,7 +377,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   {
     return const_iterator(m_shared_info, (m_index_view._data() + this->size()), _localIdOffset());
   }
-  //! Vue sur le tableau des indices
+  //! View on the array of indices
   ItemIndexArrayView indexes() const { return m_index_view; }
 
  public:
@@ -391,16 +404,17 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  public:
 
-  // Pour SWIG pour positionner les valeurs l'instance POD
+  // For SWIG to position the values in the POD instance
   void _internalSwigSet(ItemVectorViewPOD* vpod);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur un tableau typé d'entités.
+ * \brief View on a typed array of entities.
  */
-template<typename ItemType>
+template <typename ItemType>
 class ItemVectorViewT
 : public ItemVectorView
 {
@@ -412,63 +426,74 @@ class ItemVectorViewT
   using const_iterator = ItemVectorViewConstIteratorT<ItemType>;
   using difference_type = std::ptrdiff_t;
   using value_type = ItemType;
-  //TODO a supprimer avec le C++20
+  //TODO to be removed with C++20
   using reference_type = ItemType&;
-  //TODO a supprimer avec le C++20
+  //TODO to be removed with C++20
   using const_reference_type = const ItemType&;
-  // TODO: Créér le type 'Sentinel' lorsqu'on sera en C++20
+  // TODO: Create the 'Sentinel' type when we are in C++20
   using SentinelType = const_iterator;
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
-  ItemVectorViewT(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
-  : ItemVectorView(aitems,local_ids,true) {}
+  ItemVectorViewT(const ItemInternalArrayView& aitems, const Int32ConstArrayView& local_ids)
+  : ItemVectorView(aitems, local_ids, true)
+  {}
 
   ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
-  ItemVectorViewT(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
-  : ItemVectorView(aitems,indexes,true) {}
+  ItemVectorViewT(ItemInternalArrayView aitems, ItemIndexArrayView indexes)
+  : ItemVectorView(aitems, indexes, true)
+  {}
 
  public:
 
   ItemVectorViewT() = default;
   ItemVectorViewT(const ItemVectorView& rhs)
-  : ItemVectorView(rhs) {}
+  : ItemVectorView(rhs)
+  {}
   inline ItemVectorViewT(const ItemVectorT<ItemType>& rhs);
   ItemVectorViewT(const ItemInternalVectorView& rhs)
-  : ItemVectorView(rhs) {}
+  : ItemVectorView(rhs)
+  {}
   ItemVectorViewT(const impl::ItemIndexedListView<DynExtent>& rhs)
-  : ItemVectorView(rhs) {}
-  ItemVectorViewT(ItemInfoListView item_info_list_view,ConstArrayView<Int32> local_ids)
-  : ItemVectorView(item_info_list_view,local_ids) {}
-  ItemVectorViewT(ItemInfoListView item_info_list_view,ItemIndexArrayView indexes)
-  : ItemVectorView(item_info_list_view,indexes) {}
-  ItemVectorViewT(IItemFamily* family,ConstArrayView<Int32> local_ids)
-  : ItemVectorView(family,local_ids) {}
-  ItemVectorViewT(IItemFamily* family,ItemIndexArrayView indexes)
-  : ItemVectorView(family,indexes) {}
+  : ItemVectorView(rhs)
+  {}
+  ItemVectorViewT(ItemInfoListView item_info_list_view, ConstArrayView<Int32> local_ids)
+  : ItemVectorView(item_info_list_view, local_ids)
+  {}
+  ItemVectorViewT(ItemInfoListView item_info_list_view, ItemIndexArrayView indexes)
+  : ItemVectorView(item_info_list_view, indexes)
+  {}
+  ItemVectorViewT(IItemFamily* family, ConstArrayView<Int32> local_ids)
+  : ItemVectorView(family, local_ids)
+  {}
+  ItemVectorViewT(IItemFamily* family, ItemIndexArrayView indexes)
+  : ItemVectorView(family, indexes)
+  {}
 
-  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  // Temporary (01/2023) for conversion with the new ItemConnectedListView type
   ItemVectorViewT(const ItemConnectedListViewT<ItemType>& v)
-  : ItemVectorView(v){}
+  : ItemVectorView(v)
+  {}
 
  protected:
 
-  ItemVectorViewT(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids,Int32 local_id_offset)
-  : ItemVectorView(shared_info,local_ids,local_id_offset) { }
+  ItemVectorViewT(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
+  : ItemVectorView(shared_info, local_ids, local_id_offset)
+  {}
 
  public:
 
   ItemType operator[](Integer index) const
   {
-    return ItemType(m_index_view[index],m_shared_info);
+    return ItemType(m_index_view[index], m_shared_info);
   }
 
  public:
-  
+
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info,m_index_view.m_view);
+    return ItemEnumeratorT<ItemType>(m_shared_info, m_index_view.m_view);
   }
   inline const_iterator begin() const
   {

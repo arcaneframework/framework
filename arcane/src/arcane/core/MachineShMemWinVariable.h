@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinVariable.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Classes permettant d'exploiter l'objet MachineShMemWinVariable pointé de  */
-/* la zone mémoire des variables en mémoire partagée.                        */
+/* Classes allowing the use of the MachineShMemWinVariable object pointed    */
+/*  to by the shared memory variable memory area.                            */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_CORE_MACHINESHMEMWINVARIABLE_H
@@ -43,14 +43,13 @@ class MachineShMemWinVariableMDBase;
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to the shared elements of the variable
+ * in shared memory.
  *
- * Pour avoir accès à toutes les propriétés, il est nécessaire d'utiliser une
- * des classes enfants :
- * - \a MachineShMemWinVariableArrayT pour les variables tableaux sans
+ * To access all properties, it is necessary to use one of the child classes:
+ * - \a MachineShMemWinVariableArrayT for array variables without
  *   support,
- * - \a MachineShMemWinVariableItemT pour les variables au maillage.
+ * - \a MachineShMemWinVariableItemT for mesh variables.
  */
 class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
 {
@@ -58,8 +57,8 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
  protected:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   explicit MachineShMemWinVariableCommon(IVariable* var);
 
@@ -70,18 +69,18 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method allowing retrieval of ranks that possess a segment
+   * in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method allowing waiting until all processes/threads
+   * on the node call this method to continue execution.
    */
   void barrier() const;
 
@@ -97,16 +96,16 @@ class ARCANE_CORE_EXPORT MachineShMemWinVariableCommon
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to the shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables tableaux sans support.
+ * This class works for array variables without support.
  *
- * Si la taille de la variable change lorsqu'un objet de ce type est utilisé,
- * il est nécessaire d'appeler la méthode \a updateVariable().
+ * If the size of the variable changes while an object of this type is used,
+ * it is necessary to call the \a updateVariable() method.
  */
 template <class DataType>
 class MachineShMemWinVariableArrayT
@@ -116,8 +115,8 @@ class MachineShMemWinVariableArrayT
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "PInShMem".
    */
   ARCANE_CORE_EXPORT explicit MachineShMemWinVariableArrayT(VariableRefArrayT<DataType> var);
   ARCANE_CORE_EXPORT ~MachineShMemWinVariableArrayT() override;
@@ -125,23 +124,23 @@ class MachineShMemWinVariableArrayT
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le tableau d'un
-   * autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a view on the array of another
+   * subdomain on the node.
    *
-   * Équivalent à "var.asArray()" mais d'un autre sous-domaine.
+   * Equivalent to "var.asArray()" but for another subdomain.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   ARCANE_CORE_EXPORT Span<DataType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un
-   * redimensionnement de la variable.
+   * \brief Method allowing updating this object after a
+   * resizing of the variable.
    *
-   * Appel collectif.
+   * Collective call.
    */
   ARCANE_CORE_EXPORT void updateVariable();
 
@@ -157,16 +156,16 @@ class MachineShMemWinVariableArrayT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to the shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables scalaire au maillage.
+ * This class works for mesh scalar variables.
  *
- * Si le maillage change lorsqu'un objet de ce type est utilisé, il est
- * nécessaire d'appeler la méthode \a updateVariable().
+ * If the mesh changes while an object of this type is used, it is
+ * necessary to call the \a updateVariable() method.
  */
 template <class ItemType, class DataType>
 class MachineShMemWinMeshVariableScalarT
@@ -176,8 +175,8 @@ class MachineShMemWinMeshVariableScalarT
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   ARCANE_CORE_EXPORT explicit MachineShMemWinMeshVariableScalarT(MeshVariableScalarRefT<ItemType, DataType> var);
 
@@ -186,46 +185,46 @@ class MachineShMemWinMeshVariableScalarT
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur la variable d'un
-   * autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a view on the variable of another
+   * subdomain on the node.
    *
-   * Équivalent à "var.asArray()" mais d'un autre sous-domaine.
+   * Equivalent to "var.asArray()" but for another subdomain.
    *
-   * \warning Attention : pour accéder aux éléments de la vue, il est
-   *          nécessaire d'utiliser les local_ids de l'autre sous-domaine !
-   *          Ne pas utiliser les local_ids de notre sous-domaine !
+   * \warning Attention: To access the elements of the view, it is
+   *          necessary to use the local_ids of the other subdomain!
+   *          Do not use the local_ids of our subdomain!
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   ARCANE_CORE_EXPORT Span<DataType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir un élément de la variable d'un autre
-   * sous-domaine.
+   * \brief Method allowing retrieval of an element of the variable from another
+   * subdomain.
    *
-   * \warning Attention : le local_id correspond au local_id du sous-domaine
-   *          \a rank ! Ne surtout pas utiliser un local_id de notre
-   *          sous-domaine pour accéder aux éléments de la vue !
+   * \warning Attention: The local_id corresponds to the local_id of the subdomain
+   *          \a rank! Absolutely do not use a local_id from our
+   *          subdomain to access the elements of the view!
    *
-   * \note Si plusieurs itérations sont nécessaires pour un même rang, il est
-   *       préférable de récupérer une vue via \a segmentView(Int32 rank).
+   * \note If multiple iterations are necessary for the same rank, it is
+   *       preferable to retrieve a view via \a segmentView(Int32 rank).
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine de la variable ciblée.
-   * \param notlocal_id Le local_id du sous-domaine \a rank.
-   * \return L'élément de l'item.
+   * \param rank The rank of the subdomain of the targeted variable.
+   * \param notlocal_id The local_id of the subdomain \a rank.
+   * \return The item element.
    */
   ARCANE_CORE_EXPORT DataType operator()(Int32 rank, Int32 notlocal_id);
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage.
+   * \brief Method allowing updating this object after a change
+   * in the mesh.
    *
-   * Appel collectif.
+   * Collective call.
    */
   ARCANE_CORE_EXPORT void updateVariable();
 
@@ -241,16 +240,16 @@ class MachineShMemWinMeshVariableScalarT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to the shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables tableaux 2D sans support.
+ * This class works for 2D array variables without support.
  *
- * Si la taille de la variable change lorsqu'un objet de ce type est utilisé,
- * il est nécessaire d'appeler la méthode \a updateVariable().
+ * If the size of the variable changes while an object of this type is used,
+ * it is necessary to call the \a updateVariable() method.
  */
 template <class DataType>
 class MachineShMemWinVariableArray2T
@@ -258,8 +257,8 @@ class MachineShMemWinVariableArray2T
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   ARCANE_CORE_EXPORT explicit MachineShMemWinVariableArray2T(VariableRefArray2T<DataType> var);
 
@@ -268,39 +267,39 @@ class MachineShMemWinVariableArray2T
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method allowing retrieval of ranks that possess a segment
+   * in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ARCANE_CORE_EXPORT ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method allowing waiting until all processes/threads
+   * on the node call this method to continue execution.
    */
   ARCANE_CORE_EXPORT void barrier() const;
 
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le tableau d'un
-   * autre sous-domaine du noeud.
+   * \brief Method allowing retrieval of a view on the array of another
+   * subdomain on the node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue 2D.
+   * \param rank The rank of the subdomain.
+   * \return A 2D view.
    */
   ARCANE_CORE_EXPORT Span2<DataType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un
-   * redimensionnement de la variable.
+   * \brief Method allowing updating this object after a
+   * resizing of the variable.
    *
-   * Appel collectif.
+   * Collective call.
    */
   ARCANE_CORE_EXPORT void updateVariable();
 
@@ -317,16 +316,16 @@ class MachineShMemWinVariableArray2T
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to the shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables tableaux au maillage.
+ * This class works for mesh array variables.
  *
- * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
- * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ * If the mesh and/or the variable size changes when an object of this
+ * type is used, it is necessary to call the \a updateVariable() method.
  */
 template <class ItemType, class DataType>
 class MachineShMemWinMeshVariableArrayT
@@ -335,8 +334,8 @@ class MachineShMemWinMeshVariableArrayT
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   ARCANE_CORE_EXPORT explicit MachineShMemWinMeshVariableArrayT(MeshVariableArrayRefT<ItemType, DataType> var);
 
@@ -345,66 +344,66 @@ class MachineShMemWinMeshVariableArrayT
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method to get the ranks that possess a segment
+   * in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ARCANE_CORE_EXPORT ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method to wait until all processes/threads
+   * on the node call this method to continue execution.
    */
   ARCANE_CORE_EXPORT void barrier() const;
 
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur la variable d'un
-   * autre sous-domaine du noeud.
+   * \brief Method to get a view of the variable from another
+   * subdomain on the node.
    *
-   * Équivalent à "var.asArray()" mais d'un autre sous-domaine.
-   * Le premier indice correspond au local_id, le second indice est la
-   * position de l'élément dans le tableau de l'item.
+   * Equivalent to "var.asArray()" but from another subdomain.
+   * The first index corresponds to the local_id, the second index is the
+   * position of the element in the item array.
    *
-   * \warning Attention : pour accéder aux éléments de la vue, il est
-   *          nécessaire d'utiliser les local_ids de l'autre sous-domaine !
-   *          Ne pas utiliser les local_ids de notre sous-domaine !
+   * \warning Attention: to access the elements of the view, it is
+   *          necessary to use the local_ids of the other subdomain!
+   *          Do not use the local_ids of our subdomain!
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue 2D.
+   * \param rank The subdomain rank.
+   * \return A 2D view.
    */
   ARCANE_CORE_EXPORT Span2<DataType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir le tableau d'un item d'un autre
-   * sous-domaine.
+   * \brief Method to get the array of an item from another
+   * subdomain.
    *
-   * \warning Attention : le local_id correspond au local_id du sous-domaine
-   *          \a rank ! Ne surtout pas utiliser un local_id de notre
-   *          sous-domaine pour accéder aux éléments de la vue !
+   * \warning Attention: the local_id corresponds to the local_id of the subdomain
+   *          \a rank! Absolutely do not use a local_id from our
+   *          subdomain to access the elements of the view!
    *
-   * \note Si plusieurs itérations sont nécessaires pour un même rang, il est
-   *       préférable de récupérer une vue via \a segmentView(Int32 rank).
+   * \note If multiple iterations are necessary for the same rank, it is
+   *       preferable to retrieve a view via \a segmentView(Int32 rank).
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine de la variable ciblée.
-   * \param notlocal_id Le local_id du sous-domaine \a rank.
-   * \return Le tableau de l'item.
+   * \param rank The rank of the targeted variable's subdomain.
+   * \param notlocal_id The local_id of the subdomain \a rank.
+   * \return The item array.
    */
   ARCANE_CORE_EXPORT Span<DataType> operator()(Int32 rank, Int32 notlocal_id);
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage et/ou après un redimensionnement de la variable.
+   * \brief Method to update this object after a change
+   * in the mesh and/or after a resizing of the variable.
    *
-   * Appel collectif.
+   * Collective call.
    */
   ARCANE_CORE_EXPORT void updateVariable();
 
@@ -422,17 +421,17 @@ class MachineShMemWinMeshVariableArrayT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to shared elements of the variable
+ * in shared memory.
  *
- * Cette classe ne peut pas être utilisée directement. Il est nécessaire
- * d'utiliser une des classes suivante :
- * - \a MachineShMemWinMeshMDVariableT pour les variables au maillage de type
- *   scalaire et de dimension max de 3,
- * - \a MachineShMemWinMeshVectorMDVariableT pour les variables au maillage de
- *   type vecteur et de dimension max de 2,
- * - \a MachineShMemWinMeshMatrixMDVariableT pour les variables au maillage de
- *   type matrice et de dimension max de 1.
+ * This class cannot be used directly. It is necessary
+ * to use one of the following classes:
+ * - \a MachineShMemWinMeshMDVariableT for scalar mesh variables
+ *   with a maximum dimension of 3,
+ * - \a MachineShMemWinMeshVectorMDVariableT for vector mesh variables
+ *   with a maximum dimension of 2,
+ * - \a MachineShMemWinMeshMatrixMDVariableT for matrix mesh variables
+ *   with a maximum dimension of 1.
  */
 template <class ItemType, class DataType, class Extents>
 class MachineShMemWinMDVariableT
@@ -441,8 +440,8 @@ class MachineShMemWinMDVariableT
  protected:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   ARCANE_CORE_EXPORT explicit MachineShMemWinMDVariableT(MeshVariableArrayRefT<ItemType, DataType> var);
 
@@ -453,65 +452,65 @@ class MachineShMemWinMDVariableT
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method to get the ranks that possess a segment
+   * in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ARCANE_CORE_EXPORT ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method to wait until all processes/threads
+   * on the node call this method to continue execution.
    */
   ARCANE_CORE_EXPORT void barrier() const;
 
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur la variable d'un
-   * autre sous-domaine du noeud.
+   * \brief Method to get a view of the variable from another
+   * subdomain on the node.
    *
-   * Le premier indice correspond au local_id, les autres indices sont la
-   * position de l'élément dans le tableau de l'item.
+   * The first index corresponds to the local_id, the other indices are the
+   * position of the element in the item array.
    *
-   * \warning Attention : pour accéder aux éléments de la vue, il est
-   *          nécessaire d'utiliser les local_ids de l'autre sous-domaine !
-   *          Ne pas utiliser les local_ids de notre sous-domaine !
+   * \warning Attention: to access the elements of the view, it is
+   *          necessary to use the local_ids of the other subdomain!
+   *          Do not use the local_ids of our subdomain!
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The subdomain rank.
+   * \return A view.
    */
   ARCANE_CORE_EXPORT MDSpan<DataType, typename MDDimType<Extents::rank() + 1>::DimType> view(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant d'obtenir le tableau multi-dimensionnel d'un
-   * item d'un autre sous-domaine.
+   * \brief Method to get the multi-dimensional array of an
+   * item from another subdomain.
    *
-   * \warning Attention : le local_id correspond au local_id du sous-domaine
-   *          \a rank ! Ne surtout pas utiliser un local_id de notre
-   *          sous-domaine pour accéder aux éléments de la vue !
+   * \warning Attention: the local_id corresponds to the local_id of the subdomain
+   *          \a rank! Absolutely do not use a local_id from our
+   *          subdomain to access the elements of the view!
    *
-   * \note Si plusieurs itérations sont nécessaires pour un même rang, il est
-   *       préférable de récupérer une vue via \a view(Int32 rank).
+   * \note If multiple iterations are necessary for the same rank, it is
+   *       preferable to retrieve a view via \a view(Int32 rank).
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine de la variable ciblée.
-   * \param notlocal_id Le local_id du sous-domaine \a rank.
-   * \return Le tableau MD de l'item.
+   * \param rank The rank of the targeted variable's subdomain.
+   * \param notlocal_id The local_id of the subdomain \a rank.
+   * \return The MD array of the item.
    */
   ARCANE_CORE_EXPORT MDSpan<DataType, Extents> operator()(Int32 rank, Int32 notlocal_id);
 
   /*!
-   * \brief Méthode permettant de mettre à jour cet objet après un changement
-   * dans le maillage et/ou après un redimensionnement de la variable.
+   * \brief Method to update this object after a change
+   * in the mesh and/or after a resizing of the variable.
    *
-   * Appel collectif.
+   * Collective call.
    */
   ARCANE_CORE_EXPORT void updateVariable();
 
@@ -530,17 +529,17 @@ class MachineShMemWinMDVariableT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables au maillage de type scalaire et
- * de dimension max de 3.
+ * This class works for scalar mesh variables
+ * with a maximum dimension of 3.
  *
- * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
- * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ * If the mesh and/or the variable size changes when an object of this
+ * type is used, it is necessary to call the \a updateVariable() method.
  */
 template <class ItemType, class DataType, class Extents>
 class MachineShMemWinMeshMDVariableT
@@ -550,8 +549,8 @@ class MachineShMemWinMeshMDVariableT
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   explicit MachineShMemWinMeshMDVariableT(MeshMDVariableRefT<ItemType, DataType, Extents> var)
   : MachineShMemWinMDVariableT<ItemType, DataType, Extents>(var.underlyingVariable())
@@ -567,17 +566,17 @@ class MachineShMemWinMeshMDVariableT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables au maillage de type vecteur et
- * de dimension max de 2.
+ * This class works for vector mesh variables
+ * with a maximum dimension of 2.
  *
- * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
- * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ * If the mesh and/or the variable size changes when an object of this
+ * type is used, it is necessary to call the \a updateVariable() method.
  */
 template <class ItemType, class DataType, class Extents>
 class MachineShMemWinMeshVectorMDVariableT
@@ -588,8 +587,8 @@ class MachineShMemWinMeshVectorMDVariableT
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   template <Int32 Size>
   explicit MachineShMemWinMeshVectorMDVariableT(MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents> var)
@@ -606,17 +605,17 @@ class MachineShMemWinMeshVectorMDVariableT
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'accéder aux éléments partagés de la variable
- * en mémoire partagée.
+ * \brief Class allowing access to shared elements of the variable
+ * in shared memory.
  *
- * Il est nécessaire que cette variable soit allouée en mémoire partagée avec
- * la propriété "IVariable::PInShMem".
+ * It is necessary that this variable be allocated in shared memory with
+ * the property "IVariable::PInShMem".
  *
- * Cette classe fonctionne pour les variables au maillage de type matrice et
- * de dimension max de 1.
+ * This class works for matrix mesh variables
+ * with a maximum dimension of 1.
  *
- * Si le maillage et/ou la taille de la variable change lorsqu'un objet de ce
- * type est utilisé, il est nécessaire d'appeler la méthode \a updateVariable().
+ * If the mesh and/or the variable size changes when an object of this
+ * type is used, it is necessary to call the \a updateVariable() method.
  */
 template <class ItemType, class DataType, class Extents>
 class MachineShMemWinMeshMatrixMDVariableT
@@ -627,8 +626,8 @@ class MachineShMemWinMeshMatrixMDVariableT
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param var Variable ayant la propriété "IVariable::PInShMem".
+   * \brief Constructor.
+   * \param var Variable having the property "IVariable::PInShMem".
    */
   template <Int32 Row, Int32 Column>
   explicit MachineShMemWinMeshMatrixMDVariableT(MeshMatrixMDVariableRefT<ItemType, DataType, Row, Column, Extents> var)

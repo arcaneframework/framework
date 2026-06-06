@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Data.cc                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Types liés aux 'IData'.                                                   */
+/* Types related to 'IData'.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -109,9 +109,9 @@ fillContiguousDataGeneric(IData* data, const void* fill_address,
   ConstMemoryView fill_value_view(makeConstMemoryView(fill_address, datatype_size, 1));
   MutableMemoryView destination_buf = num_data->memoryView();
 
-  // Si \a data est un tableau 2D ou plus il faut le transformer en un tableau 1D
-  // du nombre total d'éléments sinon 'destination_buf.datatypeSize() n'est pas
-  // cohérent avec 'datatype_size'
+  // If the data is a 2D array or more, it must be transformed into a 1D array
+  // of the total number of elements, otherwise 'destination_buf.datatypeSize()' is not
+  // consistent with 'datatype_size'
   if (data->dimension() > 1) {
     Int64 total_dim = data->shape().totalNbElement();
     Int64 nb_element = destination_buf.nbElement();

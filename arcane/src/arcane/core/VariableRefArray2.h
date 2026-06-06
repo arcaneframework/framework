@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableRefArray2.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une référence sur une variable tableau 2D.                  */
+/* Class managing a reference to a 2D array variable.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEREFARRAY2_H
 #define ARCANE_CORE_VARIABLEREFARRAY2_H
@@ -25,30 +25,31 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Variable tableau bi dimensionnel.
+ * \brief Two-dimensional array variable.
  *
- * Cette variable gère des tableaux 2D classiques.
+ * This variable manages classic 2D arrays.
  */
-template<typename T>
+template <typename T>
 class VariableRefArray2T
 : public VariableRef
 , public Array2View<T>
 {
  public:
-  
+
   typedef T DataType;
   typedef Array2<T> ValueType;
   typedef ConstArrayView<T> ConstReturnReferenceType;
   typedef ArrayView<T> ReturnReferenceType;
-  
-  //! Type des éléments de la variable
+
+  //! Type of the variable elements
   typedef DataType ElementType;
-  //! Type de la classe de base
+  //! Type of the base class
   typedef VariableRef BaseClass;
-  //! Type de la classe gérant la valeur de la variable
+  //! Type of the class managing the variable value
   typedef Array2<DataType> ContainerType;
-  //! Type du tableau permettant d'accéder à la variable
+  //! Type of the array used to access the variable
   typedef Array2View<DataType> ArrayBase;
 
   typedef Array2VariableT<DataType> PrivatePartType;
@@ -57,43 +58,43 @@ class VariableRefArray2T
 
  public:
 
-  //! Construit une référence à une variable tableau spécifiée dans \a vb
+  //! Constructs a reference to a 2D array variable specified in \a vb
   ARCANE_CORE_EXPORT VariableRefArray2T(const VariableBuildInfo& vb);
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT VariableRefArray2T(const VariableRefArray2T<DataType>& rhs);
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT VariableRefArray2T(IVariable* var);
   /*!
-   * \brief Opérateur de recopie.
-   * \deprecated Utiliser refersTo() à la place.
+   * \brief Copy assignment operator.
+   * \deprecated Use refersTo() instead.
    */
   ARCCORE_DEPRECATED_2021("Use refersTo() instead.")
   ARCANE_CORE_EXPORT void operator=(const VariableRefArray2T<DataType>& rhs);
-  virtual ARCANE_CORE_EXPORT ~VariableRefArray2T(); //!< Libère les ressources
+  virtual ARCANE_CORE_EXPORT ~VariableRefArray2T(); //!< Frees resources
 
  public:
 
   /*!
-   * \brief Réalloue le nombre d'éléments de la première dimension du tableau.
+   * \brief Reallocates the number of elements in the first dimension of the array.
    *
-   * Le nombre d'éléments de la seconde dimension est mis à zéro.
-   * \warning la réallocation ne conserve pas les valeurs précédentes.
+   * The number of elements in the second dimension is set to zero.
+   * \warning reallocation does not preserve previous values.
    */
   virtual ARCANE_CORE_EXPORT void resize(Integer new_size);
 
   /*!
-   * \brief Réalloue le nombre d'éléments du tableau.
+   * \brief Reallocates the number of elements in the array.
    *
-   * Réalloue le tableau avec \a dim1_size comme taille de la première
-   * dimension et \a dim2_size comme taille de la deuxième.
-   * \warning la réallocation ne conserve pas les valeurs précédentes.
+   * Reallocates the array with \a dim1_size as the size of the first
+   * dimension and \a dim2_size as the size of the second.
+   * \warning reallocation does not preserve previous values.
    */
-  ARCANE_CORE_EXPORT void resize(Integer dim1_size,Integer dim2_size);
+  ARCANE_CORE_EXPORT void resize(Integer dim1_size, Integer dim2_size);
 
-  //! Remplit la variable avev la valeur \a value
+  //! Fills the variable with the value \a value
   ARCANE_CORE_EXPORT void fill(const DataType& value);
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const VariableRefArray2T<DataType>& rhs);
 
  public:
@@ -104,10 +105,9 @@ class VariableRefArray2T
   virtual ARCANE_CORE_EXPORT void updateFromInternal();
 
   /*!
-    \brief Retourne le conteneur des valeurs de cette variable.
+    \brief Returns the container of the variable's values.
     *
-    L'appel à cette méthode n'est possible que pour les variables
-    privées (propriété PPrivate).
+    Calling this method is only possible for private variables (PPrivate property).
     */
   ARCCORE_DEPRECATED_2021("Use _internalTrueData() instead.")
   ARCANE_CORE_EXPORT ContainerType& internalContainer();
@@ -140,5 +140,4 @@ class VariableRefArray2T
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

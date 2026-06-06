@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableReaderWriter.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface représentant un lecteur/écrivain de tableau simple.             */
+/* Interface representing a simple table reader/writer.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISIMPLETABLEREADERWRITER_H
 #define ARCANE_CORE_ISIMPLETABLEREADERWRITER_H
@@ -31,22 +31,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Classe contenant deux méthodes statiques
- * utile pour les implémentations.
+ * \brief Class containing two static methods
+ * useful for implementations.
  * 
  */
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
+
   /**
-   * @brief Méthode statique permettant de créer un répertoire avec plusieurs
-   * processus.
-   * @note C'est une méthode collective qui doit être appelée par tous les processus.
+   * \brief Static method allowing the creation of a directory with multiple
+   * processes.
+   * \note This is a collective method that must be called by all processes.
    * 
-   * @param parallel_mng Le parallel manager du contexte actuel.
-   * @param directory Le répertoire à créer.
-   * @return true Si le répertoire a été correctement créé.
-   * @return false Si le répertoire n'a pas pu être créé.
+   * \param parallel_mng The parallel manager of the current context.
+   * \param directory The directory to create.
+   * \return true If the directory was successfully created.
+   * \return false If the directory could not be created.
    */
   static bool createDirectoryOnlyProcess0(IParallelMng* parallel_mng, const Directory& directory)
   {
@@ -59,13 +60,14 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
     }
     return sf == 0;
   };
+
   /**
-   * @brief Méthode statique permettant de vérifier l'existance d'un fichier.
+   * \brief Static method allowing verification of file existence.
    * 
-   * @param directory Le répertoire où se situe le fichier.
-   * @param file Le nom du fichier (avec l'extension).
-   * @return true Si le fichier existe déjà.
-   * @return false Si le fichier n'existe pas.
+   * \param directory The directory where the file is located.
+   * \param file The file name (with extension).
+   * \return true If the file already exists.
+   * \return false If the file does not exist.
    */
   static bool isFileExist(const Directory& directory, const String& file)
   {
@@ -81,194 +83,195 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Interface de classe permettant de lire un fichier et d'écrire
- * un fichier avec ou à partir d'un SimpleTableInternal.
+ * \brief Class interface allowing reading a file and writing
+ * a file with or from a SimpleTableInternal.
  * 
- * Le fichier lu devra, de préférence, avoir été écrit par une implémentation 
- * de cette même interface.
+ * The file read must preferably have been written by an implementation 
+ * of this same interface.
  * 
- * Impérativement donc, un fichier écrit par une implémentation de cette
- * interface devra pouvoir être lu par cette même implémentation.
+ * Imperatively, a file written by an implementation of this
+ * interface must be readable by this same implementation.
  * 
- * L'implémentation ne devra pas détruire l'objet SimpleTableInternal
- * pointé par le pointeur utilisé. C'est à l'appelant de gérer ça.
+ * The implementation must not destroy the SimpleTableInternal object
+ * pointed to by the pointer used. The caller is responsible for managing this.
  */
 class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 {
  public:
+
   virtual ~ISimpleTableReaderWriter() = default;
 
  public:
+
   /**
-   * @brief Méthode permettant d'écrire un tableau simple dans un fichier.
+   * \brief Method allowing writing a simple table to a file.
    * 
-   * L'extension sera ajouté par l'implémentation.
+   * The extension will be added by the implementation.
    * 
-   * Le répertoire de destination sera créé par l'implémentation s'il
-   * n'existe pas.
+   * The destination directory will be created by the implementation if
+   * it does not exist.
    * 
-   * Les élements de SimpleTableInternal qui doivent impérativement
-   * être écrits sont :
-   * - les noms des lignes    (m_row_names),
-   * - les noms des colonnes  (m_column_names),
-   * - le nom du tableau      (m_table_name),
-   * - les valeurs du tableau (m_values).
+   * The SimpleTableInternal elements that must be written are:
+   * - row names (m_row_names),
+   * - column names (m_column_names),
+   * - table name (m_table_name),
+   * - table values (m_values).
    * 
-   * Les autres élements de SimpleTableInternal ne sont pas obligatoire.
+   * Other SimpleTableInternal elements are not mandatory.
    * 
-   * @param dst Le répertoire de destination.
-   * @param file_name Le nom du fichier (sans extension).
-   * @return true Si le fichier a bien été écrit.
-   * @return false Si le fichier n'a pas pu être écrit.
+   * \param dst The destination directory.
+   * \param file_name The file name (without extension).
+   * \return true If the file was successfully written.
+   * \return false If the file could not be written.
    */
   virtual bool writeTable(const Directory& dst, const String& file_name) = 0;
 
   /**
-   * @brief Méthode permettant de lire un fichier contenant un tableau simple.
+   * \brief Method allowing reading a file containing a simple table.
    * 
-   * L'extension sera ajouté par l'implémentation.
+   * The extension will be added by the implementation.
    * 
-   * Un appel à SimpleTableInternal::clear() devra être effectué avant la lecture.
+   * A call to SimpleTableInternal::clear() must be performed before reading.
    * 
-   * Les élements qui doivent impérativement être récupérés sont :
-   * - les noms des lignes    (m_row_names),
-   * - les noms des colonnes  (m_column_names),
-   * - le nom du tableau      (m_table_name),
-   * - les valeurs du tableau (m_values).
+   * The elements that must be retrieved are:
+   * - row names (m_row_names),
+   * - column names (m_column_names),
+   * - table name (m_table_name),
+   * - table values (m_values).
    * 
-   * Les élements qui doivent être déduit si non récupérés sont :
-   * - les tailles des lignes   (m_row_sizes),
-   * - les tailles des colonnes (m_column_sizes).
+   * The elements that must be deduced if not retrieved are:
+   * - row sizes (m_row_sizes),
+   * - column sizes (m_column_sizes).
    * 
-   * Déduction par défaut pour m_row_sizes :
+   * Default deduction for m_row_sizes:
    * - len(m_row_sizes) = len(m_row_names)
    * - m_row_sizes[*]   = m_values.dim2Size()
    * 
-   * Déduction par défaut pour m_column_sizes :
+   * Default deduction for m_column_sizes:
    * - len(m_column_sizes) = len(m_column_names)
    * - m_column_sizes[*]   = m_values.dim1Size()
    * 
    * 
-   * @param src Le répertoire source.
-   * @param file_name Le nom du fichier (sans extension).
-   * @return true Si le fichier a bien été lu.
-   * @return false Si le fichier n'a pas pu être lu.
+   * \param src The source directory.
+   * \param file_name The file name (without extension).
+   * \return true If the file was successfully read.
+   * \return false If the file could not be read.
    */
   virtual bool readTable(const Directory& src, const String& file_name) = 0;
 
   /**
-   * @brief Méthode permettant d'effacer le contenu de l'objet
-   * SimpleTableInternal.
+   * \brief Method allowing clearing the content of the
+   * SimpleTableInternal object.
    */
   virtual void clearInternal() = 0;
 
   /**
-   * @brief Méthode permettant d'écrire le tableau dans la
-   * sortie standard.
+   * \brief Method allowing writing the table to the
+   * standard output.
    * 
-   * Le format d'écriture est libre (pour l'implémentation
-   * csv, l'écriture se fait pareil que dans un fichier csv).
+   * The writing format is free (for the csv implementation, the
+   * writing is done the same way as in a csv file).
    */
   virtual void print() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer la précision actuellement
-   * utilisée pour l'écriture des valeurs.
+   * \brief Method allowing retrieval of the precision currently
+   * used for writing values.
    * 
-   * @return Integer La précision.
+   * \return Integer The precision.
    */
   virtual Integer precision() = 0;
 
   /**
-   * @brief Méthode permettant de modifier la précision du print.
+   * \brief Method allowing modification of the print precision.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * For both the 'print()' method and the 'writetable()' method.
    * 
-   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
-   *          si le flag "std::fixed" est désactivé, la précision définira le
-   *          nombre de chiffres total (avant et après la virgule) ;
-   *          si le flag "std::fixed" est activé, la précision définira le
-   *          nombre de chiffres après la virgule. Attention donc lors de
-   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
-   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
-   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * \warning The "std::fixed" flag modifies the behavior of "setPrecision()";
+   *          if the "std::fixed" flag is disabled, the precision defines the
+   *          total number of digits (before and after the comma);
+   *          if the "std::fixed" flag is enabled, the precision defines the
+   *          number of digits after the comma. Therefore, attention must be paid when
+   *          using "std::numeric_limits<Real>::max_digits10"
+   *          (for writing) or "std::numeric_limits<Real>::digits10"
+   *          (for reading), which should be used without the "std::fixed" flag.
    * 
-   * @param precision La nouvelle précision.
+   * \param precision The new precision.
    */
   virtual void setPrecision(Integer precision) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si le frag 'std::fixed' est
-   * actif ou non pour l'écriture des valeurs.
+   * \brief Method allowing checking if the 'std::fixed' flag is
+   * active or not for writing values.
    * 
-   * @return true Si oui.
-   * @return false Si non.
+   * \return true If yes.
+   * \return false If no.
    */
   virtual bool isFixed() = 0;
   /**
-   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
+   * \brief Method allowing setting or unsetting the 'std::fixed' flag.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * For both the 'print()' method and the 'writetable()' method.
    * 
-   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
-   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
-   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
+   * This flag allows 'forcing' the number of digits after the comma to
+   * the desired precision. For example, if 'setPrecision(4)' was called,
+   * and 'setFixed(true)' is called, the print of '6.1' will yield '6.1000'.
    * 
-   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
-   *          si le flag "std::fixed" est désactivé, la précision définira le
-   *          nombre de chiffres total (avant et après la virgule) ;
-   *          si le flag "std::fixed" est activé, la précision définira le
-   *          nombre de chiffres après la virgule. Attention donc lors de
-   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
-   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
-   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * \warning The "std::fixed" flag modifies the behavior of "setPrecision()";
+   *          if the "std::fixed" flag is disabled, the precision defines the
+   *          total number of digits (before and after the comma);
+   *          if the "std::fixed" flag is enabled, the precision defines the
+   *          number of digits after the comma. Therefore, attention must be paid when
+   *          using "std::numeric_limits<Real>::max_digits10"
+   *          (for writing) or "std::numeric_limits<Real>::digits10"
+   *          (for reading), which should be used without the "std::fixed" flag.
    * 
-   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
+   * \param fixed Whether the 'std::fixed' flag should be set or not.
    */
   virtual void setFixed(bool fixed) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si le frag 'std::scientific' est
-   * actif ou non pour l'écriture des valeurs.
+   * \brief Method allowing checking if the 'std::scientific' flag is
+   * active or not for writing values.
    * 
-   * @return true Si oui.
-   * @return false Si non.
+   * \return true If yes.
+   * \return false If no.
    */
   virtual bool isForcedToUseScientificNotation() = 0;
   /**
-   * @brief Méthode permettant de définir le flag 'std::scientific' ou non.
+   * \brief Method allowing setting or unsetting the 'std::scientific' flag.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * For both the 'print()' method and the 'writetable()' method.
    * 
-   * Ce flag permet de 'forcer' l'affichage des valeurs en écriture
-   * scientifique.
+   * This flag allows 'forcing' the display of values in scientific
+   * notation during writing.
    * 
-   * @param use_scientific Si le flag 'std::scientific' doit être défini ou non.
+   * \param use_scientific Whether the 'std::scientific' flag should be set or not.
    */
   virtual void setForcedToUseScientificNotation(bool use_scientific) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le type de fichier
-   * qui sera écrit par l'implémentation. ("csv" sera retourné
-   * pour l'implémentation csv).
+   * \brief Method allowing retrieval of the file type
+   * that will be written by the implementation. ("csv" will be returned
+   * for the csv implementation).
    * 
-   * @return String Le type/l'extension du fichier utilisé.
+   * \return String The file type/extension used.
    */
   virtual String fileType() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * SimpleTableInternal utilisé.
+   * \brief Method allowing retrieval of a reference to the
+   * SimpleTableInternal object used.
    * 
-   * @return Ref<SimpleTableInternal> Une copie de la référence. 
+   * \return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de définir une référence vers un
+   * \brief Method allowing setting a reference to a
    * SimpleTableInternal.
    * 
-   * @param simple_table_internal La référence vers un SimpleTableInternal.
+   * \param simple_table_internal The reference to a SimpleTableInternal.
    */
   virtual void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
@@ -282,6 +285,3 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

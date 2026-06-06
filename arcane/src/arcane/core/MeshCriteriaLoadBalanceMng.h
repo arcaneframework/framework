@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshCriteriaLoadBalanceMng.h                                (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des critères d'équilibre de charge des maillages.            */
+/* Mesh load balance criteria manager.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHCRITERIALOADBALANCEMNG_H
 #define ARCANE_CORE_MESHCRITERIALOADBALANCEMNG_H
@@ -28,8 +28,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant d'ajouter des critères pour ajuster
- *        l'équilibre de charge.
+ * \brief Class allowing criteria to be added to adjust
+ *        the load balance.
  */
 class ARCANE_CORE_EXPORT MeshCriteriaLoadBalanceMng
 : public ICriteriaLoadBalanceMng

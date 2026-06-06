@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseOptionException.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Exception en rapport avec le jeu de données.                              */
+/* Exception related to the dataset.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONEXCEPTION_H
 #define ARCANE_CORE_CASEOPTIONEXCEPTION_H
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception en rapport avec le jeu de données.
+ * \brief Exception related to the dataset.
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseOptionException
@@ -37,25 +38,25 @@ class ARCANE_CORE_EXPORT CaseOptionException
  public:
 
   /*!
-   * \brief Exception lorsqu'une option d'une jeu de données n'est pas valide.
+   * \brief Exception when a dataset option is not valid.
    *
-   * Cette exception est collective.
+   * This exception is collective.
    */
   CaseOptionException(const String& where, const String& node_name,
                       const XmlNode& parent, const String& value,
                       const String& type);
   /*!
-   * \brief Exception lorsqu'une option d'une jeu de données n'est pas trouvé.
+   * \brief Exception when a dataset option is not found.
    *
-   * Cette exception est collective.
+   * This exception is collective.
    */
   CaseOptionException(const String& where, const String& node_name,
                       const XmlNode& parent);
-  //! Exception générique
+  //! Generic exception
   CaseOptionException(const String& where, const String& message, bool is_collective = false);
-  //! Exception générique
+  //! Generic exception
   CaseOptionException(const TraceInfo& where, const String& message, bool is_collective = false);
-  // Constructeur de recopie
+  // Copy constructor
   CaseOptionException(const CaseOptionException& rhs) ARCANE_NOEXCEPT;
   ~CaseOptionException() ARCANE_NOEXCEPT override;
 
@@ -80,5 +81,4 @@ class ARCANE_CORE_EXPORT CaseOptionException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

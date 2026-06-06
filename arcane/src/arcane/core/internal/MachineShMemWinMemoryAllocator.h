@@ -7,12 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinMemoryAllocator.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Allocateur mémoire utilisant la classe MachineShMemWinBase.               */
+/* Memory allocator using the MachineShMemWinBase class.                     */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_INTERNAL_MACHINESHMEMWINMEMORYALLOCATOR_H
 #define ARCANE_CORE_INTERNAL_MACHINESHMEMWINMEMORYALLOCATOR_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

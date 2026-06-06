@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICaseOptionList.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Options du jeu de données.                                                */
+/* Data set options.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEOPTIONLIST_H
 #define ARCANE_CORE_ICASEOPTIONLIST_H
@@ -30,9 +30,10 @@ class ICaseOptionListInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une liste d'options du jeu de données.
+ * \brief Interface for a data set options list.
  */
 class ARCANE_CORE_EXPORT ICaseOptionList
 {
@@ -45,77 +46,77 @@ class ARCANE_CORE_EXPORT ICaseOptionList
  public:
 
   /*!
-   * \brief Retourne l'élément lié à cette liste d'option.
+   * \brief Returns the element associated with this options list.
    *
-   * S'il n'y en a pas, retourne un XmlNode nul. S'il y en a plusieurs, retourne le
-   * premier.
+   * If there are none, returns a null XmlNode. If there are multiple, returns the
+   * first one.
    */
-  virtual XmlNode rootElement() const =0;
-  //! Retourne l'élément parent.
-  virtual XmlNode parentElement() const =0;
-  //! Ajoute la liste \a co à la liste des fils.
-  virtual void addChild(ICaseOptions* co) =0;
-  //! Supprime \a co de la liste des fils.
-  virtual void removeChild(ICaseOptions* co) =0;
-  //! Retourne le gestionnaire du cas
-  virtual ICaseMng* caseMng() const =0;
+  virtual XmlNode rootElement() const = 0;
+  //! Returns the parent element.
+  virtual XmlNode parentElement() const = 0;
+  //! Adds the list \a co to the list of children.
+  virtual void addChild(ICaseOptions* co) = 0;
+  //! Removes \a co from the list of children.
+  virtual void removeChild(ICaseOptions* co) = 0;
+  //! Returns the case manager
+  virtual ICaseMng* caseMng() const = 0;
 
-  //! Lis les valeurs des options à partir des éléments du DOM.
-  virtual void readChildren(bool is_phase1) =0;
-  //! Affiche la liste des options filles dans le langage \a lang et leur valeur
-  virtual void printChildren(const String& lang,int indent) =0;
-  //! Retourne le nom de l'élément de cette liste
-  virtual String rootTagName() const =0;
-  //! Ajoute à la liste \a col tous les options filles.
-  virtual void deepGetChildren(Array<CaseOptionBase*>& col) =0;
-  //! Indique si l'option est présente dans le jeu de données.
-  virtual bool isPresent() const =0;
-  //! Indique si l'option est optionnelle
-  virtual bool isOptional() const =0;
-  //! Nombre minimum d'occurences
+  //! Reads the option values from the DOM elements.
+  virtual void readChildren(bool is_phase1) = 0;
+  //! Displays the list of child options in language \a lang and their value
+  virtual void printChildren(const String& lang, int indent) = 0;
+  //! Returns the name of the element of this list
+  virtual String rootTagName() const = 0;
+  //! Adds all child options to the list \a col.
+  virtual void deepGetChildren(Array<CaseOptionBase*>& col) = 0;
+  //! Indicates if the option is present in the data set.
+  virtual bool isPresent() const = 0;
+  //! Indicates if the option is optional
+  virtual bool isOptional() const = 0;
+  //! Minimum number of occurrences
   virtual Integer minOccurs() const = 0;
-  //! Nombre maximum d'occurences
+  //! Maximum number of occurrences
   virtual Integer maxOccurs() const = 0;
-  //! Applique le visiteur \a visitor
-  virtual void visit(ICaseDocumentVisitor* visitor) =0;
-  //! Nom complet au format XPath correspondant à rootElement()
-  virtual String xpathFullName() const =0;
-  //! Handle du maillage associé
-  virtual MeshHandle meshHandle() const =0;
+  //! Applies the visitor \a visitor
+  virtual void visit(ICaseDocumentVisitor* visitor) = 0;
+  //! Full name in XPath format corresponding to rootElement()
+  virtual String xpathFullName() const = 0;
+  //! Handle of the associated mesh
+  virtual MeshHandle meshHandle() const = 0;
 
-  //! Document associé.
-  virtual ICaseDocumentFragment* caseDocumentFragment() const =0;
+  //! Associated document.
+  virtual ICaseDocumentFragment* caseDocumentFragment() const = 0;
 
   /*!
-   * \brief Désactive l'option comme si elle était absente.
+   * \brief Disables the option as if it were absent.
    *
-   * Cela est utilisé par exemple si l'option est associée à un maillage
-   * qui n'est pas défini.
+   * This is used, for example, if the option is associated with a mesh
+   * that is not defined.
    */
   virtual void disable() = 0;
 
  public:
 
-  //! Ajoute l'option \a o avec le parent \a parent
+  //! Adds option \a o with parent \a parent
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void addConfig(CaseOptionBase* o,XmlNode parent) =0;
+  virtual void addConfig(CaseOptionBase* o, XmlNode parent) = 0;
 
-  //! Positionne l'élément racine de la liste, avec \a parent_element comme parent. Si déjà positionné, ne fait rien
+  //! Positions the root element of the list, with \a parent_element as parent. If already positioned, does nothing
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void setRootElementWithParent(XmlNode parent_element) =0;
+  virtual void setRootElementWithParent(XmlNode parent_element) = 0;
 
-  //! Positionne l'élément racine de la liste. Si déjà positionné, lance une exception
+  //! Positions the root element of the list. If already positioned, throws an exception
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void setRootElement(XmlNode root_element) =0;
+  virtual void setRootElement(XmlNode root_element) = 0;
 
-  //! Ajoute les éléments fils ne correspondants par à de options dans \a nlist
+  //! Adds child elements that do not correspond to options in \a nlist
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void addInvalidChildren(XmlNodeList& nlist) =0;
+  virtual void addInvalidChildren(XmlNodeList& nlist) = 0;
 
  public:
 
-  //! API interne à Arcane
-  virtual ICaseOptionListInternal* _internalApi() =0;
+  //! Internal Arcane API
+  virtual ICaseOptionListInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,4 +127,4 @@ class ARCANE_CORE_EXPORT ICaseOptionList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

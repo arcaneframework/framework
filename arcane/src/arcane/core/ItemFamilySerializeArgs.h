@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemFamilySerializeArgs.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Arguments des callbacks de sérialisation des familles d'entités.          */
+/* Arguments for the serialization callbacks of entity families.             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMFAMILYSERIALIZEARGS_H
 #define ARCANE_CORE_ITEMFAMILYSERIALIZEARGS_H
@@ -25,20 +25,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Arguments des callbacks de sérialisation des familles d'entités.
+ * \brief Arguments for the serialization callbacks of entity families.
  *
- * La signification des arguments dépend du mode de sérialisation.
+ * The meaning of the arguments depends on the serialization mode.
  *
- * En mode ISerializer::ModeReserve ou ISerializer::ModePut:
- * - rank() est le rang de la famille de destination
- * - localIds() contient les indices locaux des entités qui seront envoyés
- *   à la famille destination.
+ * In ISerializer::ModeReserve or ISerializer::ModePut mode:
+ * - rank() is the rank of the destination family
+ * - localIds() contains the local indices of the entities that will be sent
+ *   to the destination family.
  *
- * En mode ISerializer::ModeGet:
- * - rank() est le rang de la famille d'origine.
- * - localIds() contient les indices locaux des entités qu'on vient de recevoir.
+ * In ISerializer::ModeGet mode:
+ * - rank() is the rank of the source family.
+ * - localIds() contains the local indices of the entities that have just
+ * been received.
  *
  */
 class ARCANE_CORE_EXPORT ItemFamilySerializeArgs
@@ -55,26 +57,26 @@ class ARCANE_CORE_EXPORT ItemFamilySerializeArgs
 
  public:
 
-  //! Sérialiseur associé
+  //! Associated serializer
   ISerializer* serializer() const { return m_serializer; }
 
   /*!
-   * \brief Rang de la source ou de la destination.
+   * \brief Rank of the source or destination.
    *
-   * En sérialisation, il s'agit du rang de la destination et en
-   * désérialisation il s'agit du rang de la source.
+   * During serialization, it is the rank of the destination, and during
+   * deserialization it is the rank of the source.
    */
   Int32 rank() const { return m_rank; }
 
   /*!
-   * \brief Indices locaux des entités.
-   * En sérialisation, il s'agit des indices locaux des entités envoyées au
-   * rang \a rank(). En désérialisation, il s'agit des indices locaux
-   * recues par le rang \a rank().
+   * \brief Local indices of the entities.
+   * During serialization, these are the local indices of the entities sent to
+   * rank \a rank(). During deserialization, these are the local indices
+   * received by rank \a rank().
    */
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
-  //! Indice du message dans la liste des messages
+  //! Message index in the list of messages
   Integer messageIndex() const { return m_message_index; }
 
  public:
@@ -93,4 +95,4 @@ class ARCANE_CORE_EXPORT ItemFamilySerializeArgs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

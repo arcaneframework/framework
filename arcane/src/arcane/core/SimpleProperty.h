@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleProperty.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation basique d'une propriété.                                   */
+/* Basic implementation of a property.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SIMPLEPROPERTY_H
 #define ARCANE_CORE_SIMPLEPROPERTY_H
@@ -26,10 +26,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T>
+template <class T>
 class SimplePropertyTraitsT
 {
  public:
+
   typedef const T& ConstReferenceType;
   typedef T& ReferenceType;
   typedef T ValueType;
@@ -38,10 +39,11 @@ class SimplePropertyTraitsT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class SimplePropertyTraitsT<String>
 {
  public:
+
   typedef const String& ConstReferenceType;
   typedef String& ReferenceType;
   typedef String ValueType;
@@ -49,11 +51,12 @@ class SimplePropertyTraitsT<String>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation basique d'une propriété en lecture seule.
+ * \brief Basic implementation of a read-only property.
  */
-template<class T>
+template <class T>
 class SimpleReadOnlyPropertyT
 {
  public:
@@ -64,8 +67,12 @@ class SimpleReadOnlyPropertyT
 
  public:
 
-  SimpleReadOnlyPropertyT() : m_value(T()) {}
-  SimpleReadOnlyPropertyT(ConstReferenceType v) : m_value(v) {}
+  SimpleReadOnlyPropertyT()
+  : m_value(T())
+  {}
+  SimpleReadOnlyPropertyT(ConstReferenceType v)
+  : m_value(v)
+  {}
 
  public:
 
@@ -78,11 +85,12 @@ class SimpleReadOnlyPropertyT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation basique d'une propriété.
+ * \brief Basic implementation of a property.
  */
-template<class T>
+template <class T>
 class SimplePropertyT
 : public SimpleReadOnlyPropertyT<T>
 {
@@ -94,11 +102,15 @@ class SimplePropertyT
 
  public:
 
-  SimplePropertyT() : SimpleReadOnlyPropertyT<T>() {}
-  SimplePropertyT(ConstReferenceType v) : SimpleReadOnlyPropertyT<T>(v) {}
+  SimplePropertyT()
+  : SimpleReadOnlyPropertyT<T>()
+  {}
+  SimplePropertyT(ConstReferenceType v)
+  : SimpleReadOnlyPropertyT<T>(v)
+  {}
 
  public:
-		  
+
   inline ConstReferenceType get() const { return this->m_value; }
   inline ReferenceType get() { return this->m_value; }
   inline void put(ConstReferenceType v) { this->m_value = v; }
@@ -112,4 +124,4 @@ class SimplePropertyT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

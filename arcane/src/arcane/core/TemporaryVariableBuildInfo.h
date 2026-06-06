@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TemporaryVariableBuildInfo.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour construire une variable temporaraire.                   */
+/* Information for building a temporary variable.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_TEMPORARYVARIABLEBUILDINFO_H
 #define ARCANE_CORE_TEMPORARYVARIABLEBUILDINFO_H
@@ -27,14 +27,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Paramètres nécessaires à la construction d'une variable temporaire.
+ * \brief Parameters required to build a temporary variable.
  *
- * Une variable, même temporaire, doit être créée avec les mêmes paramètres
- * sur tous les sous-domaines.
+ * A variable, even a temporary one, must be created with the same parameters
+ * on all sub-domains.
  *
- * \warning Cette classe n'est pas encore opérationnelle
+ * \warning This class is not yet operational
  */
 class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
 : public VariableBuildInfo
@@ -42,48 +43,48 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
  public:
 
   /*!
-   * \brief Construit un initialiseur pour une variable.
+   * \brief Constructs an initializer for a variable.
    *
-   * \param name nom de la variable
-   * \param m module associé
+   * \param name name of the variable
+   * \param m associated module
    */
   TemporaryVariableBuildInfo(IModule* m, const String& name);
 
   /*!
-   * \brief Construit un initialiseur pour une variable sans l'associer à
-   * un module.
+   * \brief Constructs an initializer for a variable without associating it with
+   * a module.
    *
-   * \param sub_domain gestionnaire de sous-domaine
-   * \param name nom de la variable
+   * \param sub_domain sub-domain manager
+   * \param name name of the variable
    */
   TemporaryVariableBuildInfo(ISubDomain* sub_domain, const String& name);
 
   /*!
-   * \brief Construit un initialiseur pour une variable.
+   * \brief Constructs an initializer for a variable.
    *
-   * \param m module associé
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
+   * \param m associated module
+   * \param name name of the variable
+   * \param item_family_name name of the entity family
    */
   TemporaryVariableBuildInfo(IModule* m, const String& name,
                              const String& item_family_name);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée à un
-   * maillage.
+   * \brief Constructs an initializer for a variable associated with a
+   * mesh.
    *
-   * \param sub_domain gestionnaire de sous-domaine
-   * \param name nom de la variable
+   * \param sub_domain sub-domain manager
+   * \param name name of the variable
    */
   TemporaryVariableBuildInfo(IMesh* mesh, const String& name);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée à un
-   * maillage.
+   * \brief Constructs an initializer for a variable associated with a
+   * mesh.
    *
-   * \param sub_domain gestionnaire de sous-domaine
-   * \param name nom de la variable
-   * \param item_family_name nom de la famille d'entité
+   * \param sub_domain sub-domain manager
+   * \param name name of the variable
+   * \param item_family_name name of the entity family
    */
   TemporaryVariableBuildInfo(IMesh* mesh, const String& name,
                              const String& item_family_name);
@@ -102,4 +103,4 @@ class ARCANE_CORE_EXPORT TemporaryVariableBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

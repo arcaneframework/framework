@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemFamilyExchanger.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Echange entre sous-domaine les entités d'une famille.                     */
+/* Exchange of family entities between sub-domains.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILYEXCHANGER_H
 #define ARCANE_CORE_IITEMFAMILYEXCHANGER_H
@@ -36,126 +36,120 @@ class ParallelExchangerOptions;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Échange des entités et leurs caractéristiques pour une famille donnée
+ * \brief Exchange of entities and their characteristics for a given family
  
- Cette classe gère l'échange d'entités entre les sous-domaines. Elle est
- utilisée par exemple lors d'un repartitionnement. En général cette classe
- n'est pas utilisée directement (sauf pour spécifier les entités à échanger)
- mais via l'interface IMeshExchanger.
+ This class manages the exchange of entities between sub-domains. It is
+ used, for example, during a redistribution. Generally, this class
+ is not used directly (except to specify the entities to exchange)
+ but via the IMeshExchanger interface.
  
- L'utilisateur de cette classe doit commencer par spécifier la liste des
- entités à envoyer à chaque sous-domaine via la méthode setExchangeItems().
+ The user of this class must start by specifying the list of entities to
+ send to each sub-domain via the setExchangeItems() method.
 
- L'échange d'entités se fait en plusieurs étapes comme indiquée dans
- IMeshExchanger.
+ Entity exchange is done in several steps as indicated in IMeshExchanger.
 
- La sérialisation proprement dite des entités se fait en trois phases
- successives: les entités, les groupes et les variables. La désérialisation
- se fait dans le même ordre. En effet, il est nécessaire pour désérialiser
- les variables de connaitre les groupes et pour désérialiser les groupes
- de connaître les entités.
+ The actual serialization of entities takes place in three successive phases:
+ entities, groups, and variables. Deserialization is done in the same order.
+ Indeed, it is necessary to know the groups to deserialize the variables, and
+ to know the entities to deserialize the groups.
 
- Lorsque des mailles ou des particules sont envoyées, il faut
- appeler la méthode readAndAllocItems() pour les créér, avant
- d'appeler readGroups() puis readVariables().
+ When meshes or particles are sent, you must call the readAndAllocItems()
+ method to create them, before calling readGroups() and then readVariables().
 */
 class ARCANE_CORE_EXPORT IItemFamilyExchanger
 {
  public:
 
-  virtual ~IItemFamilyExchanger(){}
+  virtual ~IItemFamilyExchanger() {}
 
  public:
 
   /*!
    * \internal
-   * \brief Détermine la liste des entités à échanger.
+   * \brief Determines the list of entities to exchange.
 
-   * \warning Cette méthode ne doit être utilisée que pour les familles
-   * de particules.
+   * \warning This method must only be used for particle families.
 
-   Cette opération se sert de la variable itemsOwner() et du champ
-   owner() de chaque entité pour déterminer à qui chaque entité doit
-   être envoyée. Par conséquent, il faut appeler cette opération
-   avant que DynamicMesh::_setOwnerFromVariable() ne soit appelé.
+   This operation uses the itemsOwner() variable and the owner() field of each
+   entity to determine who each entity must be sent to. Therefore, this
+   operation must be called before DynamicMesh::_setOwnerFromVariable() is
+   called.
    *
-   * \todo A supprimer
+   * \todo To be removed
    */
-  virtual void computeExchangeItems() =0;
-  
-  //! Positionne la liste des entités à échanger.
-  virtual void setExchangeItems(ConstArrayView< std::set<Int32> > items_to_send) =0;
+  virtual void computeExchangeItems() = 0;
+
+  //! Positions the list of entities to exchange.
+  virtual void setExchangeItems(ConstArrayView<std::set<Int32>> items_to_send) = 0;
 
   /*!
-   * \brief Détermine les informations nécessaires pour les échanges.
-   * \retval true s'il n'y a rien à échanger
-   * \retval false sinon.
+   * \brief Determines the information necessary for the exchanges.
+   * \retval true if there is nothing to exchange
+   * \retval false otherwise.
    */
-  virtual bool computeExchangeInfos() =0;
+  virtual bool computeExchangeInfos() = 0;
 
-  //! Prépare les structures d'envoie
-  virtual void prepareToSend() =0;
-  virtual void releaseBuffer() =0;
+  //! Prepares the sending structures
+  virtual void prepareToSend() = 0;
+  virtual void releaseBuffer() = 0;
 
   /*!
-   * \brief Après réception des messages, lit et créé les entités transférées.
+   * \brief After receiving messages, reads and creates the transferred entities.
    *
-   * Cette méthode ne fait rien pour les entités autre
-   * que pour les mailles et les particules, pour la gestion legacy.
-   * Avec le graphe des familles ItemFamilyNetwork, cette méthode crée les
-   * items et leur dépendances (ie connectivités descendantes).
-   * Cela implique de séparer le traitement des sous-items (sous-maillages)
-   * et des relations (connectivités ascendantes ou dof), qui ne peuvent
-   * être traités tant que tous les items ne sont pas créés.
+   * This method does nothing for entities other than meshes and particles,
+   * for legacy management.
+   * With the ItemFamilyNetwork family graph, this method creates the items and
+   * their dependencies (i.e., descendant connectivities).
+   * This involves separating the processing of sub-items (sub-meshes) and
+   * relations (ascending connectivities or dofs), which cannot be processed
+   * until all items are created.
    *
-   * \warning Avant d'appeler cette méthode, il faut être certain
-   * que les entités n'appartenant plus à ce sous-domaine ont été
-   * détruites
+   * \warning Before calling this method, you must be certain that entities no longer
+   * belonging to this sub-domain have been destroyed
    */
-  virtual void readAndAllocItems() =0;
-  virtual void readAndAllocSubMeshItems() =0;
-  virtual void readAndAllocItemRelations() =0;
+  virtual void readAndAllocItems() = 0;
+  virtual void readAndAllocSubMeshItems() = 0;
+  virtual void readAndAllocItemRelations() = 0;
 
-  //! Après réception des messages, lit les groupes
-  virtual void readGroups() =0;
+  //! After receiving messages, reads the groups
+  virtual void readGroups() = 0;
 
-  //! Après réception des messages, lit les valeurs des variables
-  virtual void readVariables() =0;
+  //! After receiving messages, reads the variable values
+  virtual void readVariables() = 0;
 
   /*!
    * \internal
-   * \brief Supprime les entités envoyées.
+   * \brief Removes the sent entities.
    *
-   * Cette opération ne doit se faire que pour les entités qui
-   * ne dépendent pas d'une autre entité. Par exemple, il est impossible
-   * de supprimer directement les noeuds, car certaines mailles qui
-   * ne sont pas envoyées peuvent reposer dessus.
+   * This operation must only be performed for entities that do not depend on
+   * another entity. For example, it is impossible to directly delete nodes,
+   * because certain meshes that are not sent may rely on them.
    *
-   * \warning Cette opération n'est valide que pour les particules sans
-   * notion de particule fantôme.
-   * \todo A supprimer
+   * \warning This operation is only valid for particles without the concept of
+   * ghost particles.
+   * \todo To be removed
    */
-  virtual void removeSentItems() =0;
+  virtual void removeSentItems() = 0;
 
-  //! Envoie les messages d'échange
-  virtual void processExchange() =0;
+  //! Sends the exchange messages
+  virtual void processExchange() = 0;
 
   /*!
-   * \brief Termine l'échange.
+   * \brief Finalizes the exchange.
    *
-   * Effectue les dernières mises à jour suite à un échange. Cette
-   * méthode est appelée lorsque toutes les entités et les variables
-   * ont été échangées.
+   * Performs the final updates following an exchange. This method is called
+   * when all entities and variables have been exchanged.
    */
-  virtual void finalizeExchange() =0;
+  virtual void finalizeExchange() = 0;
 
-  //! Famille associée
-  virtual IItemFamily* itemFamily() =0;
+  //! Associated family
+  virtual IItemFamily* itemFamily() = 0;
 
-  //! Positionne les options utilisées lors de l'échange des entités
-  virtual void setParallelExchangerOption(const ParallelExchangerOptions& options) =0;
+  //! Sets the options used during entity exchange
+  virtual void setParallelExchangerOption(const ParallelExchangerOptions& options) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -166,5 +160,4 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

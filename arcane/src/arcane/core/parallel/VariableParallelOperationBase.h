@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableParallelOperationBase.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base des opérations parallèle sur des variables.                */
+/* Base class for parallel operations on variables.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLEL_VARIABLEPARALLELOPERATION_H
 #define ARCANE_CORE_PARALLEL_VARIABLEPARALLELOPERATION_H
@@ -32,10 +32,11 @@ namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une classe d'opérations parallèle sur des variables.
+ * \brief Interface for a class of parallel operations on variables.
  *
- Ces opérations sont collectives.
+ These operations are collective.
  */
 class ARCANE_CORE_EXPORT VariableParallelOperationBase
 : public TraceAccessor
@@ -44,7 +45,7 @@ class ARCANE_CORE_EXPORT VariableParallelOperationBase
  public:
 
   VariableParallelOperationBase(IParallelMng* pm);
-  virtual ~VariableParallelOperationBase() {} //!< Libère les ressources.
+  virtual ~VariableParallelOperationBase() {} //!< Frees resources.
 
  public:
 
@@ -68,17 +69,16 @@ class ARCANE_CORE_EXPORT VariableParallelOperationBase
   IParallelMng* m_parallel_mng;
   IItemFamily* m_item_family;
   VariableList m_variables;
-  //! Liste des entités à envoyer à chaque processeur
+  //! List of entities to send to each processor
   UniqueArray<SharedArray<ItemLocalId>> m_items_to_send;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

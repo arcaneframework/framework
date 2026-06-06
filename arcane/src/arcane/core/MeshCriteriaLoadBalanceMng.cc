@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshCriteriaLoadBalanceMng.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Gestionnaire des critères d'équilibre de charge des maillages.            */
+/* Mesh load balance criteria manager.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,9 +24,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Constructeur
- * \param sd Le sous-domaine où se trouve l'instance de ILoadBalanceMng.
- * \param mesh_handle Le maillage sur lequel les critères seront définis.
+ * \brief Constructor
+ * \param sd The subdomain where the ILoadBalanceMng instance is located.
+ * \param mesh_handle The mesh on which the criteria will be defined.
  */
 MeshCriteriaLoadBalanceMng::
 MeshCriteriaLoadBalanceMng(ISubDomain* sd, const MeshHandle& mesh_handle)

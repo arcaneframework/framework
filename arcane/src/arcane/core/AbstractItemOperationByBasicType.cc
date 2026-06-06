@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AbstractItemOperationByBasicType.cc                         (C) 2000-2016 */
 /*                                                                           */
-/* Opérateur abstrait sur des entités rangées par type.                      */
+/* Abstract operator on entities sorted by type.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,13 +15,14 @@
 
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/Item.h"
-#include "arcane/AbstractItemOperationByBasicType.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/AbstractItemOperationByBasicType.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,7 +61,7 @@ void AbstractItemOperationByBasicType::
 applyHexagon6(ItemVectorView items)
 {
   ARCANE_UNUSED(items);
-  throw NotImplementedException(A_FUNCINFO); 
+  throw NotImplementedException(A_FUNCINFO);
 }
 void AbstractItemOperationByBasicType::
 applyTetraedron4(ItemVectorView items)
@@ -150,26 +151,25 @@ void AbstractItemOperationByBasicType::
 applyDualFace(ItemVectorView group)
 {
   ARCANE_UNUSED(group);
-  throw NotImplementedException(A_FUNCINFO); 
+  throw NotImplementedException(A_FUNCINFO);
 }
 void AbstractItemOperationByBasicType::
 applyDualCell(ItemVectorView group)
 {
   ARCANE_UNUSED(group);
-  throw NotImplementedException(A_FUNCINFO); 
+  throw NotImplementedException(A_FUNCINFO);
 }
 void AbstractItemOperationByBasicType::
 applyLink(ItemVectorView group)
 {
   ARCANE_UNUSED(group);
-  throw NotImplementedException(A_FUNCINFO); 
+  throw NotImplementedException(A_FUNCINFO);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

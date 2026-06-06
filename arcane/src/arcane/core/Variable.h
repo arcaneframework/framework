@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Variable.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant la partie privée d'une variable.                            */
+/* Class managing the private part of a variable.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLE_H
 #define ARCANE_CORE_VARIABLE_H
@@ -32,7 +32,7 @@ namespace Arcane
 
 class VariableInfo;
 class VariableBuildInfo;
-template<typename T> class IDataTracerT;
+template <typename T> class IDataTracerT;
 class VariablePrivate;
 class MemoryAccessInfo;
 class IParallelMng;
@@ -40,38 +40,36 @@ class VariableResizeArgs;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Instance d'une variable.
+ * \brief Instance of a variable.
  *
- Cette classe gère les données d'une variable. Cette instance ne doit en
- principe pas être utilisée par les développeurs de code.
- \todo expliquer mieux
+This class manages the data of a variable. This instance should generally
+not be used by code developers.
+ \todo explain better
 	
- Une variable est caractérisée par:
+A variable is characterized by:
  <ul>
- <li>son <b>nom</b>,</li>
- <li>son <b>type</b>: réel, entier, tenseur, ...</li>,
- <li>son <b>genre</b>: scalaire, tableau, grandeur au noeud, grandeur
- au centre des mailles ...</li>
+ <li>its <b>name</b>,</li>
+ <li>its <b>type</b>: real, integer, tensor, ...</li>,
+ <li>its <b>kind</b>: scalar, array, nodal quantity, cell-center quantity ...</li>
  </ul>
 
- Une variable qui repose sur un type d'entité du maillage est appelée une
- variable du maillage.
+A variable based on a type of mesh entity is called a mesh variable.
 
- La variable est généralement utilisée par un module (IModule) via une référence
- (VariableRef).
+The variable is generally used by a module (IModule) via a reference (VariableRef).
 
- Les variables sont <b>persistantes</b> et leur lecture/écriture se fait
- par les méthodes read() et write().
+Variables are <b>persistent</b> and their reading/writing is done
+by the read() and write() methods.
 
- \warning Cette classe est gérée entièrement par Arcane et les modules
- qui l'utilisent ne doivent en principe ne l'utiliser que pour récupérer des
- informations. Les opérations qui modifient cette instance (comme setItemGroup())
- ne doivent être utilisé que si le développeur possède une bonne connaissance
- de leur fonctionnement.
+ \warning This class is entirely managed by Arcane, and modules
+that use it should generally only use it to retrieve information. Operations
+that modify this instance (such as setItemGroup())
+should only be used if the developer has a good understanding
+of their functioning.
 
- * Cette classe ne doit pas être copiée. 
+ * This class must not be copied. 
  */
 class ARCANE_CORE_EXPORT Variable
 : public TraceAccessor
@@ -79,19 +77,19 @@ class ARCANE_CORE_EXPORT Variable
 {
  protected:
 
-  //! Créé une variable lié à la référence \a v.
-  Variable(const VariableBuildInfo& v,const VariableInfo& vi);
- 
+  //! Creates a variable linked to the reference \a v.
+  Variable(const VariableBuildInfo& v, const VariableInfo& vi);
+
  public:
-  
-  //! Libère les ressources
+
+  //! Frees resources
   ~Variable() override;
 
  public:
 
-  //! Constructeur de recopie (ne pas utiliser)
+  //! Copy constructor (do not use)
   Variable(const Variable& from) = delete;
-  //! Opérateur de recopie (ne pas utiliser)
+  //! Copy assignment operator (do not use)
   Variable& operator=(const Variable& from) = delete;
 
  public:
@@ -107,21 +105,21 @@ class ARCANE_CORE_EXPORT Variable
   void notifyReferencePropertyChanged() override;
 
  public:
-	
-  //! Positionne l'état d'utilisation de la variable
+
+  //! Sets the usage state of the variable
   void setUsed(bool v) override;
 
-  //! Etat d'utilisation de la variable
+  //! Usage state of the variable
   bool isUsed() const override;
 
   bool isPartial() const override;
 
  public:
 
-  void setTraceInfo(Integer,eTraceType) override {}
+  void setTraceInfo(Integer, eTraceType) override {}
 
  public:
-  
+
   void read(IDataReader* d) override;
   void write(IDataWriter* d) override;
   void notifyEndRead() override;
@@ -151,11 +149,11 @@ class ARCANE_CORE_EXPORT Variable
   Int32 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost) final;
 
   eDataType dataType() const override;
-  bool initialize(const ItemGroup& /*group*/,const String& /*value*/) override { return true; }
+  bool initialize(const ItemGroup& /*group*/, const String& /*value*/) override { return true; }
 
   IDataFactoryMng* dataFactoryMng() const final;
-  void serialize(ISerializer* sbuffer,IDataOperation* operation) override;
-  void serialize(ISerializer* sbuffer,Int32ConstArrayView ids,IDataOperation* operation) override;
+  void serialize(ISerializer* sbuffer, IDataOperation* operation) override;
+  void serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operation) override;
 
   void resize(Integer n) override;
   void resizeFromGroup() override;
@@ -164,14 +162,14 @@ class ARCANE_CORE_EXPORT Variable
   DataAllocationInfo allocationInfo() const override;
 
  public:
-  
+
   IObservable* writeObservable() override;
   IObservable* readObservable() override;
   IObservable* onSizeChangedObservable() override;
 
  public:
 
-  void addTag(const String& tagname,const String& tagvalue) override;
+  void addTag(const String& tagname, const String& tagvalue) override;
   void removeTag(const String& tagname) override;
   bool hasTag(const String& tagname) override;
   String tagValue(const String& tagname) override;
@@ -181,8 +179,8 @@ class ARCANE_CORE_EXPORT Variable
   void update() override;
   void setUpToDate() override;
   Int64 modifiedTime() override;
-  void addDepend(IVariable* var,eDependType dt) override;
-  void addDepend(IVariable* var,eDependType dt,const TraceInfo& tinfo) override;
+  void addDepend(IVariable* var, eDependType dt) override;
+  void addDepend(IVariable* var, eDependType dt, const TraceInfo& tinfo) override;
   void removeDepend(IVariable* var) override;
   void setComputeFunction(IVariableComputeFunction* v) override;
   IVariableComputeFunction* computeFunction() override;
@@ -195,7 +193,7 @@ class ARCANE_CORE_EXPORT Variable
   IVariableInternal* _internalApi() override;
 
  public:
-  
+
   IMemoryAccessTrace* memoryAccessTrace() const override { return nullptr; }
 
  protected:
@@ -203,42 +201,43 @@ class ARCANE_CORE_EXPORT Variable
   void _setProperty(int property);
 
   /*!
-   * \brief Positionne la donnée.
+   * \brief Positions the data.
    *
-   * Si data est nul, une erreur fatale est envoyée
+   * If data is null, a fatal error is sent
    */
   void _setData(const Ref<IData>& data);
 
-  //! Indique si les données de la variable sont valides
+  //! Indicates if the variable data is valid
   void _setValidData(bool valid_data);
+
   /*!
-   * \brief Indique si les données de la variable sont valides.
+   * \brief Indicates if the variable data is valid.
    *
-   * Les données sont valides à la fin d'un appel à setUsed().
+   * The data is valid at the end of a call to setUsed().
    */
   bool _hasValidData() const;
 
  protected:
 
-  virtual void _internalResize(const VariableResizeArgs& resize_args) =0;
+  virtual void _internalResize(const VariableResizeArgs& resize_args) = 0;
 
   void _checkSwapIsValid(Variable* rhs);
-  // Temporaire pour test libération mémoire
+  // Temporary for memory release test
   bool _wantShrink() const;
 
-  // Accès via VariablePrivate pour l'API interne
+  // Access via VariablePrivate for internal API
   friend class VariablePrivate;
   void _resize(const VariableResizeArgs& resize_args);
 
-  //! Comparaison de valeurs entre variables
-  virtual VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) =0;
+  //! Comparison of values between variables
+  virtual VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) = 0;
 
  private:
 
-  VariablePrivate* m_p; //!< Implémentation
+  VariablePrivate* m_p; //!< Implementation
 
  private:
-  
+
   void _checkSetItemFamily();
   void _checkSetItemGroup();
   void _checkSetProperty(VariableRef*);
@@ -255,7 +254,7 @@ class ARCANE_CORE_EXPORT Variable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
 
 #include "arcane/core/VariableScalar.h"
 #include "arcane/core/VariableArray.h"

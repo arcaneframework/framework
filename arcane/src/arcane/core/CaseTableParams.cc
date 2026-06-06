@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseTableParams.cc                                          (C) 2000-2023 */
 /*                                                                           */
-/* Paramètre d'une fonction du jeu de données.                               */
+/* Parameter of a dataset function.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,7 +17,7 @@
 
 #include "arcane/datatype/SmallVariant.h"
 
-#include "arcane/CaseTableParams.h"
+#include "arcane/core/CaseTableParams.h"
 
 #include <algorithm>
 
@@ -190,14 +190,14 @@ template <class Type> CaseTable::eError CFParamSetterT<Type>::
 _checkValid(Integer id, Type avalue) const
 {
   Integer nb_param = nbElement();
-  // Vérifie que le 'begin' courant est supérieur au précédent.
+  // Checks that the current 'begin' is greater than the previous one.
   if (nb_param != 0 && id > 0) {
     Type previous_value = asType(param(id - 1));
     if (avalue < previous_value)
       return CaseTable::ErrNotGreaterThanPrevious;
   }
 
-  // Vérifie que le 'begin' courant est inférieur au suivant.
+  // Checks that the current 'begin' is less than the next one.
   if (nb_param != 0 && (id + 1) < nb_param) {
     Type next_value = asType(param(id + 1));
     if (avalue > next_value)
@@ -231,7 +231,7 @@ class CaseTableParams::Impl
 
   CaseTable::eParamType m_param_type;
   ICFParamSetter* m_setter;
-  Params m_param_list; //!< Liste des valeurs
+  Params m_param_list; //!< List of values
 };
 
 /*---------------------------------------------------------------------------*/
@@ -263,9 +263,8 @@ setType(CaseTable::eParamType type)
   delete m_setter;
 
   if (type == CaseTable::ParamUnknown) {
-    // Normalement on devrait faire un fatal mais pour des raisons de
-    // compatibilité avec l'existant on considère qu'il s'agit d'un paramètre
-    // de type 'Real'.
+    // Normally we should do a fatal error, but for reasons of
+    // compatibility with existing code, we consider it a 'Real' type parameter.
     type = CaseTable::ParamReal;
   }
 
@@ -390,9 +389,8 @@ namespace
 template <typename T> void CaseTableParams::
 _getRange(T v, Int32& begin, Int32& end) const
 {
-  // Comme les valeurs des paramètres sont triées, utilise une
-  // dichotomie pour chercher à quelle indice dans le tableau des paramètres
-  // se trouve 'v'.
+  // Since the parameter values are sorted, use binary search to find the
+  // index in the parameter array where 'v' is located.
   const Int32 max_end = nbElement();
   begin = 0;
   end = max_end;
@@ -401,8 +399,8 @@ _getRange(T v, Int32& begin, Int32& end) const
   ConstArrayView<SmallVariant> params = m_p->m_param_list;
   auto iter = std::lower_bound(params.begin(), params.end(), v2, comp);
   Int32 pos = static_cast<Int32>(iter - params.begin());
-  // Augmente l'intervalle pour être sur de traiter les cas limites
-  // où la valeur est proche d'une valeur conservée dans \a params.
+  // Increase the interval to ensure that boundary cases where the value is
+  // close to a value stored in \a params are handled.
   begin = pos - 2;
   end = pos + 2;
   begin = std::clamp(begin, 0, max_end);

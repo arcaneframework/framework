@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Timer.cc                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'un timer.                                                       */
+/* Timer management.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,8 +34,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 Timer::
-Timer(ISubDomain* sd,const String& name,eTimerType type)
-: Timer(sd->timerMng(),name,type)
+Timer(ISubDomain* sd, const String& name, eTimerType type)
+: Timer(sd->timerMng(), name, type)
 {
 }
 
@@ -43,7 +43,7 @@ Timer(ISubDomain* sd,const String& name,eTimerType type)
 /*---------------------------------------------------------------------------*/
 
 Timer::
-Timer(ITimerMng* tm,const String& name,eTimerType type)
+Timer(ITimerMng* tm, const String& name, eTimerType type)
 : m_timer_mng(tm)
 , m_type(type)
 , m_nb_activated(0)
@@ -71,7 +71,7 @@ start()
 {
   if (m_is_activated)
     ARCANE_FATAL("Timer is already activated");
-  
+
   //\todo Get time
   m_activation_time = 0.;
   m_timer_mng->beginTimer(this);
@@ -86,7 +86,7 @@ start()
 Real Timer::
 stop()
 {
-  if (m_is_activated){
+  if (m_is_activated) {
     m_activation_time = m_timer_mng->endTimer(this);
     m_is_activated = false;
     m_total_time += m_activation_time;
@@ -102,7 +102,6 @@ reset()
   m_is_activated = false;
   m_activation_time = 0.0;
   m_total_time = 0.0;
- 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -128,7 +127,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 Timer::Action::
-Action(ISubDomain* sub_domain,const String& action_name,bool print_time)
+Action(ISubDomain* sub_domain, const String& action_name, bool print_time)
 : m_stats(0)
 , m_action_name(action_name)
 , m_print_time(print_time)
@@ -142,7 +141,7 @@ Action(ISubDomain* sub_domain,const String& action_name,bool print_time)
 /*---------------------------------------------------------------------------*/
 
 Timer::Action::
-Action(ITimeStats* stats,const String& action_name,bool print_time)
+Action(ITimeStats* stats, const String& action_name, bool print_time)
 : m_stats(stats)
 , m_action_name(action_name)
 , m_print_time(print_time)
@@ -157,7 +156,7 @@ Timer::Action::
 ~Action()
 {
   if (m_stats)
-    m_stats->endAction(m_action_name,m_print_time);
+    m_stats->endAction(m_action_name, m_print_time);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -180,7 +179,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 Timer::Phase::
-Phase(ISubDomain* sub_domain,eTimePhase pt)
+Phase(ISubDomain* sub_domain, eTimePhase pt)
 : m_stats(0)
 , m_phase_type(pt)
 {
@@ -193,7 +192,7 @@ Phase(ISubDomain* sub_domain,eTimePhase pt)
 /*---------------------------------------------------------------------------*/
 
 Timer::Phase::
-Phase(ITimeStats* stats,eTimePhase pt)
+Phase(ITimeStats* stats, eTimePhase pt)
 : m_stats(stats)
 , m_phase_type(pt)
 {
@@ -217,7 +216,7 @@ Timer::Phase::
 /*---------------------------------------------------------------------------*/
 
 Timer::SimplePrinter::
-SimplePrinter(ITraceMng* tm,const String& msg)
+SimplePrinter(ITraceMng* tm, const String& msg)
 : m_trace_mng(tm)
 , m_begin_time(0.0)
 , m_is_active(true)
@@ -230,7 +229,7 @@ SimplePrinter(ITraceMng* tm,const String& msg)
 /*---------------------------------------------------------------------------*/
 
 Timer::SimplePrinter::
-SimplePrinter(ITraceMng* tm,const String& msg,bool is_active)
+SimplePrinter(ITraceMng* tm, const String& msg, bool is_active)
 : m_trace_mng(tm)
 , m_begin_time(0.0)
 , m_is_active(is_active)
@@ -245,7 +244,7 @@ SimplePrinter(ITraceMng* tm,const String& msg,bool is_active)
 Timer::SimplePrinter::
 ~SimplePrinter()
 {
-  if (m_is_active){
+  if (m_is_active) {
     Real end_time = platform::getRealTime();
     Real diff_time = end_time - m_begin_time;
     m_trace_mng->info() << m_message << "  time=" << diff_time;
@@ -266,20 +265,20 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 TimeMetricAction Timer::
-phaseAction(ITimeStats* s,eTimePhase phase)
+phaseAction(ITimeStats* s, eTimePhase phase)
 {
   ITimeMetricCollector* c = nullptr;
   if (s)
     c = s->metricCollector();
   if (!c)
     return TimeMetricAction();
-  return TimeMetricAction(c,TimeMetricActionBuildInfo(String(),phase));
+  return TimeMetricAction(c, TimeMetricActionBuildInfo(String(), phase));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

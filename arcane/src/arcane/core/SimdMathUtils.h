@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimdMathUtils.h                                             (C) 2000-2022 */
 /*                                                                           */
-/* Fonctions mathématiques diverses pour les classes SIMD.                   */
+/* Diverse mathematical functions for SIMD classes.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_SIMDMATHUTILS_H
 #define ARCANE_SIMDMATHUTILS_H
@@ -26,37 +26,36 @@ namespace Arcane::math
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Produit vectoriel de \a u par \a v dans \f$R^3\f$.
+ * \brief Vector product of u by v in R^3.
  */
 inline SimdReal3
-cross(const SimdReal3& u,const SimdReal3& v)
+cross(const SimdReal3& u, const SimdReal3& v)
 {
   return SimdReal3(
-                    u.y * v.z  - u.z * v.y,
-                    u.z * v.x  - u.x * v.z,
-                    u.x * v.y  - u.y * v.x
-                    );
+  u.y * v.z - u.z * v.y,
+  u.z * v.x - u.x * v.z,
+  u.x * v.y - u.y * v.x);
 }
 
 /*!
- * \brief Produit vectoriel de \a u par \a v dans \f$R^2\f$.
+ * \brief Vector product of u by v in R^2.
  */
 inline SimdReal
-cross2D(const SimdReal3& u,const SimdReal3& v)
+cross2D(const SimdReal3& u, const SimdReal3& v)
 {
-  return (u.x * v.y  - u.y * v.x);
+  return (u.x * v.y - u.y * v.x);
 }
 
 inline SimdReal
-dot(const SimdReal3& u,const SimdReal3& v)
+dot(const SimdReal3& u, const SimdReal3& v)
 {
-  return SimdReal(u.x*v.x + u.y*v.y + u.z*v.z);
+  return SimdReal(u.x * v.x + u.y * v.y + u.z * v.z);
 }
 
 inline SimdReal
-dot(const SimdReal2& u,const SimdReal2& v)
+dot(const SimdReal2& u, const SimdReal2& v)
 {
-  return SimdReal(u.x*v.x + u.y*v.y);
+  return SimdReal(u.x * v.x + u.y * v.y);
 }
 
 ARCCORE_DEPRECATED_2021("Use normL2() instead")
@@ -64,8 +63,9 @@ inline SimdReal
 abs(const SimdReal3& sr)
 {
   SimdReal vr;
-  ENUMERATE_SIMD_REAL(si){
-    Real3 r(sr.x[si],sr.y[si],sr.z[si]);
+  ENUMERATE_SIMD_REAL(si)
+  {
+    Real3 r(sr.x[si], sr.y[si], sr.z[si]);
     vr[si] = r.normL2();
   }
   return vr;
@@ -76,8 +76,9 @@ inline SimdReal
 abs(const SimdReal2& sr)
 {
   SimdReal vr;
-  ENUMERATE_SIMD_REAL(si){
-    Real2 r(sr.x[si],sr.y[si]);
+  ENUMERATE_SIMD_REAL(si)
+  {
+    Real2 r(sr.x[si], sr.y[si]);
     vr[si] = r.normL2();
   }
   return vr;
@@ -87,8 +88,9 @@ inline SimdReal
 normL2(const SimdReal3& sr)
 {
   SimdReal vr;
-  ENUMERATE_SIMD_REAL(si){
-    Real3 r(sr.x[si],sr.y[si],sr.z[si]);
+  ENUMERATE_SIMD_REAL(si)
+  {
+    Real3 r(sr.x[si], sr.y[si], sr.z[si]);
     vr[si] = r.normL2();
   }
   return vr;
@@ -98,56 +100,59 @@ inline SimdReal
 normL2(const SimdReal2& sr)
 {
   SimdReal vr;
-  ENUMERATE_SIMD_REAL(si){
-    Real2 r(sr.x[si],sr.y[si]);
+  ENUMERATE_SIMD_REAL(si)
+  {
+    Real2 r(sr.x[si], sr.y[si]);
     vr[si] = r.normL2();
   }
   return vr;
 }
 
 /*!
- * \brief Produit mixte de \a u, \a v et \a w
+ * \brief Mixed product of u, v and w
  */
 inline SimdReal
-mixteMul(const SimdReal3& u,const SimdReal3& v,const SimdReal3& w)
+mixteMul(const SimdReal3& u, const SimdReal3& v, const SimdReal3& w)
 {
-  return dot(u,cross(v,w));
+  return dot(u, cross(v, w));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline SimdReal3x3
-prodTens(const SimdReal3& u,const SimdReal3& v)
+prodTens(const SimdReal3& u, const SimdReal3& v)
 {
-  return SimdReal3x3(u.x*v,u.y*v,u.z*v);
+  return SimdReal3x3(u.x * v, u.y * v, u.z * v);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup GroupMathUtils
- * \brief Produit matrice matrice entre deux tenseurs.
+ * \brief Matrix-matrix product between two tensors.
  */
 inline SimdReal3x3
-matrixProduct(const SimdReal3x3& t,const SimdReal3x3& v)
+matrixProduct(const SimdReal3x3& t, const SimdReal3x3& v)
 {
-  return SimdReal3x3(SimdReal3(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
-                               t.x.x*v.x.y+t.x.y*v.y.y+t.x.z*v.z.y,
-                               t.x.x*v.x.z+t.x.y*v.y.z+t.x.z*v.z.z),
-                     SimdReal3(t.y.x*v.x.x+t.y.y*v.y.x+t.y.z*v.z.x,
-                               t.y.x*v.x.y+t.y.y*v.y.y+t.y.z*v.z.y,
-                               t.y.x*v.x.z+t.y.y*v.y.z+t.y.z*v.z.z),
-                     SimdReal3(t.z.x*v.x.x+t.z.y*v.y.x+t.z.z*v.z.x,
-                               t.z.x*v.x.y+t.z.y*v.y.y+t.z.z*v.z.y,
-                               t.z.x*v.x.z+t.z.y*v.y.z+t.z.z*v.z.z));
+  return SimdReal3x3(SimdReal3(t.x.x * v.x.x + t.x.y * v.y.x + t.x.z * v.z.x,
+                               t.x.x * v.x.y + t.x.y * v.y.y + t.x.z * v.z.y,
+                               t.x.x * v.x.z + t.x.y * v.y.z + t.x.z * v.z.z),
+                     SimdReal3(t.y.x * v.x.x + t.y.y * v.y.x + t.y.z * v.z.x,
+                               t.y.x * v.x.y + t.y.y * v.y.y + t.y.z * v.z.y,
+                               t.y.x * v.x.z + t.y.y * v.y.z + t.y.z * v.z.z),
+                     SimdReal3(t.z.x * v.x.x + t.z.y * v.y.x + t.z.z * v.z.x,
+                               t.z.x * v.x.y + t.z.y * v.y.y + t.z.z * v.z.y,
+                               t.z.x * v.x.z + t.z.y * v.y.z + t.z.z * v.z.z));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup GroupMathUtils
- * \brief Transpose la matrice.
+ * \brief Transpose the matrix.
  */
 inline SimdReal3x3
 matrixTranspose(const SimdReal3x3& t)
@@ -161,80 +166,86 @@ matrixTranspose(const SimdReal3x3& t)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne le minimum de deux SimdReal2
+ * \brief Returns the minimum of two SimdReal2
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal2
-min(const SimdReal2& a,const SimdReal2& b)
+min(const SimdReal2& a, const SimdReal2& b)
 {
-  return SimdReal2( math::min(a.x,b.x), math::min(a.y,b.y) );
+  return SimdReal2(math::min(a.x, b.x), math::min(a.y, b.y));
 }
+
 /*!
- * \brief Retourne le minimum de deux SimdReal3
+ * \brief Returns the minimum of two SimdReal3
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal3
-min(const SimdReal3& a,const SimdReal3& b)
+min(const SimdReal3& a, const SimdReal3& b)
 {
-  return SimdReal3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
+  return SimdReal3(math::min(a.x, b.x), math::min(a.y, b.y), math::min(a.z, b.z));
 }
+
 /*!
- * \brief Retourne le minimum de deux SimdReal2x2
+ * \brief Returns the minimum of two SimdReal2x2
  * \ingroup GroupMathUtils
  */
 inline SimdReal2x2
-min(const SimdReal2x2& a,const SimdReal2x2& b)
+min(const SimdReal2x2& a, const SimdReal2x2& b)
 {
-  return SimdReal2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
+  return SimdReal2x2(math::min(a.x, b.x), math::min(a.y, b.y));
 }
+
 /*!
- * \brief Retourne le minimum de deux SimdReal3x3
+ * \brief Returns the minimum of two SimdReal3x3
  * \ingroup GroupMathUtils
  */
 inline SimdReal3x3
-min(const SimdReal3x3& a,const SimdReal3x3& b)
+min(const SimdReal3x3& a, const SimdReal3x3& b)
 {
-  return SimdReal3x3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
+  return SimdReal3x3(math::min(a.x, b.x), math::min(a.y, b.y), math::min(a.z, b.z));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne le maximum de deux SimdReal2
+ * \brief Returns the maximum of two SimdReal2
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal2
-max(const SimdReal2& a,const SimdReal2& b)
+max(const SimdReal2& a, const SimdReal2& b)
 {
-  return SimdReal2( math::max(a.x,b.x), math::max(a.y,b.y) );
+  return SimdReal2(math::max(a.x, b.x), math::max(a.y, b.y));
 }
+
 /*!
- * \brief Retourne le maximum de deux SimdReal3
+ * \brief Returns the maximum of two SimdReal3
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal3
-max(const SimdReal3& a,const SimdReal3& b)
+max(const SimdReal3& a, const SimdReal3& b)
 {
-  return SimdReal3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
+  return SimdReal3(math::max(a.x, b.x), math::max(a.y, b.y), math::max(a.z, b.z));
 }
+
 /*!
- * \brief Retourne le maximum de deux SimdReal2x2
+ * \brief Returns the maximum of two SimdReal2x2
  * \ingroup GroupMathUtils
  */
 inline SimdReal2x2
-max(const SimdReal2x2& a,const SimdReal2x2& b)
+max(const SimdReal2x2& a, const SimdReal2x2& b)
 {
-  return SimdReal2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
+  return SimdReal2x2(math::max(a.x, b.x), math::max(a.y, b.y));
 }
+
 /*!
- * \brief Retourne le maximum de deux SimdReal3x3
+ * \brief Returns the maximum of two SimdReal3x3
  * \ingroup GroupMathUtils
  */
 inline SimdReal3x3
-max(const SimdReal3x3& a,const SimdReal3x3& b)
+max(const SimdReal3x3& a, const SimdReal3x3& b)
 {
-  return SimdReal3x3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
+  return SimdReal3x3(math::max(a.x, b.x), math::max(a.y, b.y), math::max(a.z, b.z));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,4 +256,4 @@ max(const SimdReal3x3& a,const SimdReal3x3& b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelMngDispatcher.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire du parallélisme sur un domaine.                 */
+/* Interface of the parallelism manager on a domain.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLELMNGDISPATCHER_H
 #define ARCANE_PARALLELMNGDISPATCHER_H
@@ -25,6 +25,7 @@
 
 namespace Arcane
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -75,10 +76,11 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Redirige la gestion des messages des sous-domaines
- * suivant le type de l'argument.
+ * \brief Redirects the message management of sub-domains
+ * according to the argument type.
  */
 class ARCANE_CORE_EXPORT ParallelMngDispatcher
 : public ReferenceCounterImpl
@@ -86,7 +88,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 {
  public:
 
-  //! Implémentation de Arccore::MessagePassing::IControlDispatcher.
+  //! Implementation of Arccore::MessagePassing::IControlDispatcher.
   class ARCANE_CORE_EXPORT DefaultControlDispatcher
   : public MP::IControlDispatcher
   {
@@ -94,7 +96,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
     explicit DefaultControlDispatcher(IParallelMng* pm);
 
-  public:
+   public:
 
     void waitAllRequests(ArrayView<Request> requests) override;
     void waitSomeRequests(ArrayView<Request> requests,
@@ -108,12 +110,12 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
     MP::IProfiler* profiler() const override { return nullptr; }
     void setProfiler(MP::IProfiler* p) override;
 
-  private:
+   private:
 
     IParallelMng* m_parallel_mng;
   };
 
-  //! Implémentation de Arccore::MessagePassing::ISerializeDispatcher.
+  //! Implementation of Arccore::MessagePassing::ISerializeDispatcher.
   class SerializeDispatcher;
 
   friend class ParallelMngInternal;
@@ -144,42 +146,45 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   void broadcastString(String& str, Int32 rank) override;
   void broadcastMemoryBuffer(ByteArray& bytes, Int32 rank) override;
 
-  //! Redéfinit ici allGather pour éviter de cacher le symbole dans les classes dérivées.
+  //! Redefines allGather here to avoid hiding the symbol in derived classes.
   void allGather(ISerializer* send_serializer, ISerializer* recv_serializer) override;
 
  public:
 
 #define ARCANE_PARALLEL_MANAGER_DISPATCH_PROTOTYPE(field, type) \
- public:\
+ public: \
+\
   void allGather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf) override; \
   void gather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer rank) override; \
   void allGatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf) override; \
   void gatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf, Integer rank) override; \
   void scatterVariable(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer root) override; \
   type reduce(eReduceType rt, type v) override; \
-  void reduce(eReduceType rt, ArrayView<type> v) override;\
-  void broadcast(ArrayView<type> send_buf, Integer id) override;\
-  void send(ConstArrayView<type> values, Integer id) override;\
-  void recv(ArrayView<type> values, Integer id) override;\
+  void reduce(eReduceType rt, ArrayView<type> v) override; \
+  void broadcast(ArrayView<type> send_buf, Integer id) override; \
+  void send(ConstArrayView<type> values, Integer id) override; \
+  void recv(ArrayView<type> values, Integer id) override; \
   Request send(ConstArrayView<type> values, Int32 rank, bool is_blocked) override; \
   Request send(Span<const type> values, const PointToPointMessageInfo& message) override; \
-  Request recv(ArrayView<type> values, Int32 rank, bool is_blocked) override;\
+  Request recv(ArrayView<type> values, Int32 rank, bool is_blocked) override; \
   Request receive(Span<type> values, const PointToPointMessageInfo& message) override; \
-  void sendRecv(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer id) override;\
-  void allToAll(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer count) override;\
-  void allToAllVariable(ConstArrayView<type> send_buf, Int32ConstArrayView send_count,\
-                        Int32ConstArrayView send_index, ArrayView<type> recv_buf,\
-                        Int32ConstArrayView recv_count, Int32ConstArrayView recv_index) override;\
-  type scan(eReduceType rt, type v);                                     \
-  void computeMinMaxSum(type val, type& min_val, type& max_val, type& sum_val, Int32& min_proc, Int32& max_proc) override;\
-  void computeMinMaxSum(ConstArrayView<type> values,\
-                        ArrayView<type> min_values,\
-                        ArrayView<type> max_values,\
-                        ArrayView<type> sum_values,\
-                        ArrayView<Int32> min_ranks,\
-                        ArrayView<Int32> max_ranks) override;\
-  void scan(eReduceType rt, ArrayView<type> v) override;\
- protected:\
+  void sendRecv(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer id) override; \
+  void allToAll(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer count) override; \
+  void allToAllVariable(ConstArrayView<type> send_buf, Int32ConstArrayView send_count, \
+                        Int32ConstArrayView send_index, ArrayView<type> recv_buf, \
+                        Int32ConstArrayView recv_count, Int32ConstArrayView recv_index) override; \
+  type scan(eReduceType rt, type v); \
+  void computeMinMaxSum(type val, type& min_val, type& max_val, type& sum_val, Int32& min_proc, Int32& max_proc) override; \
+  void computeMinMaxSum(ConstArrayView<type> values, \
+                        ArrayView<type> min_values, \
+                        ArrayView<type> max_values, \
+                        ArrayView<type> sum_values, \
+                        ArrayView<Int32> min_ranks, \
+                        ArrayView<Int32> max_ranks) override; \
+  void scan(eReduceType rt, ArrayView<type> v) override; \
+\
+ protected: \
+\
   IParallelDispatchT<type>* field;
 
   ARCANE_PARALLEL_MANAGER_DISPATCH_PROTOTYPE(m_char, char)
@@ -230,7 +235,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
  public:
 
-  template <class CreatorType>  void
+  template <class CreatorType> void
   createDispatchers(CreatorType& ct)
   {
     m_char = ct.template create<char>();
@@ -281,9 +286,9 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
  protected:
 
   MP::MessagePassingMng* _messagePassingMng() const { return m_message_passing_mng_ref.get(); }
-  UniqueArray<Integer> _doWaitRequests(ArrayView<Request> requests,Parallel::eWaitType wait_type);
-  virtual ISerializeMessageList* _createSerializeMessageList() =0;
-  virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) =0;
+  UniqueArray<Integer> _doWaitRequests(ArrayView<Request> requests, Parallel::eWaitType wait_type);
+  virtual ISerializeMessageList* _createSerializeMessageList() = 0;
+  virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) = 0;
   virtual bool _isAcceleratorAware() const { return false; }
   virtual Ref<IParallelMng> _createSubParallelMngRef(Int32 color, Int32 key);
 
@@ -294,7 +299,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   void _setSerializeDispatcher(MP::ISerializeDispatcher* d);
 
  private:
-  
+
   ITimeStats* m_time_stats = nullptr;
   Ref<MP::Dispatchers> m_mp_dispatchers_ref;
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
@@ -321,4 +326,4 @@ class ParallelMngContainerBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

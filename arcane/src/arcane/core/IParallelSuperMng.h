@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IParallelSuperMng.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface du superviseur du parallélisme.                                 */
+/* Parallelism supervisor interface.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARALLELSUPERMNG_H
 #define ARCANE_CORE_IPARALLELSUPERMNG_H
@@ -33,9 +33,10 @@ class IThreadMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe abstraite du superviseur de parallélisme.
+ * \brief Abstract class of the parallelism supervisor.
  */
 class ARCANE_CORE_EXPORT IParallelSuperMng
 {
@@ -45,138 +46,137 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
   typedef Parallel::eReduceType eReduceType;
 
  public:
-	
-  virtual ~IParallelSuperMng() {} //!< Libère les ressources.
+
+  virtual ~IParallelSuperMng() {} //!< Frees resources.
 
  public:
 
   /*!
-   * \brief Construit les membres l'instance.
+   * \brief Constructs the instance members.
    *
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée. Cette méthode doit être appelée avant initialize().
+   * The instance is not usable until this method has been called.
+   * This method must be called before initialize().
    *
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \warning This method must only be called once.
    */
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
-   * \brief Initialise l'instance.
+   * \brief Initializes the instance.
    *
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée.
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * The instance is not usable until this method has been called.
+   * \warning This method must only be called once.
    */
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
  public:
 
-  //! Retourne le gestionnaire principal.
-  virtual IApplication* application() const =0;
+  //! Returns the main manager.
+  virtual IApplication* application() const = 0;
 
-  //! Gestionnaire de thread.
-  virtual IThreadMng* threadMng() const =0;
-	
-  //! Retourne \a true si l'exécution est parallèle
-  virtual bool isParallel() const =0;
+  //! Thread manager.
+  virtual IThreadMng* threadMng() const = 0;
 
-  //! Retourne le numéro du process (compris entre 0 et nbProcess()-1)
-  virtual Int32 commRank() const =0;
+  //! Returns true if the execution is parallel
+  virtual bool isParallel() const = 0;
 
-  //! Retourne le nombre total de process utilisés
-  virtual Int32 commSize() const =0;
+  //! Returns the process number (between 0 and nbProcess()-1)
+  virtual Int32 commRank() const = 0;
 
-  //! Rang de cette instance pour les traces.
-  virtual Int32 traceRank() const =0;
+  //! Returns the total number of processes used
+  virtual Int32 commSize() const = 0;
+
+  //! Rank of this instance for traces.
+  virtual Int32 traceRank() const = 0;
 
   /*!
-   * \brief Adresse du communicateur MPI associé à ce gestionnaire.
+   * \brief Address of the MPI communicator associated with this manager.
    *
-   * Le communicateur n'est valide que si on utilise MPI. Sinon, l'adresse
-   * retournée est 0. La valeur retournée est de type (MPI_Comm*).
+   * The communicator is only valid if MPI is used. Otherwise, the returned address
+   * is 0. The returned value is of type (MPI_Comm*).
    */
 
-  virtual void* getMPICommunicator() =0;
+  virtual void* getMPICommunicator() = 0;
 
   /*!
-   * \brief Communicateur MPI associé à ce gestionnaire
+   * \brief MPI communicator associated with this manager
    *
    * \sa IParallelMng::communicator()
    */
-  virtual Parallel::Communicator communicator() const =0;
+  virtual Parallel::Communicator communicator() const = 0;
 
   /*!
    * \internal
-   * \brief Créé un gestionnaire de parallélisme pour l'ensemble des coeurs alloués.
+   * \brief Creates a parallelism manager for all allocated cores.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Cette méthode ne doit être appelée qu'une seule fois lors de l'initialisation.
+   * This method must only be called once during initialization.
    *
-   * \a local_rank est le rang local de l'appelant dans la liste des rangs.
-   * En mode pure MPI, ce rang est toujours 0 car il n'y a qu'un seul
-   * thread. En mode Thread ou Thread/MPI, il s'agit du rang du thread utilisé
-   * lors de la création.
+   * \a local_rank is the local rank of the caller in the list of ranks.
+   * In pure MPI mode, this rank is always 0 because there is only one
+   * thread. In Thread or Thread/MPI mode, it is the rank of the thread used
+   * during creation.
    *
-   * Le gestionnaire retourné reste la propriété de cette instance et 
-   * ne doit pas être détruit.
+   * The returned manager remains the property of this instance and 
+   * must not be destroyed.
    *
-   * A usage interne uniquement.
+   * For internal use only.
    */
-  virtual Ref<IParallelMng> internalCreateWorldParallelMng(Int32 local_rank) =0;
+  virtual Ref<IParallelMng> internalCreateWorldParallelMng(Int32 local_rank) = 0;
 
   /*!
-   * \brief Nombre de sous-domaines à créér localement.
-   * - 1 si séquentiel.
-   * - 1 si MPI pur
-   * - n si THREAD ou THREAD/MPI
+   * \brief Number of subdomains to create locally.
+   * - 1 if sequential.
+   * - 1 if pure MPI
+   * - n if THREAD or THREAD/MPI
    */
-  virtual Int32 nbLocalSubDomain() =0;
+  virtual Int32 nbLocalSubDomain() = 0;
 
   /*!
-   * \brief Tente de faire un abort.
+   * \brief Attempts to abort.
    *
-   * Cette méthode est appelée lorsqu'une exception a été généré et que le
-   * cas en cours d'exécution doit s'interrompre. Elle permet d'effectuer les
-   * opérations de nettoyage du gestionnaire si besoin est.
+   * This method is called when an exception has been generated and the
+   * current execution case must stop. It allows performing cleanup operations
+   * on the manager if necessary.
    */
-  virtual void tryAbort() =0;
+  virtual void tryAbort() = 0;
 
-  //! \a true si l'instance est un gestionnaire maître des entrées/sorties.
-  virtual bool isMasterIO() const =0;
+  //! Returns true if the instance is a master I/O manager.
+  virtual bool isMasterIO() const = 0;
 
   /*!
-    \brief Rang de l'instance gérant les entrées/sorties (pour laquelle isMasterIO() est vrai)
+    \brief Rank of the instance managing input/output (for which isMasterIO() is true)
     *
-    * Dans l'implémentation actuelle, il s'agit toujours du processeur de rang 0.
+    * In the current implementation, this is always the rank 0 processor.
     */
-  virtual Int32 masterIORank() const =0;
+  virtual Int32 masterIORank() const = 0;
 
   /*!
-   * \brief Gestionnaire de parallèlisme pour l'ensemble des ressources allouées.
+   * \brief Parallelism manager for all allocated resources.
    */
   //virtual IParallelMng* worldParallelMng() const =0;
 
-  //! Effectue une barière
-  virtual void barrier() =0;
+  //! Performs a barrier
+  virtual void barrier() = 0;
 
  public:
 
-  //! @name opérations de broadcast
+  //! @name broadcast operations
   //@{
   /*!
-   * \brief Envoie un tableau de valeurs sur tous les processus
-   * Cette opération synchronise le tableau de valeur \a send_buf sur tous
-   * les processus. Le tableau utilisé est celui du processus dont
-   * l'identifiant (processId()) est \a process_id.
-   * Tous les processus doivent appelés cette méthode avec
-   * le même paramètre \a process_id et avoir un tableau \a send_buf
-   * contenant le même nombre d'éléments.
+   * \brief Sends an array of values to all processes
+   * This operation synchronizes the value array send_buf across all
+   * processes. The array used is that of the process whose
+   * identifier (processId()) is process_id.
+   * All processes must call this method with
+   * the same parameter process_id and have a send_buf array
+   * containing the same number of elements.
    */
-  virtual void broadcast(ByteArrayView send_buf,Integer process_id) =0;
-  virtual void broadcast(Int32ArrayView send_buf,Integer process_id) =0;
-  virtual void broadcast(Int64ArrayView send_buf,Integer process_id) =0;
-  virtual void broadcast(RealArrayView send_buf,Integer process_id) =0;
+  virtual void broadcast(ByteArrayView send_buf, Integer process_id) = 0;
+  virtual void broadcast(Int32ArrayView send_buf, Integer process_id) = 0;
+  virtual void broadcast(Int64ArrayView send_buf, Integer process_id) = 0;
+  virtual void broadcast(RealArrayView send_buf, Integer process_id) = 0;
   //@}
 };
 

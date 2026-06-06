@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableUtilsInternal.cc                                    (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur les variables internes à Arcane.       */
+/* Various utility functions for internal Arcane variables.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ fillFloat64Array(IVariable* v, ArrayView<double> values)
   auto* true_data = dynamic_cast<IArrayDataT<double>*>(var_data);
   if (!true_data)
     return true;
-  // TODO: Vérifier la taille
+  // TODO: Check the size
   ArrayView<Real> var_values(true_data->view());
   values.copy(var_values);
   return false;
@@ -79,7 +79,7 @@ getDataInternal(IVariable* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::VariableUtils
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

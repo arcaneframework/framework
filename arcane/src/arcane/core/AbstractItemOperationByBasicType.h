@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AbstractItemOperationByBasicType.h                          (C) 2000-2025 */
 /*                                                                           */
-/* Opérateur abstrait sur des entités rangées par type.                      */
+/* Abstract operator on entities sorted by type.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ABSTRACTITEMOPERATIONBYBASICTYPE_H
 #define ARCANE_CORE_ABSTRACTITEMOPERATIONBYBASICTYPE_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Opérateur abstrait sur des entités rangées par type.
+ * \brief Abstract operator on entities sorted by type.
  */
 class ARCANE_CORE_EXPORT AbstractItemOperationByBasicType
 : public IItemOperationByBasicType
@@ -66,5 +67,4 @@ class ARCANE_CORE_EXPORT AbstractItemOperationByBasicType
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

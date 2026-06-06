@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Matrix.cc                                                   (C) 2000-2026 */
 /*                                                                           */
-/* Matrix d'algèbre linéraire.                                               */
+/* Linear algebra matrix.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,9 @@ namespace Arcane::MatVec
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Matrice avec stockage CSR.
+ * \brief Matrix with CSR storage.
  */
 class MatrixImpl
 {
@@ -342,8 +343,8 @@ DiagonalPreconditioner(const Matrix& matrix)
 #endif
   const double epsilon = std::numeric_limits<Real>::min();
 
-  // Inverse la diagonale si la valeur n'est pas inférieure à l'epsilon de Real
-  // (sinon cela génère un FPE)
+  // Invert the diagonal if the value is not less than the Real epsilon
+  // (otherwise it generates an FPE)
   for (Integer i = 0; i < size; ++i) {
     Real v = vec_values[i];
     bool is_zero = v > -epsilon && v < epsilon;
@@ -507,7 +508,6 @@ _applySolver(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPrecond
   //Real norm0 = r.normInf();
   const Real delta0 = delta_new;
 
-
   //cout << " TOL=" << epsilon << " delta0=" << delta0 << '\n';
   //cout << " deltanew=" << delta_new << '\n';
   Integer nb_iter = 0;
@@ -515,7 +515,7 @@ _applySolver(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPrecond
     if (delta_new < epsilon * epsilon * delta0)
       break;
 #if 0
-    // Si on utilise la norme inf
+    // If we use the infinity norm
     {
       Real norm = r.normInf();
       cout << " norm=" << norm << " norm0=" << norm0 << '\n';
@@ -1034,7 +1034,7 @@ sortDiagonale()
   if (arcaneIsCheck()) {
     checkValid();
   }
-  // Trie la diagonale pour qu'elle soit le premièr élément de la ligne
+  // Sort the diagonal so that it is the first element of the row
   IntegerConstArrayView rows_index = m_rows_index;
   IntegerArrayView columns = m_columns;
   RealArrayView values = m_values;
@@ -1191,7 +1191,7 @@ readHypre(const String& filename)
     if (!ifile.good())
       break;
     if (x != last_row) {
-      // Nouvelle ligne.
+      // New row.
       if (is_verbose)
         std::cout << "New row last_row_size=" << nb_column << "\n";
       rows_size[last_row] = nb_column;

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IServiceInfo.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface des informations d'un service.                                  */
+/* Interface of service information.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERVICEINFO_H
 #define ARCANE_CORE_ISERVICEINFO_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Service
- * \brief Interface des informations d'un service ou d'un module.
+ * \brief Interface for service or module information.
  */
 class ARCANE_CORE_EXPORT IServiceInfo
 {
@@ -38,58 +39,58 @@ class ARCANE_CORE_EXPORT IServiceInfo
 
  public:
 
-  virtual ~IServiceInfo() = default; //!< Libère les ressources
+  virtual ~IServiceInfo() = default; //!< Frees resources
 
  public:
 
-  //! Partie locale du nom du service
+  //! Local part of the service name
   virtual String localName() const = 0;
 
-  //! Namespace du nom du service
+  //! Service name namespace
   virtual String namespaceURI() const = 0;
 
-  //! Version du service
+  //! Service version
   virtual VersionInfo version() const = 0;
 
-  //! Version du fichier axl décrivant ce service
+  //! Version of the axl file describing this service
   virtual Real axlVersion() const = 0;
 
-  //! Indique si le service est utilisable en dimension \a n.
+  //! Indicates if the service is usable in dimension \a n.
   virtual bool allowDimension(Integer n) const = 0;
 
-  /*! \brief Ajoute l'interface de nom \a name aux interfaces
-   * implémentées par ce service.
+  /*! \brief Adds the name interface \a name to the interfaces
+   * implemented by this service.
    */
   virtual void addImplementedInterface(const String& name) = 0;
 
-  //! Liste des noms des classes implémentées par ce service
+  //! List of names of classes implemented by this service
   virtual StringCollection implementedInterfaces() const = 0;
 
-  //! Nom du fichier contenant le jeu de données (nul si aucun)
+  //! Name of the file containing the dataset (null if none)
   virtual const String& caseOptionsFileName() const = 0;
 
-  //! Liste des fabriques du service
+  //! List of service factories
   virtual ServiceFactory2Collection factories() const = 0;
 
-  //! Fabrique pour les service singleton (nullptr si non supporté)
+  //! Factory for singleton services (nullptr if not supported)
   virtual Internal::ISingletonServiceFactory* singletonFactory() const = 0;
 
-  /*! \brief Nom de l'élément XML du service pour le langage \a lang.
-   * Si \a lang est nul, retourne le nom par défaut.
+  /*! \brief Name of the service XML element for the language \a lang.
+   * If \a lang is null, returns the default name.
    */
   virtual String tagName(const String& lang) const = 0;
 
-  //! Infos sur les fabriques disponibles pour ce service
+  //! Information on factories available for this service
   virtual IServiceFactoryInfo* factoryInfo() const = 0;
 
   /*!
-   * \brief Indique où peut être utilisé le service.
+   * \brief Indicates where the service can be used.
    *
-   * Il s'agit d'une combinaison de valeurs de eServiceType.
+   * It is a combination of eServiceType values.
    */
   virtual int usageType() const = 0;
 
-  //! Contenu du fichier AXL associé à ce service ou module
+  //! Content of the AXL file associated with this service or module
   virtual const FileContent& axlContent() const = 0;
 };
 
@@ -101,5 +102,4 @@ class ARCANE_CORE_EXPORT IServiceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

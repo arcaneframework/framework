@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshPartInfo.h                                              (C) 2000-2018 */
 /*                                                                           */
-/* Informations sur la partie d'un maillage.                                 */
+/* Mesh part information.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESHPARTINFO_H
 #define ARCANE_MESHPARTINFO_H
@@ -26,20 +26,30 @@ class IParallelMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations un maillage partitionné.
+ * \brief Information about a partitioned mesh.
  */
 class ARCANE_CORE_EXPORT MeshPartInfo
 {
  public:
-  MeshPartInfo(Int32 part_rank,Int32 nb_part,
-               Int32 replication_rank,Int32 nb_replication)
-  : m_part_rank(part_rank), m_nb_part(nb_part),
-    m_replication_rank(replication_rank), m_nb_replication(nb_replication) {}
+
+  MeshPartInfo(Int32 part_rank, Int32 nb_part,
+               Int32 replication_rank, Int32 nb_replication)
+  : m_part_rank(part_rank)
+  , m_nb_part(nb_part)
+  , m_replication_rank(replication_rank)
+  , m_nb_replication(nb_replication)
+  {}
   MeshPartInfo()
-  : m_part_rank(-1), m_nb_part(0),
-    m_replication_rank(-1), m_nb_replication(0) {}
+  : m_part_rank(-1)
+  , m_nb_part(0)
+  , m_replication_rank(-1)
+  , m_nb_replication(0)
+  {}
+
  public:
+
   Int32 partRank() const { return m_part_rank; }
   void setPartRank(Int32 v) { m_part_rank = v; }
   Int32 nbPart() const { return m_nb_part; }
@@ -48,7 +58,9 @@ class ARCANE_CORE_EXPORT MeshPartInfo
   void setReplicationRank(Int32 v) { m_replication_rank = v; }
   Int32 nbReplication() const { return m_nb_replication; }
   void setNbReplication(Int32 v) { m_nb_replication = v; }
+
  private:
+
   Int32 m_part_rank;
   Int32 m_nb_part;
   Int32 m_replication_rank;
@@ -59,7 +71,8 @@ class ARCANE_CORE_EXPORT MeshPartInfo
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_CORE_EXPORT
-MeshPartInfo makeMeshPartInfoFromParallelMng(IParallelMng* pm);
+MeshPartInfo
+makeMeshPartInfoFromParallelMng(IParallelMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,4 +83,3 @@ MeshPartInfo makeMeshPartInfoFromParallelMng(IParallelMng* pm);
 /*---------------------------------------------------------------------------*/
 
 #endif
-

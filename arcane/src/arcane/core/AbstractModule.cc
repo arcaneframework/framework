@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AbstractModule.cc                                           (C) 2000-2021 */
 /*                                                                           */
-/* Classe gérant un module.                                                  */
+/* Class managing a module.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
 
-#include "arcane/AbstractModule.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ModuleBuildInfo.h"
+#include "arcane/core/AbstractModule.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ModuleBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ AbstractModule(const ModuleBuildInfo& mbi)
 , m_name(mbi.name())
 , m_used(false)
 , m_disabled(false)
-, m_version_info(0,0,0)
+, m_version_info(0, 0, 0)
 , m_accelerator_mng(mbi.subDomain()->acceleratorMng())
 {
 }
@@ -82,4 +82,3 @@ traceMng() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

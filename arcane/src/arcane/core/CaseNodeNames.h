@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseNodeNames.h                                             (C) 2000-2020 */
 /*                                                                           */
-/* Noms des noeuds XML d'un jeu de donnée Arcane.                            */
+/* XML node names of an Arcane dataset.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CASENODENAMES_H
 #define ARCANE_CASENODENAMES_H
@@ -24,10 +24,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Noms des noeuds XML d'un jeu de données Arcane.
+ * \brief XML node names of an Arcane dataset.
  */
 class ARCANE_CORE_EXPORT CaseNodeNames
 {
@@ -37,7 +38,7 @@ class ARCANE_CORE_EXPORT CaseNodeNames
 
  public:
 
-  //! Crée une instance pour le langage \a lang
+  //! Creates an instance for the language \a lang
   CaseNodeNames(const String& lang);
   ~CaseNodeNames();
 
@@ -107,5 +108,4 @@ class ARCANE_CORE_EXPORT CaseNodeNames
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDataReader2.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface de lecture des données d'une variable.                          */
+/* Interface for reading data of a variable.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAREADER2_H
 #define ARCANE_CORE_IDATAREADER2_H
@@ -30,46 +30,58 @@ class IData;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de relecture des données.
+ * \brief Data reading information.
  */
 class ARCANE_CORE_EXPORT DataReaderInfo
 {
  public:
-  DataReaderInfo(){}
+
+  DataReaderInfo() {}
+
  public:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de relecture des données d'une variable.
+ * \brief Data reading information for a variable.
  */
 class ARCANE_CORE_EXPORT VariableDataReadInfo
 {
  public:
-  VariableDataReadInfo(VariableMetaData* varmd,IData* data)
-  : m_varmd(varmd), m_data(data){}
+
+  VariableDataReadInfo(VariableMetaData* varmd, IData* data)
+  : m_varmd(varmd)
+  , m_data(data)
+  {}
+
  public:
+
   VariableMetaData* variableMetaData() const { return m_varmd; }
   IData* data() const { return m_data; }
+
  private:
+
   VariableMetaData* m_varmd;
   IData* m_data;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Interface de lecture des données d'une variable (Version 2)
+ * \brief Interface for reading data of a variable (Version 2)
  *
- * Cette interface permet de lire les données d'une variable à partir
- * d'un fichier de protection.
+ * This interface allows reading data of a variable from
+ * a checkpoint file.
  *
- * Cette interface est en générale utilisée par
- * IVariableMng::readCheckpoint(). L'ordre d'appel des opérations
- * est le suivant:
+ * This interface is generally used by
+ * IVariableMng::readCheckpoint(). The order of operations
+ * is as follows:
  * \code
  * IDataReader2 reader = ...;
  * DataReaderInfo read_infos = ...
@@ -80,23 +92,23 @@ class ARCANE_CORE_EXPORT VariableDataReadInfo
  * reader->endRead();
  * \endcode
  */
- class IDataReader2
+class IDataReader2
 {
  public:
 
-  //! Libère les ressources
-  virtual ~IDataReader2(){}
+  //! Releases resources
+  virtual ~IDataReader2() {}
 
  public:
 
-  //! Remplit \a bytes avec le contenu des méta-données
-  virtual void fillMetaData(ByteArray& bytes) =0;
-  //! Notifie du début de lecture des données
-  virtual void beginRead(const DataReaderInfo& infos) =0;
-  //! Lit les données des informations spécifiées par \a infos
-  virtual void read(const VariableDataReadInfo& infos) =0;
-  //! Notifie de la fin de lecture des données
-  virtual void endRead() =0;
+  //! Fills \a bytes with the metadata content
+  virtual void fillMetaData(ByteArray& bytes) = 0;
+  //! Notifies the start of data reading
+  virtual void beginRead(const DataReaderInfo& infos) = 0;
+  //! Reads the data specified by \a infos
+  virtual void read(const VariableDataReadInfo& infos) = 0;
+  //! Notifies the end of data reading
+  virtual void endRead() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -107,5 +119,4 @@ class ARCANE_CORE_EXPORT VariableDataReadInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

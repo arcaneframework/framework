@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICheckpointMng.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des informations des protections.               */
+/* Interface of the checkpoint information manager.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICHECKPOINTMNG_H
 #define ARCANE_CORE_ICHECKPOINTMNG_H
@@ -25,50 +25,46 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire des informations des protections.
+ * \brief Interface of the checkpoint information manager.
  *
- * Ce gestionnaire gère les informations des protections, à savoir les
- * temps protégés, les services utilisés et d'autres informations nécessaires
- * pour les reprises. Il ne gère pas directement l'écriture ni la relecture
- * qui sont déléguées à un ICheckpointReader ou ICheckpointWriter.
+ * This manager handles checkpoint information, namely the saved times, the
+ * services used, and other information necessary for recovery. It does not
+ * directly manage the writing or reading, which are delegated to an
+ * ICheckpointReader or ICheckpointWriter.
  *
- * La lecture d'une protection provoque la modification de toutes les variables
- * et des maillages.
+ * Reading a checkpoint causes the modification of all variables and meshes.
  */
 class ARCANE_CORE_EXPORT ICheckpointMng
 {
  public:
 
-  virtual ~ICheckpointMng() = default; //!< Libère les ressources.
+  virtual ~ICheckpointMng() = default; //!< Frees resources.
 
  public:
 
   /*!
-   * \brief Lit une protection.
+   * \brief Reads a checkpoint.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser readDefaultCheckpoint() à la place
+   * \deprecated Use readDefaultCheckpoint() instead
    */
   ARCANE_DEPRECATED_122 virtual void readCheckpoint() = 0;
 
   /*!
-   * \brief Lit une protection.
+   * \brief Reads a checkpoint.
    *
-   * Lit une protection à partir du lecture \a reader.
+   * Reads a checkpoint from the \a reader.
    */
   virtual void readCheckpoint(ICheckpointReader* reader) = 0;
 
   /*!
-   * \brief Lit une protection.
+   * \brief Reads a checkpoint.
    *
-   * Lit une protection dont les infos de lecture sont dans \a infos.
+   * Reads a checkpoint whose reading information is in \a infos.
    *
-   * \deprecated A la place, utiliser le code suivants:
+   * \deprecated Instead, use the following code:
    * \code
    * ICheckpointMng* cm = ...;
    * Span<const Byte> buffer;
@@ -79,30 +75,30 @@ class ARCANE_CORE_EXPORT ICheckpointMng
   virtual ARCANE_DEPRECATED_2018 void readCheckpoint(ByteConstArrayView infos) = 0;
 
   /*!
-   * \brief Lit les informations d'une protection.
+   * \brief Reads checkpoint information.
    *
-   * Lit les informations d'une protection contenant dans le buffer \a infos.
-   * \a buf_name contient le nom du buffer utilisé dans les affichages en cas d'erreur.
+   * Reads the information of a checkpoint contained in the \a infos buffer.
+   * \a buf_name contains the name of the buffer used in displays in case of an error.
    */
   virtual CheckpointInfo readCheckpointInfo(Span<const Byte> infos, const String& buf_name) = 0;
 
   /*!
-   * \brief Lit une protection.
+   * \brief Reads a checkpoint.
    *
-   * Lit une protection dont les infos sont dans \a checkpoint_infos.
+   * Reads a checkpoint whose information is in \a checkpoint_infos.
    */
   virtual void readCheckpoint(const CheckpointInfo& checkpoint_info) = 0;
 
   /*!
-   * \brief Lit une protection par défaut
+   * \brief Reads a default checkpoint
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Dans l'implémentation par défaut, les informations pour la relecture
-   * sont stockées dans un fichier de nom 'checkpoint_info.xml' et qui se trouve
-   * dans le répertoire d'exportation du cas (ISubDomain::exportDirectory()).
+   * In the default implementation, the information for resumption is stored in
+   * a file named 'checkpoint_info.xml' located in the case's export directory
+   * (ISubDomain::exportDirectory()).
    *
-   * \deprecated A la place, utiliser le code suivants:
+   * \deprecated Instead, use the following code:
    * \code
    * ICheckpointMng* cm = ...;
    * CheckpointInfo checkpoint_info = cm->readDefaultChekpointInfo();
@@ -112,66 +108,64 @@ class ARCANE_CORE_EXPORT ICheckpointMng
   virtual ARCANE_DEPRECATED_2018 void readDefaultCheckpoint() = 0;
 
   /*!
-   * \brief Lit les informations de protection par défaut.
+   * \brief Reads default checkpoint information.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Dans l'implémentation par défaut, les informations pour la relecture
-   * sont stockées dans un fichier de nom 'checkpoint_info.xml' et qui se trouve
-   * dans le répertoire d'exportation du cas (ISubDomain::exportDirectory()).
+   * In the default implementation, the information for resumption is stored
+   * in a file named 'checkpoint_info.xml' located in the case's export
+   * directory (ISubDomain::exportDirectory()).
    *
-   * Après lecture des informations, il est possible d'appeler
-   * readCheckpoint(const CheckpointInfo& checkpoint_info) pour lire la protection.
+   * After reading the information, it is possible to call
+   * readCheckpoint(const CheckpointInfo& checkpoint_info) to read the checkpoint.
    */
   virtual CheckpointInfo readDefaultCheckpointInfo() = 0;
 
   /*!
-   * \brief Écrit une protection par défaut avec l'écrivain \a writer.
+   * \brief Writes a default checkpoint using the \a writer.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * \deprecated Utiliser writeDefaultCheckpoint() à la place.
+   * \deprecated Use writeDefaultCheckpoint() instead.
    */
   ARCANE_DEPRECATED_122 virtual void writeCheckpoint(ICheckpointWriter* writer) = 0;
 
   /*!
-   * \brief Écrit une protection avec l'écrivain \a writer.
+   * \brief Writes a checkpoint using the \a writer.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Les informations pour pouvoir le relire sont stockées dans le tableau
-   * \a infos passé en argument. Il est ensuite possible de relire une protection
-   * via readCheckpoint(ByteConstArrayView).
+   * The information required to read it back is stored in the \a infos array
+   * passed as an argument. It is then possible to read a checkpoint back via
+   * readCheckpoint(ByteConstArrayView).
    *
-   * L'implémentation par défaut stocke dans infos un fichier XML contenant en autre
-   * le nom du lecteur correspondant, le nombre de sous-domaines, ...
+   * The default implementation stores in infos an XML file containing, among
+   * other things, the name of the corresponding reader, the number of subdomains, ...
    */
   virtual void writeCheckpoint(ICheckpointWriter* writer, ByteArray& infos) = 0;
 
   /*!
-   * \brief Écrit une protection avec l'écrivain \a writer.
+   * \brief Writes a checkpoint using the \a writer.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Il s'agit d'une protection classique qui pourra être relue via readDefaultCheckpoint().
+   * This is a standard checkpoint that can be read back via readDefaultCheckpoint().
    *
    * \sa readDefaultCheckpoint
    */
   virtual void writeDefaultCheckpoint(ICheckpointWriter* writer) = 0;
 
   /*!
-   * \brief Observable en écriture.
+   * \brief Write observable.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * avant d'écrire une protection.
+   * Observers registered in this observable are called before writing a checkpoint.
    */
   virtual IObservable* writeObservable() = 0;
 
   /*!
-   * \brief Observable en lecture.
+   * \brief Read observable.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * après relecture complète d'une protection.
+   * Observers registered in this observable are called after a complete checkpoint read.
    */
   virtual IObservable* readObservable() = 0;
 };
@@ -184,5 +178,4 @@ class ARCANE_CORE_EXPORT ICheckpointMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

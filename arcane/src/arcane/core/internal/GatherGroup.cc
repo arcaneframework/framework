@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* GatherGroup.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de gérer les regroupements de données sur le ou les     */
-/* sous-domaines écrivains.                                                  */
+/* Class allowing the management of data groupings on the one or more        */
+/* writing subdomains.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,8 +56,8 @@ isNeedGather()
 {
   ARCANE_CHECK_POINTER(m_gather_group_info);
   IParallelMng* pm = m_gather_group_info->m_parallel_mng;
-  // True si Thread ou Hybride ou MPI sans MPI-IO
-  // False si Séquentiel ou MPI + MPI-IO.
+  // True if Thread or Hybrid or MPI without MPI-IO
+  // False if Sequential or MPI + MPI-IO.
   return pm->commSize() != 1 && (pm->isThreadImplementation() || !m_gather_group_info->m_use_collective_io);
 }
 
@@ -70,7 +70,7 @@ gatherToMasterIO(Int64 sizeof_elem, Span<const Byte> in, Span<Byte> out)
   ARCANE_CHECK_POINTER(m_gather_group_info);
   IParallelMng* pm = m_gather_group_info->m_parallel_mng;
 
-  // Si séquentiel ou MPI + MPI-IO.
+  // If sequential or MPI + MPI-IO.
   if ((pm->commSize() == 1) || (!pm->isThreadImplementation() && m_gather_group_info->m_use_collective_io)) {
     out.copy(in);
     return;
@@ -152,7 +152,7 @@ computeSize(Int32 nb_elem_in)
     m_nb_sender_to_writer = m_parallel_mng->commSize();
   }
 
-  // Si séquentiel ou MPI + MPI-IO.
+  // If sequential or MPI + MPI-IO.
   if ((m_parallel_mng->commSize() == 1) || (!m_parallel_mng->isThreadImplementation() && m_use_collective_io)) {
     m_nb_elem_output = nb_elem_in;
     m_nb_writer_global = m_parallel_mng->commSize();

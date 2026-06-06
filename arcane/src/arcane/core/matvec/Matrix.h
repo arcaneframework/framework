@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Matrix.h                                                    (C) 2000-20265 */
+/* Matrix.h                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Matrix d'algèbre linéraire.                                               */
+/* Linear algebra matrix.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATVEC_MATRIX_H
 #define ARCANE_CORE_MATVEC_MATRIX_H
@@ -35,10 +35,11 @@ class AMG;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Matrice avec stockage CSR.
+ * \brief Matrix with CSR storage.
  *
- * Les matrices fonctionnent par référence
+ * Matrices operate by reference
  */
 class ARCANE_CORE_EXPORT Matrix
 {
@@ -56,58 +57,59 @@ class ARCANE_CORE_EXPORT Matrix
 
  public:
 
-  //! Clone la matrice
+  //! Clone the matrix
   Matrix clone() const;
 
  public:
 
-  // Nombre de lignes de la matrice
+  // Number of rows of the matrix
   Integer nbRow() const;
-  // Nombre de colonnes de la matrice
+  // Number of columns of the matrix
   Integer nbColumn() const;
-  //! Positionne le nombre d'éléments non nuls de chaque ligne
+  //! Sets the number of non-zero elements for each row
   void setRowsSize(IntegerConstArrayView rows_size);
-  //! Positionne les valeurs des éléments de la matrice
+  //! Sets the values of the matrix elements
   void setValues(IntegerConstArrayView columns, RealConstArrayView values);
-  //! Imprime la matrice
+  //! Prints the matrix
   void dump(std::ostream& o) const;
-  //! Valeurs de la matrice
+  //! Matrix values
   RealConstArrayView values() const;
-  //! Valeurs de la matrice
+  //! Matrix values
   RealArrayView values();
-  //! Indices des premiers éléments de chaque ligne
+  //! Indices of the first elements of each row
   IntegerConstArrayView rowsIndex() const;
-  //! Indices des colonnes des valeurs
+  //! Column indices of the values
   IntegerConstArrayView columns() const;
-  //! Indices des premiers éléments de chaque ligne
+  //! Indices of the first elements of each row
   IntegerArrayView rowsIndex();
-  //! Indices des colonnes des valeurs
+  //! Column indices of the values
   IntegerArrayView columns();
-  //! Positionne la valeur d'un élément de la matrice
+  //! Sets the value of a matrix element
   void setValue(Integer row, Integer column, Real value);
-  //! Retourne la valeur d'un élément de la matrice
+  //! Returns the value of a matrix element
   Real value(Integer row, Integer column) const;
-  //! Arrange le stockage pour que la diagonale soit le premier élément
+  //! Arranges the storage so that the diagonal is the first element
   void sortDiagonale();
-  //! Lit la matrice au format X Y
+  //! Reads the matrix in X Y format
   static Matrix read(const String& filename);
-  //! Lit la matrice au format Hypre
+  //! Reads the matrix in Hypre format
   static Matrix readHypre(const String& filename);
 
  private:
 
-  //! Implémentation
+  //! Implementation
   MatrixImpl* m_impl = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un préconditionneur.
+ * \brief Interface for a preconditioner.
  *
- * Le préconditionneur prend un vecteur en entrée (en général le résidu)
- * et le multiplie à une approximation de la matrice inverse du
- * système linéaire.
+ * The preconditioner takes a vector as input (generally the residual)
+ * and multiplies it by an approximation of the inverse matrix of the
+ * linear system.
  * 
  */
 class ARCANE_CORE_EXPORT IPreconditioner
@@ -152,11 +154,12 @@ class ARCANE_CORE_EXPORT ConjugateGradientSolver
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Préconditionneur diagonal.
+ * \brief Diagonal preconditioner.
  *
- * Ce préconditionneur calcule une approximation de l'inverse
- * d'une matrice \a M en ne prenant que sa diagonale et en l'inversant.
+ * This preconditioner calculates an approximation of the inverse
+ * of a matrix A M by only taking its diagonal and inverting it.
  */
 class ARCANE_CORE_EXPORT DiagonalPreconditioner
 : public IPreconditioner
@@ -198,7 +201,7 @@ class ARCANE_CORE_EXPORT MatrixOperation2
   Matrix matrixMatrixProductFast(const Matrix& left_matrix, const Matrix& right_matrix);
   Matrix transpose(const Matrix& matrix);
   Matrix transposeFast(const Matrix& matrix);
-  // Applique le produit de matrice L * M * R avec L = transpose(R)
+  // Applies the matrix product L * M * R with L = transpose(R)
   Matrix applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix, const Matrix& right_matrix);
   Matrix applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
                                 const Matrix& right_matrix);
@@ -266,11 +269,12 @@ class ARCANE_CORE_EXPORT AMGSolver
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Solveur direct utilisant le pivot de gauss.
+ * \brief Direct solver using Gaussian pivot.
  *
- * A utiliser uniquement pour les petites matrices (<1000 lignes) sinon le
- * temps de calcul devient très important.
+ * To be used only for small matrices (<1000 rows), otherwise the
+ * computation time becomes very important.
  */
 class ARCANE_CORE_EXPORT DirectSolver
 {

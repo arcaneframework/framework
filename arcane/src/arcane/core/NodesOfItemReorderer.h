@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* NodesOfItemReorderer.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe utilitaire pour réordonner les noeuds d'une entité.                */
+/* Utility class to reorder the nodes of an entity.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_NODESOFITEMREORDERER_H
 #define ARCANE_CORE_NODESOFITEMREORDERER_H
@@ -26,8 +26,9 @@ class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour réordonner les noeuds d'une entité.
+ * \brief Utility class to reorder the nodes of an entity.
  */
 class ARCANE_CORE_EXPORT NodesOfItemReorderer
 {

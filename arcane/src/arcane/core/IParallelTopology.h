@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelTopology.h                                         (C) 2000-20255 */
+/* IParallelTopology.h                                        (C) 2000-20255 */
 /*                                                                           */
-/* Informations sur la topologie d'allocation des coeurs de calcul.          */
+/* Information on the computing core allocation topology.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARALLELTOPOLOGY_H
 #define ARCANE_CORE_IPARALLELTOPOLOGY_H
@@ -24,64 +24,65 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Parallel
- * \brief Informations sur la topologie d'allocation des coeurs de calcul.
+ * \brief Information on the computing core allocation topology.
  *
- * Une instance de cette classe est liée à un IParallelMng.
+ * An instance of this class is linked to an IParallelMng.
  *
- * Elle permet de savoir comment les rangs de ce IParallelMng sont alloués
- * sur le cluster et dans les processus.
+ * It allows knowing how the ranks of this IParallelMng are allocated
+ * on the cluster and within the processes.
  *
  */
 class ARCANE_CORE_EXPORT IParallelTopology
 {
  public:
 
-  virtual ~IParallelTopology() = default; //!< Libère les ressources.
+  virtual ~IParallelTopology() = default; //!< Frees resources.
 
  public:
 
-  //! Gestionnaire de parallélisme associé
+  //! Associated parallelism manager
   virtual IParallelMng* parallelMng() const = 0;
 
-  //! Indique si ce rang est le rang maître pour une machine (noeud)
+  //! Indicates if this rank is the master rank for a machine (node)
   virtual bool isMasterMachine() const = 0;
 
-  //! Liste des rangs qui sont sur la même machine
+  //! List of ranks that are on the same machine
   virtual Int32ConstArrayView machineRanks() const = 0;
 
   /*!
-   * \brief Rang de cette instance dans la liste des machines (noeuds).
+   * \brief Rank of this instance in the list of machines (nodes).
    *
-   * Ce rang est compris entre 0 et masterMachineRanks().size().
+   * This rank is between 0 and masterMachineRanks().size().
    */
   virtual Int32 machineRank() const = 0;
 
   /*!
-   * \brief Liste des rangs maîtres pour chaque machine (noeud).
+   * \brief List of master ranks for each machine (node).
    *
-   * Cette liste est la même pour tous les rangs.
+   * This list is the same for all ranks.
    */
   virtual Int32ConstArrayView masterMachineRanks() const = 0;
 
-  //! Indique si ce rang est le maitre dans les rangs de ce processus.
+  //! Indicates if this rank is the master within the ranks of this process.
   virtual bool isMasterProcess() const = 0;
 
-  //! Liste des rangs qui sont dans le même processus (en multi-threading)
+  //! List of ranks that are in the same process (in multi-threading)
   virtual Int32ConstArrayView processRanks() const = 0;
 
   /*!
-   * \brief Rang de cette instance dans la liste des processus.
+   * \brief Rank of this instance in the list of processes.
    *
-   * Ce rang est compris entre 0 et masterProcessRanks().size().
+   * This rank is between 0 and masterProcessRanks().size().
    */
   virtual Int32 processRank() const = 0;
 
   /*!
-   * \brief Liste des rangs maitres pour chaque processus.
+   * \brief List of master ranks for each process.
    *
-   * Cette liste est la même pour tous les rangs.
+   * This list is the same for all ranks.
    */
   virtual Int32ConstArrayView masterProcessRanks() const = 0;
 };
@@ -94,4 +95,4 @@ class ARCANE_CORE_EXPORT IParallelTopology
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableBuildInfo.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Informations pour construire une variable.                                */
+/* Information for building a variable.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,18 +32,18 @@ namespace Arcane
 
 namespace
 {
-ISubDomain*
-_getSubDomainDeprecated(const MeshHandle& handle)
-{
-  return handle.subDomain();
-}
-}
+  ISubDomain*
+  _getSubDomainDeprecated(const MeshHandle& handle)
+  {
+    return handle.subDomain();
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IModule* m,const String& name,int property)
+VariableBuildInfo(IModule* m, const String& name, int property)
 : m_sub_domain(m->subDomain())
 , m_module(m)
 , m_mesh_handle(m->defaultMeshHandle())
@@ -57,7 +57,7 @@ VariableBuildInfo(IModule* m,const String& name,int property)
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(ISubDomain* sd,const String& name,int property)
+VariableBuildInfo(ISubDomain* sd, const String& name, int property)
 : m_sub_domain(sd)
 , m_name(name)
 , m_property(property)
@@ -69,7 +69,7 @@ VariableBuildInfo(ISubDomain* sd,const String& name,int property)
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property)
+VariableBuildInfo(IVariableMng* variable_mng, const String& name, int property)
 : m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
 , m_name(name)
 , m_property(property)
@@ -81,7 +81,7 @@ VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property)
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,int property)
+VariableBuildInfo(const MeshHandle& mesh_handle, const String& name, int property)
 : m_sub_domain(_getSubDomainDeprecated(mesh_handle))
 , m_mesh_handle(mesh_handle)
 , m_name(name)
@@ -94,8 +94,8 @@ VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,int property)
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IMesh* mesh,const String& name,int property)
-: VariableBuildInfo(mesh->handle(),name,property)
+VariableBuildInfo(IMesh* mesh, const String& name, int property)
+: VariableBuildInfo(mesh->handle(), name, property)
 {
 }
 
@@ -103,8 +103,8 @@ VariableBuildInfo(IMesh* mesh,const String& name,int property)
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IModule* m,const String& name,
-                  const String& item_family_name,int property)
+VariableBuildInfo(IModule* m, const String& name,
+                  const String& item_family_name, int property)
 : m_sub_domain(m->subDomain())
 , m_module(m)
 , m_mesh_handle(m->defaultMeshHandle())
@@ -119,8 +119,8 @@ VariableBuildInfo(IModule* m,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
-                  const String& item_family_name,int property)
+VariableBuildInfo(const MeshHandle& mesh_handle, const String& name,
+                  const String& item_family_name, int property)
 : m_sub_domain(_getSubDomainDeprecated(mesh_handle))
 , m_mesh_handle(mesh_handle)
 , m_name(name)
@@ -134,9 +134,9 @@ VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IMesh* mesh,const String& name,
-                  const String& item_family_name,int property)
-: VariableBuildInfo(mesh->handle(),name,item_family_name,property)
+VariableBuildInfo(IMesh* mesh, const String& name,
+                  const String& item_family_name, int property)
+: VariableBuildInfo(mesh->handle(), name, item_family_name, property)
 {
 }
 
@@ -144,8 +144,8 @@ VariableBuildInfo(IMesh* mesh,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(ISubDomain* sd,const String& name,const String& mesh_name,
-                  const String& item_family_name,int property)
+VariableBuildInfo(ISubDomain* sd, const String& name, const String& mesh_name,
+                  const String& item_family_name, int property)
 : m_sub_domain(sd)
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -159,8 +159,8 @@ VariableBuildInfo(ISubDomain* sd,const String& name,const String& mesh_name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IVariableMng* variable_mng,const String& name,const String& mesh_name,
-                  const String& item_family_name,int property)
+VariableBuildInfo(IVariableMng* variable_mng, const String& name, const String& mesh_name,
+                  const String& item_family_name, int property)
 : m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -174,7 +174,7 @@ VariableBuildInfo(IVariableMng* variable_mng,const String& name,const String& me
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IItemFamily* family,const String& name,int property)
+VariableBuildInfo(IItemFamily* family, const String& name, int property)
 : m_sub_domain(_getSubDomainDeprecated(family->mesh()->handle()))
 , m_mesh_handle(family->mesh()->handle())
 , m_name(name)
@@ -188,9 +188,9 @@ VariableBuildInfo(IItemFamily* family,const String& name,int property)
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IModule* m,const String& name,
+VariableBuildInfo(IModule* m, const String& name,
                   const String& item_family_name,
-                  const String& item_group_name,int property)
+                  const String& item_group_name, int property)
 : m_sub_domain(m->subDomain())
 , m_module(m)
 , m_mesh_handle(m->defaultMesh()->handle())
@@ -206,9 +206,9 @@ VariableBuildInfo(IModule* m,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
+VariableBuildInfo(const MeshHandle& mesh_handle, const String& name,
                   const String& item_family_name,
-                  const String& item_group_name,int property)
+                  const String& item_group_name, int property)
 : m_sub_domain(_getSubDomainDeprecated(mesh_handle))
 , m_mesh_handle(mesh_handle)
 , m_name(name)
@@ -223,10 +223,10 @@ VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IMesh* mesh,const String& name,
+VariableBuildInfo(IMesh* mesh, const String& name,
                   const String& item_family_name,
-                  const String& item_group_name,int property)
-: VariableBuildInfo(mesh->handle(),name,item_family_name,item_group_name,property)
+                  const String& item_group_name, int property)
+: VariableBuildInfo(mesh->handle(), name, item_family_name, item_group_name, property)
 {
 }
 
@@ -234,10 +234,10 @@ VariableBuildInfo(IMesh* mesh,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(ISubDomain* sd,const String& name,
+VariableBuildInfo(ISubDomain* sd, const String& name,
                   const String& mesh_name,
                   const String& item_family_name,
-                  const String& item_group_name,int property)
+                  const String& item_group_name, int property)
 : m_sub_domain(sd)
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -252,10 +252,10 @@ VariableBuildInfo(ISubDomain* sd,const String& name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
-VariableBuildInfo(IVariableMng* variable_mng,const String& name,
+VariableBuildInfo(IVariableMng* variable_mng, const String& name,
                   const String& mesh_name,
                   const String& item_family_name,
-                  const String& item_group_name,int property)
+                  const String& item_group_name, int property)
 : m_sub_domain(variable_mng->_internalApi()->internalSubDomain())
 , m_name(name)
 , m_item_family_name(item_family_name)
@@ -282,7 +282,7 @@ VariableBuildInfo(const NullTag&)
 void VariableBuildInfo::
 _init()
 {
-  if (!m_mesh_handle.isNull()){
+  if (!m_mesh_handle.isNull()) {
     m_mesh_name = m_mesh_handle.meshName();
   }
 }

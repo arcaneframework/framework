@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItemIndexedSelectionView.cc                      (C) 2000-2026 */
 /*                                                                           */
-/* Vue sur un sous ensemble d'un conteneur de ConstituentItem.               */
+/* View over a subset of a ConstituentItem container.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ ConstituentItemIndexedSelectionViewBase::
 ConstituentItemIndexedSelectionViewBase(IMeshComponent* constituent, Int32 selection_size)
 {
   SmallSpan<const Int32> v = constituent->materialMng()->_internalApi()->identitySelectionView();
-  // Vérifie que la vue retournée a une taille au moins égale à la sélection.
+  // Checks that the returned view has a size at least equal to the selection.
   if (v.size() < selection_size)
     ARCANE_FATAL("Invalid size for identity selection (selection_size={0} identity={1})",
                  selection_size, v.size());

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshVariableTpl.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Instanciation des classes templates des variables du maillage.            */
+/* Instantiation of template classes for mesh variables.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,21 +25,22 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MESHVARIABLE_SCALAR(datatype) \
-template class ARCANE_TEMPLATE_EXPORT ItemVariableScalarRefT<datatype>;\
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableScalarRefT<datatype>;\
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Node,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Edge,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Face,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Cell,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DoF,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Node,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Edge,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Face,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Cell,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DoF,datatype>
+  template class ARCANE_TEMPLATE_EXPORT ItemVariableScalarRefT<datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableScalarRefT<datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Node, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Edge, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Face, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Cell, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Particle, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DoF, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Node, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Edge, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Face, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Cell, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Particle, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DoF, datatype>
 
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ARCANE_INSTANTIATE_MESHVARIABLE_SCALAR(Byte);
@@ -57,11 +58,9 @@ ARCANE_INSTANTIATE_MESHVARIABLE_SCALAR(Real3);
 ARCANE_INSTANTIATE_MESHVARIABLE_SCALAR(Real3x3);
 
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

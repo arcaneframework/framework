@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICaseMngInternal.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de ICaseMng.                                      */
+/* Internal Arcane component of ICaseMng.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_ICASEMNGINTERNAL_H
 #define ARCANE_CORE_INTERNAL_ICASEMNGINTERNAL_H
@@ -25,9 +25,10 @@ class ParameterListWithCaseOption;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de ICaseMng.
+ * \brief Internal part of ICaseMng.
  */
 class ARCANE_CORE_EXPORT ICaseMngInternal
 {
@@ -38,21 +39,21 @@ class ARCANE_CORE_EXPORT ICaseMngInternal
  public:
 
   /*!
-   * \brief Lit une option du jeu de données.
+   * \brief Reads an option from the dataset.
    */
   virtual void internalReadOneOption(ICaseOptions* opt, bool is_phase1) = 0;
 
   /*!
-   * \brief Crée un fragment.
+   * \brief Creates a fragment.
    *
-   * L'instance retournée doit être détruite par l'appel à delete.
-   * L'instance retournée devient propriétaire de \a document et se chargera
-   * de le détruire.
+   * The returned instance must be destroyed by calling delete.
+   * The returned instance becomes the owner of \a document and will be responsible
+   * for destroying it.
    */
   virtual ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) = 0;
 
-  //! Liste des paramètres pouvant surcharger le jeu de données
-  virtual const ParameterListWithCaseOption& parameters() const=0;
+  //! List of parameters that can override the dataset
+  virtual const ParameterListWithCaseOption& parameters() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

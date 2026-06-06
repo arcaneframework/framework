@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelSuperMngDispatcher.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire du parallélisme sur un domaine.                 */
+/* Interface for the parallelism manager on a domain.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLELSUPERMNGDISPATCHER_H
 #define ARCANE_CORE_PARALLELSUPERMNGDISPATCHER_H
@@ -25,10 +25,11 @@ template <class T> class IParallelDispatchT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Redirige la gestion des messages des sous-domaines
- * suivant le type de l'argument.
+ * \brief Redirects the message management of sub-domains
+ * based on the argument type.
  */
 class ARCANE_CORE_EXPORT ParallelSuperMngDispatcher
 : public IParallelSuperMng
@@ -118,4 +119,4 @@ class ARCANE_CORE_EXPORT ParallelSuperMngDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

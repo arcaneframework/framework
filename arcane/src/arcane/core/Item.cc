@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Item.cc                                                     (C) 2000-2024 */
 /*                                                                           */
-/* Classe de base d'un élément du maillage.                                  */
+/* Base class for a mesh element.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,14 +38,17 @@ std::atomic<int> Item::m_nb_set_from_internal = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \defgroup GroupItem Les éléments du maillage
+ * \defgroup GroupItem Mesh elements
  *
- * Il s'agit de l'ensemble des classes traitant les entités de maillage.
+ * This is the set of classes that handle mesh entities.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Voir Item.h et ItemSharedInfo.h pour les #ifdef associés
+
+// See Item.h and ItemSharedInfo.h for associated #ifdefs
 
 String Item::
 typeName(Integer t)
@@ -65,7 +68,7 @@ void Item::
 _badConversion() const
 {
 #ifdef ARCANE_DEBUG
-  ARCANE_FATAL("Bad conversion from {0}",kind());
+  ARCANE_FATAL("Bad conversion from {0}", kind());
 #else /* ARCANE_DEBUG */
   ARCANE_FATAL("Bad conversion");
 #endif /* ARCANE_DEBUG */
@@ -78,10 +81,10 @@ _badConversion() const
 /*---------------------------------------------------------------------------*/
 
 void IndexedItemConnectivityViewBase::
-_badConversion(eItemKind k1,eItemKind k2) const
+_badConversion(eItemKind k1, eItemKind k2) const
 {
   ARCANE_FATAL("Can not convert connectivity view ({0},{1}) to ({2},{3})",
-               m_source_kind,m_target_kind,k1,k2);
+               m_source_kind, m_target_kind, k1, k2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,11 +109,10 @@ resetStats()
   m_nb_set_from_internal = 0;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour tester l'instantiation de ces classes
+// For testing the instantiation of these classes
 template class ItemConnectedListViewT<Node>;
 template class ItemConnectedEnumeratorBaseT<Node>;
 template class ItemConnectedEnumeratorT<Node>;
@@ -119,7 +121,7 @@ template class ItemConnectedEnumeratorT<Item>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namesapce Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableRefScalar.cc                                        (C) 2000-2024 */
 /*                                                                           */
-/* Référence à une variable scalaire.                                        */
+/* Reference to a scalar variable.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,36 +29,36 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableFactoryRegisterer
+template <typename DataType> VariableFactoryRegisterer
 VariableRefScalarT<DataType>::
-m_auto_registerer(_autoCreate,_buildVariableTypeInfo());
+m_auto_registerer(_autoCreate, _buildVariableTypeInfo());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableTypeInfo
+template <typename DataType> VariableTypeInfo
 VariableRefScalarT<DataType>::
 _buildVariableTypeInfo()
 {
-  return VariableTypeInfo(IK_Unknown,VariableDataTypeTraitsT<DataType>::type(),0,0,false);
+  return VariableTypeInfo(IK_Unknown, VariableDataTypeTraitsT<DataType>::type(), 0, 0, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableInfo
+template <typename DataType> VariableInfo
 VariableRefScalarT<DataType>::
 _buildVariableInfo(const VariableBuildInfo& vbi)
 {
   VariableTypeInfo vti = _buildVariableTypeInfo();
   DataStorageTypeInfo sti = vti._internalDefaultDataStorage();
-  return VariableInfo(vbi.name(),vbi.itemFamilyName(),vbi.itemGroupName(),vbi.meshName(),vti,sti);
+  return VariableInfo(vbi.name(), vbi.itemFamilyName(), vbi.itemGroupName(), vbi.meshName(), vti, sti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableRef*
+template <typename DataType> VariableRef*
 VariableRefScalarT<DataType>::
 _autoCreate(const VariableBuildInfo& vb)
 {
@@ -68,11 +68,11 @@ _autoCreate(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
+template <typename DataType>
 VariableRefScalarT<DataType>::
 VariableRefScalarT(const VariableBuildInfo& vb)
 : VariableRef(vb)
-, m_private_part(PrivatePartType::getReference(vb,_buildVariableInfo(vb)))
+, m_private_part(PrivatePartType::getReference(vb, _buildVariableInfo(vb)))
 {
   _internalInit(m_private_part);
 }
@@ -80,7 +80,7 @@ VariableRefScalarT(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
+template <typename DataType>
 VariableRefScalarT<DataType>::
 VariableRefScalarT(IVariable* var)
 : VariableRef(var)
@@ -92,7 +92,7 @@ VariableRefScalarT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 VariableRefScalarT<DataType>::
 VariableRefScalarT(const VariableRefScalarT<DataType>& rhs)
 : VariableRef(rhs)
@@ -104,7 +104,7 @@ VariableRefScalarT(const VariableRefScalarT<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void 
+template <class DataType> void
 VariableRefScalarT<DataType>::
 refersTo(const VariableRefScalarT<DataType>& rhs)
 {
@@ -116,7 +116,7 @@ refersTo(const VariableRefScalarT<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void 
+template <typename DataType> void
 VariableRefScalarT<DataType>::
 assign(const DataType& v)
 {
@@ -129,37 +129,36 @@ assign(const DataType& v)
 
 namespace
 {
-template<typename T>
-void _reduce(T& value,IParallelMng* pm,IParallelMng::eReduceType t,FalseType)
-{
-  ARCANE_UNUSED(value);
-  ARCANE_UNUSED(pm);
-  ARCANE_UNUSED(t);
-}
+  template <typename T>
+  void _reduce(T& value, IParallelMng* pm, IParallelMng::eReduceType t, FalseType)
+  {
+    ARCANE_UNUSED(value);
+    ARCANE_UNUSED(pm);
+    ARCANE_UNUSED(t);
+  }
 
-template<typename T>
-void _reduce(T& value,IParallelMng* pm,IParallelMng::eReduceType t,TrueType)
-{
-  T r = value;
-  value = pm->reduce(t,r);
-}
-}
+  template <typename T>
+  void _reduce(T& value, IParallelMng* pm, IParallelMng::eReduceType t, TrueType)
+  {
+    T r = value;
+    value = pm->reduce(t, r);
+  }
+} // namespace
 
-
-template<typename DataType> void 
+template <typename DataType> void
 VariableRefScalarT<DataType>::
 reduce(IParallelMng::eReduceType type)
 {
-  typedef typename VariableDataTypeTraitsT<ElementType>::HasReduce  HasReduce;
+  typedef typename VariableDataTypeTraitsT<ElementType>::HasReduce HasReduce;
   ElementType v = m_private_part->value();
-  _reduce(v,variableMng()->parallelMng(),type,HasReduce());
+  _reduce(v, variableMng()->parallelMng(), type, HasReduce());
   assign(v);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void 
+template <typename T> void
 VariableRefScalarT<T>::
 updateFromInternal()
 {
@@ -168,10 +167,11 @@ updateFromInternal()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Échange les valeurs de la variable \a rhs avec celles de l'instance.
+ * \brief Exchange the values of variable \a rhs with those of the instance.
  */
-template<typename DataType> void
+template <typename DataType> void
 VariableRefScalarT<DataType>::
 swapValues(VariableRefScalarT<DataType>& rhs)
 {

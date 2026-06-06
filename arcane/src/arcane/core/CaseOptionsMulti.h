@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseOptionsMulti.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Options du jeu de données gérant plusieurs occurences.                    */
+/* Data set options managing multiple occurrences.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONSMULTI_H
 #define ARCANE_CORE_CASEOPTIONSMULTI_H
@@ -25,20 +25,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'un tableau d'options complexes du jeu de données.
+ * \brief Base class for an array of complex data set options.
  */
 class ARCANE_CORE_EXPORT CaseOptionsMulti
 : public CaseOptions
 , public ICaseOptionsMulti
 {
  public:
-	
-  CaseOptionsMulti(ICaseMng*,const String& tag_root_name,
-                   const XmlNode& element,Integer min_occurs,Integer max_occurs);
-  CaseOptionsMulti(ICaseOptionList*,const String& tag_root_name,
-                   const XmlNode& element,Integer min_occurs,Integer max_occurs);
+
+  CaseOptionsMulti(ICaseMng*, const String& tag_root_name,
+                   const XmlNode& element, Integer min_occurs, Integer max_occurs);
+  CaseOptionsMulti(ICaseOptionList*, const String& tag_root_name,
+                   const XmlNode& element, Integer min_occurs, Integer max_occurs);
 
  public:
 
@@ -61,4 +62,4 @@ class ARCANE_CORE_EXPORT CaseOptionsMulti
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemPrinter.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Routines d'impressions d'une entité.                                      */
+/* Routines for printing an entity.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMPRINTER_H
 #define ARCANE_CORE_ITEMPRINTER_H
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe utilitaire pour imprimer les infos sur une entité.
+ * \brief Utility class for printing information about an entity.
  */
 class ARCANE_CORE_EXPORT ItemPrinter
 {
@@ -82,7 +83,7 @@ class ARCANE_CORE_EXPORT ItemPrinter
 
  public:
 
-  //! Ecriture sur flux de l'Item courant
+  //! Write to stream of the current Item
   void print(std::ostream& o) const;
 
  public:
@@ -107,7 +108,7 @@ class ARCANE_CORE_EXPORT FullItemPrinter
   : m_item(item.itemBase())
   {}
 
-  //! Ecriture sur flux de l'Item courant et de ses sous-items
+  //! Write to stream of the current Item and its sub-items
   void print(std::ostream& o) const;
 
  private:
@@ -127,7 +128,7 @@ class ARCANE_CORE_EXPORT NeighborItemPrinter
   , m_level_max(levelmax)
   {}
 
-  //! Ecriture sur flux de l'Item courant et de ses sous-items
+  //! Write to stream of the current Item and its sub-items
   void print(std::ostream& o) const { print(o, m_item, m_level_max, m_level_max); }
 
  private:

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AnyItemLinkVariable.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Variable de liens d'items de types quelconques.                           */
+/* Link variable for items of arbitrary types.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMLINKVARIABLE_H
 #define ARCANE_CORE_ANYITEM_ANYITEMLINKVARIABLE_H
@@ -26,12 +26,12 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*
- * \brief Variable de liens d'items de types quelconques.
+ * \brief Link variable for items of arbitrary types.
  * 
- * Par exemple :
+ * For example:
  *
- * AnyItem::Variable<Real> variable(family);               // Remplie
- * AnyItem::LinkVariable<Real> link_variable(link_family); // Remplie
+ * AnyItem::Variable<Real> variable(family);               // Filled
+ * AnyItem::LinkVariable<Real> link_variable(link_family); // Filled
  *
  * Real value = 0;
  * ENUMERATE_ANY_ITEM_LINK(ilink, link_family) {
@@ -47,59 +47,63 @@ namespace Arcane::AnyItem
  * }
  *
  */
-template<typename DataType>
-class LinkVariable 
-  : public ILinkFamilyObserver
+template <typename DataType>
+class LinkVariable
+: public ILinkFamilyObserver
 {
-public:
+ public:
 
   LinkVariable(const LinkFamily& family)
-    : m_family(family) 
-    , m_values(m_family.capacity()) 
+  : m_family(family)
+  , m_values(m_family.capacity())
   {
     m_family.registerObserver(*this);
   }
 
   LinkVariable(const LinkVariable& v)
-    : m_family(v.m_family) 
-    , m_values(v.m_values) 
+  : m_family(v.m_family)
+  , m_values(v.m_values)
   {
     m_family.registerObserver(*this);
   }
-  
-  ~LinkVariable() 
+
+  ~LinkVariable()
   {
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
   }
 
-  //! Accesseur
-  inline DataType& operator[](const LinkFamily::LinkIndex& item) {
+  //! Accessor
+  inline DataType& operator[](const LinkFamily::LinkIndex& item)
+  {
     return m_values[item.index()];
   }
-  
-  //! Accesseur
-  inline DataType operator[](const LinkFamily::LinkIndex& item) const {
+
+  //! Accessor
+  inline DataType operator[](const LinkFamily::LinkIndex& item) const
+  {
     return m_values[item.index()];
   }
- 
-  //! Action si la famille est invalidée : on retaille
-  inline void notifyFamilyIsInvalidate() {
-    // Si la famille change, on retaille
+
+  //! Action if the family is invalidated: we resize
+  inline void notifyFamilyIsInvalidate()
+  {
+    // If the family changes, we resize
     m_values.resize(m_family.capacity());
   }
-  
-  //! Action si la famille est reservée : on retaille
-  inline void notifyFamilyIsReserved() {
-    // Si la famille est reservée, on retaille simplement
+
+  //! Action if the family is reserved: we resize
+  inline void notifyFamilyIsReserved()
+  {
+    // If the family is reserved, we simply resize
     m_values.resize(m_family.capacity());
   }
-  
-private:
-  
-  //! Famille de liens
+
+ private:
+
+  //! Link family
   const LinkFamily m_family;
-  
-  //! Valeurs
+
+  //! Values
   Arcane::UniqueArray<DataType> m_values;
 };
 
@@ -110,5 +114,5 @@ private:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-    
-#endif /* ARCANE_ANYITEM_ANYITEMLINKVARIABLEARRAY_H */
+
+#endif

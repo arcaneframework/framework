@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypeInfoBuilder.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Constructeur de type d'entité de maillage.                                */
+/* Mesh entity type constructor.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -172,7 +172,7 @@ addEdgeAndFaceLine(Int32 edge_face_index,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
+//! Adds a quadratic line to the list of faces (for 2D elements)
 void ItemTypeInfoBuilder::
 addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2)
 {
@@ -190,7 +190,7 @@ addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
+//! Adds a quadratic line to the list of faces (for 2D elements)
 void ItemTypeInfoBuilder::
 addFaceLine4(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3)
 {
@@ -418,8 +418,8 @@ addFaceOctogon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n
 void ItemTypeInfoBuilder::
 addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n)
 {
-  // Actuellement cette méthode est uniquement appelée pour les faces 2D donc
-  // l'élément actuel doit être de dimension 3.
+  // Currently, this method is only called for 2D faces, so
+  // the current element must be of dimension 3.
   _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
@@ -428,7 +428,7 @@ addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n)
   buf.add(face_nb_node);
   for (Integer i = 0; i < face_nb_node; ++i)
     buf.add(n[i]);
-  buf.add(face_nb_node); // nb edge; ne traite pas de cas particulier pour n==2
+  buf.add(face_nb_node); // number of edges; does not handle a special case for n==2
   for (Integer i = 0; i < face_nb_node; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
@@ -448,7 +448,7 @@ computeFaceEdgeInfos()
     Integer face_nb_node = local_face.nbNode();
     Integer face_nb_edge = local_face.nbEdge();
     for (Integer i_edge = 0; i_edge < face_nb_edge; ++i_edge) {
-      // L'objectif est de trouver l'arête de sommet [i_edge, i_edge+1] dans l'élément
+      // The goal is to find the vertex edge [i_edge, i_edge+1] in the element
       Integer beginNode = local_face.node(i_edge);
       Integer endNode = local_face.node((i_edge + 1) % face_nb_edge);
       Integer face_edge = -1;
@@ -503,4 +503,3 @@ _checkSetIsPolygon()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

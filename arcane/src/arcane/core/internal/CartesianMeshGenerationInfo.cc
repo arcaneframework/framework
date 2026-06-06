@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshGenerationInfo.cc                              (C) 2000-2021 */
 /*                                                                           */
-/* Informations sur la génération des maillages cartésiens.                  */
+/* Information on Cartesian mesh generation.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,8 +18,8 @@
 #include "arcane/utils/AutoDestroyUserData.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/Properties.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/Properties.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ CartesianMeshGenerationInfo(IMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
-setOwnCellOffsets(Int64 x,Int64 y,Int64 z)
+setOwnCellOffsets(Int64 x, Int64 y, Int64 z)
 {
   m_own_cell_offsets[0] = x;
   m_own_cell_offsets[1] = y;
@@ -227,18 +227,18 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 ICartesianMeshGenerationInfo* ICartesianMeshGenerationInfo::
-getReference(IMesh* mesh,bool create)
+getReference(IMesh* mesh, bool create)
 {
   //TODO: faire lock pour multi-thread
   const char* name = "CartesianMeshGenerationInfo";
   IUserDataList* udlist = mesh->userDataList();
 
-  IUserData* ud = udlist->data(name,true);
-  if (!ud){
+  IUserData* ud = udlist->data(name, true);
+  if (!ud) {
     if (!create)
       return nullptr;
     ICartesianMeshGenerationInfo* cm = new impl::CartesianMeshGenerationInfo(mesh);
-    udlist->setData(name,new AutoDestroyUserData<ICartesianMeshGenerationInfo>(cm));
+    udlist->setData(name, new AutoDestroyUserData<ICartesianMeshGenerationInfo>(cm));
     return cm;
   }
   auto* adud = dynamic_cast<AutoDestroyUserData<ICartesianMeshGenerationInfo>*>(ud);
@@ -250,7 +250,7 @@ getReference(IMesh* mesh,bool create)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

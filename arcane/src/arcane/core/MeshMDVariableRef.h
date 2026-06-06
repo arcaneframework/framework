@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshMDVariableRef.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant une variable multi-dimension sur une entité du maillage.    */
+/* Class managing a multi-dimensional variable on a mesh entity.             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHMDVARIABLEREF_H
 #define ARCANE_CORE_MESHMDVARIABLEREF_H
@@ -29,8 +29,8 @@
 /*
  * ATTENTION:
  *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
+ * All classes in this file are experimental and the API is not
+ * fixed. DO NOT USE OUTSIDE OF ARCANE.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -86,10 +86,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base gérant une variable multi-dimension sur une entité du maillage.
+ * \brief Base class managing a multi-dimensional variable on a mesh entity.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is under definition. Do not use outside of Arcane.
  */
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefBaseT
@@ -111,10 +112,10 @@ class MeshMDVariableRefBaseT
     _internalInit(m_underlying_var.variable());
   }
 
-  //! Variable sous-jacente associée.
+  //! Associated underlying variable.
   UnderlyingVariableType& underlyingVariable() { return m_underlying_var; }
 
-  //! Forme complète (statique + dynamique) de la variable.
+  //! Full shape (static + dynamic) of the variable.
   ArrayShape fullShape() const { return m_underlying_var.trueData()->shape(); }
 
  protected:
@@ -138,10 +139,11 @@ class MeshMDVariableRefBaseT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant une variable multi-dimension sur une entité du maillage.
+ * \brief Class managing a multi-dimensional variable on a mesh entity.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is under definition. Do not use outside of Arcane.
  */
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefT
@@ -150,7 +152,7 @@ class MeshMDVariableRefT
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 3, "Only Extents of rank 0, 1, 2 or 3 are implemented");
-  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
+  static_assert(std::is_same_v<DataType, BasicType>, "DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
@@ -177,7 +179,6 @@ class MeshMDVariableRefT
   {
     return this->m_mdspan(id.localId());
   }
-
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   DataType& operator()(ItemLocalIdType id, Int32 i1)
@@ -216,10 +217,10 @@ class MeshMDVariableRefT
   }
 
   /*!
-   * \brief Change la forme de la donnée.
+   * \brief Changes the data shape.
    *
-   * Le nombre d'éléments de \a dims doit correspondre aux nombre de valeurs
-   * dynamiques de \a Extents.
+   * The number of elements in \a dims must correspond to the number of dynamic values
+   * in \a Extents.
    */
   void reshape(std::array<Int32, Extents::nb_dynamic> dims)
   {
@@ -230,10 +231,11 @@ class MeshMDVariableRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant une variable multi-dimension de type 'NumVector' sur une entité du maillage.
+ * \brief Class managing a multi-dimensional 'NumVector' type variable on a mesh entity.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is under definition. Do not use outside of Arcane.
  */
 template <typename ItemType, typename DataType, int Size, typename Extents>
 class MeshVectorMDVariableRefT
@@ -268,42 +270,42 @@ class MeshVectorMDVariableRefT
 
  public:
 
-  //! Accède à la donnée en lecture/écriture
+  //! Accesses the data for reading/writing
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
   ReferenceType operator()(ItemLocalIdType id)
   {
     return ReferenceType(m_vector_mdspan.ptrAt(id.localId()));
   }
 
-  //! Accède à la donnée en lecture
+  //! Accesses the data for reading
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
   ConstReferenceType operator()(ItemLocalIdType id) const
   {
     return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId()));
   }
 
-  //! Accède à la donnée en lecture/écriture
+  //! Accesses the data for reading/writing
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   ReferenceType operator()(ItemLocalIdType id, Int32 i1)
   {
     return ReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1));
   }
 
-  //! Accède à la donnée en lecture
+  //! Accesses the data for reading
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   ConstReferenceType operator()(ItemLocalIdType id, Int32 i1) const
   {
     return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1));
   }
 
-  //! Accède à la donnée en lecture/écriture
+  //! Accesses the data for reading/writing
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   ReferenceType operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
   {
     return ReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1, i2));
   }
 
-  //! Accède à la donnée en lecture
+  //! Accesses the data for reading
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   ConstReferenceType operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
   {
@@ -311,15 +313,15 @@ class MeshVectorMDVariableRefT
   }
 
   /*!
-   * \brief Change la forme de la donnée.
+   * \brief Changes the data shape.
    *
-   * Le nombre d'éléments de \a dims doit correspondre aux nombre de valeurs
-   * dynamiques de \a Extents.
+   * The number of elements in \a dims must correspond to the number of dynamic values
+   * in \a Extents.
    */
   void reshape(std::array<Int32, Extents::nb_dynamic> dims)
   {
     std::array<Int32, nb_dynamic + 1> full_dims;
-    // On ajoute 'Size' à la fin des dimensions.
+    // We add 'Size' to the end of the dimensions.
     for (int i = 0; i < nb_dynamic; ++i)
       full_dims[i] = dims[i];
     full_dims[nb_dynamic] = Size;
@@ -332,10 +334,10 @@ class MeshVectorMDVariableRefT
   void updateFromInternal() override
   {
     BaseClass::updateFromInternal();
-    // Positionne la valeur de m_vector_mdspan.
-    // Il aura les mêmes dimensions que m_mdspan sauf qu'on
-    // enlève la dernière dimension et qu'on change le type
-    // de 'DataType' en 'NumVector<DataType,Size>.
+    // Positions the value of m_vector_mdspan.
+    // It will have the same dimensions as m_mdspan except that we
+    // remove the last dimension and change the type
+    // from 'DataType' to 'NumVector<DataType,Size>'.
     DataType* v = this->m_mdspan.to1DSpan().data();
     NumVectorType* nv = reinterpret_cast<NumVectorType*>(v);
     m_vector_mdspan = MDSpanType(nv, this->m_mdspan.extents().dynamicExtents());
@@ -348,10 +350,12 @@ class MeshVectorMDVariableRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe gérant une variable multi-dimension de type 'NumMatrix' sur une entité du maillage.
+ * \brief Class managing a multi-dimensional 'NumMatrix' type variable on a
+ * mesh entity.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is under definition. Do not use outside of Arcane.
  */
 template <typename ItemType, typename DataType, int Row, int Column, typename Extents>
 class MeshMatrixMDVariableRefT
@@ -411,15 +415,15 @@ class MeshMatrixMDVariableRefT
   }
 
   /*!
-   * \brief Change la forme de la donnée.
+   * \brief Changes the data shape.
    *
-   * Le nombre d'éléments de \a dims doit correspondre aux nombre de valeurs
-   * dynamiques de \a Extents.
+   * The number of elements in \a dims must correspond to the number of dynamic values
+   * in \a Extents.
    */
   void reshape(std::array<Int32, Extents::nb_dynamic> dims)
   {
     std::array<Int32, nb_dynamic + 2> full_dims;
-    // On ajoute 'Row' et 'Column' à la fin des dimensions.
+    // We add 'Row' and 'Column' to the end of the dimensions.
     for (int i = 0; i < nb_dynamic; ++i)
       full_dims[i] = dims[i];
     full_dims[nb_dynamic] = Row;
@@ -433,10 +437,10 @@ class MeshMatrixMDVariableRefT
   void updateFromInternal() override
   {
     BaseClass::updateFromInternal();
-    // Positionne la valeur de m_vector_mdspan.
-    // Il aura les mêmes dimensions que m_mdspan sauf qu'on
-    // enlève la dernière dimension et qu'on change le type
-    // de 'DataType' en 'NumMatrix<DataType,Row,Column>.
+    // Positions the value of m_vector_mdspan.
+    // It will have the same dimensions as m_mdspan except that we
+    // remove the last dimension and change the type
+    // from 'DataType' to 'NumMatrix<DataType,Row,Column>'.
     DataType* v = this->m_mdspan.to1DSpan().data();
     NumMatrixType* nv = reinterpret_cast<NumMatrixType*>(v);
     m_matrix_mdspan = MDSpanType(nv, this->m_mdspan.extents().dynamicExtents());

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialVariableInternal.h                             (C) 2000-2024 */
 /*                                                                           */
-/* API interne Arcane de 'IMeshMaterialVariable'.                            */
+/* Arcane internal API for 'IMeshMaterialVariable'.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_INTERNAL_IMESHMATERIALVARIABLEINTERNAL_H
 #define ARCANE_CORE_MATERIALS_INTERNAL_IMESHMATERIALVARIABLEINTERNAL_H
@@ -27,8 +27,9 @@ class ComponentItemListBuilder;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour la copie entre deux zones mémoire.
+ * \brief Information for copying between two memory regions.
  */
 struct ARCANE_CORE_EXPORT CopyBetweenDataInfo
 {
@@ -48,7 +49,7 @@ struct ARCANE_CORE_EXPORT CopyBetweenDataInfo
 };
 
 /*!
- * \brief Arguments communs pour toutes les méthodes de MeshMaterialVariableIndexer.
+ * \brief Common arguments for all MeshMaterialVariableIndexer methods.
  */
 class ARCANE_CORE_EXPORT VariableIndexerCommonArgs
 {
@@ -77,14 +78,15 @@ class ARCANE_CORE_EXPORT VariableIndexerCommonArgs
 
   Int32 m_var_index = -1;
   RunQueue m_queue;
-  //! Informations de copie si on n'utilise qu'une seule commande
+  //! Copy information if only one command is used
   UniqueArray<CopyBetweenDataInfo>* m_copy_data = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ * \brief Arguments for methods copying between partial and global values
  */
 class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 : public VariableIndexerCommonArgs
@@ -115,8 +117,9 @@ class ARCANE_CORE_EXPORT CopyBetweenPartialAndGlobalArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ * \brief Arguments for methods copying between partial and global values
  */
 class ARCANE_CORE_EXPORT InitializeWithZeroArgs
 : public VariableIndexerCommonArgs
@@ -136,8 +139,9 @@ class ARCANE_CORE_EXPORT InitializeWithZeroArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments des méthodes de copie entre valeurs partielles et globales
+ * \brief Arguments for methods copying between partial and global values
  */
 class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
 : public VariableIndexerCommonArgs
@@ -153,8 +157,9 @@ class ARCANE_CORE_EXPORT ResizeVariableIndexerArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API interne Arcane de 'IMeshMaterialVariable'.
+ * \brief Arcane internal API for 'IMeshMaterialVariable'.
  */
 class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
 {
@@ -165,26 +170,26 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
  public:
 
   /*!
-   *\brief Taille en octet pour conserver une valeur de la variable.
+   *\brief Byte size to save a variable value.
    *
-   * Pour une variable scalaire, il s'agit de la taille du type de donnée associé.
-   * Pour une variable tableau, il s'agit de la taille du type de donnée 
-   * multiplié pour le nombre d'éléments du tableau.
+   * For a scalar variable, this is the size of the associated data type.
+   * For an array variable, this is the size of the data type 
+   * multiplied by the number of elements in the array.
    */
   virtual Int32 dataTypeSize() const = 0;
 
   /*!
-   * \brief Copie les valeurs de la variable dans un buffer.
+   * \brief Copies the variable values into a buffer.
    *
-   * \a queue peut être nulle.
+   * \a queue may be null.
    */
   virtual void copyToBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                             Span<std::byte> bytes, RunQueue* queue) const = 0;
 
   /*!
-   * \brief Copie les valeurs de la variable depuis un buffer.
+   * \brief Copies the variable values from a buffer.
    *
-   * \a queue peut être nulle.
+   * \a queue may be null.
    */
   virtual void copyFromBuffer(SmallSpan<const MatVarIndex> matvar_indexes,
                               Span<const std::byte> bytes, RunQueue* queue) = 0;
@@ -202,16 +207,16 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableInternal
   //! \internal
   virtual void copyBetweenPartialAndGlobal(const CopyBetweenPartialAndGlobalArgs& args) = 0;
 
-  //! Initialize les valeurs des nouveaux constituants avec la valeur zéro
+  //! Initialize the values of new components with zero
   virtual void initializeNewItemsWithZero(InitializeWithZeroArgs& args) = 0;
 
-  //! Liste des 'VariableRef' associées à cette variable.
-  virtual ConstArrayView<VariableRef*> variableReferenceList() const =0;
+  //! List of 'VariableRef' associated with this variable.
+  virtual ConstArrayView<VariableRef*> variableReferenceList() const = 0;
 
-  //!Synchronise les références
+  //! Synchronizes references
   virtual void syncReferences(bool check_resize) = 0;
 
-  //! Redimensionne la valeur partielle associée à l'indexer \a index
+  //! Resizes the partial value associated with index \a index
   virtual void resizeForIndexer(ResizeVariableIndexerArgs& args) = 0;
 };
 

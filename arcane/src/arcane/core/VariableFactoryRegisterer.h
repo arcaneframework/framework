@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableFactoryRegisterer.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Singleton permettant d'enregister une fabrique de variable.               */
+/* Singleton allowing registration of a variable factory.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEFACTORYREGISTERER_H
 #define ARCANE_CORE_VARIABLEFACTORYREGISTERER_H
@@ -24,18 +24,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Enregistreur d'une fabrique de variables.
+ * \brief Variable factory registrar.
  *
- Chaque instance de ce type doit être une variable globale qui référence
- une fonction de création de variable d'un type donnée. Chaque instance
- étant globale, sa création a lieu avant de rentrer dans le main(). Il ne
- faut donc faire aucune opération utilisant des objets externes ou même
- des allocations dynamiques car on ne connait pas les objets déjà créés
+Each instance of this type must be a global variable that references
+a variable creation function of a given type. Since each instance
+is global, its creation happens before entering main(). Therefore, no
+operations using external objects or even dynamic allocations should be performed
+because the already created objects are unknown.
 
- La classe est concu pour que toutes ses instances soient liées par une
- liste chaînée. Le premier maillon étant récupérable par firstVariableFactory();
+The class is designed so that all its instances are linked by a
+linked list. The first link is retrievable via firstVariableFactory();
 */
 class ARCANE_CORE_EXPORT VariableFactoryRegisterer
 {
@@ -45,73 +46,74 @@ class ARCANE_CORE_EXPORT VariableFactoryRegisterer
 
  public:
 
- //! Crée un enregistreur pour une VariableFactory pour le type \a var_type_info et pour fonction de création \a func
-  VariableFactoryRegisterer(VariableFactoryFunc func,const VariableTypeInfo& var_type_info);
+  //! Creates a registrar for a VariableFactory for the type \a var_type_info
+  //! and for the creation function \a func
+  VariableFactoryRegisterer(VariableFactoryFunc func, const VariableTypeInfo& var_type_info);
 
  public:
 
   /*!
-   * \brief Créé une fabrique pour ce type de variable.
+   * \brief Creates a factory for this variable type.
    *
-   * La fabrique doit être détruite par l'opérateur delete lorsqu'elle n'est
-   * plus utilisée.
-   */  
+   * The factory must be destroyed by the delete operator when it is
+   * no longer used.
+   */
   IVariableFactory* createFactory();
 
-  //! VariableFactory précédent (0 si le premier)
+  //! Previous VariableFactory (0 if the first)
   VariableFactoryRegisterer* previousVariableFactory() const { return m_previous; }
 
-  //! VariableFactory suivant (0 si le dernier)
+  //! Next VariableFactory (0 if the last)
   VariableFactoryRegisterer* nextVariableFactory() const { return m_next; }
 
-  //! Genre des variables de données de la variable créée par cette fabrique
+  //! Kind of data variables of the variable created by this factory
   eItemKind itemKind() const { return m_variable_type_info.itemKind(); }
 
-  //! Type de données de la variable créée par cette fabrique
+  //! Data type of the variable created by this factory
   eDataType dataType() const { return m_variable_type_info.dataType(); }
 
-  //! Dimension de la variable créée par cette fabrique
+  //! Dimension of the variable created by this factory
   Integer dimension() const { return m_variable_type_info.dimension(); }
 
-  //! Tag indiquant le type multiple (0 si non multiple, 1 si multiple, 2 si multiple deprecated)
+  //! Tag indicating the multiple type (0 if not multiple, 1 if multiple, 2 if multiple deprecated)
   Integer multiTag() const { return m_variable_type_info.multiTag(); }
 
-  //! indique si la fabrique est pour une variable partielle.
+  //! Indicates if the factory is for a partial variable.
   bool isPartial() const { return m_variable_type_info.isPartial(); }
 
-  //! Informations sur le type de la variable
+  //! Information about the variable type
   const VariableTypeInfo& variableTypeInfo() const { return m_variable_type_info; }
 
   /*!
-   * \brief Positionne le VariableFactory précédent.
+   * \brief Positions the previous VariableFactory.
    *
-   * Cette méthode est automatiquement appelée par IVariableFactoryRegistry.
+   * This method is automatically called by IVariableFactoryRegistry.
    */
   void setPreviousVariableFactory(VariableFactoryRegisterer* s) { m_previous = s; }
 
   /*!
-   *  \brief Positionne le VariableFactory suivant
+   *  \brief Positions the next VariableFactory
    *
-   * Cette méthode est automatiquement appelée par IVariableFactoryRegistry.
+   * This method is automatically called by IVariableFactoryRegistry.
    */
   void setNextVariableFactory(VariableFactoryRegisterer* s) { m_next = s; }
 
  public:
 
   static VariableFactoryRegisterer* firstVariableFactory();
- 
+
  private:
 
-  //! Fonction de création du IVariableFactoryFactory
+  //! Creation function for IVariableFactoryFactory
   VariableFactoryFunc m_function;
 
-  //! Informations sur le type de la variable
+  //! Information about the variable type
   VariableTypeInfo m_variable_type_info;
 
-  //! VariableFactory précédent
+  //! Previous VariableFactory
   VariableFactoryRegisterer* m_previous;
 
-  //! VariableFactory suivant
+  //! Next VariableFactory
   VariableFactoryRegisterer* m_next;
 };
 
@@ -124,4 +126,3 @@ class ARCANE_CORE_EXPORT VariableFactoryRegisterer
 /*---------------------------------------------------------------------------*/
 
 #endif
-

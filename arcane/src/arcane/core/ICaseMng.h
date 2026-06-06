@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICaseMng.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la classe gérant le jeu de données.                          */
+/* Interface for the class managing the dataset.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEMNG_H
 #define ARCANE_CORE_ICASEMNG_H
@@ -29,28 +29,29 @@ class ICaseMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Types des évènements supportés par ICaseMng.
+ * \brief Types of events supported by ICaseMng.
  *
- * Il est possible de s'enregistrer sur ces évènements via la méthode
- * ICaseMng::observable().
+ * It is possible to register for these events via the ICaseMng::observable() method.
  */
 enum class eCaseMngEventType
 {
-  //! Évènement généré avant de lire les options dans la phase 1
+  //! Event generated before reading options in phase 1
   BeginReadOptionsPhase1,
-  //! Évènement généré avant de lire les options dans la phase 2.
+  //! Event generated before reading options in phase 2.
   BeginReadOptionsPhase2
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Interface du gestionnaire de cas.
+ * \brief Case manager interface.
  *
- * Cette interface est gérée par un compteur de référence et ne doit pas
- * être détruite explictement.
+ * This interface is managed by a reference counter and should not
+ * be explicitly destroyed.
  */
 class ICaseMng
 {
@@ -58,139 +59,138 @@ class ICaseMng
 
  public:
 
-  // TODO: rendre privé (début 2024)
-  virtual ~ICaseMng() = default; //!< Libère les ressources
+  // TODO: make private (start 2024)
+  virtual ~ICaseMng() = default; //!< Frees resources
 
  public:
 
-  //! Application associée
+  //! Associated application
   virtual IApplication* application() = 0;
 
-  //! Gestionnaire de traces
+  //! Trace manager
   virtual ITraceMng* traceMng() = 0;
 
-  //! Gestionnaire de maillage associé
+  //! Associated mesh manager
   virtual IMeshMng* meshMng() const = 0;
 
-  //! Gestionnaire de sous-domaine.
+  //! Sub-domain manager.
   virtual ISubDomain* subDomain() = 0;
 
-  //! Document XML du jeu de données (peut être nul si pas de jeu de donneés)
+  //! XML document of the dataset (can be null if no dataset)
   virtual ICaseDocument* caseDocument() = 0;
 
-  //! Fragment du Document XML associé au jeu de données (peut être nul si pas de jeu de donneés)
+  //! Fragment of the XML Document associated with the dataset (can be null if no dataset)
   virtual ICaseDocumentFragment* caseDocumentFragment() = 0;
 
-  //! Système d'unité associé.
+  //! Associated unit system.
   virtual IPhysicalUnitSystem* physicalUnitSystem() const = 0;
 
-  //! Lit le document XML du jeu de données.
+  //! Reads the XML document of the dataset.
   virtual ICaseDocument* readCaseDocument(const String& filename, ByteConstArrayView bytes) = 0;
 
-  //! Lit les options du jeu de donnée correspondant aux modules utilisés
+  //! Reads the dataset options corresponding to the used modules
   virtual void readOptions(bool is_phase1) = 0;
 
-  //! Affiche les valeurs des options
+  //! Prints the option values
   virtual void printOptions() = 0;
 
-  //! Lit les tables du jeu de donnée.
+  //! Reads the dataset tables.
   virtual void readFunctions() = 0;
 
  public:
 
-  //! Enregistre une liste d'options du jeu de donnée
+  //! Registers a list of dataset options
   virtual void registerOptions(ICaseOptions*) = 0;
 
-  //! Déseregistre une liste d'options du jeu de donnée
+  //! Unregisters a list of dataset options
   virtual void unregisterOptions(ICaseOptions*) = 0;
 
-  //! Collection des blocs d'options.
+  //! Collection of option blocks.
   virtual CaseOptionsCollection blocks() const = 0;
 
  public:
 
-  //! Retourne la fonction de nom \a name ou \a nullptr s'il n'y en a pas.
+  //! Returns the function by name \a name or \a nullptr if none exists.
   virtual ICaseFunction* findFunction(const String& name) const = 0;
 
   /*!
-   * \brief Retourne la liste des tables.
+   * \brief Returns the list of tables.
    *
-   * Le pointeur retourné n'est plus valide dès que la liste des tables change.
+   * The returned pointer is no longer valid as soon as the list of tables changes.
    */
   virtual CaseFunctionCollection functions() = 0;
 
   /*!
-   * \brief Supprime une fonction.
+   * \brief Deletes a function.
    *
-   * Supprime la fonction \a func. Si cette fonction n'est pas dans cette liste,
-   * ne fait rien.
-   * Si \a dofree est vrai, l'opérateur delete est appelé sur cette fonction.
+   * Deletes the function \a func. If this function is not in this list,
+   * nothing is done.
+   * If \a dofree is true, the delete operator is called on this function.
    */
   ARCCORE_DEPRECATED_2019("Use removeFunction(ICaseFunction*) instead.")
   virtual void removeFunction(ICaseFunction* func, bool dofree) = 0;
 
   /*!
-   * \brief Supprime une fonction.
+   * \brief Deletes a function.
    *
-   * Supprime la fonction \a func. Si cette fonction n'est pas dans cette liste,
-   * ne fait rien.
+   * Deletes the function \a func. If this function is not in this list,
+   * nothing is done.
    */
   virtual void removeFunction(ICaseFunction* func) = 0;
 
   /*!
-   * \brief Ajoute la fonction \a func.
+   * \brief Adds the function \a func.
    *
-   * L'ajout ne peut se faire que lors de l'initialisation. L'appelant reste
-   * propriétaire de l'instance \a func et doit l'enlever via removeFunction().
+   * Addition can only be done during initialization. The caller remains
+   * the owner of the \a func instance and must remove it via removeFunction().
    */
   ARCCORE_DEPRECATED_2019("Use addFunction(Ref<ICaseFunction>) instead.")
   virtual void addFunction(ICaseFunction* func) = 0;
 
   /*!
-   * \brief Ajoute la fonction \a func.
+   * \brief Adds the function \a func.
    *
-   * L'ajout ne peut se faire que lors de l'initialisation.
+   * Addition can only be done during initialization.
    */
   virtual void addFunction(Ref<ICaseFunction> func) = 0;
 
   /*!
-   * \brief Met à jour les options basée sur une table de marche en temps.
+   * \brief Updates the options based on a time-marching table.
    *
-   * Pour chaque option dépendant d'une table de marche, met à jour sa valeur
-   * en utilisant le paramètre \a current_time s'il s'agit d'une table de
-   * marche avec paramètre réel ou \a current_iteration s'il s'agit d'une
-   * table de marche avec paramètre entier.
-   * Si la fonction de l'option possède un coefficient ICaseFunction::deltatCoef()
-   * non nul, le temps utilisé est égal à current_time + coef*current_deltat.
+   * For each option dependent on a marching table, updates its value
+   * using the \a current_time parameter if it is a marching table with a real parameter,
+   * or \a current_iteration if it is a marching table with an integer parameter.
+   * If the option function has a non-zero coefficient ICaseFunction::deltatCoef(),
+   * the time used is equal to current_time + coef*current_deltat.
    *
-   * \param current_time temps utilisé comme paramètre pour la fonction
-   * \param current_deltat deltat utilisé comme paramètre pour la fonction
-   * \param current_iteration itération utilisé comme paramètre pour la fonction
+   * \param current_time time used as parameter for the function
+   * \param current_deltat deltat used as parameter for the function
+   * \param current_iteration iteration used as parameter for the function
    */
   virtual void updateOptions(Real current_time, Real current_deltat, Integer current_iteration) = 0;
 
   /*!
-   * \brief Positionne la manière de traiter les avertissements.
+   * \brief Sets the way warnings are treated.
    * \sa isTreatWarningAsError().
    */
   virtual void setTreatWarningAsError(bool v) = 0;
 
   /*!
-   * \brief Indique si les avertissements dans le jeu de données doivent être traités
-   * comme des erreurs et provoquer l'arrêt du code.
+   * \brief Indicates whether warnings in the dataset should be treated
+   * as errors and cause the code to stop.
    */
   virtual bool isTreatWarningAsError() const = 0;
 
-  //! Positionne l'autorisation des éléments inconnus à la racine du document.
+  //! Sets the permission for unknown elements at the document root.
   virtual void setAllowUnkownRootElelement(bool v) = 0;
 
-  //! Indique si les éléments inconnus à la racine du document sont autorisés
+  //! Indicates whether unknown elements at the document root are allowed
   virtual bool isAllowUnkownRootElelement() const = 0;
 
   /*!
-   * \brief Observable sur l'instance.
+   * \brief Observable on the instance.
    *
-   * Le type de l'observable est donné par \a type
+   * The type of the observable is given by \a type
    */
   virtual IObservable* observable(eCaseMngEventType type) = 0;
 
@@ -200,7 +200,7 @@ class ICaseMng
 
  public:
 
-  //! Implémentation interne
+  //! Internal implementation
   virtual ICaseMngInternal* _internalImpl() = 0;
 };
 
@@ -212,4 +212,4 @@ class ICaseMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

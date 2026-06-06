@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialVariable.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une variable sur un matériau du maillage.                     */
+/* Interface of a variable on a mesh material.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLE_H
 #define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLE_H
@@ -40,8 +40,9 @@ class IMeshMaterialVariableInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une variable matériau d'un maillage.
+ * \brief Interface of a material variable on a mesh.
  */
 class ARCANE_CORE_EXPORT IMeshMaterialVariable
 {
@@ -51,190 +52,188 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
 
  public:
 
-  //! Nom de la variable.
-  virtual String name() const =0;
+  //! Name of the variable.
+  virtual String name() const = 0;
 
-  //! Variable globale sur le maillage associée.
-  virtual IVariable* globalVariable() const =0;
+  //! Associated global variable on the mesh.
+  virtual IVariable* globalVariable() const = 0;
 
   /*!
    * \internal
-   * \brief Construit les infos de la variable.
-   * A usage interne à Arcane.
+   * \brief Builds the variable information.
+   * For internal use in Arcane.
    */
-  virtual void buildFromManager(bool is_continue) =0;
+  virtual void buildFromManager(bool is_continue) = 0;
 
   /*!
-   * \brief Synchronise les références.
+   * \brief Synchronizes references.
    *
-   * Synchronise les valeurs des références (VariableRef) à cette variable
-   * avec la valeur actuelle de la variable. Cette méthode est appelé
-   * automatiquement lorsque le nombre d'éléments d'une variable tableau change.
+   * Synchronizes the values of references (VariableRef) to this variable
+   * with the current value of the variable. This method is called
+   * automatically when the number of elements of an array variable changes.
    */
-  virtual void syncReferences() =0;
+  virtual void syncReferences() = 0;
 
   /*!
-   * \brief Ajoute une référence à cette variable
+   * \brief Adds a reference to this variable
    *
-   * \pre \a var_ref ne doit pas déjà référencer une variable.
+   * Precondition: var_ref must not already reference a variable.
    */
-  virtual void addVariableRef(MeshMaterialVariableRef* var_ref) =0;
+  virtual void addVariableRef(MeshMaterialVariableRef* var_ref) = 0;
 
   /*!
-   * \brief Supprime une référence à cette variable
+   * \brief Removes a reference to this variable
    *
-   * \pre \a var_ref doit référencer cette variable (un appel à addVariableRef()
-   * doit avoir été effectué sur cette variable).
+   * Precondition: var_ref must reference this variable (a call to addVariableRef()
+   * must have been made on this variable).
    */
-  virtual void removeVariableRef(MeshMaterialVariableRef* var_ref) =0;
+  virtual void removeVariableRef(MeshMaterialVariableRef* var_ref) = 0;
 
   //! \internal
-  virtual MeshMaterialVariableRef* firstReference() const =0;
+  virtual MeshMaterialVariableRef* firstReference() const = 0;
 
   /*!
    * \internal
-   * \brief Variable contenant les valeurs spécifiques du matériau \a mat.
+   * \brief Variable containing the specific values of the material mat.
    */
-  virtual IVariable* materialVariable(IMeshMaterial* mat) =0;
+  virtual IVariable* materialVariable(IMeshMaterial* mat) = 0;
 
   /*!
-   * \brief Indique si on souhaite conserver la valeur de la variable
-   * apres un changement de la liste des matériaux.
+   * \brief Indicates whether the variable value should be kept after a change in the list of materials.
    */
-  virtual void setKeepOnChange(bool v) =0;
+  virtual void setKeepOnChange(bool v) = 0;
 
   /*!
-   * \brief Indique si on souhaite conserver la valeur de la variable
-   * apres un changement de la liste des matériaux.
+   * \brief Indicates whether the variable value should be kept after a change in the list of materials.
    */
-  virtual bool keepOnChange() const =0;
+  virtual bool keepOnChange() const = 0;
 
   /*!
-   * \brief Synchronise la variable.
+   * \brief Synchronizes the variable.
    *
-   * La synchronisation se fait sur tous les matériaux de la maille.
-   * Il est indispensable que toutes mailles fantômes aient déjà le bon
-   * nombre de matériaux.
+   * Synchronization is performed across all materials of the mesh.
+   * It is essential that all ghost cells already have the correct
+   * number of materials.
    */
-  virtual void synchronize() =0;
+  virtual void synchronize() = 0;
 
-  virtual void synchronize(MeshMaterialVariableSynchronizerList& sync_list) =0;
+  virtual void synchronize(MeshMaterialVariableSynchronizerList& sync_list) = 0;
 
   /*!
-   * \brief Affiche les valeurs de la variable sur le flot \a ostr.
+   * \brief Dumps the variable values to the stream ostr.
    */
-  virtual void dumpValues(std::ostream& ostr) =0;
+  virtual void dumpValues(std::ostream& ostr) = 0;
 
   /*!
-   * \brief Affiche les valeurs de la variable pour la vue \a view sur le flot \a ostr.
+   * \brief Dumps the variable values for the view view to the stream ostr.
    */
-  virtual void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) =0;
+  virtual void dumpValues(std::ostream& ostr, AllEnvCellVectorView view) = 0;
 
   /*!
-   * \brief Remplit les valeurs partielles avec la valeur de la maille globale associée.
+   * \brief Fills partial values with the value of the associated global mesh.
    */
-  virtual void fillPartialValuesWithGlobalValues() =0;
+  virtual void fillPartialValuesWithGlobalValues() = 0;
 
   /*!
-   * \brief Remplit les valeurs partielles avec la valeur de la maille du dessus.
-   * Si \a level vaut LEVEL_MATERIAL, copie les valeurs matériaux avec celle du milieu.
-   * Si \a level vaut LEVEL_ENVIRONNEMENT, copie les valeurs des milieux avec
-   * celui de la maille globale.
-   * Si \a level vaut LEVEL_ALLENVIRONMENT, remplit toutes les valeurs partielles
-   * avec celle de la maille globale (cela rend cette méthode équivalente à
-   * fillGlobalValuesWithGlobalValues().
+   * \brief Fills partial values with the value of the super mesh.
+   * If level equals LEVEL_MATERIAL, it copies material values with the middle one.
+   * If level equals LEVEL_ENVIRONMENT, it copies environment values with
+   * the global mesh's.
+   * If level equals LEVEL_ALLENVIRONMENT, it fills all partial values
+   * with the global mesh's value (this makes this method equivalent to
+   * fillGlobalValuesWithGlobalValues()).
    */
-  virtual void fillPartialValuesWithSuperValues(Int32 level) =0;
+  virtual void fillPartialValuesWithSuperValues(Int32 level) = 0;
 
-  //! Sérialise la variable pour les entités de numéro local \a ids
-  virtual void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) =0;
+  //! Serializes the variable for local ID entities ids.
+  virtual void serialize(ISerializer* sbuffer, Int32ConstArrayView ids) = 0;
 
-  //! Espace de définition de la variable (matériau+milieu ou milieu uniquement)
-  virtual MatVarSpace space() const =0;
+  //! Variable definition space (material+environment or environment only)
+  virtual MatVarSpace space() const = 0;
 
  public:
 
-  //! @name Gestion des dépendances
+  //! @name Dependency Management
   //@{
-  /*! \brief Recalcule la variable pour le matériau \a mat si nécessaire
+  /*! \brief Recalculates the variable for material mat if necessary
    *
-   * Par le mécanisme de dépendances, cette opération est appelée récursivement
-   * sur toutes les variables dont dépend l'instance. La fonction de recalcul
-   * computeFunction() est ensuite appelée s'il s'avère qu'une des variables
-   * dont elle dépend a été modifiée plus récemment.
+   * Through the dependency mechanism, this operation is called recursively
+   * on all variables that the instance depends on. The recalculation function
+   * computeFunction() is then called if it turns out that one of the variables
+   * it depends on has been modified more recently.
    *
-   * \pre computeFunction() != 0
+   * Precondition: computeFunction() != 0
    */
-  virtual void update(IMeshMaterial* mat) =0;
+  virtual void update(IMeshMaterial* mat) = 0;
 
-  /*! \brief Indique que la variable vient d'être mise à jour.
+  /*! \brief Indicates that the variable has just been updated.
    *
-   * Pour une gestion correcte des dépendances, il faut que cette propriété
-   * soit appelée toutes les fois où la mise à jour d'une variable a été
-   * effectuée.
+   * For correct dependency management, this property must be called every
+   * time a variable has been updated.
    */
-  virtual void setUpToDate(IMeshMaterial* mat) =0;
+  virtual void setUpToDate(IMeshMaterial* mat) = 0;
 
-  //! Temps auquel la variable a été mise à jour
-  virtual Int64 modifiedTime(IMeshMaterial* mat) =0;
+  //! Time when the variable was updated
+  virtual Int64 modifiedTime(IMeshMaterial* mat) = 0;
 
-  //! Ajoute \a var à la liste des dépendances
-  virtual void addDepend(IMeshMaterialVariable* var) =0;
+  //! Adds var to the dependency list
+  virtual void addDepend(IMeshMaterialVariable* var) = 0;
 
-  //! Ajoute \a var à la liste des dépendances avec les infos de trace \a tinfo
-  virtual void addDepend(IMeshMaterialVariable* var,const TraceInfo& tinfo) =0;
+  //! Adds var to the dependency list with trace info tinfo
+  virtual void addDepend(IMeshMaterialVariable* var, const TraceInfo& tinfo) = 0;
 
-  //! Ajoute \a var à la liste des dépendances
-  virtual void addDepend(IVariable* var) =0;
+  //! Adds var to the dependency list
+  virtual void addDepend(IVariable* var) = 0;
 
-  //! Ajoute \a var à la liste des dépendances avec les infos de trace \a tinfo
-  virtual void addDepend(IVariable* var,const TraceInfo& tinfo) =0;
+  //! Adds var to the dependency list with trace info tinfo
+  virtual void addDepend(IVariable* var, const TraceInfo& tinfo) = 0;
 
-  /*! \brief Supprime \a var de la liste des dépendances
+  /*! \brief Removes var from the dependency list
    */
-  virtual void removeDepend(IMeshMaterialVariable* var) =0;
+  virtual void removeDepend(IMeshMaterialVariable* var) = 0;
 
-  /*! \brief Supprime \a var de la liste des dépendances
+  /*! \brief Removes var from the dependency list
    */
-  virtual void removeDepend(IVariable* var) =0;
+  virtual void removeDepend(IVariable* var) = 0;
 
-  /*! \brief Positionne la fonction de recalcule de la variable.
+  /*! \brief Sets the variable's recalculation function.
    *
-   * Si une fonction de recalcule existait déjà, elle est détruite
-   * et remplacée par celle-ci.
+   * If a recalculation function already existed, it is destroyed
+   * and replaced by this one.
    */
-  virtual void setComputeFunction(IMeshMaterialVariableComputeFunction* v) =0;
+  virtual void setComputeFunction(IMeshMaterialVariableComputeFunction* v) = 0;
 
-  //! Fonction utilisée pour mettre à jour la variable
-  virtual IMeshMaterialVariableComputeFunction* computeFunction() =0;
+  //! Function used to update the variable
+  virtual IMeshMaterialVariableComputeFunction* computeFunction() = 0;
 
   /*!
-   * \brief Infos de dépendances.
+   * \brief Dependency information.
    *
-   * Remplit le tableau \a infos avec les infos de dépendance sur les variables
-   * globales et le tableau \a mat_infos avec celles sur les variables matériaux.
+   * Fills the array infos with dependency information on global variables
+   * and the array mat_infos with those on material variables.
    */
   virtual void dependInfos(Array<VariableDependInfo>& infos,
-                           Array<MeshMaterialVariableDependInfo>& mat_infos) =0;
+                           Array<MeshMaterialVariableDependInfo>& mat_infos) = 0;
   //@}
 
  public:
 
-  virtual IMeshMaterialVariableInternal* _internalApi() =0;
+  virtual IMeshMaterialVariableInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Classe pour gérer la création du type concret de la variable matériaux.
+ * \brief Class for managing the creation of the concrete type of the material variable.
  */
-template<typename TrueType>
+template <typename TrueType>
 class MeshMaterialVariableBuildTraits
 {
  public:
+
   static ARCANE_CORE_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo(MatVarSpace space);
-  static ARCANE_CORE_EXPORT TrueType* getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
+  static ARCANE_CORE_EXPORT TrueType* getVariableReference(const MaterialVariableBuildInfo& v, MatVarSpace mvs);
   static ARCANE_CORE_EXPORT TrueType* getVariableReference(IMeshMaterialVariable* var);
 };
 
@@ -246,5 +245,4 @@ class MeshMaterialVariableBuildTraits
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

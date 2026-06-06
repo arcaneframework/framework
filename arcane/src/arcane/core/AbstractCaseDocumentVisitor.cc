@@ -1,26 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AbstractCaseOptionVisitor.cc                                (C) 2000-2017 */
 /*                                                                           */
-/* Visiteur abstrait pour une option du jeu de données.                      */
+/* Abstract visitor for a dataset option.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/AbstractCaseDocumentVisitor.h"
+#include "arcane/core/AbstractCaseDocumentVisitor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,7 +27,7 @@ void AbstractCaseDocumentVisitor::
 _throwException()
 {
   String s = String::format("visitor not implemented for this case option");
-  throw NotImplementedException(A_FUNCINFO,s);
+  throw NotImplementedException(A_FUNCINFO, s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -61,7 +59,6 @@ applyVisitor(const CaseOptionSimple* opt)
   ARCANE_UNUSED(opt);
   _throwException();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,7 +134,7 @@ endVisit(const CaseOptionServiceImpl* opt)
 /*---------------------------------------------------------------------------*/
 
 void AbstractCaseDocumentVisitor::
-beginVisit(const CaseOptionMultiServiceImpl* opt,Integer index)
+beginVisit(const CaseOptionMultiServiceImpl* opt, Integer index)
 {
   ARCANE_UNUSED(opt);
   ARCANE_UNUSED(index);
@@ -148,7 +145,7 @@ beginVisit(const CaseOptionMultiServiceImpl* opt,Integer index)
 /*---------------------------------------------------------------------------*/
 
 void AbstractCaseDocumentVisitor::
-endVisit(const CaseOptionMultiServiceImpl* opt,Integer index)
+endVisit(const CaseOptionMultiServiceImpl* opt, Integer index)
 {
   ARCANE_UNUSED(opt);
   ARCANE_UNUSED(index);
@@ -158,7 +155,7 @@ endVisit(const CaseOptionMultiServiceImpl* opt,Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

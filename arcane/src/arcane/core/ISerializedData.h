@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ISerializedData.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une donnée sérialisée.                                        */
+/* Interface of a serialized data.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERIALIZEDDATA_H
 #define ARCANE_CORE_ISERIALIZEDDATA_H
@@ -24,37 +24,38 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une donnée sérialisée.
+ * \brief Interface of a serialized data.
  *
- * Une donnée (IData) est sérialisée en une instance de cette classe.
+ * A data (IData) is serialized into an instance of this class.
  *
- * Quel que soit le type de la donnée, le type sérialisé est obligatoirement
- * un type de base parmi les suivants: DT_Byte, DT_Int16, DT_Int32, DT_Int64, DT_Real.
+ * Regardless of the data type, the serialized type must be
+ * a base type among the following: DT_Byte, DT_Int16, DT_Int32, DT_Int64, DT_Real.
  *
- * Une instance de cette classe n'est valable que tant que la donnée
- * de référence n'est pas modifiée.
+ * An instance of this class is only valid as long as the reference data
+ * is not modified.
  * 
- * Pour sérialiser une donnée \a data en écriture:
+ * To serialize a data \a data for writing:
  * \code
  * IData* data = ...;
  * ISerializedData* sdata = data->createSerializedData();
- * // sdata->constBytes() contient la donnée sérialisée.
+ * // sdata->constBytes() contains the serialized data.
  * Span<const Byte> buf(sdata->constBytes());
  * std::cout.write(reinterpret_cast<const char*>(buf.data()),buf.size());
  * \endcode
  *
- * Pour sérialiser une donnée \a data en lecture:
+ * To serialize a data \a data for reading:
  * \code
  * IData* data = ...
- * // Créé une instance d'un ISerializedData.
+ * // Create an instance of an ISerializedData.
  * Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(...);
  * data->allocateBufferForSerializedData(sdata);
- * // Remplit sdata->writableBytes() à partir de votre source
+ * // Fills sdata->writableBytes() from your source
  * Span<Byte> buf(sdata->writableBytes());
  * std::cin.read(reinterpret_cast<char*>(buf.data()),buf.size());
- * // Assigne la valeur à \a data
+ * // Assigns the value to \a data
  * data->assignSerializedData(sdata);
  * \endcode
  */
@@ -64,153 +65,153 @@ class ARCANE_CORE_EXPORT ISerializedData
 
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   virtual ~ISerializedData() = default;
 
  public:
 
-  //! Type de la donnée
+  //! Data type
   virtual eDataType baseDataType() const = 0;
 
-  //! Dimension. 0 pour un scalaire, 1 pour un tableau mono-dim, ...
+  //! Dimension. 0 for a scalar, 1 for a 1D array, ...
   virtual Integer nbDimension() const = 0;
 
-  //! Nombre d'éléments
+  //! Number of elements
   virtual Int64 nbElement() const = 0;
 
-  //! Nombre d'éléments du type de base
+  //! Number of base elements
   virtual Int64 nbBaseElement() const = 0;
 
-  //! Indique s'il s'agit d'un tableau multi-taille. (pertinent uniquement si nbDimension()>1)
+  //! Indicates if it is a multi-size array. (only relevant if nbDimension()>1)
   virtual bool isMultiSize() const = 0;
 
-  //! Indique le nombre d'octets qu'il faut allouer pour stocker ou lire les données
+  //! Indicates the number of bytes that must be allocated to store or read the data
   virtual Int64 memorySize() const = 0;
 
-  //! Tableau contenant le nombre d'éléments pour chaque dimension
+  //! Array containing the number of elements for each dimension
   virtual Int64ConstArrayView extents() const = 0;
 
-  //! Forme du tableau associé aux données
+  //! Shape of the array associated with the data
   virtual ArrayShape shape() const = 0;
 
-  //! Valeurs sérialisées.
+  //! Serialized values.
   virtual Span<const Byte> constBytes() const = 0;
 
   /*!
-   * \brief Vue sur les valeurs sérialisées
+   * \brief View of the serialized values
    *
-   * \warning Cette méthode renvoie une vue non vide uniquement si on
-   * a appelé allocateMemory() ou setWritableBytes(Span<Byte>) avant.
+   * \warning This method returns a non-empty view only if one
+   * has called allocateMemory() or setWritableBytes(Span<Byte>) beforehand.
    */
   virtual Span<Byte> writableBytes() = 0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation.
+   * \brief Positions the serialized values.
    *
-   * La vue \a bytes doit rester valide tant que cette instance est utilisée.
+   * The view \a bytes must remain valid as long as this instance is used.
    */
   virtual void setWritableBytes(Span<Byte> bytes) = 0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation pour la lecture
+   * \brief Positions the serialized values for reading
    *
-   * La vue \a bytes doit rester valide tant que cette instance est utilisée.
+   * The view \a bytes must remain valid as long as this instance is used.
    */
   virtual void setConstBytes(Span<const Byte> bytes) = 0;
 
   /*!
-   * \brief Alloue un tableaux pour contenir les éléments sérialisés.
+   * \brief Allocates an array to hold the serialized elements.
    *
-   * Après appel à cette méthode, il est possible de récupérer une
-   * vue sur les valeurs sérialisées via writableBytes() ou constBytes().
+   * After calling this method, it is possible to retrieve a
+   * view of the serialized values via writableBytes() or constBytes().
    */
   virtual void allocateMemory(Int64 size) = 0;
 
  public:
 
   /*!
-   * \brief Serialize en lecture ou écriture la donnée
+   * \brief Serialize the data for reading or writing
    */
   virtual void serialize(ISerializer* buffer) = 0;
 
   /*!
-   * \brief Serialize en lecture la donnée
+   * \brief Serialize the data for reading
    */
   virtual void serialize(ISerializer* buffer) const = 0;
 
  public:
 
   /*!
-   * \brief Calcul une clé de hashage sur cette donnée.
+   * \brief Compute a hash key on this data.
    *
-   * La clé est ajoutée dans \a output. La longueur de la clé dépend
-   * de l'algorithme utilisé.
+   * The key is added to \a output. The length of the key depends
+   * on the algorithm used.
    */
   virtual void computeHash(IHashAlgorithm* algo, ByteArray& output) const = 0;
 
  public:
 
   /*!
-   * \brief Valeurs sérialisées.
-   * \deprecated Utiliser bytes() à la place.
+   * \brief Serialized values.
+   * \deprecated Use bytes() instead.
    */
   ARCANE_DEPRECATED_2018_R("Use method 'writableBytes()' or 'constBytes()' instead")
   virtual ByteConstArrayView buffer() const = 0;
 
   /*!
-   * \brief Valeurs sérialisées.
-   * \deprecated Utiliser bytes() à la place.
+   * \brief Serialized values.
+   * \deprecated Use bytes() instead.
    */
   ARCANE_DEPRECATED_2018_R("Use method 'writableBytes()' or 'constBytes()' instead")
   virtual ByteArrayView buffer() = 0;
 
-  //! Valeurs sérialisées.
+  //! Serialized values.
   ARCCORE_DEPRECATED_2021("Use method 'writableBytes()' or 'constBytes()' instead")
   virtual Span<const Byte> bytes() const = 0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation.
+   * \brief Positions the serialized values.
    *
-   * Le tableau \a buffer ne doit pas être modifié
-   * tant que cette instance est utilisée.
-   * \deprecated Utiliser setBytes() à la place.
+   * The array \a buffer must not be modified
+   * as long as this instance is used.
+   * \deprecated Use setBytes() instead.
    */
   ARCCORE_DEPRECATED_2021("Use method 'setWritableBytes()' instead")
   virtual void setBuffer(ByteArrayView buffer) = 0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation.
+   * \brief Positions the serialized values.
    *
-   * Le tableau \a buffer ne doit pas être modifié
-   * tant que cette instance est utilisée.
-   * \deprecated Utiliser setBytes() à la place.
+   * The array \a buffer must not be modified
+   * as long as this instance is used.
+   * \deprecated Use setBytes() instead.
    */
   ARCCORE_DEPRECATED_2021("Use method 'setConstBytes()' instead")
   virtual void setBuffer(ByteConstArrayView buffer) = 0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation.
+   * \brief Positions the serialized values.
    *
-   * Le tableau \a bytes ne doit pas être modifié
-   * tant que cette instance est utilisée.
+   * The array \a bytes must not be modified
+   * as long as this instance is used.
    */
   ARCCORE_DEPRECATED_2021("Use method 'setWritableBytes()' instead")
   virtual void setBytes(Span<Byte> bytes) = 0;
 
   /*!
-   * \brief Positionne les valeurs de sérialisation.
+   * \brief Positions the serialized values.
    *
-   * Le tableau \a bytes ne doit pas être modifié
-   * tant que cette instance est utilisée.
+   * The array \a bytes must not be modified
+   * as long as this instance is used.
    */
   ARCCORE_DEPRECATED_2021("Use method 'setConstBytes()' instead")
   virtual void setBytes(Span<const Byte> bytes) = 0;
 
   /*!
-   * \brief Valeurs sérialisées
+   * \brief Serialized values
    *
-   * \warning Cette méthode renvoie une vue non vide uniquement si on
-   * a appelé setBytes(Span<Byte>) ou allocateMemory().
+   * \warning This method returns a non-empty view only if one
+   * has called setBytes(Span<Byte>) or allocateMemory().
    */
   ARCCORE_DEPRECATED_2021("Use method 'writableBytes()' or 'constBytes()' instead")
   virtual Span<Byte> bytes() = 0;
@@ -218,14 +219,15 @@ class ARCANE_CORE_EXPORT ISerializedData
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé des données sérialisées.
+ * \brief Creates serialized data.
  *
- * les tableaux \a dimensions et \a values ne sont pas dupliqués et ne doivent
- * pas être modifiés tant que l'objet sérialisé est utilisé.
+ * The arrays \a dimensions and \a values are not duplicated and must not
+ * be modified as long as the serialized object is used.
  *
- * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int16, \a DT_Int32,
- * \a DT_Int64 ou DT_Real.
+ * The type \a data_type must be a type among \a DT_Byte, \a DT_Int16, \a DT_Int32,
+ * \a DT_Int64 or DT_Real.
  */
 extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
@@ -235,14 +237,15 @@ arcaneCreateSerializedDataRef(eDataType data_type, Int64 memory_size,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé des données sérialisées.
+ * \brief Creates serialized data.
  *
- * les tableaux \a dimensions et \a values ne sont pas dupliqués et ne doivent
- * pas être modifiés tant que l'objet sérialisé est utilisé.
+ * The arrays \a dimensions and \a values are not duplicated and must not
+ * be modified as long as the serialized object is used.
  *
- * Le type \a data_type doit être un type parmi \a DT_Byte, \a DT_Int16, \a DT_Int32,
- * \a DT_Int64 ou DT_Real.
+ * The type \a data_type must be a type among \a DT_Byte, \a DT_Int16, \a DT_Int32,
+ * \a DT_Int64 or DT_Real.
  */
 extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
@@ -253,11 +256,12 @@ arcaneCreateSerializedDataRef(eDataType data_type, Int64 memory_size,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé des données sérialisées.
+ * \brief Creates serialized data.
  *
- * la donnée sérialisée est vide. Elle ne pourra être utilisée qu'après un
- * appel à ISerializedData::serialize() en mode ISerializer::ModePut.
+ * The serialized data is empty. It can only be used after a
+ * call to ISerializedData::serialize() in ISerializer::ModePut mode.
  */
 extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
@@ -271,5 +275,4 @@ arcaneCreateEmptySerializedDataRef();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

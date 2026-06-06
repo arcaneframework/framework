@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypeInfoBuilder.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Construction d'un type d'entité du maillage.                              */
+/* Construction of a mesh entity type.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMTYPEINFOBUILDER_H
 #define ARCANE_CORE_ITEMTYPEINFOBUILDER_H
@@ -26,30 +26,31 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Construction des infos d'un type d'entité du maillage.
+ * \brief Construction of the information for a mesh entity type.
  *
- * Pour des raisons de performances, on essaie de stocker ces informations
- * de manière contigue en mémoire, car elles seront accédées très souvent.
- * Pour cela, on utilise un Buffer dans ItemTypeMng.
+ * For performance reasons, we try to store this information
+ * contiguously in memory, as they will be accessed very often.
+ * To do this, we use a Buffer in ItemTypeMng.
  *
- * La méthode setInfos() permet d'indiquer le type et le nombre de noeuds, d'arêtes
- * et de faces du type. Il faut ensuite appeler les méthodes addEdge() et addFace...()
+ * The setInfos() method allows you to specify the type and the number of nodes, edges
+ * and faces of the type. You must then call the addEdge() and addFace...() methods.
  *
- * Une fois le type complètement défini, il ne doit plus être modifié.
+ * Once the type is completely defined, it must no longer be modified.
  *
- * Pour un numéro de type donné, il n'existe qu'une instance de ItemTypeInfo et cette
- * instance reste valide tant que le gestionnaire de type (ItemTypeMng) n'est pas détruit.
- * Par conséquent, il est possible de stocker le pointeur sur l'instance et
- * de comparer deux types uniquement en comparant les pointeurs.
+ * For a given type number, there is only one instance of ItemTypeInfo, and this
+ * instance remains valid as long as the type manager (ItemTypeMng) is not destroyed.
+ * Consequently, it is possible to store the pointer to the instance and
+ * to compare two types solely by comparing the pointers.
  */
 class ItemTypeInfoBuilder
 : public ItemTypeInfo
 {
  public:
 
-  //! Dimension du type
+  //! Dimension of the type
   enum class Dimension : Int16
   {
     DimUnknown = -1,
@@ -61,7 +62,7 @@ class ItemTypeInfoBuilder
 
  public:
 
-  //! Constructeur par défaut
+  //! Default constructor
   ItemTypeInfoBuilder() = default;
 
  public:
@@ -75,119 +76,119 @@ class ItemTypeInfoBuilder
                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
-   * \brief Positionne les informations d'un type.
+   * \brief Positions the information for a type.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use setInfo(...,Dimension dimension, ...) instead")
   void setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name, Int16 dimension,
                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
-   * \brief Positionne les informations d'un type.
+   * \brief Positions the information for a type.
    */
   void setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name, Dimension dimension,
                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
-   * \brief Positionne les informations d'un type.
+   * \brief Positions the information for a type.
    */
   void setInfos(ItemTypeMng* mng, Int16 type_id, String type_name, Dimension dimension,
                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
-   * \brief Positionne l'ordre du type.
+   * \brief Positions the order of the type.
    *
-   * Si pas appelé, on considère que le type est pour les entités d'ordre 1.
-   * Le premier argument est l'ordre de l'entité et le deuxième l'élément d'ordre 1 correspondant.
+   * If not called, the type is considered to be for order 1 entities.
+   * The first argument is the entity order and the second is the corresponding order 1 element.
    */
   void setOrder(Int16 order, ItemTypeId linear_type);
 
   /*!
-   * \brief Ajoute une arête à la liste des arêtes
+   * \brief Adds an edge to the list of edges
    *
-   * \a n0 noeud origine
-   * \a n1 noeud extrémité
-   * \a f_left numéro local de la face à gauche
-   * \a f_right numéro local de la face à droite
+   * \a n0 origin node
+   * \a n1 end node
+   * \a f_left local number of the left face
+   * \a f_right local number of the right face
    */
   void addEdge(Integer edge_index, Integer n0, Integer n1, Integer f_left, Integer f_right);
 
   /*!
-   * \brief Ajoute une arête et une face
+   * \brief Adds an edge and a face
    *
-   * \a edge_face_index index local de l'arête et de la face.
-   * \a begin_end_node couple (noeud origine,noeud extrémité) de l'arête et la face à ajouter.
-   * \a left_and_right_face couple numéro local (face à gauche, face à droite) de l'arête à ajouter
+   * \a edge_face_index local index of the edge and the face.
+   * \a begin_end_node pair (origin node, end node) of the edge and the face to be added.
+   * \a left_and_right_face pair local number (left face, right face) of the edge to be added
    */
   void addEdgeAndFaceLine(Int32 edge_face_index,
                           std::array<Int16, 2> begin_end_node,
                           std::array<Int16, 2> left_and_right_face);
 
   /*!
-   * \brief Ajoute une arête pour une maille 2D d'un maillage en 3D.
+   * \brief Adds an edge for a 2D mesh in a 3D mesh.
    *
-   * \a n0 noeud origine
-   * \a n1 noeud extrémité
+   * \a n0 origin node
+   * \a n1 end node
    */
   void addEdge2D(Integer edge_index, Integer n0, Integer n1);
 
-  //! Ajoute un sommet à la liste des faces (pour les elements 1D)
+  //! Adds a vertex to the list of faces (for 1D elements)
   void addFaceVertex(Integer face_index, Integer n0);
 
-  //! Ajoute une ligne à la liste des faces (pour les elements 2D)
+  //! Adds a line to the list of faces (for 2D elements)
   void addFaceLine(Integer face_index, Integer n0, Integer n1);
 
-  //! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
+  //! Adds a quadratic line to the list of faces (for 2D elements)
   void addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2);
 
-  //! Ajoute une ligne d'ordre 3 à la liste des faces (pour les elements 2D)
+  //! Adds a third-order line to the list of faces (for 2D elements)
   void addFaceLine4(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3);
 
-  //! Ajoute un triangle à la liste des faces
+  //! Adds a triangle to the list of faces
   void addFaceTriangle(Integer face_index, Integer n0, Integer n1, Integer n2);
 
-  //! Ajoute un triangle quadratique à la liste des faces
+  //! Adds a quadratic triangle to the list of faces
   void addFaceTriangle6(Integer face_index, Integer n0, Integer n1, Integer n2,
                         Integer n3, Integer n4, Integer n5);
 
-  //! Ajoute un quadrilatère à la liste des faces
+  //! Adds a quadrilateral to the list of faces
   void addFaceQuad(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3);
 
-  //! Ajoute un quadrilatère quadratique à la liste des faces
+  //! Adds a quadratic quadrilateral to the list of faces
   void addFaceQuad8(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
                     Integer n4, Integer n5, Integer n6, Integer n7);
 
-  //! Ajoute un quadrilatère quadratique à la liste des faces
+  //! Adds a quadratic quadrilateral to the list of faces
   void addFaceQuad9(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
                     Integer n4, Integer n5, Integer n6, Integer n7, Integer n8);
 
-  //! Ajoute un pentagone à la liste des faces
+  //! Adds a pentagon to the list of faces
   void addFacePentagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3, Integer n4);
 
-  //! Ajoute un hexagone à la liste des faces
+  //! Adds a hexagon to the list of faces
   void addFaceHexagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
                       Integer n4, Integer n5);
 
-  //! Ajoute un heptagone à la liste des faces
+  //! Adds a heptagon to the list of faces
   void addFaceHeptagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
                        Integer n4, Integer n5, Integer n6);
 
-  //! Ajoute un heptagone à la liste des faces
+  //! Adds an octagon to the list of faces
   void addFaceOctogon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
                       Integer n4, Integer n5, Integer n6, Integer n7);
 
-  //! Ajoute une face générique à la liste des faces
+  //! Adds a generic face to the list of faces
   void addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n);
 
-  //! Calcule les relations face->arêtes
+  //! Computes the face->edge relations
   void computeFaceEdgeInfos();
 
-  //! Positionne l'information indiquant si le type est valide pour une maille
+  //! Positions the information indicating if the type is valid for a cell
   void setIsValidForCell(bool is_valid)
   {
     m_is_valid_for_cell = is_valid;
   }
 
-  //! Positionne l'information indiquant si le type a un nœud au centre
+  //! Positions the information indicating if the type has a center node
   void setHasCenterNode(bool has_center_node)
   {
     m_has_center_node = has_center_node;
@@ -195,7 +196,7 @@ class ItemTypeInfoBuilder
 
  private:
 
-  void _setNbEdgeAndFace(Integer nb_edge,Integer nb_face);
+  void _setNbEdgeAndFace(Integer nb_edge, Integer nb_face);
   void _checkDimension(Int16 dim);
   void _checkSetIsPolygon();
 };
@@ -208,5 +209,4 @@ class ItemTypeInfoBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IEntryPoint.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface du point d'entrée d'un module.                                  */
+/* Interface of a module entry point.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IENTRYPOINT_H
 #define ARCANE_CORE_IENTRYPOINT_H
@@ -26,127 +26,128 @@ class IModule;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un point d'entrée d'un module.
+ * \brief Interface of a module entry point.
  * \ingroup Module
  */
 class ARCANE_CORE_EXPORT IEntryPoint
 {
  public:
 
-  /*! @name Point d'appel
-    Endroit ou est utilisé le point d'entrée.
+  /*! @name Call point
+    Where the entry point is used.
    */
   //@{
-  //! appelé pendant la boucle de calcul
+  //! called during the calculation loop
   static const char* const WComputeLoop;
-  //! appelé pour la construction du module
+  //! called for module construction
   static const char* const WBuild;
-  //! appelé pendant l'initialisation
+  //! called during initialization
   static const char* const WInit;
-  //! appelé pendant l'initialisation d'une reprise
+  //! called during continuation initialization
   static const char* const WContinueInit;
-  //! appelé pendant l'initialisation d'un nouveau cas
+  //! called during new case initialization
   static const char* const WStartInit;
-  //! appelé pour restaurer les variables lors d'un retour arrière
+  //! called to restore variables during a rollback
   static const char* const WRestore;
-  //! appelé après un changement de maillage
+  //! called after a mesh change
   static const char* const WOnMeshChanged;
-  //! appelé après un raffinement de maillage
+  //! called after mesh refinement
   static const char* const WOnMeshRefinement;
-  //!< appelé lors de la terminaison du code.
+  //!< called upon code termination.
   static const char* const WExit;
   //@}
 
   /*!
-   * \brief Propriétés d'un point d'entrée.
+   * \brief Properties of an entry point.
    */
   enum
   {
-    PNone = 0, //!< Pas de propriétés
+    PNone = 0, //!< No properties
     /*!
-     * \brief Chargé automatiquement au début.
-     * Cela signifie qu'un module possédant un point d'entrée avec cette
-     * propriété sera toujours chargé, et que le point d'entrée sera ajouté
-     * à la liste des points d'entrées s'exécutant en début de boucle en temps.
+     * \brief Automatically loaded at the beginning.
+     * This means that a module possessing an entry point with this
+     * property will always be loaded, and the entry point will be added
+     * to the list of entry points executing at the beginning of the time loop.
      */
     PAutoLoadBegin = 1,
     /*!
-     * \brief Chargé automatiquement à la fin.
-     * Cela signifie qu'un module possédant un point d'entrée avec cette
-     * propriété sera toujours chargé, et que le point d'entrée sera ajouté
-     * à la liste des points d'entrées s'exécutant en fin de boucle en temps.
+     * \brief Automatically loaded at the end.
+     * This means that a module possessing an entry point with this
+     * property will always be loaded, and the entry point will be added
+     * to the list of entry points executing at the end of the time loop.
      */
     PAutoLoadEnd = 2
   };
 
  public:
 
-  virtual ~IEntryPoint() = default; //!< Libère les ressources
+  virtual ~IEntryPoint() = default; //!< Releases resources
 
  public:
 
-  //! Retourne le nom du point d'entrée.
+  //! Returns the name of the entry point.
   virtual String name() const = 0;
 
-  //! Nom complet (avec le module) du point d'entrée. Ce nom est unique.
+  //! Full name (with the module) of the entry point. This name is unique.
   virtual String fullName() const = 0;
 
  public:
 
-  //! Retourne le gestionnaire principal
+  //! Returns the main manager
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this method. Try to get 'ISubDomain' from another way")
   virtual ISubDomain* subDomain() const = 0;
 
-  //! Retourne le module associé au point d'entrée
+  //! Returns the module associated with the entry point
   virtual IModule* module() const = 0;
 
-  //! Appelle le point d'entrée
+  //! Calls the entry point
   virtual void executeEntryPoint() = 0;
 
   /*!
-   * \brief Consommation CPU totale passé dans ce point d'entrée en (en milli-s).
+   * \brief Total CPU consumption spent in this entry point (in milliseconds).
    *
-   * \note depuis la version 3.6 de Arcane, cette méthode renvoie la même valeur
-   * que totalElapsedTime().
+   * \note since version 3.6 of Arcane, this method returns the same value
+   * as totalElapsedTime().
    */
   virtual Real totalCPUTime() const = 0;
 
   /*!
-   * \brief Consommation CPU de la dernière itération (en milli-s).
+   * \brief CPU consumption of the last iteration (in milliseconds).
    *
-   * \note depuis la version 3.6 de Arcane, cette méthode renvoie la même valeur
-   * que lastElapsedTime().
+   * \note since version 3.6 of Arcane, this method returns the same value
+   * as lastElapsedTime().
    */
   virtual Real lastCPUTime() const = 0;
 
-  //! Temps d'exécution passé (temps horloge) dans ce point d'entrée en (en milli-s)
+  //! Elapsed execution time (clock time) in this entry point (in milliseconds)
   virtual Real totalElapsedTime() const = 0;
 
-  //! Temps d'exécution (temps horloge) de la dernière itération (en milli-s).
+  //! Elapsed execution time (clock time) of the last iteration (in milliseconds).
   virtual Real lastElapsedTime() const = 0;
 
   /*!
-   * \brief Retourne totalElapsedTime().
-   * \deprecated Utiliser totalElapsedTime() à la place
+   * \brief Returns totalElapsedTime().
+   * \deprecated Use totalElapsedTime() instead
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use totalElapsedTime() instead")
   virtual Real totalTime(Timer::eTimerType) const = 0;
 
   /*!
-   * \brief Retourne lastElapsedTime().
-   * \deprecated Utiliser lastElapsedTime() à la place
+   * \brief Returns lastElapsedTime().
+   * \deprecated Use lastElapsedTime() instead
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use lastElapsedTime() instead")
   virtual Real lastTime(Timer::eTimerType) const = 0;
 
-  //! Retourne le nombre de fois que le point d'entrée a été exécuté
+  //! Returns the number of times the entry point has been executed
   virtual Integer nbCall() const = 0;
 
-  //! Retourne l'endroit ou est appelé le point d'entrée.
+  //! Returns where the entry point is called.
   virtual String where() const = 0;
 
-  //! Retourne les propriétés du point d'entrée.
+  //! Returns the properties of the entry point.
   virtual int property() const = 0;
 };
 
@@ -158,5 +159,4 @@ class ARCANE_CORE_EXPORT IEntryPoint
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

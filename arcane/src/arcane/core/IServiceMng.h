@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IServiceMng.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des services.                                   */
+/* Service manager interface.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERVICEMNG_H
 #define ARCANE_CORE_ISERVICEMNG_H
@@ -24,32 +24,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de services.
+ * \brief Service manager interface.
  */
 class IServiceMng
 {
  public:
 
-  virtual ~IServiceMng() = default; //!< Libère les ressources.
+  virtual ~IServiceMng() = default; //!< Releases resources.
 
  public:
 
-  //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng() const =0;
+  //! Associated trace manager
+  virtual ITraceMng* traceMng() const = 0;
 
-  //! Ajoute une référence au service \a sv
-  virtual void addSingletonInstance(SingletonServiceInstanceRef sv) =0;
+  //! Adds a reference to the service \a sv
+  virtual void addSingletonInstance(SingletonServiceInstanceRef sv) = 0;
 
-  //! Retourne la liste des services singleton
-  virtual SingletonServiceInstanceCollection singletonServices() const =0;
+  //! Returns the list of singleton services
+  virtual SingletonServiceInstanceCollection singletonServices() const = 0;
 
   /*!
-   * Service singleton de nom \a name.
+   * Singleton service named \a name.
    *
-   * Retourne une référence nulle si aucune instance de nom \a name n'existe.
+   * Returns a null reference if no instance of name \a name exists.
    */
-  virtual SingletonServiceInstanceRef singletonServiceReference(const String& name) const =0;
+  virtual SingletonServiceInstanceRef singletonServiceReference(const String& name) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -60,5 +61,4 @@ class IServiceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

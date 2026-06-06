@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CheckpointService.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Service de protection/reprise.                                            */
+/* Protection/recovery service.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CHECKPOINTSERVICE_H
 #define ARCANE_CORE_CHECKPOINTSERVICE_H
@@ -36,9 +36,10 @@ class ServiceBuildInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Service de protection/reprise.
+ * \brief Protection/recovery service.
  */
 class ARCANE_CORE_EXPORT CheckpointService
 : public BasicService
@@ -65,7 +66,7 @@ class ARCANE_CORE_EXPORT CheckpointService
   void setCurrentTimeAndIndex(Real current_time, Integer current_index) override;
 
   RealConstArrayView checkpointTimes() const override { return m_checkpoint_times; }
-  //! Méta données pour le lecteur associé à cet écrivain
+  //! Metadata for the reader associated with this writer
   String readerMetaData() const override { return m_reader_meta_data; }
   void setReaderMetaData(const String& s) override { m_reader_meta_data = s; }
   void setBaseDirectoryName(const String& dirname) override { m_base_directory_name = dirname; }
@@ -92,5 +93,4 @@ class ARCANE_CORE_EXPORT CheckpointService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshPartitioner.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un partitionneur de maillage.                                 */
+/* Interface of a mesh partitioner.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHPARTITIONERBASE_H
 #define ARCANE_CORE_IMESHPARTITIONERBASE_H
@@ -24,39 +24,40 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un partitionneur de maillage.
+ * \brief Interface of a mesh partitioner.
  */
 class IMeshPartitionerBase
 {
  public:
 
-  virtual ~IMeshPartitionerBase() = default; //!< Libère les ressources.
+  virtual ~IMeshPartitionerBase() = default; //!< Releases resources.
 
  public:
 
   /*!
-   * Re-partitionne le maillage \a mesh
+   * Re-partitions the mesh \a mesh
    *
-   * Cette méthode change les propriétaires des entités et
-   * remplit la variable IItemFamily::itemsNewOwner() de chaque famille d'entité
-   * du maillage \a mesh avec le numéro du nouveau sous-domaine propriétaire.
+   * This method changes the owners of the entities and
+   * fills the IItemFamily::itemsNewOwner() variable of each entity family
+   * of the mesh \a mesh with the number of the new owning subdomain.
    *
-   * \note Cette méthode est réservée aux développeurs Arcane.
-   * Si un module souhaite effectuer un re-partitionnement,
-   * il faut appeler la méthode 
+   * \note This method is reserved for Arcane developers.
+   * If a module wishes to perform a re-partitioning,
+   * it must call the method 
    * IMeshUtilities::partitionAndExchangeMeshWithReplication()
-   * qui gère à la fois le partitionnement et l'échange des
-   * informations et supporte la réplication de domaine.
+   * which handles both the partitioning and the exchange of
+   * information and supports domain replication.
    */
-  virtual void partitionMesh(bool initial_partition) =0;
+  virtual void partitionMesh(bool initial_partition) = 0;
 
-  //! Maillage associé
-  virtual IPrimaryMesh* primaryMesh() =0;
+  //! Associated mesh
+  virtual IPrimaryMesh* primaryMesh() = 0;
 
-  //! Notification lors de la fin d'un re-partitionnement (après échange des entités)
-  virtual void notifyEndPartition() =0;
-  };
+  //! Notification when a re-partitioning finishes (after entity exchange)
+  virtual void notifyEndPartition() = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,4 +67,4 @@ class IMeshPartitionerBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

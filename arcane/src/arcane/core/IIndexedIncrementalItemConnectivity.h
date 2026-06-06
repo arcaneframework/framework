@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IIndexedIncrementalItemConnectivity.h                       (C) 2000-2025 */
 /*                                                                           */
-/* Interface de connectivité incrémentale des entités.                       */
+/* Incremental connectivity interface for entities.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IINDEXEDINCREMENTALITEMCONNECTIVITY_H
 #define ARCANE_CORE_IINDEXEDINCREMENTALITEMCONNECTIVITY_H
@@ -27,11 +27,12 @@ class IIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour gérer une connectivité incrémentale.
+ * \brief Interface to manage incremental connectivity.
  *
- * Une connectivité relie deux familles, une source (sourceFamily()) et
- * une cible (targetFamily()).
+ * A connectivity links two families, a source (sourceFamily()) and
+ * a target (targetFamily()).
  */
 class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivity
 {
@@ -41,10 +42,10 @@ class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivity
 
  public:
 
-  //! Interface de la connectivité associée
-  virtual IIncrementalItemConnectivity* connectivity() =0;
+  //! Interface of the associated connectivity
+  virtual IIncrementalItemConnectivity* connectivity() = 0;
 
-  //! Vue sur la connectivité.
+  //! View of the connectivity.
   virtual IndexedItemConnectivityViewBase view() const = 0;
 };
 

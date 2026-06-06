@@ -1,14 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SimpleTableInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Fichier contenant la structure SimpleTableInternal décrivant un tableau   */
-/* de valeurs simple.                                                        */
+/* File containing the SimpleTableInternal structure describing a table      */
+/* of simple values.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SIMPLETABLEINTERNAL_H
 #define ARCANE_CORE_SIMPLETABLEINTERNAL_H
@@ -31,17 +31,17 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Structure représentant un tableau simple.
+ * @brief Structure representing a simple table.
  * 
- * Un tableau simple ressemble à ça :
+ * A simple table looks like this:
  * 
- * NomTableau | C1 | C2 | C3
+ * TableName | C1 | C2 | C3
  *    L1      |Val1|Val2|Val3
  *    L2      |Val4|Val5|Val6
  * 
- * Un nom de tableau, une liste de noms de lignes,
- * une liste de noms de colonnes et une liste 2D
- * de valeur (Real pour l'instant).
+ * A table name, a list of row names,
+ * a list of column names, and a 2D list
+ * of values (Real for now).
  * 
  */
 struct ARCANE_CORE_EXPORT SimpleTableInternal
@@ -80,9 +80,9 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
 
   String m_table_name;
 
-  // Tailles des lignes/colonnes
-  // (et pas le nombre d'éléments, on compte les "trous" entre les éléments ici,
-  // mais sans le trou de fin).
+  // Row/column sizes
+  // (and not the number of elements, we count the "gaps" between elements here,
+  // but without the final gap).
   // Ex. : {{"1", "2", "0", "3", "0", "0"},
   //        {"4", "5", "6", "0", "7", "8"},
   //        {"0", "0", "0", "0", "0", "0"}}
@@ -98,7 +98,7 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
   UniqueArray<Integer> m_row_sizes;
   UniqueArray<Integer> m_column_sizes;
 
-  // Position du dernier élement ajouté.
+  // Position of the last added element.
   Integer m_last_row;
   Integer m_last_column;
 };
@@ -112,6 +112,3 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VtkCellTypes.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Définitions des types de maille de VTK.                                   */
+/* Definitions of VTK mesh types.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_VTKCELLTYPES_H
 #define ARCANE_CORE_INTERNAL_VTKCELLTYPES_H
@@ -24,11 +24,14 @@ namespace Arcane
 class ItemTypeInfo;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::VtkUtils
 {
 
-// Les valeurs de 'VTK_*' sont issues des sources de VTK 9.2.
-// Elles sont définies dans le fichier 'Common/DataModel/vtkCellType'.
+// The 'VTK_*' values come from the VTK 9.2 sources.
+// They are defined in the file 'Common/DataModel/vtkCellType'.
 
 // Linear cells
 const unsigned char VTK_EMPTY_CELL = 0;
@@ -70,7 +73,7 @@ const unsigned char VTK_BIQUADRATIC_TRIANGLE = 34;
 // Cubic, isoparametric cell
 const unsigned char VTK_CUBIC_LINE = 35;
 
-// Special class of cells formed by convex group of points
+// Special class of cells formed by a convex group of points
 const unsigned char VTK_CONVEX_POINT_SET = 41;
 
 // Polyhedron cell (consisting of polygonal faces)
@@ -94,7 +97,7 @@ const unsigned char VTK_HIGHER_ORDER_WEDGE = 65;
 const unsigned char VTK_HIGHER_ORDER_PYRAMID = 66;
 const unsigned char VTK_HIGHER_ORDER_HEXAHEDRON = 67;
 
-// Arbitrary order Lagrange elements (formulated separated from generic higher order cells)
+// Arbitrary order Lagrange elements (formulated separately from generic higher order cells)
 const unsigned char VTK_LAGRANGE_CURVE = 68;
 const unsigned char VTK_LAGRANGE_TRIANGLE = 69;
 const unsigned char VTK_LAGRANGE_QUADRILATERAL = 70;
@@ -103,7 +106,7 @@ const unsigned char VTK_LAGRANGE_HEXAHEDRON = 72;
 const unsigned char VTK_LAGRANGE_WEDGE = 73;
 const unsigned char VTK_LAGRANGE_PYRAMID = 74;
 
-// Arbitrary order Bezier elements (formulated separated from generic higher order cells)
+// Arbitrary order Bezier elements (formulated separately from generic higher order cells)
 const unsigned char VTK_BEZIER_CURVE = 75;
 const unsigned char VTK_BEZIER_TRIANGLE = 76;
 const unsigned char VTK_BEZIER_QUADRILATERAL = 77;
@@ -124,8 +127,8 @@ arcaneToVtkCellType(Int16 arcane_type);
 extern "C++" ARCANE_CORE_EXPORT unsigned char
 arcaneToVtkCellType(const ItemTypeInfo* arcane_type);
 
-// Les valeurs pour les types 'CellGhostTypes' et 'PointGhostTypes' sont définies
-// dans le fichier vtkDataSetAttributes.h.
+// The values for the 'CellGhostTypes' and 'PointGhostTypes' are defined
+// in the file vtkDataSetAttributes.h.
 enum CellGhostTypes
 {
   DUPLICATECELL = 1, // the cell is present on multiple processors
@@ -141,7 +144,6 @@ enum PointGhostTypes
   DUPLICATEPOINT = 1, // the point is present on multiple processors
   HIDDENPOINT = 2 // the point is needed to maintain connectivity, but the data values should be ignored.
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

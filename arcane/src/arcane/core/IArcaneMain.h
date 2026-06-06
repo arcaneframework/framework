@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IArcaneMain.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface de la classe ArcaneMain.                                        */
+/* Interface of the ArcaneMain class.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IARCANEMAIN_H
 #define ARCANE_CORE_IARCANEMAIN_H
@@ -33,36 +33,37 @@ class IDirectSubDomainExecuteFunctor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface de la classe de gestion du code.
+ * \brief Interface of the code management class.
  *
- Cette classe virtuelle sert à la création et l'initialisation des instances
- des gestionnaires du code. Elle pilote aussi le déroulement d'un cas.
+ This virtual class is used for the creation and initialization of instances
+ of code managers. It also controls the execution of a case.
  
- Une instance de cette classe est créée par l'intermédiaire de la méthode
- IMainFactory::createArcaneMain(), appelée par
+ An instance of this class is created via the method
+ IMainFactory::createArcaneMain(), called by
  IMainFactory::arcaneMain().
 
- * L'implémentation doit au moins prendre en compte les aspects suivants.
- * - Analyser la ligne de commande.
- * - Créer une instance d'un superviseur (IMainFactory::createSuperMng()),
- * la construire (ISuperMng::build()) et l'initialiser (ISuperMng::initialize()).
- * - Créer une instance du chargeur de module (IMainFactory::createModuleLoader())
+ * The implementation must at least take into account the following aspects.
+ * - Analyze the command line.
+ * - Create an instance of a supervisor (IMainFactory::createSuperMng()),
+ * build it (ISuperMng::build()) and initialize it (ISuperMng::initialize()).
+ * - Create an instance of the module loader (IMainFactory::createModuleLoader())
  */
 class ARCANE_CORE_EXPORT IArcaneMain
 {
  public:
 
-  //! Libère les ressources.
+  //! Releases resources.
   virtual ~IArcaneMain() {}
 
  public:
 
   /*!
-   * Récupère l'instance globale.
+   * Retrieves the global instance.
    *
-   * \warning L'instance globale n'est disponible que pendant l'appel à
+   * \warning The global instance is only available during the call to
    * ArcaneMain::arcaneMain().
    */
   static IArcaneMain* arcaneMain();
@@ -78,88 +79,88 @@ class ARCANE_CORE_EXPORT IArcaneMain
  public:
 
   /*!
-   * \brief Construit les membres la classe.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée. Cette méthode doit être appelée avant initialize().
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \brief Constructs the class members.
+   * The instance is not usable until this method has been
+   * called. This method must be called before initialize().
+   * \warning This method must only be called once.
    */
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
-   * \brief Initialise l'instance.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée.
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \brief Initializes the instance.
+   * The instance is not usable until this method has been
+   * called.
+   * \warning This method must only be called once.
    */
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
  public:
 
-  /*! \brief Analyse les arguments.
+  /*! \brief Parses arguments.
    *
-   * Les arguments reconnus doivent être supprimés de la liste.
+   * Recognized arguments must be removed from the list.
    *
-   * \retval true si l'exécution doit s'arrêter,
-   * \retval false si elle continue normalement
+   * \retval true if execution must stop,
+   * \retval false if it continues normally
    */
-  virtual bool parseArgs(StringList args) =0;
+  virtual bool parseArgs(StringList args) = 0;
 
-  /*! \brief Lance l'exécution.
-   * Cette méthode ne retourne que lorsqu'on quitte le programme.
-   * \return le code de retour d'Arcane, 0 si tout est ok.
+  /*! \brief Starts execution.
+   * This method only returns when the program exits.
+   * \return the Arcane return code, 0 if everything is okay.
    */
-  virtual int execute() =0;
+  virtual int execute() = 0;
 
-  //! Effectue les dernières opérations avant destruction de l'instance
-  virtual void finalize() =0;
-  
-  //! Code d'erreur de l'exécution
-  virtual int errorCode() const =0;
-  
-  //! Positionne le code de retour
-  virtual void setErrorCode(int errcode) =0;
+  //! Performs the last operations before instance destruction
+  virtual void finalize() = 0;
 
-  //! Effectue un abort.
-  virtual void doAbort() =0;
+  //! Execution error code
+  virtual int errorCode() const = 0;
+
+  //! Sets the return code
+  virtual void setErrorCode(int errcode) = 0;
+
+  //! Performs an abort.
+  virtual void doAbort() = 0;
 
  public:
 
-  //! Informations sur l'éxécutable
-  virtual const ApplicationInfo& applicationInfo() const =0;
+  //! Executable information
+  virtual const ApplicationInfo& applicationInfo() const = 0;
 
-  //! Informations pour construire l'instance IApplication.
-  virtual const ApplicationBuildInfo& applicationBuildInfo() const =0;
+  //! Information to build the IApplication instance.
+  virtual const ApplicationBuildInfo& applicationBuildInfo() const = 0;
 
-  //! Informations d'initialisation du runtime '.Net'.
-  virtual const DotNetRuntimeInitialisationInfo& dotnetRuntimeInitialisationInfo() const =0;
+  //! .Net runtime initialization information.
+  virtual const DotNetRuntimeInitialisationInfo& dotnetRuntimeInitialisationInfo() const = 0;
 
-  //! Informations d'initialisation du runtime pour les accélérateurs
-  virtual const AcceleratorRuntimeInitialisationInfo& acceleratorRuntimeInitialisationInfo() const =0;
+  //! Runtime initialization information for accelerators
+  virtual const AcceleratorRuntimeInitialisationInfo& acceleratorRuntimeInitialisationInfo() const = 0;
 
-  //! Fabrique principale
-  virtual IMainFactory* mainFactory() const =0;
+  //! Main factory
+  virtual IMainFactory* mainFactory() const = 0;
 
   //! Application
-  virtual IApplication* application() const =0;
+  virtual IApplication* application() const = 0;
 
  public:
-  
+
   /*!
-   * \brief Indique que certains objets sont gérés via un ramasse miette.
+   * \brief Indicates that certain objects are managed via a garbage collector.
    */
-  virtual bool hasGarbageCollector() const =0;
+  virtual bool hasGarbageCollector() const = 0;
 
  public:
 
-  //! Liste des fabriques de service enregistrées
-  virtual ServiceFactoryInfoCollection registeredServiceFactoryInfos() =0;
+  //! List of registered service factories
+  virtual ServiceFactoryInfoCollection registeredServiceFactoryInfos() = 0;
 
-  //! Liste des fabriques de module enregistrées
-  virtual ModuleFactoryInfoCollection registeredModuleFactoryInfos() =0;
+  //! List of registered module factories
+  virtual ModuleFactoryInfoCollection registeredModuleFactoryInfos() = 0;
 
  public:
 
-  virtual void setDirectExecuteFunctor(IDirectSubDomainExecuteFunctor* f) =0;
+  virtual void setDirectExecuteFunctor(IDirectSubDomainExecuteFunctor* f) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -170,4 +171,4 @@ class ARCANE_CORE_EXPORT IArcaneMain
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

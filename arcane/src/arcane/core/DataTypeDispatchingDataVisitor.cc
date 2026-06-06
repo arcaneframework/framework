@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DataTypeDispatchingDataVisitor.cc                           (C) 2000-2023 */
 /*                                                                           */
-/* IDataVisitor dispatchant les opérations suivant le type de donnée.        */
+/* IDataVisitor dispatching operations according to the data type.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,8 +32,7 @@ AbstractDataTypeDispatchingDataVisitor(IDataTypeDataDispatcherT<Byte>* a_byte,
                                        IDataTypeDataDispatcherT<Real3>* a_real3,
                                        IDataTypeDataDispatcherT<Real2x2>* a_real2x2,
                                        IDataTypeDataDispatcherT<Real3x3>* a_real3x3,
-                                       IDataTypeDataDispatcherT<String>* a_string
-                                       )
+                                       IDataTypeDataDispatcherT<String>* a_string)
 {
   m_byte = a_byte;
   m_real = a_real;
@@ -160,7 +159,7 @@ applyVisitor(IArrayDataT<Int64>* data)
 {
   m_int64->applyDispatch(data);
 }
-   
+
 void AbstractDataTypeDispatchingDataVisitor::
 applyVisitor(IArrayDataT<Real2>* data)
 {
@@ -251,7 +250,7 @@ applyVisitor(IArray2DataT<Real3x3>* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

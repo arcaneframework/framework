@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DataStorageTypeInfo.cc                                      (C) 2000-2023 */
 /*                                                                           */
-/* Informations sur le type du conteneur d'une donnée.                       */
+/* Data container type information.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,8 +26,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 DataStorageTypeInfo::
-DataStorageTypeInfo(eBasicDataType basic_data_type,Integer nb_basic_element,
-                    Integer dimension,Integer multi_tag,const String& impl_name)
+DataStorageTypeInfo(eBasicDataType basic_data_type, Integer nb_basic_element,
+                    Integer dimension, Integer multi_tag, const String& impl_name)
 : m_basic_data_type(basic_data_type)
 , m_nb_basic_element(nb_basic_element)
 , m_dimension(dimension)
@@ -50,7 +50,7 @@ _buildFullName() const
   full_name_b += m_dimension;
   full_name_b += ".";
   full_name_b += m_multi_tag;
-  if (!m_impl_name.empty()){
+  if (!m_impl_name.empty()) {
     full_name_b += ".";
     full_name_b += m_impl_name;
   }

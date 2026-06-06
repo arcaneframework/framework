@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IService.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service.                                                   */
+/* Interface of a service.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISERVICE_H
 #define ARCANE_CORE_ISERVICE_H
@@ -26,12 +26,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service.
+ * \brief Interface of a service.
  *
- * Les instances retournées par serviceInfo() et serviceParent() sont la
- * propriété de l'application (interface IApplication) et ne doivent jamais
- * être modifiée ni détruite.
+ * The instances returned by serviceInfo() and serviceParent() are the
+ * property of the application (IApplication interface) and must never
+ * be modified or destroyed.
  *
  * \deprecated
  */
@@ -39,29 +40,30 @@ class ARCANE_CORE_EXPORT IService
 {
  protected:
 
-  //! Constructeur
+  //! Constructor
   IService() {}
 
  public:
 
-  virtual ~IService() {} //!< Libère les ressources
+  virtual ~IService() {} //!< Releases resources
 
  public:
 
-  //! Parent de ce service
+  //! Parent of this service
   virtual IBase* serviceParent() const = 0;
 
-  //! Interface de ce service (normalement this)
+  //! Interface of this service (normally this)
   virtual IService* serviceInterface() = 0;
 
-  //! Informations du service
+  //! Service information
   virtual IServiceInfo* serviceInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une instance d'un service.
+ * \brief Interface of a service instance.
  */
 class ARCANE_CORE_EXPORT IServiceInstance
 {
@@ -73,9 +75,9 @@ class ARCANE_CORE_EXPORT IServiceInstance
 
  public:
 
-  //! Ajoute une référence.
+  //! Adds a reference.
   virtual void addReference() = 0;
-  //! Supprime une référence.
+  //! Removes a reference.
   virtual void removeReference() = 0;
   virtual IServiceInfo* serviceInfo() const = 0;
   //! \internal
@@ -84,16 +86,17 @@ class ARCANE_CORE_EXPORT IServiceInstance
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une instance de service singleton.
+ * \brief Interface of a singleton service instance.
  */
 class ARCANE_CORE_EXPORT ISingletonServiceInstance
 : public IServiceInstance
 {
  public:
 
-  //! Liste des instances des interfaces implémentées par le singleton
+  //! List of instances of interfaces implemented by the singleton
   virtual ServiceInstanceCollection interfaceInstances() = 0;
 };
 
@@ -101,7 +104,7 @@ class ARCANE_CORE_EXPORT ISingletonServiceInstance
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface typée gérant l'instance d'un service.
+ * \brief Typed interface managing a service instance.
  */
 template <typename InterfaceType>
 class IServiceInstanceT

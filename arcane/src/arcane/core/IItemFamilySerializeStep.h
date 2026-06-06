@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemFamilySerializeStep.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une étape de la sérialisation des familles d'entités.         */
+/* Interface for a step in the serialization of entity families.             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILYSERIALIZESTEP_H
 #define ARCANE_CORE_IITEMFAMILYSERIALIZESTEP_H
@@ -24,14 +24,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une étape de la sérialisation des familles d'entités.
+ * \brief Interface for a step in the serialization of entity families.
  *
- * Cette interface est utilisée par IItemFamilyExchanger pour sérialiser
- * et désérialiser des informations. La sérialisation se fait par échange
- * de messages et il y a un message par rang avec lequel on communique.
+ * This interface is used by IItemFamilyExchanger to serialize
+ * and deserialize information. Serialization is done by message exchange
+ * and there is one message per rank with which we communicate.
  *
- * Le pseudo-code d'appel est le suivant:
+ * The call pseudo-code is as follows:
  \code
  * IItemFamilyExchanger* exchanger = ...;
  * IItemFamilySerializeStep* step = ...;
@@ -56,13 +57,12 @@ namespace Arcane
  * step->finalize();
  \endcode
  *
- * La méthode serialize() est appelée pour chaque rang avec lequel on
- * communique.
+ * The serialize() method is called for each rank we communicate with.
  *
- * L'étape est appelé lors de la phase de sérialisation spécifiée par phase()
- * comme spécifié dans la documentation de IItemFamilyExchanger.
+ * The step is called during the serialization phase specified by phase()
+ * as specified in the IItemFamilyExchanger documentation.
  *
- * Pour la phase spécifiée, l'ordre d'appel est le suivant:
+ * For the specified phase, the call order is as follows:
  \code
  * IItemFamilySerializeStep* step = ...;
  * ISerializer* sbuf = ...;
@@ -74,23 +74,23 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStep
 {
  public:
 
-  //! Phase de la sérialisation
+  //! Serialization phase
   enum ePhase
   {
     PH_Item,
     PH_Group,
     PH_Variable
   };
-  //! Action en cours de la sérialisation
+  //! Action during serialization
   enum class eAction
   {
-    //! Début de la préparation de l'envoie.
+    //! Start of send preparation.
     AC_BeginPrepareSend,
-    //! Fin de la préparation de l'envoie.
+    //! End of send preparation.
     AC_EndPrepareSend,
-    //! Début de la réception des données.
+    //! Start of data reception.
     AC_BeginReceive,
-    //! Fin de la réception des données.
+    //! End of data reception.
     AC_EndReceive,
   };
 
@@ -108,7 +108,7 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStep
    public:
 
     eAction action() const { return m_action; }
-    //! Nombre de messages de sérialisation
+    //! Number of serialization messages
     Integer nbMessage() const { return m_nb_message; }
 
    private:
@@ -123,40 +123,41 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStep
 
  public:
 
-  //! Initialise l'instance avant le début des échanges.
+  //! Initializes the instance before the start of exchanges.
   virtual void initialize() = 0;
 
-  //! Notifie l'instance qu'on entre dans une certaine phase de l'échange.
+  //! Notifies the instance that we are entering a certain phase of the exchange.
   virtual void notifyAction(const NotifyActionArgs& args) = 0;
 
   /*!
-   * \brief Sérialise dans/depuis \a buf.
+   * \brief Serializes into/from \a buf.
    *
-   * \a args.rank() contient le rang du sous-domaine avec lequel on
-   * communique. \a args.messageIndex() l'index numéro du message et
-   * \a args.nbMessageIndex() le nombre de message qui seront envoyés.
+   * \a args.rank() contains the rank of the subdomain with which we
+   * communicate. \a args.messageIndex() is the message number index and
+   * \a args.nbMessageIndex() is the number of messages that will be sent.
    *
-   * En sérialisation, il s'agit des indices locaux des entités envoyées au
-   * rang \a rank(). En désérialisation, il s'agit des indices locaux
-   * recues par le rang \a rank().
+   * During serialization, these are the local indices of the entities sent to
+   * rank \a rank(). During deserialization, these are the local indices
+   * received by rank \a rank().
    */
   virtual void serialize(const ItemFamilySerializeArgs& args) = 0;
 
-  //! Effectue les traitements de fin d'échange.
+  //! Performs end-of-exchange processing.
   virtual void finalize() = 0;
 
-  //! Phase de la sérialisation où cette instance intervient.
+  //! Serialization phase where this instance is involved.
   virtual ePhase phase() const = 0;
 
-  //! Famille associée
+  //! Associated family
   virtual IItemFamily* family() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fabrique pour créer une étape de la sérialisation des
- * familles d'entités.
+ * \brief Factory for creating a step in the serialization of
+ * entity families.
  */
 class ARCANE_CORE_EXPORT IItemFamilySerializeStepFactory
 {
@@ -167,10 +168,10 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStepFactory
  public:
 
   /*!
-   * \brief Créé une étape pour la famille \a family.
+   * \brief Creates a step for the family \a family.
    *
-   * Peut retourner nullptr auquel cas aucune étape n'est ajoutée pour cette
-   * fabrique.
+   * May return nullptr in which case no step is added for this
+   * factory.
    */
   virtual IItemFamilySerializeStep* createStep(IItemFamily* family) = 0;
 };
@@ -184,4 +185,3 @@ class ARCANE_CORE_EXPORT IItemFamilySerializeStepFactory
 /*---------------------------------------------------------------------------*/
 
 #endif
-

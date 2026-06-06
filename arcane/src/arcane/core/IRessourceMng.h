@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IRessourceMng.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un gestionnaire de ressources.                                */
+/* Interface of a resource manager.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IRESSOURCEMNG_H
 #define ARCANE_CORE_IRESSOURCEMNG_H
@@ -24,32 +24,33 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un gestionnaire de ressource.
+ * \brief Interface of a resource manager.
  *
  */
 class ARCANE_CORE_EXPORT IRessourceMng
 {
-  // TODO: supprimer cette classe qui n'est plus utile.
-  // Il est possible de créer directement une instance
-  // de IXmlDocumentHolder
+  // TODO: delete this class which is no longer useful.
+  // It is possible to create an instance directly
+  // of IXmlDocumentHolder
 
  public:
 
-  //! Création d'un gestionnaire d'historique par défaut.
+  //! Creation of a default history manager.
   static IRessourceMng* createDefault(IApplication*);
 
  public:
 
-  virtual ~IRessourceMng() = default; //!< Libère les ressources
+  virtual ~IRessourceMng() = default; //!< Frees the resources
 
  public:
 
   /*!
-   * \brief Créé un noeud document XML.
+   * \brief Creates an XML document node.
    *
-   * Crée et retourne un document XML utilisant une implémentation par défaut.
-   * La destruction de ce document invalide tous les noeuds qui en dépendent.
+   * Creates and returns an XML document using a default implementation.
+   * The destruction of this document invalidates all nodes that depend on it.
    */
   virtual IXmlDocumentHolder* createXmlDocument() = 0;
 };
@@ -62,4 +63,4 @@ class ARCANE_CORE_EXPORT IRessourceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

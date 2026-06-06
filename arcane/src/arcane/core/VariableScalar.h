@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableScalar.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Variable scalaire.                                                        */
+/* Scalar variable.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLESCALAR_H
 #define ARCANE_CORE_VARIABLESCALAR_H
@@ -24,16 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Variable scalaire.
+ * \brief Scalar variable.
  */
-template<class T>
+template <class T>
 class VariableScalarT
 : public Variable
 {
  public:
-	
+
   typedef T ValueType;
   typedef IScalarDataT<T> ValueDataType;
   typedef VariableScalarT<T> ThatClass;
@@ -41,12 +42,12 @@ class VariableScalarT
 
  protected:
 
-  //! Construit une variable basée sur la référence \a v
-  VariableScalarT(const VariableBuildInfo& v,const VariableInfo& vi);
+  //! Constructs a variable based on the reference \a v
+  VariableScalarT(const VariableBuildInfo& v, const VariableInfo& vi);
 
  public:
 
-  static ARCANE_CORE_EXPORT ThatClass* getReference(const VariableBuildInfo& v,const VariableInfo& vi);
+  static ARCANE_CORE_EXPORT ThatClass* getReference(const VariableBuildInfo& v, const VariableInfo& vi);
   static ARCANE_CORE_EXPORT ThatClass* getReference(IVariable* var);
 
  public:
@@ -56,13 +57,13 @@ class VariableScalarT
   Real allocatedMemory() const override;
   Integer nbElement() const override { return 1; }
   ValueType& value() { return m_value->value(); }
-  void shrinkMemory() override { }
+  void shrinkMemory() override {}
   void print(std::ostream& o) const override;
   IData* data() override { return m_value; }
   const IData* data() const override { return m_value; }
 
  public:
-  
+
   void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) override;
   void copyItemsMeanValues(Int32ConstArrayView first_source,
                            Int32ConstArrayView second_source,
@@ -96,4 +97,4 @@ class VariableScalarT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

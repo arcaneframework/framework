@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DotNetRuntimeInitialisationInfo.cc                          (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime '.Net'.                     */
+/* Information for the initialization of the '.Net' runtime.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,6 +29,7 @@ namespace Arcane
 class DotNetRuntimeInitialisationInfo::Impl
 {
  public:
+
   bool m_is_using_dotnet_runtime = false;
   String m_main_assembly_name;
   String m_execute_method_name;
@@ -39,42 +40,42 @@ class DotNetRuntimeInitialisationInfo::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename V> void DotNetRuntimeInitialisationInfoProperties::
+template <typename V> void DotNetRuntimeInitialisationInfoProperties::
 _applyPropertyVisitor(V& p)
 {
   auto b = p.builder();
   p << b.addString("MainAssemblyName")
-        .addDescription("Name of the assembly to load at startup")
-        .addCommandLineArgument("DotNetMainAssemblyName")
-        .addGetter([](auto a) { return a.x.mainAssemblyName(); })
-        .addSetter([](auto a) { a.x.setMainAssemblyName(a.v); });
+       .addDescription("Name of the assembly to load at startup")
+       .addCommandLineArgument("DotNetMainAssemblyName")
+       .addGetter([](auto a) { return a.x.mainAssemblyName(); })
+       .addSetter([](auto a) { a.x.setMainAssemblyName(a.v); });
 
   p << b.addString("ExecuteMethodName")
-        .addDescription("Name of the method to execute")
-        .addCommandLineArgument("DotNetExecuteMethodName")
-        .addGetter([](auto a) { return a.x.executeMethodName(); })
-        .addSetter([](auto a) { a.x.setExecuteMethodName(a.v); });
+       .addDescription("Name of the method to execute")
+       .addCommandLineArgument("DotNetExecuteMethodName")
+       .addGetter([](auto a) { return a.x.executeMethodName(); })
+       .addSetter([](auto a) { a.x.setExecuteMethodName(a.v); });
 
   p << b.addString("ExecuteClassName")
-        .addDescription("Name of the class containing the methode to execute")
-        .addCommandLineArgument("DotNetExecuteClassName")
-        .addGetter([](auto a) { return a.x.executeClassName(); })
-        .addSetter([](auto a) { a.x.setExecuteClassName(a.v); });
+       .addDescription("Name of the class containing the methode to execute")
+       .addCommandLineArgument("DotNetExecuteClassName")
+       .addGetter([](auto a) { return a.x.executeClassName(); })
+       .addSetter([](auto a) { a.x.setExecuteClassName(a.v); });
 
   p << b.addString("EmbeddedRuntime")
-        .addDescription("Name of the dotnet runtime ('coreclr', 'mono') to use")
-        .addCommandLineArgument("DotNetEmbeddedRuntime")
-        .addGetter([](auto a) { return a.x.embeddedRuntime(); })
-        .addSetter([](auto a) { a.x.setEmbeddedRuntime(a.v); });
+       .addDescription("Name of the dotnet runtime ('coreclr', 'mono') to use")
+       .addCommandLineArgument("DotNetEmbeddedRuntime")
+       .addGetter([](auto a) { return a.x.embeddedRuntime(); })
+       .addSetter([](auto a) { a.x.setEmbeddedRuntime(a.v); });
 
   p << b.addBool("UsingDotNet")
-        .addDescription("Set/Unset the loading of the '.Net' runtime with 'coreclr'")
-        .addCommandLineArgument("UsingDotNet")
-        .addGetter([](auto a) { return a.x.isUsingDotNetRuntime(); })
-        .addSetter([](auto a) {
-          a.x.setIsUsingDotNetRuntime(a.v);
-          a.x.setEmbeddedRuntime("coreclr");
-        });
+       .addDescription("Set/Unset the loading of the '.Net' runtime with 'coreclr'")
+       .addCommandLineArgument("UsingDotNet")
+       .addGetter([](auto a) { return a.x.isUsingDotNetRuntime(); })
+       .addSetter([](auto a) {
+         a.x.setIsUsingDotNetRuntime(a.v);
+         a.x.setEmbeddedRuntime("coreclr");
+       });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,7 +102,7 @@ DotNetRuntimeInitialisationInfo(const DotNetRuntimeInitialisationInfo& rhs)
 DotNetRuntimeInitialisationInfo& DotNetRuntimeInitialisationInfo::
 operator=(const DotNetRuntimeInitialisationInfo& rhs)
 {
-  if (&rhs!=this){
+  if (&rhs != this) {
     delete m_p;
     m_p = new Impl(*(rhs.m_p));
   }
@@ -200,7 +201,7 @@ setEmbeddedRuntime(StringView v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_PROPERTY_CLASS(DotNetRuntimeInitialisationInfoProperties,());
+ARCANE_REGISTER_PROPERTY_CLASS(DotNetRuntimeInitialisationInfoProperties, ());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -209,4 +210,3 @@ ARCANE_REGISTER_PROPERTY_CLASS(DotNetRuntimeInitialisationInfoProperties,());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

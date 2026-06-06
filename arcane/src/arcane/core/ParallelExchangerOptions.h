@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelExchangerOptions.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Options pour modifier le comportement de 'IParallelExchanger'.            */
+/* Options to modify the behavior of 'IParallelExchanger'.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_PARALLELEXCHANGEROPTIONS_H
 #define ARCANE_CORE_PARALLELEXCHANGEROPTIONS_H
@@ -25,51 +25,53 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Options pour IParallelMng::processExchange().
+ * \brief Options for IParallelMng::processExchange().
  */
 class ARCANE_CORE_EXPORT ParallelExchangerOptions
 {
  public:
+
   /*!
-   * \brief Mode d'échange.
+   * \brief Exchange mode.
    */
   enum eExchangeMode
   {
-    //! Utilise les échanges point à point (send/recv)
+    //! Uses point-to-point exchanges (send/recv)
     EM_Independant,
-    //! Utilise les opération collectives (allToAll)
+    //! Uses collective operations (allToAll)
     EM_Collective,
-    //! Choisi automatiquement entre point à point ou collective.
+    //! Automatically chooses between point-to-point or collective.
     EM_Auto
   };
 
  public:
 
-  //! Positionne le mode d'échange.
+  //! Sets the exchange mode.
   void setExchangeMode(eExchangeMode mode) { m_exchange_mode = mode; }
-  //! Mode d'échange spécifié
+  //! Specified exchange mode
   eExchangeMode exchangeMode() const { return m_exchange_mode; };
 
-  //! Positionne le nombre maximal de messages en vol.
+  //! Sets the maximum number of pending messages.
   void setMaxPendingMessage(Int32 v) { m_max_pending_message = v; }
-  //! Nombre maximal de messages en vol
+  //! Maximum number of pending messages
   Int32 maxPendingMessage() const { return m_max_pending_message; };
 
-  //! Positionne le niveau de verbosité
+  //! Sets the verbosity level
   void setVerbosityLevel(Int32 v) { m_verbosity_level = v; }
-  //! Niveau de verbosité
+  //! Verbosity level
   Int32 verbosityLevel() const { return m_verbosity_level; };
 
  private:
 
-  //! Mode d'échange.
+  //! Exchange mode.
   eExchangeMode m_exchange_mode = EM_Independant;
 
-  //! Nombre maximal de messages en vol
+  //! Maximum number of pending messages
   Int32 m_max_pending_message = 0;
 
-  //! Niveau de verbosité
+  //! Verbosity level
   Int32 m_verbosity_level = 0;
 };
 

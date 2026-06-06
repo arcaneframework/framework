@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialsCoreGlobal.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales des matériaux de Arcane.                           */
+/* General declarations for Arcane materials.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATERIALSCOREGLOBAL_H
 #define ARCANE_CORE_MATERIALS_MATERIALSCOREGLOBAL_H
@@ -39,7 +39,7 @@ namespace Arcane::Materials::matimpl
 {
 using ::Arcane::ItemBase;
 class ConstituentItemBase;
-}
+} // namespace Arcane::Materials::matimpl
 
 namespace Arcane::Materials
 {
@@ -136,31 +136,31 @@ using IMeshEnvironmentPtr = IMeshEnvironment*;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Liste de composants multi-matériaux du maillage.
+//! List of multi-material components of the mesh.
 using MeshComponentListView = ConstArrayView<IMeshComponent*>;
 
-//! Liste de milieux du maillage.
+//! List of mesh environments.
 using MeshEnvironmentListView = ConstArrayView<IMeshEnvironment*>;
 
-//! Liste de matériaux du maillage.
+//! List of mesh materials.
 using MeshMaterialListView = ConstArrayView<IMeshMaterial*>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Liste de ComponentCell issues d'un IMeshComponent.
+//! Vector of ComponentCells originating from an IMeshComponent.
 using ComponentCellVector = ComponentItemVector;
 
-//! Type de la vue sur un EnvCellVector
+//! View type for an EnvCellVector
 using EnvCellVectorView = EnvItemVectorView;
 
-//! Type de la vue sur un MatCellVector
+//! View type for a MatCellVector
 using MatCellVectorView = MatItemVectorView;
 
-//! Type de la vue sur un ComponentCellVector
+//! View type for a ComponentCellVector
 using ComponentCellVectorView = ComponentItemVectorView;
 
-//! Liste de composants multi-matériaux du maillage.
+//! List of multi-material components of the mesh.
 using MeshComponentList = ConstArrayView<IMeshComponent*>;
 
 template <typename DataType> class CellMaterialVariableScalarRef;
@@ -176,27 +176,27 @@ class IArrayMeshMaterialVariable;
 class CellComponentCellEnumerator;
 template <typename ConstituentCellType> class CellComponentCellEnumeratorT;
 
-//! Enumérateur sur les mailles matériaux d'une maille.
+//! Enumerator over material meshes of a mesh.
 using CellMatCellEnumerator = CellComponentCellEnumeratorT<MatCell>;
 
-//! Enumérateur sur les mailles milieux d'une maille.
+//! Enumerator over environment meshes of a mesh.
 using CellEnvCellEnumerator = CellComponentCellEnumeratorT<EnvCell>;
 
-//! Index d'un MatItem dans une variable.
+//! Index of a MatItem in a variable.
 using MatCellLocalId = MatItemLocalId;
 
-//! Index d'un EnvItem dans une variable.
+//! Index of an EnvItem in a variable.
 using EnvCellLocalId = EnvItemLocalId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #if 0
-//! Selection sur un 'EvnCellVectorView'
+//! Selection over an 'EvnCellVectorView'
 using EnvCellVectorSelectionView = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
-//! Selection sur un 'MatCellVectorView'
+//! Selection over a 'MatCellVectorView'
 using MatCellVectorSelectionView = ConstituentItemIndexedSelectionView<MatCellVectorView>;
-//! Selection sur un 'ComponentCellVectorView'
+//! Selection over a 'ComponentCellVectorView'
 using ComponentCellVectorSelectionView = ConstituentItemIndexedSelectionView<ComponentCellVectorView>;
 #endif
 class EnvCellVectorSelectionView;
@@ -212,21 +212,22 @@ static const Int32 LEVEL_ALLENVIRONMENT = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Espace de définition d'une variable matériau.
+ * \brief Definition space for a material variable.
  */
 enum class MatVarSpace
 {
-  //! Variable ayant des valeurs sur les milieux et matériaux
+  //! Variable having values on environments and materials
   MaterialAndEnvironment = 1,
-  //! Variable ayant des valeurs uniquement sur les milieux
+  //! Variable having values only on environments
   Environment
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Partie d'un composant
+//! Part of a component
 enum class eMatPart
 {
   Pure = 0,
@@ -255,4 +256,4 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::Materials::IConstituentItemVecto
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

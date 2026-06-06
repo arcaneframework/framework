@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IVariableParallelOperation.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une classe d'opérations parallèles sur des variables.         */
+/* Interface of a class for parallel operations on variables.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLEPARALLELOPERATION_H
 #define ARCANE_CORE_IVARIABLEPARALLELOPERATION_H
@@ -24,45 +24,45 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une classe d'opérations parallèle sur des variables.
+ * \brief Interface of a class for parallel operations on variables.
  *
- * Ces opérations sont collectives.
+ * These operations are collective.
  *
- * Avant d'effectuer l'opération, il faut positionner la famille
- * d'entités (setItemFamily()),
- * puis ajouter la liste des variables sur lesquelles seront effectuées
- * les opérations.
+ * Before performing the operation, the entity family must be positioned
+ * (setItemFamily()), then add the list of variables on which the operations
+ * will be performed.
  */
 class ARCANE_CORE_EXPORT IVariableParallelOperation
 {
  public:
 
-  virtual ~IVariableParallelOperation() = default; //!< Libère les ressources.
+  virtual ~IVariableParallelOperation() = default; //!< Releases resources.
 
  public:
 
-  virtual void build() =0; //!< Construit l'instance
+  virtual void build() = 0; //!< Constructs the instance
 
  public:
 
   /*!
-   * \brief Positionne la famille d'entité sur laquelle on souhaite opérer.
+   * \brief Positions the entity family on which the operation is to be performed.
    * 
-   * La famille doit être positionnée avant d'ajouter des variables.
-   * Elle ne peut l'être qu'une seule fois.
+   * The family must be positioned before adding variables.
+   * It can only be done once.
    */
-  virtual void setItemFamily(IItemFamily* family) =0;
-  
-  //! Famille d'entités sur laquelle on opère
-  virtual IItemFamily* itemFamily() =0;
+  virtual void setItemFamily(IItemFamily* family) = 0;
 
-  //! Ajoute \a variable à la liste des variables concernées par l'opération
-  virtual void addVariable(IVariable* variable) =0;
+  //! Entity family on which the operation is performed
+  virtual IItemFamily* itemFamily() = 0;
 
-  //! Applique l'opération.
-  virtual void applyOperation(IDataOperation* operation) =0;
+  //! Adds a variable to the list of variables concerned by the operation
+  virtual void addVariable(IVariable* variable) = 0;
+
+  //! Applies the operation.
+  virtual void applyOperation(IDataOperation* operation) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -74,4 +74,3 @@ class ARCANE_CORE_EXPORT IVariableParallelOperation
 /*---------------------------------------------------------------------------*/
 
 #endif
-

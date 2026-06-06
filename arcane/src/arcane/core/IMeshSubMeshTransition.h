@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,9 +25,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Macro pour convertir un IMesh en IPrimaryMesh.
+ * \brief Macro to convert an IMesh to IPrimaryMesh.
  *
- * \deprecated Ne pas utiliser. Appeler IMesh::toPrimaryMesh() à la place.
+ * \deprecated Do not use. Call IMesh::toPrimaryMesh() instead.
  */
 #define PRIMARYMESH_CAST(m) ((m)->toPrimaryMesh())
 
@@ -39,4 +39,4 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

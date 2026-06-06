@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IVariableMng.h                                              (C) 2000-2023 */
 /*                                                                           */
-/* Interface du gestionnaire des variables.                                  */
+/* Variable manager interface.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLEMNG_H
 #define ARCANE_CORE_IVARIABLEMNG_H
@@ -46,339 +46,339 @@ class IVariableMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de variables.
+ * \brief Variable manager interface.
  *
- * Ce gestionnaire contient la liste des variables déclarées dans le
- * sous-domaine associé \a subDomain(). Il maintient la liste des variables
- * et permet de les lire ou de les écrire.
+ * This manager contains the list of variables declared in the
+ * associated sub-domain \a subDomain(). It maintains the list of variables
+ * and allows them to be read or written.
  */
 class IVariableMng
 {
  public:
 
-  virtual ~IVariableMng() = default; //!< Libère les ressources.
+  virtual ~IVariableMng() = default; //!< Frees resources.
 
  public:
 
-  //! Gestionnaire du sous-domaine
+  //! Sub-domain manager
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
-  virtual ISubDomain* subDomain() =0;
+  virtual ISubDomain* subDomain() = 0;
 
-  //! Gestionnaire de parallélisme associé
-  virtual IParallelMng* parallelMng() const =0;
+  //! Associated parallelism manager
+  virtual IParallelMng* parallelMng() const = 0;
 
-  //! Gestionnaire de messages
-  virtual ITraceMng* traceMng() =0;
-
-  /*!
-   * \brief Vérifie une variable.
-   *
-   * Vérifie que la variable de nom \a name caractérisée par \a infos est valide
-   * C'est le cas si et seulement si:
-   * - aucune variable de nom \a infos.name() n'existe déjà.
-   * - une variable de nom \a infos.name() existe et
-   * son type et son genre correspondent \a infos.
-   *
-   * Si la variable n'est pas valide, une exception est lancée.
-   * 
-   * Cette opération est utilisée lorsqu'on souhaite créer une
-   * nouvelle référence à une variable et permet de s'assurer qu'elle
-   * sera valide.
-   *
-   * \exception ExBadVariableKindType si la variable de nom \a infos.name() existe
-   * et que son type et le genre ne correspondent pas à ceux de \a infos.
-   *
-   * \return la variable de \a infos.name() si elle existe, 0 sinon
-   */
-  virtual IVariable* checkVariable(const VariableInfo& infos) =0;
-  /*! \brief Génère un nom pour une variable temporaire.
-   *
-   * Pour assurer la cohérence de ce nom, il faut que tous les sous-domaines
-   * appellent cette fonction.
-   */
-  virtual String generateTemporaryVariableName() =0;
-  
-  //! Affiche la liste des variables du gestionnaire lié à un module
-  virtual void dumpList(std::ostream&,IModule*) =0;
-
-  //! Affiche la liste de toutes les variables du gestionnaire
-  virtual void dumpList(std::ostream&) =0;
-
+  //! Message manager
+  virtual ITraceMng* traceMng() = 0;
 
   /*!
-   * \brief Taille estimé pour exporter des variables.
+   * \brief Checks a variable.
    *
-   Cette opération estime le nombre de méga octets que va générer
-   l'exportation des variables \a vars. Si \a vars est vide, l'estimation
-   porte sur toutes les variables référencées.
-   
-   L'estimation tient compte uniquement de la quantité mémoire utilisée
-   par les variables et pas de l'écrivain utilisé.
-
-   L'estimation est locale au sous-domaine. Pour obtenir la taille totale
-   d'une exportation, il faut effectuer déterminer la taille par sous-domaine
-   et faire la somme.
-
-   Cette méthode est collective
-
-   \todo utiliser des entiers 8 octets voir plus...
+   * Checks that the variable named \a name characterized by \a infos
+   * is valid.
+   * This is true if and only if:
+   * - no variable named \a infos.name() already exists.
+   * - a variable named \a infos.name() exists and
+   * its type and kind match \a infos.
+   *
+   * If the variable is not valid, an exception is thrown.
+   *
+   * This operation is used when you want to create a
+   * new reference to a variable and ensure that it
+   * will be valid.
+   *
+   * \exception ExBadVariableKindType if the variable named \a infos.name() exists
+   * and its type and kind do not match those of \a infos.
+   *
+   * \return the variable named \a infos.name() if it exists, 0 otherwise
    */
-  virtual Real exportSize(const VariableCollection& vars) =0;
+  virtual IVariable* checkVariable(const VariableInfo& infos) = 0;
+  /*! \brief Generates a name for a temporary variable.
+   *
+   * To ensure the consistency of this name, all sub-domains
+   * must call this function.
+   */
+  virtual String generateTemporaryVariableName() = 0;
+
+  //! Displays the list of variables managed by a module
+  virtual void dumpList(std::ostream&, IModule*) = 0;
+
+  //! Displays the list of all variables managed by the manager
+  virtual void dumpList(std::ostream&) = 0;
 
   /*!
-   * \brief Observable pour les variables en écriture.
+   * \brief Estimated size for exporting variables.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * avant d'écrire les variables (opération writeCheckpoint(),
-   * writeVariables() ou writePostProcessing()).
+   This operation estimates the number of megabytes that the
+   exportation of variables \a vars will generate. If \a vars is empty, the estimation
+   is based on all referenced variables.
+
+   The estimation only takes into account the memory used
+   by the variables and not the writer used.
+
+   The estimation is local to the sub-domain. To obtain the total size
+   of an export, you must determine the size per sub-domain
+   and sum them up.
+
+   This method is collective
+
+   \todo use 8-byte integers or more...
    */
-  virtual IObservable* writeObservable() =0;
+  virtual Real exportSize(const VariableCollection& vars) = 0;
 
   /*!
-   * \brief Observable pour les variables en lecture.
+   * \brief Observable for variables being written.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * après avoir lu les variables (opération readVariables() ou readCheckpoint()).
+   * Observers registered in this observable are called
+   * before writing variables (operation writeCheckpoint(),
+   * writeVariables() or writePostProcessing()).
    */
-  virtual IObservable* readObservable() =0;
-
-  /*! \brief Ecrit les variables.
-   *
-   * Parcours l'ensemble des variables du gestionnaire et leur applique l'écrivain
-   * \a writer. Si \a filter est non nul, il est appliqué à chaque variable et
-   * une variable n'est écrite que si le filtre est vrai pour cette variable.
-   *
-   * Cette méthode est collective
-   */
-  virtual void writeVariables(IDataWriter* writer,IVariableFilter* filter=0) =0;
+  virtual IObservable* writeObservable() = 0;
 
   /*!
-   * \brief Exporte les variables.
+   * \brief Observable for variables being read.
    *
-   * Exporte les variables de la liste \a vars. Si \a vars est
-   * vide, exporte toutes les variables de la base qui sont utilisées.
+   * Observers registered in this observable are called
+   * after reading variables (operation readVariables() or readCheckpoint()).
    */
-  virtual void writeVariables(IDataWriter* writer,const VariableCollection& vars) =0;
+  virtual IObservable* readObservable() = 0;
+
+  /*! \brief Writes the variables.
+   *
+   * Iterates through all variables managed by the manager and applies the writer
+   * \a writer to them. If \a filter is not null, it is applied to each variable and
+   * a variable is written only if the filter is true for that variable.
+   *
+   * This method is collective
+   */
+  virtual void writeVariables(IDataWriter* writer, IVariableFilter* filter = 0) = 0;
 
   /*!
-   * \internal
-   * \brief Ecrit les variables pour une protection.
+   * \brief Exports the variables.
    *
-   * Utilise le service de protection \a writer pour écrire les variables.
-   *
-   * Cette méthode est collective.
-   *
-   * Cette méthode est interne à Arcane. En générel, l'écriture
-   * d'une protection se fait via une instance de ICheckpointMng,
-   * accessible via ISubDomain::checkpointMng().
+   * Exports the variables in the list \a vars. If \a vars is
+   * empty, it exports all variables in the base that are used.
    */
-  virtual void writeCheckpoint(ICheckpointWriter* writer) =0;
-
-  /*! \brief Ecrit les variables pour un post-traitement.
-   *
-   * Utilise le service de post-traitement \a writer pour écrire les variables.
-   * L'appelant doit avoir positionner les champs de \a writer avant cet appel,
-   * notamment la liste des variables à post-traiter. Cette méthode
-   * appelle IPostProcessorWriter::notifyBeginWrite() avant l'écriture
-   * et IPostProcessorWriter::notifyEndWriter() en fin.
-   *
-   * Cette méthode est collective.
-   */
-  virtual void writePostProcessing(IPostProcessorWriter* writer) =0;
-
-  /*!
-   *\brief Relit toutes les variables.
-   *
-   * Parcours l'ensemble des variables du gestionnaire et leur applique le lecteur
-   * \a reader. Si \a filter est non nul, il est appliqué à chaque variable et
-   * une variable n'est lue que si le filtre est vrai pour cette variable. Les
-   * variables qui ne sont pas lues ne sont pas modifiées par cette opération.
-   *
-   * \deprecated Utiliser readVariable(IDataReader*)
-   *
-   * Cette méthode est collective.
-   */
-  virtual void readVariables(IDataReader* reader,IVariableFilter* filter=0) =0;
+  virtual void writeVariables(IDataWriter* writer, const VariableCollection& vars) = 0;
 
   /*!
    * \internal
-   * \brief Relit toutes les variables d'une protection.
+   * \brief Writes variables for a checkpoint.
    *
-   * Lit une protection avec le service \a reader sur l'ensemble
-   * des variables.
+   * Uses the protection service \a writer to write the variables.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    *
-   * Cette méthode est interne à Arcane. En générel, la lecture
-   * d'une protection se fait via une instance de ICheckpointMng,
+   * This method is internal to Arcane. Generally, writing
+   * a checkpoint is done via an instance of ICheckpointMng,
    * accessible via ISubDomain::checkpointMng().
    */
-  virtual void readCheckpoint(ICheckpointReader* reader) =0;
+  virtual void writeCheckpoint(ICheckpointWriter* writer) = 0;
+
+  /*! \brief Writes variables for post-processing.
+   *
+   * Uses the post-processing service \a writer to write the variables.
+   * The caller must have positioned the fields of \a writer before this call,
+   * notably the list of variables to be post-processed. This method
+   * calls IPostProcessorWriter::notifyBeginWrite() before writing
+   * and IPostProcessorWriter::notifyEndWriter() at the end.
+   *
+   * This method is collective.
+   */
+  virtual void writePostProcessing(IPostProcessorWriter* writer) = 0;
+
+  /*!
+   *\brief Reads all variables.
+   *
+   * Iterates through all variables managed by the manager and applies the reader
+   * \a reader to them. If \a filter is not null, it is applied to each variable and
+   * a variable is read only if the filter is true for that variable. Variables
+   * that are not read are not modified by this operation.
+   *
+   * \deprecated Use readVariable(IDataReader*)
+   *
+   * This method is collective.
+   */
+  virtual void readVariables(IDataReader* reader, IVariableFilter* filter = 0) = 0;
 
   /*!
    * \internal
-   * \brief Relit toutes les variables d'une protection.
+   * \brief Reads all variables from a checkpoint.
    *
-   * Lit une protection avec les informations contenues
-   * dans \a infos.
+   * Reads a checkpoint using the service \a reader on all
+   * variables.
    *
-   * Cette méthode est collective.
+   * This method is collective.
    *
-   * Cette méthode est interne à Arcane. En générel, la lecture
-   * d'une protection se fait via une instance de ICheckpointMng,
+   * This method is internal to Arcane. Generally, reading
+   * a checkpoint is done via an instance of ICheckpointMng,
    * accessible via ISubDomain::checkpointMng().
    */
-  virtual void readCheckpoint(const CheckpointReadInfo& infos) =0;
+  virtual void readCheckpoint(ICheckpointReader* reader) = 0;
 
-  //! Donne l'ensemble des variables du module \a i
-  virtual void variables(VariableRefCollection v,IModule* i) =0;
+  /*!
+   * \internal
+   * \brief Reads all variables from a checkpoint.
+   *
+   * Reads a checkpoint using the information contained
+   * in \a infos.
+   *
+   * This method is collective.
+   *
+   * This method is internal to Arcane. Generally, reading
+   * a checkpoint is done via an instance of ICheckpointMng,
+   * accessible via ISubDomain::checkpointMng().
+   */
+  virtual void readCheckpoint(const CheckpointReadInfo& infos) = 0;
 
-  //! Liste des variables
-  virtual VariableCollection variables() =0;
+  //! Gets all variables of module \a i
+  virtual void variables(VariableRefCollection v, IModule* i) = 0;
 
-  //! Liste des variables utilisées
-  virtual VariableCollection usedVariables() =0;
-  
-  //! Notifie au gestionnaire que l'état d'une variable a changé
-  virtual void notifyUsedVariableChanged() =0;
-  
-  //! Retourne la variable de nom \a name ou 0 si aucune de se nom existe.
-  virtual IVariable* findVariable(const String& name) =0;
+  //! List of variables
+  virtual VariableCollection variables() = 0;
 
-  //! Retourne la variable du maillage de nom \a name ou 0 si aucune de se nom existe.
-  virtual IVariable* findMeshVariable(IMesh* mesh,const String& name) =0;
+  //! List of used variables
+  virtual VariableCollection usedVariables() = 0;
 
-  //! Retourne la variable de nom complet \a name ou 0 si aucune de se nom existe.
-  virtual IVariable* findVariableFullyQualified(const String& name) =0;
+  //! Notifies the manager that a variable's state has changed
+  virtual void notifyUsedVariableChanged() = 0;
 
-  //! Ecrit les statistiques sur les variables sur le flot \a ostr
-  virtual void dumpStats(std::ostream& ostr,bool is_verbose) =0;
+  //! Returns the variable named \a name or 0 if no such name exists.
+  virtual IVariable* findVariable(const String& name) = 0;
 
-  //! Ecrit les statistiques avec l'écrivain \a writer.
-  virtual void dumpStatsJSON(JSONWriter& writer) =0;
+  //! Returns the mesh variable named \a name or 0 if no such name exists.
+  virtual IVariable* findMeshVariable(IMesh* mesh, const String& name) = 0;
 
-  //! Interface des fonctions utilitaires associées
-  virtual IVariableUtilities* utilities() const =0;
+  //! Returns the fully qualified variable named \a name or 0 if no such name exists.
+  virtual IVariable* findVariableFullyQualified(const String& name) = 0;
 
-  //! Interface du gestionnaire de synchronisation des variables.
-  virtual IVariableSynchronizerMng* synchronizerMng() const =0;
+  //! Writes statistics about variables to the stream \a ostr
+  virtual void dumpStats(std::ostream& ostr, bool is_verbose) = 0;
+
+  //! Writes statistics with the writer \a writer.
+  virtual void dumpStatsJSON(JSONWriter& writer) = 0;
+
+  //! Interface of associated utility functions
+  virtual IVariableUtilities* utilities() const = 0;
+
+  //! Interface of the variable synchronization manager.
+  virtual IVariableSynchronizerMng* synchronizerMng() const = 0;
 
  public:
 
-  //! \name Evènements
+  //! \name Events
   //@{
-  //! Evènement envoyé lorsqu'une variable est créée
-  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableAdded() =0;
+  //! Event sent when a variable is created
+  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableAdded() = 0;
 
-  //! Evènement envoyé lorsqu'une variable est détruite
-  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableRemoved() =0;
+  //! Event sent when a variable is destroyed
+  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableRemoved() = 0;
   //@}
 
  public:
 
   /*!
-   * \brief Construit les membres de l'instance.
+   * \brief Constructs the instance members.
    *
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée. Cette méthode doit être appelée avant initialize().
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * The instance is not usable until this method has been
+   * called. This method must be called before initialize().
+   * \warning This method must only be called once.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
-   * \brief Initialise l'instance.
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été
-   * appelée.
-   * \warning Cette méthode ne doit être appelée qu'une seule fois.
+   * \brief Initializes the instance.
+   * The instance is not usable until this method has been
+   * called.
+   * \warning This method must only be called once.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
-  //! Supprime et détruit les variables gérées par ce gestionnaire
+  //! Removes and destroys the variables managed by this manager
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void removeAllVariables() =0;
+  virtual void removeAllVariables() = 0;
 
-  //! Détache les variables associées au maillage \a mesh.
+  //! Detaches variables associated with the mesh \a mesh.
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void detachMeshVariables(IMesh* mesh) =0;
-
+  virtual void detachMeshVariables(IMesh* mesh) = 0;
 
   /*!
-   * \brief Ajoute une référence à une variable.
+   * \brief Adds a reference to a variable.
    *
-   * Ajoute la référence \a var au gestionnaire.
+   * Adds the reference \a var to the manager.
    *
    * \pre var != 0
-   * \pre var ne doit pas déjà être référencée.
-   * \return l'implémentation associée à \a var.
+   * \pre var must not already be referenced.
+   * \return the implementation associated with \a var.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void addVariableRef(VariableRef* var) =0;
+  virtual void addVariableRef(VariableRef* var) = 0;
 
   /*!
-   * \brief Supprime une référence à une variable.
+   * \brief Removes a reference to a variable.
    *
-   * Supprime la référence \a var du gestionnaire.
+   * Removes the reference \a var from the manager.
    *
-   * Si \a var n'est pas référencée par le gestionnaire, rien n'est effectué.
+   * If \a var is not referenced by the manager, nothing is done.
    * \pre var != 0
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void removeVariableRef(VariableRef* var) =0;
+  virtual void removeVariableRef(VariableRef* var) = 0;
 
   /*!
-   * \brief Ajoute une variable.
+   * \brief Adds a variable.
    *
-   * Ajoute la variable \a var.
+   * Adds the variable \a var.
    *
-   * La validité de la variable n'est pas effectuée (void checkVariable()).
+   * The validity of the variable is not checked (void checkVariable()).
    *
    * \pre var != 0
-   * \pre var ne doit pas déjà être référencée.
-   * \return l'implémentation associée à \a var.
+   * \pre var must not already be referenced.
+   * \return the implementation associated with \a var.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void addVariable(IVariable* var) =0;
+  virtual void addVariable(IVariable* var) = 0;
 
   /*!
-   * \brief Supprime une variable.
+   * \brief Removes a variable.
    *
-   * Supprime la variable \a var.
+   * Removes the variable \a var.
    *
-   * Après appel à cette méthode, la variable ne doit plus être utilisée.
+   * After calling this method, the variable must no longer be used.
    *
    * \pre var != 0
-   * \pre var doit avoir une seule référence.
+   * \pre var must have a single reference.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void removeVariable(IVariable* var) =0;
+  virtual void removeVariable(IVariable* var) = 0;
 
   /*!
-   * \brief Initialise les variables.
+   * \brief Initializes the variables.
    *
-   * Parcours la liste des variables et les initialisent.
-   * Seules les variables d'un module utilisé sont initialisées.
+   * Iterates through the list of variables and initializes them.
+   * Only variables of a used module are initialized.
    *
-   * \param is_continue \a true vrai si on est en reprise.
+   * \param is_continue \a true if resuming.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void initializeVariables(bool is_continue) =0;
+  virtual void initializeVariables(bool is_continue) = 0;
 
  public:
 
   /*!
    * \internal
-   * Fonction interne temporaire pour récupérer le sous-domaine.
+   * Temporary internal function to retrieve the sub-domain.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual ISubDomain* _internalSubDomain() const =0;
+  virtual ISubDomain* _internalSubDomain() const = 0;
 
  public:
 
-  //! API interne à Arcane
-  virtual IVariableMngInternal* _internalApi() =0;
+  //! Internal Arcane API
+  virtual IVariableMngInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -389,4 +389,4 @@ class IVariableMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

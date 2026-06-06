@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDataReader.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface de lecture des données d'une variable.                          */
+/* Interface for reading variable data.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAREADER_H
 #define ARCANE_CORE_IDATAREADER_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup IO
- * \brief Interface de lecture des données d'une variable.
+ * \brief Interface for reading variable data.
  *
  * \sa IDataWriter
  */
@@ -34,7 +35,7 @@ class ARCANE_CORE_EXPORT IDataReader
 {
  public:
 
-  //! Libère les ressources
+  //! Frees resources
   virtual ~IDataReader() = default;
 
  public:
@@ -44,12 +45,12 @@ class ARCANE_CORE_EXPORT IDataReader
 
  public:
 
-  //! Méta-données
+  //! Metadata
   virtual String metaData() = 0;
 
  public:
 
-  //! Lit les données \a data de la variable \a var
+  //! Reads the data \a data of the variable \a var
   virtual void read(IVariable* var, IData* data) = 0;
 };
 
@@ -61,5 +62,4 @@ class ARCANE_CORE_EXPORT IDataReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

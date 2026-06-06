@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITimeHistoryTransformer.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un objet transformant les courbes d'historiques.              */
+/* Interface of an object transforming history curves.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMEHISTORYTRANSFORMER_H
 #define ARCANE_CORE_ITIMEHISTORYTRANSFORMER_H
@@ -26,52 +26,53 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un objet transformant les courbes d'historiques.
+ * \brief Interface of an object transforming history curves.
  *
- * Les classes implémentant cette interface peuvent transformer les
- * courbes des historiques en temps. Cela permet par exemple de modifier
- * les points des courbes ou d'en enlever. 
+ * Classes implementing this interface can transform the
+ * time history curves. This allows, for example, modifying
+ * the points of the curves or removing them. 
  *
- * L'utilisation se fait via l'appel à ITimeHistoryMng::applyTransformation() qui
- * va appeler La méthode transform() de cette instance pour chaque courbe.
+ * Usage is done via the call to ITimeHistoryMng::applyTransformation(), which
+ * will call the transform() method of this instance for each curve.
  *
- * Il est permis de changer le nombre d'éléments de la courbe, mais
- * infos.iterations.size()*infos.sub_size et values.size() doivent avoir le même nombre
- * d'éléments. Il n'est pas permis de changer le nom de la courbe ni
- * le nombre de valeurs par itération (sub_size).
+ * It is permitted to change the number of elements of the curve, but
+ * infos.iterations.size()*infos.sub_size and values.size() must have the same number
+ * of elements. It is not permitted to change the name of the curve or
+ * the number of values per iteration (sub_size).
  */
 class ARCANE_CORE_EXPORT ITimeHistoryTransformer
 {
  public:
 
-  //! Infos communes à chaque courbe
+  //! Common info for each curve
   class CommonInfo
   {
    public:
 
-    //! Nom de la courbe
+    //! Name of the curve
     String name;
-    //! Liste des itérations
+    //! List of iterations
     Int32SharedArray iterations;
-    //! Nombre de valeurs par courbe
+    //! Number of values per curve
     Integer sub_size = 0;
   };
 
  public:
 
-  virtual ~ITimeHistoryTransformer() = default; //!< Libère les ressources
+  virtual ~ITimeHistoryTransformer() = default; //!< Frees resources
 
  public:
 
-  //! Applique la transformation pour une courbe avec des valeurs \a Real
+  //! Applies the transformation for a curve with \a Real values
   virtual void transform(CommonInfo& infos, RealSharedArray values) = 0;
 
-  //! Applique la transformation pour une courbe avec des valeurs \a Int32
+  //! Applies the transformation for a curve with \a Int32 values
   virtual void transform(CommonInfo& infos, Int32SharedArray values) = 0;
 
-  //! Applique la transformation pour une courbe avec des valeurs \a Int64
+  //! Applies the transformation for a curve with \a Int64 values
   virtual void transform(CommonInfo& infos, Int64SharedArray values) = 0;
 };
 
@@ -83,4 +84,4 @@ class ARCANE_CORE_EXPORT ITimeHistoryTransformer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

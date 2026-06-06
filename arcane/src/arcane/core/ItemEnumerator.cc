@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemEnumerator.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Enumérateur sur des groupes d'entités du maillage.                        */
+/* Enumerator over groups of mesh entities.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@ namespace Arcane
 
 namespace
 {
-Ref<IItemEnumeratorTracer> m_singleton_tracer;
+  Ref<IItemEnumeratorTracer> m_singleton_tracer;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -44,19 +44,19 @@ singleton()
 class ItemEnumeratorPOD
 {
  public:
+
   ItemSharedInfo* m_shared_info;
   const Int32* m_local_ids;
   Integer m_index;
   Integer m_count;
 };
 
-void
-_arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod)
+void _arcaneInternalItemEnumeratorSwigSet(const ItemEnumerator* ie, ItemEnumeratorPOD* vpod)
 {
-  vpod-> m_local_ids = ie->unguardedLocalIds();
-  vpod-> m_index = ie->index();
-  vpod-> m_count = ie->count();
-  vpod-> m_shared_info = ie->_sharedInfo();
+  vpod->m_local_ids = ie->unguardedLocalIds();
+  vpod->m_index = ie->index();
+  vpod->m_count = ie->count();
+  vpod->m_shared_info = ie->_sharedInfo();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ arcaneSetSingletonItemEnumeratorTracer(Ref<IItemEnumeratorTracer> tracer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Pour tester la validité des instantiations
+// For testing the validity of instantiations
 
 template class ItemVectorViewConstIteratorT<Cell>;
 template class ItemVectorViewT<Cell>;

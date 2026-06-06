@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DataTypeDispatchingDataVisitor.h                            (C) 2000-2025 */
 /*                                                                           */
-/* IDataVisitor dispatchant les opérations suivant le type de donnée.        */
+/* IDataVisitor dispatching operations according to the data type.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPEDISPATCHINGDATAVISITOR_H
 #define ARCANE_CORE_DATATYPEDISPATCHINGDATAVISITOR_H
@@ -24,54 +24,63 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe template pour dispatcher des données (IData)
- * suivant leur type (DataType).
+ * \brief Template class for dispatching data (IData)
+ * according to their type (DataType).
  */
-template<typename DataType>
+template <typename DataType>
 class ARCANE_CORE_EXPORT IDataTypeDataDispatcherT
 {
  public:
-  virtual ~IDataTypeDataDispatcherT(){}
+
+  virtual ~IDataTypeDataDispatcherT() {}
+
  public:
-  virtual void applyDispatch(IScalarDataT<DataType>* data) =0;
-  virtual void applyDispatch(IArrayDataT<DataType>* data) =0;
-  virtual void applyDispatch(IArray2DataT<DataType>* data) =0;
+
+  virtual void applyDispatch(IScalarDataT<DataType>* data) = 0;
+  virtual void applyDispatch(IArrayDataT<DataType>* data) = 0;
+  virtual void applyDispatch(IArray2DataT<DataType>* data) = 0;
   virtual void applyDispatch(IMultiArray2DataT<DataType>*) {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de IDataDispatcherT pour la class 'String'.
+ * \brief Specialization of IDataDispatcherT for the 'String' class.
  *
- * Cette spécialisation est nécessaire car il n'existe pas
- * de données du type \a IMultiArray2Data<String>.
+ * This specialization is necessary because there is no
+ * data of type \a IMultiArray2Data<String>.
  */
-template<>
+template <>
 class ARCANE_CORE_EXPORT IDataTypeDataDispatcherT<String>
 {
  public:
-  virtual ~IDataTypeDataDispatcherT(){}
+
+  virtual ~IDataTypeDataDispatcherT() {}
+
  public:
-  virtual void applyDispatch(IScalarDataT<String>* data) =0;
-  virtual void applyDispatch(IArrayDataT<String>* data) =0;
+
+  virtual void applyDispatch(IScalarDataT<String>* data) = 0;
+  virtual void applyDispatch(IArrayDataT<String>* data) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief IDataVisitor dispatchant les opérations suivant le type de la donnée.
+ * \brief IDataVisitor dispatching operations according to the data type.
  *
- * Le dispatcher doit hériter de IDataDispatcherT et de l'interface
- * \a IDispatcherType passée en argument de la classe template.
+ * The dispatcher must inherit from IDataDispatcherT and the interface
+ * \a IDispatcherType passed as an argument to the template class.
  *
- * L'interface \a IDispatcherType doit définir le type
- * HasStringDispatch comme TrueType ou FalseType suivant si elle
- * supporte le dispatch du type String.
+ * The \a IDispatcherType interface must define the type
+ * HasStringDispatch as TrueType or FalseType depending on whether it
+ * supports String type dispatch.
  *
- * Il est possible de construire directement une instance via
- * le constructeur ou via la fonction statique create().
+ * It is possible to construct an instance directly via
+ * the constructor or via the static function create().
  */
 class ARCANE_CORE_EXPORT AbstractDataTypeDispatchingDataVisitor
 : public AbstractDataVisitor
@@ -79,10 +88,10 @@ class ARCANE_CORE_EXPORT AbstractDataTypeDispatchingDataVisitor
  public:
 
   /*!
-   * \brief Construit une instance.
-   * Les objets passés en paramètres deviennent la propriété de cette
-   * instance qui se charge de les détruire via l'opérateur
-   * delete dans le destructeur
+   * \brief Constructs an instance.
+   * The objects passed as parameters become the property of this
+   * instance, which is responsible for destroying them via the operator
+   * delete in the destructor
    */
   AbstractDataTypeDispatchingDataVisitor(IDataTypeDataDispatcherT<Byte>* a_byte,
                                          IDataTypeDataDispatcherT<Real>* a_real,
@@ -93,8 +102,7 @@ class ARCANE_CORE_EXPORT AbstractDataTypeDispatchingDataVisitor
                                          IDataTypeDataDispatcherT<Real3>* a_real3,
                                          IDataTypeDataDispatcherT<Real2x2>* a_real2x2,
                                          IDataTypeDataDispatcherT<Real3x3>* a_real3x3,
-                                         IDataTypeDataDispatcherT<String>* a_string
-                                         );
+                                         IDataTypeDataDispatcherT<String>* a_string);
   ~AbstractDataTypeDispatchingDataVisitor();
 
  public:
@@ -157,37 +165,40 @@ class ARCANE_CORE_EXPORT AbstractDataTypeDispatchingDataVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief IDataVisitor dispatchant les opérations suivant le type de la donnée.
+ * \brief IDataVisitor dispatching operations according to the data type.
  *
- * Le dispatcher doit hériter de IDataTypeDataDispatcherT et de l'interface
- * \a IDispatcherType passée en argument de la classe template.
+ * The dispatcher must inherit from IDataTypeDataDispatcherT and the interface
+ * \a IDispatcherType passed as an argument to the template class.
  *
- * L'interface \a IDispatcherType doit définir le type
- * HasStringDispatch comme TrueType ou FalseType suivant si elle
- * supporte le dispatch du type String.
+ * The \a IDispatcherType interface must define the type
+ * HasStringDispatch as TrueType or FalseType depending on whether it
+ * supports String type dispatch.
  *
- * Il est possible de construire directement une instance via
- * le constructeur ou via la fonction statique create().
+ * It is possible to construct an instance directly via
+ * the constructor or via the static function create().
  */
-template<typename IDispatcherType>
+template <typename IDispatcherType>
 class DataTypeDispatchingDataVisitor
 : public AbstractDataTypeDispatchingDataVisitor
 {
  public:
+
   typedef DataTypeDispatchingDataVisitor<IDispatcherType> ThatClass;
   typedef IDispatcherType* IDispatcherTypePtr;
+
  public:
 
   /*!
-   * \brief Construit une instance.
-   * Les paramètres a_* et i_* doivent spécifier la même instance,
-   * l'un via l'interface IDataTypeDataDispatcherT et l'autre
+   * \brief Constructs an instance.
+   * The a_* and i_* parameters must specify the same instance,
+   * one via the IDataTypeDataDispatcherT interface and the other
    * via IDispatcherType.
    *
-   * Les objets passés en paramètres deviennent la propriété de cette
-   * instance qui se charge de les détruire via l'opérateur
-   * delete dans le destructeur
+   * The objects passed as parameters become the property of this
+   * instance, which is responsible for destroying them via the operator
+   * delete in the destructor
    */
   DataTypeDispatchingDataVisitor(IDataTypeDataDispatcherT<Byte>* a_byte,
                                  IDataTypeDataDispatcherT<Real>* a_real,
@@ -199,41 +210,43 @@ class DataTypeDispatchingDataVisitor
                                  IDataTypeDataDispatcherT<Real2x2>* a_real2x2,
                                  IDataTypeDataDispatcherT<Real3x3>* a_real3x3,
                                  IDataTypeDataDispatcherT<String>* a_string)
-  : AbstractDataTypeDispatchingDataVisitor(a_byte,a_real,a_int16,a_int32,a_int64,a_real2,a_real3,
-                                           a_real2x2,a_real3x3,a_string){}
+  : AbstractDataTypeDispatchingDataVisitor(a_byte, a_real, a_int16, a_int32, a_int64, a_real2, a_real3,
+                                           a_real2x2, a_real3x3, a_string)
+  {}
 
  public:
 
   /*!
-   * \brief Créé une instance de la classe.
+   * \brief Creates an instance of the class.
    *
-   * Créé une instance utilisant le type concret \a TrueDispatcherType et prenant
-   * comme argument lors de la construction le type \a BuildArgType.
+   * Creates an instance using the concrete type \a TrueDispatcherType and taking
+   * the type \a BuildArgType as an argument during construction.
    *
-   * Cette opération effectue l'opération suivante pour chaque type \a DataType:
+   * This operation performs the following for each type \a DataType:
    * - new TrueDispatcherType<DataType>(arg);
    */
-  template<template<typename DataType> class TrueDispatcherType,typename BuildArgType> static ThatClass*
+  template <template <typename DataType> class TrueDispatcherType, typename BuildArgType> static ThatClass*
   create(BuildArgType arg)
   {
     typedef typename IDispatcherType::HasStringDispatch HasStringDispatch;
-    return _create<TrueDispatcherType,BuildArgType>(arg,HasStringDispatch());
+    return _create<TrueDispatcherType, BuildArgType>(arg, HasStringDispatch());
   }
 
  private:
-  template<template<typename DataType> class TrueDispatcherType,typename BuildArgType> static ThatClass*
-  _create(BuildArgType arg,TrueType)
+
+  template <template <typename DataType> class TrueDispatcherType, typename BuildArgType> static ThatClass*
+  _create(BuildArgType arg, TrueType)
   {
     TrueDispatcherType<String>* a_string = new TrueDispatcherType<String>(arg);
-    return _create2(arg,a_string,a_string);
+    return _create2(arg, a_string, a_string);
   }
-  template<template<typename DataType> class TrueDispatcherType,typename BuildArgType> static ThatClass*
-  _create(BuildArgType arg,FalseType)
+  template <template <typename DataType> class TrueDispatcherType, typename BuildArgType> static ThatClass*
+  _create(BuildArgType arg, FalseType)
   {
-    return _create2<TrueDispatcherType,BuildArgType>(arg,0,0);
+    return _create2<TrueDispatcherType, BuildArgType>(arg, 0, 0);
   }
-  template<template<typename DataType> class TrueDispatcherType,typename BuildArgType> static ThatClass*
-  _create2(BuildArgType arg,IDataTypeDataDispatcherT<String>* a_string,IDispatcherType* i_string)
+  template <template <typename DataType> class TrueDispatcherType, typename BuildArgType> static ThatClass*
+  _create2(BuildArgType arg, IDataTypeDataDispatcherT<String>* a_string, IDispatcherType* i_string)
   {
     TrueDispatcherType<Byte>* a_byte = new TrueDispatcherType<Byte>(arg);
     TrueDispatcherType<Real>* a_real = new TrueDispatcherType<Real>(arg);
@@ -244,27 +257,27 @@ class DataTypeDispatchingDataVisitor
     TrueDispatcherType<Real3>* a_real3 = new TrueDispatcherType<Real3>(arg);
     TrueDispatcherType<Real2x2>* a_real2x2 = new TrueDispatcherType<Real2x2>(arg);
     TrueDispatcherType<Real3x3>* a_real3x3 = new TrueDispatcherType<Real3x3>(arg);
-    ThatClass* p = new ThatClass(a_byte,a_real,a_int16,a_int32,a_int64,a_real2,a_real3,
-                                 a_real2x2,a_real3x3,a_string);
-    p->setDispatchers(a_byte,a_real,a_int16,a_int32,a_int64,a_real2,a_real3,
-                      a_real2x2,a_real3x3,i_string);
+    ThatClass* p = new ThatClass(a_byte, a_real, a_int16, a_int32, a_int64, a_real2, a_real3,
+                                 a_real2x2, a_real3x3, a_string);
+    p->setDispatchers(a_byte, a_real, a_int16, a_int32, a_int64, a_real2, a_real3,
+                      a_real2x2, a_real3x3, i_string);
     return p;
   }
 
  public:
 
-  //! Liste des dispatchers
+  //! List of dispatchers
   ConstArrayView<IDispatcherType*> dispatchers() const
   {
-    return ConstArrayView<IDispatcherType*>(m_nb_dispatcher,m_dispatchers);
+    return ConstArrayView<IDispatcherType*>(m_nb_dispatcher, m_dispatchers);
   }
 
  public:
 
   /*!
-   *\brief Positionne la liste des dispatchers.
-   * \warning ne doit être fait que lors de l'initialisation. La méthode
-   * create() appelle automatiquement cette méthode.
+   *\brief Positions the list of dispatchers.
+   * \warning should only be done during initialization. The method
+   * create() calls this method automatically.
    */
   void setDispatchers(IDispatcherType* i_byte,
                       IDispatcherType* i_real,
@@ -275,8 +288,7 @@ class DataTypeDispatchingDataVisitor
                       IDispatcherType* i_real3,
                       IDispatcherType* i_real2x2,
                       IDispatcherType* i_real3x3,
-                      IDispatcherType* i_string
-                      )
+                      IDispatcherType* i_string)
   {
     m_nb_dispatcher = 10;
 
@@ -295,8 +307,9 @@ class DataTypeDispatchingDataVisitor
   }
 
  protected:
+
   Integer m_nb_dispatcher = 0;
-  IDispatcherTypePtr m_dispatchers[10] = { };
+  IDispatcherTypePtr m_dispatchers[10] = {};
 };
 
 /*---------------------------------------------------------------------------*/
@@ -307,5 +320,4 @@ class DataTypeDispatchingDataVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

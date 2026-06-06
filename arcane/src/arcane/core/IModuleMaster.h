@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IModuleMaster.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface du module Maître.                                               */
+/* Interface of the Master module.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMODULEMASTER_H
 #define ARCANE_CORE_IMODULEMASTER_H
@@ -24,49 +24,50 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du module principal.
+ * \brief Interface of the main module.
  * 
- * Le module principal est le module encadrant les différentes actions des points d'entrée.
- * Voir l'implémentation \a ModuleMaster pour plus de détails.
+ * The main module is the module framing the different actions of the entry points.
+ * See the \a ModuleMaster implementation for more details.
  */
 class ARCANE_CORE_EXPORT IModuleMaster
 {
  public:
 
-  //! Destructeur.
-  /*! Libère les ressources */
+  //! Destructor.
+  /*! Frees the resources */
   virtual ~IModuleMaster() {}
 
  public:
 
-  //! Création d'une instance de IModuleMaster
-  /*! Actuellement implémenté dans \a ModuleMaster */
+  //! Creation of an instance of IModuleMaster
+  /*! Currently implemented in \a ModuleMaster */
   static IModuleMaster* createDefault(const ModuleBuildInfo&);
 
  public:
 
-  //! Retourne les options de ce module
+  //! Returns the options of this module
   virtual CaseOptionsMain* caseoptions() = 0;
 
-  //! Conversion en module standard
-  /*! Le succès de la conversion est liée à l'implémentation de \a IModuleMaster en tant que \a IModule */
+  //! Conversion to standard module
+  /*! The success of the conversion is linked to the implementation of \a IModuleMaster as \a IModule */
   virtual IModule* toModule() = 0;
 
-  //! Accès aux variables 'communes' partagés entre tout service et module
+  //! Access to 'common' variables shared between all services and modules
   virtual CommonVariables* commonVariables() = 0;
 
-  //! Ajoute le service de boucle en temps
+  //! Adds the time loop service
   virtual void addTimeLoopService(ITimeLoopService* tls) = 0;
 
   /*!
-   * \brief Sort les courbes classiques.
+   * \brief Outputs the standard curves.
    *
-   * Cet appel ajoute dans le ITimeHistoryMng les courbes classiques
-   * (telles que CPUTime, ElapsedTime, TotalMemory, ...) pour l'itération
-   * courante. Par défaut, si cette fonction n'est pas appelée, les
-   * sorties se font à la fin de l'itération.
+   * This call adds the standard curves to the ITimeHistoryMng
+   * (such as CPUTime, ElapsedTime, TotalMemory, ...) for the current iteration. 
+   * By default, if this function is not called, the
+   * outputs occur at the end of the iteration.
    */
   virtual void dumpStandardCurves() = 0;
 };
@@ -79,5 +80,4 @@ class ARCANE_CORE_EXPORT IModuleMaster
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

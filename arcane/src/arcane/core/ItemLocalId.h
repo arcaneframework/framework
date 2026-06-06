@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemLocalId.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Numéro local d'une entité du maillage.                                    */
+/* Local ID of a mesh entity.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMLOCALID_H
 #define ARCANE_CORE_ITEMLOCALID_H
@@ -28,14 +28,15 @@ class ItemSharedInfo;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: rendre obsolète les constructeurs qui prennent un argument
-// un ItemEnumerator
+// TODO: deprecate constructors that take an argument
+// an ItemEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Index d'un Item dans une variable.
+ * \brief Index of an Item in a variable.
  */
 class ARCANE_CORE_EXPORT ItemLocalId
 {
@@ -45,7 +46,7 @@ class ARCANE_CORE_EXPORT ItemLocalId
   constexpr ARCCORE_HOST_DEVICE explicit ItemLocalId(Int32 id)
   : m_local_id(id)
   {}
-  // La définition de ce constructeur est dans ItemInternal.h
+  // The definition of this constructor is in ItemInternal.h
   inline ItemLocalId(ItemInternal* item);
   inline ItemLocalId(ItemConnectedEnumerator enumerator);
   template <typename ItemType> inline ItemLocalId(ItemEnumeratorT<ItemType> enumerator);
@@ -80,9 +81,10 @@ class ARCANE_CORE_EXPORT ItemLocalId
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Index d'une entité \a ItemType dans une variable.
+ * \brief Index of an \a ItemType entity in a variable.
  */
 template <typename ItemType_>
 class ItemLocalIdT
@@ -125,11 +127,12 @@ class ItemLocalIdT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour convertir un ItemLocalId vers une entité (Item).
+ * \brief Class to convert an ItemLocalId to an entity (Item).
  *
- * Les instances de cette classe restent valides durant toute la durée
- * de vie de la famille associée.
+ * Instances of this class remain valid throughout the lifetime
+ * of the associated family.
  */
 class ARCANE_CORE_EXPORT ItemLocalIdToItemConverter
 {
@@ -139,19 +142,19 @@ class ARCANE_CORE_EXPORT ItemLocalIdToItemConverter
 
   explicit ItemLocalIdToItemConverter(IItemFamily* family);
   /*!
-   * \brief Constructeur par défaut.
+   * \brief Default constructor.
    *
-   * L'instance ne sera pas valide tant qu'elle n'aura pas été recopiée
-   * depuis une instance valide (en utilisant le constructeur qui
-   * prend un IItemFamily en argument.
+   * The instance will not be valid until it has been copied
+   * from a valid instance (using the constructor that
+   * takes an IItemFamily as an argument).
    */
   ItemLocalIdToItemConverter() = default;
 
  public:
 
-  //! Entité de numéro local \a local_id
+  //! Entity of local ID \a local_id
   inline constexpr ARCCORE_HOST_DEVICE Item operator[](ItemLocalId local_id) const;
-  //! Entité de numéro local \a local_id
+  //! Entity of local ID \a local_id
   inline constexpr ARCCORE_HOST_DEVICE Item operator[](Int32 local_id) const;
 
  private:
@@ -161,11 +164,12 @@ class ARCANE_CORE_EXPORT ItemLocalIdToItemConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour convertir un ItemLocalId vers une entité (Item).
+ * \brief Class to convert an ItemLocalId to an entity (Item).
  *
- * Les instances de cette classe restent valides durant toute la durée
- * de vie de la famille associée.
+ * Instances of this class remain valid throughout the lifetime
+ * of the associated family.
  */
 template <typename ItemType_> class ItemLocalIdToItemConverterT
 : public ItemLocalIdToItemConverter
@@ -181,16 +185,16 @@ template <typename ItemType_> class ItemLocalIdToItemConverterT
 
  public:
 
-  //! Entité de numéro local \a local_id
+  //! Entity of local ID \a local_id
   inline constexpr ARCCORE_HOST_DEVICE ItemType operator[](ItemLocalIdType local_id) const;
-  //! Entité de numéro local \a local_id
+  //! Entity of local ID \a local_id
   inline constexpr ARCCORE_HOST_DEVICE ItemType operator[](Int32 local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe pour convertir un NodeLocalId vers une arête.
+//! Class to convert a NodeLocalId to an edge.
 class NodeLocalIdToNodeConverter
 : public ItemLocalIdToItemConverterT<Node>
 {
@@ -199,7 +203,7 @@ class NodeLocalIdToNodeConverter
   using ItemLocalIdToItemConverterT<Node>::ItemLocalIdToItemConverterT;
 };
 
-//! Classe pour convertir un EdgeLocalId vers une arête.
+//! Class to convert an EdgeLocalId to an edge.
 class EdgeLocalIdToEdgeConverter
 : public ItemLocalIdToItemConverterT<Edge>
 {
@@ -208,7 +212,7 @@ class EdgeLocalIdToEdgeConverter
   using ItemLocalIdToItemConverterT<Edge>::ItemLocalIdToItemConverterT;
 };
 
-//! Classe pour convertir un FaceLocalId vers une face.
+//! Class to convert a FaceLocalId to a face.
 class FaceLocalIdToFaceConverter
 : public ItemLocalIdToItemConverterT<Face>
 {
@@ -217,7 +221,7 @@ class FaceLocalIdToFaceConverter
   using ItemLocalIdToItemConverterT<Face>::ItemLocalIdToItemConverterT;
 };
 
-//! Classe pour convertir un CellLocalId vers une maille.
+//! Class to convert a CellLocalId to a mesh.
 class CellLocalIdToCellConverter
 : public ItemLocalIdToItemConverterT<Cell>
 {
@@ -226,7 +230,7 @@ class CellLocalIdToCellConverter
   using ItemLocalIdToItemConverterT<Cell>::ItemLocalIdToItemConverterT;
 };
 
-//! Classe pour convertir un ParticleLocalId vers une particule.
+//! Class to convert a ParticleLocalId to a particle.
 class ParticleLocalIdToParticleConverter
 : public ItemLocalIdToItemConverterT<Particle>
 {
@@ -235,7 +239,7 @@ class ParticleLocalIdToParticleConverter
   using ItemLocalIdToItemConverterT<Particle>::ItemLocalIdToItemConverterT;
 };
 
-//! Classe pour convertir un DoFLocalId vers un degré de liberté.
+//! Class to convert a DoFLocalId to a degree of freedom.
 class DoFLocalIdToDoFConverter
 : public ItemLocalIdToItemConverterT<DoF>
 {

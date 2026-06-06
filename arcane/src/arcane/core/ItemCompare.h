@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemCompare.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Routines de comparaisons de deux entités.                                 */
+/* Routines for comparing two entities.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMCOMPARE_H
 #define ARCANE_CORE_ITEMCOMPARE_H
@@ -44,10 +44,10 @@ class ItemCompare
 /*---------------------------------------------------------------------------*/
 
 /**
- * Ordre spécifique pour qu'Item* soit utilisé dans un set.
- * Nous utilisons l'id, mais le premier tri est par niveau.
- * Ceci garantit,en traversant l'ensemble du début à la fin,
- * de rencontrer les éléments (parent) de niveau inférieur d'abord.
+ * Specific order for Item* to be used in a set.
+ * We use the ID, but the primary sort is by level.
+ * This ensures, when traversing the set from beginning to end,
+ * that lower level elements (parents) are encountered first.
  */
 class CompareItemIdsByLevel
 {

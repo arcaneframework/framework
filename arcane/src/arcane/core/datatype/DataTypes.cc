@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DataTypes.cc                                                (C) 2000-2024 */
 /*                                                                           */
-/* Définition des types liés aux données.                                    */
+/* Definition of data-related types.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,11 +28,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file DataTypes.h
  *
- * \brief Fichier contenant les définitions des types de données gérés par %Arcane.
+ * \brief File containing the definitions of data types managed by %Arcane.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,7 +53,7 @@ namespace
     DataTypeNames::N_UNKNOWN
   };
 
-  //! Taille d'un élément du type
+  //! Size of an element of the type
   int ALL_SIZEOF[NB_ARCANE_DATA_TYPE] = {
     sizeof(Byte), sizeof(Real),
     sizeof(Int16), sizeof(Int32), sizeof(Int64),
@@ -119,7 +121,7 @@ dataTypeSize(eDataType type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Trouve le type associé à \a name. Envoie une exception en cas d'erreur
+//! Finds the type associated with \a name. Sends an exception in case of error
 extern "C++" ARCANE_DATATYPE_EXPORT eDataType
 dataTypeFromName(const char* name)
 {
@@ -223,7 +225,7 @@ fillNan(ArrayView<Type> ptr)
   _fillNoNan(ptr);
 }
 
-template<typename Type> static void
+template <typename Type> static void
 _fillWithNan(ArrayView<Type> ptr)
 {
   Real v = _getNan();
@@ -320,4 +322,3 @@ defaultValue() -> Real2x2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

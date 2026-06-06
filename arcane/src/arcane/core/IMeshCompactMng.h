@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshCompactMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des compactages de familles d'un maillage.      */
+/* Interface for managing the compaction of mesh families.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHCOMPACTMNG_H
 #define ARCANE_CORE_IMESHCOMPACTMNG_H
@@ -29,61 +29,62 @@ class IMeshCompacter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire des compactages de familles d'un maillage.
+ * \brief Interface for managing the compaction of mesh families.
  *
- * Lorsqu'un compactage est en cours, il est interdit de faire certaines
- * opérations sur le maillage comme par exemple créer une nouvelle famille
- * ou ajouter des groupes.
+ * While a compaction is in progress, it is forbidden to perform certain
+ * operations on the mesh, such as creating a new family
+ * or adding groups.
  *
- * Le début d'un compactage se fait via l'appel à beginCompact(). Une fois
- * le compactage terminé, il faut appeler endCompact() pour détruire
- * l'instance de IMeshCompacter.
+ * The start of a compaction is done by calling beginCompact(). Once
+ * the compaction is finished, you must call endCompact() to destroy
+ * the IMeshCompacter instance.
  *
- * Pour plus d'informations sur le compactage, se reporter à la documentation
- * de IMeshCompacter.
+ * For more information on compaction, refer to the documentation
+ * of IMeshCompacter.
  */
 class ARCANE_CORE_EXPORT IMeshCompactMng
 {
  public:
 
-  virtual ~IMeshCompactMng() {} //<! Libère les ressources
+  virtual ~IMeshCompactMng() {} //<! Releases resources
 
  public:
 
-  //! Maillage associé
-  virtual IMesh* mesh() const =0;
+  //! Associated mesh
+  virtual IMesh* mesh() const = 0;
 
   /*!
-   * \brief Débute un compactage sur toutes les familles du maillage.
+   * \brief Starts a compaction on all families of the mesh.
    *
    * \pre compacter()==nullptr.
    */
-  virtual IMeshCompacter* beginCompact() =0;
+  virtual IMeshCompacter* beginCompact() = 0;
 
   /*!
-   * \brief Débute un compactage pour la famille d'entité \a family
+   * \brief Starts a compaction for the entity family \a family
    *
    * \pre compacter()==nullptr.
    *
    */
-  virtual IMeshCompacter* beginCompact(IItemFamily* family) =0;
+  virtual IMeshCompacter* beginCompact(IItemFamily* family) = 0;
 
   /*!
-   * \brief Signale que le compactage est terminé.
+   * \brief Signals that the compaction is finished.
    *
-   * Cela permet de désallouer les structures associées au compactage.
+   * This allows the deallocation of structures associated with the compaction.
    * \post exchanger()==nullptr.
    */
-  virtual void endCompact() =0;
+  virtual void endCompact() = 0;
 
   /*!
-   * \brief Compacteur actif courant.
+   * \brief Current active compacter.
    *
-   * Le compacteur est non nul que si on est entre un beginCompact()
-   * et un endCompact()
+   * The compacter is non-null only if we are between a beginCompact()
+   * and an endCompact()
    */
-  virtual IMeshCompacter* compacter() =0;
+  virtual IMeshCompacter* compacter() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

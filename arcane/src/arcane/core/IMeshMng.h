@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMng.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des maillages.                                  */
+/* Mesh manager interface.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHMNG_H
 #define ARCANE_CORE_IMESHMNG_H
@@ -24,73 +24,74 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire des maillages.
+ * \brief Mesh manager interface.
  *
- * Cette interface gère une liste de maillages et permet de créér des maillages
- * ou récupérer un maillage existant à partir de son nom.
+ * This interface manages a list of meshes and allows creating meshes
+ * or retrieving an existing mesh by its name.
  *
- * La création de maillage se fait via 'IMeshFactoryMng' dont une instance
- * est récupérable via meshFactoryMng(). La création effective de maillage ne peut
- * avoir lieu qu'après lecture du jeu de données. Il est par contre possible
- * de créér une référence (via createMeshHandle()) sur un maillage à n'importe quel
- * moment.
+ * Mesh creation is done via 'IMeshFactoryMng' whose instance
+ * can be retrieved via meshFactoryMng(). Effective mesh creation cannot
+ * take place until after reading the dataset. However, it is possible
+ * to create a reference (via createMeshHandle()) to a mesh at any
+ * time.
  */
 class ARCANE_CORE_EXPORT IMeshMng
 {
  public:
 
-  //! Libère les ressources.
+  //! Frees the resources.
   virtual ~IMeshMng() = default;
 
  public:
 
-  //! Gestionnaire de trace associé à ce gestionnaire
+  //! Trace manager associated with this manager
   virtual ITraceMng* traceMng() const = 0;
 
-  //! Fabrique de maillages associée à ce gestionnaire
+  //! Mesh factory associated with this manager
   virtual IMeshFactoryMng* meshFactoryMng() const = 0;
 
-  //! Gestionnaire de variables associé à ce gestionnaire
+  //! Variable manager associated with this manager
   virtual IVariableMng* variableMng() const = 0;
 
  public:
 
   /*!
-   * \brief Recherche le maillage de nom \a name.
+   * \brief Searches for the mesh with name \a name.
    *
-   * Si le maillage n'est pas trouvé, la méthode lance une exception
-   * si \a throw_exception vaut \a true ou retourne *nullptr* si \a throw_exception
-   * vaut \a false.
+   * If the mesh is not found, the method throws an exception
+   * if \a throw_exception is \a true or returns *nullptr* if \a throw_exception
+   * is \a false.
    */
   virtual MeshHandle* findMeshHandle(const String& name, bool throw_exception) = 0;
 
   /*!
-   * \brief Recherche le maillage de nom \a name.
+   * \brief Searches for the mesh with name \a name.
    *
-   * Si le maillage n'est pas trouvé, la méthode lance une exception.
+   * If the mesh is not found, the method throws an exception.
    */
   virtual MeshHandle findMeshHandle(const String& name) = 0;
 
   /*!
-   * \brief Créé et retourne un handle pour un maillage de nom \a name.
+   * \brief Creates and returns a handle for a mesh with name \a name.
    *
-   * Lève une exception si un handle associé à ce nom existe déjà.
+   * Throws an exception if a handle associated with this name already exists.
    */
   virtual MeshHandle createMeshHandle(const String& name) = 0;
 
   /*!
-   * \brief Détruit le maillage associé à \a handle.
+   * \brief Destroys the mesh associated with \a handle.
    *
-   * Le maillage doit être un maillage implémentant IPrimaryMesh.
+   * The mesh must be a mesh implementing IPrimaryMesh.
    *
-   * \warning \a handle ne doit plus être utilisé après cet appel
-   * et le maillage associé non plus. S'il reste des références à ces deux
-   * objets, le comportement est indéfini.
+   * \warning \a handle must no longer be used after this call
+   * and the associated mesh either. If references to these two
+   * objects remain, the behavior is undefined.
    */
   virtual void destroyMesh(MeshHandle handle) = 0;
 
-  //! Handle pour le maillage par défaut.
+  //! Handle for the default mesh.
   virtual MeshHandle defaultMeshHandle() const = 0;
 };
 
@@ -102,4 +103,4 @@ class ARCANE_CORE_EXPORT IMeshMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

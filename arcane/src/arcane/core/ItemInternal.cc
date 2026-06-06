@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemInternal.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne d'une entité.                                              */
+/* Internal part of an entity.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,9 +40,9 @@ ItemInternalConnectivityList ItemInternalConnectivityList::nullInstance;
 void impl::MutableItemBase::
 _checkUniqueId(Int64 new_uid) const
 {
-  if (new_uid<0){
+  if (new_uid < 0) {
     ARCANE_FATAL("Bad unique id - new_uid={0} local_id={1} current={2}",
-                 new_uid,m_local_id,uniqueId().asInt64());
+                 new_uid, m_local_id, uniqueId().asInt64());
   }
 }
 
@@ -64,7 +64,7 @@ unsetUniqueId()
 Int32 ItemUniqueId::
 asInt32() const
 {
-  if (m_unique_id>2147483647)
+  if (m_unique_id > 2147483647)
     ARCANE_FATAL("Unique id is too big to be converted to a Int32");
   return (Int32)(m_unique_id);
 }
@@ -76,7 +76,7 @@ ItemTypeId ItemTypeId::
 fromInteger(Int64 v)
 {
   Int16 x = CheckedConvert::toInt16(v);
-  return ItemTypeId{x};
+  return ItemTypeId{ x };
 }
 
 /*---------------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ _nbLinearNode() const
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const ItemUniqueId& id)
+operator<<(std::ostream& o, const ItemUniqueId& id)
 {
   o << id.asInt64();
   return o;
@@ -115,8 +115,8 @@ topHParent() const
   const ItemInternal* top_it = this;
   while (top_it->nbHParent())
     top_it = top_it->_internalHParent(0);
-  ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
-  ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
+  ARCANE_ASSERT((!top_it->null()), ("topHParent Problem!"));
+  ARCANE_ASSERT((top_it->level() == 0), ("topHParent Problem"));
   return top_it;
 }
 
@@ -129,8 +129,8 @@ topHParentBase() const
   ItemBase top_it = *this;
   while (top_it.nbHParent())
     top_it = top_it.hParentBase(0);
-  ARCANE_ASSERT((!top_it.null()),("topHParent Problem!"));
-  ARCANE_ASSERT((top_it.level() == 0),("topHParent Problem"));
+  ARCANE_ASSERT((!top_it.null()), ("topHParent Problem!"));
+  ARCANE_ASSERT((top_it.level() == 0), ("topHParent Problem"));
   return top_it;
 }
 
@@ -143,8 +143,8 @@ topHParent()
   ItemInternal* top_it = this;
   while (top_it->nbHParent())
     top_it = top_it->_internalHParent(0);
-  ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
-  ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
+  ARCANE_ASSERT((!top_it->null()), ("topHParent Problem!"));
+  ARCANE_ASSERT((top_it->level() == 0), ("topHParent Problem"));
   return top_it;
 }
 
@@ -155,7 +155,7 @@ Int32 impl::ItemBase::
 whichChildAmI(Int32 local_id) const
 {
   ARCANE_ASSERT((this->hasHChildren()), ("item has non-child!"));
-  for (Integer c=0; c<this->nbHChildren(); c++)
+  for (Integer c = 0; c < this->nbHChildren(); c++)
     if (this->hChildId(c) == local_id)
       return c;
   return -1;
@@ -165,10 +165,10 @@ whichChildAmI(Int32 local_id) const
 /*---------------------------------------------------------------------------*/
 
 Int32 ItemInternal::
-whichChildAmI(const ItemInternal *iitem) const
+whichChildAmI(const ItemInternal* iitem) const
 {
   ARCANE_ASSERT((this->hasHChildren()), ("item has non-child!"));
-  for (Integer c=0; c<this->nbHChildren(); c++)
+  for (Integer c = 0; c < this->nbHChildren(); c++)
     if (this->_internalHChild(c) == iitem)
       return c;
   return -1;
@@ -181,14 +181,14 @@ ItemInternalVectorView impl::ItemBase::
 _internalActiveCells2(Int32Array& local_ids) const
 {
   const Integer nbcell = this->nbCell();
-  for(Integer icell = 0 ; icell < nbcell ; ++icell) {
+  for (Integer icell = 0; icell < nbcell; ++icell) {
     ItemBase cell = this->cellBase(icell);
-    if (cell.isActive()){
+    if (cell.isActive()) {
       const Int32 local_id = cell.localId();
       local_ids.add(local_id);
     }
   }
-  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,local_ids,0);
+  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info, local_ids, 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -205,30 +205,30 @@ _setFaceInfos(Int32 mod_flags)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Pour une face, positionne à la fois la back cell et la front cell.
+ * \brief For a face, positions both the back cell and the front cell.
  *
- * \a back_cell_lid et/ou \a front_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
- * ce qui signifie que l'entité n'a pas de back cell ou front cell. Si les
- * deux valeurs sont nulles, alors la face est considérée comme n'ayant
- * plus de mailles connectées.
+ * \a back_cell_lid and/or \a front_cell_lid may be NULL_ITEM_LOCAL_ID
+ * which means that the entity does not have a back cell or a front cell. If both
+ * values are null, then the face is considered to have no connected cells.
  *
- * \note Cette méthode est utilisée uniquement par FaceFamily.
+ * \note This method is used only by FaceFamily.
  */
 void impl::MutableItemBase::
-_setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
+_setFaceBackAndFrontCells(Int32 back_cell_lid, Int32 front_cell_lid)
 {
-  if (front_cell_lid==NULL_ITEM_LOCAL_ID){
-    // Reste uniquement la back_cell ou aucune maille.
-    Int32 mod_flags = (back_cell_lid!=NULL_ITEM_LOCAL_ID) ? (II_Boundary | II_HasBackCell | II_BackCellIsFirst) : 0;
+  if (front_cell_lid == NULL_ITEM_LOCAL_ID) {
+    // Only the back_cell remains or no cell.
+    Int32 mod_flags = (back_cell_lid != NULL_ITEM_LOCAL_ID) ? (II_Boundary | II_HasBackCell | II_BackCellIsFirst) : 0;
     _setFaceInfos(mod_flags);
   }
-  else if (back_cell_lid==NULL_ITEM_LOCAL_ID){
-    // Reste uniquement la front cell
+  else if (back_cell_lid == NULL_ITEM_LOCAL_ID) {
+    // Only the front cell remains
     _setFaceInfos(II_Boundary | II_HasFrontCell | II_FrontCellIsFirst);
   }
-  else{
-    // Il y a deux mailles connectées.
+  else {
+    // There are two connected cells.
     _setFaceInfos(II_HasFrontCell | II_HasBackCell | II_BackCellIsFirst);
   }
 }
@@ -253,7 +253,7 @@ _isValid()
 {
   if (!m_shared_info)
     ARCANE_FATAL("Null ItemSharedInfo");
-  if (!m_local_ids.empty()){
+  if (!m_local_ids.empty()) {
     auto* items_data = _items().data();
     if (!items_data)
       ARCANE_FATAL("Null ItemsInternal list");

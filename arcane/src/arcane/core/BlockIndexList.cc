@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BlockIndexList.cc                                           (C) 2000-2023 */
 /*                                                                           */
-/* Classe gérant un tableau d'indices sous la forme d'une liste de blocs.    */
+/* Class managing an index array in the form of a block list.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -112,14 +112,14 @@ _addBlockInfo(const Int32* data, Int16 size)
 Int32 BlockIndexList::
 _computeNbContigusBlock() const
 {
-  // TODO: on doit pouvoir savoir automatiquement si un bloc est contigu
-  // en connaissant son hash et la taille du bloc.
+  // TODO: we should be able to automatically determine if a block is contiguous
+  // by knowing its hash and the block size.
   if (m_block_size == 0)
     return 0;
 
   Int32 nb_reduced_block = m_indexes.size() / m_block_size;
   const Int32 block_size = m_block_size;
-  // Numéro du bloc contenant les indices continus s'il y en a un
+  // Number of the block containing the contiguous indices if there is one
   Int32 contigu_block_pos = -1;
 
   for (Int32 i = 0; i < nb_reduced_block; ++i) {
@@ -140,8 +140,8 @@ _computeNbContigusBlock() const
   if (contigu_block_pos < 0)
     return 0;
 
-  // Le nombre de blocs contigu correspond au nombre de blocs pour
-  // lesquels l'index est 'contigu_block_pos'.
+  // The number of contiguous blocks corresponds to the number of blocks for
+  // where the index is 'contigu_block_pos'.
   Int32 nb_contigu = 0;
   for (Int32 i = 0, n = m_nb_block; i < n; ++i) {
     if (m_blocks_index_and_offset[i * 2] == contigu_block_pos)
@@ -191,7 +191,7 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     Int32 first_value = indexes[iter_index];
     size_t hash = hasher(0);
 
-    // TODO: faire une spécialisation en fonction de la taille de bloc.
+    // TODO: implement specialization based on block size.
     for (Int32 z = 1; z < block_size; ++z) {
       Int32 diff = indexes[iter_index + z] - first_value;
       size_t hash2 = hasher(diff);
@@ -201,7 +201,7 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     auto idx = block_indexes.find(hash);
     Int32 block_index = -1;
     if (idx == block_indexes.end()) {
-      // Nouveau bloc.
+      // New block.
       block_index = static_cast<Int32>(block_indexes.size());
       block_indexes.insert(std::make_pair(hash, block_index));
       block_index_in_original_array.add(iter_index);
@@ -220,7 +220,7 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     }
   }
 
-  // Gère l'éventuel dernier bloc.
+  // Handles the potential last block.
   if (remaining_size != 0) {
     Int32 iter_index = nb_fixed_block * block_size;
     Int32 first_value = indexes[iter_index];
@@ -229,8 +229,8 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     block_index_list._setBlockIndexAndOffset(nb_fixed_block, block_index, first_value);
   }
 
-  // Maintenant qu'on connait le nombre de blocs communs, alloue le tableau
-  // des blocs compressés et recopie les valeurs correspondantes
+  // Now that we know the number of common blocks, allocate the array
+  // of compressed blocks and copy the corresponding values
   {
     Int32 local_block_values[BlockIndex::MAX_BLOCK_SIZE];
     local_block_values[0] = 0;
@@ -248,8 +248,8 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     if (remaining_size != 0) {
       Int32 pos = nb_fixed_block * block_size;
       Int32 first_value = indexes[pos];
-      // TODO: regarder pour faire un padding jusqu'à la fin du bloc avec la dernière
-      // valeur (comme ce qui est fait pour les ItemGroup)
+      // TODO: consider padding up to the end of the block with the last
+      // value (as is done for ItemGroup)
       for (Int32 z = 1; z < remaining_size; ++z) {
         Int32 diff = indexes[pos + z] - first_value;
         local_block_values[z] = diff;

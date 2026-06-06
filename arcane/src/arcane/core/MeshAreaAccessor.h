@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshAreaAccessor.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Accès aux informations d'une zone de maillage.                            */
+/* Access to information about a mesh area.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHAREAACCESSOR_H
 #define ARCANE_CORE_MESHAREAACCESSOR_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Accès aux informations d'une zone de maillage.
+ * \brief Access to information about a mesh area.
  */
 class ARCANE_CORE_EXPORT MeshAreaAccessor
 {
@@ -37,32 +38,32 @@ class ARCANE_CORE_EXPORT MeshAreaAccessor
 
  public:
 
-  //! Zone de maillage accédée par cette accessor
+  //! Mesh area accessed by this accessor
   IMeshArea* meshArea();
 
-  //! Positionne à \a mesh_area la zone de maillage accédée par cette accessor
+  //! Sets the mesh area accessed by this accessor to \a mesh_area
   void setMeshArea(IMeshArea* mesh_area);
 
  public:
 
-  //! Nombre de noeuds du maillage
+  //! Number of nodes in the mesh
   Integer nbNode();
 
-  //! Nombre de mailles du maillage
+  //! Number of cells in the mesh
   Integer nbCell();
 
  public:
 
-  //! Groupe de tous les noeuds de la zone
+  //! Group of all nodes in the area
   NodeGroup allNodes();
 
-  //! Groupe de toutes les mailles de la zone
+  //! Group of all cells in the area
   CellGroup allCells();
 
-  //! Groupe de tous les noeuds propres de la zone
+  //! Group of all own nodes in the area
   NodeGroup ownNodes();
 
-  //! Groupe de toutes les mailles propres de la zone
+  //! Group of all own cells in the area
   CellGroup ownCells();
 
  private:

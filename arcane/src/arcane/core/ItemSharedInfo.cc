@@ -1,26 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfo.cc                                           (C) 2000-2023 */
 /*                                                                           */
-/* Informations communes à plusieurs entités.                                */
+/* Common information for several entities.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemSharedInfo.h"
+#include "arcane/core/ItemSharedInfo.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemInternal.h"
-#include "arcane/ItemInfoListView.h"
-#include "arcane/Item.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ItemInternal.h"
+#include "arcane/core/ItemInfoListView.h"
+#include "arcane/core/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,16 +33,16 @@ namespace Arcane
 
 ItemSharedInfo ItemSharedInfo::nullItemSharedInfo;
 
-// TODO: A terme il faudra pouvoir changer cela pour utiliser une valeur
-// allouée dynamiquement ce qui permettra à cette instance d'être utilisée
-// sur GPU.
+// TODO: In the future, it will be necessary to be able to change this to use a value
+// allocated dynamically, which will allow this instance to be used
+// on GPU.
 ItemSharedInfo* ItemSharedInfo::nullItemSharedInfoPointer = &ItemSharedInfo::nullItemSharedInfo;
 
 namespace
 {
-// Suppose NULL_ITEM_UNIQUE_ID == (-1) et NULL_ITEM_LOCAL_ID == (-1)
-// Cree un pseudo-tableau qui pourra etre indexé avec NULL_ITEM_LOCAL_ID
-// pour la maille nulle.
+// Assumes NULL_ITEM_UNIQUE_ID == (-1) and NULL_ITEM_LOCAL_ID == (-1)
+// Creates a pseudo-array that can be indexed with NULL_ITEM_LOCAL_ID
+// for the null mesh.
 Int64 null_int64_buf[2] = { NULL_ITEM_UNIQUE_ID, NULL_ITEM_UNIQUE_ID };
 Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
 
@@ -122,8 +122,8 @@ _init(eItemKind ik)
 ItemInternal* ItemSharedInfo::
 _parent(Int32 id) const
 {
-  // En pointant vers le bon champ du MeshItemInternalList dans le maillage parent
-  // TODO GG: on pourrait conserver une fois pour toute l'instance de 'ItemInfoListView'
+  // By pointing to the correct field of the MeshItemInternalList in the parent mesh
+  // TODO GG: we could keep the 'ItemInfoListView' instance permanently
   return ItemCompatibility::_itemInternal(m_items->mesh->itemFamily(m_item_kind)->parentFamily()->itemInfoListView()[id]);
 }
 
@@ -224,7 +224,7 @@ _setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_i
 Int32* ItemSharedInfo::
 _parentPtr(Int32 local_id)
 {
-  // GG: ATTENTION: Cela ne fonctionne que si on a au plus un parent.
+  // GG: ATTENTION: This only works if we have at most one parent.
   return m_parent_item_ids.ptrAt(local_id);
 }
 
@@ -295,4 +295,3 @@ updateMeshItemInternalList()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

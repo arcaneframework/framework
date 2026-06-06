@@ -1,19 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemVectorView.cc                                           (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur une liste pour obtenir des informations sur les entités.          */
+/* View over a list to retrieve information about entities.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/Item.h"
+#include "arcane/core/Item.h"
 
-#include "arcane/IItemFamily.h"
+#include "arcane/core/IItemFamily.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ ItemVectorView::
 ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
 : m_index_view(indexes)
 {
- _init2(family);
+  _init2(family);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
 void ItemVectorView::
 _init2(IItemFamily* family)
 {
-  if (family){
+  if (family) {
     ItemInfoListView info_view(family);
     m_shared_info = info_view.m_item_shared_info;
   }
@@ -76,13 +76,13 @@ fillLocalIds(Array<Int32>& ids) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Note: ces structures doivent avoir le même layout que la
-// version qui est dans NumericWrapper.h
+// Note: these structures must have the same layout as the version in NumericWrapper.h
 
-// Cette classe sert de type de retour pour wrapper la class ConstArrayView
-template<typename DataType> class ConstArrayViewPOD_T
+// This class serves as a return type to wrap the ConstArrayView class
+template <typename DataType> class ConstArrayViewPOD_T
 {
  public:
+
   Integer m_size;
   const DataType* m_ptr;
 };
@@ -90,6 +90,7 @@ template<typename DataType> class ConstArrayViewPOD_T
 class ItemIndexArrayViewPOD
 {
  public:
+
   ConstArrayViewPOD_T<Int32> m_local_ids;
   Int32 m_flags;
 };
@@ -97,6 +98,7 @@ class ItemIndexArrayViewPOD
 class ItemVectorViewPOD
 {
  public:
+
   ItemIndexArrayViewPOD m_local_ids;
   ItemSharedInfo* m_shared_info;
 };
@@ -120,4 +122,3 @@ _internalSwigSet(ItemVectorViewPOD* vpod)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

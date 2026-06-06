@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableUtils.h                                             (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur les variables.                         */
+/* Various utility functions for variables.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEUTILS_H
 #define ARCANE_CORE_VARIABLEUTILS_H
@@ -25,61 +25,54 @@ namespace Arcane::VariableUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Pré-copie la mémoire associée à la variable \a var.
- *
- * Pré-copie la mémoire associé à la variable \a sur l'accélérateur
- * spécifié par \a queue_or_null si elle ne s'y trouve pas encore.
- *
- * \a var doit être une variable d'un type numérique.
- * Si \a queue_or_null est nul, aucune opération n'est effectuée.
- * L'opération est asynchrone.
- */
-extern "C++" ARCANE_CORE_EXPORT
-void prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null);
 
 /*!
- * \brief Pré-copie la mémoire associée à la variable \a var.
+ * \brief Prefetches the memory associated with the variable \a var.
+ *
+ * Prefetches the memory associated with the variable \a onto the accelerator
+ * specified by \a queue_or_null if it is not already there.
+ *
+ * \a var must be a numerical type variable.
+ * If \a queue_or_null is null, no operation is performed.
+ * The operation is asynchronous.
+ */
+extern "C++" ARCANE_CORE_EXPORT void prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null);
+
+/*!
+ * \brief Prefetches the memory associated with the variable \a var.
  * \sa void prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null);
  */
-extern "C++" ARCANE_CORE_EXPORT
-void prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null);
+extern "C++" ARCANE_CORE_EXPORT void prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null);
 
 /*!
- * \brief Indique que la variable est essentiellement en lecture.
+ * \brief Indicates that the variable is mostly read-only.
  *
- * Cela est utilisé uniquement avec les accélérateurs et permet d'éviter
- * des transferts mémoire en l'accélérateur et le CPU.
+ * This is used only with accelerators and prevents memory transfers
+ * between the accelerator and the CPU.
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markVariableAsMostlyReadOnly(IVariable* var);
+extern "C++" ARCANE_CORE_EXPORT void markVariableAsMostlyReadOnly(IVariable* var);
 
 /*!
- * \brief Indique que la variable est essentiellement en lecture.
+ * \brief Indicates that the variable is mostly read-only.
  * \a void markVariableAsMostlyReadOnly(IVariableRef* var);
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markVariableAsMostlyReadOnly(VariableRef& var);
+extern "C++" ARCANE_CORE_EXPORT void markVariableAsMostlyReadOnly(VariableRef& var);
 
 /*!
- * \brief Indique que la variable est essentiellement en lecture.
+ * \brief Indicates that the variable is mostly read-only.
  * \a void markVariableAsMostlyReadOnly(IVariableRef* var);
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var);
+extern "C++" ARCANE_CORE_EXPORT void markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CORE_EXPORT
-void experimentalChangeAllocator(::Arcane::Materials::IMeshMaterialVariable* var,
-                                 eMemoryRessource mem);
+extern "C++" ARCANE_CORE_EXPORT void experimentalChangeAllocator(::Arcane::Materials::IMeshMaterialVariable* var,
+                                                                 eMemoryRessource mem);
 
-extern "C++" ARCANE_CORE_EXPORT
-void experimentalChangeAllocator(IVariable* var, eMemoryRessource mem);
+extern "C++" ARCANE_CORE_EXPORT void experimentalChangeAllocator(IVariable* var, eMemoryRessource mem);
 
-extern "C++" ARCANE_CORE_EXPORT
-void experimentalChangeAllocator(VariableRef& var, eMemoryRessource mem);
+extern "C++" ARCANE_CORE_EXPORT void experimentalChangeAllocator(VariableRef& var, eMemoryRessource mem);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

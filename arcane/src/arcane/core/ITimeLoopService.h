@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITimeLoopService.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service opérant lors de la boucle en temps.                */
+/* Interface of a service operating during the time loop.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMELOOPSERVICE_H
@@ -25,12 +25,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un service opérant lors de la boucle en temps.
+ * \brief Interface of a service operating during the time loop.
  *
- * Un service implémentant cette interface permet de spécifier une
- * action qui sera effectuée à un point précis de la boucle en temps.
+ * A service implementing this interface allows specifying an
+ * action that will be performed at a specific point in the time loop.
  */
 class ITimeLoopService
 {
@@ -57,4 +58,4 @@ class ITimeLoopService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

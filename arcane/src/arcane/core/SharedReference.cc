@@ -1,19 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SharedReference.cc                                          (C) 2000-2022 */
 /*                                                                           */
-/* Compteur de référence.                                                    */
+/* Reference counter.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Iostream.h"
 
-#include "arcane/SharedReference.h"
+#include "arcane/core/SharedReference.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,11 +37,11 @@ void SharedReference::
 removeRef()
 {
   Int32 r = --m_ref_count;
-  // Cette méthode pouvant être appelé depuis un destructeur, il ne faut
-  // pas qu'elle lève d'exception
-  if (r<0)
+  // Since this method might be called from a destructor, it must not
+  // throw an exception
+  if (r < 0)
     arcaneNoReferenceErrorCallTerminate(this);
-  if (r==0)
+  if (r == 0)
     deleteMe();
 }
 

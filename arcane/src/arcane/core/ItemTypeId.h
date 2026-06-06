@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypeId.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Type d'une entité.                                                        */
+/* Type of an entity.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMTYPEID_H
 #define ARCANE_CORE_ITEMTYPEID_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Type d'une entité (Item).
+ * \brief Type of an entity (Item).
  */
 class ARCANE_CORE_EXPORT ItemTypeId
 {
@@ -43,10 +44,10 @@ class ARCANE_CORE_EXPORT ItemTypeId
   constexpr ARCCORE_HOST_DEVICE Int16 typeId() const { return m_type_id; }
   constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_type_id == IT_NullType; }
   /*!
-   * \brief Créé une instance à partir d'un entier.
+   * \brief Creates an instance from an integer.
    *
-   * Cette méthode lève une exception si \a v est supérieur à la valeur
-   * maximale autorisée qui est actuellement 2^15.
+   * This method throws an exception if \a v is greater than the maximum allowed value,
+   * which is currently 2^15.
    */
   static ItemTypeId fromInteger(Int64 v);
 
@@ -58,133 +59,132 @@ class ARCANE_CORE_EXPORT ItemTypeId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Numéro du type d'entité inconnu ou null
+//! Unknown or null entity type number
 static constexpr ItemTypeId ITI_NullType(IT_NullType);
-//! Numéro du type d'entité Noeud (1 sommet 1D, 2D et 3D)
+//! Entity type number Node (1 vertex 1D, 2D and 3D)
 static constexpr ItemTypeId ITI_Vertex(IT_Vertex);
-//! Numéro du type d'entité Arête (2 sommets, 1D, 2D et 3D)
+//! Entity type number Edge (2 vertices, 1D, 2D and 3D)
 static constexpr ItemTypeId ITI_Line2(IT_Line2);
-//! Numéro du type d'entité Triangle (3 sommets, 2D)
+//! Entity type number Triangle (3 vertices, 2D)
 static constexpr ItemTypeId ITI_Triangle3(IT_Triangle3);
-//! Numéro du type d'entité Quadrilatère (4 sommets, 2D)
+//! Entity type number Quadrilateral (4 vertices, 2D)
 static constexpr ItemTypeId ITI_Quad4(IT_Quad4);
-//! Numéro du type d'entité Pentagone (5 sommets, 2D)
+//! Entity type number Pentagon (5 vertices, 2D)
 static constexpr ItemTypeId ITI_Pentagon5(IT_Pentagon5);
-//! Numéro du type d'entité Hexagone (6 sommets, 2D)
+//! Entity type number Hexagon (6 vertices, 2D)
 static constexpr ItemTypeId ITI_Hexagon6(IT_Hexagon6);
-//! Numéro du type d'entité Tetraèdre (4 sommets, 3D)
+//! Entity type number Tetrahedron (4 vertices, 3D)
 static constexpr ItemTypeId ITI_Tetraedron4(IT_Tetraedron4);
-//! Numéro du type d'entité Pyramide (5 sommets, 3D)
+//! Entity type number Pyramid (5 vertices, 3D)
 static constexpr ItemTypeId ITI_Pyramid5(IT_Pyramid5);
-//! Numéro du type d'entité Prisme (6 sommets, 3D)
+//! Entity type number Prism (6 vertices, 3D)
 static constexpr ItemTypeId ITI_Pentaedron6(IT_Pentaedron6);
-//! Numéro du type d'entité Hexaèdre (8 sommets, 3D)
+//! Entity type number Hexahedron (8 vertices, 3D)
 static constexpr ItemTypeId ITI_Hexaedron8(IT_Hexaedron8);
-//! Numéro du type d'entité Heptaèdre (prisme à base pentagonale)
+//! Entity type number Heptahedron (prism with a pentagonal base)
 static constexpr ItemTypeId ITI_Heptaedron10(IT_Heptaedron10);
-//! Numéro du type d'entité Octaèdre (prisme à base hexagonale)
+//! Entity type number Octahedron (prism with a hexagonal base)
 static constexpr ItemTypeId ITI_Octaedron12(IT_Octaedron12);
-//! Numéro du type d'entité HemiHexa7 (héxahèdre à 1 dégénérescence)
+//! Entity type number HemiHexa7 (hexahedron with 1 degeneracy)
 static constexpr ItemTypeId ITI_HemiHexa7(IT_HemiHexa7);
-//! Numéro du type d'entité HemiHexa6 (héxahèdre à 2 dégénérescences non contigues)
+//! Entity type number HemiHexa6 (hexahedron with 2 non-contiguous degeneracies)
 static constexpr ItemTypeId ITI_HemiHexa6(IT_HemiHexa6);
-//! Numéro du type d'entité HemiHexa5 (héxahèdres à 3 dégénérescences non contigues)
+//! Entity type number HemiHexa5 (hexahedrons with 3 non-contiguous degeneracies)
 static constexpr ItemTypeId ITI_HemiHexa5(IT_HemiHexa5);
-//! Numéro du type d'entité AntiWedgeLeft6 (héxahèdre à 2 dégénérescences contigues)
+//! Entity type number AntiWedgeLeft6 (hexahedron with 2 contiguous degeneracies)
 static constexpr ItemTypeId ITI_AntiWedgeLeft6(IT_AntiWedgeLeft6);
-//! Numéro du type d'entité AntiWedgeRight6 (héxahèdre à 2 dégénérescences contigues (seconde forme))
+//! Entity type number AntiWedgeRight6 (hexahedron with 2 contiguous degeneracies (second form))
 static constexpr ItemTypeId ITI_AntiWedgeRight6(IT_AntiWedgeRight6);
-//! Numéro du type d'entité DiTetra5 (héxahèdre à 3 dégénérescences orthogonales)
+//! Entity type number DiTetra5 (hexahedron with 3 orthogonal degeneracies)
 static constexpr ItemTypeId ITI_DiTetra5(IT_DiTetra5);
-//! Numero du type d'entite noeud dual d'un sommet
+//! Number of the dual node entity type of a vertex
 static constexpr ItemTypeId ITI_DualNode(IT_DualNode);
-//! Numero du type d'entite noeud dual d'une arête
+//! Number of the dual node entity type of an edge
 static constexpr ItemTypeId ITI_DualEdge(IT_DualEdge);
-//! Numero du type d'entite noeud dual d'une face
+//! Number of the dual node entity type of a face
 static constexpr ItemTypeId ITI_DualFace(IT_DualFace);
-//! Numero du type d'entite noeud dual d'une cellule
+//! Number of the dual node entity type of a cell
 static constexpr ItemTypeId ITI_DualCell(IT_DualCell);
-//! Numéro du type d'entité liaison
+//! Entity type number Link
 static constexpr ItemTypeId ITI_Link(IT_Link);
-//! Numéro du type d'entité Face pour les maillages 1D.
+//! Entity type number Face for 1D meshes.
 static constexpr ItemTypeId ITI_FaceVertex(IT_FaceVertex);
-//! Numéro du type d'entité Cell pour les maillages 1D.
+//! Entity type number Cell for 1D meshes.
 static constexpr ItemTypeId ITI_CellLine2(IT_CellLine2);
-//! Numero du type d'entite noeud dual d'une particule
+//! Number of the dual node entity type of a particle
 static constexpr ItemTypeId ITI_DualParticle(IT_DualParticle);
 
-//! Numéro du type d'entité Enneèdre (prisme à base heptagonale)
+//! Entity type number Ennehedron (prism with a heptagonal base)
 static constexpr ItemTypeId ITI_Enneedron14(IT_Enneedron14);
-//! Numéro du type d'entité Decaèdre (prisme à base Octogonale)
+//! Entity type number Decahedron (prism with an Octagonal base)
 static constexpr ItemTypeId ITI_Decaedron16(IT_Decaedron16);
 
-//! Numéro du type d'entité Heptagon 2D (heptagonale)
+//! Entity type number Heptagon 2D (heptagonal)
 static constexpr ItemTypeId ITI_Heptagon7(IT_Heptagon7);
 
-//! Numéro du type d'entité Octogon 2D (Octogonale)
+//! Entity type number Octagon 2D (octagonal)
 static constexpr ItemTypeId ITI_Octogon8(IT_Octogon8);
 
-//! Éléments quadratiques
+//! Quadratic elements
 //@{
-//! Ligne d'ordre 2
+//! Order 2 Line
 static constexpr ItemTypeId ITI_Line3(IT_Line3);
-//! Triangle d'ordre 2
+//! Order 2 Triangle
 static constexpr ItemTypeId ITI_Triangle6(IT_Triangle6);
-//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces)
+//! Order 2 Quadrangle (with 4 nodes on the faces)
 static constexpr ItemTypeId ITI_Quad8(IT_Quad8);
-//! Tétraèdre d'ordre 2
+//! Order 2 Tetrahedron
 static constexpr ItemTypeId ITI_Tetraedron10(IT_Tetraedron10);
-//! Hexaèdre d'ordre 2
+//! Order 2 Hexahedron
 static constexpr ItemTypeId ITI_Hexaedron20(IT_Hexaedron20);
-//! Hexaèdre d'ordre 2
+//! Order 2 Hexahedron
 static constexpr ItemTypeId ITI_Pentaedron15(IT_Pentaedron15);
-//! Pyramide d'ordre 2
+//! Order 2 Pyramid
 static constexpr ItemTypeId ITI_Pyramid13(IT_Pyramid13);
 //@}
 
-//! Maille Line3. EXPERIMENTAL !
+//! Line3 Mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_CellLine3(IT_CellLine3);
 
 /*!
- * \brief Mailles 2D dans un maillage 3D.
- * \warning Ces types sont expérimentaux et ne doivent
- * pas être utilisés en dehors de %Arcane.
+ * \brief 2D meshes in a 3D mesh.
+ * \warning These types are experimental and should not be used outside of %Arcane.
  */
 //@{
-//! Maille Line2 dans un maillage 3D. EXPERIMENTAL !
+//! Line2 Mesh in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Line2(IT_Cell3D_Line2);
-//! Maille Triangulaire à 3 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Triangular Mesh with 3 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Triangle3(IT_Cell3D_Triangle3);
-//! Maille Quadrangulaire à 4 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Quadrangular Mesh with 4 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad4(IT_Cell3D_Quad4);
-//! Maille Line3 dans un maillage 3D. EXPERIMENTAL !
+//! Line3 Mesh in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Line3(IT_Cell3D_Line3);
-//! Maille Triangulaire à 6 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Triangular Mesh with 6 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Triangle6(IT_Cell3D_Triangle6);
-//! Maille Quadrangulaire à 8 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Quadrangular Mesh with 8 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad8(IT_Cell3D_Quad8);
-//! Maille Quadrangulaire à 9 noeuds dans un maillage 3D. EXPERIMENTAL !
+//! Quadrangular Mesh with 9 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad9(IT_Cell3D_Quad9);
 //@}
 
-//! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces et 1 noeud au centre). EXPERIMENTAL !
+//! Order 2 Quadrangle (with 4 nodes on the faces and 1 node in the center). EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Quad9(IT_Quad9);
-//! Hexaèdre d'ordre 2 (avec 12 noeuds sur les arêtes, 6 sur les faces et un noeud centre. EXPERIMENTAL !
+//! Order 2 Hexahedron (with 12 nodes on the edges, 6 on the faces and one center node. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Hexaedron27(IT_Hexaedron27);
 
-//! Ligne d'ordre 3. EXPERIMENTAL !
+//! Order 3 Line. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Line4(IT_Line4);
-//! Triangle d'ordre 3. EXPERIMENTAL !
+//! Order 3 Triangle. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Triangle10(IT_Triangle10);
-//! Ligne d'ordre 3. EXPERIMENTAL !
+//! Order 3 Line. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_CellLine4(IT_CellLine4);
-//! Ligne d'ordre 3. EXPERIMENTAL !
+//! Order 3 Line. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Line4(IT_Cell3D_Line4);
 
-//! Triangle d'ordre 3 dans un maillage 3D. EXPERIMENTAL !
+//! Order 3 Triangle in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Triangle10(IT_Cell3D_Triangle10);
 
-//! Première valeur pour les type polygones génériques (EXPERIMENTAL)
+//! First value for generic polygon types (EXPERIMENTAL)
 static constexpr ItemTypeId ITI_GenericPolygon(IT_GenericPolygon);
 
 /*---------------------------------------------------------------------------*/

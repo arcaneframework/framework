@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICaseOptions.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Options du jeu de donnés.                                                 */
+/* Data set options.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEOPTIONS_H
 #define ARCANE_CORE_ICASEOPTIONS_H
@@ -24,12 +24,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'une liste d'options du jeu de données.
+ * \brief Interface for a list of data set options.
  *
- * Cette interface est gérée par un compteur de référence et ne doit pas
- * être détruite explictement.
+ * This interface is managed by a reference counter and should not be
+ * explicitly destroyed.
  */
 class ARCANE_CORE_EXPORT ICaseOptions
 {
@@ -41,20 +42,20 @@ class ARCANE_CORE_EXPORT ICaseOptions
 
  public:
 
-  //! Vrai nom (non traduit) de l'élément.
+  //! True name (untranslated) of the element.
   virtual String rootTagTrueName() const = 0;
 
-  //! Nom de l'élément dans le langage du jeu de données.
+  //! Name of the element in the data set language.
   virtual String rootTagName() const = 0;
 
-  //! Nom dans la langue \a lang de l'option. Retourne \a rootTagTrueName() si pas de traduction.
+  //! Name in the language \a lang of the option. Returns \a rootTagTrueName() if no translation exists.
   virtual String translatedName(const String& lang) const = 0;
 
   ARCCORE_DEPRECATED_2019("Use read(eCaseOptionReadPhase) instead")
   virtual void read(bool is_phase1) = 0;
 
   /*!
-   * \brief Effectue la lecture de la phase \a read_phase des options.
+   * \brief Performs the reading of the \a read_phase phase of the options.
    */
   virtual void read(eCaseOptionReadPhase read_phase) = 0;
 
@@ -62,27 +63,27 @@ class ARCANE_CORE_EXPORT ICaseOptions
 
   virtual void printChildren(const String& lang, int indent) = 0;
 
-  //! Retourne le service associé ou `nullptr` s'il n'y en a pas.
+  //! Returns the associated service or `nullptr` if none exists.
   virtual IServiceInfo* caseServiceInfo() const = 0;
 
-  //! Retourne le module associé ou `nullptr` s'il n'y en a pas.
+  //! Returns the associated module or `nullptr` if none exists.
   virtual IModule* caseModule() const = 0;
 
   /*!
    * \internal
-   * \brief Associe le service \a m à ce jeu de données.
+   * \brief Associates the service \a m with this data set.
    */
   virtual void setCaseServiceInfo(IServiceInfo* m) = 0;
 
   /*!
    * \internal
-   * \brief  Associe le module \a m à ce jeu de données.
+   * \brief  Associates the module \a m with this data set.
    */
   virtual void setCaseModule(IModule* m) = 0;
 
   /*!
    * \internal
-   * \brief Ajoute à la liste \a col tous les options filles.
+   * \brief Adds all child options to the list \a col.
    */
   virtual void deepGetChildren(Array<CaseOptionBase*>& col) = 0;
 
@@ -90,34 +91,33 @@ class ARCANE_CORE_EXPORT ICaseOptions
 
   virtual const ICaseOptionList* configList() const = 0;
 
-  //! Fonction indiquant l'état d'activation de l'option
+  //! Function indicating the activation status of the option
   virtual ICaseFunction* activateFunction() = 0;
 
   /*!
-   * \brief Indique si l'option est présente dans le jeu de données.
+   * \brief Indicates whether the option is present in the data set.
    *
-   * Une option peut ne pas apparaître si elle ne contient que des
-   * options ayant une valeur par défaut.
+   * An option may not appear if it only contains options with a default value.
    */
   virtual bool isPresent() const = 0;
 
   /*!
    * \internal
-   * \brief Ajoute une traduction pour le nom de l'option.
+   * \brief Adds a translation for the option name.
    *
-   * Ajoute le nom \a name de l'option correspondant au langage \a lang.
-   * Si une traduction existe déjà pour ce langage, elle est remplacée par
-   * celle-ci.
+   * Adds the option name \a name corresponding to the language \a lang.
+   * If a translation already exists for this language, it is replaced by
+   * this one.
    */
   virtual void addAlternativeNodeName(const String& lang, const String& name) = 0;
 
   virtual ICaseMng* caseMng() const = 0;
   virtual ITraceMng* traceMng() const = 0;
   /*!
-   * \brief Sous-domain associé.
+   * \brief Associated sub-domain.
    *
-   * \deprecated Ne plus utiliser cette méthode car à terme une option
-   * pourra exister sans sous-domaine.
+   * \deprecated Do not use this method because eventually an option
+   * may exist without a sub-domain.
    */
   ARCCORE_DEPRECATED_2019("Do not use subDomain(). Try to get subDomain from an other way.")
   virtual ISubDomain* subDomain() const = 0;
@@ -130,14 +130,14 @@ class ARCANE_CORE_EXPORT ICaseOptions
 
   /*!
    * \internal
-   * Détache l'option de son parent.
+   * Detaches the option from its parent.
    */
   virtual void detach() = 0;
 
-  //! Applique le visiteur sur cette option
+  //! Applies the visitor to this option
   virtual void visit(ICaseDocumentVisitor* visitor) const = 0;
 
-  //! Nom complet au format XPath correspondant à rootElement()
+  //! Full name in XPath format corresponding to rootElement()
   virtual String xpathFullName() const = 0;
 
  public:
@@ -149,7 +149,7 @@ class ARCANE_CORE_EXPORT ICaseOptions
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface d'une liste d'options présente plusieurs fois.
+ * \brief Interface for a list of options that appears multiple times.
  */
 class ARCANE_CORE_EXPORT ICaseOptionsMulti
 {
@@ -159,11 +159,11 @@ class ARCANE_CORE_EXPORT ICaseOptionsMulti
 
  public:
 
-  virtual void multiAllocate(const XmlNodeList&) =0;
-  virtual ICaseOptions* toCaseOptions() =0;
-  virtual void addChild(ICaseOptionList* v) =0;
-  virtual Integer nbChildren() const =0;
-  virtual ICaseOptionList* child(Integer index) const =0;
+  virtual void multiAllocate(const XmlNodeList&) = 0;
+  virtual ICaseOptions* toCaseOptions() = 0;
+  virtual void addChild(ICaseOptionList* v) = 0;
+  virtual Integer nbChildren() const = 0;
+  virtual ICaseOptionList* child(Integer index) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -180,4 +180,4 @@ _arcaneDeprecatedGetSubDomain(ICaseOptions* opt);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

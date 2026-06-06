@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RealArray2Variant.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.   */
+/* Variant that can contain the types ConstArray2View, Real2x2, and Real3x3. */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_DATATYPE_REALARRAY2VARIANT_H
@@ -31,9 +31,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Variant pouvant contenir les types ConstArray2View, Real2x2 et Real3x3.
+ * \brief Variant that can contain the types ConstArray2View, Real2x2, and Real3x3.
  */
 class RealArray2Variant
 {
@@ -60,17 +61,17 @@ class RealArray2Variant
   }
 
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  template<typename LayoutType>
-  RealArray2Variant(const NumArray<Real,MDDim2,LayoutType>& v)
+  template <typename LayoutType>
+  RealArray2Variant(const NumArray<Real, MDDim2, LayoutType>& v)
   : RealArray2Variant(v.mdspan())
   {}
-  template<typename LayoutType>
-  RealArray2Variant(MDSpan<Real,MDDim2,LayoutType> v)
+  template <typename LayoutType>
+  RealArray2Variant(MDSpan<Real, MDDim2, LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.extent0(), v.extent1());
   }
-  template<typename LayoutType>
-  RealArray2Variant(MDSpan<const Real,MDDim2,LayoutType> v)
+  template <typename LayoutType>
+  RealArray2Variant(MDSpan<const Real, MDDim2, LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.extent0(), v.extent1());
   }
@@ -92,26 +93,26 @@ class RealArray2Variant
     _setValue(reinterpret_cast<Real*>(&r), 3, 3);
     return (*this);
   }
-  
-  Real* operator[](Integer index) 
-  { 
-     ARCANE_ASSERT(index < m_nb_dim1, ("Index out of range"));
-     return m_value[index];
+
+  Real* operator[](Integer index)
+  {
+    ARCANE_ASSERT(index < m_nb_dim1, ("Index out of range"));
+    return m_value[index];
   }
-  const Real* operator [](Integer index) const
-  { 
-     ARCANE_ASSERT(index < m_nb_dim1, ("Index out of range"));
-     return m_value[index];
+  const Real* operator[](Integer index) const
+  {
+    ARCANE_ASSERT(index < m_nb_dim1, ("Index out of range"));
+    return m_value[index];
   }
 
-  Real& operator()(Int32 i,Int32 j)
-  { 
-     ARCANE_ASSERT(i < m_nb_dim1, ("Index i out of range"));
-     ARCANE_ASSERT(j < m_nb_dim2, ("Index j out of range"));
-     return m_value[i][j];
+  Real& operator()(Int32 i, Int32 j)
+  {
+    ARCANE_ASSERT(i < m_nb_dim1, ("Index i out of range"));
+    ARCANE_ASSERT(j < m_nb_dim2, ("Index j out of range"));
+    return m_value[i][j];
   }
-  Real operator()(Int32 i,Int32 j) const
-  { 
+  Real operator()(Int32 i, Int32 j) const
+  {
     ARCANE_ASSERT(i < m_nb_dim1, ("Index i out of range"));
     ARCANE_ASSERT(j < m_nb_dim2, ("Index j out of range"));
     return m_value[i][j];
@@ -123,7 +124,7 @@ class RealArray2Variant
   const Real* data() const { return reinterpret_cast<const Real*>(m_value); }
   operator ConstArray2View<Real>() const
   {
-      return ConstArray2View<Real>(data(), m_nb_dim1, m_nb_dim2);
+    return ConstArray2View<Real>(data(), m_nb_dim1, m_nb_dim2);
   }
   operator Real2x2() const
   {
@@ -131,18 +132,18 @@ class RealArray2Variant
   }
   operator Real3x3() const
   {
-    return Real3x3::fromLines(m_value[0][0], m_value[0][1], m_value[0][2], 
+    return Real3x3::fromLines(m_value[0][0], m_value[0][1], m_value[0][2],
                               m_value[1][0], m_value[1][1], m_value[1][2],
                               m_value[2][0], m_value[2][1], m_value[2][2]);
   }
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  template<typename LayoutType>
-  operator NumArray<Real,MDDim2,LayoutType>() const
+  template <typename LayoutType>
+  operator NumArray<Real, MDDim2, LayoutType>() const
   {
-    NumArray<Real,MDDim2> v(m_nb_dim1,m_nb_dim2);
-    for( Integer i=0, m=m_nb_dim1; i<m; ++i )
-      for( Integer j=0, n=m_nb_dim2; j<n; ++j )
-        v(i,j) = m_value[i][j];
+    NumArray<Real, MDDim2> v(m_nb_dim1, m_nb_dim2);
+    for (Integer i = 0, m = m_nb_dim1; i < m; ++i)
+      for (Integer j = 0, n = m_nb_dim2; j < n; ++j)
+        v(i, j) = m_value[i][j];
     return v;
   }
 #endif
@@ -161,8 +162,8 @@ class RealArray2Variant
     ARCANE_ASSERT(nb_dim1 <= MAX_DIM1_SIZE, ("Dim1 size too large"));
     m_nb_dim2 = nb_dim2;
     ARCANE_ASSERT(nb_dim2 <= MAX_DIM2_SIZE, ("Dim2 size too large"));
-    for (Integer i = 0 ; i < nb_dim1; ++i)
-      for (Integer j = 0 ; j < nb_dim2; ++j)
+    for (Integer i = 0; i < nb_dim1; ++i)
+      for (Integer j = 0; j < nb_dim2; ++j)
         m_value[i][j] = v[i * nb_dim2 + j];
   }
 };

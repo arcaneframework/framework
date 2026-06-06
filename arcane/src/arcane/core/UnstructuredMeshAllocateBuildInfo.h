@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* UnstructuredMeshAllocateBuildInfo.h                         (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour allouer les entités d'un maillage non structuré.        */
+/* Information for allocating entities of an unstructured mesh.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_UNSTRUCTUREDMESHALLOCATEBUILDINFO_H
 #define ARCANE_CORE_UNSTRUCTUREDMESHALLOCATEBUILDINFO_H
@@ -25,14 +25,15 @@ class UnstructuredMeshAllocateBuildInfoInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour allouer les entités d'un maillage non structuré.
+ * \brief Information for allocating entities of an unstructured mesh.
  *
- * Cette classe permet de spécifier les mailles qui seront ajoutées lors
- * de l'allocation initiale du maillage.
- * Il faut appeler setMeshDimension() pour spécifier la dimension du maillage
- * puis appeler addCell() pour chaque maille qu'on souhaite ajouter. Une fois
- * toute les mailles ajoutées il faut appeler allocateMesh().
+ * This class allows specifying the cells that will be added during
+ * the initial mesh allocation.
+ * You must call setMeshDimension() to specify the mesh dimension,
+ * then call addCell() for each cell you wish to add. Once
+ * all cells have been added, you must call allocateMesh().
  */
 class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
 {
@@ -56,36 +57,35 @@ class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
  public:
 
   /*!
-   * \brief Pre-alloue la mémoire.
+   * \brief Pre-allocate the memory.
    *
-   * Pré-alloue les tableaux contenant la connectivité pour contenir \a nb_cell
-   * mailles et \a nb_connectivity_node pour la liste des noeuds
-   * des mailles.
+   * Pre-allocates the arrays containing the connectivity to hold \a nb_cell
+   * cells and \a nb_connectivity_node for the list of cell nodes.
    *
-   * Cette méthode est optionnelle et n'est utile que pour
-   * optimiser la gestion mémoire.
+   * This method is optional and is only useful for
+   * optimizing memory management.
    *
-   * Par exemple, si on sait que notre maillage contiendra 300 quadrangles
-   * alors on peut utiliser preAllocate(300,300*4).
+   * For example, if we know that our mesh will contain 300 quadrangles
+   * then we can use preAllocate(300,300*4).
    */
   void preAllocate(Int32 nb_cell, Int64 nb_connectivity_node);
 
-  //! Positionne la dimension du maillage
+  //! Sets the mesh dimension
   void setMeshDimension(Int32 v);
 
-  //! Ajoute une maille au maillage
+  //! Adds a cell to the mesh
   void addCell(ItemTypeId type_id, Int64 cell_uid, SmallSpan<const Int64> nodes_uid);
 
   /*!
-   * \brief Alloue le maillage avec les mailles ajoutées lors de l'appel à addCell().
+   * \brief Allocates the mesh with the cells added during the call to addCell().
    *
-   * Cette méthode est collective.
+   * This method is collective.
    */
   void allocateMesh();
 
  public:
 
-  //! Partie interne réservée à Arcane
+  //! Internal part reserved for Arcane
   UnstructuredMeshAllocateBuildInfoInternal* _internal();
 
  private:

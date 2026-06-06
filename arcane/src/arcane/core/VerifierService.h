@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VerifierService.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base du service de vérification des variables.                  */
+/* Base class for the variable verification service.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VERIFIERSERVICE_H
 #define ARCANE_CORE_VERIFIERSERVICE_H
@@ -35,10 +35,11 @@ class IDataReader;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Classe de base du service de vérification des données
- * entre deux exécutions.
+ * \brief Base class for the data verification service
+ * between two runs.
  */
 class ARCANE_CORE_EXPORT VerifierService
 : public AbstractService
@@ -85,7 +86,7 @@ class ARCANE_CORE_EXPORT VerifierService
   void setResultFileName(const String& file_name) override { m_result_file_name = file_name; }
   String resultfileName() const override { return m_result_file_name; }
 
-  //! Type de comparaison souhaité
+  //! Desired comparison type
   void setCompareMode(eCompareMode v) override { m_compare_mode = v; }
   eCompareMode compareMode() const override { return m_compare_mode; }
 
@@ -104,7 +105,7 @@ class ARCANE_CORE_EXPORT VerifierService
  protected:
 
   virtual void _doVerif(IDataReader* reader, const VariableCollection& variables, bool compare_ghost);
-  //! Remplit dans \a variables la liste des variables devant être relues
+  //! Fills the list of variables that need to be reread in \a variables
   virtual void _getVariables(VariableList variables, bool parallel_sequential);
 
  public:
@@ -136,4 +137,4 @@ class ARCANE_CORE_EXPORT VerifierService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

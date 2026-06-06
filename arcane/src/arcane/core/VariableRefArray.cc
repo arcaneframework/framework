@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableRefArray.cc                                         (C) 2000-2024 */
 /*                                                                           */
-/* Référence à une variable tableau 1D.                                      */
+/* Reference to a 1D array variable.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -125,8 +125,9 @@ refersTo(const VariableRefArrayT<DataType>& rhs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Libère la mémoire allouée.
+ * Frees allocated memory.
  */
 template <typename DataType>
 VariableRefArrayT<DataType>::

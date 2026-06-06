@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemConnectedEnumeratorBase.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base des énumérateurs sur les entités connectées du maillage.   */
+/* Base class for enumerators over connected entities of the mesh.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMCONNECTEDENUMERATORBASE_H
 #define ARCANE_CORE_ITEMCONNECTEDENUMERATORBASE_H
@@ -27,10 +27,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe de base des énumérateurs sur une liste d'entité connectées.
+ * \brief Base class for enumerators over a list of connected entities.
  *
- * Les instances de cette classes sont créées soit via ItemConnectedEnumerator,
- * soit via ItemConnectedEnumeratorT.
+ * Instances of this class are created either via ItemConnectedEnumerator,
+ * or via ItemConnectedEnumeratorT.
  *
  * \code
  * for( ItemConnectedEnumeratorBase iter(...); iter.hasNext(); ++iter )
@@ -39,7 +39,7 @@ namespace Arcane
  */
 class ItemConnectedEnumeratorBase
 {
-  // Seule ces classes ont le droit de construire des instances de cette classe
+  // Only these classes are allowed to construct instances of this class
   template <typename T> friend class ItemConnectedEnumeratorBaseT;
 
  private:
@@ -63,31 +63,31 @@ class ItemConnectedEnumeratorBase
 
  public:
 
-  //! Incrémente l'index de l'énumérateur
+  //! Increments the enumerator index
   constexpr void operator++()
   {
     ++m_index;
   }
 
-  //! Vrai si on n'a pas atteint la fin de l'énumérateur (index()<count())
+  //! True if the end of the enumerator has not been reached (index()<count())
   constexpr bool operator()() const
   {
     return m_index < m_count;
   }
 
-  //! Vrai si on n'a pas atteint la fin de l'énumérateur (index()<count())
+  //! True if the end of the enumerator has not been reached (index()<count())
   constexpr bool hasNext() const { return m_index < m_count; }
 
-  //! Nombre d'éléments de l'énumérateur
+  //! Number of elements in the enumerator
   constexpr Int32 count() const { return m_count; }
 
-  //! Indice courant de l'énumérateur
+  //! Current index of the enumerator
   constexpr Int32 index() const { return m_index; }
 
-  //! localId() de l'entité courante.
+  //! localId() of the current entity.
   constexpr ItemLocalId itemLocalId() const { return ItemLocalId(m_local_id_offset + m_local_ids[m_index]); }
 
-  //! localId() de l'entité courante.
+  //! localId() of the current entity.
   constexpr Int32 localId() const { return m_local_id_offset + m_local_ids[m_index]; }
 
  protected:
@@ -100,10 +100,11 @@ class ItemConnectedEnumeratorBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base typeé des énumérateurs sur une liste d'entité connectées.
+ * \brief Typed base class for enumerators over a list of connected entities.
  *
- * Les instances de cette classes sont créées soit via ItemConnectedEnumerator, soit
+ * Instances of this class are created either via ItemConnectedEnumerator, or
  * via ItemConnectedEnumeratorT.
  */
 template <typename ItemType>

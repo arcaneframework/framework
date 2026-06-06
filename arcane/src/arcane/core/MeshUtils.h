@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshUtils.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur le maillage.                           */
+/* Various utility functions for the mesh.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHUTILS_H
 #define ARCANE_CORE_MESHUTILS_H
@@ -21,11 +21,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MeshUtils.h
  *
- * \brief Fonctions utilitaires sur le maillage.
+ * \brief Utility functions for the mesh.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,23 +53,24 @@ writeMeshItemInfo(ISubDomain*, Face face, bool depend_info = true);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Réordonne les noeuds d'une face.
+ * \brief Reorders the nodes of a face.
  *
- * Cette méthode réordonne la liste des noeuds d'une face pour que les
- * propriétés suivantes soient respectées:
- * - le premier noeud de la face est celui dont le numéro global est le plus petit.
- * - le deuxième noeud de la face est celui dont le numéro global est le deuxième plus petit.
+ * This method reorders the list of nodes of a face so that the following
+ * properties are respected:
+ * - the first node of the face is the one with the smallest global number.
+ * - the second node of the face is the one with the second smallest global number.
  *
- * Cela permet d'orienter les faces de manière identiques en parallèle.
+ * This allows faces to be oriented identically in parallel.
  *
- * \a before_ids et \a to doivent avoir le même nombre d'éléments
+ * \a before_ids and \a to must have the same number of elements
  *
- * \param before_ids numéros globaux des noeuds de la face avant renumérotation.
- * \param after_ids en sortie, numéros globaux des noeuds de la face après renumérotation
+ * \param before_ids global numbers of the face nodes before renumbering.
+ * \param after_ids (output), global numbers of the face nodes after renumbering
  *
- * \retval true si la face change d'orientation lors de la renumérotation
- * \retval false sinon.
+ * \retval true if the face changes orientation during renumbering
+ * \retval false otherwise.
  */
 extern "C++" ARCANE_CORE_EXPORT bool
 reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
@@ -77,27 +80,28 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Réordonne les noeuds d'une face.
+ * \brief Reorders the nodes of a face.
  *
- * Cette méthode réordonne la liste des noeuds d'une face pour que les
- * propriétés suivantes soient respectées:
- * - le premier noeud de la face est celui dont le numéro global est le plus petit.
- * - le deuxième noeud de la face est celui dont le numéro global est le deuxième plus petit.
+ * This method reorders the list of nodes of a face so that the following
+ * properties are respected:
+ * - the first node of the face is the one with the smallest global number.
+ * - the second node of the face is the one with the second smallest global number.
  *
- * Cela permet d'orienter les faces de manière identiques en parallèle.
+ * This allows faces to be oriented identically in parallel.
  *
- * \a nodes_unique_id et \a new_index doivent avoir le même nombre d'éléments
+ * \a nodes_unique_id and \a new_index must have the same number of elements
  *
- * \param nodes_unique_id numéros uniques des noeuds de la face.
- * \param new_index en sortie, position des numéros des noeuds après réorientation.
+ * \param nodes_unique_id unique numbers of the face nodes.
+ * \param new_index (output), position of the node numbers after reorientation.
  *
- * Par exemple, si une face possède les 4 noeuds de numéros uniques 7 3 2 5,
- * la réorientation donnera le quadruplet (2 3 7 5), soit le tableau d'index
- * suivant (2,1,0,3).
+ * For example, if a face has 4 nodes with unique numbers 7 3 2 5,
+ * the reorientation will yield the quadruplet (2 3 7 5), which is the following index array
+ * (2,1,0,3).
  *
- * \retval true si la face change d'orientation lors de la renumérotation
- * \retval false sinon.
+ * \retval true if the face changes orientation during renumbering
+ * \retval false otherwise.
  */
 extern "C++" ARCANE_CORE_EXPORT bool
 reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, Int32ArrayView new_index);
@@ -105,14 +109,14 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, Int32ArrayView new_inde
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recherche une entité face à partir des numéros locaux de ces noeuds.
+ * \brief Searches for a face entity using the local numbers of these nodes.
  *
- * Recherche la face donnée par la liste ordonnée des numéros <b>locaux</b> de
- * ces noeuds \a face_nodes_local_id. \a node doit être le premier noeud de
- * la face. Les noeuds de la face doivent être correctement orientés, comme
- * après un appel à reorderNodesOfFace().
+ * Searches for the face given by the sorted list of <b>local</b> numbers of
+ * these nodes \a face_nodes_local_id. \a node must be the first node of
+ * the face. The nodes of the face must be correctly oriented, as
+ * after calling reorderNodesOfFace().
  *
- * \return la face correspondante ou la face nulle si elle n'est pas trouvé.
+ * \return the corresponding face or a null face if it is not found.
  */
 extern "C++" ARCANE_CORE_EXPORT Face
 getFaceFromNodesLocalId(Node node, Int32ConstArrayView face_nodes_local_id);
@@ -127,14 +131,14 @@ getFaceFromNodesLocal(Node node, Int32ConstArrayView face_nodes_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Recherche une entité face à partir des numéros uniques de ces noeuds.
+ * \brief Searches for a face entity using the unique numbers of these nodes.
  *
- * Recherche la face donnée par la liste ordonnée des numéros <b>unique</b> de
- * ces noeuds \a face_nodes_unique_id. \a node doit être le premier noeud de
- * la face. Les noeuds de la face doivent être correctement orientés, comme
- * après un appel à reorderNodesOfFace().
+ * Searches for the face given by the sorted list of <b>unique</b> numbers of
+ * these nodes \a face_nodes_unique_id. \a node must be the first node of
+ * the face. The nodes of the face must be correctly oriented, as
+ * after calling reorderNodesOfFace().
  *
- * \return la face correspondante ou la face nulle si elles n'est pas trouvé.
+ * \return the corresponding face or a null face if it is not found.
  */
 extern "C++" ARCANE_CORE_EXPORT Face
 getFaceFromNodesUniqueId(Node node, Int64ConstArrayView face_nodes_unique_id);
@@ -148,8 +152,9 @@ getFaceFromNodesUnique(Node node, Int64ConstArrayView face_nodes_unique_id)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Génère un identifiant unique à partir d'une liste d'identifiants de noeuds.
+ * \brief Generates a unique identifier from a list of node identifiers.
  */
 extern "C++" ARCANE_CORE_EXPORT Int64
 generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id);
@@ -158,36 +163,36 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id);
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Supprime une entité en conservant l'ordre.
+ * \brief Removes an entity while preserving order.
  *
- * Supprime l'entité de numéro local \a local_id de la liste \a items.
- * Les entités situées après l'entité supprimée sont décalées pour remplir le trou.
- * Si aucune valeur de \a items ne vaut \a local_id, une exception est levée.
+ * Removes the entity with local number \a local_id from the list \a items.
+ * Entities located after the removed entity are shifted to fill the gap.
+ * If no value in \a items equals \a local_id, an exception is raised.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que le maillage possède certaines propriétés.
+ * \brief Checks if the mesh has certain properties.
  *
- * Si \a is_sorted, vérifie que les entités de maillage sont triées par
- * ordre croissant de leur uniqueId().
- * Si \a has_no_hole est vrai, vérifie que si le maillage possède \a n
- * entité d'un type, leur numéro local varie bien de \a 0 à \a n-1.
- * Si \a check_faces est vrai, on vérifie pour les faces. Cette option
- * n'est utilisable que pour les maillages ancienne génération (MeshV1) et
- * sera supprimée dès que cette option ne sera plus utilisée.
+ * If \a is_sorted, checks that the mesh entities are sorted by
+ * ascending order of their uniqueId().
+ * If \a has_no_hole is true, checks that if the mesh has \a n
+ * entities of a certain type, their local number ranges from \a 0 to \a n-1.
+ * If \a check_faces is true, it checks the faces. This option
+ * is only usable for older generation meshes (MeshV1) and
+ * will be removed as soon as this option is no longer used.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 checkMeshProperties(IMesh* mesh, bool is_sorted, bool has_no_hole, bool check_faces);
 
 /*!
- * \brief Ecrit sur le fichier \a file_name les infos du maillage \a mesh
+ * \brief Writes the mesh info \a mesh to the file \a file_name
  *
- * Les identifiants des entités sont triés pour que le maillage soit
- * identique quel que soit la numérotation initiale.
+ * Entity identifiers are sorted so that the mesh is identical regardless of the initial numbering.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 writeMeshInfosSorted(IMesh* mesh, const String& file_name);
@@ -196,9 +201,9 @@ extern "C++" ARCANE_CORE_EXPORT void
 writeMeshInfos(IMesh* mesh, const String& file_name);
 
 /*!
- * \brief Ecrit sur le fichier \a file_name la connectivité du maillage \a mesh
+ * \brief Writes the connectivity of the mesh \a mesh to the file \a file_name
  *
- * La connectivité de chaque entité arête, face et maille est sauvée.
+ * The connectivity of each edge, face, and cell entity is saved.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 writeMeshConnectivity(IMesh* mesh, const String& file_name);
@@ -210,61 +215,61 @@ extern "C++" ARCANE_CORE_EXPORT void
 checkMeshConnectivity(IMesh* mesh, const String& file_name, bool check_sub_domain);
 
 /*!
- * \brief Ecrit dans le flux \a ostr la description des items du groupe \a item_group
+ * \brief Writes the description of items in group \a item_group to the stream \a ostr
  *
- * Pour l'affichage, un nom \a name est associé.
+ * For display, a name \a name is associated.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 printItems(std::ostream& ostr, const String& name, ItemGroup item_group);
 
 /*!
- * \brief Affiche l'utilisation mémoire des groupes du maillage.
+ * \brief Displays the memory usage of the mesh groups.
  *
- * Si \a print_level vaut 0, affiche uniquement l'usage mémoire total.
- * So \a print_level vaut 1 ou plus, affiche l'usage pour chaque groupe.
+ * If \a print_level is 0, only the total memory usage is displayed.
+ * If \a print_level is 1 or more, the usage for each group is displayed.
  *
- * En retour, indique la mémoire consommée en octets.
+ * Returns the memory consumed in bytes.
  */
 extern "C++" ARCANE_CORE_EXPORT Int64
 printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level);
 
-//! Limite au plus juste l'usage mémoire des groupes.
+//! Optimizes the memory usage of the groups.
 extern "C++" ARCANE_CORE_EXPORT void
 shrinkMeshGroups(IMesh* mesh);
 
 /*!
- * \brief Ecrit dans un fichier les informations sur la topologie d'une synchronisation
+ * \brief Writes the topology information of a synchronizer to a file
  *
- * Ecrit dans le fichier \a filename les informations sur la topologie de \a var_syncer.
- * Cette méthode est collective. Seul le rang 0 écrit l'information de la topologie.
+ * Writes the topology information of \a var_syncer to the file \a filename.
+ * This method is collective. Only rank 0 writes the topology information.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer, const String& filename);
 
 /*!
  * \internal
- * \brief Calcul et affiche les patterns communs dans les connectivités.
+ * \brief Calculates and displays common patterns in the connectivities.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 computeConnectivityPatternOccurence(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Indique que les connectivités du maillages ne seront
- * pas régulièrement modifiées.
+ * \brief Indicates that the mesh connectivities will not be regularly modified.
  *
- * Cette fonction permet d'indiquer que les connectivitées associées aux
- * entités du maillage (Node, Edge, Face et Cell) sont la plupart du temps
- * en lecture. A noter que cela ne concerne pas les particules.
+ * This function allows indicating that the connectivities associated with
+ * mesh entities (Node, Edge, Face, and Cell) are mostly read-only. Note that
+ * this does not concern particles.
  *
- * En cas d'utilisation sur accélérateur, cela permet de dupliquer les
- * informations entre l'accélérateur et l'hôte pour éviter des aller-retour
- * multiples si les connectivités sont utilisées sur les deux à la fois.
+ * When used on an accelerator, this allows duplicating information between
+ * the accelerator and the host to avoid multiple round trips
+ * if the connectivities are used on both simultaneously.
  *
- * Si \a q est non nul et que \a do_prefetch vaut \a true, alors
- * VariableUtils::prefetchVariableAsync() est appelé pour chaque variable
- * gérant la connectivité.
+ * If \a q is non-null and \a do_prefetch is true, then
+ * VariableUtils::prefetchVariableAsync() is called for each variable
+ * managing the connectivity.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh, RunQueue* q = nullptr,
@@ -272,10 +277,11 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh, RunQueue* q = nullptr,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Retourne l'entité de la famille \a family de numéro unique \a unique_id.
+ * \brief Returns the entity of the family \a family with unique ID \a unique_id.
  *
- * Si aucune entité avec cet \a unique_id n'est trouvé, retourne l'entité nulle.
+ * If no entity with this \a unique_id is found, returns the null entity.
  *
  * \pre family->hasUniqueIdMap() == true
  */
@@ -284,10 +290,11 @@ findOneItem(IItemFamily* family, Int64 unique_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * \brief Retourne l'entité de la famille \a family de numéro unique \a unique_id.
+ * \brief Returns the entity of the family \a family with unique ID \a unique_id.
  *
- * Si aucune entité avec cet \a unique_id n'est trouvé, retourne l'entité nulle.
+ * If no entity with this \a unique_id is found, returns the null entity.
  *
  * \pre family->hasUniqueIdMap() == true
  */
@@ -296,29 +303,31 @@ findOneItem(IItemFamily* family, ItemUniqueId unique_id);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visite l'ensemble des groupes de \a family avec le functor \a functor.
+ * \brief Visits all groups of \a family using the functor \a functor.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 visitGroups(IItemFamily* family, IFunctorWithArgumentT<ItemGroup&>* functor);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visite l'ensemble des groupes de \a mesh avec le functor \a functor.
+ * \brief Visits all groups of \a mesh using the functor \a functor.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 visitGroups(IMesh* mesh, IFunctorWithArgumentT<ItemGroup&>* functor);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visite l'ensemble des groupes de \a family avec la lambda \a f.
+ * \brief Visits all groups of \a family using the lambda \a f.
  *
- * Cette fonction permet d'appliquer un visiteur pour l'ensemble des
- * groupes de la famille \a family.
+ * This function allows applying a visitor to all groups of the family \a family.
  *
- * Par exemple:
+ * For example:
  *
  * \code
  * IMesh* mesh = ...;
@@ -330,20 +339,21 @@ template <typename LambdaType> inline void
 visitGroups(IItemFamily* family, const LambdaType& f)
 {
   StdFunctorWithArgumentT<ItemGroup&> sf(f);
-  // Il faut caster en le bon type pour que le compilateur utilise la bonne surcharge.
+  // It must be cast to the correct type so that the compiler uses the correct overload.
   IFunctorWithArgumentT<ItemGroup&>* sf_addr = &sf;
   visitGroups(family, sf_addr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Visite l'ensemble des groupes de \a mesh avec la lambda \a f.
+ * \brief Visits all groups of \a mesh using the lambda \a f.
  *
- * Cette fonction permet d'appliquer un visiteur pour l'ensemble des
- * groupes de l'ensemble des familles du maillage \a mesh
+ * This function allows applying a visitor to all groups of the families in
+ * the mesh \a mesh
  *
- * Elle s'utilise comme suit:
+ * It is used as follows:
  *
  * \code
  * IMesh* mesh = ...;
@@ -355,7 +365,7 @@ template <typename LambdaType> inline void
 visitGroups(IMesh* mesh, const LambdaType& f)
 {
   StdFunctorWithArgumentT<ItemGroup&> sf(f);
-  // Il faut caster en le bon pour que le compilateur utilise la bonne surcharge.
+  // It must be cast to the correct type so that the compiler uses the correct overload.
   IFunctorWithArgumentT<ItemGroup&>* sf_addr = &sf;
   visitGroups(mesh, sf_addr);
 }
@@ -370,21 +380,22 @@ namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Redimensionne un tableau qui est indexé par des 'ItemLocalId'.
+ * \brief Resizes an array that is indexed by 'ItemLocalId'.
  *
- * Le tableau \a array est redimensionné uniquement si \a new_size est
- * supérieure à la taille actuelle du tableau ou si \a force_resize est vrai.
+ * The array \a array is resized only if \a new_size is greater than the
+ * current size of the array or if \a force_resize is true.
  *
- * Si le tableau est redimensionné, on réserve une capacité supplémentaire
- * pour éviter de réallouer à chaque fois.
+ * If the array is resized, additional capacity is reserved to avoid
+ * reallocating every time.
  *
- * Cette fonction est appelée en général pour les tableaux indexés par un
- * ItemLocalId et donc cette fonction peut être appelée à chaque fois qu'on
- * ajoute une entité au maillage.
+ * This function is generally called for arrays indexed by an ItemLocalId,
+ * and therefore this function can be called every time an entity is added
+ * to the mesh.
  *
- * \retval true si un redimensionnement a eu lieu
- * \retval false sinon
+ * \retval true if a resize occurred
+ * \retval false otherwise
  */
 template <typename DataType> inline bool
 checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
@@ -394,35 +405,36 @@ checkResizeArray(Array<DataType>& array, Int64 new_size, bool force_resize)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne le maximum des uniqueId() des entités standards du maillage.
+ * \brief Returns the maximum of the uniqueId() of the standard entities of the mesh.
  *
- * Les entités standards sont les noeuds, mailles, faces et arêtes.
- * L'opération est collective sur mesh->parallelMng().
+ * Standard entities are nodes, cells, faces, and edges.
+ * The operation is collective on mesh->parallelMng().
  */
 extern "C++" ARCANE_CORE_EXPORT ItemUniqueId
 getMaxItemUniqueIdCollective(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie le hash des uniqueId() des entités d'une famille.
+ * \brief Checks the hash of the uniqueId() of entities in a family.
  *
- * Calcule via l'algo \a hash_algo un hash des uniqueId() des entités
- * d'une famille. Pour ce calcul, le rang 0 récupère l'ensemble des uniqueId()
- * des entités propres de chaque sous-domaine, les trie et calcul le hash
- * sur le tableau trié.
+ * Calculates a hash of the uniqueId() of entities in a family using the
+ * \a hash_algo algorithm. For this calculation, rank 0 retrieves the set of
+ * uniqueIds() of the local entities of each subdomain, sorts them, and
+ * calculates the hash on the sorted array.
  *
- * Comme la majorité du travail est effectuée par le rang 0, cette méthode
- * n'est pas très extensible et ne doit donc être utilisée qu'à des fins
- * de test.
+ * Since most of the work is performed by rank 0, this method is not very
+ * extensible and should therefore only be used for testing purposes.
  *
- * \a expected_hash est la valeur attendue du hash sous forme de caractères
- * hexadécimaux (obtenu via Convert::toHexaString()). Si \a expected_hash
- * est non nul, compare le résultat avec cette valeur et si elle est différente,
- * lance une exception FatalErrorException.
+ * \a expected_hash is the expected hash value in hexadecimal characters
+ * (obtained via Convert::toHexaString()). If \a expected_hash is not null,
+ * it compares the result with this value and, if different, throws a
+ * FatalErrorException.
  *
- * Cette opération est collective.
+ * This operation is collective.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
@@ -431,69 +443,74 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Rempli \a uids avec les uniqueId() des entités de \a view.
+ * \brief Fills \a uids with the uniqueId() of the entities in \a view.
  */
 extern "C++" ARCANE_CORE_EXPORT void
-fillUniqueIds(ItemVectorView items,Array<Int64>& uids);
+fillUniqueIds(ItemVectorView items, Array<Int64>& uids);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Créé ou recréé une connectivité noeuds-noeuds via les arêtes.
+ * \brief Creates or recreates a node-node connectivity via edges.
  *
- * La connectivité aura pour nom \a connectivity_name.
+ * The connectivity will be named \a connectivity_name.
  */
 extern "C++" ARCANE_CORE_EXPORT Ref<IIndexedIncrementalItemConnectivity>
 computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé ou recréé une connectivité noeuds-noeuds via les arêtes
- * pour les noeuds sur les faces frontières du maillage.
+ * \brief Creates or recreates a node-node connectivity via edges for nodes
+ * on the boundary faces of the mesh.
  *
- * La connectivité aura pour nom \a connectivity_name.
+ * The connectivity will be named \a connectivity_name.
  */
 extern "C++" ARCANE_CORE_EXPORT Ref<IIndexedIncrementalItemConnectivity>
 computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détermine les propriétaires des noeuds.
+ * \brief Determines the owners of the nodes.
  *
- * La détermination se fait en fonction des propriétaires des mailles.
- * Il ne doit pas y avoir de couches de mailles fantômes.
+ * The determination is based on the owners of the cells.
+ * There should be no layers of ghost cells.
  *
- * Cette opération est collective.
+ * This operation is collective.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 computeAndSetOwnerForNodes(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détermine les propriétaires des arêtes.
+ * \brief Determines the owners of the edges.
  *
- * La détermination se fait en fonction des propriétaires des mailles.
- * Il ne doit pas y avoir de couches de mailles fantômes.
+ * The determination is based on the owners of the cells.
+ * There should be no layers of ghost cells.
  *
- * Cette opération est collective.
+ * This operation is collective.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 computeAndSetOwnerForEdges(IMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détermine les propriétaires des faces.
+ * \brief Determines the owners of the faces.
  *
- * La détermination se fait en fonction des propriétaires des mailles.
- * Il ne doit pas y avoir de couches de mailles fantômes.
+ * The determination is based on the owners of the cells.
+ * There should be no layers of ghost cells.
  *
- * Cette opération est collective.
+ * This operation is collective.
  */
 extern "C++" ARCANE_CORE_EXPORT void
 computeAndSetOwnerForFaces(IMesh* mesh);
@@ -508,9 +525,9 @@ computeAndSetOwnerForFaces(IMesh* mesh);
 
 namespace Arcane::mesh_utils
 {
-// Using pour compatibilité avec l'existant.
-// Ces using ont été ajoutés pour la version 3.10 de Arcane (juin 2023).
-// On pourra les rendre obsolètes début 2024.
+// Used for compatibility with existing code.
+// These usings were added for Arcane version 3.10 (June 2023).
+// They can be deprecated starting in early 2024.
 using MeshUtils::checkMeshConnectivity;
 using MeshUtils::checkMeshProperties;
 using MeshUtils::computeConnectivityPatternOccurence;

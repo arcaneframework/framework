@@ -7,14 +7,12 @@
 /*---------------------------------------------------------------------------*/
 /* MachineShMemWinBase.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
-/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
-/* être redimensionnées.                                                     */
+/* Class allowing the creation of memory windows for a computing node.       */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_MACHINESHMEMWINBASE_H
 #define ARCANE_CORE_MACHINESHMEMWINBASE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,13 +41,13 @@ namespace MessagePassing
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de créer une fenêtre mémoire partagée entre les
- * sous-domaines d'un même noeud.
+ * \brief Class allowing the creation of a shared memory window between the
+ * subdomains of the same node.
  *
- * Les segments de cette fenêtre ne sont pas contigüs en mémoire et peuvent
- * être redimensionnés.
+ * The segments of this window are not contiguous in memory and can
+ * be resized.
  *
- * La méthode \a add() permet d'ajouter des éléments de manière itérative.
+ * The \a add() method allows elements to be added iteratively.
  */
 class ARCANE_CORE_EXPORT MachineShMemWinBase
 {
@@ -57,198 +55,196 @@ class ARCANE_CORE_EXPORT MachineShMemWinBase
  public:
 
   /*!
-   * \brief Constructeur.
-   * \param pm Le parallelMng à utiliser.
-   * \param sizeof_segment La taille total de notre segment (en octet / doit
-   * être divisible par \a sizeof_elem).
-   * \param sizeof_elem La taille d'un élément de notre segment (en octet).
+   * \brief Constructor.
+   * \param pm The parallelMng to use.
+   * \param sizeof_segment The total size of our segment (in bytes / must
+   * be divisible by \a sizeof_elem).
+   * \param sizeof_elem The size of an element in our segment (in bytes).
    */
   MachineShMemWinBase(IParallelMng* pm, Int64 sizeof_segment, Int32 sizeof_elem);
 
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method to obtain the ranks that possess a segment
+   * in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   ConstArrayView<Int32> machineRanks() const;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method to wait until all processes/threads
+   * on the node call this method to continue execution.
    */
   void barrier() const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment.
+   * \brief Method to obtain a view of our segment.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue.
+   * \return A view.
    */
   Span<std::byte> segmentView();
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
-   * autre sous-domaine du noeud.
+   * \brief Method to obtain a view of the segment of another
+   * subdomain on the node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   Span<std::byte> segmentView(Int32 rank);
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment.
+   * \brief Method to obtain a view of our segment.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue.
+   * \return A view.
    */
   Span<const std::byte> segmentConstView() const;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
-   * autre sous-domaine du noeud.
+   * \brief Method to obtain a view of the segment of another
+   * subdomain on the node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   Span<const std::byte> segmentConstView(Int32 rank) const;
 
   /*!
-   * \brief Méthode permettant d'ajouter des élements dans notre segment.
+   * \brief Method to add elements into our segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
+   * \note The methods add(..) and addToAnotherSegment(..) must not be mixed.
    *
-   * Si le segment est trop petit, il sera redimensionné.
+   * If the segment is too small, it will be resized.
    *
-   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
-   * méthode \a add() sans paramètres ou cette méthode avec une vue vide.
+   * Subdomains that do not wish to add elements can call the
+   * \a add() method without parameters or this method with an empty view.
    *
-   * \param elem Les éléments à ajouter.
+   * \param elem The elements to add.
    */
   void add(Span<const std::byte> elem);
   /*!
-   * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas ajouter
-   * d'éléments dans son segment.
+   * \brief Method to be called by the subdomain(s) that do not wish to add
+   * elements to its segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
+   * \note The methods add(..) and addToAnotherSegment(..) must not be mixed.
    *
-   * Voir la documentation de \a add(Span<const std::byte> elem).
+   * See the documentation for \a add(Span<const std::byte> elem).
    */
   void add();
 
   /*!
-   * \brief Méthode permettant d'ajouter des éléments dans le segment d'un
-   * autre sous-domaine.
+   * \brief Method to add elements into the segment of another
+   * subdomain.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
+   * \note The methods add(..) and addToAnotherSegment(..) must not be mixed.
    *
-   * Deux sous-domaines ne doivent pas ajouter d'éléments dans un même
-   * segment de sous-domaine.
+   * Two subdomains must not add elements to the same subdomain segment.
    *
-   * Si le segment ciblé est trop petit, il sera redimensionné.
+   * If the target segment is too small, it will be resized.
    *
-   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
-   * méthode \a addToAnotherSegment() sans paramètres.
+   * Subdomains that do not wish to add elements can call the
+   * \a addToAnotherSegment() method without parameters.
    *
-   * \param rank Le rang du sous-domaine avec le segment à modifier.
-   * \param elem Les éléments à ajouter.
+   * \param rank The rank of the subdomain whose segment is to be modified.
+   * \param elem The elements to add.
    */
   void addToAnotherSegment(Int32 rank, Span<const std::byte> elem);
 
   /*!
-   * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas ajouter
-   * d'éléments dans le segment d'un autre sous-domaine.
+   * \brief Method to be called by the subdomain(s) that do not wish to add
+   * elements into the segment of another subdomain.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \note Les méthodes add(..) et addToAnotherSegment(..) ne se mélangent pas.
+   * \note The methods add(..) and addToAnotherSegment(..) must not be mixed.
    *
-   * Voir la documentation de \a addToAnotherSegment(Int32 rank, Span<const Type> elem).
+   * See the documentation for \a addToAnotherSegment(Int32 rank, Span<const Type> elem).
    */
   void addToAnotherSegment();
 
   /*!
-   * \brief Méthode permettant de réserver de l'espace mémoire dans notre segment.
+   * \brief Method to reserve memory space in our segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Cette méthode ne fait rien si \a new_capacity est inférieur à l'espace
-   * mémoire déjà alloué pour le segment.
-   * Pour les sous-domaines ne souhaitant pas augmenter l'espace mémoire
-   * disponible pour leur segment, il est possible de mettre le paramètre
-   * \a new_capacity à 0 ou d'utiliser la méthode \a reserve() (sans
-   * arguments).
+   * This method does nothing if \a new_capacity is less than the memory space
+   * already allocated for the segment.
+   * For subdomains that do not wish to increase the available memory space
+   * for their segment, it is possible to set the \a new_capacity parameter
+   * to 0 or use the \a reserve() method (without arguments).
    *
-   * L'espace qui sera réservé aura une taille supérieur ou égale à
+   * The reserved space will have a size greater than or equal to
    * \a new_capacity.
    *
-   * Cette méthode ne redimensionne pas le segment, il faudra toujours passer
-   * par la méthode add() pour ajouter des éléments.
+   * This method does not resize the segment; you must always use the add()
+   * method to add elements.
    *
-   * Pour redimensionner le segment, la méthode \a resize(Int64 new_size) est
-   * disponible.
+   * To resize the segment, the \a resize(Int64 new_size) method is
+   * available.
    *
-   * \param new_nb_elem_segment_capacity La nouvelle capacité demandée (en nombre d'éléments, pas en octet).
+   * \param new_nb_elem_segment_capacity The requested new capacity (in number of elements, not in bytes).
    */
   void reserve(Int64 new_nb_elem_segment_capacity);
 
   /*!
-   * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas réserver
-   * davantage de mémoire pour leurs segments.
+   * \brief Method to be called by the subdomain(s) that do not wish to reserve
+   * more memory for their segments.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Voir la documentation de \a reserve(Int64 new_nb_elem_segment_capacity).
+   * See the documentation for \a reserve(Int64 new_nb_elem_segment_capacity).
    */
   void reserve();
 
   /*!
-   * \brief Méthode permettant de redimensionner notre segment.
+   * \brief Method to resize our segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Si la taille fournie est inférieure à la taille actuelle du segment, les
-   * éléments situés après la taille fournie seront supprimés.
+   * If the provided size is less than the current size of the segment, elements
+   * located after the provided size will be deleted.
    *
-   * Pour les sous-domaines ne souhaitant pas redimensionner leur segment, il est
-   * possible de mettre l'argument \a new_size à -1 ou d'appeler la méthode
-   * \a resize() (sans arguments).
+   * For subdomains that do not wish to resize their segment, it is
+   * possible to set the \a new_size argument to -1 or call the method
+   * \a resize() (without arguments).
    *
-   * \param new_nb_elem_segment La nouvelle taille (en nombre d'éléments, pas en octet).
+   * \param new_nb_elem_segment The new size (in number of elements, not in bytes).
    */
   void resize(Int64 new_nb_elem_segment);
 
   /*!
-   * \brief Méthode à appeler par le ou les sous-domaines ne souhaitant pas
-   * redimensionner leurs segments.
+   * \brief Method to be called by the subdomain(s) that do not wish to
+   * resize their segments.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Voir la documentation de \a resize(Int64 new_nb_elem_segment).
+   * See the documentation for \a resize(Int64 new_nb_elem_segment).
    */
   void resize();
 
   /*!
-   * \brief Méthode permettant de réduire l'espace mémoire réservé pour les
-   * segments au minimum nécessaire.
+   * \brief Method to reduce the reserved memory space for the
+   * segments to the minimum necessary.
    *
-   * Appel collectif.
+   * Collective call.
    */
   void shrink();
 

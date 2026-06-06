@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemFamily.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une famille d'entités.                                        */
+/* Interface of an entity family.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILY_H
 #define ARCANE_CORE_IITEMFAMILY_H
@@ -27,57 +27,56 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'une famille d'entités.
+ * \brief Interface of an entity family.
  *
- * Une famille d'entité gère toutes les entités de même genre (Item::kind())
- * et est attachée à un maillage (IMesh).
+ * An entity family manages all entities of the same kind (Item::kind())
+ * and is attached to a mesh (IMesh).
  *
- * Pour tout maillage, il existe une et une seule famille de
- * noeuds (Node), arêtes (Edge), faces (Face) et mailles (Cell).
- * Ces entités sont appelées des entités de \b base du maillage et les
- * familles associées les familles de base du maillage.
+ * For any mesh, there is exactly one family of
+ * nodes (Node), edges (Edge), faces (Face), and cells (Cell).
+ * These entities are called base mesh entities and the
+ * associated families are the base mesh families.
  *
- * Suivant l'implémentation, il peut aussi y avoir des familles
- * de particules (Particle), de noeuds duaux (DualNode) ou de liens (Link).
- * Suivant la connectivité demandée, une famille peut ne pas avoir d'éléments.
- * Par exemple, par défaut en 3D, les arêtes (Edge) ne sont pas créées.
+ * Depending on the implementation, there may also be families
+ * of particles (Particle), dual nodes (DualNode), or links (Link).
+ * Depending on the requested connectivity, a family may not have elements.
+ * For example, by default in 3D, edges (Edge) are not created.
  *
- * Chaque entité de la famille possède un identifiant local dans la
- * famille, donnée par Item::localId(). Lorsqu'une famille évolue, cet identifiant
- * peut être modifié. Les Item::localId() des entités d'une famille ne sont
- * pas nécessairement contigus. La méthode maxLocalId() permet de connaître
- * le maximum de ces valeurs. Le compactage permet
- * de garantir que les localId() sont renumérotés de 0 à (nbItem()-1). Pour les entités
- * de base du maillage, le compactage est automatique si le maillage
- * à la propriété \a "sort" à vrai. Pour les autres, il faut appeler
- * compactItems().
+ * Each entity in the family has a local identifier within the
+ * family, given by Item::localId(). When a family evolves, this identifier
+ * may be modified. The Item::localId() of entities in a family are not
+ * necessarily contiguous. The maxLocalId() method allows knowing
+ * the maximum of these values. Compaction ensures
+ * that the localId() are renumbered from 0 to (nbItem()-1). For base mesh entities,
+ * compaction is automatic if the mesh has the property \a "sort" set to true. For others,
+ * you must call compactItems().
  *
- * Par défaut, une famille possède une table de conversion des
- * uniqueId() vers les localId(). Cette table doit exister pour
- * permettre les opérations suivantes:
- * - le uniqueId() est garanti unique sur le sous-domaine et doit
- * l'être par construction sur tous les sous-domaines.
- * - faire appel aux méthodes itemsUniqueIdToLocalId().
- * - les entités de la famille peuvent être présentes dans plusieurs
- * sous-domaines.
- * - faire des synchronisations.
- * - avoir des variables partielles sur cette famille
+ * By default, a family has a conversion table from
+ * uniqueId() to localId(). This table must exist to allow the following operations:
+ * - the uniqueId() is guaranteed to be unique within the subdomain and must
+ * be so by construction across all subdomains.
+ * - calling the itemsUniqueIdToLocalId() methods.
+ * - the family entities can be present in multiple
+ * subdomains.
+ * - performing synchronizations.
+ * - having partial variables on this family
  *
- * Il est possible d'activer ou désactiver cette table de conversion
- * via la méthode setHasUniqueIdMap() uniquement si aucune entité
- * n'a été créée. Cette opération n'est pas possible sur
- * les familles de noeuds, arêtes, faces et mailles.
+ * It is possible to enable or disable this conversion table
+ * via the setHasUniqueIdMap() method only if no entity
+ * has been created. This operation is not possible on
+ * node, edge, face, and cell families.
  
- * Lorsqu'on modifie une famille par ajout ou suppression d'entités, les
- * variables et les groupes qui reposent sur cette famille ne sont plus utilisables
- * tant qu'on a pas fait d'appel à endUpdate(). Il est possible pour des raisons
- * d'optimisation de faire des mise à jour de certaines variables ou groupes via
- * partialEndUpdateVariable() ou partialEndUpdateGroup(). ATTENTION, un appel
- * à l'une de ces 3 méthodes de mise à jour invalide les instances des entités (Item).
- * Pour conserver une référence sur une entité, il faut soit utiliser un groupe (ItemGroup),
- * soit conserver son numéro unique et utiliser itemsUniqueIdToLocalId().
+ * When a family is modified by adding or removing entities, the
+ * variables and groups relying on this family are no longer usable
+ * until endUpdate() is called. For optimization reasons, it is possible to perform
+ * updates of certain variables or groups via
+ * partialEndUpdateVariable() or partialEndUpdateGroup(). ATTENTION, an call
+ * to one of these 3 update methods invalidates the entity instances (Item).
+ * To retain a reference to an entity, you must either use a group (ItemGroup)
+ * or keep its unique number and use itemsUniqueIdToLocalId().
  *
  */
 class ARCANE_CORE_EXPORT IItemFamily
@@ -87,521 +86,518 @@ class ARCANE_CORE_EXPORT IItemFamily
 
  public:
 
-  virtual ~IItemFamily() {} //<! Libère les ressources
+  virtual ~IItemFamily() {} //<! Frees resources
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
-  //! Nom de la famille
-  virtual String name() const =0;
+  //! Family name
+  virtual String name() const = 0;
 
-  //! Nom complet de la famille (avec celui du maillage)
-  virtual String fullName() const =0;
+  //! Full family name (with the mesh's name)
+  virtual String fullName() const = 0;
 
-  //! Genre des entités
-  virtual eItemKind itemKind() const =0;
-  
-  //! Nombre d'entités
-  virtual Integer nbItem() const =0;
+  //! Entity kind
+  virtual eItemKind itemKind() const = 0;
+
+  //! Number of entities
+  virtual Integer nbItem() const = 0;
 
   /*!
-   * Taille nécessaire pour dimensionner les variables sur ces entités.
+   * Size required to dimension variables on these entities.
    *
-   * Il s'agit du maximum des Item::localId() des entités de cette famille plus 1.
+   * This is the maximum of the Item::localId() of the entities in
+   * this family plus 1.
    */
-  virtual Int32 maxLocalId() const =0;
+  virtual Int32 maxLocalId() const = 0;
 
  public:
 
-  // TODO: a supprimer. Utiliser itemInfoListView à la place
-  //! Tableau interne des entités
-  virtual ItemInternalArrayView itemsInternal() =0;
+  // TODO: to be removed. Use itemInfoListView instead
+  //! Internal array of entities
+  virtual ItemInternalArrayView itemsInternal() = 0;
 
  public:
 
-  //! Vue sur la liste d'informations sur les entités
-  virtual ItemInfoListView itemInfoListView() =0;
+  //! View on the entity information list
+  virtual ItemInfoListView itemInfoListView() = 0;
 
   /*!
    * \brief IItemFamily parent
    *
-   * Issue des imbrications de sous-maillages
-   * \return nullptr si n'a pas de famille parente
+   * Resulting from sub-mesh nesting
+   * \return nullptr if there is no parent family
    */
   virtual IItemFamily* parentFamily() const = 0;
 
   /*!
    * \internal
-   * \brief Positionne l'IItemFamily parent.
+   * \brief Positions the parent IItemFamily.
    *
-   * A utiliser avant build() pour les sous-maillages construit dynamiquement
-   * (i.e. pas depuis un reprise).
+   * To be used before build() for dynamically constructed sub-meshes
+   * (i.e., not from a restart).
    *
-   * TODO: A mettre dans l'API interne
+   * TODO: To be put in the internal API
    */
   virtual void setParentFamily(IItemFamily* parent) = 0;
 
-  //! Donne la profondeur d'imbrication du maillage courant
+  //! Gives the nesting depth of the current mesh
   virtual Integer parentFamilyDepth() const = 0;
 
   /*!
    * \internal
-   * \brief Ajoute d'une famile en dépendance
+   * \brief Adds a family as a dependency
    *
-   * Opération en symétrie de setParentFamily
+   * Operation symmetric to setParentFamily
    *
-   * TODO: A mettre dans l'API interne
+   * TODO: To be put in the internal API
    */
   virtual void addChildFamily(IItemFamily* family) = 0;
 
-  //! Familles enfantes de cette famille
+  //! Child families of this family
   virtual IItemFamilyCollection childFamilies() = 0;
 
   /*!
-   * \brief Variable contenant le numéro du nouveau sous-domaine
-   * propriétaire de l'entité.
+   * \brief Variable containing the number of the new subdomain
+   * owning the entity.
    *
-   * Cette variable n'est utilisée que pour un repartitionnement du maillage.
+   * This variable is only used for mesh partitioning.
    */
-  virtual VariableItemInt32& itemsNewOwner() =0;
-  
-  //! Vérification de la validité des structures internes (interne)
-  virtual void checkValid() =0;
+  virtual VariableItemInt32& itemsNewOwner() = 0;
+
+  //! Check the validity of internal structures (internal)
+  virtual void checkValid() = 0;
 
   /*!
-   * \brief Vérification de la validité des structures internes concernant
-   * la connectivité.
+   * \brief Verification of the validity of internal structures concerning
+   * connectivity.
    */
-  virtual void checkValidConnectivity() =0;
+  virtual void checkValidConnectivity() = 0;
 
   /*!
-   * \brief Vérifie que les identifiants \a unique_ids sont bien uniques
-   * pour tous les sous-domaines.
+   * \brief Checks that the \a unique_ids are truly unique
+   * for all subdomains.
    *
-   * Cette méthode NE vérifie PAS que les \a unique_ids sont identiques
-   * à ceux des entités déjà créées. Elle vérifie uniquement l'ensemble des
-   * \a unique_ids passés en argument par tous les sous-domaines.
+   * This method DOES NOT check that the \a unique_ids are identical
+   * to those of entities already created. It only checks the set of
+   * \a unique_ids passed as arguments by all subdomains.
    *
-   * Cette opération est collective et doit être appelée par tous les sous-domaines.
+   * This operation is collective and must be called by all subdomains.
    */
-  virtual void checkUniqueIds(Int64ConstArrayView unique_ids) =0;
+  virtual void checkUniqueIds(Int64ConstArrayView unique_ids) = 0;
 
  public:
 
   /*!
-   * \brief Vue sur les entités.
+   * \brief View on the entities.
    *
-   * Retourne une vue sur les entités de numéro locaux \a local_ids.
-   * \warning Cette vue n'est valide que tant que la famille n'évolue pas.
-   * En particulier, l'ajout, la suppression ou le compactage invalide la vue.
-   * Si vous souhaitez conserver une liste même après modification, il faut
-   * utiliser les groupes (ItemGroup).
+   * Returns a view on the entities with local numbers \a local_ids.
+   * \warning This view is only valid as long as the family does not evolve.
+   * In particular, adding, removing, or compacting invalidates the view.
+   * If you want to keep a list even after modification, you must
+   * use groups (ItemGroup).
    */
-  virtual ItemVectorView view(Int32ConstArrayView local_ids) =0;
+  virtual ItemVectorView view(Int32ConstArrayView local_ids) = 0;
 
   /*!
-   * \brief Vue sur toutes les entités de la famille.
+   * \brief View on all entities in the family.
    */
-  virtual ItemVectorView view() =0;
+  virtual ItemVectorView view() = 0;
 
   /*!
-   * \brief Supprime des entités.
+   * \brief Removes entities.
    *
-   * Utilise le graphe (Familles, Connectivités) ItemFamilyNetwork
+   * Uses the graph (Families, Connectivities) ItemFamilyNetwork
    *
-   * TODO: A mettre dans l'API interne
+   * TODO: To be put in the internal API
    */
-  virtual void removeItems2(mesh::ItemDataList& item_data_list) =0;
+  virtual void removeItems2(mesh::ItemDataList& item_data_list) = 0;
 
   /*!
    * \internal
-   * \brief Supprime des entités et met a jour les connectivites.
+   * \brief Removes entities and updates connectivities.
    *
-   * Ne supprime pas d'eventuels sous items orphelins.
+   * Does not delete any potential orphaned sub-items.
    *
-   * Contexte d'utilisation avec un graphe des familles. Les sous items
-   * orphelins ont du eux aussi etre marque NeedRemove.
-   * Il n'y a donc pas besoin de les gerer dans les familles parentes.
+   * Context of use with a family graph. Orphaned sub-items
+   * must also be marked NeedRemove.
+   * Therefore, there is no need to manage them in parent families.
    *
-   * TODO: A mettre dans l'API interne
+   * TODO: To be put in the internal API
    */
-  virtual void removeNeedRemoveMarkedItems() =0;
+  virtual void removeNeedRemoveMarkedItems() = 0;
 
   /*!
-   * \brief Entité de numéro unique \a unique_id.
+   * \brief Unique ID entity \a unique_id.
    *
-   * Si aucune entité avec cet \a unique_id n'est trouvé, retourne \a nullptr.
+   * If no entity with this \a unique_id is found, returns \a nullptr.
    *
    * \pre hasUniqueIdMap()
    */
   ARCANE_DEPRECATED_REASON("Use MeshUtils::findOneItem() instead")
-  virtual ItemInternal* findOneItem(Int64 unique_id) =0;
+  virtual ItemInternal* findOneItem(Int64 unique_id) = 0;
 
-  /*! \brief Notifie la fin de modification de la liste des entités.
+  /*! \brief Notifies the end of modification of the entity list.
    *
-   * Cette méthode doit être appelée après modification de la liste des
-   * entités (après ajout ou suppression). Elle met à jour les groupes
-   * et redimensionne les variables sur cette famille.
+   * This method must be called after modifying the entity list (after adding or removing). It updates the groups
+   * and resizes the variables on this family.
    */
-  virtual void endUpdate() =0;
+  virtual void endUpdate() = 0;
 
   /*!
-   * \brief Mise à jour partielle.
+   * \brief Partial update.
    *
-   * Met à jour les structures internes après une modification de la famille.
-   * Il s'agit d'une version optimisée de endUpdate() lorsqu'on souhaite
-   * faire de multiples modifications de maillage. Cette méthode NE met PAS
-   * à jour les groupes ni les variables associées à cette famille. Seul le
-   * groupe allItems() est disponible. Il est possible de mettre à jour
-   * un groupe via partialEndUpdateGroup() et une variable via partialEndUpdateVariable().
+   * Updates the internal structures after a family modification.
+   * This is an optimized version of endUpdate() when you want
+   * to perform multiple mesh modifications. This method DOES NOT update
+   * the groups or variables associated with this family. Only the
+   * allItems() group is available. It is possible to update
+   * a group via partialEndUpdateGroup() and a variable via partialEndUpdateVariable().
    *
-   * Cette méthode est réservée aux utilisateurs expérimentés. Pour les autres,
-   * il vaut mieux utiliser endUpdate().
+   * This method is reserved for experienced users. For others,
+   * it is better to use endUpdate().
    */
-  virtual void partialEndUpdate() =0;
+  virtual void partialEndUpdate() = 0;
 
   /*!
-   * \brief Met à jour un groupe.
+   * \brief Updates a group.
    *
-   * Met à jour le groupe \a group après une modification de la famille.
-   * La mise à jour consiste à supprimer du groupe les entités de la famille
-   * éventuellement détruites lors de la modification.
+   * Updates the \a group after a family modification.
+   * The update consists of removing entities from the group that were
+   * possibly destroyed during the modification.
    *
    * \sa partialEndUpdate().
    */
-  virtual void partialEndUpdateGroup(const ItemGroup& group) =0;
-  
+  virtual void partialEndUpdateGroup(const ItemGroup& group) = 0;
+
   /*!
-   * \brief Met à jour une variable.
+   * \brief Updates a variable.
    *
-   * Met à jour la variable \a variable après une modification de la famille.
-   * La mise à jour consiste à redimensionner la variable après un éventuel
-   * ajout d'entités.
+   * Updates the \a variable after a family modification.
+   * The update consists of resizing the variable after a possible
+   * addition of entities.
    *
    * \sa partialEndUpdate().
    */
-  virtual void partialEndUpdateVariable(IVariable* variable) =0;
+  virtual void partialEndUpdateVariable(IVariable* variable) = 0;
 
-  //! Notifie que les entités propres au sous-domaine de la famille ont été modifiées
-  virtual void notifyItemsOwnerChanged() =0;
+  //! Notifies that the entities specific to the family's subdomain have been modified
+  virtual void notifyItemsOwnerChanged() = 0;
 
-  //! Notifie que les numéros uniques des entités ont été modifiées
-  virtual void notifyItemsUniqueIdChanged() =0;
+  //! Notifies that the unique IDs of the entities have been modified
+  virtual void notifyItemsUniqueIdChanged() = 0;
 
  public:
 
-  //! Informations sur la connectivité locale au sous-domaine pour à cette famille
-  virtual IItemConnectivityInfo* localConnectivityInfos() const =0;
+  //! Information on local connectivity within the subdomain for this family
+  virtual IItemConnectivityInfo* localConnectivityInfos() const = 0;
 
-  //! Informations sur la connectivité globales à tous les sous-domaines.
-  virtual IItemConnectivityInfo* globalConnectivityInfos() const =0;
+  //! Information on global connectivity across all subdomains.
+  virtual IItemConnectivityInfo* globalConnectivityInfos() const = 0;
 
  public:
 
   /*!
-   * \brief Indique si la famille possède une table de conversion
-   * uniqueId vers localId.
+   * \brief Indicates whether the family has a conversion table
+   * from uniqueId to localId.
    *
-   * La table de conversion permet d'utiliser les méthodes
-   * itemsUniqueIdToLocalId() ou findOneItem().
+   * The conversion table allows using the methods
+   * itemsUniqueIdToLocalId() or findOneItem().
    *
-   * Cette méthode ne peut être appelée que lorsqu'il n'y a aucune
-   * entité de la famille.
+   * This method can only be called when there are no
+   * entities in the family.
    *
-   * Les familles de noeuds, arêtes, faces et mailles du maillage
-   * ont obligatoirement une table de conversion.
+   * The node, edge, face, and cell families of the mesh
+   * must have a conversion table.
    */
-  virtual void setHasUniqueIdMap(bool v) =0;
+  virtual void setHasUniqueIdMap(bool v) = 0;
 
-  //! Indique si la famille possède une table de conversion uniqueId vers localId.
-  virtual bool hasUniqueIdMap() const =0;
+  //! Indicates if the family has a uniqueId to localId conversion table.
+  virtual bool hasUniqueIdMap() const = 0;
 
  public:
 
   /*!
-   * \brief Converti un tableau de numéros uniques en numéros locaux.
+   * \brief Converts an array of unique numbers to local numbers.
    *
-   *  Cette opération prend en entrée le tableau \a unique_ids contenant les
-   * numéros uniques des entités du type \a item_kind et retourne dans
-   * \a local_ids le numéro local à ce sous-domaine correspondant.
+   * This operation takes as input the \a unique_ids array containing the
+   * unique numbers of entities of type \a item_kind and returns in
+   * \a local_ids the corresponding local number for this subdomain.
    *
-   * La complexité de cette opération dépend de l'implémentation.
-   * L'implémentation par défaut utilise une table de hachage. La complexité
-   * moyenne est donc constante.
+   * The complexity of this operation depends on the implementation.
+   * The default implementation uses a hash table. The average complexity
+   * is therefore constant.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
-   * pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
+   * If \a do_fatal is true, a fatal error is generated if an entity is not
+   * found, otherwise the not found element has the value NULL_ITEM_ID.
    *
    * \pre hasUniqueIdMap()
    */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       Int64ConstArrayView unique_ids,
-                                      bool do_fatal=true) const =0;
+                                      bool do_fatal = true) const = 0;
 
   /*!
-   * \brief Converti un tableau de numéros uniques en numéros locaux.
+   * \brief Converts an array of unique numbers to local numbers.
    *
-   * Cette opération prend en entrée le tableau \a unique_ids contenant les
-   * numéros uniques des entités du type \a item_kind et retourne dans
-   * \a local_ids le numéro local à ce sous-domaine correspondant.
+   * This operation takes as input the \a unique_ids array containing the
+   * unique numbers of entities of type \a item_kind and returns in
+   * \a local_ids the corresponding local number for this subdomain.
    *
-   * La complexité de cette opération dépend de l'implémentation.
-   * L'implémentation par défaut utilise une table de hachage. La complexité
-   * moyenne est donc constante.
+   * The complexity of this operation depends on the implementation.
+   * The default implementation uses a hash table. The average complexity
+   * is therefore constant.
    *
-   * Si \a do_fatal est vrai, une erreur fatale est générée si une entité n'est
-   * pas n'est trouvée, sinon l'élément non trouvé a pour valeur NULL_ITEM_ID.
+   * If \a do_fatal is true, a fatal error is generated if an entity is not
+   * found, otherwise the not found element has the value NULL_ITEM_ID.
    */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       ConstArrayView<ItemUniqueId> unique_ids,
-                                      bool do_fatal=true) const =0;
+                                      bool do_fatal = true) const = 0;
 
  public:
 
   /*!
-   * \brief Positionne la fonction de tri des entités.
+   * \brief Positions the entity sorting function.
    *
-   * La méthode par défaut est de trier les entités par uniqueId() croissant.
-   * Si \a sort_function est nul, c'est la méthode par défaut qui sera utilisée.
-   * Sinon, \a sort_function remplace la fonction précédente qui est détruite
+   * The default method is to sort entities by ascending uniqueId().
+   * If \a sort_function is null, the default method will be used.
+   * Otherwise, \a sort_function replaces the previous function, which is destroyed
    * (via delete).
-   * Le tri est effectué via l'appel à compactItems().
+   * Sorting is performed via the call to compactItems().
    * \sa itemSortFunction()
    */
-  virtual void setItemSortFunction(IItemInternalSortFunction* sort_function) =0;
+  virtual void setItemSortFunction(IItemInternalSortFunction* sort_function) = 0;
 
   /*!
-   * \brief Fonction de tri des entités.
+   * \brief Entity sorting function.
    *
-   * L'instance de cette classe reste propriétaire de l'objet retournée
-   * qui ne doit pas être détruit ni modifié.
+   * The instance of this class remains the owner of the returned object,
+   * which must not be destroyed or modified.
    * \sa setItemSortFunction()
    */
-  virtual IItemInternalSortFunction* itemSortFunction() const =0;
+  virtual IItemInternalSortFunction* itemSortFunction() const = 0;
 
  public:
 
-  //! Sous-domaine associé
+  //! Associated sub-domain
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
-  virtual ISubDomain* subDomain() const =0;
+  virtual ISubDomain* subDomain() const = 0;
 
-  //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng() const =0;
+  //! Associated trace manager
+  virtual ITraceMng* traceMng() const = 0;
 
-  //! Maillage associé
-  virtual IMesh* mesh() const =0;
+  //! Associated mesh
+  virtual IMesh* mesh() const = 0;
 
-  //! Gestionnaire de parallélisme associé
-  virtual IParallelMng* parallelMng() const =0;
-
- public:
-
-  //! Groupe de toutes les entités
-  virtual ItemGroup allItems() const =0;
-
-  //! Liste des groupes de cette famille
-  virtual ItemGroupCollection groups() const =0;
+  //! Associated parallelism manager
+  virtual IParallelMng* parallelMng() const = 0;
 
  public:
 
-  //! @name opérations sur des groupes
+  //! Group of all entities
+  virtual ItemGroup allItems() const = 0;
+
+  //! Collection of groups in this family
+  virtual ItemGroupCollection groups() const = 0;
+
+ public:
+
+  //! @name operations on groups
   //@{
   /*!
-    \brief Recherche un groupe.
-    \param name nom du groupe à rechercher
-    \return le groupe de nom \a name ou le groupe nul s'il n'y en a pas.
+    \brief Searches for a group.
+    \param name name of the group to search for
+    \return the group named \a name or a null group if none exists.
   */
-  virtual ItemGroup findGroup(const String& name) const =0;
+  virtual ItemGroup findGroup(const String& name) const = 0;
 
   /*!
-   * \brief Recherche un groupe
+   * \brief Searches for a group
    *
-   * \param name nom du groupe à rechercher
+   * \param name name of the group to search for
    *
-   * \return le groupe trouvé ou le groupe nul si aucun groupe de nom
-   * \a name et de type \a type n'existe et si \a create_if_needed vaut \e false.
-   * Si \a create_if_needed vaux \e vrai, un groupe vide de nom \a name est créé et retourné.
+   * \return the found group or a null group if no group with the name
+   * \a name and type \a type exists and if \a create_if_needed is false.
+   * If \a create_if_needed is true, an empty group named \a name is created and returned.
    */
-  virtual ItemGroup findGroup(const String& name,bool create_if_needed) =0;
-  
-
-  /*! 
-   * \brief Créé un groupe d'entités de nom \a name contenant les entités \a local_ids.
-   *
-   * \param name nom du groupe
-   * \param local_ids liste des localId() des entités composant le groupe.
-   * \param do_override si \e true et q'un groupe de même nom existe déjà,
-   * ses éléments sont remplacés par ceux donnés dans \a local_ids. Si \e false,
-   * alors une exception est levée.
-   * \return le groupe créé
-   */
-  virtual ItemGroup createGroup(const String& name,Int32ConstArrayView local_ids,bool do_override=false) =0;
+  virtual ItemGroup findGroup(const String& name, bool create_if_needed) = 0;
 
   /*!
-   * \brief Créé un groupe d'entités de nom \a name
+   * \brief Creates an entity group named \a name containing the entities \a local_ids.
    *
-   * Le groupe ne doit pas déjà exister sinon une exception est levée.
-   *
-   * \param name nom du groupe
-   * \return le groupe créé
+   * \param name name of the group
+   * \param local_ids list of localId() of the entities composing the group.
+   * \param do_override if true and a group of the same name already exists,
+   * its elements are replaced by those given in \a local_ids. If false,
+   * an exception is raised.
+   * \return the created group
    */
-  virtual ItemGroup createGroup(const String& name) =0;
+  virtual ItemGroup createGroup(const String& name, Int32ConstArrayView local_ids, bool do_override = false) = 0;
 
   /*!
-   * \brief Supprime tous les groupes de cette famille.
+   * \brief Creates an entity group named \a name
+   *
+   * The group must not already exist, otherwise an exception is raised.
+   *
+   * \param name name of the group
+   * \return the created group
    */
-  virtual void destroyGroups() =0;
+  virtual ItemGroup createGroup(const String& name) = 0;
+
+  /*!
+   * \brief Deletes all groups in this family.
+   */
+  virtual void destroyGroups() = 0;
 
   /*!
    * \internal
    * For Internal Use Only
    */
-  virtual ItemGroup createGroup(const String& name,const ItemGroup& parent,bool do_override=false) =0;
+  virtual ItemGroup createGroup(const String& name, const ItemGroup& parent, bool do_override = false) = 0;
 
   //@}
 
   /*!
-   * \brief Recherche la variable de nom \a name associée à cette famille.
+   * \brief Searches for the variable name \a name associated with this family.
    *
-   * Si aucune variable de nom \a name n'existe, si \a throw_exception vaut
-   * \a false, retourne 0, sinon lève une exception.
+   * If no variable with the name \a name exists, and if \a throw_exception is
+   * false, returns 0; otherwise, it throws an exception.
    */
-  virtual IVariable* findVariable(const String& name,bool throw_exception=false) =0;
+  virtual IVariable* findVariable(const String& name, bool throw_exception = false) = 0;
 
   /*!
-   * \brief Ajoute à la collection \a collection la liste des variables
-   * utilisés de cette famille.
+   * \brief Adds the list of variables used by this family to the \a collection.
    */
-  virtual void usedVariables(VariableCollection collection) =0;
+  virtual void usedVariables(VariableCollection collection) = 0;
 
  public:
 
-  //! Prépare les données pour une protection
-  virtual void prepareForDump() =0;
+  //! Prepares data for dumping
+  virtual void prepareForDump() = 0;
 
-  //! Relit les données à partir d'une protection
-  virtual void readFromDump() =0;
+  //! Reads data from a dump
+  virtual void readFromDump() = 0;
 
-  /** 
-   * Copie les valeurs des entités numéros @a source dans les entités
-   * numéros @a destination
-   * 
-   * @param source liste des @b localId source
-   * @param destination liste des @b localId destination
+  /**
+   * Copies the values of entities numbered @a source into entities
+   * numbered @a destination
+   *
+   * @param source list of @b source localIds
+   * @param destination list of @b destination localIds
    */
-  virtual void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) =0;
+  virtual void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) = 0;
 
-  /** 
-   * Copie les moyennes des valeurs des entités numéros
-   * @a first_source et @a second_source dans les entités numéros
+  /**
+   * Copies the mean values of entities numbered
+   * @a first_source and @a second_source into entities numbered
    * @a destination
-   * 
-   * @param first_source liste des @b localId de la 1ère source
-   * @param second_source  liste des @b localId de la 2ème source
-   * @param destination  liste des @b localId destination
+   *
+   * @param first_source list of @b localIds of the 1st source
+   * @param second_source list of @b localIds of the 2nd source
+   * @param destination list of @b destination localIds
    */
   virtual void copyItemsMeanValues(Int32ConstArrayView first_source,
                                    Int32ConstArrayView second_source,
                                    Int32ConstArrayView destination) = 0;
 
   /*!
-   * \brief Supprime toutes les entités de la famille.
-   * \warning attention à ne pas détruire des entités qui sont utilisées dans
-   * par une autre famille. En général, il est plus prudent d'utiliser IMesh::clearItems()
-   * si on souhaite supprimer tous les éléments du maillage.
+   * \brief Deletes all entities in the family.
+   * \warning be careful not to destroy entities that are used in
+   * by another family. In general, it is safer to use IMesh::clearItems()
+   * if you want to delete all elements of the mesh.
    */
-  virtual void clearItems() =0;
+  virtual void clearItems() = 0;
 
-  //! Compacte les entités.
-  virtual void compactItems(bool do_sort) =0;
+  //! Compresses the entities.
+  virtual void compactItems(bool do_sort) = 0;
 
  public:
 
   /*!
-   * \brief Construit les structures nécessaires à la synchronisation.
+   * \brief Constructs the structures necessary for synchronization.
    *
-   Cette opération doit être effectuée à chaque fois que les entités
-   du maillage changent de propriétaire (par exemple lors d'un équilibrage de
-   charge).
-   
-   Cette opération est collective.
+   * This operation must be performed every time the entities
+   * of the mesh change ownership (for example, during a load balancing).
+
+   This operation is collective.
   */
-  virtual void computeSynchronizeInfos() =0;
+  virtual void computeSynchronizeInfos() = 0;
 
-  //! Liste des sous-domaines communiquants pour les entités.
-  virtual void getCommunicatingSubDomains(Int32Array& sub_domains) const =0;
+  //! List of communicating sub-domains for the entities.
+  virtual void getCommunicatingSubDomains(Int32Array& sub_domains) const = 0;
 
-  //! @name opérations de synchronisation d'une variable
+  //! @name variable synchronization operations
   //@{
 
-  //! Synchroniseur sur toutes les entités de la famille
-  virtual IVariableSynchronizer* allItemsSynchronizer() =0;
-  
+  //! Synchronizer on all entities of the family
+  virtual IVariableSynchronizer* allItemsSynchronizer() = 0;
+
   /*!
-   * \brief Synchronise les variables \a variables.
+   * \brief Synchronizes the variables \a variables.
    *
-   * Les variables \a variables doivent être toutes être issues
-   * de cette famille et ne pas être partielles.
+   * The variables \a variables must all come from
+   * this family and must not be partial.
    */
-  virtual void synchronize(VariableCollection variables) =0;
-  
-  // TODO: à rendre virtuelle pure (décembre 2024)
+  virtual void synchronize(VariableCollection variables) = 0;
+
+  // TODO: make pure virtual (December 2024)
   /*!
-   * \brief Synchronise les variables \a variables sur une liste d'entités.
+   * \brief Synchronizes the variables \a variables on a list of entities.
    *
-   * Les variables \a variables doivent être toutes être issues
-   * de cette famille et ne pas être partielles.
-   * 
-   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
-   * une entité présente dans cette liste sur un sous-domaine doit être présente
-   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   * The variables \a variables must all come from
+   * this family and must not be partial.
+   *
+   * Only the entities listed in \a local_ids will be synchronized. Note:
+   * an entity present in this list on one sub-domain must be present
+   * in this list for any other sub-domain that possesses this entity.
    */
   virtual void synchronize(VariableCollection variables, Int32ConstArrayView local_ids);
   //@}
-  
-  /*!
-   * \brief Applique une opération de réduction depuis les entités fantômes.
-   *
-   * Cette opération est l'opération inverse de la synchronisation.
-   *
-   * Le sous-domaine récupère les valeurs de la variable \a v sur les entités
-   * qu'il partage avec d'autres sous-domaines et l'opération de réduction
-   * \a operation est appliquée sur cette variable.
-   */
-  virtual void reduceFromGhostItems(IVariable* v,IDataOperation* operation) =0;
-  /*!
-   * \brief Applique une opération de réduction depuis les entités fantômes.
-   *
-   * Cette opération est l'opération inverse de la synchronisation.
-   *
-   * Le sous-domaine récupère les valeurs de la variable \a v sur les entités
-   * qu'il partage avec d'autres sous-domaines et l'opération de réduction
-   * \a operation est appliquée sur cette variable.
-   */
-  virtual void reduceFromGhostItems(IVariable* v,Parallel::eReduceType operation) =0;
 
-  //! Cherche une liste d'adjacence.
+  /*!
+   * \brief Applies a reduction operation from ghost items.
+   *
+   * This operation is the inverse of synchronization.
+   *
+   * The sub-domain retrieves the values of variable \a v on the entities
+   * it shares with other sub-domains, and the reduction operation
+   * \a operation is applied to this variable.
+   */
+  virtual void reduceFromGhostItems(IVariable* v, IDataOperation* operation) = 0;
+  /*!
+   * \brief Applies a reduction operation from ghost items.
+   *
+   * This operation is the inverse of synchronization.
+   *
+   * The sub-domain retrieves the values of variable \a v on the entities
+   * it shares with other sub-domains, and the reduction operation
+   * \a operation is applied to this variable.
+   */
+  virtual void reduceFromGhostItems(IVariable* v, Parallel::eReduceType operation) = 0;
+
+  //! Searches for an adjacency list.
   ARCANE_DEPRECATED_REASON("Y2024: use findAdjacency() instead")
   virtual ItemPairGroup findAdjencyItems(const ItemGroup& group,
                                          const ItemGroup& sub_group,
                                          eItemKind link_kind,
                                          Integer nb_layer) = 0;
   /*!
-   * \brief Cherche une liste d'adjacence.
+   * \brief Searches for an adjacency list.
    *
-   * Cherche la liste d'entités de type \a sub_kind, liées par
-   * le type d'entité \a link_kind du groupe \a group,
-   * sur un nombre de couche \a nb_layer.
+   * Searches for the list of entities of type \a sub_kind, linked by
+   * the entity type \a link_kind of group \a group,
+   * over a number of layers \a nb_layer.
    *
-   * Si \a group et \a sub_group sont de même genre, une entité est toujours
-   * dans sa liste d'adjacence, en tant que premier élément.
+   * If \a group and \a sub_group are of the same kind, an entity is always
+   * in its adjacency list, as the first element.
    *
-   * Si la liste n'existe pas, elle est créée.
+   * If the list does not exist, it is created.
    *
-   * \note pour l'instant une seule couche est autorisée.
+   * \note currently only one layer is allowed.
    */
   virtual ItemPairGroup findAdjacencyItems(const ItemGroup& group,
                                            const ItemGroup& sub_group,
@@ -609,112 +605,110 @@ class ARCANE_CORE_EXPORT IItemFamily
                                            Integer nb_layer);
 
   /*!
-   * \brief Retourne l'interface de la famille de particule de cette famille.
+   * \brief Returns the interface of the particle family for this family.
    *
-   * L'interface IParticleFamily n'existe que si cette famille est
-   * une famille de particules (itemKind()==IK_Particle). Pour les
-   * autres genres de famille, 0 est retourné.
+   * The IParticleFamily interface only exists if this family is
+   * a particle family (itemKind()==IK_Particle). For other family kinds,
+   * 0 is returned.
    */
-  virtual IParticleFamily* toParticleFamily() =0;
+  virtual IParticleFamily* toParticleFamily() = 0;
 
   /*!
-   * \brief Retourne l'interface de la famille de particule de cette famille.
+   * \brief Returns the interface of the particle family for this family.
    *
-   * L'interface IParticleFamily n'existe que si cette famille est
-   * une famille de particules (itemKind()==IK_Particle). Pour les
-   * autres genres de famille, 0 est retourné.
+   * The IParticleFamily interface only exists if this family is
+   * a particle family (itemKind()==IK_Particle). For other family kinds, 0 is returned.
    */
   virtual IDoFFamily* toDoFFamily() { return nullptr; }
 
   /*!
    * \internal
-   * \brief Supprime les entités donnés par \a local_ids.
+   * \brief Removes the entities given by \a local_ids.
    *
-   * Pour usage interne uniquement. Si on souhaite supprimer des entités
-   * du maillage, il faut passer par IMeshModifier via l'appel à IMesh::modifier().
+   * For internal use only. If you want to delete entities
+   * from the mesh, you must go through IMeshModifier via the call to IMesh::modifier().
    */
-  virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) =0;
-
+  virtual void internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost = false) = 0;
 
   /*!
-   * \name Enregistre/Supprime un gestionnaire de connectivité.
+   * \name Register/Delete a connectivity manager.
    *
-   * Permet de répercuter les évolutions de la famille dans les
-   * connectivites "externes" ou elle est impliquée.
-   * Ces connectivites "externes" sont aujourd'hui les connectivités
-   * utilisant les degres de liberté.
+   * Allows propagating family changes to "external" connectivities
+   * in which it is involved.
+   * These "external" connectivities are currently those
+   * using degrees of freedom.
    *
-   * \note Ces méthodes sont internes à %Arcane.
+   * \note These methods are internal to %Arcane.
    */
   //@{
-  virtual void addSourceConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void addTargetConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void removeSourceConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void removeTargetConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void setConnectivityMng(IItemConnectivityMng* connectivity_mng) =0;
+  virtual void addSourceConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void addTargetConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void removeSourceConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void removeTargetConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void setConnectivityMng(IItemConnectivityMng* connectivity_mng) = 0;
   //@}
 
   /*!
-    * \brief Alloue des entités fantômes.
+    * \brief Allocates ghost entities.
     *
-    * Après appel à cette opération, il faut appeler endUpdate() pour
-    * notifier à l'instance la fin des modifications. Il est possible
-    * d'enchaîner plusieurs allocations avant d'appeler
+    * After calling this operation, you must call endUpdate() to
+    * notify the instance that the modifications are finished. It is possible
+    * to chain several allocations before calling
     * endUpdate().
     *
-    * Les \a unique_ids sont ceux d'items présents sur un autre
-    * sous-domaine, dont le numéro est dans le tableau owners (de même
-    * taille que le tableau unique_ids). \a items doit avoir le même
-    * nombre d'éléments que \a unique_ids et sera remplit en retour
-    * avec les numéros locaux des entités créées.
+    * The \a unique_ids are those of items present on another
+    * sub-domain, whose number is in the owners array (of the same
+    * size as the unique_ids array). \a items must have the same
+    * number of elements as \a unique_ids and will be filled back
+    * with the local numbers of the created entities.
     */
   virtual void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items,
-                             Int32ConstArrayView owners) =0;
+                             Int32ConstArrayView owners) = 0;
 
  public:
 
-  //! Interface des comportements/politiques associées à cette famille.
-  virtual IItemFamilyPolicyMng* policyMng() =0;
+  //! Interface of behaviors/policies associated with this family.
+  virtual IItemFamilyPolicyMng* policyMng() = 0;
 
-  //! Propriétés associées à cette famille.
-  virtual Properties* properties() =0;
+  //! Properties associated with this family.
+  virtual Properties* properties() = 0;
 
  public:
 
-  //! Evènement pour l'ajout et la suppression d'entité
+  //! Event for entity addition and deletion
   virtual EventObservableView<const ItemFamilyItemListChangedEventArgs&> itemListChangedEvent() = 0;
 
  public:
 
   /*!
-   * \brief Change le numéro unique de l'entité.
+   * \brief Changes the unique number of the entity.
    *
-   * \warning Cette méthode est expérimentale.
-   * \warning Modifier le uniqueId d'une entité peut engendrer des incohérences
-   * dans le maillage et la numérotation. Il est préférable de n'appeler cette méthode
-   * que sur les entités qui ne sont pas associées à d'autres (par exemple les noeuds qu'on vient
-   * de créer).
+   * \warning This method is experimental.
+   * \warning Modifying an entity's uniqueId can cause inconsistencies
+   * in the mesh and numbering. It is preferable to only call this method
+   * on entities that are not associated with others (for example, nodes that
+   * have just been created).
    */
-  virtual void experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id) =0;
+  virtual void experimentalChangeUniqueId(ItemLocalId local_id, ItemUniqueId unique_id) = 0;
 
  public:
 
   /*!
-   * \brief Redimensionne les variables de cette famille.
+   * \brief Resizes the variables of this family.
    *
-   * Cette méthode est interne à Arcane.
+   * This method is internal to Arcane.
    */
   virtual void resizeVariables(bool force_resize) = 0;
 
  public:
 
-  //! Interface du modificateur de topologie.
+  //! Topology modifier interface.
   virtual IItemFamilyTopologyModifier* _topologyModifier() = 0;
 
  public:
 
-  //! API interne à Arcane
-  virtual IItemFamilyInternal* _internalApi() =0;
+  //! Internal Arcane API
+  virtual IItemFamilyInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -725,4 +719,4 @@ class ARCANE_CORE_EXPORT IItemFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

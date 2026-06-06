@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MatItem.h                                                   (C) 2000-2024 */
 /*                                                                           */
-/* Entités matériau et milieux.                                              */
+/* Material and environment entities.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATITEM_H
 #define ARCANE_CORE_MATERIALS_MATITEM_H
@@ -29,20 +29,21 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Représente un matériau d'une maille multi-matériau.
+ * \brief Represents a material in a multi-material mesh.
  *
- * Cette objet représente un matériau d'une maille multi-matériau.
+ * This object represents a material in a multi-material mesh.
  *
- * Il existe une maille spéciale, appelée maille nulle, pour laquelle
- * null() est vrai et qui représente une maille invalide. Dans le
- * cas de la maille invalide, il ne faut appeler aucune des autres
- * méthode de la classe sous peine de provoquer un plantage.
+ * There is a special mesh, called the null mesh, for which
+ * null() is true and which represents an invalid mesh. In the
+ * case of the invalid mesh, none of the other
+ * class methods should be called, under penalty of causing a crash.
  *
- * \warning Ces mailles sont invalidées dès que la liste des mailles d'un
- * matériau ou d'un milieux change. Il ne faut donc pas
- * conservér une maille de ce type entre deux changements de cette liste.
+ * \warning These meshes are invalidated as soon as the list of meshes of a
+ * material or environment changes. Therefore, one must not
+ * keep a mesh of this type between two changes of this list.
  */
 class MatCell
 : public ComponentCell
@@ -53,7 +54,7 @@ class MatCell
   : ComponentCell(item_base)
   {
 #ifdef ARCANE_CHECK
-    _checkLevel(item_base,LEVEL_MATERIAL);
+    _checkLevel(item_base, LEVEL_MATERIAL);
 #endif
   }
 
@@ -66,16 +67,16 @@ class MatCell
 
  public:
 
-  //! Maille milieu auquel cette maille matériau appartient.
+  //! Environment mesh to which this material mesh belongs.
   ARCCORE_HOST_DEVICE inline EnvCell envCell() const;
 
-  //! Materiau associé
+  //! Associated material
   IMeshMaterial* material() const { return _material(); }
 
-  //! Materiau utilisateur associé
+  //! Associated user material
   IUserMeshMaterial* userMaterial() const { return _material()->userMaterial(); }
 
-  //! Identifiant du matériau
+  //! Material identifier
   ARCCORE_HOST_DEVICE Int32 materialId() const { return componentId(); }
 
  private:
@@ -87,19 +88,19 @@ class MatCell
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
- * \brief Maille arcane d'un milieu.
+ * \brief Arcane mesh of an environment.
  *
- * Une telle maille contient les informations sur les matériaux
- * d'un milieu pour une maille donnée.
+ * Such a mesh contains information about the materials
+ * of an environment for a given mesh.
  *
- * Il existe une maille spéciale, appelée maille nulle, pour laquelle
- * null() est vrai et qui représente une maille invalide. Dans le
- * cas de la maille invalide, il ne faut appeler aucune des autres
- * méthode de la classe sous peine de provoquer un plantage.
+ * There is a special mesh, called the null mesh, for which
+ * null() is true and which represents an invalid mesh. In the
+ * case of the invalid mesh, none of the other
+ * class methods should be called, under penalty of causing a crash.
  *
- * \warning Ces mailles sont invalidées dès que la liste des mailles d'un
- * matériau ou d'un milieux change. Il ne faut donc pas
- * conserver une maille de ce type entre deux changements de cette liste.
+ * \warning These meshes are invalidated as soon as the list of meshes of a
+ * material or environment changes. Therefore, one must not
+ * keep a mesh of this type between two changes of this list.
  */
 class EnvCell
 : public ComponentCell
@@ -110,7 +111,7 @@ class EnvCell
   : ComponentCell(item_base)
   {
 #ifdef ARCANE_CHECK
-    _checkLevel(item_base,LEVEL_ENVIRONMENT);
+    _checkLevel(item_base, LEVEL_ENVIRONMENT);
 #endif
   }
   explicit ARCCORE_HOST_DEVICE EnvCell(const ComponentCell& item)
@@ -121,22 +122,22 @@ class EnvCell
 
  public:
 
-  // Nombre de matériaux du milieu présents dans la maille
+  // Number of environment materials present in the mesh
   ARCCORE_HOST_DEVICE Int32 nbMaterial() const { return nbSubItem(); }
 
-  //! Maille contenant les infos sur tous les milieux
+  //! Mesh containing information about all environments
   ARCCORE_HOST_DEVICE inline AllEnvCell allEnvCell() const;
 
-  //! i-ème maille matériau de cette maille
+  //! i-th material mesh of this mesh
   ARCCORE_HOST_DEVICE inline MatCell cell(Integer i) const { return _subItemBase(i); }
 
-  //! Milieu associé
+  //! Associated environment
   IMeshEnvironment* environment() const { return _environment(); }
 
-  //! Identifiant du milieu
+  //! Environment identifier
   ARCCORE_HOST_DEVICE Int32 environmentId() const { return componentId(); }
 
-  //! Enumérateur sur les mailles matériaux de cette maille
+  //! Enumerator over the material meshes of this mesh
   ARCCORE_HOST_DEVICE CellMatCellEnumerator subMatItems() const
   {
     return CellMatCellEnumerator(*this);
@@ -149,17 +150,18 @@ class EnvCell
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Maille arcane avec info matériaux et milieux.
+ * \brief Arcane mesh with material and environment information.
  *
- * Une telle maille contient les informations sur les milieux
- * pour une maille donnée. Elle permet par exemple de connaitre le nombre
- * de milieux et pour chacun la liste des matériaux.
+ * Such a mesh contains information about the environments
+ * for a given mesh. It allows, for example, knowing the number
+ * of environments and for each the list of materials.
  *
- * \warning Ces mailles sont invalidées dès que la liste des mailles d'un
- * matériau ou d'un milieux change. Il ne faut donc pas
- * conservér une maille de ce type entre deux changements de cette liste.
+ * \warning These meshes are invalidated as soon as the list of meshes of a
+ * material or environment changes. Therefore, one must not
+ * keep a mesh of this type between two changes of this list.
  */
 class AllEnvCell
 : public ComponentCell
@@ -170,7 +172,7 @@ class AllEnvCell
   : ComponentCell(item_base)
   {
 #if defined(ARCANE_CHECK)
-    _checkLevel(item_base,LEVEL_ALLENVIRONMENT);
+    _checkLevel(item_base, LEVEL_ALLENVIRONMENT);
 #endif
   }
 
@@ -183,13 +185,13 @@ class AllEnvCell
 
  public:
 
-  //! Nombre de milieux présents dans la maille
+  //! Number of environments present in the mesh
   ARCCORE_HOST_DEVICE Int32 nbEnvironment() const { return nbSubItem(); }
 
-  //! i-ème maille milieu
+  //! i-th environment mesh
   EnvCell cell(Int32 i) const { return EnvCell(_subItemBase(i)); }
 
-  //! Enumérateur sur les mailles milieux de cette maille
+  //! Enumerator over the environment meshes of this mesh
   ARCCORE_HOST_DEVICE CellEnvCellEnumerator subEnvItems() const
   {
     return CellEnvCellEnumerator(*this);
@@ -222,4 +224,4 @@ allEnvCell() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

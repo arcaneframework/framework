@@ -1,22 +1,22 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RessourceMng.cc                                             (C) 2000-2022 */
 /*                                                                           */
-/* Gestionnaire de ressources.                                               */
+/* Resource manager.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/IApplication.h"
-#include "arcane/IRessourceMng.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IRessourceMng.h"
 
-#include "arcane/DomUtils.h"
+#include "arcane/core/DomUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestionnaire de ressources.
+ * \brief Resource manager.
  */
 class RessourceMng
 : public IRessourceMng

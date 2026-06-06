@@ -1,14 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITimeHistoryAdder.h                                         (C) 2000-2024 */
 /*                                                                           */
-/* Interface de classe permettant d'ajouter un historique de valeur lié à    */
-/* un maillage.                                                              */
+/* Class interface allowing the addition of a value history linked to        */
+/* a mesh.                                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,62 +32,62 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Interface de classe permettant d'ajouter une ou plusieurs valeurs
- * à un historique de valeurs.
+ * \brief Class interface allowing the addition of one or more values
+ * to a value history.
  */
 class ITimeHistoryAdder
 {
  public:
 
-  virtual ~ITimeHistoryAdder() = default; //!< Libère les ressources
+  virtual ~ITimeHistoryAdder() = default; //!< Frees resources
 
  public:
 
   /*!
-   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   * \brief Method allowing the addition of a value to a history.
    *
-   * \param thpi Les paramètres de la valeur.
-   * \param value La valeur à ajouter.
+   * \param thpi The parameters of the value.
+   * \param value The value to add.
    */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Real value) = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   * \brief Method allowing the addition of a value to a history.
    *
-   * \param thpi Les paramètres de la valeur.
-   * \param value La valeur à ajouter.
+   * \param thpi The parameters of the value.
+   * \param value The value to add.
    */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int32 value) = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter une valeur à un historique.
+   * \brief Method allowing the addition of a value to a history.
    *
-   * \param thpi Les paramètres de la valeur.
-   * \param value La valeur à ajouter.
+   * \param thpi The parameters of the value.
+   * \param value The value to add.
    */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int64 value) = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   * \brief Method allowing the addition of values to a history.
    *
-   * \param thpi Les paramètres des valeurs.
-   * \param value Les valeurs à ajouter.
+   * \param thpi The parameters of the values.
+   * \param value The values to add.
    */
   virtual void addValue(const TimeHistoryAddValueArg& thp, RealConstArrayView values) = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   * \brief Method allowing the addition of values to a history.
    *
-   * \param thpi Les paramètres des valeurs.
-   * \param value Les valeurs à ajouter.
+   * \param thpi The parameters of the values.
+   * \param value The values to add.
    */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int32ConstArrayView values) = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter des valeurs à un historique.
+   * \brief Method allowing the addition of values to a history.
    *
-   * \param thpi Les paramètres des valeurs.
-   * \param value Les valeurs à ajouter.
+   * \param thpi The parameters of the values.
+   * \param value The values to add.
    */
   virtual void addValue(const TimeHistoryAddValueArg& thp, Int64ConstArrayView values) = 0;
 };

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDoFFamily.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une famille de degrés de liberté (DoF).                       */
+/* Interface of a family of degrees of freedom (DoF).                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDOFFAMILY_H
 #define ARCANE_CORE_IDOFFAMILY_H
@@ -25,15 +25,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'une famille de DoF.
+ * \brief Interface of a DoF family.
  */
 class ARCANE_CORE_EXPORT IDoFFamily
 {
  public:
 
-  virtual ~IDoFFamily() = default; //<! Libère les ressources
+  virtual ~IDoFFamily() = default; //<! Frees resources
 
  public:
 
@@ -41,24 +42,24 @@ class ARCANE_CORE_EXPORT IDoFFamily
 
  public:
 
-  //! Nom de la famille
+  //! Name of the family
   virtual String name() const = 0;
 
-  //! Nom complet de la famille (avec celui du maillage)
+  //! Full name of the family (including the mesh name)
   virtual String fullName() const = 0;
 
-  //! Nombre d'entités
+  //! Number of entities
   virtual Integer nbItem() const = 0;
 
-  //! Groupe de tous les DoF
+  //! Group of all DoFs
   virtual ItemGroup allItems() const = 0;
 
  public:
 
-  //! En entree les uids des dofs et on recupere leurs lids
+  //! Input is the DoF uids and we retrieve their lids
   virtual DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids) = 0;
 
-  //! L'ajout de fantomes doit etre suivi d'un appel de computeSynchronizeInfos
+  //! Adding ghosts must be followed by a call to computeSynchronizeInfos
   virtual DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids,
                                      Int32ConstArrayView owners) = 0;
 

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Expression.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Référence à une expression.                                               */
+/* Reference to an expression.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_EXPRESSION_H
 #define ARCANE_CORE_EXPR_EXPRESSION_H
@@ -32,26 +32,27 @@ class ExpressionResult;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence à une expression.
+ * \brief Reference to an expression.
  *
- Cette classe sert juste pour maintenir une référence à une expression
- (IExpression). Elle est utilisée dans les wrapper pour garantir qu'une
- expression allouée est bien détruite lorsqu'elle n'est plus utilisée.
+ This class is just used to maintain a reference to an expression
+ (IExpression). It is used in wrappers to ensure that an
+ allocated expression is properly destroyed when it is no longer used.
  */
 class ARCANE_EXPR_EXPORT Expression
 {
  public:
 
-  //! Constructeur par défaut.
+  //! Default constructor.
   Expression();
 
   Expression(IExpressionImpl*);
 
   explicit Expression(Real v);
 
-  /*! \brief Constructeur de recopie.
-   * Le constructeur est protégé pour éviter de dupliquer par erreur une
+  /*! \brief Copy constructor.
+   * The constructor is protected to prevent accidental duplication of a
    * instance.
    */
   Expression(const Expression& expr);
@@ -62,12 +63,12 @@ class ARCANE_EXPR_EXPORT Expression
  public:
 
   void assign(const Expression& expr);
-  void assign(const Expression& expr,const Array<Integer>& indices);
+  void assign(const Expression& expr, const Array<Integer>& indices);
   void assign(Real val);
 
   void apply(ExpressionResult* result);
 
-  void dumpIf(const Expression& test_expr,Array<Expression>& exprs);
+  void dumpIf(const Expression& test_expr, Array<Expression>& exprs);
   void dumpIf(const Expression& test_expr);
 
   IExpressionImpl* operator->() const;
@@ -107,64 +108,99 @@ class ARCANE_EXPR_EXPORT Expression
   Expression eand(Expression ex1);
 
   Expression operator+(Real a)
-    { return this->operator+(literal(a)); }
+  {
+    return this->operator+(literal(a));
+  }
   Expression operator-(Real a)
-    { return this->operator-(literal(a)); }
+  {
+    return this->operator-(literal(a));
+  }
   Expression operator*(Real a)
-    { return this->operator*(literal(a)); }
+  {
+    return this->operator*(literal(a));
+  }
   Expression operator/(Real a)
-    { return this->operator/(literal(a)); }
+  {
+    return this->operator/(literal(a));
+  }
 
   Expression eq(Real a)
-    { return this->eq(literal(a)); }
+  {
+    return this->eq(literal(a));
+  }
   Expression lt(Real a)
-    { return this->lt(literal(a)); }
+  {
+    return this->lt(literal(a));
+  }
   Expression gt(Real a)
-    { return this->gt(literal(a)); }
+  {
+    return this->gt(literal(a));
+  }
   Expression lte(Real a)
-    { return this->lte(literal(a)); }
+  {
+    return this->lte(literal(a));
+  }
   Expression gte(Real a)
-    { return this->gte(literal(a)); }
+  {
+    return this->gte(literal(a));
+  }
 
   Expression eand(Real a)
-    { return this->eand(literal(a)); }
+  {
+    return this->eand(literal(a));
+  }
   Expression eor(Real a)
-    { return this->eor(literal(a)); }
+  {
+    return this->eor(literal(a));
+  }
 
   Expression ifelse(Expression ex1, Expression ex2);
   Expression ifelse(Real ex1, Real ex2)
-    { return this->ifelse(literal(ex1), literal(ex2)); }
+  {
+    return this->ifelse(literal(ex1), literal(ex2));
+  }
   Expression ifelse(Expression ex1, Real ex2)
-    { return this->ifelse(ex1, literal(ex2)); }
+  {
+    return this->ifelse(ex1, literal(ex2));
+  }
   Expression ifelse(Real ex1, Expression ex2)
-    { return this->ifelse(literal(ex1), ex2); }
+  {
+    return this->ifelse(literal(ex1), ex2);
+  }
 
   Expression minimum(Expression v);
   Expression minimum(Real v)
-    { return this->minimum(literal(v)); }
+  {
+    return this->minimum(literal(v));
+  }
 
   Expression maximum(Expression v);
   Expression maximum(Real v)
-    { return this->maximum(literal(v)); }
+  {
+    return this->maximum(literal(v));
+  }
 
   Expression pow(Expression v);
   Expression pow(Real v)
-    { return this->pow(literal(v)); }
-  
+  {
+    return this->pow(literal(v));
+  }
+
   Expression literal(Real v);
-  
+
   void setTrace(bool v);
 
   unsigned long vectorSize();
 
  private:
+
   IExpressionImpl* m_expression;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITiedInterface.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une classe gérant une semi-conformité du maillage.            */
+/* Interface of a class managing semi-conforming mesh.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIEDINTERFACE_H
 #define ARCANE_CORE_ITIEDINTERFACE_H
@@ -33,44 +33,45 @@ typedef ConstMultiArray2View<TiedFace> TiedInterfaceFaceList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Interface d'un classe gérant une semi-conformité du maillage.
+ * \brief Interface of a class managing semi-conforming mesh.
  */
 class ITiedInterface
 {
  public:
 
-  virtual ~ITiedInterface() = default; //!< Libère les ressources
+  virtual ~ITiedInterface() = default; //!< Releases resources
 
  public:
 
   /*!
-   * \brief Groupe contenant les faces maîtres.
+   * \brief Group containing the master faces.
    *
-   * Il s'agit d'un groupe contenant uniquement les entités
-   * propres à ce sous-domaine.
+   * It is a group containing only the entities
+   * specific to this subdomain.
    */
   virtual FaceGroup masterInterface() const = 0;
 
-  //! Nom du groupe contenant les mailles maîtres
+  //! Name of the group containing the master meshes
   virtual String masterInterfaceName() const = 0;
 
   /*!
-   * \brief Groupe contenant les faces esclaves.
+   * \brief Group containing the slave faces.
    *
-   * Il s'agit d'un groupe contenant uniquement les entités
-   * propres à ce sous-domaine.
+   * It is a group containing only the entities
+   * specific to this subdomain.
    */
   virtual FaceGroup slaveInterface() const = 0;
 
-  //! Nom du groupe contenant les mailles esclaves
+  //! Name of the group containing the slave meshes
   virtual String slaveInterfaceName() const = 0;
 
-  //! Liste des informations sur les noeuds esclaves d'une face maître
+  //! List of information about the slave nodes of a master face
   virtual TiedInterfaceNodeList tiedNodes() const = 0;
 
-  //! Liste des informations sur les faces esclaves d'une face maître
+  //! List of information about the slave faces of a master face
   virtual TiedInterfaceFaceList tiedFaces() const = 0;
 };
 
@@ -82,5 +83,4 @@ class ITiedInterface
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

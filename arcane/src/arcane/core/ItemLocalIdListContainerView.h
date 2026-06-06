@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemLocalIdListContainerView.h                              (C) 2000-2024 */
 /*                                                                           */
-/* Vue sur le conteneur d'une liste de ItemLocalId.                          */
+/* View over the container of a list of ItemLocalId.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMLOCALIDLISTCONTAINERVIEW_H
 #define ARCANE_CORE_ITEMLOCALIDLISTCONTAINERVIEW_H
@@ -24,21 +24,22 @@ namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Vue sur le conteneur d'une liste de ItemLocalId.
+ * \brief View over the container of a list of ItemLocalId.
  *
- * Cette classe sert uniquement à conserver les informations nécessaires
- * pour une liste de 'ItemLocalId' et n'est utilisé que pour passer des
- * informations entre les vues sur les entités (par exemple ItemVectorView)
- * et les itérateurs associés.
+ * This class is only used to store the necessary information
+ * for a list of 'ItemLocalId' and is only used to pass
+ * information between entity views (e.g., ItemVectorView)
+ * and associated iterators.
  *
- * La classe utilisateur associée est ItemLocalIdListView.
+ * The associated user class is ItemLocalIdListView.
  */
 class ARCANE_CORE_EXPORT ItemLocalIdListContainerView
 {
-  // NOTE: Cette classe est mappée en C# et si on change sa structure il
-  // faut mettre à jour la version C# correspondante.
+  // NOTE: This class is mapped in C# and if its structure is changed,
+  // the corresponding C# version must be updated.
   template <typename ItemType> friend class ::Arcane::ItemLocalIdListViewT;
   template <int Extent> friend class ::Arcane::impl::ItemIndexedListView;
   friend ItemVectorView;

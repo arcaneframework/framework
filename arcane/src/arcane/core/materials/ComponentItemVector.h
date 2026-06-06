@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ComponentItemVector.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Vecteur sur des entités constituants.                                     */
+/* Vector over constituent entities.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEMVECTOR_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEMVECTOR_H
@@ -33,8 +33,9 @@ class ConstituentItemLocalIdList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour l'implémentation de ComponentItemVector.
+ * \brief Interface for the implementation of ComponentItemVector.
  */
 class IConstituentItemVectorImpl
 {
@@ -60,69 +61,71 @@ class IConstituentItemVectorImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vecteur sur les entités d'un constituant.
+ * \brief Vector over the entities of a constituent.
  *
- * \warning Ce vecteur n'est valide que tant que le milieu et le groupe support
- * ne change pas.
+ * \warning This vector is only valid as long as the medium and the supporting group
+ * do not change.
  *
- * Cette classe est similaire à la classe ItemVector mais contient une liste
- * d'entités d'un constituant (IMeshComponent). Toutes les entités doivent
- * appartenir au même constituant.
+ * This class is similar to the ItemVector class but contains a list
+ * of constituent entities (IMeshComponent). All entities must
+ * belong to the same constituent.
  *
- * Les instances de cette classe ne sont en général pas construit
- * directement sauf s'il s'agit de copies. Pour la création d'origine, il
- * faut utilise MatCellVector ou EnvCellVector.
+ * Instances of this class are generally not constructed
+ * directly unless they are copies. For original creation, MatCellVector or EnvCellVector must be used.
  *
- * Cette classe utilise une sémantique par référence. Pour effectuer une copie,
- * il faut utiliser la commande clone() ou construire un objet via une vue:
+ * This class uses a reference semantics. To perform a copy,
+ * you must use the clone() command or construct an object via a view:
  *
  \code
  * ComponentItemVector v1 = ...;
- * ComponentItemVector v2 = v1; // v2 fait référence à v1
- * ComponentItemVector v3 = v1.clone(); // v3 est une copie de v1
- * ComponentItemVector v4 = v1.view(); // v4 est une copie de v1
+ * ComponentItemVector v2 = v1; // v2 references v1
+ * ComponentItemVector v3 = v1.clone(); // v3 is a copy of v1
+ * ComponentItemVector v4 = v1.view(); // v4 is a copy of v1
  \endcode
  */
 class ARCANE_CORE_EXPORT ComponentItemVector
 {
  public:
 
-  //! Constructeur de recopie. Cette instance fait ensuite référence à \a rhs
+  //! Copy constructor. This instance then references \a rhs
   ComponentItemVector(const ComponentItemVector& rhs) = default;
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   ComponentItemVector& operator=(const ComponentItemVector&) = default;
 
  protected:
 
-  //! Construit un vecteur pour le constituant \a component
+  //! Constructs a vector for the constituent \a component
   explicit ComponentItemVector(IMeshComponent* component);
-  //! Constructeur de recopie. Cette instance est une copie de \a rhs.
+
+  //! Copy constructor. This instance is a copy of \a rhs.
   explicit ComponentItemVector(ComponentItemVectorView rhs);
 
  public:
 
-  //! Conversion vers une vue sur ce vecteur
+  //! Conversion to a view of this vector
   operator ComponentItemVectorView() const
   {
     return view();
   }
 
-  //! Vue sur ce vecteur
+  //! View of this vector
   ComponentItemVectorView view() const;
 
-  //! Constituant associé
+  //! Associated constituent
   IMeshComponent* component() const { return _component(); }
 
-  //! Clone ce vecteur
+  //! Clone this vector
   ComponentItemVector clone() const { return ComponentItemVector(view()); }
 
  public:
 
-  //! Liste des entités pures (associées à la maille globale) du constituant
+  //! List of pure entities (associated with the global mesh) of the constituent
   ComponentPurePartItemVectorView pureItems() const;
-  //! Liste des entités impures (partielles) du constituant
+
+  //! List of impure (partial) entities of the constituent
   ComponentImpurePartItemVectorView impureItems() const;
 
  protected:
@@ -150,5 +153,4 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

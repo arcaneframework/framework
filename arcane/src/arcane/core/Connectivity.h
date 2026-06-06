@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Connectivity.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Descripteur de connectivité.                                              */
+/* Connectivity descriptor.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CONNECTIVITY_H
 #define ARCANE_CORE_CONNECTIVITY_H
@@ -33,10 +33,10 @@ class ARCANE_CORE_EXPORT Connectivity
 {
  public:
 
-  //! Flags de connectivité
+  //! Connectivity flags
   /*! 
-   * Toutes les connectivités ne sont pas débrayables.
-   * La numérotation jusqu'à CellToCell est faite pour la traduction avec _kindsToConnectivity 
+   * Not all connectivities are decouplable.
+   * The numbering up to CellToCell is done for translation with _kindsToConnectivity 
    */
   enum eConnectivityType
   {
@@ -44,7 +44,7 @@ class ARCANE_CORE_EXPORT Connectivity
     // From Node
     // CT_NodeToNode = 1<<1,
     CT_NodeToEdge = 1 << 2,
-    CT_NodeToFace = 1 << 3, // Utilisé dans UnstructuredMeshUtilities::localIdsFromConnectivity
+    CT_NodeToFace = 1 << 3, // Used in UnstructuredMeshUtilities::localIdsFromConnectivity
     CT_NodeToCell = 1 << 4,
     // From Edge
     CT_EdgeToNode = 1 << 5,
@@ -82,17 +82,17 @@ class ARCANE_CORE_EXPORT Connectivity
     CT_Dim2D = 1 << 29,
     CT_Dim3D = 1 << 30,
 
-    // Types composés
-    // Connectivité par défaut
+    // Compound types
+    // Default connectivity
     CT_Default = CT_NodeToCell + CT_NodeToFace + CT_FaceToNode + CT_FaceToCell + CT_CellToNode + CT_CellToFace + CT_HasNode + CT_HasFace + CT_HasCell,
 
-    CT_Default1D = CT_NodeToCell // minimum en 1D
+    CT_Default1D = CT_NodeToCell // minimum in 1D
     + CT_FaceToNode + CT_FaceToCell + CT_CellToNode + CT_CellToFace + CT_HasNode + CT_HasFace + CT_HasCell,
 
-    CT_Default2D = CT_NodeToCell // minimum en 2D
+    CT_Default2D = CT_NodeToCell // minimum in 2D
     + CT_FaceToNode + CT_FaceToCell + CT_CellToNode + CT_CellToFace + CT_HasNode + CT_HasFace + CT_HasCell,
 
-    CT_Default3D = CT_NodeToCell // minimum en 3D
+    CT_Default3D = CT_NodeToCell // minimum in 3D
     + CT_FaceToNode + CT_FaceToCell + CT_CellToNode + CT_CellToFace + CT_HasNode + CT_HasFace + CT_HasCell,
 
     CT_FullConnectivity2D = CT_NodeToFace + CT_NodeToCell + CT_FaceToNode + CT_FaceToCell + CT_CellToNode + CT_CellToFace + CT_HasNode + CT_HasFace + CT_HasCell,
@@ -108,7 +108,7 @@ class ARCANE_CORE_EXPORT Connectivity
 
  public:
 
-  //! Classe d'écriture d'un marqueur de connectivité
+  //! Class for writing a connectivity marker
   class Printer
   {
    public:
@@ -128,7 +128,7 @@ class ARCANE_CORE_EXPORT Connectivity
 
  public:
 
-  /** Constructeur de la classe */
+  /** Constructor of the class */
   explicit Connectivity(VariableScalarInteger connectivity);
 
  public:
@@ -150,10 +150,10 @@ class ARCANE_CORE_EXPORT Connectivity
 
   static Integer getPrealloc(Integer connectivity, eItemKind kindA, eItemKind kindB);
 
-  //! Fonction d'écriture sur un flux
+  //! Function to write to a stream
   static void print(std::ostream& o, Integer connectivity);
 
-  //! Conversion de type en connectivité
+  //! Type to connectivity conversion
   static Integer kindsToConnectivity(eItemKind kindA, eItemKind kindB);
 
  private:
@@ -187,4 +187,4 @@ operator<<(std::ostream& o, const Connectivity::Printer& p);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_CONNECTIVITY_H */
+#endif

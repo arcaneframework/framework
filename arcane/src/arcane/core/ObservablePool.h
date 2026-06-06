@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ObserverPool.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Liste d'observables.                                                      */
+/* List of observables.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_OBSERVABLEPOOL_H
 #define ARCANE_CORE_OBSERVABLEPOOL_H
@@ -34,27 +34,28 @@ class IObservable;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste d'observables.
+ * \brief List of observables.
  *
- * Cette classe permet de gérer une liste d'observables. Chaque observable
- * est associée à une clé de type \a KeyType.
+ * This class allows managing a list of observables. Each observable
+ * is associated with a key of type \a KeyType.
  */
-template<typename KeyType>
+template <typename KeyType>
 class ObservablePool
 {
  public:
 
-  typedef std::map<KeyType,IObservable*> ObservableListType;
+  typedef std::map<KeyType, IObservable*> ObservableListType;
 
  public:
-	
-  //! Constructeur
+
+  //! Constructor
   ObservablePool() {}
-  //! Libère les ressources
+  //! Frees resources
   ~ObservablePool()
   {
-    for( const auto& x : m_observables ){
+    for (const auto& x : m_observables) {
       IObservable* o = x.second;
       o->detachAllObservers();
       delete o;
@@ -62,13 +63,13 @@ class ObservablePool
   }
 
  public:
-  
+
   void add(const KeyType& key)
   {
     IObservable* x = _getIfExists(key);
     if (x)
       ARCANE_FATAL("Observable with current key already exists");
-    m_observables.insert(std::make_pair(key,new Observable()));
+    m_observables.insert(std::make_pair(key, new Observable()));
   }
 
   IObservable* operator[](const KeyType& key)
@@ -80,15 +81,14 @@ class ObservablePool
   }
 
  protected:
-
  private:
 
-  ObservableListType m_observables; //!< Liste des observables
+  ObservableListType m_observables; //!< List of observables
 
   IObservable* _getIfExists(const KeyType& key) const
   {
     auto x = m_observables.find(key);
-    if (x!=m_observables.end())
+    if (x != m_observables.end())
       return x->second;
     return nullptr;
   }
@@ -102,5 +102,4 @@ class ObservablePool
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,24 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableRef.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Référence à une variable sur un matériau du maillage.                     */
+/* Reference to a variable on a mesh material.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MESHMATERIALVARIABLEREF_H
 #define ARCANE_CORE_MATERIALS_MESHMATERIALVARIABLEREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MeshMaterialVariableRef.h
  *
- * Ce fichier contient les différents types gérant les références
- * sur les variables matériaux.
+ * This file contains the different types managing references
+ * to material variables.
  */
+
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array2View.h"
 
@@ -39,13 +41,15 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Classe de base des références aux variables matériaux.
+ * \brief Base class for material variable references.
  */
 class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 {
  public:
+
   class Enumerator
   {
    public:
@@ -79,15 +83,15 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 
  public:
 
-  //! Référence précédente (ou null) sur variable()
+  //! Previous reference (or null) on variable()
   MeshMaterialVariableRef* previousReference();
 
-  //! Référence suivante (ou null) sur variable()
+  //! Next reference (or null) on variable()
   MeshMaterialVariableRef* nextReference();
 
   /*!
    * \internal
-   * \brief Positionne la référence précédente.
+   * \brief Positions the previous reference.
    *
    * For internal use only.
    */
@@ -95,39 +99,39 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 
   /*!
    * \internal
-   * \brief Positionne la référence suivante.
+   * \brief Positions the next reference.
    *
    * For internal use only.
    */
   void setNextReference(MeshMaterialVariableRef* v);
 
-  //! Enregistre la variable (interne)
+  //! Registers the variable (internal)
   void registerVariable();
 
-  //! Supprime l'enregistrement de la variable (interne)
+  //! Unregisters the variable (internal)
   void unregisterVariable();
 
-  virtual void updateFromInternal() =0;
-  
-  //! Variable matériau associée.
+  virtual void updateFromInternal() = 0;
+
+  //! Associated material variable.
   IMeshMaterialVariable* materialVariable() const { return m_material_variable; }
 
-  //! Synchronise les valeurs entre les sous-domaines
+  //! Synchronizes values between sub-domains
   void synchronize();
 
-  //! Ajoute cette variable à la liste des synchronisations \a sync_list.
+  //! Adds this variable to the synchronization list \a sync_list.
   void synchronize(MeshMaterialVariableSynchronizerList& sync_list);
 
-  //! Espace de définition de la variable (matériau+milieu ou milieu uniquement)
+  //! Definition space of the variable (material+environment or environment only)
   MatVarSpace space() const { return m_material_variable->space(); }
 
   /*!
-   * \brief Remplit les valeurs partielles avec la valeur de la maille du dessus.
-   * Si \a level vaut LEVEL_MATERIAL, copie les valeurs matériaux avec celle du milieu.
-   * Si \a level vaut LEVEL_ENVIRONNEMENT, copie les valeurs des milieux avec
-   * celui de la maille globale.
-   * Si \a level vaut LEVEL_ALLENVIRONMENT, remplit toutes les valeurs partielles
-   * avec celle de la maille globale (cela rend cette méthode équivalente à
+   * \brief Fills partial values with the super mesh value.
+   * If \a level is LEVEL_MATERIAL, copies material values with those of the environment.
+   * If \a level is LEVEL_ENVIRONMENT, copies environment values with
+   * those of the global mesh.
+   * If \a level is LEVEL_ALLENVIRONMENT, fills all partial values
+   * with those of the global mesh (this makes this method equivalent to
    * fillGlobalValuesWithGlobalValues().
    */
   void fillPartialValuesWithSuperValues(Int32 level)
@@ -137,58 +141,63 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 
  public:
 
-  // Fonctions issues de VariableRef. A terme, il faudra que la variable
-  // materiau dérive de la variable classique.
-  //@{ Fonctions issues de VariablesRef. Ces fonctions s'appliquent sur la variable globale associée.
+  // Functions inherited from VariableRef. Eventually, the material variable
+  // will derive from the classic variable.
+  //@{ Functions inherited from VariablesRef. These functions apply to the associated global variable.
   String name() const;
-	void setUpToDate();
-	bool isUsed() const;
-	void update();
-	void addDependCurrentTime(const VariableRef& var);
-	void addDependCurrentTime(const VariableRef& var,const TraceInfo& tinfo);
+  void setUpToDate();
+  bool isUsed() const;
+  void update();
+  void addDependCurrentTime(const VariableRef& var);
+  void addDependCurrentTime(const VariableRef& var, const TraceInfo& tinfo);
   void addDependCurrentTime(const MeshMaterialVariableRef& var);
   void addDependPreviousTime(const MeshMaterialVariableRef& var);
   void removeDepend(const MeshMaterialVariableRef& var);
-	template<typename ClassType> void
-	setComputeFunction(ClassType* instance,void (ClassType::*func)())
-	{ m_global_variable->setComputeFunction(new VariableComputeFunction(instance,func)); }
+  template <typename ClassType> void
+  setComputeFunction(ClassType* instance, void (ClassType::*func)())
+  {
+    m_global_variable->setComputeFunction(new VariableComputeFunction(instance, func));
+  }
   //@}
 
-  //! Fonctions pour gérer les dépendances sur la partie matériau de la variable.
+  //! Functions to manage dependencies on the material part of the variable.
   //@{
-	void setUpToDate(IMeshMaterial*);
-	void update(IMeshMaterial*);
-	void addMaterialDepend(const VariableRef& var);
-	void addMaterialDepend(const VariableRef& var,const TraceInfo& tinfo);
-	void addMaterialDepend(const MeshMaterialVariableRef& var);
-	void addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo);
-	template<typename ClassType> void
-	setMaterialComputeFunction(ClassType* instance,void (ClassType::*func)(IMeshMaterial*))
-	{ m_material_variable->setComputeFunction(new MeshMaterialVariableComputeFunction(instance,func)); }
+  void setUpToDate(IMeshMaterial*);
+  void update(IMeshMaterial*);
+  void addMaterialDepend(const VariableRef& var);
+  void addMaterialDepend(const VariableRef& var, const TraceInfo& tinfo);
+  void addMaterialDepend(const MeshMaterialVariableRef& var);
+  void addMaterialDepend(const MeshMaterialVariableRef& var, const TraceInfo& tinfo);
+  template <typename ClassType> void
+  setMaterialComputeFunction(ClassType* instance, void (ClassType::*func)(IMeshMaterial*))
+  {
+    m_material_variable->setComputeFunction(new MeshMaterialVariableComputeFunction(instance, func));
+  }
   //@}
 
  protected:
-  
+
   void _internalInit(IMeshMaterialVariable* mat_variable);
   bool _isRegistered() const { return m_is_registered; }
 
  private:
 
-  //! Variable associée
+  //! Associated variable
   IMeshMaterialVariable* m_material_variable = nullptr;
 
-  //! Référence précédente sur \a m_variable
+  //! Previous reference on \a m_variable
   MeshMaterialVariableRef* m_previous_reference = nullptr;
 
-  //! Référence suivante sur \a m_variable
+  //! Next reference on \a m_variable
   MeshMaterialVariableRef* m_next_reference = nullptr;
 
-  //! Variable globale associée
+  //! Associated global variable
   IVariable* m_global_variable = nullptr;
 
   bool m_is_registered = false;
 
  private:
+
   void _checkValid() const
   {
 #ifdef ARCANE_CHECK
@@ -201,13 +210,14 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Variable scalaire sur les mailles d'un matériau du maillage.
+ * \brief Scalar variable on the meshes of a mesh material.
  *
- * Pour l'instant, cette classe n'est instanciée que pour les mailles
+ * For now, this class is only instantiated for meshes
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellMaterialVariableScalarRef
 : public MeshMaterialVariableRef
 {
@@ -221,29 +231,29 @@ class CellMaterialVariableScalarRef
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const VariableBuildInfo& vb);
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb);
   /*!
-   * \brief Construit une référence à la variable \a var.
+   * \brief Constructs a reference to the variable \a var.
    *
-   * \a var doit avoir comme type de donnée \a DataType et doit être une variable scalaire sinon
-   * une exception est levée.
+   * \a var must have the data type \a DataType and must be a scalar variable, otherwise
+   * an exception is raised.
    */
   explicit ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(IMeshMaterialVariable* var);
   ARCANE_CORE_EXPORT CellMaterialVariableScalarRef(const ThatClass& rhs);
 
  public:
 
-  //! Opérateur de recopie (interdit)
+  //! Copy assignment operator (deleted)
   ARCANE_CORE_EXPORT ThatClass& operator=(const ThatClass& rhs) = delete;
-  //! Constructeur vide (interdit)
+  //! Default constructor (deleted)
   CellMaterialVariableScalarRef() = delete;
 
  public:
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
@@ -264,82 +274,82 @@ class CellMaterialVariableScalarRef
 
  public:
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for the material mesh \a mc
   DataType operator[](ComponentItemLocalId mc) const
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for the material mesh \a mc
   DataType& operator[](ComponentItemLocalId mc)
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur partielle de la variable pour l'itérateur \a mc
+  //! Partial value of the variable for the iterator \a mc
   DataType operator[](CellComponentCellEnumerator mc) const
   {
     return this->operator[](mc._varIndex());
   }
 
-  //! Valeur partielle de la variable pour l'itérateur \a mc
+  //! Partial value of the variable for the iterator `mc`
   DataType& operator[](CellComponentCellEnumerator mc)
   {
     return this->operator[](mc._varIndex());
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for the cell `c`
   DataType operator[](CellLocalId c) const
   {
     return m_value[0][c.localId()];
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for the cell `c`
   DataType& operator[](CellLocalId c)
   {
     return m_value[0][c.localId()];
   }
 
-  //! Valeur de la variable pour la maille matériau \a mvi
+  //! Value of the variable for the material cell `mvi`
   DataType operator[](PureMatVarIndex mvi) const
   {
     return m_value[0][mvi.valueIndex()];
   }
 
-  //! Valeur de la variable pour la maille matériau \a mvi
+  //! Value of the variable for the material cell `mvi`
   DataType& operator[](PureMatVarIndex mvi)
   {
     return m_value[0][mvi.valueIndex()];
   }
 
   /*!
-   * \brief Valeur de la variable pour le matériau d'index \a mat_id de
-   * la maille \a ou 0 si absent de la maille.
+   * \brief Value of the variable for the material with index `mat_id` of
+   * the cell, or 0 if absent from the cell.
    */
-  ARCANE_CORE_EXPORT DataType matValue(AllEnvCell c,Int32 mat_id) const;
+  ARCANE_CORE_EXPORT DataType matValue(AllEnvCell c, Int32 mat_id) const;
 
   /*!
-   * \brief Valeur de la variable pour le milieu d'index \a env_id de
-   * la maille \a ou 0 si absent de la maille.
+   * \brief Value of the variable for the environment with index `env_id` of
+   * the cell, or 0 if absent from the cell.
    */
-  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c,Int32 env_id) const;
+  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c, Int32 env_id) const;
 
  public:
-  
-  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values);
-  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArrayView indexes);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,Array<DataType>& values);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,Array<DataType>& values,Int32ConstArrayView indexes);
+
+  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values);
+  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values, Int32ConstArrayView indexes);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, ArrayView<DataType> values);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, ArrayView<DataType> values, Int32ConstArrayView indexes);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, Array<DataType>& values);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, Array<DataType>& values, Int32ConstArrayView indexes);
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   ARCANE_CORE_EXPORT void fillPartialValues(const DataType& value);
 
  public:
 
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT GlobalVariableRefType& globalVariable();
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT const GlobalVariableRefType& globalVariable() const;
 
  private:
@@ -355,26 +365,27 @@ class CellMaterialVariableScalarRef
 
  public:
 
-  // TODO: Temporaire. a supprimer.
+  // TODO: Temporary. To be removed.
   ArrayView<DataType>* _internalValue() const { return m_value; }
 
  public:
 
 #ifdef ARCANE_DOTNET
-  // Uniquement pour le wrapper C#
-  // TODO: a terme utiliser 'm_container_view' à la place
+  // Only for the C# wrapper
+  // TODO: Eventually use 'm_container_view' instead
   void* _internalValueAsPointerOfPointer() { return reinterpret_cast<void*>(&m_value); }
 #endif
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Variable tableau sur les mailles d'un matériau du maillage.
- * Pour l'instant, cette classe n'est instanciée que pour les mailles
+ * \brief Array variable over the cells of a material in the mesh.
+ * For now, this class is only instantiated for cells.
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellMaterialVariableArrayRef
 : public MeshMaterialVariableRef
 {
@@ -388,29 +399,28 @@ class CellMaterialVariableArrayRef
 
  public:
 
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in `vb`
   explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const VariableBuildInfo& vb);
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in `vb`
   explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb);
   /*!
-   * \brief Construit une référence à la variable \a var.
+   * \brief Constructs a reference to the variable `var`.
    *
-   * \a var doit avoir comme type de donnée \a DataType et doit être une variable tableau sinon
-   * une exception est levée.
+   * \a var must have the data type `DataType` and must be an array variable, otherwise an exception is raised.
    */
   explicit ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(IMeshMaterialVariable* var);
   ARCANE_CORE_EXPORT CellMaterialVariableArrayRef(const ThatClass& rhs);
 
  public:
 
-  //! Opérateur de recopie (interdit)
+  //! Copy operator (deleted)
   ARCANE_CORE_EXPORT ThatClass& operator=(const ThatClass& rhs) = delete;
-  //! Constructeur vide (interdit)
+  //! Default constructor (deleted)
   CellMaterialVariableArrayRef() = delete;
 
  public:
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable `rhs`.
   ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
@@ -420,18 +430,18 @@ class CellMaterialVariableArrayRef
 
  public:
 
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT GlobalVariableRefType& globalVariable();
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT const GlobalVariableRefType& globalVariable() const;
 
  public:
 
   /*!
-   * \brief Redimensionne le nombre d'éléments du tableau.
+   * \brief Resizes the number of elements in the array.
    *
-   * La première dimension reste toujours égale au nombre d'éléments du maillage.
-   * Seule la deuxième composante est retaillée.
+   * The first dimension always remains equal to the number of elements in the mesh.
+   * Only the second component is resized.
    */
   ARCANE_CORE_EXPORT void resize(Integer dim2_size);
 
@@ -448,37 +458,37 @@ class CellMaterialVariableArrayRef
 
  public:
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for the material cell `mc`
   ConstArrayView<DataType> operator[](ComponentItemLocalId mc) const
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for the material cell `mc`
   ArrayView<DataType> operator[](ComponentItemLocalId mc)
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for the cell `c`
   ConstArrayView<DataType> operator[](CellLocalId c) const
   {
     return m_value[0][c.localId()];
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for the cell `c`
   ArrayView<DataType> operator[](CellLocalId c)
   {
     return m_value[0][c.localId()];
   }
 
-  //! Valeur de la variable pour la maille matériau \a mvi
+  //! Value of the variable for the material cell `mvi`
   ConstArrayView<DataType> operator[](PureMatVarIndex mvi) const
   {
     return m_value[0][mvi.valueIndex()];
   }
 
-  //! Valeur de la variable pour la maille matériau \a mvi
+  //! Value of the variable for the material cell `mvi`
   ArrayView<DataType> operator[](PureMatVarIndex mvi)
   {
     return m_value[0][mvi.valueIndex()];
@@ -499,60 +509,60 @@ class CellMaterialVariableArrayRef
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! %Variable matériau de type \a #Byte
+//! %Material variable of type `Byte`
 typedef CellMaterialVariableScalarRef<Byte> MaterialVariableCellByte;
-//! %Variable matériau de type \a #Real
+//! %Material variable of type `Real`
 typedef CellMaterialVariableScalarRef<Real> MaterialVariableCellReal;
-//! %Variable matériau de type \a #Int16
+//! %Material variable of type `Int16`
 typedef CellMaterialVariableScalarRef<Int16> MaterialVariableCellInt16;
-//! %Variable matériau de type \a #Int32
+//! %Material variable of type `Int32`
 typedef CellMaterialVariableScalarRef<Int32> MaterialVariableCellInt32;
-//! %Variable matériau de type \a #Int64
+//! %Material variable of type `Int64`
 typedef CellMaterialVariableScalarRef<Int64> MaterialVariableCellInt64;
-//! %Variable matériau de type \a Real2
+//! %Material variable of type `Real2`
 typedef CellMaterialVariableScalarRef<Real2> MaterialVariableCellReal2;
-//! %Variable matériau de type \a Real3
+//! %Material variable of type `Real3`
 typedef CellMaterialVariableScalarRef<Real3> MaterialVariableCellReal3;
-//! %Variable matériau de type \a Real2x2
+//! %Material variable of type `Real2x2`
 typedef CellMaterialVariableScalarRef<Real2x2> MaterialVariableCellReal2x2;
-//! %Variable matériau de type \a Real3x3
+//! %Material variable of type `Real3x3`
 typedef CellMaterialVariableScalarRef<Real3x3> MaterialVariableCellReal3x3;
 
 #ifdef ARCANE_64BIT
-//! %Variable matériau de type \a #Integer
+//! %Material variable of type `Integer`
 typedef MaterialVariableCellInt64 MaterialVariableCellInteger;
 #else
-//! %Variable matériau de type \a #Integer
+//! %Material variable of type `Integer`
 typedef MaterialVariableCellInt32 MaterialVariableCellInteger;
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! %Variable matériau de type tableau de \a #Byte
+//! %Material variable of type array of `Byte`
 typedef CellMaterialVariableArrayRef<Byte> MaterialVariableCellArrayByte;
-//! %Variable matériau de type tableau de \a #Real
+//! %Material variable of type array of `Real`
 typedef CellMaterialVariableArrayRef<Real> MaterialVariableCellArrayReal;
-//! %Variable matériau de type tableau de \a #Int16
+//! %Material variable of type array of `Int16`
 typedef CellMaterialVariableArrayRef<Int16> MaterialVariableCellArrayInt16;
-//! %Variable matériau de type tableau de \a #Int32
+//! %Material variable of type array of `Int32`
 typedef CellMaterialVariableArrayRef<Int32> MaterialVariableCellArrayInt32;
-//! %Variable matériau de type tableau de \a #Int64
+//! %Material variable of type array of `Int64`
 typedef CellMaterialVariableArrayRef<Int64> MaterialVariableCellArrayInt64;
-//! %Variable matériau de type tableau de \a Real2
+//! %Material variable of type array of `Real2`
 typedef CellMaterialVariableArrayRef<Real2> MaterialVariableCellArrayReal2;
-//! %Variable matériau de type tableau de \a Real3
+//! %Material variable of type array of `Real3`
 typedef CellMaterialVariableArrayRef<Real3> MaterialVariableCellArrayReal3;
-//! %Variable matériau de type tableau de \a Real2x2
+//! %Material variable of type array of `Real2x2`
 typedef CellMaterialVariableArrayRef<Real2x2> MaterialVariableCellArrayReal2x2;
-//! %Variable matériau de type tableau de \a Real3x3
+//! %Material variable of type array of `Real3x3`
 typedef CellMaterialVariableArrayRef<Real3x3> MaterialVariableCellArrayReal3x3;
 
 #ifdef ARCANE_64BIT
-//! %Variable matériau de type tableau de \a #Integer
+//! %Material variable of type array of `Integer`
 typedef MaterialVariableCellArrayInt64 MaterialVariableCellArrayInteger;
 #else
-//! %Variable matériau de type tableau de \a #Integer
+//! %Material variable of type array of `Integer`
 typedef MaterialVariableCellArrayInt32 MaterialVariableCellArrayInteger;
 #endif
 
@@ -564,5 +574,4 @@ typedef MaterialVariableCellArrayInt32 MaterialVariableCellArrayInteger;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

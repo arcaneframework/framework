@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ServiceFactory.cc                                           (C) 2000-2019 */
 /*                                                                           */
-/* Fabrique des services/modules.                                            */
+/* Factory for services/modules.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/List.h"
 
-#include "arcane/IServiceInfo.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/ServiceInstance.h"
+#include "arcane/core/IServiceInfo.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/ServiceInstance.h"
 
 #include <iostream>
 
@@ -27,73 +27,77 @@ namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ServiceFactory.h
  *
- * \brief Ce fichier contient les différentes fabriques de services
- * et macro pour enregistrer les services.
+ * \brief This file contains the various service factories
+ * and macros for registering services.
  *
- * La plupart des types de ce fichier sont internes à Arcane. Le seul élément
- * utile pour un utilisateur est la macro ARCANE_REGISTER_SERVICE() qui
- * permet d'enregistrer un service.
+ * Most types in this file are internal to Arcane. The only element
+ * useful for a user is the ARCANE_REGISTER_SERVICE() macro, which
+ * allows a service to be registered.
  */
 
 /*!
  * \file ServiceProperty.h
  *
- * \brief Ce fichier contient les différentes types et classes
- * pour spécifier les propriétés d'un service.
+ * \brief This file contains the various types and classes
+ * for specifying service properties.
  */
-
 
 /*!
  * \defgroup Service Service
  *
- * \brief Ensemble des types utilisés dans la gestion des services.
+ * \brief Collection of types used in service management.
  *
- * La plupart des services utilisateurs sont des services de
- * sous-domaine et dérivent indirectement de la classe
- * BasicService. En règle générale, un service est défini dans un
- * fichier AXL et l'outil \a axl2cc permet de générer la classe
- * de base d'un service à partir de ce fichier AXL. Pour plus
- * d'informations se reporter à la rubrique \ref arcanedoc_core_types_service.
+ * Most user services are subdomain services
+ * and derive indirectly from the BasicService class. Generally, a service is defined in an
+ * AXL file, and the tool \a axl2cc allows generating the base class
+ * of a service from this AXL file. For more
+ * information, refer to section \ref arcanedoc_core_types_service.
  *
- * Il est néanmoins possible d'avoir des services sans fichier
- * AXL. Dans ce cas, l'enregistrement d'un service pour qu'il soit
- * reconnu par Arcane se fait via la macro ARCANE_REGISTER_SERVICE().
+ * Nevertheless, it is possible to have services without an AXL file. In this case, registering a service so that it is
+ * recognized by Arcane is done via the ARCANE_REGISTER_SERVICE() macro.
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Instances des services singletons.
+ * \brief Singleton service instances.
  *
- * Les services singletons peuvent implémenter plusieurs interfaces.
- * Il y a donc une instance IServiceInstance par interface plus une instance
- * pour le service lui-même. Comme toutes ces instances référencent le
- * même service, il faut faire attention de ne détruire le service qu'une
- * seule fois.
+ * Singleton services can implement multiple interfaces.
+ * There is therefore one IServiceInstance instance per interface plus an instance
+ * for the service itself. Since all these instances reference the
+ * same service, care must be taken not to destroy the service more than once.
  */
 class SingletonServiceFactoryBase::ServiceInstance
 : public ISingletonServiceInstance
 , public IServiceInstanceAdder
 {
  public:
+
   ServiceInstance(IServiceInfo* si)
-  : m_service_info(si){}
+  : m_service_info(si)
+  {}
   ~ServiceInstance()
   {
     destroyInstance();
   }
+
  public:
+
   void addReference() override { ++m_nb_ref; }
   void removeReference() override
   {
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1)
       delete this;
   }
+
  public:
+
   ServiceInstanceCollection interfaceInstances() override { return m_instances; }
   void destroyInstance()
   {
@@ -102,12 +106,16 @@ class SingletonServiceFactoryBase::ServiceInstance
   }
   IServiceInfo* serviceInfo() const override { return m_service_info; }
   void setTrueInstance(ServiceInstanceRef si) { m_true_instance = si; }
+
  public:
+
   void addInstance(ServiceInstanceRef instance) override
   {
     m_instances.add(instance);
   }
+
  private:
+
   IServiceInfo* m_service_info;
   List<ServiceInstanceRef> m_instances;
   ServiceInstanceRef m_true_instance;
@@ -117,13 +125,13 @@ class SingletonServiceFactoryBase::ServiceInstance
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé un service singleton
+//! Created a singleton service
 Ref<ISingletonServiceInstance> SingletonServiceFactoryBase::
 createSingletonServiceInstance(const ServiceBuildInfoBase& sbib)
 {
   auto x = new ServiceInstance(m_service_info);
   IServiceInstanceAdder* sia = x;
-  ServiceInstanceRef si = _createInstance(sbib,sia);
+  ServiceInstanceRef si = _createInstance(sbib, sia);
   x->setTrueInstance(si);
   return makeRef<ISingletonServiceInstance>(x);
 }
@@ -140,11 +148,11 @@ addReference()
 void AbstractServiceFactory::
 removeReference()
 {
-  // Décrémente et retourne la valeur d'avant.
-  // Si elle vaut 1, cela signifie qu'on n'a plus de références
-  // sur l'objet et qu'il faut le détruire.
-  Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-  if (v==1)
+  // Decrements and returns the previous value.
+  // If it is 1, it means there are no more references
+  // to the object and it must be destroyed.
+  Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+  if (v == 1)
     delete this;
 }
 
@@ -155,4 +163,3 @@ removeReference()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

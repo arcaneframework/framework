@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableDiff.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des différences entre les variables                               */
+/* Handling differences between variables                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -60,7 +60,7 @@ dump(ConstArrayView<DiffInfo> diffs_info, IVariable* var, IParallelMng* pm,
   for (Integer i = 0; i < nb_print; ++i) {
     const DiffInfo& di = diffs_info[i];
     if (di.m_unique_id != NULL_ITEM_UNIQUE_ID) {
-      // Il s'agit d'une entité
+      // This is an entity
       char type = di.m_is_own ? 'O' : 'G';
       ostr() << "VDIFF: Variable '" << var_name << "'"
              << " (" << type << ")"
@@ -68,15 +68,15 @@ dump(ConstArrayView<DiffInfo> diffs_info, IVariable* var, IParallelMng* pm,
              << " lid=" << di.m_local_id;
     }
     else {
-      // Il s'agit de l'indice d'une variable tableau
+      // This is the index of an array variable
       ostr() << "VDIFF: Variable '" << var_name << "'"
              << " index=" << di.m_local_id;
     }
     if (di.m_sub_index != NULL_ITEM_ID)
       ostr() << " [" << di.m_sub_index << "]";
-    // Indique si on effectue l'affichage par défaut.
-    // C'est le cas sauf si on demande la norme et que le type est numérique
-    // (les types comme 'String' n'ont pas de notion de norme)
+    // Indicates whether default display is performed.
+    // This is the case unless the norm is requested and the type is numeric
+    // (types like 'String' do not have a notion of norm)
     bool is_print_default = true;
     if constexpr (IsNumeric) {
       if (compare_args.computeDifferenceMethod() == eVariableComparerComputeDifferenceMethod::LocalNormMax) {

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemGroupImpl.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un groupe d'entités de maillage.                         */
+/* Implementation of a mesh entity group.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,20 +38,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe d'un groupe nul.
+ * \brief Null group class.
  */
 class ItemGroupImplNull
 : public ItemGroupImpl
 {
  public:
 
-  ItemGroupImplNull() : ItemGroupImpl() {}
+  ItemGroupImplNull()
+  : ItemGroupImpl()
+  {}
 
  public:
 
-  //! Retourne le nom du groupe
+  //! Returns the group name
   const String& name() const { return m_name; }
   const String& fullName() const { return m_name; }
 
@@ -87,7 +90,8 @@ class ItemGroupImplItemGroupComputeFunctor
   ItemGroupImplItemGroupComputeFunctor(ItemGroupImpl* parent, FuncPtr funcPtr)
   : ItemGroupComputeFunctor()
   , m_parent(parent)
-  , m_function(funcPtr) { }
+  , m_function(funcPtr)
+  {}
 
  public:
 
@@ -98,7 +102,7 @@ class ItemGroupImplItemGroupComputeFunctor
 
  private:
 
-  ItemGroupImpl * m_parent;
+  ItemGroupImpl* m_parent;
   FuncPtr m_function;
 };
 
@@ -108,9 +112,9 @@ class ItemGroupImplItemGroupComputeFunctor
 ItemGroupImpl* ItemGroupImpl::
 checkSharedNull()
 {
-  // Normalement ce test n'est vrai que si on a une instance globale
-  // de 'ItemGroup' ce qui est déconseillé. Sinon, _buildSharedNull() a été
-  // automatiquement appelé lors de l'initialisation (dans arcaneInitialize()).
+  // Normally this test is only true if we have a global instance
+  // of 'ItemGroup' which is discouraged. Otherwise, _buildSharedNull() was
+  // automatically called during initialization (in arcaneInitialize()).
   if (!shared_null)
     _buildSharedNull();
   return shared_null;
@@ -120,8 +124,8 @@ checkSharedNull()
 /*---------------------------------------------------------------------------*/
 
 ItemGroupImpl::
-ItemGroupImpl(IItemFamily* family,const String& name)
-: m_p (new ItemGroupInternal(family,name))
+ItemGroupImpl(IItemFamily* family, const String& name)
+: m_p(new ItemGroupInternal(family, name))
 {
   m_p->m_sub_parts_by_type.setImpl(this);
 }
@@ -130,8 +134,8 @@ ItemGroupImpl(IItemFamily* family,const String& name)
 /*---------------------------------------------------------------------------*/
 
 ItemGroupImpl::
-ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name)
-: m_p(new ItemGroupInternal(family,parent,name))
+ItemGroupImpl(IItemFamily* family, ItemGroupImpl* parent, const String& name)
+: m_p(new ItemGroupInternal(family, parent, name))
 {
   m_p->m_sub_parts_by_type.setImpl(this);
 }
@@ -141,7 +145,7 @@ ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name)
 
 ItemGroupImpl::
 ItemGroupImpl()
-: m_p (new ItemGroupInternal())
+: m_p(new ItemGroupInternal())
 {
   m_p->m_sub_parts_by_type.setImpl(this);
 }
@@ -300,17 +304,17 @@ setOwn(bool v)
     return;
   if (!is_own) {
     if (m_p->m_own_group)
-      ARCANE_THROW(NotSupportedException,"Setting Own with 'Own' sub-group already defined");
+      ARCANE_THROW(NotSupportedException, "Setting Own with 'Own' sub-group already defined");
   }
   else {
-    // On a le droit de remettre setOwn() à 'false' pour le groupe de toutes
-    // les entités. Cela est nécessaire en reprise si le nombre de parties
-    // du maillage est différent du IParallelMng associé à la famille
+    // We are allowed to reset setOwn() to 'false' for the group of all
+    // entities. This is necessary during recovery if the number of mesh parts
+    // is different from the IParallelMng associated with the family
     if (!isAllItems())
-      ARCANE_THROW(NotSupportedException,"Un-setting Own on a own group");
+      ARCANE_THROW(NotSupportedException, "Un-setting Own on a own group");
   }
   m_p->m_is_own = v;
-  // (HP) TODO: Faut il notifier des observers ?
+  // (HP) TODO: Should we notify observers?
 }
 
 /*---------------------------------------------------------------------------*/
@@ -328,19 +332,20 @@ itemKind() const
 ItemGroupImpl* ItemGroupImpl::
 ownGroup()
 {
-	ItemGroupImpl* ii = m_p->m_own_group;
-	// Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
-	if (!ii) {
-		if (m_p->m_is_own){
-			ii = this;
-			m_p->m_own_group = ii;
-		} else {
-			ii = createSubGroup("Own",m_p->m_item_family,new OwnItemGroupComputeFunctor());
-			m_p->m_own_group = ii;
-			ii->setOwn(true);
-		}
-	}
-	return ii;
+  ItemGroupImpl* ii = m_p->m_own_group;
+  // The flag is already set in ItemGroupInternal::_init or ItemGroupImpl::setOwn
+  if (!ii) {
+    if (m_p->m_is_own) {
+      ii = this;
+      m_p->m_own_group = ii;
+    }
+    else {
+      ii = createSubGroup("Own", m_p->m_item_family, new OwnItemGroupComputeFunctor());
+      m_p->m_own_group = ii;
+      ii->setOwn(true);
+    }
+  }
+  return ii;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -349,12 +354,12 @@ ownGroup()
 ItemGroupImpl* ItemGroupImpl::
 ghostGroup()
 {
-	ItemGroupImpl* ii = m_p->m_ghost_group;
-	if (!ii) {
-		ii = createSubGroup("Ghost",m_p->m_item_family,new GhostItemGroupComputeFunctor());
-		m_p->m_ghost_group = ii;
-	}
-	return ii;
+  ItemGroupImpl* ii = m_p->m_ghost_group;
+  if (!ii) {
+    ii = createSubGroup("Ghost", m_p->m_item_family, new GhostItemGroupComputeFunctor());
+    m_p->m_ghost_group = ii;
+  }
+  return ii;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -363,14 +368,14 @@ ghostGroup()
 ItemGroupImpl* ItemGroupImpl::
 interfaceGroup()
 {
-	if (itemKind()!=IK_Face)
-		return checkSharedNull();
-	ItemGroupImpl* ii = m_p->m_interface_group;
-	if (!ii) {
-		ii = createSubGroup("Interface",m_p->m_item_family,new InterfaceItemGroupComputeFunctor());
-		m_p->m_interface_group = ii;
-	}
-	return ii;
+  if (itemKind() != IK_Face)
+    return checkSharedNull();
+  ItemGroupImpl* ii = m_p->m_interface_group;
+  if (!ii) {
+    ii = createSubGroup("Interface", m_p->m_item_family, new InterfaceItemGroupComputeFunctor());
+    m_p->m_interface_group = ii;
+  }
+  return ii;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -379,11 +384,11 @@ interfaceGroup()
 ItemGroupImpl* ItemGroupImpl::
 nodeGroup()
 {
-  if (itemKind()==IK_Node)
+  if (itemKind() == IK_Node)
     return this;
   ItemGroupImpl* ii = m_p->m_node_group;
-  if (!ii){
-    ii = createSubGroup("Nodes",m_p->m_mesh->nodeFamily(),new ItemItemGroupComputeFunctor<Node>());
+  if (!ii) {
+    ii = createSubGroup("Nodes", m_p->m_mesh->nodeFamily(), new ItemItemGroupComputeFunctor<Node>());
     m_p->m_node_group = ii;
   }
   return ii;
@@ -395,11 +400,11 @@ nodeGroup()
 ItemGroupImpl* ItemGroupImpl::
 edgeGroup()
 {
-  if (itemKind()==IK_Edge)
+  if (itemKind() == IK_Edge)
     return this;
   ItemGroupImpl* ii = m_p->m_edge_group;
-  if (!ii){
-    ii = createSubGroup("Edges",m_p->m_mesh->edgeFamily(),new ItemItemGroupComputeFunctor<Edge>());
+  if (!ii) {
+    ii = createSubGroup("Edges", m_p->m_mesh->edgeFamily(), new ItemItemGroupComputeFunctor<Edge>());
     m_p->m_edge_group = ii;
   }
   return ii;
@@ -411,11 +416,11 @@ edgeGroup()
 ItemGroupImpl* ItemGroupImpl::
 faceGroup()
 {
-  if (itemKind()==IK_Face)
+  if (itemKind() == IK_Face)
     return this;
   ItemGroupImpl* ii = m_p->m_face_group;
-  if (!ii){
-    ii = createSubGroup("Faces",m_p->m_mesh->faceFamily(),new ItemItemGroupComputeFunctor<Face>());
+  if (!ii) {
+    ii = createSubGroup("Faces", m_p->m_mesh->faceFamily(), new ItemItemGroupComputeFunctor<Face>());
     m_p->m_face_group = ii;
   }
   return ii;
@@ -427,11 +432,11 @@ faceGroup()
 ItemGroupImpl* ItemGroupImpl::
 cellGroup()
 {
-  if (itemKind()==IK_Cell)
+  if (itemKind() == IK_Cell)
     return this;
   ItemGroupImpl* ii = m_p->m_cell_group;
-  if (!ii){
-    ii = createSubGroup("Cells",m_p->m_mesh->cellFamily(),new ItemItemGroupComputeFunctor<Cell>());
+  if (!ii) {
+    ii = createSubGroup("Cells", m_p->m_mesh->cellFamily(), new ItemItemGroupComputeFunctor<Cell>());
     m_p->m_cell_group = ii;
   }
   return ii;
@@ -443,11 +448,11 @@ cellGroup()
 ItemGroupImpl* ItemGroupImpl::
 innerFaceGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_inner_face_group;
-  if (!ii){
-    ii = createSubGroup("InnerFaces",m_p->m_mesh->faceFamily(),
+  if (!ii) {
+    ii = createSubGroup("InnerFaces", m_p->m_mesh->faceFamily(),
                         new InnerFaceItemGroupComputeFunctor());
     m_p->m_inner_face_group = ii;
   }
@@ -460,11 +465,11 @@ innerFaceGroup()
 ItemGroupImpl* ItemGroupImpl::
 outerFaceGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_outer_face_group;
-  if (!ii){
-    ii = createSubGroup("OuterFaces",m_p->m_mesh->faceFamily(),
+  if (!ii) {
+    ii = createSubGroup("OuterFaces", m_p->m_mesh->faceFamily(),
                         new OuterFaceItemGroupComputeFunctor());
     m_p->m_outer_face_group = ii;
   }
@@ -480,12 +485,12 @@ outerFaceGroup()
 ItemGroupImpl* ItemGroupImpl::
 activeCellGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_active_cell_group;
 
-  if (!ii){
-    ii = createSubGroup("ActiveCells",m_p->m_mesh->cellFamily(),
+  if (!ii) {
+    ii = createSubGroup("ActiveCells", m_p->m_mesh->cellFamily(),
                         new ActiveCellGroupComputeFunctor());
     m_p->m_active_cell_group = ii;
   }
@@ -498,12 +503,12 @@ activeCellGroup()
 ItemGroupImpl* ItemGroupImpl::
 ownActiveCellGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_active_cell_group;
-  // Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
+  // The flag is already set in ItemGroupInternal::_init or ItemGroupImpl::setOwn
   if (!ii) {
-    ii = createSubGroup("OwnActiveCells",m_p->m_mesh->cellFamily(),
+    ii = createSubGroup("OwnActiveCells", m_p->m_mesh->cellFamily(),
                         new OwnActiveCellGroupComputeFunctor());
     m_p->m_own_active_cell_group = ii;
     ii->setOwn(true);
@@ -516,11 +521,11 @@ ownActiveCellGroup()
 ItemGroupImpl* ItemGroupImpl::
 levelCellGroup(const Integer& level)
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_level_cell_group[level];
-  if (!ii){
-    ii = createSubGroup(String::format("LevelCells{0}",level),
+  if (!ii) {
+    ii = createSubGroup(String::format("LevelCells{0}", level),
                         m_p->m_mesh->cellFamily(),
                         new LevelCellGroupComputeFunctor(level));
     m_p->m_level_cell_group[level] = ii;
@@ -534,12 +539,12 @@ levelCellGroup(const Integer& level)
 ItemGroupImpl* ItemGroupImpl::
 ownLevelCellGroup(const Integer& level)
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_level_cell_group[level];
-  // Le flag est déjà positionné dans le ItemGroupInternal::_init ou ItemGroupImpl::setOwn
+  // The flag is already set in ItemGroupInternal::_init or ItemGroupImpl::setOwn
   if (!ii) {
-    ii = createSubGroup(String::format("OwnLevelCells{0}",level),
+    ii = createSubGroup(String::format("OwnLevelCells{0}", level),
                         m_p->m_mesh->cellFamily(),
                         new OwnLevelCellGroupComputeFunctor(level));
     m_p->m_own_level_cell_group[level] = ii;
@@ -553,11 +558,11 @@ ownLevelCellGroup(const Integer& level)
 ItemGroupImpl* ItemGroupImpl::
 activeFaceGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_active_face_group;
-  if (!ii){
-    ii = createSubGroup("ActiveFaces",m_p->m_mesh->faceFamily(),
+  if (!ii) {
+    ii = createSubGroup("ActiveFaces", m_p->m_mesh->faceFamily(),
                         new ActiveFaceItemGroupComputeFunctor());
     m_p->m_active_face_group = ii;
   }
@@ -570,11 +575,11 @@ activeFaceGroup()
 ItemGroupImpl* ItemGroupImpl::
 ownActiveFaceGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_own_active_face_group;
-  if (!ii){
-    ii = createSubGroup("OwnActiveFaces",m_p->m_mesh->faceFamily(),
+  if (!ii) {
+    ii = createSubGroup("OwnActiveFaces", m_p->m_mesh->faceFamily(),
                         new OwnActiveFaceItemGroupComputeFunctor());
     m_p->m_own_active_face_group = ii;
   }
@@ -586,11 +591,11 @@ ownActiveFaceGroup()
 ItemGroupImpl* ItemGroupImpl::
 innerActiveFaceGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_inner_active_face_group;
-  if (!ii){
-    ii = createSubGroup("InnerActiveFaces",m_p->m_mesh->faceFamily(),
+  if (!ii) {
+    ii = createSubGroup("InnerActiveFaces", m_p->m_mesh->faceFamily(),
                         new InnerActiveFaceItemGroupComputeFunctor());
     m_p->m_inner_active_face_group = ii;
   }
@@ -603,11 +608,11 @@ innerActiveFaceGroup()
 ItemGroupImpl* ItemGroupImpl::
 outerActiveFaceGroup()
 {
-  if (itemKind()!=IK_Cell)
+  if (itemKind() != IK_Cell)
     return checkSharedNull();
   ItemGroupImpl* ii = m_p->m_outer_active_face_group;
-  if (!ii){
-    ii = createSubGroup("OuterActiveFaces",m_p->m_mesh->faceFamily(),
+  if (!ii) {
+    ii = createSubGroup("OuterActiveFaces", m_p->m_mesh->faceFamily(),
                         new OuterActiveFaceItemGroupComputeFunctor());
     m_p->m_outer_active_face_group = ii;
   }
@@ -617,7 +622,7 @@ outerActiveFaceGroup()
 /*---------------------------------------------------------------------------*/
 
 ItemGroupImpl* ItemGroupImpl::
-createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFunctor * functor)
+createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFunctor* functor)
 {
   String sub_name = name() + "_" + suffix;
   auto finder = m_p->m_sub_groups.find(sub_name);
@@ -625,13 +630,12 @@ createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFuncto
     ARCANE_FATAL("Cannot create already existing sub-group ({0}) in group ({1})",
                  suffix, name());
   }
-  ItemGroup ig = family->createGroup(sub_name,ItemGroup(this));
+  ItemGroup ig = family->createGroup(sub_name, ItemGroup(this));
   ItemGroupImpl* ii = ig.internal();
   ii->setComputeFunctor(functor);
   functor->setGroup(ii);
-  // Observer par défaut : le sous groupe n'est pas intéressé par les infos détaillées de transition
-  attachObserver(ii,newItemGroupObserverT(ii,
-                                          &ItemGroupImpl::_executeInvalidate));
+  // Default observer: the subgroup is not interested in detailed transition information
+  attachObserver(ii, newItemGroupObserverT(ii, &ItemGroupImpl::_executeInvalidate));
   m_p->m_sub_groups[sub_name] = ii;
   ii->invalidate(false);
   return ii;
@@ -649,7 +653,7 @@ findSubGroup(const String& suffix)
     return finder->second.get();
   }
   else {
-    // ou bien erreur ?
+    // or an error?
     return checkSharedNull();
   }
 }
@@ -667,7 +671,7 @@ changeIds(Int32ConstArrayView old_to_new_ids)
     return;
   }
 
-  // ItemGroupImpl ne fait d'habitude pas le checkNeedUpdate lui meme, plutot le ItemGroup
+  // ItemGroupImpl usually does not perform the checkNeedUpdate itself, rather the ItemGroup
   checkNeedUpdate();
   if (isAllItems()) {
     // Int32ArrayView items_lid = m_p->itemsLocalId();
@@ -681,24 +685,25 @@ changeIds(Int32ConstArrayView old_to_new_ids)
   }
 
   Int32ArrayView items_lid = m_p->itemsLocalId();
-  for( Integer i=0, is=items_lid.size(); i<is; ++i ){
+  for (Integer i = 0, is = items_lid.size(); i < is; ++i) {
     Integer old_id = items_lid[i];
     items_lid[i] = old_to_new_ids[old_id];
   }
 
   m_p->updateTimestamp();
-  // Pour l'instant, il ne faut pas trier les entités des variables
-  // partielles car les valeurs correspondantes des variables ne sont
-  // pas mises à jour (il faut implémenter changeGroupIds pour cela)
-  // NOTE: est-ce utile de le faire ?
-  // NOTE: faut-il le faire pour les autre aussi ? A priori, cela n'est
-  // utile que pour garantir le meme resultat parallele/sequentiel
+  // For now, the entities of the variables should not be sorted
+  // partial because the corresponding values of the variables are not
+  // updated (changeGroupIds must be implemented for this)
+  // NOTE: is it useful to do this?
+  // NOTE: should it be done for others too? As far as I know, this is
+  // only useful to guarantee the same parallel/sequential result
   if (m_p->m_observer_need_info) {
     m_p->notifyCompactObservers(&old_to_new_ids);
-  } else {
-    // Pas besoin d'infos, on peut changer arbitrairement leur ordre
-    // TODO: #warning "(HP) Connexion de ce triage d'item avec la famille ?"
-    std::sort(std::begin(items_lid),std::end(items_lid));
+  }
+  else {
+    // No need for info, we can change their order arbitrarily
+    // TODO: #warning "(HP) Connection of this item sorting with the family?"
+    std::sort(std::begin(items_lid), std::end(items_lid));
     m_p->notifyCompactObservers(nullptr);
   }
 }
@@ -764,50 +769,50 @@ setLocalToSubDomain(bool v)
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-addItems(Int32ConstArrayView items_local_id,bool check_if_present)
+addItems(Int32ConstArrayView items_local_id, bool check_if_present)
 {
-  ARCANE_ASSERT(( (!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems()) ),
-		("Operation on invalid group"));
+  ARCANE_ASSERT(((!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems())),
+                ("Operation on invalid group"));
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
     ARCANE_FATAL("Cannot add items on computed group ({0})", name());
   IMesh* amesh = mesh();
   if (!amesh)
-    throw ArgumentException(A_FUNCINFO,"null group");
+    throw ArgumentException(A_FUNCINFO, "null group");
   ITraceMng* trace = amesh->traceMng();
 
   Integer nb_item_to_add = items_local_id.size();
-  if (nb_item_to_add==0)
+  if (nb_item_to_add == 0)
     return;
 
   Int32Array& items_lid = m_p->mutableItemsLocalId();
   const Integer current_size = items_lid.size();
   Integer nb_added = 0;
 
-  if(isAllItems()) {
-    // Ajoute les nouveaux items à la fin
+  if (isAllItems()) {
+    // Adds the new items to the end.
     Integer nb_items_id = current_size;
     m_p->m_items_index_in_all_group.resize(m_p->maxLocalId());
-    for( Integer i=0, is=nb_item_to_add; i<is; ++i ){
+    for (Integer i = 0, is = nb_item_to_add; i < is; ++i) {
       Int32 local_id = items_local_id[i];
       items_lid.add(local_id);
-      m_p->m_items_index_in_all_group[local_id] = nb_items_id+i;
+      m_p->m_items_index_in_all_group[local_id] = nb_items_id + i;
     }
     nb_added = nb_item_to_add;
   }
   else if (check_if_present) {
-    // Vérifie que les entités à ajouter ne sont pas déjà présentes
+    // Checks that the entities to be added are not already present
     UniqueArray<bool> presence_checks(m_p->maxLocalId());
     presence_checks.fill(false);
-    for( Integer i=0, is=items_lid.size(); i<is; ++i ){
+    for (Integer i = 0, is = items_lid.size(); i < is; ++i) {
       presence_checks[items_lid[i]] = true;
     }
 
-    for( Integer i=0; i<nb_item_to_add; ++i ) {
+    for (Integer i = 0; i < nb_item_to_add; ++i) {
       const Integer lid = items_local_id[i];
-      if (!presence_checks[lid]){
+      if (!presence_checks[lid]) {
         items_lid.add(lid);
-        // Met à \a true comme cela si l'entité est présente plusieurs fois
-        // dans \a items_local_id cela fonctionne quand même.
+        // Sets to true like this if the entity is present multiple times
+        // in \a items_local_id it still works.
         presence_checks[lid] = true;
         ++nb_added;
       }
@@ -815,12 +820,12 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
   }
   else {
     nb_added = nb_item_to_add;
-    MemoryUtils::checkResizeArrayWithCapacity(items_lid,current_size+nb_added,false);
-    SmallSpan<Int32> ptr = items_lid.subView(current_size,nb_added);
+    MemoryUtils::checkResizeArrayWithCapacity(items_lid, current_size + nb_added, false);
+    SmallSpan<Int32> ptr = items_lid.subView(current_size, nb_added);
     MemoryUtils::copy<Int32>(ptr, items_local_id);
   }
 
-  if (arcaneIsCheck()){
+  if (arcaneIsCheck()) {
     trace->info(5) << "ItemGroupImpl::addItems() group <" << name() << "> "
                    << " checkpresent=" << check_if_present
                    << " nb_current=" << current_size
@@ -829,9 +834,9 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
     checkValid();
   }
 
-  if (nb_added!=0) {
+  if (nb_added != 0) {
     m_p->updateTimestamp();
-    Int32ConstArrayView observation_info(nb_added, items_lid.unguardedBasePointer()+current_size);
+    Int32ConstArrayView observation_info(nb_added, items_lid.unguardedBasePointer() + current_size);
     m_p->notifyExtendObservers(&observation_info);
   }
 }
@@ -840,7 +845,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-removeItems(Int32ConstArrayView items_local_id,[[maybe_unused]] bool check_if_present)
+removeItems(Int32ConstArrayView items_local_id, [[maybe_unused]] bool check_if_present)
 {
   m_p->_removeItems(items_local_id);
 }
@@ -853,60 +858,60 @@ removeAddItems(Int32ConstArrayView removed_items_lids,
                Int32ConstArrayView added_items_lids,
                bool check_if_present)
 {
-  ARCANE_ASSERT(( (!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems()) ),
+  ARCANE_ASSERT(((!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems())),
                 ("Operation on invalid group"));
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
     ARCANE_FATAL("Cannot remove items on computed group ({0})", name());
   IMesh* amesh = mesh();
   if (!amesh)
-    throw ArgumentException(A_FUNCINFO,"null group");
+    throw ArgumentException(A_FUNCINFO, "null group");
   ITraceMng* trace = amesh->traceMng();
-  if (isOwn() && amesh->meshPartInfo().nbPart()!=1){
-    ARCANE_THROW(NotSupportedException,"Cannot remove items if isOwn() is true");
+  if (isOwn() && amesh->meshPartInfo().nbPart() != 1) {
+    ARCANE_THROW(NotSupportedException, "Cannot remove items if isOwn() is true");
   }
- 
-  Int32Array & items_lid = m_p->mutableItemsLocalId();
-  
-  if(isAllItems()) {
+
+  Int32Array& items_lid = m_p->mutableItemsLocalId();
+
+  if (isAllItems()) {
     ItemInternalList internals = itemsInternal();
     const Integer internal_size = internals.size();
     const Integer new_size = m_p->m_item_family->nbItem();
     items_lid.resize(new_size);
     m_p->m_items_index_in_all_group.resize(m_p->maxLocalId());
-    if (new_size==internal_size){
-      // Il n'y a pas de trous dans la numérotation
-      for( Integer i=0; i<internal_size; ++i ){
+    if (new_size == internal_size) {
+      // There are no gaps in the numbering
+      for (Integer i = 0; i < internal_size; ++i) {
         Int32 local_id = internals[i]->localId();
         items_lid[i] = local_id;
         m_p->m_items_index_in_all_group[local_id] = i;
       }
     }
-    else{
+    else {
       Integer index = 0;
-      for( Integer i=0; i<internal_size; ++i ){
+      for (Integer i = 0; i < internal_size; ++i) {
         ItemInternal* item = internals[i];
-        if (!item->isSuppressed()){
+        if (!item->isSuppressed()) {
           Int32 local_id = item->localId();
           items_lid[index] = local_id;
           m_p->m_items_index_in_all_group[local_id] = index;
           ++index;
         }
       }
-      if (index!=new_size)
+      if (index != new_size)
         ARCANE_FATAL("Inconsistent number of elements in the generation of the group '{0}' expected={1} present={2}",
                      name(), new_size, index);
     }
 
-    // On ne peut pas savoir ce qui a changé donc dans le doute on
-    // incrémente le timestamp.
+    // We cannot know what has changed, so out of doubt we
+    // increment the timestamp.
     m_p->updateTimestamp();
   }
   else {
-    removeItems(removed_items_lids,check_if_present);
-    addItems(added_items_lids,check_if_present);
+    removeItems(removed_items_lids, check_if_present);
+    addItems(added_items_lids, check_if_present);
   }
-  
-  if(arcaneIsCheck()){
+
+  if (arcaneIsCheck()) {
     trace->info(5) << "ItemGroupImpl::removeAddItems() group <" << name() << "> "
                    << " old_size=" << m_p->m_item_family->nbItem()
                    << " new_size=" << size()
@@ -915,7 +920,6 @@ removeAddItems(Int32ConstArrayView removed_items_lids,
     checkValid();
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -931,14 +935,14 @@ setItems(Int32ConstArrayView items_local_id)
   buf_view.copy(items_local_id);
   m_p->updateTimestamp();
   m_p->m_need_recompute = false;
-  if (arcaneIsCheck()){
+  if (arcaneIsCheck()) {
     ITraceMng* trace = m_p->mesh()->traceMng();
     trace->debug(Trace::High) << "ItemGroupImpl::setItems() group <" << name() << "> "
                               << " size=" << size();
     checkValid();
   }
 
-  // On tolére encore le setItems initial en le convertissant en un addItems
+  // We still tolerate the initial setItems by converting it to an addItems
   if (size() != 0)
     m_p->notifyInvalidateObservers();
   else
@@ -951,17 +955,24 @@ setItems(Int32ConstArrayView items_local_id)
 class ItemGroupImpl::ItemSorter
 {
  public:
-  ItemSorter(ItemInfoListView items) : m_items(items){}
+
+  ItemSorter(ItemInfoListView items)
+  : m_items(items)
+  {}
+
  public:
+
   void sort(Int32ArrayView local_ids) const
   {
-    std::sort(std::begin(local_ids),std::end(local_ids),*this);
+    std::sort(std::begin(local_ids), std::end(local_ids), *this);
   }
-  bool operator()(Int32 lid1,Int32 lid2) const
+  bool operator()(Int32 lid1, Int32 lid2) const
   {
     return m_items[lid1].uniqueId() < m_items[lid2].uniqueId();
   }
+
  private:
+
   ItemInfoListView m_items;
 };
 
@@ -969,9 +980,9 @@ class ItemGroupImpl::ItemSorter
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-setItems(Int32ConstArrayView items_local_id,bool do_sort)
+setItems(Int32ConstArrayView items_local_id, bool do_sort)
 {
-  if (!do_sort){
+  if (!do_sort) {
     setItems(items_local_id);
     return;
   }
@@ -1005,16 +1016,21 @@ isAllItems() const
 class ItemCheckSuppressedFunctor
 {
  public:
+
   ItemCheckSuppressedFunctor(ItemInternalList items)
   : m_items(items)
-    {
-    }
+  {
+  }
+
  public:
+
   bool operator()(Integer item_lid)
-    {
-      return m_items[item_lid]->isSuppressed();
-    }
+  {
+    return m_items[item_lid]->isSuppressed();
+  }
+
  private:
+
   ItemInternalList m_items;
 };
 
@@ -1036,9 +1052,9 @@ removeSuppressedItems()
   Integer nb_item = items.size();
   Int32Array& items_lid = m_p->mutableItemsLocalId();
   Integer current_size = items_lid.size();
-  if (arcaneIsCheck()){
-    for( Integer i=0; i<current_size; ++i ){
-      if (items_lid[i]>=nb_item){
+  if (arcaneIsCheck()) {
+    for (Integer i = 0; i < current_size; ++i) {
+      if (items_lid[i] >= nb_item) {
         trace->fatal() << "ItemGroupImpl::removeSuppressedItems(): bad range "
                        << " name=" << name()
                        << " i=" << i << " lid=" << items_lid[i]
@@ -1048,33 +1064,34 @@ removeSuppressedItems()
   }
 
   Int32UniqueArray removed_ids, removed_lids;
-  Int32ConstArrayView * observation_info  = NULL;
-  Int32ConstArrayView * observation_info2 = NULL;
+  Int32ConstArrayView* observation_info = NULL;
+  Int32ConstArrayView* observation_info2 = NULL;
   Integer new_size;
-  // Si le groupe posséde des observers ayant besoin d'info, il faut les calculer
-  if (m_p->m_observer_need_info){
-    removed_ids.reserve(current_size); // préparation à taille max
+  // If the group has observers needing information, they must be calculated
+  if (m_p->m_observer_need_info) {
+    removed_ids.reserve(current_size); // preparation for max size
     Integer index = 0;
-    for( Integer i=0; i<current_size; ++i ){
-      if (!items[items_lid[i]]->isSuppressed()){
+    for (Integer i = 0; i < current_size; ++i) {
+      if (!items[items_lid[i]]->isSuppressed()) {
         items_lid[index] = items_lid[i];
         ++index;
-      } else {
+      }
+      else {
         // trace->debug(Trace::Highest) << "Remove from group " << name() << " item " << i << " " << items_lid[i] << " " << ItemPrinter(items[items_lid[i]]);
         removed_lids.add(items_lid[i]);
       }
     }
     new_size = index;
-    if (new_size!=current_size){
+    if (new_size != current_size) {
       items_lid.resize(new_size);
       observation_info = new Int32ConstArrayView(removed_lids.size(), removed_lids.unguardedBasePointer());
     }
   }
-  else{
+  else {
     ItemCheckSuppressedFunctor f(m_p->items());
     auto ibegin = std::begin(items_lid);
-    auto new_end = std::remove_if(ibegin,std::end(items_lid),f);
-    new_size = (Integer)(new_end-ibegin);
+    auto new_end = std::remove_if(ibegin, std::end(items_lid), f);
+    new_size = (Integer)(new_end - ibegin);
     items_lid.resize(new_size);
   }
 
@@ -1084,7 +1101,7 @@ removeSuppressedItems()
     checkValid();
   }
 
-  // Ne met à jour que si le groupe a été modifié
+  // Only update if the group has been modified
   if (current_size != new_size) {
     m_p->updateTimestamp();
     m_p->notifyReduceObservers(observation_info);
@@ -1108,14 +1125,14 @@ checkValid()
 bool ItemGroupImpl::
 _checkNeedUpdate(bool do_padding)
 {
-  // NOTE: l'utilisation de verrou est pour l'instant expérimentale (juin 2025)
-  // On met le verrou sur toute la méthode pour que ce soit plus simple, mais
-  // on pourrait ne le faire qu'après vérification que la mise à jour
-  // est vraiment utile.
+  // NOTE: the use of locks is currently experimental (June 2025)
+  // We put the lock on the entire method to keep it simpler, but
+  // we could only do it after checking that the update
+  // is truly useful.
   ItemGroupInternal::CheckNeedUpdateMutex::ScopedLock lock(m_p->m_check_need_update_mutex);
 
-  // En cas de problème sur des re-calculs très imbriqués, une proposition est
-  // de désactiver les lignes #A pour activer les lignes #B
+  // In case of problems with very nested recalculations, a proposal is
+  // to disable lines #A to enable lines #B
   bool has_recompute = false;
   if (m_p->m_need_recompute) {
     m_p->m_need_recompute = false;
@@ -1128,10 +1145,10 @@ _checkNeedUpdate(bool do_padding)
     //       m_p->notifyInvalidateObservers(); // #B
     //     }                                   // #B
 
-    if (m_p->m_need_invalidate_on_recompute) {     // #A
+    if (m_p->m_need_invalidate_on_recompute) { // #A
       m_p->m_need_invalidate_on_recompute = false; // #A
-      m_p->notifyInvalidateObservers();            // #A
-    }                                              // #A
+      m_p->notifyInvalidateObservers(); // #A
+    } // #A
     has_recompute = true;
   }
   if (do_padding)
@@ -1183,11 +1200,11 @@ clear()
 {
   Int32Array& items_lid = m_p->mutableItemsLocalId();
   if (!items_lid.empty())
-    // Incrémente uniquement si le groupe n'est pas déjà vide
+    // Increment only if the group is not already empty
     m_p->updateTimestamp();
   items_lid.clear();
   m_p->m_need_recompute = false;
-  for( const auto& i : m_p->m_sub_groups )
+  for (const auto& i : m_p->m_sub_groups)
     i.second->clear();
   m_p->notifyInvalidateObservers();
 }
@@ -1209,7 +1226,7 @@ parentGroup()
 void ItemGroupImpl::
 applyOperation(IItemOperationByBasicType* operation)
 {
-  ARCANE_ASSERT((!m_p->m_need_recompute),("Operation on invalid group"));
+  ARCANE_ASSERT((!m_p->m_need_recompute), ("Operation on invalid group"));
   m_p->m_sub_parts_by_type.applyOperation(operation);
 }
 
@@ -1241,7 +1258,7 @@ applyOperation(IItemOperationByBasicType* operation)
   const bool has_only_one_type = (m_unique_children_type != IT_NullType);
   if (is_verbose)
     tm->info() << "applyOperation has_only_one_type=" << has_only_one_type << " value=" << m_unique_children_type;
-  // TODO: Supprimer la macro et la remplacer par une fonction.
+  // TODO: Remove the macro and replace it with a function.
 
 #define APPLY_OPERATION_ON_TYPE(ITEM_TYPE) \
   if (isUseV2ForApplyOperation()) { \
@@ -1249,16 +1266,16 @@ applyOperation(IItemOperationByBasicType* operation)
     Int32ConstArrayView sub_ids = m_children_by_type_ids[type_id]; \
     if (has_only_one_type && type_id == m_unique_children_type) \
       sub_ids = m_group_internal->itemsLocalId(); \
-    if (is_verbose && sub_ids.size()>0)                                   \
+    if (is_verbose && sub_ids.size() > 0) \
       tm->info() << "Type=" << (int)IT_##ITEM_TYPE << " nb=" << sub_ids.size(); \
-    if (sub_ids.size()!=0){\
+    if (sub_ids.size() != 0) { \
       operation->apply##ITEM_TYPE(family->view(sub_ids)); \
     } \
   } \
   else { \
     ItemGroup group(m_children_by_type[IT_##ITEM_TYPE]); \
-    if (!group.empty())                                       \
-      operation->apply##ITEM_TYPE(group.view());              \
+    if (!group.empty()) \
+      operation->apply##ITEM_TYPE(group.view()); \
   }
 
   APPLY_OPERATION_ON_TYPE(Vertex);
@@ -1285,7 +1302,7 @@ applyOperation(IItemOperationByBasicType* operation)
   APPLY_OPERATION_ON_TYPE(DualFace);
   APPLY_OPERATION_ON_TYPE(DualCell);
   APPLY_OPERATION_ON_TYPE(Link);
-  
+
 #undef APPLY_OPERATION_ON_TYPE
 }
 
@@ -1313,7 +1330,7 @@ timestamp() const
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-attachObserver(const void * ref, IItemGroupObserver * obs)
+attachObserver(const void* ref, IItemGroupObserver* obs)
 {
   auto finder = m_p->m_observers.find(ref);
   auto end = m_p->m_observers.end();
@@ -1326,7 +1343,7 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
     m_p->m_observers[ref] = obs;
   }
 
-  // Mise à jour du flag de demande d'info
+  // Update the info request flag
   _updateNeedInfoFlag(m_p->m_observer_need_info | obs->needInfo());
 }
 
@@ -1334,7 +1351,7 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupImpl::
-detachObserver(const void * ref)
+detachObserver(const void* ref)
 {
   auto finder = m_p->m_observers.find(ref);
   auto end = m_p->m_observers.end();
@@ -1342,22 +1359,21 @@ detachObserver(const void * ref)
   if (finder == end)
     return;
 
-  IItemGroupObserver * obs = finder->second;
+  IItemGroupObserver* obs = finder->second;
   delete obs;
   m_p->m_observers.erase(finder);
-  // Mise à jour du flag de demande d'info
+  // Update the info request flag
   bool new_observer_need_info = false;
   auto i = m_p->m_observers.begin();
-  for( ; i != end ; ++i ) {
-    IItemGroupObserver * obs = i->second;
+  for (; i != end; ++i) {
+    IItemGroupObserver* obs = i->second;
     new_observer_need_info |= obs->needInfo();
   }
   _updateNeedInfoFlag(new_observer_need_info);
 
-  // On invalide la table de hachage éventuelle
-  // des variables partielles si il n'y a plus
-  // de référence. 
-  if(m_p->m_group_index_table.isUsed() && m_p->m_group_index_table.isUnique()) {
+  // We invalidate the potential hash table of partial variables
+  // if there are no references left.
+  if (m_p->m_group_index_table.isUsed() && m_p->m_group_index_table.isUnique()) {
     m_p->m_group_index_table.reset();
     m_p->m_synchronizer.reset();
   }
@@ -1407,12 +1423,12 @@ void ItemGroupSubPartsByType::
 _computeChildrenByTypeV1()
 {
   ItemGroup that_group(m_group_impl);
-  ITraceMng * trace = that_group.mesh()->traceMng();
+  ITraceMng* trace = that_group.mesh()->traceMng();
   trace->debug(Trace::High) << "ItemGroupImpl::_computeChildrenByType for " << m_group_internal->name();
 
   Integer nb_basic_item_type = ItemTypeMng::nbBasicItemType();
 
-  UniqueArray< SharedArray<Int32> > items_by_type(nb_basic_item_type);
+  UniqueArray<SharedArray<Int32>> items_by_type(nb_basic_item_type);
   for (Integer i = 0; i < nb_basic_item_type; ++i) {
     ItemGroupImpl* impl = m_children_by_type[i];
     impl->beginTransaction();
@@ -1421,7 +1437,7 @@ _computeChildrenByTypeV1()
   ENUMERATE_ (Item, iitem, that_group) {
     Item item = *iitem;
     Integer item_type = item.type();
-    if (item_type<nb_basic_item_type)
+    if (item_type < nb_basic_item_type)
       items_by_type[item_type].add(iitem.itemLocalId());
   }
 
@@ -1435,7 +1451,6 @@ _computeChildrenByTypeV1()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -1443,8 +1458,8 @@ void ItemGroupImpl::
 _executeExtend(const Int32ConstArrayView* info)
 {
   ARCANE_UNUSED(info);
-  // On ne sait encore calculer appliquer des transformations à des groupes calculés
-  // On choisit l'invalidation systématique
+  // We do not yet know how to calculate/apply transformations to computed groups.
+  // We choose systematic invalidation.
   m_p->notifyInvalidateObservers();
 }
 
@@ -1455,8 +1470,8 @@ void ItemGroupImpl::
 _executeReduce(const Int32ConstArrayView* info)
 {
   ARCANE_UNUSED(info);
-  // On ne sait encore calculer appliquer des transformations à des groupes calculés
-  // On choisit l'invalidation systématique
+  // We do not yet know how to calculate/apply transformations to computed groups.
+  // We choose systematic invalidation.
   m_p->notifyInvalidateObservers();
 }
 
@@ -1467,8 +1482,8 @@ void ItemGroupImpl::
 _executeCompact(const Int32ConstArrayView* info)
 {
   ARCANE_UNUSED(info);
-  // On ne sait encore calculer appliquer des transformations à des groupes calculés
-  // On choisit l'invalidation systématique en différé (évaluée lors du prochain checkNeedUpdate)
+  // We do not yet know how to calculate/apply transformations to computed groups.
+  // We choose deferred systematic invalidation (evaluated during the next checkNeedUpdate).
   m_p->notifyInvalidateObservers();
 }
 
@@ -1491,19 +1506,15 @@ _updateNeedInfoFlag(const bool flag)
   if (m_p->m_observer_need_info == flag)
     return;
   m_p->m_observer_need_info = flag;
-  // Si change, change aussi l'observer du parent pour qu'il adapte les besoins en info de transition
-  ItemGroupImpl * parent = m_p->m_parent;
+  // If changed, also change the parent observer so it adapts the transition info needs
+  ItemGroupImpl* parent = m_p->m_parent;
   if (parent) {
     parent->detachObserver(this);
     if (m_p->m_observer_need_info) {
-      parent->attachObserver(this,newItemGroupObserverT(this,
-                                                        &ItemGroupImpl::_executeExtend,
-                                                        &ItemGroupImpl::_executeReduce,
-                                                        &ItemGroupImpl::_executeCompact,
-                                                        &ItemGroupImpl::_executeInvalidate));
-    } else {
-      parent->attachObserver(this,newItemGroupObserverT(this,
-                                                        &ItemGroupImpl::_executeInvalidate));
+      parent->attachObserver(this, newItemGroupObserverT(this, &ItemGroupImpl::_executeExtend, &ItemGroupImpl::_executeReduce, &ItemGroupImpl::_executeCompact, &ItemGroupImpl::_executeInvalidate));
+    }
+    else {
+      parent->attachObserver(this, newItemGroupObserverT(this, &ItemGroupImpl::_executeInvalidate));
     }
   }
 }
@@ -1514,14 +1525,14 @@ _updateNeedInfoFlag(const bool flag)
 void ItemGroupImpl::
 _forceInvalidate(const bool self_invalidate)
 {
-  // (HP) TODO: Mettre un observer forceInvalidate pour prévenir tout le monde ?
-  // avec forceInvalidate on doit invalider mais ne rien calculer
+  // (HP) TODO: Should we put a forceInvalidate observer to warn everyone?
+  // With forceInvalidate, we must invalidate but calculate nothing
   if (self_invalidate) {
     m_p->setNeedRecompute();
     m_p->m_need_invalidate_on_recompute = true;
   }
 
-  for( const auto& i :  m_p->m_sub_groups )
+  for (const auto& i : m_p->m_sub_groups)
     i.second->_forceInvalidate(true);
 }
 
@@ -1531,21 +1542,19 @@ _forceInvalidate(const bool self_invalidate)
 void ItemGroupImpl::
 destroy()
 {
-  // Détache les observateurs. Cela modifie \a m_observers donc il faut
-  // en faire une copie
+  // Detach the observers. This modifies m_observers so we must make a copy
   {
     std::vector<const void*> ptrs;
-    for( const auto& i : m_p->m_observers )
+    for (const auto& i : m_p->m_observers)
       ptrs.push_back(i.first);
-    for( const void* i : ptrs )
+    for (const void* i : ptrs)
       detachObserver(i);
   }
 
-  // Le groupe de toutes les entités est spécial. Il ne faut jamais le détruire
-  // vraiement.
+  // The group of all entities is special. It must never be truly destroyed.
   if (m_p->m_is_all_items)
     m_p->resetSubGroups();
-  else{
+  else {
     delete m_p;
     m_p = new ItemGroupInternal();
   }
@@ -1556,10 +1565,10 @@ destroy()
 
 SharedPtrT<GroupIndexTable> ItemGroupImpl::
 localIdToIndex()
-{ 
-  if(!m_p->m_group_index_table.isUsed()) {
+{
+  if (!m_p->m_group_index_table.isUsed()) {
     m_p->m_group_index_table = SharedPtrT<GroupIndexTable>(new GroupIndexTable(this));
-    ITraceMng* trace =  m_p->m_mesh->traceMng();
+    ITraceMng* trace = m_p->m_mesh->traceMng();
     trace->debug(Trace::High) << "** CREATION OF LOCAL ID TO INDEX TABLE OF GROUP : " << m_p->m_name;
     m_p->m_group_index_table->update();
   }
@@ -1569,14 +1578,14 @@ localIdToIndex()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IVariableSynchronizer * ItemGroupImpl::
+IVariableSynchronizer* ItemGroupImpl::
 synchronizer()
-{ 
-  if(!m_p->m_synchronizer.get()) {
+{
+  if (!m_p->m_synchronizer.get()) {
     IParallelMng* pm = m_p->m_mesh->parallelMng();
     ItemGroup this_group(this);
-    m_p->m_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this_group);
-    ITraceMng* trace =  m_p->m_mesh->traceMng();
+    m_p->m_synchronizer = ParallelMngUtils::createSynchronizerRef(pm, this_group);
+    ITraceMng* trace = m_p->m_mesh->traceMng();
     trace->debug(Trace::High) << "** CREATION OF SYNCHRONIZER OF GROUP : " << m_p->m_name;
     m_p->m_synchronizer->compute();
   }
@@ -1601,20 +1610,20 @@ checkIsSorted() const
   if (null())
     return true;
 
-  // TODO: stocker l'info dans un flag et ne refaire le test que si
-  // la liste des entités a changer (utiliser timestamp()).
+  // TODO: store the info in a flag and only re-run the test if
+  // the list of entities has changed (use timestamp()).
   ItemInternalList items(m_p->items());
   Int32ConstArrayView items_lid(m_p->itemsLocalId());
   Integer nb_item = items_lid.size();
-  // On est toujours trié si une seule entité ou moins.
-  if (nb_item<=1)
+  // We are always sorted if there is only one entity or less.
+  if (nb_item <= 1)
     return true;
-  // Compare chaque uniqueId() avec le précédent et vérifie qu'il est
-  // supérieur.
+  // Compare each uniqueId() with the previous one and verify that it is
+  // greater.
   ItemUniqueId last_uid = items[items_lid[0]]->uniqueId();
-  for( Integer i=1; i<nb_item; ++i ){
+  for (Integer i = 1; i < nb_item; ++i) {
     ItemUniqueId uid = items[items_lid[i]]->uniqueId();
-    if (uid<last_uid)
+    if (uid < last_uid)
       return false;
     last_uid = uid;
   }
@@ -1627,9 +1636,9 @@ checkIsSorted() const
 void ItemGroupImpl::
 deleteMe()
 {
-  // S'il s'agit de 'shared_null'. Il faut le positionner à nullptr pour qu'il
-  // soit réalloué éventuellement par _buildSharedNull().
-  if (this==shared_null){
+  // If it is 'shared_null'. It must be set to nullptr so that it
+  // can potentially be reallocated by _buildSharedNull().
+  if (this == shared_null) {
     shared_null = nullptr;
   }
   delete this;
@@ -1641,7 +1650,7 @@ deleteMe()
 void ItemGroupImpl::
 _buildSharedNull()
 {
-  if (!shared_null){
+  if (!shared_null) {
     shared_null = new ItemGroupImplNull();
     shared_null->addRef();
   }
@@ -1653,8 +1662,8 @@ _buildSharedNull()
 void ItemGroupImpl::
 _destroySharedNull()
 {
-  // Supprime une référence à 'shared_null'. Si le nombre de référence
-  // devient égal à 0, alors l'instance 'shared_null' est détruite.
+  // Decrements a reference to 'shared_null'. If the reference count
+  // becomes 0, the 'shared_null' instance is destroyed.
   if (shared_null)
     shared_null->removeRef();
 }
@@ -1693,8 +1702,8 @@ capacity() const
 void ItemGroupImpl::
 shrinkMemory()
 {
-  if (hasComputeFunctor()){
-    // Groupe calculé. On l'invalide et on supprime ses éléments
+  if (hasComputeFunctor()) {
+    // Computed group. We invalidate it and remove its elements
     invalidate(false);
     m_p->mutableItemsLocalId().clear();
   }
@@ -1716,11 +1725,10 @@ _internalApi() const
   return &m_p->m_internal_api;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO a supprimer lorsque la V1 ne sera plus disponible
+//TODO to be removed when V1 is no longer available
 void ItemGroupSubPartsByType::
 _initChildrenByTypeV1()
 {

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IVariableUtilities.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Interface proposant des fonctions utilitaires sur les variables.          */
+/* Interface providing utility functions on variables.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLEUTILITIES_H
 #define ARCANE_CORE_IVARIABLEUTILITIES_H
@@ -24,47 +24,48 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface proposant des fonctions utilitaires sur les variables.
+ * \brief Interface providing utility functions on variables.
  */
 class ARCANE_CORE_EXPORT IVariableUtilities
 {
  public:
 
-  virtual ~IVariableUtilities() = default; //!< Libère les ressources.
+  virtual ~IVariableUtilities() = default; //!< Frees resources.
 
  public:
 
-  //! Gestionnaire de variables associé
+  //! Associated variable manager
   virtual IVariableMng* variableMng() const = 0;
 
   /*!
-   * \brief Affiche les informations de dépendance sur une variable.
+   * \brief Displays dependency information for a variable.
    *
-   * Affiche sur le flot \a ostr les informations sur les variables
-   * dont dépend \a var. Si \a is_recursive vaut \a true, cette
-   * méthode est aussi appelé pour ces variables.
+   * Displays on the stream \a ostr the information about the variables
+   * that depend on \a var. If \a is_recursive is true, this
+   * method is also called for these variables.
    */
   virtual void dumpDependencies(IVariable* var, std::ostream& ostr, bool is_recursive) = 0;
 
   /*!
-   * \brief Affiche les informations de dépendance de toutes les variables.
+   * \brief Displays dependency information for all variables.
    *
-   * Affiche sur le flot \a ostr les informations de toutes les
-   * variables utilisées.
+   * Displays on the stream \a ostr the information of all
+   * used variables.
    */
   virtual void dumpAllVariableDependencies(std::ostream& ostr, bool is_recursive) = 0;
 
   /*!
-   * \brief Filtre les variables communes entre plusieurs rangs.
+   * \brief Filters common variables between multiple ranks.
    *
-   * Cette méthode permet de filtrer les variables de \a input_variables
-   * qui sont présentes sur tous les rangs de \a pm. Elle retourne
-   * la liste triée par ordre alphabétique des variables communes à tous
-   * les rangs.
+   * This method allows filtering the variables in \a input_variables
+   * that are present on all ranks of \a pm. It returns
+   * the list sorted alphabetically of variables common to all
+   * ranks.
    *
-   * Si \a dump_no_common est vrai, affiche (via ITraceMng::info()) la liste
-   * des variables qui ne sont pas communes sur tous les rangs.
+   * If \a dump_no_common is true, it displays (via ITraceMng::info()) the list
+   * of variables that are not common on all ranks.
    */
   virtual VariableCollection filterCommonVariables(IParallelMng* pm,
                                                    VariableCollection input_variables,
@@ -79,5 +80,4 @@ class ARCANE_CORE_EXPORT IVariableUtilities
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

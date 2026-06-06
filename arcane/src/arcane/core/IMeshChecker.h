@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshChecker.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface de méthodes de vérification d'un maillage.                      */
+/* Interface for mesh verification methods.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHCHECKER_H
 #define ARCANE_CORE_IMESHCHECKER_H
@@ -24,98 +24,99 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface de méthodes de vérification d'un maillage.
+ * \brief Interface for mesh verification methods.
  */
 class IMeshChecker
 {
  public:
 
-  virtual ~IMeshChecker() = default; //!< Libère les ressources
+  virtual ~IMeshChecker() = default; //!< Frees resources
 
  public:
 
-  //! Maillage associé
+  //! Associated mesh
   virtual IMesh* mesh() = 0;
 
   /*!
-   * \brief Positionne le niveau de vérification du maillage.
+   * \brief Sets the mesh verification level.
    *
-   * 0 - tests désactivés
-   * 1 - tests partiels, après les endUpdate()
-   * 2 - tests complets, après les endUpdate()
+   * 0 - tests disabled
+   * 1 - partial tests, after endUpdate()
+   * 2 - full tests, after endUpdate()
    */
   virtual void setCheckLevel(Integer level) = 0;
 
-  //! Niveau actuel de vérification
+  //! Current verification level
   virtual Integer checkLevel() const = 0;
 
   /*!
-   * \brief Vérification de la validité des structures internes de maillage (interne).
+   * \brief Verification of the validity of internal mesh structures (internal).
    */
   virtual void checkValidMesh() = 0;
 
   /*!
-   * \brief Vérification de la validité du maillage.
+   * \brief Verification of mesh validity.
    *
-   * Il s'agit d'une vérification globale entre tous les sous-domaines.
+   * This is a global verification across all subdomains.
    *
-   * Elle vérifie notamment que la connectivité est cohérente entre
-   * les sous-domaines.
+   * It checks, in particular, that the connectivity is consistent between
+   * subdomains.
    *
-   * La vérification peut-être assez coûteuse en temps CPU.
-   * Cette méthode est collective.
+   * The verification can be quite CPU time-intensive.
+   * This method is collective.
    */
   virtual void checkValidMeshFull() = 0;
 
   /*!
-   * \brief Vérifie que les sous-domaines sont correctement répliqués.
+   * \brief Checks that subdomains are correctly replicated.
    *
-   * Les vérifications suivantes sont faites:
-   * - mêmes familles d'entité et mêmes valeurs pour ces familles.
-   * - mêmes coordonnées des noeuds du maillage.
+   * The following checks are performed:
+   * - same entity families and same values for these families.
+   * - same mesh node coordinates.
    */
   virtual void checkValidReplication() = 0;
 
   /*!
-   * \brief Vérifie la synchronisation des variables.
+   * \brief Checks variable synchronization.
    *
-   * Vérifie pour chaque variable que ses valeurs sur les entités fantômes sont
-   * les mêmes que la valeur sur le sous-domaine propriétaire de l'entité.
+   * Checks for each variable that its values on ghost entities are
+   * the same as the value on the entity's owning subdomain.
    *
-   * Les variables sur les particules ne sont pas comparées.
+   * Variables on particles are not compared.
    *
-   * Lève une exception FatalErrorException en cas d'erreur.
+   * Raises a FatalErrorException in case of error.
    */
   virtual void checkVariablesSynchronization() = 0;
 
   /*!
-   * \brief Vérifie la synchronisation sur les groupes d'entités.
+   * \brief Checks synchronization on entity groups.
    *
-   * Vérifie pour chaque groupe de chaque famille (autre que les particules)
-   * que les entités sont les mêmes sur chaque sous-domaine.
+   * Checks for each group of each family (other than particles)
+   * that the entities are the same on each subdomain.
    *
-   * Lève une exception FatalErrorException en cas d'erreur.
+   * Raises a FatalErrorException in case of error.
    */
   virtual void checkItemGroupsSynchronization() = 0;
 
   /*!
-   * \brief Indique si on active la vérification des propriétaires des entités.
+   * \brief Indicates whether entity owner verification is active.
    *
-   * Cette vérification est effectuée lors de l'appel à checkValidConnectivity().
-   * Si elle est active, on vérifie que les noeuds, arêtes et
-   * faces ont bien le même propriétaire qu'une des mailles auxquels ils sont
-   * connectés.
+   * This verification is performed when calling checkValidConnectivity().
+   * If it is active, we check that the nodes, edges, and
+   * faces have the same owner as one of the meshes they are
+   * connected to.
    *
-   * C'est toujours le cas si lorsque les propriétaires sont gérés par %Arcane
-   * et il est donc préférable de toujours faire cette vérification pour
-   * garantir la cohérence des informations en parallèle. Cependant, si la
-   * gestion des propriétaires est faite par l'utilisateur, il est possible
-   * de désactiver cette vérification.
+   * This is always the case if the owners are managed by %Arcane
+   * and it is therefore preferable to always perform this verification to
+   * ensure consistency of information in parallel. However, if the
+   * owner management is done by the user, it is possible
+   * to disable this verification.
    */
   virtual void setIsCheckItemsOwner(bool v) = 0;
 
-  //! Indique si la vérification des propriétaires des entités (vrai par défaut)
+  //! Indicates whether entity owner verification is active (true by default)
   virtual bool isCheckItemsOwner() const = 0;
 };
 
@@ -127,4 +128,4 @@ class IMeshChecker
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

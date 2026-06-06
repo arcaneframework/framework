@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshBuildInfo.h                                             (C) 2000-2023 */
 /*                                                                           */
-/* Informations pour construire un maillage.                                 */
+/* Information for building a mesh.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESHBUILDINFO_H
 #define ARCANE_MESHBUILDINFO_H
@@ -28,61 +28,61 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Paramètres nécessaires à la construction d'un maillage.
+ * \brief Parameters necessary for building a mesh.
  *
- * Seul le nom (name()) est indispensable. Les autres paramètres sont
- * optionnels suivant le type de création qu'on souhaite. S'il ne sont pas
- * définit et utiles, une valeur par défaut sera utilisée.
+ * Only the name (name()) is essential. The other parameters are
+ * optional depending on the desired creation type. If they are not
+ * defined and useful, a default value will be used.
  *
- * Il existe deux possibilités de création:
+ * There are two possibilities for creation:
  *
- * - création d'un nouveau maillage. Dans ce cas il est nécessaire de spécifier
- *   le \a IParallelMng associé via addParallelMng().
- * - création d'un sous-maillage d'un maillage existant. Dans ce cas il
- *   est nécessaire de positionner le groupe via addItemGroup(). Le
- *   IParallelMng associé est nécessairement celui du maillage parent. Le
- *   sous-maillage créé comprendra les mailles de ce groupe.
+ * - creation of a new mesh. In this case, it is necessary to specify
+ *   the associated \a IParallelMng via addParallelMng().
+ * - creation of a sub-mesh of an existing mesh. In this case, it is necessary
+ *   to position the group via addItemGroup(). The
+ *   associated IParallelMng must be that of the parent mesh. The
+ *   created sub-mesh will include the meshes of this group.
  */
 class ARCANE_CORE_EXPORT MeshBuildInfo
 {
  public:
 
   /*!
-   * \brief Construit un maillage par défaut avec pour nom \a name.
+   * \brief Constructs a default mesh with the name \a name.
    */
   explicit MeshBuildInfo(const String& name);
 
  public:
 
-  //! Positionne le nom de la fabrique pour créer ce maillage
+  //! Sets the factory name to create this mesh
   MeshBuildInfo& addFactoryName(const String& factory_name);
-  //! Positionne le gestionnaire de parallélisme pour créér la maillage
+  //! Sets the parallelism manager to create the mesh
   MeshBuildInfo& addParallelMng(Ref<IParallelMng> pm);
-  //! Positionne le groupe de mailles pour un sous-maillage
+  //! Sets the mesh group for a sub-mesh
   MeshBuildInfo& addParentGroup(const ItemGroup& parent_group);
   /*!
-  * \brief Indique si le générateur nécessite d'appeler un partitionneur.
+  * \brief Indicates whether the generator needs to call a partitioner.
   *
-  * C'est le cas par exemple si le lecteur ne sait générer que des maillages
-  * séquentiels.
+  * This is the case, for example, if the reader can only generate sequential meshes.
   */
   MeshBuildInfo& addNeedPartitioning(bool v);
 
-  //! Positionne les caractéristiques du maillage
+  //! Sets the mesh characteristics
   MeshBuildInfo& addMeshKind(const MeshKind& v);
 
-  //! Nom du nouveau maillage
+  //! Name of the new mesh
   const String& name() const { return m_name; }
-  //! Nom de la fabrique pour créer le maillage (via IMeshFactory)
+  //! Factory name to create the mesh (via IMeshFactory)
   const String& factoryName() const { return m_factory_name; }
-  //! Gestionnaire de parallélisme dans le cas d'un nouveau maillage.
+  //! Parallelism manager in the case of a new mesh.
   Ref<IParallelMng> parallelMngRef() const { return m_parallel_mng; }
-  //! Groupe parent dans le cas d'un sous-maillage, null sinon.
+  //! Parent group in the case of a sub-mesh, null otherwise.
   const ItemGroup& parentGroup() const { return m_parent_group; }
-  //! Indique si le lecteur/générateur nécessite un partitionnement
+  //! Indicates if the reader/generator requires partitioning
   bool isNeedPartitioning() const { return m_is_need_partitioning; }
-  //! Caractéristiques du maillage
+  //! Mesh characteristics
   const MeshKind meshKind() const { return m_mesh_kind; }
 
  private:

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ServiceBuildInfo.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Structure contenant les informations pour créer un service.               */
+/* Structure containing the information to create a service.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SERVICEBUILDINFO_H
 #define ARCANE_CORE_SERVICEBUILDINFO_H
@@ -28,95 +28,95 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour créer un service.
+ * \brief Information for creating a service.
  *
- * Les instances de cette classe sont internes à Arcane. En général il faut
- * utiliser la classe ServiceBuildInfo.
+ * Instances of this class are internal to Arcane. Generally, you must
+ * use the ServiceBuildInfo class.
  *
- * Les différents champs de cette classe ne sont pas tous valides. Leur validité
- * dépend du constructeur utilisé. Seul application() est toujours valide.
- * Il est possible de connaitre les champs valides via la valeur de
- * creationType().
+ * The different fields of this class are not all valid. Their validity
+ * depends on the constructor used. Only application() is always valid. It
+ * is possible to know the valid fields via the value of creationType().
  */
 class ARCANE_CORE_EXPORT ServiceBuildInfoBase
 {
  public:
 
   /*!@{
-   * \name Constructeurs.
+   * \name Constructors.
    *
-   * Les différents constructeurs permettent de définir le type de service
+   * The different constructors allow defining the service type
    * (eServiceType).
    */
 
   /*!
-   * \brief Service associé à une application \a IApplication.
+   * \brief Service associated with an application \a IApplication.
    *
-   * Le service sera de type #ST_Application.
+   * The service will be of type #ST_Application.
    */
   explicit ServiceBuildInfoBase(IApplication* app);
 
   /*!
-   * \brief Service associé à une session \a ISession.
+   * \brief Service associated with a session \a ISession.
    *
-   * Le service sera de type #ST_Session.
+   * The service will be of type #ST_Session.
    */
   explicit ServiceBuildInfoBase(ISession* session);
 
   /*!
-   * \brief Service associé à un sous-domaine \a ISubDomain.
+   * \brief Service associated with a subdomain \a ISubDomain.
    *
-   * Le service sera de type #ST_SubDomain.
-   * Donne aussi accès à la propriété de  maillage (\a mesh())
+   * The service will be of type #ST_SubDomain.
+   * Also provides access to the mesh property (\a mesh())
    */
   explicit ServiceBuildInfoBase(ISubDomain* sd);
 
   /*!
-   * \brief Service associé à un maillage \a mesh.
+   * \brief Service associated with a mesh \a mesh.
    *
-   * Le service sera de type #ST_SubDomain.
+   * The service will be of type #ST_SubDomain.
    */
   ServiceBuildInfoBase(ISubDomain* sd, IMesh* mesh);
 
   /*!
-   * \brief Service associé à un maillage \a mesh_handle.
+   * \brief Service associated with a mesh \a mesh_handle.
    *
-   * Le service sera de type #ST_SubDomain.
+   * The service will be of type #ST_SubDomain.
    */
   explicit ServiceBuildInfoBase(const MeshHandle& mesh_handle);
 
   /*!
-   * \brief Service associé à un maillage \a mesh_handle.
+   * \brief Service associated with a mesh \a mesh_handle.
    *
-   * Le service sera de type #ST_SubDomain.
+   * The service will be of type #ST_SubDomain.
    */
   ServiceBuildInfoBase(ISubDomain* sd, const MeshHandle& mesh_handle);
 
   /*!
-   * \brief Service associé à une option du jeu de données \a co.
+   * \brief Service associated with a dataset option \a co.
    *
-   * Le service sera de type #ST_CaseOption.
-   * Donne aussi accès aux propriétés de maillage (mesh()) et
-   * sous-domaine (subDomain()).
+   * The service will be of type #ST_CaseOption.
+   * Also provides access to the mesh (mesh()) and
+   * subdomain (subDomain()) properties.
    */
   explicit ServiceBuildInfoBase(ICaseOptions* co);
 
   /*!
-   * \brief Service associé à une option du jeu de données \a co.
+   * \brief Service associated with a dataset option \a co.
    *
-   * Le service sera de type #ST_CaseOption.
-   * Donne aussi accès aux propriétés de maillage (mesh()) et
-   * sous-domaine (subDomain()).
+   * The service will be of type #ST_CaseOption.
+   * Also provides access to the mesh (mesh()) and
+   * subdomain (subDomain()) properties.
    */
   ServiceBuildInfoBase(ISubDomain* sd, ICaseOptions* co);
 
   /*!
-   * \brief Service associé à un maillage \a mesh.
+   * \brief Service associated with a mesh \a mesh.
    *
-   * Le service sera de type #ST_SubDomain.
+   * The service will be of type #ST_SubDomain.
    *
-   * \deprecated Utiliser ServiceBuildInfoBase(const MeshHandle&) à la place.
+   * \deprecated Use ServiceBuildInfoBase(const MeshHandle&) instead.
    */
   ARCCORE_DEPRECATED_2020("Use ServiceBuildInfoBase(const MeshHandle&) instead")
   explicit ServiceBuildInfoBase(IMesh* mesh);
@@ -126,53 +126,53 @@ class ARCANE_CORE_EXPORT ServiceBuildInfoBase
  public:
 
   /*!
-   * \brief Accès à l'application \a IApplication associé.
+   * \brief Access to the associated \a IApplication.
    *
-   * L'instance n'est jamais nulle quel que soit le service.
+   * The instance is never null regardless of the service.
    */
   IApplication* application() const { return m_application; }
 
   /*!
-   * \brief Accès au \a ISession associé.
+   * \brief Access to the associated \a ISession.
    *
    * \pre creationType() & (#ST_CaseOption|#ST_SubDomain|#ST_Session)
    */
   ISession* session() const { return m_session; }
 
   /*!
-   * \brief Accès au \a ISubDomain associé.
+   * \brief Access to the associated \a ISubDomain.
    *
    * \pre creationType() & (#ST_CaseOption|#ST_SubDomain)
    */
   ISubDomain* subDomain() const { return m_sub_domain; }
 
   /*!
-   * \brief Accès au \a IMesh associé.
+   * \brief Access to the associated \a IMesh.
    *
    * \pre creationType() & (#ST_CaseOption|#ST_SubDomain)
    */
   IMesh* mesh() const;
 
   /*!
-   * \brief Accès au handle de maillage \a MeshHandle associé.
+   * \brief Access to the associated mesh handle \a MeshHandle.
    *
    * \pre creationType() & (#ST_CaseOption|#ST_SubDomain)
    */
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
   /*!
-   * \brief Accès au \a ICaseOptions associé.
+   * \brief Access to the associated \a ICaseOptions.
    *
    * \pre creationType() & #ST_CaseOption
    */
   ICaseOptions* caseOptions() const { return m_case_options; }
 
   /*!
-   * \brief Accès à l'instance parente qui a créée cette instance.
+   * \brief Access to the parent instance that created this instance.
    */
   IBase* serviceParent() const { return m_service_parent; }
 
-  //! Type du service pouvant être créé par cette instance
+  //! Type of service that can be created by this instance
   eServiceType creationType() const { return m_creation_type; }
 
  protected:
@@ -189,9 +189,10 @@ class ARCANE_CORE_EXPORT ServiceBuildInfoBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Service
- * \brief Structure contenant les informations pour créer un service.
+ * \brief Structure containing the information to create a service.
  */
 class ARCANE_CORE_EXPORT ServiceBuildInfo
 : public ServiceBuildInfoBase
@@ -202,7 +203,7 @@ class ARCANE_CORE_EXPORT ServiceBuildInfo
 
  public:
 
-  //! Accès au \a IServiceInfo associé
+  //! Access to the associated \a IServiceInfo
   IServiceInfo* serviceInfo() const { return m_service_info; }
 
  private:
@@ -218,5 +219,4 @@ class ARCANE_CORE_EXPORT ServiceBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

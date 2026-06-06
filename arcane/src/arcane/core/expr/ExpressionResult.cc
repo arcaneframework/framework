@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ExpressionResult.cc                                         (C) 2000-2018 */
 /*                                                                           */
-/* Contient le résultat de l´évaluation d'une expression.                    */
+/* Contains the result of an expression evaluation.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,11 +37,10 @@ ExpressionResult::
 ExpressionResult(IVariable* v)
 {
   if (v->dimension() != 1)
-    throw BadExpressionException
-    ("ExpressionResult::ExpressionResult(IVariablePrv* v)", 
-     "Only variables of dimension 1 are dealt with in the expressions.");
+    throw BadExpressionException("ExpressionResult::ExpressionResult(IVariablePrv* v)",
+                                 "Only variables of dimension 1 are dealt with in the expressions.");
 
-  throw NotImplementedException(A_FUNCINFO,"building expression result after removing IVariableAccessor");
+  throw NotImplementedException(A_FUNCINFO, "building expression result after removing IVariableAccessor");
 #if 0
   eDataType type = v->dataType();
   switch(type)
@@ -100,7 +100,6 @@ ExpressionResult(IVariable* v)
     m_own_indices[i]=i;
   m_indices = m_own_indices.view();
 #endif
-
 }
 //%% ARCANE_EXPR_SUPPRESS_END
 
@@ -113,7 +112,7 @@ ExpressionResult(ArrayVariant* data)
 {
   Integer size = data->size();
   m_own_indices.resize(size);
-  for( Integer i=0 ; i<size ; ++i)
+  for (Integer i = 0; i < size; ++i)
     m_own_indices[i] = i;
   m_indices = m_own_indices.view();
 }
@@ -143,10 +142,10 @@ ExpressionResult::
 void ExpressionResult::
 allocate(VariantBase::eType type)
 {
-  if (!m_data){
+  if (!m_data) {
     m_data = new ArrayVariant(type, m_indices.size());
   }
-  else if (type != m_data->type()){
+  else if (type != m_data->type()) {
     OStringStream s;
     s() << "The result type of the expression ("
         << m_data->typeName() << ") "
@@ -159,7 +158,7 @@ allocate(VariantBase::eType type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream& 
+std::ostream&
 operator<<(std::ostream& s, const ExpressionResult& x)
 {
   s << "ExpressionResult [";
@@ -167,17 +166,17 @@ operator<<(std::ostream& s, const ExpressionResult& x)
     s << "data=" << *x.m_data << ", ";
   s << "indices=[ ";
   Integer size = x.m_indices.size();
-  for( Integer i=0 ; i<size ; ++i )
+  for (Integer i = 0; i < size; ++i)
     s << x.m_indices[i] << " ";
   s << "]]";
-  
+
   return s;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

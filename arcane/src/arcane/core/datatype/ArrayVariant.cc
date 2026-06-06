@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArrayVariant.cc                                             (C) 2000-2006 */
 /*                                                                           */
-/* Type de base polymorphe pour les tableaux mono-dim (dimension 1).         */
+/* Polymorphic base type for mono-dimensional arrays (dimension 1).          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,91 +26,74 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ArrayVariant::
-ArrayVariant(eType type,Integer asize)
+ArrayVariant(eType type, Integer asize)
 : VariantBase(1, type)
 , m_allocated_array(0)
 {
-  switch(type){
-  case TReal:
-    {
-      RealArray* v = new RealUniqueArray(asize);
-      m_allocated_array = v;
-      m_real_value = *v;
-    }
-    break;
-  case TInt64:
-    {
-      Int64Array* v = new Int64UniqueArray(asize);
-      m_allocated_array = v;
-      m_int64_value = *v;
-    }
-    break;
-  case TInt32:
-    {
-      Int32Array* v = new Int32UniqueArray(asize);
-      m_allocated_array = v;
-      m_int32_value = *v;
-    }
-    break;
-  case TBool:
-    {
-      BoolArray* v = new BoolUniqueArray(asize);
-      m_allocated_array = v;
-      m_bool_value = *v;
-    }
-    break;
-  case TString:
-    {
-      StringArray* v = new StringUniqueArray(asize);
-      m_allocated_array = v;
-      m_string_value = *v;
-    }
-    break;
-  case TReal2:
-    {
-      Real2Array* v = new Real2UniqueArray(asize);
-      m_allocated_array = v;
-      m_real2_value = *v;
-    }
-    break;
-  case TReal3:
-    {
-      Real3Array* v = new Real3UniqueArray(asize);
-      m_allocated_array = v;
-      m_real3_value = *v;
-    }
-    break;
-  case TReal2x2:
-    {
-      Real2x2Array* v = new Real2x2UniqueArray(asize);
-      m_allocated_array = v;
-      m_real2x2_value = *v;
-    }
-    break;
-  case TReal3x3:
-    {
-      Real3x3Array* v = new Real3x3UniqueArray(asize);
-      m_allocated_array = v;
-      m_real3x3_value = *v;
-    }
-    break;
+  switch (type) {
+  case TReal: {
+    RealArray* v = new RealUniqueArray(asize);
+    m_allocated_array = v;
+    m_real_value = *v;
+  } break;
+  case TInt64: {
+    Int64Array* v = new Int64UniqueArray(asize);
+    m_allocated_array = v;
+    m_int64_value = *v;
+  } break;
+  case TInt32: {
+    Int32Array* v = new Int32UniqueArray(asize);
+    m_allocated_array = v;
+    m_int32_value = *v;
+  } break;
+  case TBool: {
+    BoolArray* v = new BoolUniqueArray(asize);
+    m_allocated_array = v;
+    m_bool_value = *v;
+  } break;
+  case TString: {
+    StringArray* v = new StringUniqueArray(asize);
+    m_allocated_array = v;
+    m_string_value = *v;
+  } break;
+  case TReal2: {
+    Real2Array* v = new Real2UniqueArray(asize);
+    m_allocated_array = v;
+    m_real2_value = *v;
+  } break;
+  case TReal3: {
+    Real3Array* v = new Real3UniqueArray(asize);
+    m_allocated_array = v;
+    m_real3_value = *v;
+  } break;
+  case TReal2x2: {
+    Real2x2Array* v = new Real2x2UniqueArray(asize);
+    m_allocated_array = v;
+    m_real2x2_value = *v;
+  } break;
+  case TReal3x3: {
+    Real3x3Array* v = new Real3x3UniqueArray(asize);
+    m_allocated_array = v;
+    m_real3x3_value = *v;
+  } break;
   default:
-    throw BadVariantTypeException("ArrayVariant::ArrayVariant(eType,Integer)",type);
+    throw BadVariantTypeException("ArrayVariant::ArrayVariant(eType,Integer)", type);
   }
 }
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ArrayVariant::
 ArrayVariant(ArrayView<Real> data)
-: VariantBase(1,TReal)
+: VariantBase(1, TReal)
 , m_real_value(data)
 , m_allocated_array(0)
 {
@@ -121,7 +104,7 @@ ArrayVariant(ArrayView<Real> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<Real2> data)
-: VariantBase(1,TReal2)
+: VariantBase(1, TReal2)
 , m_real2_value(data)
 , m_allocated_array(0)
 {
@@ -143,7 +126,7 @@ ArrayVariant(ArrayView<Real3> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<Real2x2> data)
-: VariantBase(1,TReal2x2)
+: VariantBase(1, TReal2x2)
 , m_real2x2_value(data)
 , m_allocated_array(0)
 {
@@ -154,7 +137,7 @@ ArrayVariant(ArrayView<Real2x2> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<Real3x3> data)
-: VariantBase(1,TReal3x3)
+: VariantBase(1, TReal3x3)
 , m_real3x3_value(data)
 , m_allocated_array(0)
 {
@@ -165,7 +148,7 @@ ArrayVariant(ArrayView<Real3x3> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<Int32> data)
-: VariantBase(1,TInt32)
+: VariantBase(1, TInt32)
 , m_int32_value(data)
 , m_allocated_array(0)
 {
@@ -176,7 +159,7 @@ ArrayVariant(ArrayView<Int32> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<Int64> data)
-: VariantBase(1,TInt64)
+: VariantBase(1, TInt64)
 , m_int64_value(data)
 , m_allocated_array(0)
 {
@@ -187,7 +170,7 @@ ArrayVariant(ArrayView<Int64> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<bool> data)
-: VariantBase(1,TBool)
+: VariantBase(1, TBool)
 , m_bool_value(data)
 , m_allocated_array(0)
 {
@@ -198,7 +181,7 @@ ArrayVariant(ArrayView<bool> data)
 
 ArrayVariant::
 ArrayVariant(ArrayView<String> data)
-: VariantBase(1,TString)
+: VariantBase(1, TString)
 , m_string_value(data)
 , m_allocated_array(0)
 {
@@ -221,16 +204,34 @@ _destroy()
 {
   if (!m_allocated_array)
     return;
-  switch(m_type){
-  case TReal: delete reinterpret_cast<RealArray*>(m_allocated_array); break;
-  case TReal2: delete reinterpret_cast<Real2Array*>(m_allocated_array); break;
-  case TReal3: delete reinterpret_cast<Real3Array*>(m_allocated_array); break;
-  case TReal2x2: delete reinterpret_cast<Real2x2Array*>(m_allocated_array); break;
-  case TReal3x3: delete reinterpret_cast<Real3x3Array*>(m_allocated_array); break;
-  case TInt64: delete reinterpret_cast<Int64Array*>(m_allocated_array); break;
-  case TInt32: delete reinterpret_cast<Int32Array*>(m_allocated_array); break;
-  case TBool: delete reinterpret_cast<BoolArray*>(m_allocated_array); break;
-  case TString: delete reinterpret_cast<StringArray*>(m_allocated_array); break;
+  switch (m_type) {
+  case TReal:
+    delete reinterpret_cast<RealArray*>(m_allocated_array);
+    break;
+  case TReal2:
+    delete reinterpret_cast<Real2Array*>(m_allocated_array);
+    break;
+  case TReal3:
+    delete reinterpret_cast<Real3Array*>(m_allocated_array);
+    break;
+  case TReal2x2:
+    delete reinterpret_cast<Real2x2Array*>(m_allocated_array);
+    break;
+  case TReal3x3:
+    delete reinterpret_cast<Real3x3Array*>(m_allocated_array);
+    break;
+  case TInt64:
+    delete reinterpret_cast<Int64Array*>(m_allocated_array);
+    break;
+  case TInt32:
+    delete reinterpret_cast<Int32Array*>(m_allocated_array);
+    break;
+  case TBool:
+    delete reinterpret_cast<BoolArray*>(m_allocated_array);
+    break;
+  case TString:
+    delete reinterpret_cast<StringArray*>(m_allocated_array);
+    break;
   default:
     break;
   }
@@ -242,7 +243,7 @@ _destroy()
 Integer ArrayVariant::
 size() const
 {
-  switch(m_type){
+  switch (m_type) {
   case TReal:
     return m_real_value.size();
   case TReal2:
@@ -270,84 +271,83 @@ size() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_DATATYPE_EXPORT std::ostream& 
+extern "C++" ARCANE_DATATYPE_EXPORT std::ostream&
 operator<<(std::ostream& s, const ArrayVariant& x)
 {
   s << "ArrayVariant [t="
     << x.typeName();
-  
+
   s << ", adr=";
   Integer size = 0;
-  switch (x.type())
-  {
+  switch (x.type()) {
   case VariantBase::TReal:
     s << x.asReal().data();
     s << "], v=[ ";
     size = x.asReal().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asReal()[i] << " ";
     break;
   case VariantBase::TReal2:
     s << x.asReal2().data();
     s << "], v=[ ";
     size = x.asReal2().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asReal2()[i] << " ";
     break;
   case VariantBase::TReal3:
     s << x.asReal3().data();
     s << "], v=[ ";
     size = x.asReal3().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asReal3()[i] << " ";
     break;
   case VariantBase::TReal2x2:
     s << x.asReal2().data();
     s << "], v=[ ";
     size = x.asReal2().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asReal2x2()[i] << " ";
     break;
   case VariantBase::TReal3x3:
     s << x.asReal3x3().data();
     s << "], v=[ ";
     size = x.asReal3x3().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asReal3x3()[i] << " ";
     break;
   case VariantBase::TInt64:
     s << x.asInt64().data();
     s << "], v=[ ";
     size = x.asInt64().size();
-    for(Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asInt64()[i] << " ";
     break;
   case VariantBase::TInt32:
     s << x.asInteger().data();
     s << "], v=[ ";
     size = x.asInteger().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asInteger()[i] << " ";
     break;
   case VariantBase::TBool:
     s << x.asBool().data();
     s << "], v=[ ";
     size = x.asBool().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asBool()[i] << " ";
     break;
   case VariantBase::TString:
     s << x.asString().data();
     s << "], v=[ ";
     size = x.asString().size();
-    for (Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       s << x.asString()[i] << " ";
     break;
   default:
     break;
   }
   s << "]";
-  
+
   return s;
 }
 
@@ -355,7 +355,7 @@ operator<<(std::ostream& s, const ArrayVariant& x)
 /*---------------------------------------------------------------------------*/
 
 IntegerArrayView ArrayVariant::
-asInteger() 
+asInteger()
 {
 #ifdef ARCANE_64BIT
   return m_int64_value;
@@ -380,7 +380,7 @@ asInteger() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialMng.h                                          (C) 2000-2024 */
 /*                                                                           */
-/* Interface du gestionnaire des matériaux d'un maillage.                    */
+/* Interface for the material manager of a mesh.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_IMESHMATERIALMNG_H
 #define ARCANE_MATERIALS_IMESHMATERIALMNG_H
@@ -29,30 +29,30 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Interface du gestionnaire des matériaux et des milieux d'un maillage.
+ * \brief Interface for the material and environment manager of a mesh.
  *
- * Cette interface gère les différents composants (IMeshComponent)
- * multi-matériaux d'un maillage  ainsi que leurs variables associées.
- * Ces composants peuvent être soit des matériaux (IMeshMaterial),
- * soit des milieux (IMeshEnvironment). Il est possible de récupérer la liste
- * des matériaux via materials() et la liste des milieux par environments().
- * Il est aussi possible de récupérer l'une de ces deux listes sous forme
+ * This interface manages the different components (IMeshComponent)
+ * multi-materials of a mesh, as well as their associated variables.
+ * These components can be either materials (IMeshMaterial),
+ * or environments (IMeshEnvironment). It is possible to retrieve the list
+ * of materials via materials() and the list of environments via environments().
+ * It is also possible to retrieve one of these two lists in the form
  * 
- * L'implémentation actuelle ne gère que les matériaux et les milieux aux mailles.
+ * The current implementation only manages materials and environments on the cells.
  *
- * Une fois cette instance créé, via getReference(), la première chose à
- * faire est d'enregistrer
- * la liste des matériaux via registerMaterialInfo(). Il est ensuite
- * possible de créer chaque milieu en indiquant la liste des matériaux
- * qui le compose via createEnvironment(). Une fois ceci terminé, il
- * faut appeler endCreate() pour terminer l'initialisation. La liste des matériaux et des milieux
- * ne peut être modifiée que lors de l'initialisation. Elle ne doit plus évoluer
- * par la suite.
+ * Once this instance is created, via getReference(), the first thing to do is
+ * register
+ * the list of materials via registerMaterialInfo(). It is then
+ * possible to create each environment by indicating the list of materials
+ * that compose it via createEnvironment(). Once this is finished, you
+ * must call endCreate() to finish initialization. The list of materials and environments
+ * cannot be modified except during initialization. It must not change afterward.
  *
- * Toute modification de la liste des mailles d'un milieu ou d'un matériau
- * doit se faire via une instance de MeshMaterialModifier.
+ * Any modification of the cell list of an environment or a material
+ * must be done via an instance of MeshMaterialModifier.
  */
 class ARCANE_CORE_EXPORT IMeshMaterialMng
 {
@@ -65,384 +65,383 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
  public:
 
   /*!
-   * \brief Récupère ou créé la référence associée à \a mesh.
+   * \brief Retrieves or creates the reference associated with \a mesh.
    *
-   * Si aucun gestionnaire de matériau n'est associé à \a mesh, il
-   * sera créé lors de l'appel à cette méthode si \a create vaut \a true.
-   * Si \a create vaut \a false est qu'aucune gestionnaire n'est associé
-   * au maillage, un pointeur nul est retourné.
-   * L'instance retournée reste valide tant que le maillage \a mesh existe.
+   * If no material manager is associated with \a mesh, it
+   * will be created when this method is called if \a create is \a true.
+   * If \a create is \a false, no manager is associated
+   * with the mesh, a null pointer is returned.
+   * The returned instance remains valid as long as the mesh \a mesh exists.
    */
-  static IMeshMaterialMng* getReference(const MeshHandleOrMesh& mesh_handle,bool create=true);
+  static IMeshMaterialMng* getReference(const MeshHandleOrMesh& mesh_handle, bool create = true);
 
   /*!
-   * \brief Récupère ou créé la référence associée à \a mesh.
+   * \brief Retrieves or creates the reference associated with \a mesh.
    *
-   * Si aucun gestionnaire de matériau n'est associé à \a mesh, il
-   * sera créé lors de l'appel à cette méthode si \a create vaut \a true.
-   * Si \a create vaut \a false est qu'aucune gestionnaire n'est associé
-   * au maillage, un pointeur nul est retourné.
-   * L'instance retournée reste valide tant que le maillage \a mesh existe.
+   * If no material manager is associated with \a mesh, it
+   * will be created when this method is called if \a create is \a true.
+   * If \a create is \a false, no manager is associated
+   * with the mesh, a null pointer is returned.
+   * The returned instance remains valid as long as the mesh \a mesh exists.
    */
-  static Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool create=true);
+  static Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle, bool create = true);
 
  public:
 
-  //! Maillage associé.
-  virtual IMesh* mesh() =0;
+  //! Associated mesh.
+  virtual IMesh* mesh() = 0;
 
-  //! Gestionnaire de traces
-  virtual ITraceMng* traceMng() =0;
+  //! Trace manager
+  virtual ITraceMng* traceMng() = 0;
 
  public:
 
   /*!
-   * \brief Enregistre les infos du matériau de nom \a name.
+   * \brief Registers the material info with name \a name.
    *
-   * Cette opération ne fait que enregistrer les informations d'un matériau.
-   * Ces informations sont ensuite utilisés lors de la création du milieu
+   * This operation only registers the information of a material.
+   * This information is then used when creating the environment
    * via createEnvironment().
    */
-  virtual MeshMaterialInfo* registerMaterialInfo(const String& name) =0;
+  virtual MeshMaterialInfo* registerMaterialInfo(const String& name) = 0;
 
   /*!
-   * \brief Créé un milieu avec les infos \a infos
+   * \brief Creates an environment with the info \a infos
    *
-   * La création d'un milieu ne peut avoir lieu que lors de l'initialisation.
-   * Les matériaux constituant le milieu doivent avoir auparavant été enregistrés via
-   * \a registerMaterialInfo(). Un matériau peut appartenir à plusieurs milieux.
+   * The creation of an environment can only take place during initialization.
+   * The materials constituting the environment must have previously been registered via
+   * \a registerMaterialInfo(). A material can belong to several environments.
    */
-  virtual IMeshEnvironment* createEnvironment(const MeshEnvironmentBuildInfo& infos) =0;
+  virtual IMeshEnvironment* createEnvironment(const MeshEnvironmentBuildInfo& infos) = 0;
 
   /*!
-   * \brief Créé un bloc.
+   * \brief Creates a block.
    *
-   * Créé un bloc avec les infos \a infos.
+   * Creates a block with the info \a infos.
    *
-   * La création d'un bloc ne peut avoir lieu que lors de l'initialisation,
-   * (donc avant l'appel à endCreate()), mais après la création des milieux.
+   * The creation of a block can only take place during initialization,
+   * (i.e., before calling endCreate()), but after the creation of environments.
    */
-  virtual IMeshBlock* createBlock(const MeshBlockBuildInfo& infos) =0;
+  virtual IMeshBlock* createBlock(const MeshBlockBuildInfo& infos) = 0;
 
   /*!
-   * \brief Ajoute un milieu à un bloc existant.
+   * \brief Adds an environment to an existing block.
    *
-   * Ajoute le milieu \a env au bloc \a block.
+   * Adds the environment \a env to the block \a block.
    *
-   * La modification d'un bloc ne peut avoir lieu que lors de l'initialisation,
-   * (donc avant l'appel à endCreate()).
+   * The modification of a block can only take place during initialization,
+   * (i.e., before calling endCreate()).
    *
-   * \warning Cette méthode ne modifie pas le groupe block->cells() et c'est
-   * donc à l'appelant d'ajouter au groupe les mailles du milieu si besoin.
+   * \warning This method does not modify the block->cells() group, and it is
+   * up to the caller to add the environment's cells to the group if necessary.
    */
-  virtual void addEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) =0;
+  virtual void addEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) = 0;
 
   /*!
-   * \brief Supprime un milieu à un bloc existant.
+   * \brief Removes an environment from an existing block.
    *
-   * Supprime le milieu \a env au bloc \a block.
+   * Removes the environment \a env from the block \a block.
    *
-   * La modification d'un bloc ne peut avoir lieu que lors de l'initialisation,
-   * (donc avant l'appel à endCreate()).
+   * The modification of a block can only take place during initialization,
+   * (i.e., before calling endCreate()).
    *
-   * \warning Cette méthode ne modifie pas le groupe block->cells() et c'est
-   * donc à l'appelant d'ajouter au groupe les mailles du milieu si besoin.
+   * \warning This method does not modify the block->cells() group, and it is
+   * up to the caller to add the environment's cells to the group if necessary.
    */
-  virtual void removeEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) =0;
+  virtual void removeEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) = 0;
 
   /*!
-   * \brief Indique qu'on a fini de créer les milieux.
+   * \brief Indicates that environment creation is finished.
    *
-   * L'instance n'est pas utilisable tant que cette méthode n'a pas été appelée.
+   * The instance is not usable until this method has been called.
    *
-   * Si \a is_continue est vrai, recontruit pour chaque matériau et milieu
-   * la liste de leurs mailles à partir des informations de reprise.
+   * If \a is_continue is true, it rebuilds for each material and environment
+   * the list of their cells from the recovery information.
    */
-  virtual void endCreate(bool is_continue=false) =0;
+  virtual void endCreate(bool is_continue = false) = 0;
 
   /*!
-   * \brief Recréé les infos des matériaux et milieux à partir des infos
-   * de la protection.
+   * \brief Recreates the material and environment info from the dump info.
    *
-   * Cette méthode remplace le endCreate() et ne peut être utilisée qu'en reprise
-   * et lors de l'initialisation.
+   * This method replaces endCreate() and can only be used during recovery
+   * and during initialization.
    */
-  virtual void recreateFromDump() =0;
+  virtual void recreateFromDump() = 0;
 
   /*!
-   * \brief Positionne la sauvegarde des valeurs entre deux modifications des
-   * matériaux.
+   * \brief Sets the saving of values between two modifications of the
+   * materials.
    *
-   * Si actif, les valeurs des variables partielles sont conservées entre
-   * deux modifications de la liste des matériaux.
+   * If active, the values of partial variables are preserved between
+   * two modifications of the material list.
    */
-  virtual void setKeepValuesAfterChange(bool v) =0;
-  
-  //! Indique si les valeurs des variables sont conservées entre les modifications
-  virtual bool isKeepValuesAfterChange() const =0;
+  virtual void setKeepValuesAfterChange(bool v) = 0;
+
+  //! Indicates if variable values are preserved between modifications
+  virtual bool isKeepValuesAfterChange() const = 0;
 
   /*!
-   * \brief Indique comment initialiser les nouvelles valeurs dans
-   * les mailles matériaux et milieux.
+   * \brief Indicates how to initialize new values in
+   * material and environment cells.
    *
-   * Si vrai, les nouvelles valeurs sont initialisées à zéro ou le vecteur
-   * nul suivant le type de la donnée. Si faux, l'initialisation se fait avec
-   * la valeur globale.
+   * If true, the new values are initialized to zero or the null vector
+   * following the data type. If false, initialization is done with
+   * the global value.
    */
-  virtual void setDataInitialisationWithZero(bool v) =0;
-  
-  //! Indique comment initialiser les nouvelles valeurs dans les mailles matériaux et milieux.
-  virtual bool isDataInitialisationWithZero() const =0;
+  virtual void setDataInitialisationWithZero(bool v) = 0;
+
+  //! Indicates how to initialize new values in material and environment cells.
+  virtual bool isDataInitialisationWithZero() const = 0;
 
   /*!
-   * \brief Indique si les milieux et matériaux suivent les changements
-   * de topologie dans le maillage.
+   * \brief Indicates if environments and materials follow changes
+   * in the mesh topology.
    *
-   * Cette méthode doit être apellée avant toute création de matériau.
+   * This method must be called before any material creation.
    *
-   * Si \a v vaut \a false, les milieux et les matériaux ne sont pas notifiés
-   * des changements de la topologie du maillage. Dans ce cas, toutes les
-   * données associées sont invalidées.
+   * If \a v is \a false, environments and materials are not notified
+   * of changes in the mesh topology. In this case, all
+   * associated data is invalidated.
    */
-  virtual void setMeshModificationNotified(bool v) =0;
+  virtual void setMeshModificationNotified(bool v) = 0;
 
-  //! Indique si les milieux et matériaux suivent les changements de topologie dans le maillage.
-  virtual bool isMeshModificationNotified() const =0;
+  //! Indicates if environments and materials follow changes in the mesh topology.
+  virtual bool isMeshModificationNotified() const = 0;
 
   /*!
-   * \brief Positionner les flags pour paramêtrer les modifications de matériaux/milieux.
+   * \brief Sets the flags to parameterize material/environment modifications.
    *
-   * Les flags possibles sont une combinaison de eModificationFlags.
+   * The possible flags are a combination of eModificationFlags.
    *
-   * Par exemple:
+   * For example:
    \code
    IMeshMaterialMng* mm = ...;
    int flags = (int)eModificationFlags::GenericOptimize | (int)eModificationFlags::OptimizeMultiAddRemove;
    mm->setModificationFlags(flags);
    \endcode
    *
-   * Cette méthode doit être activé avant l'appel à endCreate() pour être prise en compte.
+   * This method must be enabled before calling endCreate() to be taken into account.
    */
-  virtual void setModificationFlags(int v) =0;
+  virtual void setModificationFlags(int v) = 0;
 
-  //! Flags pour paramêtrer les modifications
-  virtual int modificationFlags() const =0;
+  //! Flags to parameterize modifications
+  virtual int modificationFlags() const = 0;
 
   /*!
-   * \brief Positionne l'option indiquant si les variables scalaires
-   * milieux sont allouées sur les matériaux.
+   * \brief Sets the option indicating whether scalar variables
+   * of environments are allocated on materials.
    *
-   * Si actif, alors les variables scalaires milieux sont tout de même allouées
-   * aussi sur les matériaux. Cela permet de déclarer la même variable à la fois
-   * comme une variable matériau et milieu (par exemple MaterialVariableCellReal et
+   * If active, then environment scalar variables are still allocated
+   * on materials. This allows declaring the same variable both
+   * as a material variable and an environment variable (e.g., MaterialVariableCellReal and
    * EnvironmentVariableCellReal).
    *
-   * Par défaut cette option n'est pas active.
+   * By default, this option is not active.
    *
-   * Cette méthode doit être activé avant l'appel à endCreate() pour être prise en compte.
+   * This method must be enabled before calling endCreate() to be taken into account.
    */
-  virtual void setAllocateScalarEnvironmentVariableAsMaterial(bool v) =0;
+  virtual void setAllocateScalarEnvironmentVariableAsMaterial(bool v) = 0;
 
-  //! Indique si les variables scalaires milieux sont allouées sur les matériaux.
-  virtual bool isAllocateScalarEnvironmentVariableAsMaterial() const =0;
+  //! Indicates if environment scalar variables are allocated on materials.
+  virtual bool isAllocateScalarEnvironmentVariableAsMaterial() const = 0;
 
-  //! Nom du gestionnaire
-  virtual String name() const =0;
+  //! Manager name
+  virtual String name() const = 0;
 
   /*!
-   * \ brief Nom du service utilisé pour compresser les données lors du forceRecompute().
+   * \brief Name of the service used to compress data during forceRecompute().
    *
-   * Si null (le défaut), aucune compression n'est effectuée.
+   * If null (the default), no compression is performed.
    */
-  virtual void setDataCompressorServiceName(const String& name) =0;
+  virtual void setDataCompressorServiceName(const String& name) = 0;
 
-  //! virtual Nom du service utilisé pour compresser les données
-  virtual String dataCompressorServiceName() const =0;
+  //! Virtual name of the service used to compress data
+  virtual String dataCompressorServiceName() const = 0;
 
-  //! Liste des matériaux
-  virtual ConstArrayView<IMeshMaterial*> materials() const =0;
+  //! List of materials
+  virtual ConstArrayView<IMeshMaterial*> materials() const = 0;
 
-  //! Liste des matériaux vus comme composants
-  virtual MeshComponentList materialsAsComponents() const =0;
+  //! List of materials viewed as components
+  virtual MeshComponentList materialsAsComponents() const = 0;
 
-  //! Liste des milieux
-  virtual ConstArrayView<IMeshEnvironment*> environments() const =0;
+  //! List of environments
+  virtual ConstArrayView<IMeshEnvironment*> environments() const = 0;
 
-  //! Liste des milieux vus comme composants
-  virtual MeshComponentList environmentsAsComponents() const =0;
+  //! List of environments viewed as components
+  virtual MeshComponentList environmentsAsComponents() const = 0;
 
   /*!
-   * \brief Liste de tous les composants.
+   * \brief List of all components.
    *
-   * Cette liste est la concaténation de environmentsAsComponents() et
-   * materialsAsComponents(). Elle n'est valide qu'une fois endCreate() appelé.
+   * This list is the concatenation of environmentsAsComponents() and
+   * materialsAsComponents(). It is only valid once endCreate() has been called.
    */
-  virtual MeshComponentList components() const =0;
+  virtual MeshComponentList components() const = 0;
 
-  //! Liste des blocs
-  virtual ConstArrayView<IMeshBlock*> blocks() const =0;
+  //! List of blocks
+  virtual ConstArrayView<IMeshBlock*> blocks() const = 0;
 
   /*!
-   * \brief Retourne le milieux de nom \a name.
+   * \brief Returns the environment with name \a name.
    *
-   * Si aucune milieu de ce nom n'existe, retourne null si \a throw_exception est \a false
-   * et lève une exception si \a throw_exception vaut \a true.
+   * If no environment with this name exists, returns null if \a throw_exception is \a false
+   * and throws an exception if \a throw_exception is \a true.
    */
-  virtual IMeshEnvironment* findEnvironment(const String& name,bool throw_exception=true) =0;
+  virtual IMeshEnvironment* findEnvironment(const String& name, bool throw_exception = true) = 0;
 
   /*!
-   * \brief Retourne le bloc de nom \a name.
+   * \brief Returns the block with name \a name.
    *
-   * Si aucune bloc de ce nom n'existe, retourne null si \a throw_exception est \a false
-   * et lève une exception si \a throw_exception vaut \a true.
+   * If no block with this name exists, returns null if \a throw_exception is \a false
+   * and throws an exception if \a throw_exception is \a true.
    */
-  virtual IMeshBlock* findBlock(const String& name,bool throw_exception=true) =0;
+  virtual IMeshBlock* findBlock(const String& name, bool throw_exception = true) = 0;
 
   /*!
-   * \brief Remplit le tableau \a variables avec la liste des variables matériaux utilisés.
+   * \brief Fills the array \a variables with the list of used material variables.
    *
-   * La tableau \a variables est vidé avant l'appel.
+   * The array \a variables is cleared before the call.
    */
-  virtual void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) =0;
+  virtual void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) = 0;
 
-  //! Variable de nom \a name ou \a nullptr si aucune de ce nom existe.
-  virtual IMeshMaterialVariable* findVariable(const String& name) =0;
+  //! Variable with name \a name or \a nullptr if none of this name exists.
+  virtual IMeshMaterialVariable* findVariable(const String& name) = 0;
 
-  //! Variable aux matériaux associé à la variable global \a global_var (\a nullptr si aucune)
-  virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) =0;
+  //! Material variable associated with the global variable \a global_var (\a nullptr if none)
+  virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) = 0;
 
-  //! Ecrit les infos des matériaux et milieux sur le flot \a o
-  virtual void dumpInfos(std::ostream& o) =0;
+  //! Writes the material and environment info to the stream \a o
+  virtual void dumpInfos(std::ostream& o) = 0;
 
-  //! Ecrit les infos de la maille \a cell sur le flot \a o
-  virtual void dumpCellInfos(Cell cell,std::ostream& o) =0;
+  //! Writes the cell info \a cell to the stream \a o
+  virtual void dumpCellInfos(Cell cell, std::ostream& o) = 0;
 
-  //! Vérifie la validité des structures internes
-  virtual void checkValid() =0;
+  //! Checks the validity of internal structures
+  virtual void checkValid() = 0;
 
-  //! Vue sur les mailles milieux correspondant au groupe \a cells
-  virtual AllEnvCellVectorView view(const CellGroup& cells) =0;
+  //! View of environment cells corresponding to the group \a cells
+  virtual AllEnvCellVectorView view(const CellGroup& cells) = 0;
 
-  //! Vue sur les mailles milieux correspondant au groupe \a cells
-  virtual AllEnvCellVectorView view(CellVectorView cells) =0;
+  //! View of environment cells corresponding to the group \a cells
+  virtual AllEnvCellVectorView view(CellVectorView cells) = 0;
 
-  //! Vue sur les mailles milieux correspondant aux mailles de numéro locaux cells_local_id
-  virtual AllEnvCellVectorView view(SmallSpan<const Int32> cell_local_id) =0;
+  //! View of environment cells corresponding to local cell IDs cells_local_id
+  virtual AllEnvCellVectorView view(SmallSpan<const Int32> cell_local_id) = 0;
 
-  //! Créée une instance pour convertir de 'Cell' en 'AllEnvCell'
-  virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() =0;
+  //! Creates an instance to convert from 'Cell' to 'AllEnvCell'
+  virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() = 0;
 
   /*!
-   * \brief Force le recalcul des informations des matériaux.
-   * 
-   * Cette méthode permet de forcer le recalcul les informations sur les mailles
-   * mixtes par exemple suite à un changement de maillage.
-   * Il s'agit d'une méthode temporaire qui sera supprimée à terme.
-   * Les valeurs mixtes sont invalidés après appel à cette méthode.
+   * \brief Forces the recalculation of material information.
+   *
+   * This method allows forcing the recalculation of information on cells
+   * mixed, for example, following a mesh change.
+   * This is a temporary method that will eventually be removed.
+   * Mixed values are invalidated after calling this method.
    */
-  virtual void forceRecompute() =0;
+  virtual void forceRecompute() = 0;
 
-  //! Verrou utilisé pour le multi-threading
-  virtual Mutex* variableLock() =0;
+  //! Lock used for multi-threading
+  virtual Mutex* variableLock() = 0;
 
   /*!
-   * \brief Synchronise les mailles des matériaux.
+   * \brief Synchronizes material cells.
    *
-   * Cette méthode permet de synchroniser entre les sous-domaines les
-   * mailles de chaque matériau. Elle est collective
+   * This method allows synchronizing between subdomains the
+   * cells of each material. It is collective
    *
-   * Lors de cet appel, le sous-domaine propriétaire de N mailles
-   * envoie aux sous-domaines qui possède ces \a N mailles en tant que mailles
-   * fantômes la liste des matériaux qu'il possède. Ces derniers sous-domaines
-   * mettent à jour cette liste en ajoutant ou supprimant au besoin les
-   * matériaux nécessaires.
+   * During this call, the subdomain owning N cells
+   * sends to the subdomains that possess these \a N cells as ghost cells the
+   * list of materials it possesses. These latter subdomains
+   * update this list by adding or removing the necessary
+   * materials.
    *
-   * Après cet appel, il est garanti que
-   * les mailles fantômes d'un sous-domaine ont bien la même liste de
-   * matériaux et milieux que cells du sous-domaine qui est propriétaire
-   * de ces mailles. Il est notamment possible de synchroniser des variables
+   * After this call, it is guaranteed that
+   * the ghost cells of a subdomain have the same list of
+   * materials and environments as the cells of the subdomain that owns
+   * these cells. It is possible, in particular, to synchronize variables
    * via MeshMaterialVariableRef::synchronize().
    *
-   * Retourne \a true si les matériaux de ce sous-domaine ont été modifiés suite
-   * à la synchronisation, \a false sinon.
+   * Returns \a true if the materials of this subdomain have been modified following
+   * the synchronization, \a false otherwise.
    */
-  virtual bool synchronizeMaterialsInCells() =0;
+  virtual bool synchronizeMaterialsInCells() = 0;
 
   /*!
-   * \brief Vérifie que les mailles des matériaux sont cohérentes entre
-   * les sous-domaines.
+   * \brief Checks that material cells are consistent between
+   * subdomains.
    *
-   * Cette méthode permet de vérifier que toutes les mailles fantômes
-   * de notre sous-domaine ont bien la même liste de matériaux que
-   * les mailles propres associées.
+   * This method allows checking that all ghost cells
+   * of our subdomain have the same list of materials as
+   * the associated owned cells.
    *
-   * En cas d'erreur, on affiche la liste des mailles qui ne sont pas
-   * cohérentes et on lève une exception de type FatalErrorException.
+   * In case of an error, the list of inconsistent cells is displayed
+   * and a FatalErrorException is raised.
    *
-   * \a max_print indique en cas d'erreur le nombre maximal d'erreur à afficher.
-   * S'il est négatif, on affiche toutes les mailles.
+   * \a max_print indicates the maximum number of errors to display in case of an error.
+   * If it is negative, all cells are displayed.
    */
-  virtual void checkMaterialsInCells(Integer max_print=10) =0;
+  virtual void checkMaterialsInCells(Integer max_print = 10) = 0;
 
-  //! Applique le fonctor \a functor sur l'ensemble des variables matériaux
-  virtual void visitVariables(IFunctorWithArgumentT<IMeshMaterialVariable*>* functor) =0;
+  //! Applies the functor \a functor to all material variables
+  virtual void visitVariables(IFunctorWithArgumentT<IMeshMaterialVariable*>* functor) = 0;
 
   /*!
-   * \brief Compteur du nombre de modifications de la liste des matériaux
-   * et des milieux.
+   * \brief Counter for the number of modifications of the material list
+   * and environments.
    *
-   * Ce compteur augmente à chaque fois que des matériaux sont ajoutés
-   * ou supprimés. L'incrément n'est pas forcément constant.
+   * This counter increases every time materials are added
+   * or removed. The increment is not necessarily constant.
    *
-   * \note Actuellement, ce compteur n'est pas sauvegardé lors d'une
-   * protection et vaudra donc 0 en reprise.
+   * \note Currently, this counter is not saved during a
+   * protection and will therefore be 0 during recovery.
    */
-  virtual Int64 timestamp() const =0;
+  virtual Int64 timestamp() const = 0;
 
   /*!
-   * \brief Positionne la version de l'implémentation pour la synchronisation des
-   * variables matériaux.
+   * \brief Sets the version of the implementation for synchronizing
+   * material variables.
    */
-  virtual void setSynchronizeVariableVersion(Integer version) =0;
+  virtual void setSynchronizeVariableVersion(Integer version) = 0;
 
   /*!
-   * \brief Version de l'implémentation pour la synchronisation des
-   * variables matériaux.
+   * \brief Version of the implementation for synchronizing
+   * material variables.
    */
-  virtual Integer synchronizeVariableVersion() const =0;
+  virtual Integer synchronizeVariableVersion() const = 0;
 
-  //! Vrai si on est en train de faire un échange de maillage avec gestion des matériaux.
-  virtual bool isInMeshMaterialExchange() const =0;
+  //! True if a mesh exchange with material management is underway.
+  virtual bool isInMeshMaterialExchange() const = 0;
 
-  //! Interface de la fabrique de variables
-  virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const =0;
+  //! Interface of the variable factory
+  virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const = 0;
 
   /*!
-   * \brief Active ou désactive la construction et la mise à jour de la table de 
-   * "connectivité" CellLocalId -> AllEnvCell pour les RUNCOMMAND
+   * \brief Activates or deactivates the construction and update of the table of
+   * "connectivity" CellLocalId -> AllEnvCell for RUNCOMMAND
    *
-   * On peut activer également par la variable d'environnement ARCANE_ALLENVCELL_FOR_RUNCOMMAND.
-   * En option, on peut forcer la création de la table, ce qui peut être util lors d'un appel tardif
-   * de cette méthode par rapport à celui du ForceRecompute()
+   * It can also be activated by the environment variable ARCANE_ALLENVCELL_FOR_RUNCOMMAND.
+   * Optionally, the table can be forced to be created, which can be useful during a late call
+   * of this method compared to ForceRecompute()
    */
-  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) =0;
-  virtual bool isCellToAllEnvCellForRunCommand() const =0;
+  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create = false) = 0;
+  virtual bool isCellToAllEnvCellForRunCommand() const = 0;
 
   /*!
-   * \brief Indique si on utilise la valeur matériau ou milieu lorsqu'on transforme une maille
-   * partielle en maille pure.
+   * \brief Indicates whether the material or environment value is used when transforming a cell
+   * from a partial cell to a pure cell.
    *
-   * Lors du passage d'une maille partielle en maille pure, il faut recopier la valeur
-   * partielle dans la valeur globale. Par défaut, le comportement n'est pas le même
-   * suivant que les optimisations sont actives ou non (\sa modificationFlags()).
-   * Sans optimisation, c'est la valeur matériau qui est utilisée. Si l'optimisation
-   * eModificationFlags::GenericOptimize est active, c'est la valeur milieu.
+   * When transitioning from a partial cell to a pure cell, the partial value must be copied
+   * into the global value. By default, the behavior is not the same
+   * depending on whether optimizations are active or not (\sa modificationFlags()).
+   * Without optimization, the material value is used. If the optimization
+   * eModificationFlags::GenericOptimize is active, the environment value is used.
    *
-   * Cette propriété, si elle vrai, permet d'utiliser la valeur matériau
-   * dans tous les cas.
+   * If this property is true, it allows using the material value
+   * in all cases.
    */
-  virtual void setUseMaterialValueWhenRemovingPartialValue(bool v) =0;
-  virtual bool isUseMaterialValueWhenRemovingPartialValue() const =0;
+  virtual void setUseMaterialValueWhenRemovingPartialValue(bool v) = 0;
+  virtual bool isUseMaterialValueWhenRemovingPartialValue() const = 0;
 
  public:
 
@@ -450,8 +449,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   class IFactory
   {
    public:
+
     virtual ~IFactory() = default;
-    virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) =0;
+    virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle, bool is_create) = 0;
   };
 
  private:
@@ -461,18 +461,18 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
  public:
 
-  //! API interne à %Arcane
-  virtual IMeshMaterialMngInternal* _internalApi() const =0;
+  //! Internal API for %Arcane
+  virtual IMeshMaterialMngInternal* _internalApi() const = 0;
 
   /*!
    * \internal
-   * \brief Synchronizeur pour les variables matériaux et milieux sur toutes les mailles.
+   * \brief Synchronizer for material and environment variables on all cells.
    */
   virtual IMeshMaterialVariableSynchronizer* _allCellsMatEnvSynchronizer() = 0;
 
   /*!
    * \internal
-   * \brief Synchronizeur pour les variables uniquement milieux sur toutes les mailles.
+   * \brief Synchronizer for environment-only variables on all cells.
    */
   virtual IMeshMaterialVariableSynchronizer* _allCellsEnvOnlySynchronizer() = 0;
 };
@@ -485,5 +485,4 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

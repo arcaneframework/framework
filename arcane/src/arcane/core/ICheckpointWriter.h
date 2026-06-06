@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICheckpointWriter.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface du service d'écriture d'une protection/reprise.                 */
+/* Checkpoint/Recovery write service interface.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICHECKPOINTWRITER_H
 #define ARCANE_CORE_ICHECKPOINTWRITER_H
@@ -24,21 +24,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface du service d'écriture d'une protection/reprise.
+ * \brief Interface of the checkpoint/recovery write service.
  *
- * L'instance doit retourner un IDataWriter (via dataWriter()) pour
- * gérer l'écriture.
+ * The instance must return an IDataWriter (via dataWriter()) to
+ * handle the writing.
  *
- * L'enchainement des fonctions est le suivant:
+ * The sequence of functions is as follows:
  * \code
  * ICheckpointWriter* checkpoint_writer = ...;
  * checkpoint_writer->setCheckpointTimes();
  * checkpoint_writer->notifyBeginWrite();
  * checkpoint_writer->dataWriter();
  * // ...
- * // Ecriture avec le IDataWriter
+ * // Writing with the IDataWriter
  * // ...
  * checkpoint_writer->notifyBeginWrite();
  * checkpoint_writer->readerServiceName();
@@ -49,50 +50,50 @@ class ARCANE_CORE_EXPORT ICheckpointWriter
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~ICheckpointWriter() = default;
 
  public:
 
   /*!
-   * \brief Retourne l'écrivain associé.
+   * \brief Returns the associated writer.
    */
   virtual IDataWriter* dataWriter() = 0;
 
-  //! Notifie qu'une protection va être écrite avec les paramètres courants
+  //! Notifies that a checkpoint is going to be written with the current parameters
   virtual void notifyBeginWrite() = 0;
 
-  //! Notifie qu'une protection vient d'être écrite
+  //! Notifies that a checkpoint has just been written
   virtual void notifyEndWrite() = 0;
 
-  //! Positionne le nom du fichier de la protection
+  //! Sets the name of the checkpoint file
   virtual void setFileName(const String& file_name) = 0;
 
-  //! Nom du fichier de la protection
+  //! Name of the checkpoint file
   virtual String fileName() const = 0;
 
-  //! Positionne le nom du répertoire de base de la protection
+  //! Sets the name of the checkpoint base directory
   virtual void setBaseDirectoryName(const String& dirname) = 0;
 
-  //! Nom du répertoire de base de la protection
+  //! Name of the checkpoint base directory
   virtual String baseDirectoryName() const = 0;
 
-  /*! \brief Positionne les temps des protections.
+  /*! \brief Sets the checkpoint times.
    *
-   * Le temps de la protection courante est le dernier élément du tableau
+   * The time of the current checkpoint is the last element of the array
    */
   virtual void setCheckpointTimes(RealConstArrayView times) = 0;
 
-  //! Temps des protections
+  //! Checkpoint times
   virtual ConstArrayView<Real> checkpointTimes() const = 0;
 
-  //! Ferme les protections
+  //! Closes the checkpoints
   virtual void close() = 0;
 
-  //! Nom du service du lecteur associé à cet écrivain
+  //! Name of the reader service associated with this writer
   virtual String readerServiceName() const = 0;
 
-  //! Méta données pour le lecteur associé à cet écrivain
+  //! Metadata for the reader associated with this writer
   virtual String readerMetaData() const = 0;
 };
 
@@ -104,5 +105,4 @@ class ARCANE_CORE_EXPORT ICheckpointWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

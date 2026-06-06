@@ -1,23 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshUtils.cc                                                (C) 2000-2023 */
 /*                                                                           */
-/* Visiteurs divers sur les entités du maillage.                             */
+/* Various visitors on mesh entities.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/Collection.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/MeshUtils.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/MeshUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

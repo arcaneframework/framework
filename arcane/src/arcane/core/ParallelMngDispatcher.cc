@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelMngDispatcher.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Redirection de la gestion des messages suivant le type des arguments.     */
+/* Redirection of message handling based on argument type.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,7 +81,7 @@ ParallelMngDispatcherBuildInfo(Ref<MP::Dispatchers> dispatchers,
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcherBuildInfo::
-ParallelMngDispatcherBuildInfo(Int32 comm_rank,Int32 comm_size)
+ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size)
 : m_comm_rank(comm_rank)
 , m_comm_size(comm_size)
 , m_dispatchers(nullptr)
@@ -96,12 +96,12 @@ ParallelMngDispatcherBuildInfo(Int32 comm_rank,Int32 comm_size)
 void ParallelMngDispatcherBuildInfo::
 _init()
 {
-  if (!m_dispatchers){
+  if (!m_dispatchers) {
     m_dispatchers_ref = createRef<MP::Dispatchers>();
     m_dispatchers = m_dispatchers_ref.get();
   }
-  if (!m_message_passing_mng){
-    auto* x = new MP::MessagePassingMng(m_comm_rank,m_comm_size,m_dispatchers);
+  if (!m_message_passing_mng) {
+    auto* x = new MP::MessagePassingMng(m_comm_rank, m_comm_size, m_dispatchers);
     m_message_passing_mng = x;
     m_message_passing_mng_ref = makeRef(x);
   }
@@ -118,7 +118,6 @@ DefaultControlDispatcher(IParallelMng* pm)
 {
 }
 
-
 void ParallelMngDispatcher::DefaultControlDispatcher::
 waitAllRequests(ArrayView<Request> requests)
 {
@@ -126,7 +125,7 @@ waitAllRequests(ArrayView<Request> requests)
 }
 
 void ParallelMngDispatcher::DefaultControlDispatcher::
-waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
+waitSomeRequests(ArrayView<Request> requests, ArrayView<bool> indexes,
                  bool is_non_blocking)
 {
   UniqueArray<Integer> done_requests;
@@ -135,7 +134,7 @@ waitSomeRequests(ArrayView<Request> requests,ArrayView<bool> indexes,
   else
     done_requests = m_parallel_mng->waitSomeRequests(requests);
   indexes.fill(false);
-  for( int x : done_requests )
+  for (int x : done_requests)
     indexes[x] = true;
 }
 
@@ -143,7 +142,7 @@ IMessagePassingMng* ParallelMngDispatcher::DefaultControlDispatcher::
 commSplit(bool keep)
 {
   ARCANE_UNUSED(keep);
-  ARCANE_THROW(NotImplementedException,"split from MessagePassing::IControlDispatcher");
+  ARCANE_THROW(NotImplementedException, "split from MessagePassing::IControlDispatcher");
 }
 
 void ParallelMngDispatcher::DefaultControlDispatcher::
@@ -183,7 +182,7 @@ void ParallelMngDispatcher::DefaultControlDispatcher::
 setProfiler(MP::IProfiler* p)
 {
   ARCANE_UNUSED(p);
-  ARCANE_THROW(NotImplementedException,"setProfiler() from MessagePassing::IControlDispatcher");
+  ARCANE_THROW(NotImplementedException, "setProfiler() from MessagePassing::IControlDispatcher");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,19 +198,22 @@ class ParallelMngDispatcher::SerializeDispatcher
   {}
 
  public:
+
   Ref<ISerializeMessageList> createSerializeMessageListRef() override
   {
     return m_parallel_mng->createSerializeMessageListRef();
   }
-  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message) override
+  Request sendSerializer(const ISerializer* s, const PointToPointMessageInfo& message) override
   {
-    return m_parallel_mng->sendSerializer(s,message);
+    return m_parallel_mng->sendSerializer(s, message);
   }
-  Request receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message) override
+  Request receiveSerializer(ISerializer* s, const PointToPointMessageInfo& message) override
   {
-    return m_parallel_mng->receiveSerializer(s,message);
+    return m_parallel_mng->receiveSerializer(s, message);
   }
+
  private:
+
   IParallelMng* m_parallel_mng;
 };
 
@@ -362,7 +364,7 @@ void ParallelMngDispatcher::
 setTimeStats(ITimeStats* ts)
 {
   m_time_stats = ts;
-  if (ts){
+  if (ts) {
     ITimeMetricCollector* c = ts->metricCollector();
     _messagePassingMng()->setTimeMetricCollector(c);
   }
@@ -374,28 +376,28 @@ setTimeStats(ITimeStats* ts)
 TimeMetricAction ParallelMngDispatcher::
 _communicationTimeMetricAction() const
 {
-  return Timer::phaseAction(timeStats(),TP_Communication);
+  return Timer::phaseAction(timeStats(), TP_Communication);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ParallelMngDispatcher::
-broadcastString(String& str,Int32 rank)
+broadcastString(String& str, Int32 rank)
 {
   Int64 len_info[1];
   Int32 my_rank = commRank();
   Span<const Byte> bytes = str.bytes();
-  if (rank==my_rank){
+  if (rank == my_rank) {
     len_info[0] = bytes.size();
-    broadcast(Int64ArrayView(1,len_info),rank);
+    broadcast(Int64ArrayView(1, len_info), rank);
     ByteUniqueArray utf8_array(bytes);
-    broadcast(utf8_array,rank);
+    broadcast(utf8_array, rank);
   }
-  else{
-    broadcast(Int64ArrayView(1,len_info),rank);
+  else {
+    broadcast(Int64ArrayView(1, len_info), rank);
     ByteUniqueArray utf8_array(len_info[0]);
-    broadcast(utf8_array,rank);
+    broadcast(utf8_array, rank);
     str = String::fromUtf8(utf8_array);
   }
 }
@@ -404,20 +406,20 @@ broadcastString(String& str,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 void ParallelMngDispatcher::
-broadcastMemoryBuffer(ByteArray& bytes,Int32 rank)
+broadcastMemoryBuffer(ByteArray& bytes, Int32 rank)
 {
   Int64 size = 0;
-  if (commRank()==rank){
+  if (commRank() == rank) {
     size = bytes.largeSize();
   }
   {
-    Int64ArrayView bs(1,&size);
-    broadcast(bs,rank);
+    Int64ArrayView bs(1, &size);
+    broadcast(bs, rank);
   }
-  if (commRank()!=rank)
+  if (commRank() != rank)
     bytes.resize(size);
-  if (size!=0)
-    broadcast(bytes,rank);
+  if (size != 0)
+    broadcast(bytes, rank);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -436,7 +438,7 @@ allGather(ISerializer* send_serializer, ISerializer* recv_serializer)
 void ParallelMngDispatcher::
 processMessages(ConstArrayView<ISerializeMessage*> messages)
 {
-  TimeMetricSentry tphase(Timer::phaseAction(timeStats(),TP_Communication));
+  TimeMetricSentry tphase(Timer::phaseAction(timeStats(), TP_Communication));
   Ref<ISerializeMessageList> message_list(createSerializeMessageListRef());
 
   for (ISerializeMessage* m : messages)
@@ -509,15 +511,15 @@ _createSubParallelMngRef([[maybe_unused]] Int32 color, [[maybe_unused]] Int32 ke
 /*---------------------------------------------------------------------------*/
 
 UniqueArray<Integer> ParallelMngDispatcher::
-_doWaitRequests(ArrayView<Request> requests,eWaitType wait_type)
+_doWaitRequests(ArrayView<Request> requests, eWaitType wait_type)
 {
-  Timer::Phase tphase(timeStats(),TP_Communication);
+  Timer::Phase tphase(timeStats(), TP_Communication);
   Ref<IRequestList> request_list(createRequestListRef());
   Integer nb_request = requests.size();
   request_list->add(requests);
   request_list->wait(wait_type);
-  // Ne pas oublier de recopier les requêtes, car elles ont pu être modifiées
-  for (Integer i=0; i<nb_request; ++i )
+  // Don't forget to copy the requests, as they might have been modified
+  for (Integer i = 0; i < nb_request; ++i)
     requests[i] = request_list->request(i);
   return request_list->doneRequestIndexes();
 }
@@ -528,7 +530,7 @@ _doWaitRequests(ArrayView<Request> requests,eWaitType wait_type)
 UniqueArray<Integer> ParallelMngDispatcher::
 waitSomeRequests(ArrayView<Request> requests)
 {
-  return _doWaitRequests(requests,Parallel::WaitSome);
+  return _doWaitRequests(requests, Parallel::WaitSome);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -537,16 +539,16 @@ waitSomeRequests(ArrayView<Request> requests)
 UniqueArray<Integer> ParallelMngDispatcher::
 testSomeRequests(ArrayView<Request> requests)
 {
-  return _doWaitRequests(requests,Parallel::WaitSomeNonBlocking);
+  return _doWaitRequests(requests, Parallel::WaitSomeNonBlocking);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCANE_PARALLEL_MANAGER_DISPATCH(field,type)\
-void ParallelMngDispatcher::\
-allGather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf)\
-{ \
+#define ARCANE_PARALLEL_MANAGER_DISPATCH(field, type) \
+  void ParallelMngDispatcher:: \
+  allGather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf) \
+  { \
     Timer::Phase tphase(timeStats(), TP_Communication); \
     (field)->allGather(send_buf, recv_buf); \
   } \
@@ -675,34 +677,34 @@ allGather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf)\
   { \
     Timer::Phase tphase(timeStats(), TP_Communication); \
     (field)->computeMinMaxSum(values, min_values, max_values, sum_values, min_ranks, max_ranks); \
-  }\
-void ParallelMngDispatcher:: \
+  } \
+  void ParallelMngDispatcher:: \
   scan(eReduceType rt, ArrayView<type> v) \
   { \
     Timer::Phase tphase(timeStats(), TP_Communication); \
     (field)->scan(rt, v); \
   }
 
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_char,char)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_char,unsigned char)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_signed_char,signed char)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_short,short)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_short,unsigned short)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_int,int)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_int,unsigned int)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_long,long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long,unsigned long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_long,long long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long_long,unsigned long long)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_float,float)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_double,double)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_double,long double)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_apreal,APReal)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2,Real2)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3,Real3)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2x2,Real2x2)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3x3,Real3x3)
-ARCANE_PARALLEL_MANAGER_DISPATCH(m_hpreal,HPReal)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_char, char)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_char, unsigned char)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_signed_char, signed char)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_short, short)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_short, unsigned short)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_int, int)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_int, unsigned int)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_long, long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long, unsigned long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_long, long long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_unsigned_long_long, unsigned long long)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_float, float)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_double, double)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_long_double, long double)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_apreal, APReal)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2, Real2)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3, Real3)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real2x2, Real2x2)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_real3x3, Real3x3)
+ARCANE_PARALLEL_MANAGER_DISPATCH(m_hpreal, HPReal)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -716,7 +718,7 @@ namespace Arccore
 {
 ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMng);
 ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMngContainer);
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

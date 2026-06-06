@@ -1,16 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BadExpressionException.cc                                   (C) 2000-2018 */
 /*                                                                           */
-/* Exception lorsqu'une expression n'est pas valide.                         */
+/* Exception when an expression is invalid.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcanePrecomp.h"
 
@@ -21,14 +20,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 BadExpressionException::
 BadExpressionException(const String& where)
-: Exception("BadExpression",where)
+: Exception("BadExpression", where)
 , m_msg("")
 {
 }
@@ -37,8 +37,8 @@ BadExpressionException(const String& where)
 /*---------------------------------------------------------------------------*/
 
 BadExpressionException::
-BadExpressionException(const String& where,const String& msg)
-: Exception("BadExpression",where)
+BadExpressionException(const String& where, const String& msg)
+: Exception("BadExpression", where)
 , m_msg(msg)
 {
 }
@@ -58,12 +58,7 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-

@@ -1,14 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableComparator.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Interface pour les services permettant de comparer un ISimpleTableOutput  */
-/* et un fichier de référence.                                               */
+/* Interface for services allowing the comparison of an ISimpleTableOutput   */
+/* and a reference file.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ISIMPLETABLECOMPARATOR_H
 #define ARCANE_CORE_ISIMPLETABLECOMPARATOR_H
@@ -29,243 +29,245 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @ingroup StandardService
- * @brief Interface de classe représentant un comparateur
- * de tableaux. À utiliser avec un service implémentant
- * ISimpleTableOutput.
+ * \ingroup StandardService
+ * \brief Class interface representing a table comparator. To be used with
+ * a service implementing ISimpleTableOutput.
  * 
- * La différence avec ISimpleTableInternalComparator est
- * que l'on compare un SimpleTableInternal contenu dans
- * un ISimpleTableOutput avec un SimpleTableInternal
- * généré à partir d'un fichier de référence.
+ * The difference with ISimpleTableInternalComparator is
+ * that we compare a SimpleTableInternal contained in
+ * an ISimpleTableOutput with a SimpleTableInternal
+ * generated from a reference file.
  * 
- * Cette interface permet aussi de générer les fichiers
- * de référence en utilisant le nom de répertoire et
- * le nom de tableau du ISimpleTableOutput, permettant
- * de faciliter le processus.
+ * This interface also allows generating the reference files
+ * using the directory name and
+ * the table name of the ISimpleTableOutput, facilitating
+ * the process.
  */
 class ARCANE_CORE_EXPORT ISimpleTableComparator
 {
  public:
+
   virtual ~ISimpleTableComparator() = default;
 
  public:
+
   /**
-   * @brief Méthode permettant d'initialiser le service.
+   * \brief Method allowing the service to be initialized.
    * 
-   * Le pointeur vers une implémentation de ISimpleTableOutput
-   * doit contenir les valeurs à comparer ou à écrire en tant que
-   * valeurs de référence et l'emplacement de destination des
-   * fichiers de sorties, pour que soit automatiquement déterminé
-   * l'emplacement des fichiers de réferences.
+   * The pointer to an ISimpleTableOutput implementation
+   * must contain the values to be compared or written as
+   * reference values and the destination location of the
+   * output files, so that the location of the reference files
+   * is automatically determined.
    * 
-   * @param simple_table_output_ptr Une implémentation de ISimpleTableOutput.
+   * \param simple_table_output_ptr An implementation of ISimpleTableOutput.
    */
   virtual void init(ISimpleTableOutput* simple_table_output_ptr) = 0;
 
   /**
-   * @brief Méthode permettant d'effacer les données lues par readReferenceFile().
-   * @note Efface le SimpleTableInternal du comparateur sans toucher à celui du
+   * \brief Method allowing the data read by readReferenceFile() to be cleared.
+   * \note Clears the comparator's SimpleTableInternal without affecting that of the
    * SimpleTableOutput.
    */
   virtual void clear() = 0;
 
   /**
-   * @brief Méthode permettant d'afficher le tableau lu.
+   * \brief Method allowing the read table to be displayed.
    * 
-   * @param rank Le processus qui doit afficher son tableau (-1 pour tous les processus).
+   * \param rank The process that must display its table (-1 for all processes).
    */
   virtual void print(Integer rank = 0) = 0;
 
   /**
-   * @brief Méthode permettant de modifier le répertoire racine.
-   * Cela permet d'écrire ou de rechercher des fichiers de réferences
-   * autre part que dans le répertoire déterminé par l'implémentation.
+   * \brief Method allowing the root directory to be modified.
+   * This allows writing or searching for reference files
+   * elsewhere than in the directory determined by the implementation.
    * 
-   * Par défaut, pour l'implémentation csv, le répertoire racine est :
+   * By default, for the csv implementation, the root directory is:
    * ./output/csv_ref/
    * 
-   * @param root_directory Le nouveau répertoire racine.
+   * \param root_directory The new root directory.
    */
   virtual void editRootDirectory(const Directory& root_directory) = 0;
 
   /**
-   * @brief Méthode permettant d'écrire les fichiers de référence.
+   * \brief Method allowing reference files to be written.
    * 
-   * @warning (Pour l'instant), cette méthode utilise l'objet pointé par 
-   *          le pointeur donné lors de l'init(), donc l'écriture s'effectura 
-   *          dans le format voulu par l'implémentation de ISimpleTableOutput.
-   *          Si les formats de lecture et d'écriture ne correspondent
-   *          pas, un appel à "compareWithReference()" retournera forcement
+   * \warning (For now), this method uses the object pointed to by 
+   *          the pointer given during init(), so the writing will occur 
+   *          in the format desired by the ISimpleTableOutput implementation.
+   *          If the reading and writing formats do not match,
+   *          a call to "compareWithReference()" will necessarily return
    *          false.
    * 
-   * @param rank Le processus qui doit écrire son fichier (-1 pour tous les processus).
-   * @return true Si l'écriture a bien eu lieu (et si processus appelant != rank).
-   * @return false Si l'écriture n'a pas eu lieu.
+   * \param rank The process that must write its file (-1 for all processes).
+   * \return true If the writing was successful (and if calling process != rank).
+   * \return false If the writing did not occur.
    */
   virtual bool writeReferenceFile(Integer rank = -1) = 0;
+
   /**
-   * @brief Méthode permettant de lire les fichiers de références.
+   * \brief Method allowing reference files to be read.
    * 
-   * Le type des fichiers de référence doit correspondre à l'implémentation
-   * de cette interface choisi (exemple : fichier .csv -> SimpleCsvComparatorService).
+   * The type of the reference files must correspond to the implementation
+   * of this chosen interface (example: .csv file -> SimpleCsvComparatorService).
    * 
-   * @param rank Le processus qui doit lire son fichier (-1 pour tous les processus).
-   * @return true Si le fichier a été lu (et si processus appelant != rank).
-   * @return false Si le fichier n'a pas été lu.
+   * \param rank The process that must read its file (-1 for all processes).
+   * \return true If the file was read (and if calling process != rank).
+   * \return false If the file was not read.
    */
   virtual bool readReferenceFile(Integer rank = -1) = 0;
 
   /**
-   * @brief Méthode permettant de savoir si les fichiers de réferences existent.
+   * \brief Method allowing to check if the reference files exist.
    * 
-   * @param rank Le processus qui doit chercher son fichier (-1 pour tous les processus). 
-   * @return true Si le fichier a été trouvé (et si processus appelant != rank).
-   * @return false Si le fichier n'a pas été trouvé.
+   * \param rank The process that must look for its file (-1 for all processes). 
+   * \return true If the file was found (and if calling process != rank).
+   * \return false If the file was not found.
    */
   virtual bool isReferenceExist(Integer rank = -1) = 0;
 
   /**
-   * @brief Méthode permettant de comparer l'objet de type ISimpleTableOutput
-   * aux fichiers de réferences.
+   * \brief Method allowing the ISimpleTableOutput object to be compared
+   * to the reference files.
    * 
-   * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
-   * @param compare_dimension_too Si l'on doit aussi comparer les dimensions des tableaux de valeurs.
-   * @return true S'il n'y a pas de différences (et si processus appelant != rank).
-   * @return false S'il y a au moins une différence.
+   * \param rank The process that must compare its results (-1 for all processes). 
+   * \param compare_dimension_too Whether the dimensions of the value tables should also be compared.
+   * \return true If there are no differences (and if calling process != rank).
+   * \return false If there is at least one difference.
    */
   virtual bool compareWithReference(Integer rank = -1, bool compare_dimension_too = false) = 0;
 
   /**
-   * @brief Méthode permettant de comparer uniquement un élement.
-   * Les deux SimpleTableInternal sont représentés par des Ref,
-   * donc toujours à jour.
-   * Cette méthode peut être utilisé pendant le calcul, permettant
-   * de comparer les valeurs au fur et à mesure de l'avancement du
-   * calcul, au lieu de faire une comparaison final à la fin (il est
-   * tout de même possible de faire les deux).
+   * \brief Method allowing only an element to be compared.
+   * Both SimpleTableInternals are represented by Refs,
+   * so they are always up to date.
+   * This method can be used during calculation, allowing
+   * to compare values as the calculation progresses,
+   * instead of performing a final comparison at the end (it is
+   * still possible to do both).
    * 
-   * @param column_name Le nom de la colonne où se trouve l'élément.
-   * @param row_name Le nom de la ligne où se trouve l'élément.
-   * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
-   * @return true Si les deux valeurs sont égales.
-   * @return false Si les deux valeurs sont différentes.
+   * \param column_name The name of the column where the element is located.
+   * \param row_name The name of the row where the element is located.
+   * \param rank The process that must compare its results (-1 for all processes). 
+   * \return true If the two values are equal.
+   * \return false If the two values are different.
    */
   virtual bool compareElemWithReference(const String& column_name, const String& row_name, Integer rank = -1) = 0;
 
   /**
-   * @brief Méthode permettant de comparer une valeur avec
-   * une valeur du tableau de référence.
-   * Cette méthode n'a pas besoin d'un internal 'toCompare' 
-   * (setInternalToCompare() non nécessaire).
+   * \brief Method allowing a value to be compared with
+   * a value from the reference table.
+   * This method does not need an internal 'toCompare' 
+   * (setInternalToCompare() unnecessary).
    * 
-   * @param elem La valeur à comparer.
-   * @param column_name Le nom de la colonne où se trouve l'élément de référence.
-   * @param row_name Le nom de la ligne où se trouve l'élément de référence.
-   * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
-   * @return true Si les deux valeurs sont égales.
-   * @return false Si les deux valeurs sont différentes.
+   * \param elem The value to be compared.
+   * \param column_name The name of the column where the reference element is located.
+   * \param row_name The name of the row where the reference element is located.
+   * \param rank The process that must compare its results (-1 for all processes). 
+   * \return true If the two values are equal.
+   * \return false If the two values are different.
    */
   virtual bool compareElemWithReference(Real elem, const String& column_name, const String& row_name, Integer rank = -1) = 0;
 
   /**
-   * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes
-   * à comparer.
+   * \brief Method allowing a column to be added to the list of columns
+   * to be compared.
    * 
-   * @param column_name Le nom de la colonne à comparer.
-   * @return true Si le nom a bien été ajouté.
-   * @return false Sinon.
+   * \param column_name The name of the column to compare.
+   * \return true If the name was successfully added.
+   * \return false Otherwise.
    */
   virtual bool addColumnForComparing(const String& column_name) = 0;
   /**
-   * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
-   * à comparer.
+   * \brief Method allowing a row to be added to the list of rows
+   * to be compared.
    * 
-   * @param row_name Le nom de la ligne à comparer.
-   * @return true Si le nom a bien été ajouté.
-   * @return false Sinon.
+   * \param row_name The name of the row to compare.
+   * \return true If the name was successfully added.
+   * \return false Otherwise.
    */
   virtual bool addRowForComparing(const String& row_name) = 0;
 
   /**
-   * @brief Méthode permettant de définir si le tableau de
-   * colonnes représente les colonnes à inclure dans la
-   * comparaison (false/par défaut) ou représente les colonnes
-   * à exclure de la comparaison (true).
+   * \brief Method allowing definition whether the array of
+   * columns represents the columns to include in the
+   * comparison (false/default) or represents the columns
+   * to exclude from the comparison (true).
    * 
-   * @param is_exclusive true si les colonnes doivent être
-   *                     exclus.
+   * \param is_exclusive true if the columns must be
+   *                     excluded.
    */
   virtual void isAnArrayExclusiveColumns(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant de définir si le tableau de
-   * lignes représente les lignes à inclure dans la
-   * comparaison (false/par défaut) ou représente les lignes
-   * à exclure de la comparaison (true).
+   * \brief Method allowing definition whether the array of
+   * rows represents the rows to include in the
+   * comparison (false/default) or represents the rows
+   * to exclude from the comparison (true).
    * 
-   * @param is_exclusive true si les lignes doivent être
-   *                     exclus.
+   * \param is_exclusive true if the rows must be
+   *                     excluded.
    */
   virtual void isAnArrayExclusiveRows(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant d'ajouter une expression régulière
-   * permettant de déterminer les colonnes à comparer.
+   * \brief Method allowing a regular expression to be added
+   * to determine the columns to compare.
    * 
-   * @param regex_column L'expression régulière (format ECMAScript).
+   * \param regex_column The regular expression (ECMAScript format).
    */
   virtual void editRegexColumns(const String& regex_column) = 0;
   /**
-   * @brief Méthode permettant d'ajouter une expression régulière
-   * permettant de déterminer les lignes à comparer.
+   * \brief Method allowing a regular expression to be added
+   * to determine the rows to compare.
    * 
-   * @param regex_row L'expression régulière (format ECMAScript).
+   * \param regex_row The regular expression (ECMAScript format).
    */
   virtual void editRegexRows(const String& regex_row) = 0;
 
   /**
-   * @brief Méthode permettant de demander à ce que l'expression régulière
-   * exclut des colonnes au lieu d'en inclure.
+   * \brief Method allowing to request that the regular expression
+   * excludes columns instead of including them.
    * 
-   * @param is_exclusive Si l'expression régulière est excluante.
+   * \param is_exclusive If the regular expression is exclusive.
    */
   virtual void isARegexExclusiveColumns(bool is_exclusive) = 0;
   /**
-   * @brief Méthode permettant de demander à ce que l'expression régulière
-   * exclut des lignes au lieu d'en inclure.
+   * \brief Method allowing to request that the regular expression
+   * excludes rows instead of including them.
    * 
-   * @param is_exclusive Si l'expression régulière est excluante.
+   * \param is_exclusive If the regular expression is exclusive.
    */
   virtual void isARegexExclusiveRows(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant de définir un epsilon pour une colonne donnée.
-   * Cet epsilon doit être positif pour être pris en compte.
-   * S'il y a confit avec un epsilon de ligne (défini avec addEpsilonRow()),
-   * c'est l'epsilon le plus grand qui est pris en compte.
-   * @note Si un epsilon a déjà été défini sur cette colonne, alors l'ancien
-   * epsilon sera remplacé.
+   * \brief Method allowing an epsilon to be defined for a given column.
+   * This epsilon must be positive to be taken into account.
+   * If there is a conflict with a row epsilon (defined with addEpsilonRow()),
+   * the largest epsilon is taken into account.
+   * \note If an epsilon has already been defined on this column, then the old
+   * epsilon will be replaced.
    * 
-   * @param column_name Le nom de la colonne où l'epsilon sera pris en compte.
-   * @param epsilon La marge d'erreur epsilon.
-   * @return true Si l'epsilon a bien pu être défini.
-   * @return false Si l'epsilon n'a pas pu être défini.
+   * \param column_name The name of the column where the epsilon will be taken into account.
+   * \param epsilon The epsilon error margin.
+   * \return true If the epsilon could be defined.
+   * \return false If the epsilon could not be defined.
    */
   virtual bool addEpsilonColumn(const String& column_name, Real epsilon) = 0;
 
   /**
-   * @brief Méthode permettant de définir un epsilon pour une ligne donnée.
-   * Cet epsilon doit être positif pour être pris en compte.
-   * S'il y a confit avec un epsilon de colonne (défini avec addEpsilonColumn()),
-   * c'est l'epsilon le plus grand qui est pris en compte.
-   * @note Si un epsilon a déjà été défini sur cette ligne, alors l'ancien
-   * epsilon sera remplacé.
+   * \brief Method allowing an epsilon to be defined for a given row.
+   * This epsilon must be positive to be taken into account.
+   * If there is a conflict with a column epsilon (defined with addEpsilonColumn()),
+   * the largest epsilon is taken into account.
+   * \note If an epsilon has already been defined on this row, then the old
+   * epsilon will be replaced.
    * 
-   * @param column_name Le nom de la ligne où l'epsilon sera pris en compte.
-   * @param epsilon La marge d'erreur epsilon.
-   * @return true Si l'epsilon a bien pu être défini.
-   * @return false Si l'epsilon n'a pas pu être défini.
+   * \param column_name The name of the row where the epsilon will be taken into account.
+   * \param epsilon The epsilon error margin.
+   * \return true If the epsilon could be defined.
+   * \return false If the epsilon could not be defined.
    */
   virtual bool addEpsilonRow(const String& row_name, Real epsilon) = 0;
 };
@@ -279,6 +281,3 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshMaterialMng.cc                                         (C) 2000-2023 */
 /*                                                                           */
-/* Interface du gestionnaire des matériaux et milieux d'un maillage.         */
+/* Interface for the mesh material and domain manager.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,8 +16,8 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,8 +28,9 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace {
-IMeshMaterialMng::IFactory* global_mesh_material_mng_factory = nullptr;
+namespace
+{
+  IMeshMaterialMng::IFactory* global_mesh_material_mng_factory = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -45,26 +46,26 @@ _internalSetFactory(IFactory* f)
 /*---------------------------------------------------------------------------*/
 
 Ref<IMeshMaterialMng> IMeshMaterialMng::
-getTrueReference(const MeshHandle& mesh_handle,bool is_create)
+getTrueReference(const MeshHandle& mesh_handle, bool is_create)
 {
   if (mesh_handle.isNull())
     ARCANE_FATAL("Null MeshHandle is not allowed");
   auto* f = global_mesh_material_mng_factory;
-  if (!f){
+  if (!f) {
     if (is_create)
       ARCANE_FATAL("No factory for 'IMeshMaterialMng': You need to link with 'arcane_materials' library");
     return {};
   }
-  return f->getTrueReference(mesh_handle,is_create);
+  return f->getTrueReference(mesh_handle, is_create);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IMeshMaterialMng* IMeshMaterialMng::
-getReference(const MeshHandleOrMesh& mesh_handle,bool create)
+getReference(const MeshHandleOrMesh& mesh_handle, bool create)
 {
-  return getTrueReference(mesh_handle.handle(),create).get();
+  return getTrueReference(mesh_handle.handle(), create).get();
 }
 
 /*---------------------------------------------------------------------------*/

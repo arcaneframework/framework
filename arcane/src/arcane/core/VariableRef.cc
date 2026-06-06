@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VariableRef.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Référence à une variable.                                                 */
+/* Reference to a variable.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,12 +18,12 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/VariableRef.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IModule.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ArcaneException.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ArcaneException.h"
 
 #include <set>
 
@@ -35,35 +35,44 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe interne pour gérer les fonctor appelés lors de la mise à jour
- * de la variable.
+ * \brief Internal class to manage functors called when the variable is updated.
  *
- * Les fonctors sont en général ceux du wrapper C#. La principale difficulté
- * pour traiter ces fonctor est qu'ils sont gérer par le runtime C# et donc
- * utilisent un garbage collector. Il n'est donc pas possible de savoir
- * exactement quand ces fonctors seront détruits. Une instance de cette
- * classe ne doit donc pas être détruite explicitement. Lorsque la
- * variable possédant une instance de cette classe est détruite, elle
- * appelle destroy() pour signaler que l'objet peut être détruit. Dès
- * qu'il n'y a plus de fonctor référencés, cela signifie que tous les
- * objets C# sont détruits et donc on peut détruire l'instance.
+ * Functors are generally those from the C# wrapper. The main difficulty
+ * in processing these functors is that they are managed by the C# runtime
+ * and thus use a garbage collector. It is therefore not possible to know
+ * exactly when these functors will be destroyed. An instance of this
+ * class should therefore not be explicitly destroyed. When the variable
+ * possessing an instance of this class is destroyed, it calls destroy() to
+ * signal that the object can be destroyed. As soon as no functors are
+ * referenced, it means all C# objects are destroyed and thus the instance
+ * can be destroyed.
  */
 class VariableRef::UpdateNotifyFunctorList
 {
  public:
+
   typedef void (*ChangedFunc)();
+
  public:
-  UpdateNotifyFunctorList() : m_is_destroyed(false){}
+
+  UpdateNotifyFunctorList()
+  : m_is_destroyed(false)
+  {}
+
  private:
+
   std::set<ChangedFunc> m_funcs;
   bool m_is_destroyed;
+
  public:
+
   void execute()
   {
     std::set<ChangedFunc>::const_iterator begin = m_funcs.begin();
     std::set<ChangedFunc>::const_iterator end = m_funcs.end();
-    for( ; begin!=end; ++begin ){
+    for (; begin != end; ++begin) {
       ChangedFunc f = *begin;
       (*f)();
     }
@@ -71,8 +80,8 @@ class VariableRef::UpdateNotifyFunctorList
 
   void destroy()
   {
-    // Indique qu'on detruit.
-    // Mais ne fais pas de delete tant que m_funcs n'est pas vide.
+    // Indicates that we are destroying.
+    // But do not delete until m_funcs is empty.
     m_is_destroyed = true;
     if (m_funcs.empty())
       delete this;
@@ -88,15 +97,17 @@ class VariableRef::UpdateNotifyFunctorList
     m_funcs.erase(f);
     _checkDestroy();
   }
+
  public:
-  static void* _add(VariableRef* var,void (*func)())
+
+  static void* _add(VariableRef* var, void (*func)())
   {
     //std::cout << "_SET_MESH_VARIABLE_CHANGED_DELEGATE"
     //          << " name=" << var->name()
     //          << " func=" << (void*)func
     //          << " this=" << var
     //          << '\n';
-    if (!var->m_notify_functor_list){
+    if (!var->m_notify_functor_list) {
       var->m_notify_functor_list = new VariableRef::UpdateNotifyFunctorList();
     }
     var->m_notify_functor_list->add(func);
@@ -110,6 +121,7 @@ class VariableRef::UpdateNotifyFunctorList
     //          << '\n';
     functor_list->remove(func);
   }
+
  private:
 
   void _checkDestroy()
@@ -147,12 +159,13 @@ VariableRef(IVariable* var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Constructeur pour une variable non enregistree.
+ * \brief Constructor for an unregistered variable.
  *
- * Ce constructeur n'est utilise que pour le wrapping C#. En C++,
- * il n'est pas accessible pour être sur que l'utilisateur n'a pas
- * de variables non référencées
+ * This constructor is only used for C# wrapping. In C++,
+ * it is not accessible to ensure that the user does not have
+ * unreferenced variables
  */
 VariableRef::
 VariableRef()
@@ -171,8 +184,8 @@ VariableRef(const VariableRef& from)
   _setAssignmentStackTrace();
   //cout << "** TODO: check variable copy constructor with linked list\n";
   // NOTE:
-  // C'est la variable qui met à jour m_previous_reference et m_next_reference
-  // dans registerVariable.
+  // The variable updates m_previous_reference and m_next_reference
+  // in registerVariable.
   if (from.m_variable)
     registerVariable();
 }
@@ -212,9 +225,9 @@ void VariableRef::
 _setAssignmentStackTrace()
 {
   m_assignment_stack_trace = String();
-  if (hasTraceCreation()){
+  if (hasTraceCreation()) {
     IStackTraceService* stack_service = platform::getStackTraceService();
-    if (stack_service){
+    if (stack_service) {
       m_assignment_stack_trace = stack_service->stackTrace().toString();
     }
   }
@@ -251,9 +264,9 @@ _internalInit(IVariable* variable)
   m_variable = variable;
   registerVariable();
   updateFromInternal();
-  // Les variables autres que celles sur le maillage sont toujours utilisées
-  // par défaut
-  if (variable->itemKind()==IK_Unknown)
+  // Variables other than those on the mesh are always used
+  // by default
+  if (variable->itemKind() == IK_Unknown)
     setUsed(true);
 }
 
@@ -261,7 +274,7 @@ _internalInit(IVariable* variable)
 /*---------------------------------------------------------------------------*/
 
 eDataType VariableRef::
-dataType() const 
+dataType() const
 {
   _checkValid();
   return m_variable->dataType();
@@ -271,7 +284,7 @@ dataType() const
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-print(std::ostream& o) const 
+print(std::ostream& o) const
 {
   _checkValid();
   m_variable->print(o);
@@ -361,7 +374,7 @@ void VariableRef::
 _throwInvalid() const
 {
   String msg("Using a reference on a uninitialized variable");
-  throw InternalErrorException(A_FUNCINFO,msg);
+  throw InternalErrorException(A_FUNCINFO, msg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -371,7 +384,7 @@ void VariableRef::
 setProperty(int property)
 {
   if (!_checkValidPropertyChanged(property))
-    throw InvalidArgumentException(A_FUNCINFO,"property",property);
+    throw InvalidArgumentException(A_FUNCINFO, "property", property);
   m_reference_property |= property;
   m_variable->notifyReferencePropertyChanged();
 }
@@ -383,20 +396,21 @@ void VariableRef::
 unsetProperty(int property)
 {
   if (!_checkValidPropertyChanged(property))
-    throw InvalidArgumentException(A_FUNCINFO,"property",property);
+    throw InvalidArgumentException(A_FUNCINFO, "property", property);
   m_reference_property &= ~property;
   m_variable->notifyReferencePropertyChanged();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Regarde si une propriété peut-être changée dynamiquement.
+ * \brief Checks if a property can be changed dynamically.
  */
 bool VariableRef::
 _checkValidPropertyChanged(int property)
 {
-  switch(property){
+  switch (property) {
   case IVariable::PNoDump:
   case IVariable::PNoNeedSync:
   case IVariable::PSubDomainDepend:
@@ -453,7 +467,7 @@ modifiedTime()
 void VariableRef::
 addDependCurrentTime(const VariableRef& var)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_CurrentTime);
+  m_variable->addDepend(var.variable(), IVariable::DPT_CurrentTime);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -462,25 +476,25 @@ addDependCurrentTime(const VariableRef& var)
 void VariableRef::
 addDependPreviousTime(const VariableRef& var)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_PreviousTime);
+  m_variable->addDepend(var.variable(), IVariable::DPT_PreviousTime);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-addDependCurrentTime(const VariableRef& var,const TraceInfo& tinfo)
+addDependCurrentTime(const VariableRef& var, const TraceInfo& tinfo)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_CurrentTime,tinfo);
+  m_variable->addDepend(var.variable(), IVariable::DPT_CurrentTime, tinfo);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-addDependPreviousTime(const VariableRef& var,const TraceInfo& tinfo)
+addDependPreviousTime(const VariableRef& var, const TraceInfo& tinfo)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_PreviousTime,tinfo);
+  m_variable->addDepend(var.variable(), IVariable::DPT_PreviousTime, tinfo);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -505,9 +519,9 @@ _setComputeFunction(IVariableComputeFunction* v)
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-addTag(const String& tagname,const String& tagvalue)
+addTag(const String& tagname, const String& tagvalue)
 {
-  m_variable->addTag(tagname,tagvalue);
+  m_variable->addTag(tagname, tagvalue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -622,35 +636,36 @@ _internalAssignVariable(const VariableRef& var)
   m_variable = var.m_variable;
   m_reference_property = var.m_reference_property;
   m_has_trace = false;
-  // NE PAS TOUCHER A: m_notify_functor_list
+  // DO NOT TOUCH: m_notify_functor_list
   //NOTE:
-  // C'est la variable qui met à jour m_previous_reference et m_next_reference
-  // dans registerVariable.
+  // It is the variable that updates m_previous_reference and m_next_reference
+  // in registerVariable.
   //cout << "** TODO: check variable operator= with linked list\n";
   registerVariable();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
  * \internal
- * \brief Ajoute un fonctor pour le wrapping C#.
- */ 
+ * \brief Adds a functor for C# wrapping.
+ */
 extern "C" ARCANE_CORE_EXPORT void*
-_AddVariableChangedDelegate(VariableRef* var,void (*func)())
+_AddVariableChangedDelegate(VariableRef* var, void (*func)())
 {
-  return VariableRef::UpdateNotifyFunctorList::_add(var,func);
+  return VariableRef::UpdateNotifyFunctorList::_add(var, func);
 }
 
 /*
  * \internal
- * \brief Supprimer un fonctor pour le wrapping C#.
- */ 
+ * \brief Removes a functor for C# wrapping.
+ */
 extern "C" ARCANE_CORE_EXPORT void
 _RemoveVariableChangedDelegate(VariableRef::UpdateNotifyFunctorList* functor_list,
                                void (*func)())
 {
-  VariableRef::UpdateNotifyFunctorList::_remove(functor_list,func);
+  VariableRef::UpdateNotifyFunctorList::_remove(functor_list, func);
 }
 
 /*---------------------------------------------------------------------------*/

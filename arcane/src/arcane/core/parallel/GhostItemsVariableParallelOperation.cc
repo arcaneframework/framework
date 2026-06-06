@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GhostItemsVariableParallelOperation.cc                      (C) 2000-2023 */
 /*                                                                           */
-/* Opérations parallèles sur les entités fantômes.                           */
+/* Parallel operations on ghost entities.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,10 +38,11 @@ GhostItemsVariableParallelOperation(IItemFamily* family)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construit la liste des entités à envoyer.
+ * \brief Builds the list of entities to send.
  *
- Il s'agit des entités fantômes.
+ * These are the ghost entities.
 */
 void GhostItemsVariableParallelOperation::
 _buildItemsToSend()
@@ -49,9 +50,9 @@ _buildItemsToSend()
   auto& items_to_send = _itemsToSend();
 
   ItemGroup all_items = itemFamily()->allItems();
-  ENUMERATE_ITEM(iitem,all_items){
+  ENUMERATE_ITEM (iitem, all_items) {
     Item item = *iitem;
-    if (!item.isOwn()){
+    if (!item.isOwn()) {
       items_to_send[item.owner()].add(item);
     }
   }
@@ -60,7 +61,7 @@ _buildItemsToSend()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

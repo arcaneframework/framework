@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemFlags.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Drapeaux contenant les caractéristiques d'une entité.                     */
+/* Flags containing the characteristics of an entity.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMFLAGS_H
 #define ARCANE_CORE_ITEMFLAGS_H
@@ -24,14 +24,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Flags pour les caractéristiques des entités.
+ * \brief Flags for entity characteristics.
  *
- * Ces flags permettent de conserver des informations sur les entités (Item).
- * Ils sont réservés à %Arcane et ne doivent pas être utilisés en dehors
- * d'Arcane. La seule exception concerne les valeurs ItemFlags::II_UserMark1
- * et ItemFlags::II_UserMark2. Ils peuvent être associés aux entités via
- * les méthodes MutableItemBase::addFlags(), MutableItemBase::removeFlags() ou
+ * These flags allow storing information about entities (Item).
+ * They are reserved for %Arcane and must not be used outside
+ * of Arcane. The only exception concerns the values ItemFlags::II_UserMark1
+ * and ItemFlags::II_UserMark2. They can be associated with entities via
+ * the methods MutableItemBase::addFlags(), MutableItemBase::removeFlags() or
  * ItemBase::hasFlags().
  */
 class ARCANE_CORE_EXPORT ItemFlags
@@ -42,57 +43,56 @@ class ARCANE_CORE_EXPORT ItemFlags
 
  public:
 
-  // L'affichage 'lisible' des flags est implémenté dans ItemPrinter.
-  // Il doit être mis à jour si des valeurs ici sont modifiées ou ajoutées.
+  // The 'readable' display of the flags is implemented in ItemPrinter.
+  // It must be updated if values here are modified or added.
 
   enum : FlagType
   {
-    II_Boundary = 1 << 1, //!< L'entité est sur la frontière
-    II_HasFrontCell = 1 << 2, //!< L'entité a une maille devant
-    II_HasBackCell = 1 << 3, //!< L'entité a une maille derrière
-    II_FrontCellIsFirst = 1 << 4, //!< La première maille de l'entité est la maille devant
-    II_BackCellIsFirst = 1 << 5, //!< La première maille de l'entité est la maille derrière
-    II_Own = 1 << 6, //!< L'entité est une entité propre au sous-domaine
-    II_Added = 1 << 7, //!< L'entité vient d'être ajoutée
-    II_Suppressed = 1 << 8, //!< L'entité vient d'être supprimée
-    II_Shared = 1 << 9, //!< L'entité est partagée par un autre sous-domaine
-    II_SubDomainBoundary = 1 << 10, //!< L'entité est à la frontière de deux sous-domaines
-    //II_JustRemoved = 1 << 11, //!< L'entité vient d'être supprimé
-    II_JustAdded = 1 << 12, //!< L'entité vient d'être ajoutée
-    II_NeedRemove = 1 << 13, //!< L'entité doit être supprimé
-    II_SlaveFace = 1 << 14, //!< L'entité est une face esclave d'une interface
-    II_MasterFace = 1 << 15, //!< L'entité est une face maître d'une interface
-    II_Detached = 1 << 16, //!< L'entité est détachée du maillage
+    II_Boundary = 1 << 1, //!< The entity is on the boundary
+    II_HasFrontCell = 1 << 2, //!< The entity has a front cell
+    II_HasBackCell = 1 << 3, //!< The entity has a back cell
+    II_FrontCellIsFirst = 1 << 4, //!< The first cell of the entity is the front cell
+    II_BackCellIsFirst = 1 << 5, //!< The first cell of the entity is the back cell
+    II_Own = 1 << 6, //!< The entity is a domain-specific entity
+    II_Added = 1 << 7, //!< The entity has just been added
+    II_Suppressed = 1 << 8, //!< The entity has just been suppressed
+    II_Shared = 1 << 9, //!< The entity is shared by another subdomain
+    II_SubDomainBoundary = 1 << 10, //!< The entity is at the boundary of two subdomains
+    //II_JustRemoved = 1 << 11, //!< The entity has just been removed
+    II_JustAdded = 1 << 12, //!< The entity has just been added
+    II_NeedRemove = 1 << 13, //!< The entity must be removed
+    II_SlaveFace = 1 << 14, //!< The entity is a slave face of an interface
+    II_MasterFace = 1 << 15, //!< The entity is a master face of an interface
+    II_Detached = 1 << 16, //!< The entity is detached from the mesh
     /*
-     * \brief L'entité utilise des arêtes au lieu des faces.
+     * \brief The entity uses edges instead of faces.
      *
-     * Cela n'est utilisé que pour les mailles 2D des maillages
-     * non manifold. Si positionné, cela veut dire que les entités
-     * de dimension 1 sont de type Edge et pas de type Face.
+     * This is only used for 2D meshes of non-manifold meshes. If set, it means that
+     * 1D entities are of type Edge and not of type Face.
      */
     II_HasEdgeFor1DItems = 1 << 17,
 
-    II_Coarsen = 1 << 18, //!<  L'entité est marquée pour dé-raffinement
-    II_DoNothing = 1 << 19, //!<  L'entité est bloquée
-    II_Refine = 1 << 20, //!<  L'entité est marquée pour raffinement
-    II_JustRefined = 1 << 21, //!<  L'entité vient d'être raffinée
-    II_JustCoarsened = 1 << 22, //!<  L'entité vient d'être dé-raffiné
-    II_Inactive = 1 << 23, //!<  L'entité est inactive //COARSEN_INACTIVE,
-    II_CoarsenInactive = 1 << 24, //!< L'entité est inactive et a des enfants tagués pour dé-raffinement
+    II_Coarsen = 1 << 18, //!< The entity is marked for coarsening
+    II_DoNothing = 1 << 19, //!< The entity is blocked
+    II_Refine = 1 << 20, //!< The entity is marked for refinement
+    II_JustRefined = 1 << 21, //!< The entity has just been refined
+    II_JustCoarsened = 1 << 22, //!< The entity has just been coarsened
+    II_Inactive = 1 << 23, //!< The entity is inactive //COARSEN_INACTIVE,
+    II_CoarsenInactive = 1 << 24, //!< The entity is inactive and has children tagged for coarsening
 
     /*!
-     * \brief [AMR Patch] L'entité est marquée comme étant de recouvrement par
-     * au moins un patch AMR.
+     * \brief [AMR Patch] The entity is marked as overlapping with
+     * at least one AMR patch.
      */
     II_Overlap = 1 << 25,
 
     /*!
-     * \brief [AMR Patch] L'entité est marqué comme étant dans un patch AMR.
+     * \brief [AMR Patch] The entity is marked as being in an AMR patch.
      */
     II_InPatch = 1 << 26,
 
-    II_UserMark1 = 1 << 30, //!< Marque utilisateur
-    II_UserMark2 = 1 << 31 //!< Marque utilisateur
+    II_UserMark1 = 1 << 30, //!< User mark
+    II_UserMark2 = 1 << 31 //!< User mark
   };
 
   static const int II_InterfaceFlags = II_Boundary + II_HasFrontCell + II_HasBackCell +
@@ -107,14 +107,15 @@ class ARCANE_CORE_EXPORT ItemFlags
   {
     return isSubDomainBoundary(f) && hasBackCell(f);
   }
+
   /*!
-   * \brief Index dans la face la maille derrière.
+   * \brief Index in the face for the back cell.
    *
-   * \retval -1 si pas de maillage derrière.
-   * \retval 0 ou 1 pour l'index de la maille derrière.
+   * \retval -1 if there is no cell behind.
+   * \retval 0 or 1 for the index of the back cell.
    *
-   * Si l'index est positif, il est possible de récupérer
-   * la maille derrière via Face::cell(ItemFlags::backCellIndex(f)).
+   * If the index is positive, it is possible to retrieve
+   * the back cell via Face::cell(ItemFlags::backCellIndex(f)).
    */
   static constexpr Int32 backCellIndex(FlagType f)
   {
@@ -122,14 +123,15 @@ class ARCANE_CORE_EXPORT ItemFlags
       return (f & II_BackCellIsFirst) ? 0 : 1;
     return -1;
   }
+
   /*!
-   * \brief Index dans la face la maille devant.
+   * \brief Index in the face for the front cell.
    *
-   * \retval -1 si pas de maillage devant.
-   * \retval 0 ou 1 pour l'index de la maille devant.
+   * \retval -1 if there is no cell in front.
+   * \retval 0 or 1 for the index of the front cell.
    *
-   * Si l'index est positif, il est possible de récupérer
-   * la maille devant via Face::cell(ItemFlags::frontCellIndex(f)).
+   * If the index is positive, it is possible to retrieve
+   * the front cell via Face::cell(ItemFlags::frontCellIndex(f)).
    */
   static constexpr Int32 frontCellIndex(FlagType f)
   {

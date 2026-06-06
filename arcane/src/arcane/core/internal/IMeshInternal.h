@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshInternal.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de IMesh.                                         */
+/* Internal IMesh component in Arcane.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_IMESHINTERNAL_H
 #define ARCANE_CORE_INTERNAL_IMESHINTERNAL_H
@@ -28,9 +28,10 @@ class IItemFamilySerializerMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Partie interne de IMesh.
+ * \brief Internal part of IMesh.
  */
 class ARCANE_CORE_EXPORT IMeshInternal
 {
@@ -41,43 +42,40 @@ class ARCANE_CORE_EXPORT IMeshInternal
  public:
 
   /*!
-   * \brief Positionne le type de maillage.
+   * \brief Sets the mesh type.
    *
-   * Pour l'instant il ne faut utiliser cette méthode que pour spécifier
-   * la structure du maillage (eMeshStructure).
+   * For now, this method should only be used to specify
+   * the mesh structure (eMeshStructure).
    */
   virtual void setMeshKind(const MeshKind& v) = 0;
 
   /*!
-   * \brief Renvoie le gestionnaire de connectivités des dofs.
+   * \brief Returns the dof connectivity manager.
    *
-   * Cette méthode est temporaire car ce gestionnaire de connectivités des dofs
-   * à vocation à disparaître, l'évolution des connectivités des dofs étant maintenant gérée
-   * automatiquement. A usage interne uniquement en attendant la suppression.
+   * This method is temporary because this dof connectivity manager
+   * is intended to be removed, as the evolution of dof connectivities is now managed
+   * automatically. For internal use only while awaiting removal.
    */
   virtual IItemConnectivityMng* dofConnectivityMng() const noexcept = 0;
 
   /*!
-   * \bief Renvoie l'interface de modification du maillage polyédrique
+   * \bief Returns the polyhedral mesh modification interface
    *
-   * Cette méthode retourne nullptr si l'implémentation du maillage n'est pas PolyhedralMesh
+   * This method returns nullptr if the mesh implementation is not PolyhedralMesh
    */
   virtual IPolyhedralMeshModifier* polyhedralMeshModifier() const noexcept = 0;
 
   /*!
-   * \brief Renvoie le gestionnaire des outils de sérialisation des familles.
+   * \brief Returns the family serialization tools manager.
    *
-   * Ce gestionnaire est utilisé pour le maillage polyédrique, afin de lancer une
-   * phase de finalisation de l'ajout des items après l'appel aux méthodes de désérialisation,
-   * car ces méthodes sont asynchrones et il faut déclencher la phase de finalisation.
+   * This manager is used for the polyhedral mesh, in order to trigger a
+   * finalization phase of item addition after calling the deserialization methods,
+   * because these methods are asynchronous and the finalization phase must be triggered.
    *
-   * @return Cette méthode retourne nullptr si le gestionnaire n'existe pas.
+   * @return This method returns nullptr if the manager does not exist.
    */
-  virtual IItemFamilySerializerMngInternal* familySerializerMng() const noexcept {return nullptr;}
-
+  virtual IItemFamilySerializerMngInternal* familySerializerMng() const noexcept { return nullptr; }
 };
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StandardCaseFunction.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une fonction standard du jeu de données.                    */
+/* Class managing a standard dataset function.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_STANDARDCASEFUNCTION_H
 #define ARCANE_CORE_STANDARDCASEFUNCTION_H
@@ -25,17 +25,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe gérant une fonction standard du jeu de données.
+ * \brief Class managing a standard dataset function.
  *
  * \ingroup CaseOption
  *
- * Cette classe doit être héritée et la classe dérivée doit surcharger
- * l'une des méthodes qui renvoie un IFunctionWithArgAndReturn2. Sans
- * surcharge, toutes ces méthode retournent un pointeur nul. La classe
- * dérivée n'est pas obligée de surcharger toutes les méthodes getFunctor*
- * mais peut se contenter de surcharger que ceux qu'elle souhaite.
+ * This class must be inherited and the derived class must override
+ * one of the methods that returns an IFunctionWithArgAndReturn2. Without
+ * overriding, all these methods return a null pointer. The derived
+ * class is not required to override all the getFunctor* methods
+ * but can limit itself to overriding only those it wishes.
  */
 class ARCANE_CORE_EXPORT StandardCaseFunction
 : public CaseFunction
@@ -43,7 +44,7 @@ class ARCANE_CORE_EXPORT StandardCaseFunction
 {
  public:
 
-  //! Construit une fonction du jeu de données.
+  //! Constructs a dataset function.
   explicit StandardCaseFunction(const CaseFunctionBuildInfo& info);
   ~StandardCaseFunction() override;
 
@@ -62,10 +63,10 @@ class ARCANE_CORE_EXPORT StandardCaseFunction
 
  public:
 
-  // NOTE : Le mot clé 'virtual' est nécessaire pour SWIG
-  // car cette classe a un double héritage et SWIG ne prend
-  // que le premier et donc ne voit pas les méthodes suivantes
-  // comme étant virtuelles.
+  // NOTE: The 'virtual' keyword is necessary for SWIG
+  // because this class has multiple inheritance and SWIG only takes
+  // the first one and therefore does not see the following methods
+  // as virtual.
   virtual IBinaryMathFunctor<Real, Real, Real>* getFunctorRealRealToReal() override;
   virtual IBinaryMathFunctor<Real, Real3, Real>* getFunctorRealReal3ToReal() override;
   virtual IBinaryMathFunctor<Real, Real, Real3>* getFunctorRealRealToReal3() override;
@@ -80,4 +81,4 @@ class ARCANE_CORE_EXPORT StandardCaseFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

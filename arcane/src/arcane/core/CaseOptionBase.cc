@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseOptionBase.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des options du jeu de données.                                    */
+/* Data set option management.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,9 +32,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- *\brief Implémentation de la classe de base d'une option du jeu de données.
+ * \brief Implementation of the base class for a data set option.
  */
 class CaseOptionBasePrivate
 {
@@ -44,22 +45,22 @@ class CaseOptionBasePrivate
 
  public:
 
-  ICaseMng* m_case_mng = nullptr; //!< Gestionnaire du sous-domaine
+  ICaseMng* m_case_mng = nullptr; //!< Sub-domain manager
   ICaseOptionList* m_parent_option_list = nullptr; //!< Parent
-  ICaseDocumentFragment* m_case_document_fragment = nullptr; //!< Document associé
-  XmlNode m_root_element; //!< Elément du DOM de l'option
-  String m_true_name; //!< Nom de l'option
-  String m_name; //!< Nom traduit de l'option
-  const String m_axl_default_value; //!< Valeur par défaut initiale
-  String m_default_value; //!< Valeur par défaut
-  Integer m_min_occurs; //!< Nombre minimum d'occurences
-  Integer m_max_occurs; //!< Nombre maximum d'occurences (-1 == unbounded)
+  ICaseDocumentFragment* m_case_document_fragment = nullptr; //!< Associated document
+  XmlNode m_root_element; //!< Option's DOM element
+  String m_true_name; //!< Option name
+  String m_name; //!< Translated option name
+  const String m_axl_default_value; //!< Initial default value
+  String m_default_value; //!< Default value
+  Integer m_min_occurs; //!< Minimum number of occurrences
+  Integer m_max_occurs; //!< Maximum number of occurrences (-1 == unbounded)
   bool m_is_optional;
-  bool m_is_initialized; //!< \a true si initialisé
-  bool m_is_override_default; //!< \a true si la valeur par défaut est surchargée
-  //! Liste des noms d'options par langue.
+  bool m_is_initialized; //!< \a true if initialized
+  bool m_is_override_default; //!< \a true if the default value is overridden
+  //! List of option names by language.
   StringDictionary m_name_translations;
-  //! Liste des valeurs par défaut par catégorie.
+  //! List of default values by category.
   StringDictionary m_default_values;
 };
 
@@ -94,7 +95,7 @@ CaseOptionBase::
 CaseOptionBase(const CaseOptionBuildInfo& cob)
 : m_p(new CaseOptionBasePrivate(cob))
 {
-  cob.caseOptionList()->_internalApi()->addConfig(this,cob.element());
+  cob.caseOptionList()->_internalApi()->addConfig(this, cob.element());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,9 +245,9 @@ _setTranslatedName()
   String lang = caseDocumentFragment()->language();
   if (lang.null())
     m_p->m_name = m_p->m_true_name;
-  else{
+  else {
     String tr = m_p->m_name_translations.find(lang);
-    if (!tr.null()){
+    if (!tr.null()) {
       //cerr << "** TRANSLATION FOR " << m_p->m_true_name << " is " << tr << " in " << lang << '\n';
       m_p->m_name = tr;
     }
@@ -259,15 +260,15 @@ _setTranslatedName()
 void CaseOptionBase::
 _setCategoryDefaultValue()
 {
-  // Si le développeur a surchargé l'option, ne fait rien
+  // If the developer has overridden the option, do nothing
   if (m_p->m_is_override_default)
     return;
   String category = caseDocumentFragment()->defaultCategory();
   if (category.null())
     m_p->m_default_value = m_p->m_axl_default_value;
-  else{
+  else {
     String v = m_p->m_default_values.find(category);
-    if (!v.null()){
+    if (!v.null()) {
       m_p->m_default_value = v;
     }
   }
@@ -279,7 +280,7 @@ _setCategoryDefaultValue()
 String CaseOptionBase::
 translatedName(const String& lang) const
 {
-  if (!lang.null()){
+  if (!lang.null()) {
     String tr = m_p->m_name_translations.find(lang);
     if (!tr.null())
       return tr;
@@ -309,18 +310,18 @@ rootElement() const
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionBase::
-addAlternativeNodeName(const String& lang,const String& name)
+addAlternativeNodeName(const String& lang, const String& name)
 {
-  m_p->m_name_translations.add(lang,name);
+  m_p->m_name_translations.add(lang, name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionBase::
-addDefaultValue(const String& category,const String& value)
+addDefaultValue(const String& category, const String& value)
 {
-  m_p->m_default_values.add(category,value);
+  m_p->m_default_values.add(category, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -347,8 +348,8 @@ _isInitialized() const
 void CaseOptionBase::
 _checkIsInitialized() const
 {
-  if (!_isInitialized()){
-    ARCANE_THROW(CaseOptionException,"option non initialisée '{0}'",name());
+  if (!_isInitialized()) {
+    ARCANE_THROW(CaseOptionException, "option non initialisée '{0}'", name());
   }
 }
 
@@ -366,7 +367,7 @@ _checkMinMaxOccurs(Integer nb_occur)
     return;
   }
 
-  if (nb_occur<min_occurs){
+  if (nb_occur < min_occurs) {
     StringBuilder msg = "Bad number of occurences (less than min)";
     msg += " nb_occur=";
     msg += nb_occur;
@@ -376,10 +377,10 @@ _checkMinMaxOccurs(Integer nb_occur)
     msg += m_p->m_root_element.xpathFullName();
     msg += "/";
     msg += name();
-    throw CaseOptionException(A_FUNCINFO,msg.toString(),true);
+    throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
   }
-  if (max_occurs>=0)
-    if (nb_occur>max_occurs){
+  if (max_occurs >= 0)
+    if (nb_occur > max_occurs) {
       StringBuilder msg = "Bad number of occurences (greater than max)";
       msg += " nb_occur=";
       msg += nb_occur;
@@ -389,7 +390,7 @@ _checkMinMaxOccurs(Integer nb_occur)
       msg += m_p->m_root_element.xpathFullName();
       msg += "/";
       msg += name();
-      throw CaseOptionException(A_FUNCINFO,msg.toString(),true);
+      throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
     }
 }
 
@@ -405,8 +406,7 @@ _xpathFullName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

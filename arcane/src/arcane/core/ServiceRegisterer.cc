@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ServiceRegisterer.cc                                        (C) 2000-2018 */
 /*                                                                           */
-/* Registre contenant la liste des manufactures de services.                 */
+/* Register containing the list of service implementations.                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,14 +15,15 @@
 
 #include "arcane/utils/Iostream.h"
 
-#include "arcane/ServiceRegisterer.h"
+#include "arcane/core/ServiceRegisterer.h"
 
 #include <stdlib.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,7 +57,7 @@ ServiceRegisterer(ModuleFactoryWithPropertyFunc func,
 : m_module_factory_with_property_functor(func)
 , m_info_function_with_property(nullptr)
 , m_name(properties.name())
-, m_service_property(ServiceProperty(properties.name(),0))
+, m_service_property(ServiceProperty(properties.name(), 0))
 , m_module_property(properties)
 , m_previous(nullptr)
 , m_next(nullptr)
@@ -70,14 +71,14 @@ ServiceRegisterer(ModuleFactoryWithPropertyFunc func,
 void ServiceRegisterer::
 _init()
 {
-  if (global_arcane_first_service==nullptr){
+  if (global_arcane_first_service == nullptr) {
     global_arcane_first_service = this;
     setPreviousService(nullptr);
     setNextService(nullptr);
   }
-  else{
+  else {
     ServiceRegisterer* next = global_arcane_first_service->nextService();
-    setNextService(global_arcane_first_service); 
+    setNextService(global_arcane_first_service);
     global_arcane_first_service = this;
     if (next)
       next->setPreviousService(this);
@@ -85,7 +86,7 @@ _init()
   ++global_arcane_nb_service;
 
   { // Check integrity
-    ServiceRegisterer * p = global_arcane_first_service;
+    ServiceRegisterer* p = global_arcane_first_service;
     Integer count = global_arcane_nb_service;
     while (p && count > 0) {
       p = p->nextService();
@@ -94,9 +95,10 @@ _init()
     if (p) {
       cout << "Arcane Fatal Error: Service '" << m_name << "' conflict in service registration" << std::endl;
       exit(1);
-    } else if (count > 0) {
+    }
+    else if (count > 0) {
       cout << "Arcane Fatal Error: Service '" << m_name << "' breaks service registration (inconsistent shortcut)" << std::endl;
-      exit(1);      
+      exit(1);
     }
   }
 }
@@ -122,8 +124,7 @@ nbService()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -1,15 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AnyItemUserGroup.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Groupe utilisateur aggrégée de types quelconques.                         */
+/* Aggregated user group of arbitrary types.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H 
+#ifndef ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H
 #define ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,11 +29,11 @@ namespace Arcane::AnyItem
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Groupe utilisateur
- * pour spécifier des groupes (Arcane) sur lesquels on souhaite itérer
- * ces groupes doivent être dans la famille
+ * \brief User group
+ * to specify groups (Arcane) over which one wishes to iterate
+ * these groups must be in the family
  *
- * Par exemple :
+ * For example:
  *
  * AnyItem::Family family;
  *
@@ -47,67 +47,70 @@ namespace Arcane::AnyItem
  *           << AnyItem::GroupBuilder( allFaces() );
  */
 class UserGroup
-  : public Group
-  , public IFamilyObserver
-{  
-private:
-  
+: public Group
+, public IFamilyObserver
+{
+ private:
+
   typedef Private::GroupIndexMapping GroupIndexMapping;
-  
-public:
-  
-  UserGroup(const Family& family)  
-    : Group(m_currents)
-    , m_family(family)
+
+ public:
+
+  UserGroup(const Family& family)
+  : Group(m_currents)
+  , m_family(family)
   {
     m_family.registerObserver(*this);
-  } 
-  
+  }
+
   ~UserGroup()
   {
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
   }
 
-  //! Ajout d'un groupe arcane au groupe
+  //! Adds an arcane group to the group
   inline UserGroup& operator<<(GroupBuilder builder)
   {
     ItemGroup group = builder.group();
     if (m_groups.findGroupInfo(group.internal()) != NULL)
-      throw FatalErrorException(String::format("Group '{0}' in user group already registered",group.name()));
+      throw FatalErrorException(String::format("Group '{0}' in user group already registered", group.name()));
 
-    const Private::GroupIndexInfo * info = m_family.internal()->findGroupInfo(group);
+    const Private::GroupIndexInfo* info = m_family.internal()->findGroupInfo(group);
     if (info == NULL)
-      throw FatalErrorException(String::format("Group '{0}' in user group not registered in family",group.name()));
+      throw FatalErrorException(String::format("Group '{0}' in user group not registered in family", group.name()));
 
-    if(builder.isPartial() != info->is_partial)
-      throw FatalErrorException(String::format("Group '{0}' in user group is not same in family",group.name()));
-    
+    if (builder.isPartial() != info->is_partial)
+      throw FatalErrorException(String::format("Group '{0}' in user group is not same in family", group.name()));
+
     m_currents.add(*info);
     return *this;
   }
-  
-  //! Vide le groupe
-  inline void clear() {
+
+  //! Clears the group
+  inline void clear()
+  {
     m_currents.clear();
   }
 
-  //! Action si la famille est invalidée : on vide le groupe
-  inline void notifyFamilyIsInvalidate() {
-    // Si la famille change, on invalide le groupe
+  //! Action if the family is invalidated: clears the group
+  inline void notifyFamilyIsInvalidate()
+  {
+    // If the family changes, the group is invalidated
     clear();
   }
 
-  //! Si la famille est agrandie, pas d'impact sur le groupe
-  inline void notifyFamilyIsIncreased() {
-    // On ne fait rien dans ce cas
+  //! If the family is increased, no impact on the group
+  inline void notifyFamilyIsIncreased()
+  {
+    // Nothing is done in this case
   }
-  
-private:
-  
-  //! Famille AnyItem (copie flyweight)
+
+ private:
+
+  //! AnyItem Family (flyweight copy)
   const Family m_family;
-  
-  //! Table Groupe - offset
+
+  //! Group Table - offset
   GroupIndexMapping m_currents;
 };
 
@@ -119,4 +122,4 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_ANYITEM_ANYITEMUSERGROUP_H */
+#endif

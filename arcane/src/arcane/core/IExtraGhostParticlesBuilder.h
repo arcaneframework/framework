@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IExtraGhostParticlesBuilder.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un constructeur de mailles fantômes "extraordinaires"         */
+/* Interface of a builder for "extraordinary" ghost meshes                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IEXTRAGHOSTPARTICLESBUILDER_H
 #define ARCANE_CORE_IEXTRAGHOSTPARTICLESBUILDER_H
@@ -24,40 +24,42 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un constructeur de mailles fantômes "extraordinaires".
+ * \brief Interface of a builder for "extraordinary" ghost meshes.
  *
- * Une maille fantôtme "extraordinaire" est une maille fantôme ajoutée aux
- * mailles fantôtmes définies par la connectivité du maillage. En particulier,
- * le calcul des mailles fantômes extraordinaires est effectué à chaque mise
- * à jour du maillage ou équilibrage de charge.
+ * An "extraordinary" ghost mesh is a ghost mesh added to the
+ * ghost meshes defined by the mesh connectivity. Specifically,
+ * the calculation of extraordinary ghost meshes is performed during every
+ * mesh update or load balancing.
  *
- * \note rend obsolète le paramètre \a remove_old_ghost de la méthode IMesh::endUpdate().
+ * \note makes the \a remove_old_ghost parameter of the IMesh::endUpdate()
+ * method obsolete.
  *
  */
 class IExtraGhostParticlesBuilder
 {
  public:
-  
-  virtual ~IExtraGhostParticlesBuilder() {} //!< Libère les ressources.
-  
+
+  virtual ~IExtraGhostParticlesBuilder() {} //!< Releases resources.
+
  public:
 
   /*!
-   * \brief Calcul des mailles "extraordinaires" à envoyer.
+   * \brief Calculation of "extraordinary" meshes to send.
    *
-   * Effectue le calcul des mailles "extraordinaires" suivant
-   * un algorithme de construction  
+   * Performs the calculation of "extraordinary" meshes following
+   * a construction algorithm.
    */
-  virtual void computeExtraParticlesToSend() =0;
+  virtual void computeExtraParticlesToSend() = 0;
 
   /*!
-   * \brief Indices locaux des mailles "extraordinaires" pour envoi
+   * \brief Local indices of "extraordinary" meshes for sending
    *
-   * Récupère le tableau des mailles "extraordinaires" à destination
-   * du sous-domaine \a rank
+   * Retrieves the array of "extraordinary" meshes destined for
+   * the sub-domain \a rank.
    */
-  virtual Int32ConstArrayView extraParticlesToSend(const String& family_name,Int32 rank) const =0;
+  virtual Int32ConstArrayView extraParticlesToSend(const String& family_name, Int32 rank) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,5 +70,4 @@ class IExtraGhostParticlesBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

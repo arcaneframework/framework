@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshVariableArrayTpl.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Instanciation des classes templates des variables tableaux du maillage.   */
+/* Instantiation of template classes for mesh array variables.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,20 +25,20 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(datatype) \
-template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<datatype>;\
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<datatype>;\
-template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Node,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Edge,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Face,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Cell,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<DoF,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Node,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Edge,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Face,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Cell,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<DoF,datatype>
+  template class ARCANE_TEMPLATE_EXPORT ItemVariableArrayRefT<datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableArrayRefT<datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Node, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Edge, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Face, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Cell, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<Particle, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableArrayRefT<DoF, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Node, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Edge, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Face, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Cell, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<Particle, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableArrayRefT<DoF, datatype>
 
 /*---------------------------------------------------------------------------*/
 
@@ -59,7 +59,7 @@ ARCANE_INSTANTIATE_MESHVARIABLE_ARRAY(Real3x3);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

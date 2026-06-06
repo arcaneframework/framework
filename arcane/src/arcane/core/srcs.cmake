@@ -102,8 +102,8 @@ set(ARCANE_INTERNAL_SOURCES
   )
 
 set(ARCANE_ORIGINAL_SOURCES
-  # Les fichiers suivants sont en premier car ce sont
-  # les plus longs à compiler
+  # The following files are listed first because they are
+  # the longest to compile
   Array2Variable.cc
   Array2Variable.h
   VariableArray.cc

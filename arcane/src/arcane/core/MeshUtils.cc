@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshUtils.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions diverses sur les éléments du maillage.                          */
+/* Miscellaneous functions on mesh elements.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -114,10 +114,10 @@ _writeInfo(ISubDomain* mng, const VariableCollection& variables, const ItemType&
 
   for (VariableCollection::Enumerator i(variables); ++i;) {
     IVariable* vp = *i;
-    // Pour l'instant, n'affiche pas les variables partielles
+    // For now, does not display partial variables
     if (vp->isPartial())
       continue;
-    // Vérifie qu'il s'agit bien d'une variable du maillage et du bon genre
+    // Checks if it is indeed a mesh variable and of the correct type
     ItemGroup group = vp->itemGroup();
     if (group.itemKind() != item_kind)
       continue;
@@ -546,7 +546,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
   Int32UniqueArray faces_sorted_id(nb_face);
   Int32UniqueArray cells_sorted_id(nb_cell);
   {
-    // Trie les noeuds par ordre croissant de leur coordonnées
+    // Sort nodes by ascending coordinates
     NodeInfoListView nodes(mesh->nodeFamily());
     for (Integer i = 0; i < nb_node; ++i)
       sorted_nodes[i] = nodes[i];
@@ -558,7 +558,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
     for (Integer i = 0; i < nb_node; ++i)
       nodes_sorted_id[sorted_nodes[i].localId()] = i;
 
-    // Trie les arêtes
+    // Sort edges
     EdgeInfoListView edges(mesh->edgeFamily());
     for (Integer i = 0; i < nb_edge; ++i)
       sorted_edges[i] = edges[i];
@@ -569,7 +569,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
     for (Integer i = 0; i < nb_edge; ++i)
       edges_sorted_id[sorted_edges[i].localId()] = i;
 
-    // Trie les faces
+    // Sort faces
     FaceInfoListView faces(mesh->faceFamily());
     for (Integer i = 0; i < nb_face; ++i)
       sorted_faces[i] = faces[i];
@@ -580,7 +580,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
     for (Integer i = 0; i < nb_face; ++i)
       faces_sorted_id[sorted_faces[i].localId()] = i;
 
-    // Trie les mailles
+    // Sort cells
     CellInfoListView cells(mesh->cellFamily());
     for (Integer i = 0; i < nb_cell; ++i)
       sorted_cells[i] = cells[i];
@@ -710,7 +710,7 @@ writeMeshInfos(IMesh* mesh, const String& file_name)
   NodeInfoListView nodes(mesh->nodeFamily());
   FaceInfoListView faces(mesh->faceFamily());
   CellInfoListView cells(mesh->cellFamily());
-  //TODO pouvoir afficher les infos même si on n'est pas un maillage primaire
+  //TODO display infos even if not a primary mesh
   VariableNodeReal3& coords(mesh->toPrimaryMesh()->nodesCoordinates());
 
   ofile << "** Nodes\n";
@@ -849,7 +849,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
   _sortByUniqueIds(mesh, IK_Face, faces);
   _sortByUniqueIds(mesh, IK_Cell, cells);
 
-  // Écrit les noeuds
+  // Write nodes
   {
     ofile << "<nodes count='" << nodes.size() << "'>\n";
     for (Node item : nodes) {
@@ -862,7 +862,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "</nodes>\n";
   }
 
-  // Écrit les arêtes
+  // Write edges
   {
     ofile << "<edges count='" << edges.size() << "'>\n";
     for (Edge edge : edges) {
@@ -875,7 +875,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "</edges>\n";
   }
 
-  // Écrit les faces
+  // Write faces
   {
     ofile << "<faces count='" << faces.size() << "'>\n";
     for (Face face : faces) {
@@ -886,7 +886,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
       _writeSubItems(ofile, "nodes", face.nodes());
       _writeSubItems(ofile, "edges", face.edges());
       {
-        // Infos sur les mailles
+        // Mesh info
         ofile << "<cells";
         Cell back_cell = face.backCell();
         if (!back_cell.null())
@@ -897,7 +897,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
         ofile << "/>";
       }
 
-      // Infos sur les maitres/esclaves
+      // Master/slave info
       if (face.isSlaveFace())
         _writeSubItems(ofile, "slave-faces", face.slaveFaces());
       if (face.isMasterFace()) {
@@ -911,12 +911,12 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "</faces>\n";
   }
 
-  // Écrit les mailles
+  // Write cells
   {
     ofile << "<cells count='" << cells.size() << "'>\n";
-    // Pour les mailles autour d'une maille.
-    // Une maille est autour d'une autre, si elle est connectée par
-    // au moins un noeud
+    // For cells around a cell.
+    // A cell is around another if it is connected by
+    // at least one node
     Int64UniqueArray ghost_cells_layer1;
     ghost_cells_layer1.reserve(100);
     for (Cell cell : cells) {
@@ -954,7 +954,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
         }
 
         {
-          // Trie la liste des mailles fantômes et retire les doublons.
+          // Sort the list of ghost cells and remove duplicates.
           std::sort(std::begin(ghost_cells_layer1), std::end(ghost_cells_layer1));
           auto new_end = std::unique(std::begin(ghost_cells_layer1), std::end(ghost_cells_layer1));
           ghost_cells_layer1.resize(arcaneCheckArraySize(new_end - std::begin(ghost_cells_layer1)));
@@ -969,20 +969,20 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "</cells>\n";
   }
 
-  // Sauve les groupes
+  // Save groups
 
   {
     ofile << "<groups>\n";
-    // Trie les groupes par ordre alphabétique pour être certains qu'ils sont
-    // toujours écrits dans le même ordre.
-    std::map<String,ItemGroup> sorted_groups;
+    // Sort groups alphabetically to ensure they are
+    // always written in the same order.
+    std::map<String, ItemGroup> sorted_groups;
     for (ItemGroupCollection::Enumerator i_group(mesh->groups()); ++i_group;) {
       const ItemGroup& group = *i_group;
       if (group.isLocalToSubDomain())
         continue;
-      sorted_groups.insert(std::make_pair(group.name(),group));
+      sorted_groups.insert(std::make_pair(group.name(), group));
     }
-    for ( const auto& [name,group] : sorted_groups ){
+    for (const auto& [name, group] : sorted_groups) {
       ofile << "<group name='" << group.name()
             << "' kind='" << itemKindName(group.itemKind())
             << "' count='" << group.size() << "'>\n";
@@ -994,7 +994,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "</groups>\n";
   }
 
-  // Sauve les interfaces liées
+  // Save the tied interfaces
   {
     ofile << "<tied-interfaces>\n";
     TiedInterfaceCollection tied_interfaces(mesh->tiedInterfaces());
@@ -1245,10 +1245,10 @@ _read(eItemKind ik, ItemInternalXmlMap& items_internal, XmlNode root_node,
       }
     }
     if (item.isOwn()) {
-      // Si c'est une maille, recherche si les mailles qui doivent être
-      // fantômes sont bien présentes dans le maillage.
-      // Si c'est un noeud, recherche si les mailles autour de ce noeud
-      // sont bien présentes dans le maillage.
+      // If it is a cell, search whether the cells that should be
+      // ghosts are present in the mesh.
+      // If it is a node, search whether the cells around this node
+      // are present in the mesh.
       XmlNode elem;
       if (ik == IK_Cell)
         elem = xitem.child(ustr_ghost1);
@@ -1334,8 +1334,8 @@ doCheck()
       trace->error() << "Number of items in group <" << group.name()
                      << "> (" << size << " different than reference (" << ref_size;
     }
-    // TODO: vérifier que les toutes les entités du groupe dans le maillage
-    // de référence sont aussi dans le groupe correspondant de ce maillage.
+    // TODO: verify that all group entities in the reference mesh
+    // are also in the corresponding group of this mesh.
   }
 
   if (m_has_error) {
@@ -1366,7 +1366,7 @@ checkMeshProperties(IMesh* mesh, bool is_sorted, bool has_no_hole, bool check_fa
       eItemKind ik = (*i)->itemKind();
       if (!check_faces && ik == IK_Face)
         continue;
-      // Il est normal que les particules ne soient pas triées
+      // It is normal that particles are not sorted
       if (ik == IK_Particle)
         continue;
       //ItemGroup all_items = mesh->itemFamily(ik)->allItems();
@@ -1407,13 +1407,13 @@ printItems(std::ostream& ostr, const String& name, ItemGroup item_group)
 bool MeshUtils::
 reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
 {
-  // \a true s'il faut réorienter les faces pour que leur orientation
-  // soit indépendante du partitionnement du maillage initial.
+  // \a true if the faces need to be reoriented so that their orientation
+  // is independent of the initial mesh partitioning.
   bool need_swap_orientation = false;
   Integer min_node_index = 0;
   Integer nb_node = before_ids.size();
 
-  // Traite directement le cas des arêtes
+  // Directly handles the edge case
   if (nb_node == 2) {
     if (before_ids[0] < before_ids[1]) {
       after_ids[0] = before_ids[0];
@@ -1425,18 +1425,18 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
     return true;
   }
 
-  // L'algorithme suivant oriente les faces en tenant compte uniquement
-  // de l'ordre de la numérotation de ces noeuds. Si cet ordre est
-  // conservé lors du partitionnement, alors l'orientation des faces
-  // sera aussi conservée.
+  // The following algorithm orients the faces taking into account only
+  // the order of the node numbering. If this order is
+  // preserved during partitioning, then the face orientation
+  // will also be preserved.
 
-  // L'algorithme est le suivant:
-  // - Recherche le noeud n de plus petit indice.
-  // - Recherche n-1 et n+1 les indices de ses 2 noeuds voisins.
-  // - Si (n+1) est inférieur à (n-1), l'orientation n'est pas modifiée.
-  // - Si (n+1) est supérieur à (n-1), l'orientation est inversée.
+  // The algorithm is as follows:
+  // - Find node n with the smallest index.
+  // - Find n-1 and n+1, the indices of its 2 neighboring nodes.
+  // - If (n+1) is less than (n-1), the orientation is not modified.
+  // - If (n+1) is greater than (n-1), the orientation is inverted.
 
-  // Recherche le noeud de plus petit indice
+  // Find the node with the smallest index
 
   Int64 min_node = INT64_MAX;
   for (Integer k = 0; k < nb_node; ++k) {
@@ -1448,17 +1448,15 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
   }
   Int64 next_node = before_ids[(min_node_index + 1) % nb_node];
   Int64 prev_node = before_ids[(min_node_index + (nb_node - 1)) % nb_node];
-  Integer incr = 0 ;
-  Integer incr2 = 0 ;
-  if(next_node==min_node)
-  {
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
     next_node = before_ids[(min_node_index + (nb_node + 2)) % nb_node];
-    incr = 1 ;
+    incr = 1;
   }
-  if(prev_node==min_node)
-  {
+  if (prev_node == min_node) {
     prev_node = before_ids[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1 ;
+    incr2 = nb_node - 1;
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
@@ -1483,13 +1481,13 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
 bool MeshUtils::
 reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_index)
 {
-  // \a true s'il faut réorienter les faces pour que leur orientation
-  // soit indépendante du partitionnement du maillage initial.
+  // \a true if the faces need to be reoriented so that their orientation
+  // is independent of the initial mesh partitioning.
   bool need_swap_orientation = false;
   Integer min_node_index = 0;
   Integer nb_node = nodes_unique_id.size();
 
-  // Traite directement le cas des arêtes
+  // Directly handles the edge case for edges
   if (nb_node == 2) {
     if (nodes_unique_id[0] < nodes_unique_id[1]) {
       new_index[0] = 0;
@@ -1501,18 +1499,18 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
     return true;
   }
 
-  // L'algorithme suivant oriente les faces en tenant compte uniquement
-  // de l'ordre de la numérotation de ces noeuds. Si cet ordre est
-  // conservé lors du partitionnement, alors l'orientation des faces
-  // sera aussi conservée.
+  // The following algorithm orients the faces considering only
+  // the order of the numbering of these nodes. If this order is
+  // preserved during partitioning, then the orientation of the faces
+  // will also be preserved.
 
-  // L'algorithme est le suivant:
-  // - Recherche le noeud n de plus petit indice.
-  // - Recherche n-1 et n+1 les indices de ses 2 noeuds voisins.
-  // - Si (n+1) est inférieur à (n-1), l'orientation n'est pas modifiée.
-  // - Si (n+1) est supérieur à (n-1), l'orientation est inversée.
+  // The algorithm is as follows:
+  // - Find the node n with the smallest index.
+  // - Find n-1 and n+1, the indices of its 2 neighboring nodes.
+  // - If (n+1) is less than (n-1), the orientation n is not modified.
+  // - If (n+1) is greater than (n-1), the orientation is inverted.
 
-  // Recherche le noeud de plus petit indice
+  // Search for the node with the smallest index
 
   Int64 min_node = INT64_MAX;
   for (Integer k = 0; k < nb_node; ++k) {
@@ -1524,17 +1522,15 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
   }
   Int64 next_node = nodes_unique_id[(min_node_index + 1) % nb_node];
   Int64 prev_node = nodes_unique_id[(min_node_index + (nb_node - 1)) % nb_node];
-  Integer incr = 0 ;
-  Integer incr2 = 0 ;
-  if(next_node==min_node)
-  {
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
     next_node = nodes_unique_id[(min_node_index + 2) % nb_node];
-    incr = 1 ;
+    incr = 1;
   }
-  if(prev_node==min_node)
-  {
+  if (prev_node == min_node) {
     prev_node = nodes_unique_id[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1 ;
+    incr2 = nb_node - 1;
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
@@ -1617,7 +1613,7 @@ removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id)
       return;
   }
   else {
-    // Si l'élément est le dernier, ne fait rien.
+    // If the element is the last, do nothing.
     if (items[n] == local_id)
       return;
     for (Integer i = 0; i < n; ++i) {
@@ -1628,7 +1624,7 @@ removeItemAndKeepOrder(Int32ArrayView items, Int32 local_id)
       }
     }
   }
-  // TODO: Il faut activer cela mais pour l'instant cela fait planter un test.
+  // TODO: This needs to be enabled, but for now it crashes a test.
   //ARCANE_FATAL("No entity with local_id={0} found in list {1}",local_id,items);
 }
 
@@ -1655,8 +1651,8 @@ printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level)
   Int64 total_computed_capacity = 0;
   auto f = [&](ItemGroup& group) {
     ItemGroupImpl* p = group.internal();
-    // Attention à bien prendre la taille du groupe via \a p
-    // car sinon pour un groupe calculé on le reconstruit.
+    // Be careful to get the group size via \a p
+    // because otherwise, for a computed group, it is reconstructed.
     Int64 c = p->capacity();
     bool is_computed = p->hasComputeFunctor();
     total_capacity += c;
@@ -1810,7 +1806,7 @@ markMeshConnectivitiesAsMostlyReadOnly(IMesh* mesh, RunQueue* queue, bool do_pre
   const String tag_name = "ArcaneConnectivity";
   DataAllocationInfo alloc_info(eMemoryLocationHint::HostAndDeviceMostlyRead);
 
-  // Les variables associées à la connectivité ont le tag 'ArcaneConnectivity'.
+  // Variables associated with connectivity have the tag 'ArcaneConnectivity'.
   for (VariableCollection::Enumerator iv(used_variables); ++iv;) {
     IVariable* v = *iv;
     if (!v->hasTag(tag_name))
@@ -1852,7 +1848,7 @@ findOneItem(IItemFamily* family, ItemUniqueId unique_id)
 
 namespace MeshUtils::impl
 {
-  //! Retourne le max des uniqueId() des entités de \a group
+  //! Returns the max of uniqueId() of entities in \a group
   Int64 _getMaxUniqueId(const ItemGroup& group, Int64 max_uid)
   {
     ENUMERATE_ (Item, iitem, group) {
@@ -1918,7 +1914,7 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
 /*---------------------------------------------------------------------------*/
 
 void MeshUtils::
-fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
+fillUniqueIds(ItemVectorView items, Array<Int64>& uids)
 {
   Integer nb_item = items.size();
   uids.resize(nb_item);
@@ -1932,9 +1928,9 @@ fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
 Int64 MeshUtils::
 generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
 {
-  // Tout les bits sont formées avec la fonction de hash.
-  // Le uniqueId() généré doit toujours être positif
-  // sauf pour l'entité nulle.
+  // All bits are formed using the hash function.
+  // The generated uniqueId() must always be positive
+  // except for the null entity.
   Int32 nb_node = nodes_unique_id.size();
   if (nb_node == 0)
     return -1;

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDataVisitor.h                                              (C) 2000-2024 */
 /*                                                                           */
-/* Interface du pattern visitor pour une donnée.                             */
+/* Interface of the visitor pattern for a data item.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IDATAVISITOR_H
 #define ARCANE_CORE_IDATAVISITOR_H
@@ -33,11 +33,12 @@ class IMultiArray2Data;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du pattern visitor pour une donnée.
+ * \brief Interface of the visitor pattern for a data item.
  *
- * Ce pattern se contente de transférer le visiteur sur le
- * visiteur IScalarDataVisitor, IArrayDataVisitor et IArray2DataVisitor.
+ * This pattern simply delegates the visitor to the
+ * IScalarDataVisitor, IArrayDataVisitor, and IArray2DataVisitor.
  */
 class ARCANE_CORE_EXPORT IDataVisitor
 {
@@ -56,8 +57,9 @@ class ARCANE_CORE_EXPORT IDataVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du pattern visitor pour une donnée scalaire.
+ * \brief Interface of the visitor pattern for a scalar data item.
  */
 class ARCANE_CORE_EXPORT IScalarDataVisitor
 {
@@ -85,8 +87,9 @@ class ARCANE_CORE_EXPORT IScalarDataVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du pattern visitor pour une donnée tableau.
+ * \brief Interface of the visitor pattern for an array data item.
  */
 class ARCANE_CORE_EXPORT IArrayDataVisitor
 {
@@ -114,8 +117,9 @@ class ARCANE_CORE_EXPORT IArrayDataVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du pattern visitor pour une donnée tableau 2D.
+ * \brief Interface of the visitor pattern for a 2D array data item.
  */
 class ARCANE_CORE_EXPORT IArray2DataVisitor
 {
@@ -142,10 +146,11 @@ class ARCANE_CORE_EXPORT IArray2DataVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du pattern visitor pour une donnée tableau 2D à taille variable
+ * \brief Interface of the visitor pattern for a variable-sized 2D array data item
  *
- * \deprecated Ne plus utiliser car le type sous-jacent n'est plus utilisé
+ * \deprecated Do not use because the underlying type is no longer used
  */
 class ARCANE_CORE_EXPORT IMultiArray2DataVisitor
 {

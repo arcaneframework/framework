@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DataStorageTypeInfo.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur le type du conteneur d'une donnée.                       */
+/* Data container type information.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_DATATYPES_DATASTORAGETYPEINFO_H
 #define ARCANE_CORE_DATATYPES_DATASTORAGETYPEINFO_H
@@ -27,15 +27,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de type pour un conteneur de données.
+ * \brief Type information for a data container.
  */
 class ARCANE_DATATYPE_EXPORT DataStorageTypeInfo
 {
  public:
-  //! Constructeur.
+
+  //! Constructor.
   DataStorageTypeInfo(eBasicDataType basic_data_type, Int32 nb_basic_element,
-                      Int32 dimension, Int32 multi_tag,const String& impl_name = String());
+                      Int32 dimension, Int32 multi_tag, const String& impl_name = String());
   DataStorageTypeInfo() = default;
 
  public:

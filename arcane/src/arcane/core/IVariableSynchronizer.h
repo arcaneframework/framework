@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IVariableSynchronizer.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Interface d'un service de synchronisation des variables.                  */
+/* Interface of a variable synchronization service.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IVARIABLESYNCHRONIZER_H
@@ -25,18 +25,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service de synchronisation de variable.
+ * \brief Interface of a variable synchronization service.
  *
- * Cette classe est gérée par Arcane et il n'est en générale par nécessaire
- * de l'utiliser directement. Si on souhaite syncrhoniser une variable,
- * il suffit d'appeler la méthode VariableRef::synchronize().
+ * This class is managed by Arcane and is generally not necessary
+ * to use directly. If you want to synchronize a variable,
+ * you just need to call the VariableRef::synchronize() method.
  *
- * Une instance de cette classe est créée via
- * IParallelMng::createVariableSynchronizer(). Une instance est associée
- * à un groupe d'entité. Il faut appeller la fonction compute()
- * pour calculer les infos de synchronisation. Si les entités sont
- * compactées, il faut appeler changeLocalIds().
+ * An instance of this class is created via
+ * IParallelMng::createVariableSynchronizer(). An instance is associated
+ * with an entity group. You must call the compute() function
+ * to calculate the synchronization information. If the entities are
+ * compacted, you must call changeLocalIds().
  */
 class ARCANE_CORE_EXPORT IVariableSynchronizer
 {
@@ -46,101 +47,101 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
 
  public:
 
-  //! Gestionnaire parallèle associé
+  //! Associated parallel manager
   virtual IParallelMng* parallelMng() = 0;
 
   /*!
-   * \brief Groupe d'entité servant à la synchronisation.
+   * \brief Entity group used for synchronization.
    *
-   * L'implémentation actuelle supporte uniquement le groupe
-   * de toutes les entités d'une famille.
+   * The current implementation only supports the group
+   * of all entities of a family.
    */
   virtual const ItemGroup& itemGroup() = 0;
 
   /*!
-   * \brief Recalcule les infos de synchronisation.
+   * \brief Recalculates the synchronization information.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Cette fonction doit être rappelée si les entités de itemGroup() changent
-   * de propriétaire ou si le groupe lui-même évolue.
-   * TODO: appeler cette fonction automatiquement si besoin.
+   * This function must be called if the entities in itemGroup() change
+   * owner or if the group itself evolves.
+   * TODO: call this function automatically if needed.
    */
   virtual void compute() = 0;
 
-  //! Appelé lorsque les numéros locaux des entités sont modifiés.
+  //! Called when the local IDs of the entities are modified.
   virtual void changeLocalIds(Int32ConstArrayView old_to_new_ids) = 0;
 
-  //! Synchronise la variable \a var en mode bloquant
+  //! Synchronizes the variable \a var in blocking mode
   virtual void synchronize(IVariable* var) = 0;
 
-  // TODO: à rendre virtuelle pure (décembre 2024)
+  // TODO: make pure virtual (December 2024)
   /*!
-   * \brief Synchronise la variable \a var sur les entités \a local_ids en mode bloquant
+   * \brief Synchronizes the variable \a var on the entities \a local_ids in blocking mode
    * 
-   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
-   * une entité présente dans cette liste sur un sous-domaine doit être présente
-   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   * Only the entities listed in \a local_ids will be synchronized. Note:
+   * an entity present in this list on one subdomain must be present
+   * in this list for any other subdomain that owns this entity.
    */
   virtual void synchronize(IVariable* var, Int32ConstArrayView local_ids);
-  
+
   /*!
-   * \brief Synchronise les variables \a vars en mode bloquant.
+   * \brief Synchronizes the variables \a vars in blocking mode.
    *
-   * Toutes les variables doivent être issues de la même famille
-   * et de ce groupe d'entité.
+   * All variables must belong to the same family
+   * and this entity group.
    */
   virtual void synchronize(VariableCollection vars) = 0;
 
-  // TODO: à rendre virtuelle pure (décembre 2024)
+  // TODO: make pure virtual (December 2024)
   /*!
-   * \brief Synchronise les variables \a vars en mode bloquant.
+   * \brief Synchronizes the variables \a vars in blocking mode.
    *
-   * Toutes les variables doivent être issues de la même famille
-   * et de ce groupe d'entité.
+   * All variables must belong to the same family
+   * and this entity group.
    * 
-   * Seules les entités listées dans \a local_ids seront synchronisées. Attention :
-   * une entité présente dans cette liste sur un sous-domaine doit être présente
-   * dans cette liste pour tout autre sous-domaine qui possède cette entité.
+   * Only the entities listed in \a local_ids will be synchronized. Note:
+   * an entity present in this list on one subdomain must be present
+   * in this list for any other subdomain that owns this entity.
    */
   virtual void synchronize(VariableCollection vars, Int32ConstArrayView local_ids);
-  
+
   /*!
-   * \brief Rangs des sous-domaines avec lesquels on communique.
+   * \brief Ranks of subdomains with which communication occurs.
    */
   virtual Int32ConstArrayView communicatingRanks() = 0;
 
   /*!
-   * \brief Liste des ids locaux des entités partagées avec un sous-domaine.
+   * \brief List of local IDs of entities shared with a subdomain.
    *
-   * Le rang du sous-domaine est celui de communicatingRanks()[index].
+   * The rank of the subdomain is that of communicatingRanks()[index].
    */
   virtual Int32ConstArrayView sharedItems(Int32 index) = 0;
 
   /*!
-   * \brief Liste des ids locaux des entités fantômes avec un sous-domaine.
+   * \brief List of local IDs of ghost entities with a subdomain.
    *
-   * Le rang du sous-domaine est celui de communicatingRanks()[index].
+   * The rank of the subdomain is that of communicatingRanks()[index].
    */
   virtual Int32ConstArrayView ghostItems(Int32 index) = 0;
 
   /*!
-   * \brief Synchronise la donnée \a data.
+   * \brief Synchronizes the data \a data.
    *
-   * La donnée \a data doit être associée à une variable pour laquelle
-   * il est valide d'appeler \a synchronize(). Cette méthode est interne
-   * à Arcane.
+   * The data \a data must be associated with a variable for which
+   * it is valid to call \a synchronize(). This method is internal
+   * to Arcane.
    */
   virtual void synchronizeData(IData* data) = 0;
 
   /*!
-   * \brief Evènement envoyé en début et fin de synchronisation.
+   * \brief Event sent at the beginning and end of synchronization.
    *
-   * Cet évènement est envoyé lors des appels aux méthodes
-   * de synchronisation synchronize(IVariable* var)
-   * et synchronize(VariableCollection vars). Si on souhaite être notifié
-   * des synchronisations pour toutes les instances de IVariableSynchronizer,
-   * il faut utiliser IVariableMng::synchronizerMng().
+   * This event is sent during calls to the methods
+   * synchronize(IVariable* var)
+   * and synchronize(VariableCollection vars). If you wish to be notified
+   * of synchronizations for all instances of IVariableSynchronizer,
+   * you must use IVariableMng::synchronizerMng().
    */
   virtual EventObservable<const VariableSynchronizerEventArgs&>& onSynchronized() = 0;
 };

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SequentialSection.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Section du code à exécuter séquentiellement.                              */
+/* Section of code to be executed sequentially.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_SEQUENTIALSECTION_H
 #define ARCANE_CORE_SEQUENTIALSECTION_H
@@ -24,35 +24,35 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Section de code à exécuter séquentiellement.
+ * \brief Section of code to be executed sequentially.
  *
- * Une instance de cette classe permet à une partie du code de s'exécuter
- * un peu comme si le code était séquentiel. Le code compris dans la durée
- * de vie de cet objet est d'abord exécuté sur le proc 0, puis si tout est
- * ok sur les autres. Cela permet lorsque le code exécuter est le même
- * partout (par exemple la lecture du jeu de données) de le vérifier une
- * fois et en cas d'erreur d'afficher une seule fois les messages.
+ * An instance of this class allows a part of the code to run
+ * as if the code were sequential. The code within the lifetime
+ * of this object is first executed on proc 0, and then, if everything is
+ * okay on the others. This allows checking it once when the code executed
+ * is the same everywhere (for example, reading the dataset) and displaying
+ * messages only once in case of an error.
  *
- * Comme les erreurs éventuelles ne sont affichées que par un seul
- * sous-domaine, cette classe ne doit être utilisée que lorsqu'on est
- * certain que tout les sous-domaines font le même traitement faute
- * de quoi les erreurs ne seront pas reconnues.
+ * Since potential errors are only displayed by a single
+ * subdomain, this class should only be used when you are certain that all
+ * subdomains perform the same processing, otherwise errors will not be
+ * recognized.
  *
- * De plus, comme tous les sous-domaines bloquent tant que le premier
- * sous-domaine n'a pas fini d'exécuter le code, il faut ne faut pas
- * faire d'appel au gestionnaire de parallélisme dans cette partie.
+ * Furthermore, since all subdomains block until the first
+ * subdomain has finished executing the code, you must not call the
+ * parallelism manager in this section.
  *
- * En cas d'erreur, une exception de type ExParallelFatalError est
- * envoyée dans le destructeur.
- *
- \code
+ * In case of an error, an exception of type ExParallelFatalError is
+ * sent in the destructor.
+ * \code
  * {
  *   SequentialSection ss(pm);
- *   ... // Code exécuté séquentiellement.
+ *   ... // Code executed sequentially.
  *   ss.setError(true);
  * }
- \endcode
+ * \endcode
  *
  */
 class ARCANE_CORE_EXPORT SequentialSection
@@ -84,5 +84,4 @@ class ARCANE_CORE_EXPORT SequentialSection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

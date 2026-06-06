@@ -1,19 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* InterfaceImpl.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des interfaces.                                            */
+/* Implementation of interfaces.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Sous Windows, il faut inclure les interfaces pour que leurs symboles
- * soient disponibles (sous linux aussi si on utilise gcc avec les infos
- * de visibilités).
+ * On Windows, you must include the interfaces so that their symbols
+ * are available (on Linux too if using gcc with visibility information).
  */
 
 #include "arcane/core/IVariableSynchronizerMng.h"
@@ -194,18 +193,18 @@ arcaneNamespaceURI()
 /*---------------------------------------------------------------------------*/
 
 void IDeflateService::
-compress(Span<const Byte> values,ByteArray& compressed_values)
+compress(Span<const Byte> values, ByteArray& compressed_values)
 {
-  return compress(values.smallView(),compressed_values);
+  return compress(values.smallView(), compressed_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void IDeflateService::
-decompress(Span<const Byte> compressed_values,Span<Byte> values)
+decompress(Span<const Byte> compressed_values, Span<Byte> values)
 {
-  return decompress(compressed_values.smallView(),values.smallView());
+  return decompress(compressed_values.smallView(), values.smallView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -223,18 +222,18 @@ primaryMesh()
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* IItemFamilyModifier::
-allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info)
+allocOne(Int64 uid, ItemTypeInfo* type, mesh::MeshInfos& mesh_info)
 {
-  return ItemCompatibility::_itemInternal(allocOne(uid,type->itemTypeId(),mesh_info));
+  return ItemCompatibility::_itemInternal(allocOne(uid, type->itemTypeId(), mesh_info));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* IItemFamilyModifier::
-findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc)
+findOrAllocOne(Int64 uid, ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc)
 {
-  return ItemCompatibility::_itemInternal(findOrAllocOne(uid,type->itemTypeId(),mesh_info,is_alloc));
+  return ItemCompatibility::_itemInternal(findOrAllocOne(uid, type->itemTypeId(), mesh_info, is_alloc));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -273,8 +272,8 @@ setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 void IPostProcessorWriter::
 setMesh([[maybe_unused]] IMesh* mesh)
 {
-  // Utiliser variable d'environnement.
-  if (platform::getEnvironmentVariable("ARCANE_ALLOW_POSTPROCESSOR_SETMESH")=="1")
+  // Use environment variable.
+  if (platform::getEnvironmentVariable("ARCANE_ALLOW_POSTPROCESSOR_SETMESH") == "1")
     return;
   ARCANE_FATAL("This call is deprecated and does not do anything."
                " You can temporarely disable this exception if you set the environment"
@@ -287,13 +286,13 @@ setMesh([[maybe_unused]] IMesh* mesh)
 void IMeshModifier::
 addCells(const MeshModifierAddCellsArgs& args)
 {
-  addCells(args.nbCell(),args.cellInfos(),args.cellLocalIds());
+  addCells(args.nbCell(), args.cellInfos(), args.cellLocalIds());
 }
 
 void IMeshModifier::
 addFaces(const MeshModifierAddFacesArgs& args)
 {
-  addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
+  addFaces(args.nbFace(), args.faceInfos(), args.faceLocalIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -302,25 +301,25 @@ addFaces(const MeshModifierAddFacesArgs& args)
 void IVariable::
 synchronize(Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() with specific local ids");
 }
 
 void IItemFamily::
 synchronize(VariableCollection, Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() with specific local ids");
 }
 
 void IVariableSynchronizer::
 synchronize(IVariable*, Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() with specific local ids");
 }
 
 void IVariableSynchronizer::
 synchronize(VariableCollection, Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() with specific local ids");
 }
 
 /*---------------------------------------------------------------------------*/

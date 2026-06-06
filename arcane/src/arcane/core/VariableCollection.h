@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableCollection.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Collection de variables.                                                  */
+/* Variable collection.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLECOLLECTION_H
 #define ARCANE_CORE_VARIABLECOLLECTION_H
@@ -39,14 +39,19 @@ class VariableCollection;
 class ARCANE_CORE_EXPORT VariableCollectionEnumerator
 {
  private:
+
   friend class VariableCollection;
+
  public:
+
   VariableCollectionEnumerator(const VariableCollection& col);
+
  public:
+
   bool operator++()
   {
     ++m_index;
-    return m_index<m_count;
+    return m_index < m_count;
   }
   IVariable* operator*()
   {
@@ -64,7 +69,9 @@ class ARCANE_CORE_EXPORT VariableCollectionEnumerator
   {
     m_index = -1;
   }
+
  private:
+
   Integer m_index;
   Integer m_count;
   ConstArrayView<IVariable*> m_collection;
@@ -72,10 +79,11 @@ class ARCANE_CORE_EXPORT VariableCollectionEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Collection de variables.
+ * \brief Variable collection.
  *
- * Ce type à une sémantique par référence (comme la classe SharedArray).
+ * This type has a reference semantics (like the SharedArray class).
  */
 class ARCANE_CORE_EXPORT VariableCollection
 {
@@ -85,11 +93,16 @@ class ARCANE_CORE_EXPORT VariableCollection
   : public SharedReference
   {
    public:
+
     const Array<IVariable*>& variables() const { return m_variables; }
     Array<IVariable*>& variables() { return m_variables; }
+
    public:
+
     void deleteMe() override { delete this; }
+
    private:
+
     UniqueArray<IVariable*> m_variables;
   };
 
@@ -98,7 +111,7 @@ class ARCANE_CORE_EXPORT VariableCollection
   typedef Array<IVariable*> BaseClass;
 
  public:
-  
+
   friend class VariableCollectionEnumerator;
   typedef VariableCollectionEnumerator Enumerator;
 
@@ -129,11 +142,11 @@ class ARCANE_CORE_EXPORT VariableCollection
     return _values().size();
   }
 
-  //! Applique le fonctor \a f à tous les éléments de la collection
-  template<class Function> Function
+  //! Applies the functor \a f to all elements in the collection
+  template <class Function> Function
   each(Function f)
   {
-    std::for_each(_values().begin(),_values().end(),f);
+    std::for_each(_values().begin(), _values().end(), f);
     return f;
   }
 
@@ -169,7 +182,7 @@ class ARCANE_CORE_EXPORT VariableCollection
     return _values().contains(v.variable());
   }
 
-  //! Trie la liste par ordre croissant ou décroissant des noms des variables
+  //! Sorts the list by ascending or descending variable names
   void sortByName(bool is_ascendent);
 
  private:
@@ -190,5 +203,4 @@ class ARCANE_CORE_EXPORT VariableCollection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

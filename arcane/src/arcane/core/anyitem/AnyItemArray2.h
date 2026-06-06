@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AnyItemArray2.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Tableau 2D d'items de types quelconques.                                  */
+/* 2D array of items of arbitrary types.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ANYITEM_ANYITEMARRAY2_H
 #define ARCANE_CORE_ANYITEM_ANYITEMARRAY2_H
@@ -22,22 +22,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ANYITEM_BEGIN_NAMESPACE
+namespace Arcane::AnyItem
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Tableau 2D d'items de types quelconques.
- * 
- * Similaire aux variables 2D mais sans les définir
- * 
- * Par exemle :
+ * \brief 2D array of items of arbitrary types.
+ *
+ * Similar to 2D variables but without defining them
+ *
+ * For example:
  *
  * AnyItem::UniqueArray2<Real> array(family.allItems());
  * array.resize(3);
@@ -48,73 +44,75 @@ ANYITEM_BEGIN_NAMESPACE
  *     array[iitem][i] += variable[iitem];
  * }
  *
- * \TODO : on pourrait améliorer l'implémentation en utilisant le localId dans la AnyItem::Family avec un tableau unique alloué à maxLocalId
+ * \TODO: We could improve the implementation by using localId in
+ * AnyItem::Family with a unique array allocated to maxLocalId
  */
-template<typename DataType>
+template <typename DataType>
 class Array2
 {
-public:
-  
+ public:
+
   Array2(const Group& group)
   : m_size(0)
   {
-    for(Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
-      if(e.groupIndex() >= m_values.size())
-        m_values.resize(e.groupIndex()+1);
+    for (Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
+      if (e.groupIndex() >= m_values.size())
+        m_values.resize(e.groupIndex() + 1);
     }
-    for(Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
-      m_values[e.groupIndex()].resize(e.group().itemFamily()->maxLocalId(),m_size);
+    for (Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
+      m_values[e.groupIndex()].resize(e.group().itemFamily()->maxLocalId(), m_size);
     }
   }
-  
-  //! Redimensionnement de la deuxième dimension du tableau
+
+  //! Resizing the second dimension of the array
   inline void resize(Integer size)
   {
     m_size = size;
-    for(Integer i = 0; i < m_values.size(); ++i) {
-      m_values[i].resize(m_values[i].dim1Size(),m_size);
+    for (Integer i = 0; i < m_values.size(); ++i) {
+      m_values[i].resize(m_values[i].dim1Size(), m_size);
     }
   }
 
-  //! Remplissage du tableau 
-  void fill(const DataType& data) 
+  //! Filling the array
+  void fill(const DataType& data)
   {
-    for(Integer i = 0; i < m_values.size(); ++i) {
+    for (Integer i = 0; i < m_values.size(); ++i) {
       m_values[i].fill(data);
     }
   }
-  
-  //! Accesseur
-  template<typename T>
-  inline ArrayView<DataType> operator[](const T& item) {
+
+  //! Accessor
+  template <typename T>
+  inline ArrayView<DataType> operator[](const T& item)
+  {
     return m_values[item.groupIndex()][item.varIndex()];
   }
-  
-  // Acceseur
-  template<typename T>
-  inline ConstArrayView<DataType> operator[](const T& item) const {
+
+  // Accessor
+  template <typename T>
+  inline ConstArrayView<DataType> operator[](const T& item) const
+  {
     return m_values[item.groupIndex()][item.varIndex()];
   }
-  
-  //! Retourne la taille du tableau
+
+  //! Returns the size of the array
   inline Integer size() const { return m_size; }
 
-private:
-  
-  //! Taille de la 2ème dimension du tableau
+ private:
+
+  //! Size of the array's second dimension
   Integer m_size;
 
-  //! Conteneur des variables génériques
-  Arcane::UniqueArray< Arcane::UniqueArray2<DataType> > m_values;
+  //! Container for generic variables
+  Arcane::UniqueArray<Arcane::UniqueArray2<DataType>> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ANYITEM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::AnyItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_ANYITEM_ANYITEMARRAY2_H */
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshMaterialVariableComputeFunction.h                       (C) 2000-2022 */
 /*                                                                           */
-/* Classe fonctor de recalcul d'une variable matériau.                       */
+/* Functor class for recalculating a material variable.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLECOMPUTEFUNCTION_H
 #define ARCANE_MATERIALS_MESHMATERIALVARIABLECOMPUTEFUNCTION_H
@@ -27,26 +27,28 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- \brief Interface de la classe fonctor de recalcul d'une variable.
+ \brief Interface for the functor class that recalculates a variable.
  */
 class MeshMaterialVariableComputeFunction
 : public IMeshMaterialVariableComputeFunction
 {
  public:
 
-  template<typename ClassType>
-  MeshMaterialVariableComputeFunction(ClassType* instance,void (ClassType::*func)(IMeshMaterial* mat))
-  : m_functor(new FunctorWithArgumentT<ClassType,IMeshMaterial*>(instance,func))
+  template <typename ClassType>
+  MeshMaterialVariableComputeFunction(ClassType* instance, void (ClassType::*func)(IMeshMaterial* mat))
+  : m_functor(new FunctorWithArgumentT<ClassType, IMeshMaterial*>(instance, func))
   {
   }
-  template<typename ClassType>
-  MeshMaterialVariableComputeFunction(ClassType* instance,void (ClassType::*func)(IMeshMaterial* mat),const TraceInfo& tinfo)
-  : m_functor(new FunctorWithArgumentT<ClassType,IMeshMaterial*>(instance,func)), m_trace_info(tinfo)
+  template <typename ClassType>
+  MeshMaterialVariableComputeFunction(ClassType* instance, void (ClassType::*func)(IMeshMaterial* mat), const TraceInfo& tinfo)
+  : m_functor(new FunctorWithArgumentT<ClassType, IMeshMaterial*>(instance, func))
+  , m_trace_info(tinfo)
   {
   }
 
-  //! Libère les ressources
+  //! Releases resources
   ~MeshMaterialVariableComputeFunction() override
   {
     delete m_functor;
@@ -54,7 +56,7 @@ class MeshMaterialVariableComputeFunction
 
  public:
 
-  //! Exécute la fonction de calcul
+  //! Executes the calculation function
   void execute(IMeshMaterial* mat) override
   {
     m_functor->executeFunctor(mat);
@@ -79,5 +81,4 @@ class MeshMaterialVariableComputeFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

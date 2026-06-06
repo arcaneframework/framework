@@ -1,16 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Expression.cc                                               (C) 2000-2014 */
 /*                                                                           */
-/* Référence à une expression.                                               */
+/* Reference to an expression.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcanePrecomp.h"
 
@@ -28,7 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ assign(const Expression& expr)
 }
 
 void Expression::
-assign(const Expression& expr,const Array<Integer>& indices)
+assign(const Expression& expr, const Array<Integer>& indices)
 {
   m_expression->assign(expr.m_expression, indices);
 }
@@ -106,20 +106,23 @@ apply(ExpressionResult* result)
 }
 
 void Expression::
-dumpIf(const Expression& test_expr,Array<Expression>& exprs)
+dumpIf(const Expression& test_expr, Array<Expression>& exprs)
 {
-  m_expression->dumpIf(test_expr.m_expression,exprs);
+  m_expression->dumpIf(test_expr.m_expression, exprs);
 }
 
 void Expression::
 dumpIf(const Expression& test_expr)
 {
   UniqueArray<Expression> exprs;
-  m_expression->dumpIf(test_expr.m_expression,exprs);
+  m_expression->dumpIf(test_expr.m_expression, exprs);
 }
 
 IExpressionImpl* Expression::
-operator->() const { return m_expression;}
+operator->() const
+{
+  return m_expression;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -259,42 +262,42 @@ tanh()
 Expression Expression::
 operator+(Expression ex1)
 {
-  return new BinaryExpressionImpl(m_expression,ex1. m_expression,
+  return new BinaryExpressionImpl(m_expression, ex1.m_expression,
                                   BinaryExpressionImpl::Add);
 }
 
 Expression Expression::
 operator-(Expression ex1)
 {
-  return new BinaryExpressionImpl(m_expression,ex1. m_expression,
+  return new BinaryExpressionImpl(m_expression, ex1.m_expression,
                                   BinaryExpressionImpl::Substract);
 }
 
 Expression Expression::
 operator*(Expression ex1)
 {
-  return new BinaryExpressionImpl(m_expression,ex1. m_expression,
+  return new BinaryExpressionImpl(m_expression, ex1.m_expression,
                                   BinaryExpressionImpl::Multiply);
 }
 
 Expression Expression::
 operator/(Expression ex1)
 {
-  return new BinaryExpressionImpl(m_expression,ex1. m_expression,
+  return new BinaryExpressionImpl(m_expression, ex1.m_expression,
                                   BinaryExpressionImpl::Divide);
 }
 
 Expression Expression::
 eq(Expression ex1)
 {
-  return new BinaryExpressionImpl(m_expression,ex1. m_expression,
+  return new BinaryExpressionImpl(m_expression, ex1.m_expression,
                                   BinaryExpressionImpl::Equal);
 }
 
 Expression Expression::
 lt(Expression ex1)
 {
-  return new BinaryExpressionImpl(m_expression,ex1. m_expression,
+  return new BinaryExpressionImpl(m_expression, ex1.m_expression,
                                   BinaryExpressionImpl::LessThan);
 }
 
@@ -362,7 +365,7 @@ pow(Expression ex1)
 /*---------------------------------------------------------------------------*/
 
 Expression Expression::
-ifelse(Expression ex1,Expression ex2)
+ifelse(Expression ex1, Expression ex2)
 {
   return new WhereExpressionImpl(m_expression,
                                  ex1.m_expression,
@@ -396,7 +399,7 @@ vectorSize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

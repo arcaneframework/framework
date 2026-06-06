@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CaseOptionService.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Options du jeu de données utilisant un service.                           */
+/* Data set options using a service.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_CASEOPTIONSERVICE_H
 #define ARCANE_CORE_CASEOPTIONSERVICE_H
@@ -38,27 +38,29 @@ namespace Arcane
 
 class IService;
 class CaseOptionBuildInfo;
-template<typename T> class CaseOptionServiceT;
+template <typename T> class CaseOptionServiceT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation du conteneur pour un service de type \a InterfaceType.
+ * \brief Implementation of the container for a service of type \a InterfaceType.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class CaseOptionServiceContainer
 : public ICaseOptionServiceContainer
 {
  public:
+
   ~CaseOptionServiceContainer() override
   {
     removeInstances();
   }
 
-  bool tryCreateService(Integer index,Internal::IServiceFactory2* factory,const ServiceBuildInfoBase& sbi) override
+  bool tryCreateService(Integer index, Internal::IServiceFactory2* factory, const ServiceBuildInfoBase& sbi) override
   {
-    auto true_factory = dynamic_cast< Internal::IServiceFactory2T<InterfaceType>* >(factory);
-    if (true_factory){
+    auto true_factory = dynamic_cast<Internal::IServiceFactory2T<InterfaceType>*>(factory);
+    if (true_factory) {
       Ref<InterfaceType> sr = true_factory->createServiceReference(sbi);
       InterfaceType* s = sr.get();
       m_services_reference[index] = sr;
@@ -70,21 +72,21 @@ class CaseOptionServiceContainer
 
   bool hasInterfaceImplemented(Internal::IServiceFactory2* factory) const override
   {
-    auto true_factory = dynamic_cast< Internal::IServiceFactory2T<InterfaceType>* >(factory);
-    if (true_factory){
+    auto true_factory = dynamic_cast<Internal::IServiceFactory2T<InterfaceType>*>(factory);
+    if (true_factory) {
       return true;
     }
     return false;
   }
 
-  //! Alloue un tableau pour \a size éléments
+  //! Allocates an array for \a size elements
   void allocate(Integer asize) override
   {
-    m_services.resize(asize,nullptr);
+    m_services.resize(asize, nullptr);
     m_services_reference.resize(asize);
   }
 
-  //! Retourne le nombre d'éléments du tableau.
+  //! Returns the number of elements in the array.
   Integer nbElem() const override
   {
     return m_services.size();
@@ -101,15 +103,20 @@ class CaseOptionServiceContainer
   }
 
  public:
-  //! Supprime les instances des services
+
+  //! Removes service instances
   void removeInstances()
   {
     m_services_reference.clear();
     m_services.clear();
   }
+
  public:
+
   ArrayView<InterfaceType*> view() { return m_services; }
+
  private:
+
   UniqueArray<InterfaceType*> m_services;
   UniqueArray<Ref<InterfaceType>> m_services_reference;
 };
@@ -119,18 +126,19 @@ class CaseOptionServiceContainer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Classe de base des options utilisant des services.
+ * \brief Base class for options using services.
  *
- * Les instances de cette classe ne sont pas copiables.
+ * Instances of this class are not copyable.
  */
 class ARCANE_CORE_EXPORT CaseOptionService
 {
  public:
 
- CaseOptionService(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
-  : m_impl(new CaseOptionServiceImpl(cob,allow_null,is_optional))
+  CaseOptionService(const CaseOptionBuildInfo& cob, bool allow_null, bool is_optional)
+  : m_impl(new CaseOptionServiceImpl(cob, allow_null, is_optional))
   {
   }
 
@@ -144,14 +152,14 @@ class ARCANE_CORE_EXPORT CaseOptionService
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Use toICaseOptions() instead")
-  operator CaseOptions& () { return *_impl(); }
+  operator CaseOptions&() { return *_impl(); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Use toICaseOptions() instead")
-  operator const CaseOptions& () const { return *_impl(); }
+  operator const CaseOptions&() const { return *_impl(); }
 
  public:
 
-   const ICaseOptions* toICaseOptions() { return _impl(); }
+  const ICaseOptions* toICaseOptions() { return _impl(); }
 
  public:
 
@@ -160,50 +168,54 @@ class ARCANE_CORE_EXPORT CaseOptionService
   String serviceName() const { return m_impl->serviceName(); }
   bool isOptional() const { return m_impl->isOptional(); }
   bool isPresent() const { return m_impl->isPresent(); }
-  void addAlternativeNodeName(const String& lang,const String& name)
+  void addAlternativeNodeName(const String& lang, const String& name)
   {
-    m_impl->addAlternativeNodeName(lang,name);
+    m_impl->addAlternativeNodeName(lang, name);
   }
   void getAvailableNames(StringArray& names) const
   {
     m_impl->getAvailableNames(names);
   }
+
   /*!
-   * \brief Positionne la valeur par défaut du nom du service.
+   * \brief Sets the default value for the service name.
    *
-   * Si l'option n'est pas pas présente dans le jeu de données, alors sa valeur sera
-   * celle spécifiée par l'argument \a def_value, sinon l'appel de cette méthode est sans effet.
+   * If the option is not present in the data set, its value will be
+   * that specified by the \a def_value argument; otherwise, calling this method
+   * has no effect.
    *
-   * Cette méthode ne peut être apellée que lors de la phase 1 de la lecture
-   * du jeu de données car par la suite le service est déjà instancié. Une exception
-   * FatalErrorException est levé si cette méthode est appelée et que le service
-   * est déjà instancié.
+   * This method can only be called during phase 1 of reading
+   * the data set because the service is already instantiated afterwards.
+   * A FatalErrorException exception is raised if this method is called and the
+   * service is already instantiated.
    */
   void setDefaultValue(const String& def_value)
   {
     m_impl->setDefaultValue(def_value);
   }
-  //! Ajoute la valeur par défaut \a value à la catégorie \a category
-  void addDefaultValue(const String& category,const String& value)
+
+  //! Adds the default value \a value to the category \a category
+  void addDefaultValue(const String& category, const String& value)
   {
-    m_impl->addDefaultValue(category,value);
+    m_impl->addDefaultValue(category, value);
   }
+
   /*!
-   * \brief Positionne le nom du maillage auquel le service sera associé.
+   * \brief Sets the mesh name to which the service will be associated.
    *
-   * Si nul, le service est associé au maillage par défaut du sous-domaine
-   * (ISubDomain::defaultMeshHandle()). L'association réelle se fait lors de la
-   * lecture des options. Appeler cette méthode après lecture des options n'aura
-   * aucun impact.
+   * If null, the service is associated with the default mesh of the subdomain
+   * (ISubDomain::defaultMeshHandle()). The actual association happens when reading
+   * the options. Calling this method after reading the options will have
+   * no impact.
    */
   void setMeshName(const String& mesh_name);
 
   /*!
-   * \brief Nom du maillage auquel le service est associé.
+   * \brief Mesh name to which the service is associated.
    *
-   * Il s'agit du nom du maillage tel que spécifié dans le descripteur de service
-   * (le fichier 'axl'). Pour obtenir le maillage associé après lecture des options
-   * il faut utiliser ICaseOptions::meshHandle().
+   * This is the name of the mesh as specified in the service descriptor
+   * (the 'axl' file). To get the associated mesh after reading the options
+   * you must use ICaseOptions::meshHandle().
    */
   String meshName() const;
 
@@ -220,33 +232,40 @@ class ARCANE_CORE_EXPORT CaseOptionService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class InterfaceType>
+template <class InterfaceType>
 class CaseOptionServiceT
 : public CaseOptionService
 {
  public:
-  CaseOptionServiceT(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
-  : CaseOptionService(cob,allow_null,is_optional)
+
+  CaseOptionServiceT(const CaseOptionBuildInfo& cob, bool allow_null, bool is_optional)
+  : CaseOptionService(cob, allow_null, is_optional)
   {
     _impl()->setContainer(&m_container);
   }
   ~CaseOptionServiceT() = default;
+
  public:
+
   InterfaceType* operator()() const { return _instance(); }
   InterfaceType* instance() const { return _instance(); }
   Ref<InterfaceType> instanceRef() const { return _instanceRef(); }
+
  private:
+
   CaseOptionServiceContainer<InterfaceType> m_container;
+
  private:
+
   InterfaceType* _instance() const
   {
-    if (m_container.nbElem()==1)
+    if (m_container.nbElem() == 1)
       return m_container.child(0);
     return nullptr;
   }
   Ref<InterfaceType> _instanceRef() const
   {
-    if (m_container.nbElem()==1)
+    if (m_container.nbElem() == 1)
       return m_container.childRef(0);
     return {};
   }
@@ -254,47 +273,51 @@ class CaseOptionServiceT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Classe de base d'une option service pouvant être présente plusieurs fois.
+ * \brief Base class for a service option that can appear multiple times.
  */
 class ARCANE_CORE_EXPORT CaseOptionMultiService
 {
  public:
-  CaseOptionMultiService(const CaseOptionBuildInfo& cob,bool allow_null)
-  : m_impl(new CaseOptionMultiServiceImpl(cob,allow_null))
+
+  CaseOptionMultiService(const CaseOptionBuildInfo& cob, bool allow_null)
+  : m_impl(new CaseOptionMultiServiceImpl(cob, allow_null))
   {
   }
   virtual ~CaseOptionMultiService() = default;
   CaseOptionMultiService(const CaseOptionMultiService&) = delete;
   const CaseOptionMultiService& operator=(const CaseOptionMultiService&) = delete;
+
  public:
+
   XmlNode rootElement() const { return m_impl->toCaseOptions()->configList()->rootElement(); }
   String rootTagName() const { return m_impl->rootTagName(); }
   String name() const { return m_impl->name(); }
-  //! Retourne dans \a names les noms d'implémentations valides pour ce service
+  //! Returns the valid implementation names for this service in \a names
   void getAvailableNames(StringArray& names) const
   {
     m_impl->getAvailableNames(names);
   }
-  //! Nom du n-ième service
-  String serviceName(Integer index) const 
+  //! Name of the n-th service
+  String serviceName(Integer index) const
   {
     return m_impl->serviceName(index);
   }
-  void addAlternativeNodeName(const String& lang,const String& name)
+  void addAlternativeNodeName(const String& lang, const String& name)
   {
-    m_impl->addAlternativeNodeName(lang,name);
+    m_impl->addAlternativeNodeName(lang, name);
   }
   /*!
-   * \brief Positionne le nom du maillage auquel le service sera associé.
+   * \brief Sets the mesh name to which the service will be associated.
    *
    * \sa CaseOptionService::setMeshName()
    */
   void setMeshName(const String& mesh_name);
 
   /*!
-   * \brief Nom du maillage auquel le service est associé.
+   * \brief Mesh name to which the service is associated.
    *
    * \sa CaseOptionService::axlMeshName();
    */
@@ -312,25 +335,30 @@ class ARCANE_CORE_EXPORT CaseOptionMultiService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup CaseOption
- * \brief Option du jeu de données de type liste de services.
+ * \brief Data set option of the service list type.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class CaseOptionMultiServiceT
 : public CaseOptionMultiService
 , public ArrayView<InterfaceType*>
 {
   typedef CaseOptionMultiServiceT<InterfaceType> ThatClass;
+
  public:
-  CaseOptionMultiServiceT(const CaseOptionBuildInfo& cob,bool allow_null)
-  : CaseOptionMultiService(cob,allow_null)
-  , m_notify_functor(this,&ThatClass::_notify)
+
+  CaseOptionMultiServiceT(const CaseOptionBuildInfo& cob, bool allow_null)
+  : CaseOptionMultiService(cob, allow_null)
+  , m_notify_functor(this, &ThatClass::_notify)
   {
     _impl()->setContainer(&m_container);
     _impl()->_setNotifyAllocateFunctor(&m_notify_functor);
   }
+
  public:
+
   CaseOptionMultiServiceT<InterfaceType>& operator()()
   {
     return *this;
@@ -339,13 +367,17 @@ class CaseOptionMultiServiceT
   {
     return *this;
   }
+
  protected:
-  // Notification par l'implémentation
+
+  // Notification by the implementation
   void _notify()
   {
     this->setArray(m_container.view());
   }
+
  private:
+
   CaseOptionServiceContainer<InterfaceType> m_container;
   FunctorT<ThatClass> m_notify_functor;
 };
@@ -358,4 +390,4 @@ class CaseOptionMultiServiceT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

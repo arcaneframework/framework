@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITimeStats.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Interface gérant les statistiques sur les temps d'exécution.              */
+/* Interface managing execution time statistics.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMESTATS_H
 #define ARCANE_CORE_ITIMESTATS_H
@@ -27,30 +27,31 @@ class JSONWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface gérant les statistiques sur les temps d'exécution.
+ * \brief Interface managing execution time statistics.
  *
- * Il faut appeler beginGatherStats() pour commencer à collecter les
- * informations et appeler endGatherStats() pour arrêter la collection.
+ * You must call beginGatherStats() to start collecting the
+ * information and call endGatherStats() to stop the collection.
  *
- * En général cette interface ne s'utilise pas directement mais par
- * l'intermédiaire des classes Timer::Phase et Timer::Action.
+ * Generally, this interface is not used directly but through
+ * the Timer::Phase and Timer::Action classes.
  *
- * Les méthodes de cette classe ne doivent être appelées que par un seul thread.
+ * The methods of this class must only be called by a single thread.
  */
 class ITimeStats
 {
  public:
 
-  // Libère les ressources.
+  // Releases resources.
   virtual ~ITimeStats() = default;
 
  public:
 
-  //! Démarre la collection des temps
+  //! Starts time collection
   virtual void beginGatherStats() = 0;
-  //! Arrête la collection des temps
+  //! Stops time collection
   virtual void endGatherStats() = 0;
 
  public:
@@ -64,83 +65,83 @@ class ITimeStats
  public:
 
   /*!
-   * \brief Temps réel écoulé pour la phase \a phase
+   * \brief Real elapsed time for phase \a phase
    *
-   * Retourne le temps réel écoulé (en seconde) pour la phase \a phase.
+   * Returns the real elapsed time (in seconds) for phase \a phase.
    */
   virtual Real elapsedTime(eTimePhase phase) = 0;
 
   /*!
-   * \brief Temps écoulé pour une phase d'une action.
+   * \brief Elapsed time for a phase of an action.
    *
-   * Retourne le temps réel écoulé (en seconde) pour la phase \a phase
-   * de l'action \a action. Le temps retourné est celui de l'action et
-   * de chacune de ses filles.
+   * Returns the real elapsed time (in seconds) for phase \a phase
+   * of action \a action. The returned time includes that of the action and
+   * all of its children.
    */
   virtual Real elapsedTime(eTimePhase phase, const String& action) = 0;
 
   /*!
-   * \brief Affiche les statistiques d'une action.
+   * \brief Displays statistics for an action.
    *
-   * Affiche les statistiques de l'action \a name ainsi que ces sous-actions
-   * pour l'itération courante.
+   * Displays the statistics for action \a name as well as its sub-actions
+   * for the current iteration.
    */
   virtual void dumpCurrentStats(const String& name) = 0;
 
  public:
 
   /*!
-   * \brief Affiche les statistiques sur les temps d'exécution.
+   * \brief Displays execution time statistics.
    *
-   * Il est possible de spécifier une valeur pour avoir un temps
-   * par itération ou par entité. Si \a use_elapsed_time est vrai,
-   * utilise le temps horloge, sinon utilise le temps CPU.
+   * It is possible to specify a value to get a time
+   * per iteration or per entity. If \a use_elapsed_time is true,
+   * it uses clock time; otherwise, it uses CPU time.
    */
   virtual void dumpStats(std::ostream& ostr, bool is_verbose, Real nb,
                          const String& name, bool use_elapsed_time = false) = 0;
 
   /*!
-   * \brief Affiche la date actuelle et la mémoire consommée.
+   * \brief Displays the current date and memory consumption.
    *
-   * Cette opération est collective sur \a pm.
+   * This operation is collective on \a pm.
    *
-   * Cette opération affiche la mémoire consommée pour le sous-domaine
-   * courant ainsi que le min et le max pour tous les sous-domaines.
+   * This operation displays the memory consumed for the current subdomain
+   * as well as the min and max for all subdomains.
    */
   virtual void dumpTimeAndMemoryUsage(IParallelMng* pm) = 0;
 
   /*!
-   * \brief Indique si les statistiques sont actives.
+   * \brief Indicates if statistics are active.
    *
-   * Les statistiques sont actives entre l'appel à beginGatherStats()
-   * et endGatherStats().
+   * Statistics are active between the call to beginGatherStats()
+   * and endGatherStats().
    */
   virtual bool isGathering() const = 0;
 
-  //! Sérialise dans l'écrivain \a writer les statistiques temporelles.
+  //! Serializes the temporal statistics into the writer \a writer.
   virtual void dumpStatsJSON(JSONWriter& writer) = 0;
 
-  //! Interface de collection associée
+  //! Associated collection interface
   virtual ITimeMetricCollector* metricCollector() = 0;
 
   /*!
-   * \brief Notifie qu'on commence une nouvelle itération de la boucle de calcul.
+   * \brief Notifies that a new iteration of the calculation loop begins.
    *
-   * Cette information est utilisée pour calculer les temps par itération.
+   * This information is used to calculate times per iteration.
    */
   virtual void notifyNewIterationLoop() = 0;
   virtual void saveTimeValues(Properties* p) = 0;
   virtual void mergeTimeValues(Properties* p) = 0;
 
   /*
-   * \brief Remet à zéro les statistiques courantes une action est ses sous-actions
+   * \brief Resets the current statistics for an action and its sub-actions
    *
-   * Remet à zéro les statistiques pour l'action \a action_name est ses
-   * sous-actions. Si aucune action de nom \a action_name n'existe, ne fait rien.
+   * Resets the statistics for action \a action_name and its
+   * sub-actions. If no action named \a action_name exists, it does nothing.
    *
-   * Cette méthode est réservée pour les tests et ne doit pas être utilisée
-   * en dehors de cette configuration pour éviter de rendre invalides les
-   * statistiques temporelles.
+   * This method is reserved for testing and should not be used
+   * outside of this configuration to avoid invalidating the
+   * temporal statistics.
    */
   virtual void resetStats(const String& action_name) = 0;
 };
@@ -153,5 +154,4 @@ class ITimeStats
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

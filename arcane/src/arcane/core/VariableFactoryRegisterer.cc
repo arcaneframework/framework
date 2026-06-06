@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableFactoryRegisterer.cc                                (C) 2000-2020 */
 /*                                                                           */
-/* Singleton permettant d'enregister une fabrique de variable.               */
+/* Singleton for registering a variable factory.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/VariableFactoryRegisterer.h"
-#include "arcane/VariableFactory.h"
+#include "arcane/core/VariableFactoryRegisterer.h"
+#include "arcane/core/VariableFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,10 +38,10 @@ VariableFactoryRegisterer(IVariableFactory::VariableFactoryFunc func,
 , m_previous(nullptr)
 , m_next(nullptr)
 {
-  if (!arcaneFirstVariableFactory){
+  if (!arcaneFirstVariableFactory) {
     arcaneFirstVariableFactory = this;
   }
-  else{
+  else {
     VariableFactoryRegisterer* next = arcaneFirstVariableFactory->nextVariableFactory();
     setNextVariableFactory(arcaneFirstVariableFactory);
     arcaneFirstVariableFactory = this;
@@ -50,14 +50,13 @@ VariableFactoryRegisterer(IVariableFactory::VariableFactoryFunc func,
   }
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IVariableFactory* VariableFactoryRegisterer::
 createFactory()
 {
-  return new VariableFactory(m_function,m_variable_type_info);
+  return new VariableFactory(m_function, m_variable_type_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,4 +75,3 @@ firstVariableFactory()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

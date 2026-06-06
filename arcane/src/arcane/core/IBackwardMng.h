@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IBackwardMng.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface gérant les stratégies de retour-arrière.                        */
+/* Interface managing backward strategies.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IBACKWARDMNG_H
 #define ARCANE_CORE_IBACKWARDMNG_H
@@ -24,26 +24,27 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface gérant les stratégies de retour-arrière.
+ * \brief Interface managing backward strategies.
  *
- * Cette interface est utilisée par le ITimeLoopMng pour gérer les
- * retour-arrière. Le principe du retour-arrière est de sauvegarder à une
- * itération donnée les valeurs des variables pour pouvoir revenir à
- * cette itération, par exemple en cas de problème dans le calcul.
+ * This interface is used by ITimeLoopMng to manage
+ * backward rollback. The principle of backward rollback is to save at a given
+ * iteration the values of the variables in order to be able to return to
+ * this iteration, for example, in case of a calculation problem.
  *
- * Il est possible de positionner une instance spécifique via
+ * It is possible to set a specific instance via
  * ITimeLoopMng::setBackwardMng();
  *
- * L'enchainement des opérations, effectué à la fin de chaque itération,
- * est géré par l'instance de ITimeLoopMng. Il est comme suit:
+ * The sequence of operations, performed at the end of each iteration,
+ * is managed by the ITimeLoopMng instance. It is as follows:
  *
  * \code
  * IBackwardMng bw = ...;
  * bw->beginAction();
  * if (bw->checkAndApplyRestore()){
- *   // Exécution des points d'entrée de restoration.
+ *   // Execution of restoration entry points.
  * }
  * bw->checkAndApplySave();
  * bw->endAction();
@@ -53,12 +54,12 @@ class ARCANE_CORE_EXPORT IBackwardMng
 {
  public:
 
-  // Actions à entreprendre
+  // Actions to perform
   enum eAction
   {
-    //! Sauvegarde
+    //! Save
     Save,
-    //! Restauration
+    //! Restore
     Restore
   };
 
@@ -68,71 +69,71 @@ class ARCANE_CORE_EXPORT IBackwardMng
 
  public:
 
-  //! Initialisation du manager de retour en arrière
+  //! Initialization of the backward manager
   virtual void init() = 0;
 
-  //! Indique qu'on commence les actions de sauvegarde/restauration sont terminées
+  //! Indicates that the save/restore actions have started
   virtual void beginAction() = 0;
 
   /*!
-   * \brief Vérifie et applique la restauration si nécessaire.
-   * \retval true si une restauration est effectuée.
+   * \brief Checks and applies restoration if necessary.
+   * \retval true if a restoration is performed.
    */
   virtual bool checkAndApplyRestore() = 0;
 
   /*!
-   * \brief Vérifie et applique la sauvegarde des variables si nécessaire.
-   * Si \a is_forced est vrai, force la sauvegarde.
-   * \retval true si une sauvegarde est effectuée.
+   * \brief Checks and applies variable saving if necessary.
+   * If \a is_forced is true, forces the save.
+   * \retval true if a save is performed.
    */
   virtual bool checkAndApplySave(bool is_forced) = 0;
 
-  //! Indique que les actions de sauvegarde/restauration sont terminées
+  //! Indicates that the save/restore actions are finished
   virtual void endAction() = 0;
 
-  // Période de sauvegarde
+  // Save period
   virtual void setSavePeriod(Integer n) = 0;
 
-  // Récupère la période de sauvegarde
+  // Retrieves the save period
   virtual Integer savePeriod() const = 0;
 
   /*!
-   * \brief Signale qu'on souhaite effectué un retour arrière.
+   * \brief Signals that a backward rollback is desired.
    *
-   * Le retour arrière aura lieu lors de l'appel à checkAndApplyRestore().
+   * The backward rollback will occur when checkAndApplyRestore() is called.
    *
-   * En général il ne faut pas appeler directement cette méthode mais
-   * plutôt ITimeLoopMng::goBackward().
+   * Generally, this method should not be called directly but
+   * rather ITimeLoopMng::goBackward().
    *
-   * Depuis l'appel à cette méthode jusqu'à l'action effective du
-   * retour-arrière lors de l'appel à checkAndApplyRestore(),
-   * isBackwardEnabled() retourne \a true.
+   * From the call to this method until the effective action of
+   * the backward rollback when calling checkAndApplyRestore(),
+   * isBackwardEnabled() returns \a true.
    */
   virtual void goBackward() = 0;
 
   /*!
-   * \brief Indique si les sauvegardes de retour-arrière sont verrouillées.
+   * \brief Indicates if the backward rollback saves are locked.
    *
-   * isLocked() est vrai s'il n'est pas possible de faire une
-   * sauvegarde. C'est le cas par exemple lorsqu'on a effectué à l'itération
-   * \a M un retour arrière vers l'itération N et qu'on n'est pas encore
-   * revenu à l'itération \a M.
+   * isLocked() is true if it is not possible to perform a
+   * save. This is the case, for example, when a backward rollback has been performed at iteration
+   * \a M to iteration N and we have not yet
+   * returned to iteration \a M.
    */
   virtual bool isLocked() const = 0;
 
   /*!
-   * \brief Indique si un retour-arrière est programmé.
+   * \brief Indicates if a backward rollback is scheduled.
    * \sa goBackward().
    */
   virtual bool isBackwardEnabled() const = 0;
 
   /*!
-   * \brief Supprime les ressources associées au retour-arrière.
+   * \brief Deletes resources associated with the backward rollback.
    *
-   * Cette méthode est appelé pour désallouer les ressources
-   * comme les sauvegardes des variables. Cette méthode est appelée
-   * entre autre avant un équilibrage de charge puisqu'il ne sera
-   * pas possible de faire un retour-arrière avant cet équilibrage.
+   * This method is called to deallocate resources
+   * such as variable saves. This method is called
+   * among other things before a load balancing because it will not be
+   * possible to perform a backward rollback before this balancing.
    */
   virtual void clear() = 0;
 };
@@ -145,5 +146,4 @@ class ARCANE_CORE_EXPORT IBackwardMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

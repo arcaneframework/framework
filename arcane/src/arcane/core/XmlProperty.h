@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* XmlProperty.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Propriétés liée à un noeud XML.                                           */
+/* Properties linked to an XML node.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_XMLPROPERTY_H
 #define ARCANE_CORE_XMLPROPERTY_H
@@ -25,16 +25,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une valeur propriété.
+ * \brief Interface of a property value.
  */
 class XmlPropertyValue
 : public IPropertyValue
 {
  public:
 
-  XmlPropertyValue(const XmlNode& node,IPropertyType* type,
-		   IPropertyTypeInstance* type_instance);
+  XmlPropertyValue(const XmlNode& node, IPropertyType* type,
+                   IPropertyTypeInstance* type_instance);
   XmlPropertyValue();
 
  public:
@@ -71,4 +72,4 @@ class XmlPropertyValue
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

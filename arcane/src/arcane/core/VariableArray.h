@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableArray.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Variable tableau 1D.                                                      */
+/* 1D array variable.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEARRAY_H
 #define ARCANE_CORE_VARIABLEARRAY_H
@@ -24,18 +24,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'une variable sur un tableau 1D.
+ * \brief Implementation of a variable on a 1D array.
  *
- * Les méthodes de cette classe sont internes à %Arcane.
+ * The methods of this class are internal to %Arcane.
  */
-template<class T>
+template <class T>
 class VariableArrayT
 : public Variable
 {
  public:
-	
+
   typedef Array<T> ValueType;
   typedef IArrayDataT<T> ValueDataType;
   typedef VariableArrayT<T> ThatClass;
@@ -44,7 +45,7 @@ class VariableArrayT
  protected:
 
   //! Construit une variable basée sur la référence \a v
-  VariableArrayT(const VariableBuildInfo& v,const VariableInfo& vi);
+  VariableArrayT(const VariableBuildInfo& v, const VariableInfo& vi);
 
  public:
 
@@ -53,15 +54,15 @@ class VariableArrayT
  public:
 
   static ARCANE_CORE_EXPORT ThatClass* getReference(IVariable* var);
-  static ARCANE_CORE_EXPORT ThatClass* getReference(const VariableBuildInfo& v,const VariableInfo& vi);
-                                   
+  static ARCANE_CORE_EXPORT ThatClass* getReference(const VariableBuildInfo& v, const VariableInfo& vi);
+
  public:
 
   void synchronize() override;
   void synchronize(Int32ConstArrayView local_ids) override;
-  virtual void resizeWithReserve(Integer n,Integer nb_additional);
+  virtual void resizeWithReserve(Integer n, Integer nb_additional);
   Real allocatedMemory() const override;
-  bool initialize(const ItemGroup& group,const String& value) override;
+  bool initialize(const ItemGroup& group, const String& value) override;
   Integer nbElement() const override { return m_value->view().size(); }
   ARCCORE_DEPRECATED_2021("use valueView() instead")
   ARCANE_CORE_EXPORT ValueType& value();
@@ -82,7 +83,7 @@ class VariableArrayT
   const IData* data() const override { return m_value; }
 
   virtual void fill(const T& v);
-  virtual void fill(const T& v,const ItemGroup& item_group);
+  virtual void fill(const T& v, const ItemGroup& item_group);
 
  public:
 
@@ -107,4 +108,4 @@ class VariableArrayT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

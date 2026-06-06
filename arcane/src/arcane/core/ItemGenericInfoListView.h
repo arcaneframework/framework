@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemGenericInfoListView.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur les informations génériques d'une famille d'entités.              */
+/* View of the generic information of an entity family.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMGENERICINFOLISTVIEW_H
 #define ARCANE_CORE_ITEMGENERICINFOLISTVIEW_H
@@ -30,11 +30,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur les informations génériques d'une famille d'entités.
+ * \brief View of the generic information of an entity family.
  *
- * Comme toutes les vues, les instances de cette classe sont temporaires
- * et ne doivent pas être conservées lorsque la famille associée est modifiée.
+ * Like all views, instances of this class are temporary
+ * and should not be kept when the associated family is modified.
  */
 class ARCANE_CORE_EXPORT ItemGenericInfoListView
 {
@@ -43,11 +44,12 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
  public:
 
   ItemGenericInfoListView() = default;
+
   /*!
-   * \brief Construit une vue associée à la famille \a family.
+   * \brief Constructs a view associated with the family \a family.
    *
-   * \a family peut valoir \a nullptr auquel cas l'instance n'est
-   * pas utilisable pour récupérer des informations sur les entités
+   * \a family may be \a nullptr in which case the instance is
+   * not usable for retrieving information about entities
    */
   explicit ItemGenericInfoListView(IItemFamily* family);
 
@@ -55,52 +57,52 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
 
  public:
 
-  //! Famille associée
+  //! Associated family
   IItemFamily* itemFamily() const { return m_item_shared_info->itemFamily(); }
 
-  //! Propriétaire de l'entité de numéro local \a local_id
+  //! Owner of the entity with local ID \a local_id
   constexpr ARCCORE_HOST_DEVICE Int32 owner(Int32 local_id) const { return m_owners[local_id]; }
 
-  //! Propriétaire de l'entité de numéro local \a local_id
+  //! Owner of the entity with local ID \a local_id
   constexpr ARCCORE_HOST_DEVICE Int32 owner(ItemLocalId local_id) const { return m_owners[local_id.localId()]; }
 
-  //! Type de l'entité de numéro local \a local_id
+  //! Type of the entity with local ID \a local_id
   constexpr ARCCORE_HOST_DEVICE Int16 typeId(Int32 local_id) const { return m_type_ids[local_id]; }
 
-  //! Type de l'entité de numéro local \a local_id
+  //! Type of the entity with local ID \a local_id
   constexpr ARCCORE_HOST_DEVICE Int16 typeId(ItemLocalId local_id) const { return m_type_ids[local_id.localId()]; }
 
-  //! uniqueId() de l'entité de numéro local \a local_id
+  //! uniqueId() of the entity with local ID \a local_id
   ARCCORE_HOST_DEVICE ItemUniqueId uniqueId(Int32 local_id) const
   {
     return ItemUniqueId{ m_unique_ids[local_id] };
   }
 
-  //! uniqueId() de l'entité de numéro local \a local_id
+  //! uniqueId() of the entity with local ID \a local_id
   ARCCORE_HOST_DEVICE ItemUniqueId uniqueId(ItemLocalId local_id) const
   {
     return ItemUniqueId{ m_unique_ids[local_id.localId()] };
   }
 
-  //! Indique si l'entité de numéro local \a local_id appartient au sous-domaine
+  //! Indicates if the entity with local ID \a local_id belongs to the subdomain
   constexpr ARCCORE_HOST_DEVICE bool isOwn(Int32 local_id) const
   {
     return ItemFlags::isOwn(m_flags[local_id]);
   }
 
-  //! Indique si l'entité de numéro local \a local_id appartient au sous-domaine
+  //! Indicates if the entity with local ID \a local_id belongs to the subdomain
   constexpr ARCCORE_HOST_DEVICE bool isOwn(ItemLocalId local_id) const
   {
     return ItemFlags::isOwn(m_flags[local_id]);
   }
 
-  //! Indique si l'entité de numéro local \a local_id est partagée par d'autres sous-domaines
+  //! Indicates if the entity with local ID \a local_id is shared by other subdomains
   constexpr ARCCORE_HOST_DEVICE bool isShared(Int32 local_id) const
   {
     return ItemFlags::isShared(m_flags[local_id]);
   }
 
-  //! Indique si l'entité de numéro local \a local_id est partagée par d'autres sous-domaines
+  //! Indicates if the entity with local ID \a local_id is shared by other subdomains
   constexpr ARCCORE_HOST_DEVICE bool isShared(ItemLocalId local_id) const
   {
     return ItemFlags::isShared(m_flags[local_id]);
@@ -108,8 +110,8 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
 
  private:
 
-  // NOTE: Cette structure est utilisée dans le wrapping C#.
-  // Si on modifie les champs, il faut mettre à jour la structure C# équivalente
+  // NOTE: This structure is used in the C# wrapping.
+  // If the fields are modified, the equivalent C# structure must be updated
   Int64ArrayView m_unique_ids;
   Int32ArrayView m_owners;
   Int32ArrayView m_flags;
@@ -118,7 +120,7 @@ class ARCANE_CORE_EXPORT ItemGenericInfoListView
 
  private:
 
-  // Seule ItemFamily peut créer des instances via ce constructeur
+  // Only ItemFamily can create instances via this constructor
   explicit ItemGenericInfoListView(ItemSharedInfo* shared_info);
 };
 

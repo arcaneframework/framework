@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IItemConnectivitySynchronizer.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface de synchronisation de la connectivité des entités.              */
+/* Interface for synchronizing entity connectivity.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMCONNECTIVITYSYNCHRONIZER_H
 #define ARCANE_CORE_IITEMCONNECTIVITYSYNCHRONIZER_H
@@ -29,7 +29,7 @@ class ARCANE_CORE_EXPORT IItemConnectivitySynchronizer
 {
  public:
 
-  /** Destructeur de la classe */
+  /** Class destructor */
   virtual ~IItemConnectivitySynchronizer() = default;
 
  public:
@@ -47,4 +47,4 @@ class ARCANE_CORE_EXPORT IItemConnectivitySynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ICONNECTIVITYSYNCHRONIZER_H */
+#endif

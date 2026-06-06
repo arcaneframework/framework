@@ -1,24 +1,26 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshEnvironmentVariableRef.h                                (C) 2000-2024 */
 /*                                                                           */
-/* Référence à une variable sur un milieu du maillage.                       */
+/* Reference to a variable on a mesh environment.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHENVIRONMENTVARIABLEREF_H
 #define ARCANE_MATERIALS_MESHENVIRONMENTVARIABLEREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MeshEnvironmentVariableRef.h
  *
- * Ce fichier contient les différents types gérant les références
- * sur les variables milieux.
+ * This file contains the different types managing references
+ * on environment variables.
  */
+
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 
 /*---------------------------------------------------------------------------*/
@@ -29,12 +31,13 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Variable scalaire sur les mailles d'un milieu du maillage.
+ * \brief Scalar variable on the cells of a mesh environment.
  *
- * Ce type de variable est identique à ceci près qu'elle n'a de valeurs
- * que sur les milieux et les mailles globales mais pas sur les matériaux.
+ * This type of variable is identical except that it only has values
+ * on environments and global cells but not on materials.
  */
 template <typename DataType_>
 class CellEnvironmentVariableScalarRef
@@ -51,20 +54,20 @@ class CellEnvironmentVariableScalarRef
  public:
 
   explicit ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb);
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   explicit ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const MaterialVariableBuildInfo& vb);
   ARCANE_CORE_EXPORT CellEnvironmentVariableScalarRef(const ThatClass& rhs);
 
  public:
 
-  //! Opérateur de recopie (interdit)
+  //! Copy assignment operator (deleted)
   ARCANE_CORE_EXPORT ThatClass& operator=(const ThatClass& rhs) = delete;
-  //! Constructeur vide (interdit)
+  //! Default constructor (deleted)
   CellEnvironmentVariableScalarRef() = delete;
 
  public:
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
@@ -85,46 +88,46 @@ class CellEnvironmentVariableScalarRef
 
  public:
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for material cell \a mc
   DataType operator[](ComponentItemLocalId mc) const
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for material cell \a mc
   DataType& operator[](ComponentItemLocalId mc)
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for cell \a c
   DataType operator[](CellLocalId c) const
   {
     return m_value[0][c.localId()];
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for cell \a c
   DataType& operator[](CellLocalId c)
   {
     return m_value[0][c.localId()];
   }
 
   /*!
-   * \brief Valeur de la variable pour le milieu d'index \a env_id de
-   * la maille \a ou 0 si absent de la maille.
+   * \brief Value of the variable for the environment index \a env_id of
+   * cell \a or 0 if absent from the cell.
    */
-  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c,Int32 env_id) const;
+  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c, Int32 env_id) const;
 
  public:
-  
+
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   ARCANE_CORE_EXPORT void fillPartialValues(const DataType& value);
 
  public:
 
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT GlobalVariableRefType& globalVariable();
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT const GlobalVariableRefType& globalVariable() const;
 
  private:
@@ -135,7 +138,7 @@ class CellEnvironmentVariableScalarRef
 
  public:
 
-  // TODO: Temporaire. a supprimer.
+  // TODO: Temporary. To be deleted.
   ArrayView<DataType>* _internalValue() const { return m_value; }
 
  private:
@@ -146,19 +149,20 @@ class CellEnvironmentVariableScalarRef
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Variable tableau sur les mailles d'un matériau du maillage.
- * Pour l'instant, cette classe n'est instanciée que pour les mailles
+ * \brief Array variable on the cells of a mesh material.
+ * For now, this class is only instantiated for cells
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellEnvironmentVariableArrayRef
 : public MeshMaterialVariableRef
 {
  public:
 
   using DataType = DataType_;
-  using PrivatePartType = IArrayMeshMaterialVariable<Cell,DataType>;
+  using PrivatePartType = IArrayMeshMaterialVariable<Cell, DataType>;
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
   using ThatClass = CellEnvironmentVariableArrayRef<DataType>;
@@ -166,20 +170,20 @@ class CellEnvironmentVariableArrayRef
  public:
 
   explicit ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb);
-  //! Construit une référence à la variable spécifiée dans \a vb
+  //! Constructs a reference to the variable specified in \a vb
   explicit ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb);
   ARCANE_CORE_EXPORT CellEnvironmentVariableArrayRef(const ThatClass& rhs);
 
  public:
 
-  //! Opérateur de recopie (interdit)
+  //! Copy assignment operator (deleted)
   ThatClass& operator=(const ThatClass& rhs) = delete;
-  //! Constructeur vide (interdit)
+  //! Default constructor (deleted)
   CellEnvironmentVariableArrayRef() = delete;
 
  public:
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance reference to the variable \a rhs.
   ARCANE_CORE_EXPORT virtual void refersTo(const ThatClass& rhs);
 
   /*!
@@ -189,21 +193,20 @@ class CellEnvironmentVariableArrayRef
 
  public:
 
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT GlobalVariableRefType& globalVariable();
-  //! Variable globale associée à cette variable matériau
+  //! Global variable associated with this material variable
   ARCANE_CORE_EXPORT const GlobalVariableRefType& globalVariable() const;
 
  public:
 
   /*!
-   * \brief Redimensionne le nombre d'éléments du tableau.
+   * \brief Resizes the number of elements in the array.
    *
-   * La première dimension reste toujours égale au nombre d'éléments du maillage.
-   * Seule la deuxième composante est retaillée.
+   * The first dimension always remains equal to the number of mesh elements.
+   * Only the second component is resized.
    */
   ARCANE_CORE_EXPORT void resize(Integer dim2_size);
-
 
  protected:
 
@@ -218,25 +221,25 @@ class CellEnvironmentVariableArrayRef
 
  public:
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for material cell \a mc
   ConstArrayView<DataType> operator[](ComponentItemLocalId mc) const
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur partielle de la variable pour la maille matériau \a mc
+  //! Partial value of the variable for material cell \a mc
   ArrayView<DataType> operator[](ComponentItemLocalId mc)
   {
     return this->operator[](mc.localId());
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for cell \a c
   ConstArrayView<DataType> operator[](CellLocalId c) const
   {
     return m_value[0][c.localId()];
   }
 
-  //! Valeur globale de la variable pour la maille \a c
+  //! Global value of the variable for cell \a c
   ArrayView<DataType> operator[](CellLocalId c)
   {
     return m_value[0][c.localId()];
@@ -257,60 +260,60 @@ class CellEnvironmentVariableArrayRef
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! %Variable milieu de type \a #Byte
+//! Environment variable of type \a #Byte
 typedef CellEnvironmentVariableScalarRef<Byte> EnvironmentVariableCellByte;
-//! %Variable milieu de type \a #Real
+//! Environment variable of type \a #Real
 typedef CellEnvironmentVariableScalarRef<Real> EnvironmentVariableCellReal;
-//! %Variable milieu de type \a #Int16
+//! Environment variable of type \a #Int16
 typedef CellEnvironmentVariableScalarRef<Int16> EnvironmentVariableCellInt16;
-//! %Variable milieu de type \a #Int32
+//! Environment variable of type \a #Int32
 typedef CellEnvironmentVariableScalarRef<Int32> EnvironmentVariableCellInt32;
-//! %Variable milieu de type \a #Int64
+//! Environment variable of type \a #Int64
 typedef CellEnvironmentVariableScalarRef<Int64> EnvironmentVariableCellInt64;
-//! %Variable milieu de type \a Real2
+//! Environment variable of type \a Real2
 typedef CellEnvironmentVariableScalarRef<Real2> EnvironmentVariableCellReal2;
-//! %Variable milieu de type \a Real3
+//! Environment variable of type \a Real3
 typedef CellEnvironmentVariableScalarRef<Real3> EnvironmentVariableCellReal3;
-//! %Variable milieu de type \a Real2x2
+//! Environment variable of type \a Real2x2
 typedef CellEnvironmentVariableScalarRef<Real2x2> EnvironmentVariableCellReal2x2;
-//! %Variable milieu de type \a Real3x3
+//! Environment variable of type \a Real3x3
 typedef CellEnvironmentVariableScalarRef<Real3x3> EnvironmentVariableCellReal3x3;
 
 #ifdef ARCANE_64BIT
-//! %Variable milieu de type \a #Integer
+//! Environment variable of type \a #Integer
 typedef EnvironmentVariableCellInt64 EnvironmentVariableCellInteger;
 #else
-//! %Variable milieu de type \a #Integer
+//! Environment variable of type \a #Integer
 typedef EnvironmentVariableCellInt32 EnvironmentVariableCellInteger;
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! %Variable milieu de type tableau de \a #Byte
+//! Environment variable of type array of \a #Byte
 typedef CellEnvironmentVariableArrayRef<Byte> EnvironmentVariableCellArrayByte;
-//! %Variable milieu de type tableau de \a #Real
+//! Environment variable of type array of \a #Real
 typedef CellEnvironmentVariableArrayRef<Real> EnvironmentVariableCellArrayReal;
-//! %Variable milieu de type tableau de \a #Int16
+//! Environment variable of type array of \a #Int16
 typedef CellEnvironmentVariableArrayRef<Int16> EnvironmentVariableCellArrayInt16;
-//! %Variable milieu de type tableau de \a #Int32
+//! Environment variable of type array of \a #Int32
 typedef CellEnvironmentVariableArrayRef<Int32> EnvironmentVariableCellArrayInt32;
-//! %Variable milieu de type tableau de \a #Int64
+//! Environment variable of type array of \a #Int64
 typedef CellEnvironmentVariableArrayRef<Int64> EnvironmentVariableCellArrayInt64;
-//! %Variable milieu de type tableau de \a Real2
+//! Environment variable of type array of \a Real2
 typedef CellEnvironmentVariableArrayRef<Real2> EnvironmentVariableCellArrayReal2;
-//! %Variable milieu de type tableau de \a Real3
+//! Environment variable of type array of \a Real3
 typedef CellEnvironmentVariableArrayRef<Real3> EnvironmentVariableCellArrayReal3;
-//! %Variable milieu de type tableau de \a Real2x2
+//! Environment variable of type array of \a Real2x2
 typedef CellEnvironmentVariableArrayRef<Real2x2> EnvironmentVariableCellArrayReal2x2;
-//! %Variable milieu de type tableau de \a Real3x3
+//! Environment variable of type array of \a Real3x3
 typedef CellEnvironmentVariableArrayRef<Real3x3> EnvironmentVariableCellArrayReal3x3;
 
 #ifdef ARCANE_64BIT
-//! %Variable milieu de type tableau de \a #Integer
+//! Environment variable of type array of \a #Integer
 typedef EnvironmentVariableCellInt64 EnvironmentVariableCellArrayInteger;
 #else
-//! %Variable milieu de type tableau de \a #Integer
+//! Environment variable of type array of \a #Integer
 typedef EnvironmentVariableCellInt32 EnvironmentVariableCellArrayInteger;
 #endif
 
@@ -322,5 +325,4 @@ typedef EnvironmentVariableCellInt32 EnvironmentVariableCellArrayInteger;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

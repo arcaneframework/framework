@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ICaseDocumentVisitor.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Interface du visiteur pour un jeu de données.                             */
+/* Visitor interface for a dataset.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ICASEDOCUMENTVISITOR_H
 #define ARCANE_CORE_ICASEDOCUMENTVISITOR_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du visiteur pour une option du jeu de données.
+ * \brief Visitor interface for a dataset option.
  */
 class ARCANE_CORE_EXPORT ICaseDocumentVisitor
 {
@@ -57,5 +58,4 @@ class ARCANE_CORE_EXPORT ICaseDocumentVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

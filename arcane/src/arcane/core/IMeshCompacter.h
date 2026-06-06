@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshCompacter.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'un compactage de familles du maillage.                          */
+/* Handling of mesh family compaction.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IMESHCOMPACTER_H
 #define ARCANE_CORE_IMESHCOMPACTER_H
@@ -24,44 +24,45 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'un compactage de familles du maillage.
+ * \brief Management of mesh family compaction.
  *
- * Les instances de cette classe sont créée via le gestionnaire
- * IMeshCompactMng. Un seul compactage peut avoir lieu à la fois.
+ * Instances of this class are created via the manager
+ * IMeshCompactMng. Only one compaction can take place at a time.
  *
- * Par compactage, on entend toute modification de la numérotation locale
- * des entités d'une famille. Il peut donc rester des trous dans la numérotation
- * après appel à un compactage (même si actuellement ce n'est pas le cas
- * des implémentations disponibles dans %Arcane).
+ * By compaction, we mean any modification of the local numbering
+ * of entities within a family. Therefore, gaps may remain in the numbering
+ * after calling a compaction (even if this is not the case
+ * in the implementations available in %Arcane).
  *
- * Le compactage concerne soit toutes les familles d'un maillage, soit
- * une seule famille. La méthode families() permet de retourner la
- * liste des familles compactées.
+ * Compaction concerns either all families of a mesh, or
+ * a single family. The families() method allows returning the
+ * list of compacted families.
  *
- * Même si une famille n'est pas compactée directement, elle participe à
- * certaines opérations du compactage car elle peut faire référence à des
- * entités compactées.
+ * Even if a family is not directly compacted, it participates in
+ * certain compaction operations because it may reference compacted
+ * entities.
  *
- * Les différentes opérations d'un compactage sont les suivantes:
- * 1. beginCompact():calcul de la nouvelle numération locale des entités
- * des familles compactées. Après appel à cette méthode, il est possible
- * d'appeler findCompactInfos() pour obtenir pour une famille les
- * correspondances entre nouveaux et anciens numéros locaux.
- * 2. compactVariablesAndGroups(): mise à jour des groupes et des variables
- * des familles compactées en fonction de cette nouvelle numérotation.
- * 3. updateInternalReferences(): mise à jour des références aux entités.
- * Cela concerne toutes les familles et pas seulement celles compactées.
- * 4. endCompact(): finalise le compactage des familles. Après appel à cette
- * méthode il n'est plus possible de récupérer les informations de correspondance
+ * The different operations of a compaction are as follows:
+ * 1. beginCompact(): calculation of the new local numbering of entities
+ * in the compacted families. After calling this method, it is possible
+ * to call findCompactInfos() to obtain the correspondences between new
+ * and old local numbers for a family.
+ * 2. compactVariablesAndGroups(): updating the groups and variables
+ * of the compacted families based on this new numbering.
+ * 3. updateInternalReferences(): updating references to entities.
+ * This concerns all families, not just the compacted ones.
+ * 4. endCompact(): finalizes the family compaction. After calling this
+ * method, it is no longer possible to retrieve the correspondence information
  * via findCompactInfos().
- * 5. finalizeCompact(): notification à toutes les familles que le compactage
- * est terminé. Cela permet par exemple de faire un nettoyage ou de mettre
- * à jour certaines informations.
+ * 5. finalizeCompact(): notification to all families that the compaction
+ * is finished. This allows, for example, cleaning up or updating
+ * certain information.
  *
- * La méthode doAllActions() permet de faire toutes ces phases en une seule fois.
- * C'est la méthode recommandé pour effectuer un compactage. Le code suivant
- * montre comment effectuer un compactage sur toutes les familles:
+ * The doAllActions() method allows performing all these phases at once.
+ * This is the recommended method for performing a compaction. The following code
+ * shows how to perform a compaction on all families:
  *
  * \code
  *
@@ -83,7 +84,7 @@ class ARCANE_CORE_EXPORT IMeshCompacter
 {
  public:
 
-  //! Indique les différentes phases du compactage
+  //! Indicates the different phases of compaction
   enum class ePhase
   {
     Init = 0,
@@ -97,11 +98,11 @@ class ARCANE_CORE_EXPORT IMeshCompacter
 
  public:
 
-  virtual ~IMeshCompacter() = default; //!< Libère les ressources
+  virtual ~IMeshCompacter() = default; //!< Frees resources
 
  public:
 
-  //! Exécute successivement toutes les actions de compactage.
+  //! Executes all compaction actions successively.
   virtual void doAllActions() = 0;
 
   virtual void beginCompact() = 0;
@@ -110,30 +111,29 @@ class ARCANE_CORE_EXPORT IMeshCompacter
   virtual void endCompact() = 0;
   virtual void finalizeCompact() = 0;
 
-  //! Maillage associé à ce compacter.
+  //! Mesh associated with this compacter.
   virtual IMesh* mesh() const = 0;
 
   /*!
-   * \brief Informations de compactage pour la famille \a family.
+   * \brief Compaction information for the family \a family.
    *
-   * Le pointeur retourné peut être nul si la famille spécifiée ne fait
-   * pas partie des familles compactées.
+   * The returned pointer may be null if the specified family is not part of the compacted families.
    */
   virtual const ItemFamilyCompactInfos* findCompactInfos(IItemFamily* family) const = 0;
 
-  //! Phase de l'échange dans laquelle on se trouve.
+  //! The exchange phase in which we are located.
   virtual ePhase phase() const = 0;
 
   /*!
-   * \brief Indique s'il faut trier les entités lors du compactage.
+   * \brief Indicates whether entities should be sorted during compaction.
    * \pre phase()==ePhase::Init.
    */
   virtual void setSorted(bool v) = 0;
 
-  //! Indique si souhaite trier les entités en plus de les compacter.
+  //! Indicates whether it wishes to sort the entities in addition to compacting them.
   virtual bool isSorted() const = 0;
 
-  //! Familles dont les entités sont compactées.
+  //! Families whose entities are compacted.
   virtual ItemFamilyCollection families() const = 0;
 
   //! \internal
@@ -148,4 +148,4 @@ class ARCANE_CORE_EXPORT IMeshCompacter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

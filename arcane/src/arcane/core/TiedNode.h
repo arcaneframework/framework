@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TiedNode.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Noeud semi-conforme du maillage.                                          */
+/* Semi-conformal mesh node.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_TIEDNODE_H
 #define ARCANE_CORE_TIEDNODE_H
@@ -25,15 +25,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Noeud semi-conforme du maillage.
+ * \brief Semi-conformal mesh node.
  *
- * Un noeud semi-conforme du maillage est défini par la face maître
- * auquel il appartient (voir ITiedInterface) et pas ses coordonnées
- * iso-barycentriques dans cette face. Ces coordonnées sont toujours comprises
- * entre -1 et 1 et leur valeur dépend du type de la face. Pour une face
- * 3D quadrangulaire, la définition est celle de GeometricUtilities::QuadMapping.
+ * A semi-conformal mesh node is defined by the master face it belongs to
+ * (see ITiedInterface) and not its iso-barycentric coordinates within that
+ * face. These coordinates are always between -1 and 1, and their value depends
+ * on the face type. For a 3D quadrilateral face, the definition is that of
+ * GeometricUtilities::QuadMapping.
  */
 class TiedNode
 {
@@ -51,22 +52,22 @@ class TiedNode
 
  public:
 
-  //! Indice du noeud dans la liste des noeuds soudés de la face maitre
+  //! Index of the node in the master face's tied nodes list
   Integer index() const { return m_index; }
 
-  //! Noeud lié
+  //! Tied node
   Node node() const { return m_node; }
 
-  //! Coordonnées iso-barycentriques du noeud
+  //! Iso-barycentric coordinates of the node
   Real2 isoCoordinates() const { return m_iso_coordinates; }
 
  private:
 
-  //! Indice du noeud dans la liste des noeuds soudés de la face maitre
+  //! Index of the node in the master face's tied nodes list
   Integer m_index = NULL_ITEM_LOCAL_ID;
-  //! Noeud lié
+  //! Tied node
   Node m_node;
-  //! Coordonnées iso-barycentriques du noeud
+  //! Iso-barycentric coordinates of the node
   Real2 m_iso_coordinates;
 };
 
@@ -78,5 +79,4 @@ class TiedNode
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

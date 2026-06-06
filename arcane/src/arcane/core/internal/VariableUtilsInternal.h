@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableUtilsInternal.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions utilitaires diverses sur les variables internes à Arcane.       */
+/* Various utility functions for internal Arcane variables.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_VARIABLEUTILSINTERNAL_H
 #define ARCANE_CORE_INTERNAL_VARIABLEUTILSINTERNAL_H
@@ -31,43 +31,43 @@ class ARCANE_CORE_EXPORT VariableUtilsInternal
  public:
 
   /*!
-   * \brief Remplit \a values avec les valeurs de la variable.
+   * \brief Fills \a values with the variable's values.
    *
-   * Seules les variables 1D de type \a DT_Real sont convertibles.
+   * Only 1D variables of type \a DT_Real are convertible.
    *
-   * \retval false si tout s'est bien passé.
-   * \retval true si rien n'a été effectué.
+   * \retval false if everything went well.
+   * \retval true if nothing was done.
    */
   static bool fillFloat64Array(IVariable* v, ArrayView<double> values);
 
   /*!
-   * \brief Recopie dans la variable \a v les valeurs \a values.
+   * \brief Copies the values \a values into the variable \a v.
    *
-   * Seules les variables 1D de type \a DT_Real sont convertibles.
+   * Only 1D variables of type \a DT_Real are convertible.
    *
-   * \retval false si tout s'est bien passé.
-   * \retval true si rien n'a été effectué.
+   * \retval false if everything went well.
+   * \retval true if nothing was done.
    */
   static bool setFromFloat64Array(IVariable* v, ConstArrayView<double> values);
 
   /*!
-   * \brief Recopie dans la variable \a v les valeurs \a values.
+   * \brief Copies the values \a values into the variable \a v.
    *
-   * Seules les variables numériques sont convertibles.
+   * Only numerical variables are convertible.
    *
-   * \retval false si tout s'est bien passé.
-   * \retval true si rien n'a été effectué.
+   * \retval false if everything went well.
+   * \retval true if nothing was done.
    */
   static bool setFromMemoryBuffer(IVariable* v, ConstMemoryView values);
 
-  //! Retourne l'API internal de IData associé à la variable \a v
+  //! Returns the internal IData API associated with the variable \a v
   static IDataInternal* getDataInternal(IVariable* v);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::VariableUtils
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemSharedInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Informations communes à plusieurs entités.                                */
+/* Common information for multiple entities.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMSHAREDINFO_H
 #define ARCANE_CORE_ITEMSHAREDINFO_H
@@ -27,7 +27,7 @@ namespace Arcane::mesh
 class ItemFamily;
 class ItemSharedInfoWithType;
 class DynamicMeshKindInfos;
-}
+} // namespace Arcane::mesh
 
 namespace Arcane
 {
@@ -41,15 +41,16 @@ class ItemInternalConnectivityList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Structure interne partagée d'une entité de maillage.
+ * \brief Internal shared structure of a mesh entity.
  *
- * Cette classe renferme des informations communes à plusieurs entités.
+ * This class holds common information for multiple entities.
  *
- * Comme une instance de cette classe est partagée par plusieurs entités, il
- * ne faut en cas la modifier directement. C'est à l'implémentation (Mesh)
- * de fournir un mécanisme gérant les instances de cette classe.
+ * Since an instance of this class is shared by multiple entities, it
+ * should not be modified directly. It is up to the implementation (Mesh)
+ * to provide a mechanism managing instances of this class.
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
@@ -70,7 +71,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class ItemInternalCompatibility;
   friend class SimdItemBase;
   friend class SimdItemEnumeratorBase;
-  template<int Extent> friend class ItemConnectedListView;
+  template <int Extent> friend class ItemConnectedListView;
 
  public:
 
@@ -78,8 +79,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  // TODO: Rendre privé. Il faut passer maintenant passer par nullInstance()
-  //! Pour l'entité nulle
+  // TODO: Make private. Access must now go through nullInstance()
+  //! For the null entity
   static ItemSharedInfo nullItemSharedInfo;
 
  private:
@@ -96,8 +97,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  // Seule ItemFamily peut créer des instances de cette classe autre que l'instance nulle.
-  ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
+  // Only ItemFamily can create instances of this class other than the null instance.
+  ItemSharedInfo(IItemFamily* family, MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity);
 
  public:
@@ -171,74 +172,74 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _parentV2() instead")
-  ItemInternal* parent(Integer,Integer) const;
+  ItemInternal* parent(Integer, Integer) const;
 
  private:
 
-  ItemInternal* _parentV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
+  ItemInternal* _parentV2(Int32 local_id, [[maybe_unused]] Integer aindex) const
   {
-    // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
-    ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
+    // Currently only one parent is supported, so \a aindex must be 0.
+    ARCANE_ASSERT((aindex == 0), ("Only one parent access implemented"));
     return _parent(m_parent_item_ids[local_id]);
   }
-  Int32 _parentLocalIdV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
+  Int32 _parentLocalIdV2(Int32 local_id, [[maybe_unused]] Integer aindex) const
   {
-    // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
-    ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
+    // Currently only one parent is supported, so \a aindex must be 0.
+    ARCANE_ASSERT((aindex == 0), ("Only one parent access implemented"));
     return m_parent_item_ids[local_id];
   }
-  void _setParentV2(Int32 local_id,Integer aindex,Int32 parent_local_id);
+  void _setParentV2(Int32 local_id, Integer aindex, Int32 parent_local_id);
   Int32* _parentPtr(Int32 local_id);
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
-  ItemInternal* node(Int32,Int32) const { return nullptr; }
+  ItemInternal* node(Int32, Int32) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
-  ItemInternal* edge(Int32,Int32) const { return nullptr; }
+  ItemInternal* edge(Int32, Int32) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
-  ItemInternal* face(Int32,Int32) const { return nullptr; }
+  ItemInternal* face(Int32, Int32) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
-  ItemInternal* cell(Int32,Int32) const { return nullptr; }
+  ItemInternal* cell(Int32, Int32) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
-  ItemInternal* hParent(Integer,Integer) const { return nullptr; }
+  ItemInternal* hParent(Integer, Integer) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
-  ItemInternal* hChild(Int32,Int32) const { return nullptr; }
+  ItemInternal* hChild(Int32, Int32) const { return nullptr; }
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Int32 nodeLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  Int32 nodeLocalId(Int32, Int32) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Int32 edgeLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  Int32 edgeLocalId(Int32, Int32) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Int32 faceLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  Int32 faceLocalId(Int32, Int32) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Int32 cellLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  Int32 cellLocalId(Int32, Int32) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Integer parentLocalId(Integer,Integer) const { return NULL_ITEM_LOCAL_ID; }
+  Integer parentLocalId(Integer, Integer) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Int32 hParentLocalId(Integer,Integer) const { return NULL_ITEM_LOCAL_ID; }
+  Int32 hParentLocalId(Integer, Integer) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
-  Int32 hChildLocalId(Integer,Integer) const { return NULL_ITEM_LOCAL_ID; }
+  Int32 hChildLocalId(Integer, Integer) const { return NULL_ITEM_LOCAL_ID; }
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
-  void setNode(Int32,Int32,Int32) const;
+  void setNode(Int32, Int32, Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
-  void setEdge(Int32,Int32,Int32) const;
+  void setEdge(Int32, Int32, Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
-  void setFace(Int32,Int32,Int32) const;
+  void setFace(Int32, Int32, Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
-  void setCell(Int32,Int32,Int32) const;
+  void setCell(Int32, Int32, Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
-  void setHParent(Int32,Int32,Int32) const;
+  void setHParent(Int32, Int32, Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
-  void setHChild(Int32,Int32,Int32) const;
+  void setHChild(Int32, Int32, Int32) const;
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setParentV2() instead")
-  void setParent(Integer,Integer,Integer) const;
+  void setParent(Integer, Integer, Integer) const;
 
  public:
 
@@ -263,9 +264,9 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  private:
 
   // ATTENTION:
-  // Toute modification de la liste ou du type des champs doit être
-  // reportée dans le wrapper C# (tools/wrapper/core/csharp) et
-  // dans le proxy pour totalview (src/arcane/totalview)
+  // Any modification to the list or the type of fields must be
+  // reported in the C# wrapper (tools/wrapper/core/csharp) and
+  // in the proxy for totalview (src/arcane/totalview)
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
@@ -277,39 +278,39 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int16ArrayView m_type_ids;
   eItemKind m_item_kind = IK_Unknown;
   Int32 m_nb_parent = 0;
-  ConstArrayView<ItemInternal*> m_items_internal; //!< ItemInternal des entités
+  ConstArrayView<ItemInternal*> m_items_internal; //!< ItemInternal of entities
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _ownerV2() instead")
   Int32 owner(Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setOwnerV2() instead")
-  void setOwner(Int32,Int32) const;
+  void setOwner(Int32, Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _flagsV2() instead")
   Int32 flags(Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setFlagsV2() instead")
-  void setFlags(Int32,Int32) const;
+  void setFlags(Int32, Int32) const;
 
  private:
 
   constexpr Int32 _ownerV2(Int32 local_id) const { return m_owners[local_id]; }
-  void _setOwnerV2(Int32 local_id,Int32 aowner) { m_owners[local_id] = aowner; }
+  void _setOwnerV2(Int32 local_id, Int32 aowner) { m_owners[local_id] = aowner; }
   constexpr Int32 _flagsV2(Int32 local_id) const { return m_flags[local_id]; }
-  void _setFlagsV2(Int32 local_id,Int32 f) { m_flags[local_id] = f; }
+  void _setFlagsV2(Int32 local_id, Int32 f) { m_flags[local_id] = f; }
 
   constexpr Int16 _typeId(Int32 local_id) const { return m_type_ids[local_id]; }
-  void _setTypeId(Int32 local_id,Int16 v) { m_type_ids[local_id] = v; }
+  void _setTypeId(Int32 local_id, Int16 v) { m_type_ids[local_id] = v; }
 
  public:
 
-  // TODO: a supprimer
+  // TODO: to be removed
   ARCANE_DEPRECATED_REASON("Y2022: COMMON_BASE_MEMORY is always 0")
   static const Int32 COMMON_BASE_MEMORY = 0;
 
  private:
 
   void _init(eItemKind ik);
-  //! Version non optimisée mais robuste d'accès à l'ItemInternalArrayView parent
+  //! Non-optimized but robust version of accessing the parent ItemInternalArrayView
   ItemInternal* _parent(Int32 id) const;
 };
 
@@ -317,7 +318,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const ItemSharedInfo& isi)
+operator<<(std::ostream& o, const ItemSharedInfo& isi)
 {
   isi.print(o);
   return o;

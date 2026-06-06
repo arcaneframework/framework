@@ -1,13 +1,13 @@
 ﻿/// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IGraph2.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un graphe d'un maillage.                                      */
+/* Mesh graph interface.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IGRAPH2_H
 #define ARCANE_CORE_IGRAPH2_H
@@ -30,7 +30,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Nombre de type d'entités duales
+//! Number of dual entity types
 static const Integer NB_DUAL_ITEM_TYPE = 5;
 
 extern "C++" ARCANE_CORE_EXPORT eItemKind
@@ -41,30 +41,32 @@ class IGraph2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Outillage de connectivité d'un graphe
+ * \brief Graph connectivity tooling
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire de connectivité d'un graphe
+ * \brief Interface of the graph connectivity manager
  */
 class ARCANE_CORE_EXPORT IGraphConnectivity
 {
  public:
 
-  virtual ~IGraphConnectivity() = default; //!< Libère les ressources
+  virtual ~IGraphConnectivity() = default; //!< Frees resources
 
  public:
 
-  //! accès à l'Item dual d'un DualNode (detype DoF)
+  //! Access to the dual Item of a DualNode (detype DoF)
   virtual Item dualItem(const DoF& dualNode) const = 0;
 
-  //! accès à la vue des links  constitué du dualNode de type(DoF)
+  //! Access to the view of links composed of the dualNode of type(DoF)
   virtual DoFVectorView links(const DoF& dualNode) const = 0;
 
-  //! accès à la vue des DualNodes  constituant un liaison Link de type(DoF)
+  //! Access to the view of DualNodes constituting a Link of type(DoF)
   virtual DoFVectorView dualNodes(const DoF& link) const = 0;
 };
 
@@ -96,14 +98,15 @@ class ARCANE_CORE_EXPORT IGraphObserver
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un graphe du maillage
+ * \brief Mesh graph interface
  */
 class ARCANE_CORE_EXPORT IGraph2
 {
  public:
 
-  virtual ~IGraph2() = default; //!< Libère les ressources
+  virtual ~IGraph2() = default; //!< Frees resources
 
  public:
 
@@ -121,19 +124,19 @@ class ARCANE_CORE_EXPORT IGraph2
 
   virtual bool isUpdated() = 0;
 
-  //! Nombre de noeuds duaux du graphe
+  //! Number of dual nodes of the graph
   virtual Integer nbDualNode() const = 0;
 
-  //! Nombre de liaisons du graphe
+  //! Number of links of the graph
   virtual Integer nbLink() const = 0;
 
  public:
 
-  //! Retourne la famille des noeuds duaux
+  //! Returns the family of dual nodes
   virtual const IItemFamily* dualNodeFamily() const = 0;
   virtual IItemFamily* dualNodeFamily() = 0;
 
-  //! Retourne la famille des liaisons
+  //! Returns the family of links
   virtual const IItemFamily* linkFamily() const = 0;
   virtual IItemFamily* linkFamily() = 0;
 
@@ -150,4 +153,3 @@ class ARCANE_CORE_EXPORT IGraph2
 /*---------------------------------------------------------------------------*/
 
 #endif
-

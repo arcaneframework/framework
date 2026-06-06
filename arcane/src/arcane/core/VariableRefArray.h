@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* VariableRefArray.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Classe gérant une référence sur une variable tableau 1D.                  */
+/* Class managing a reference to a 1D array variable.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_VARIABLEREFARRAY_H
 #define ARCANE_CORE_VARIABLEREFARRAY_H
@@ -25,14 +25,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> class VariableRefArrayLockT;
+template <typename DataType> class VariableRefArrayLockT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Variable tableau.
+ * \brief Array variable.
  */
-template<typename T>
+template <typename T>
 class VariableRefArrayT
 : public VariableRef
 , public ArrayView<T>
@@ -44,13 +45,13 @@ class VariableRefArrayT
   typedef typename ArrayView<T>::const_reference ConstReturnReferenceType;
   typedef typename ArrayView<T>::reference ReturnReferenceType;
 
-  //! Type des éléments de la variable
+  //! Type of the variable elements
   typedef DataType ElementType;
-  //! Type de la classe de base
+  //! Type of the base class
   typedef VariableRef BaseClass;
-  //! Type de la classe gérant la valeur de la variable
+  //! Type of the class managing the variable value
   typedef Array<DataType> ContainerType;
-  //! Type du tableau permettant d'accéder à la variable
+  //! Type of the array allowing access to the variable
   typedef ArrayView<DataType> ArrayBase;
 
   typedef VariableArrayT<DataType> PrivatePartType;
@@ -61,25 +62,25 @@ class VariableRefArrayT
 
  public:
 
-  //! Construit une référence à une variable tableau spécifiée dans \a vb
+  //! Constructs a reference to a 1D array variable specified in \a vb
   ARCANE_CORE_EXPORT explicit VariableRefArrayT(const VariableBuildInfo& vb);
-  //! Construit une référence à partir de \a rhs
+  //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT VariableRefArrayT(const VariableRefArrayT<DataType>& rhs);
-  //! Construit une référence à partir de \a var
+  //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT VariableRefArrayT(IVariable* var);
 
-  //! Positionne la référence de l'instance à la variable \a rhs.
+  //! Positions the instance's reference to the variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const VariableRefArrayT<DataType>& rhs);
 
-  ARCANE_CORE_EXPORT ~VariableRefArrayT() override; //!< Libère les ressources
+  ARCANE_CORE_EXPORT ~VariableRefArrayT() override; //!< Frees resources
 
  public:
 
-  //! Redimensionne le tableau pour contenir \a new_size éléments
+  //! Resizes the array to contain \a new_size elements
   virtual ARCANE_CORE_EXPORT void resize(Integer new_size);
 
-  //! Redimensionne le tableau pour contenir \a new_size éléments
-  virtual ARCANE_CORE_EXPORT void resizeWithReserve(Integer new_size,Integer nb_additional);
+  //! Resizes the array to contain \a new_size elements
+  virtual ARCANE_CORE_EXPORT void resizeWithReserve(Integer new_size, Integer nb_additional);
 
  public:
 
@@ -100,11 +101,11 @@ class VariableRefArrayT
  public:
 
   /*!
-    \brief Retourne le conteneur des valeurs de cette variable.
+    \brief Returns the container of this variable's values.
     *
-    L'appel à cette méthode n'est possible que pour les variables
-    privées (propriété PPrivate). Pour les autres, une exception est
-    levée (il faut utiliser lock()).
+    Calling this method is only possible for private variables
+    (PPrivate property). For others, an exception is
+    raised (you must use lock()).
     */
   ARCCORE_DEPRECATED_2021("Use _internalTrueData() instead.")
   ARCANE_CORE_EXPORT ContainerType& internalContainer();
@@ -137,4 +138,4 @@ class VariableRefArrayT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

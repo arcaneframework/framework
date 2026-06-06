@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITimeHistoryCurveWriter2.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un écrivain d'une courbe d'un historique (Version 2).         */
+/* Interface for a history curve writer (Version 2).                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITIMEHISTORYCURVEWRITER2_H
 #define ARCANE_CORE_ITIMEHISTORYCURVEWRITER2_H
@@ -19,9 +19,9 @@
 #include "arcane/utils/String.h"
 
 /*
- * \brief Indique si on autorise l'accès aux membres privés.
- * Par défaut (mars 2016) on laisse l'accès pour des raisons de compatibilité,
- * mais il faudra le supprimer.
+ * \brief Indicates whether private member access is allowed.
+ * By default (March 2016), access is kept for compatibility reasons,
+ * but it will need to be removed.
  */
 #define ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS 1
 #ifdef SWIG
@@ -36,8 +36,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour l'écriture d'une courbe.
+ * \brief Information for writing a curve.
  */
 class TimeHistoryCurveInfo
 {
@@ -89,17 +90,17 @@ class TimeHistoryCurveInfo
 
  public:
 
-  //! Nom de la courbe
+  //! Curve name
   const String& name() const { return m_name; }
   const String& support() const { return m_support; }
   bool hasSupport() const { return m_has_support; }
-  //! Liste des itérations
+  //! List of iterations
   Int32ConstArrayView iterations() const { return m_iterations; }
-  //! Liste des valeurs de la courbe
+  //! List of curve values
   RealConstArrayView values() const { return m_values; }
-  //! Nombre de valeur par temps
+  //! Number of values per time step
   Integer subSize() const { return m_sub_size; }
-  // TODO nom pas terrible
+  // TODO not a great name
   Integer subDomain() const { return m_sub_domain; }
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
@@ -119,8 +120,9 @@ class TimeHistoryCurveInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur l'écriture des courbes.
+ * \brief Information about writing curves.
  */
 class TimeHistoryCurveWriterInfo
 {
@@ -134,11 +136,11 @@ class TimeHistoryCurveWriterInfo
  public:
 
   /*!
-   * \brief Chemin ou écrire les données (sauf si surchargé spécifiquement
-   * par le service via ITimeHistoryCurveWriter2::setOutputPath())
+   * \brief Path to write the data (unless specifically overridden
+   * by the service via ITimeHistoryCurveWriter2::setOutputPath())
    */
   String path() const { return m_path; }
-  //! Liste des temps
+  //! List of times
   RealConstArrayView times() const { return m_times; }
 
 #if ARCANE_ALLOW_CURVE_WRITER_PRIVATE_ACCESS
@@ -153,11 +155,12 @@ class TimeHistoryCurveWriterInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup StandardService
- * \brief Interface d'un écrivain d'une courbe.
+ * \brief Interface for a curve writer.
  *
- * Lors de l'écriture des courbes, l'instance sera appelée comme suit:
+ * When writing curves, the instance will be called as follows:
  * \code
  * ITimeHistoryCurveWriter2* instance = ...;
  * instance->beginWrite();
@@ -170,7 +173,7 @@ class ARCANE_CORE_EXPORT ITimeHistoryCurveWriter2
 {
  public:
 
-  //! Libère les ressources
+  //! Release resources
   virtual ~ITimeHistoryCurveWriter2() = default;
 
  public:
@@ -178,38 +181,38 @@ class ARCANE_CORE_EXPORT ITimeHistoryCurveWriter2
   virtual void build() = 0;
 
   /*!
-   * \brief Notifie un début d'écriture.
+   * \brief Notify the start of writing.
    */
   virtual void beginWrite(const TimeHistoryCurveWriterInfo& infos) = 0;
 
   /*!
-   * \brief Notifie la fin de l'écriture.
+   * \brief Notify the end of writing.
    */
   virtual void endWrite() = 0;
 
   /*!
-   * \brief Ecrit une courbe.
+   * \brief Write a curve.
    *
-   * Les infos de la courbe sont données par \a infos
-   * Les valeurs sont dans le tableau \a values. \a times et \a iterations
-   * contiennent respectivement le temps et le numéro de l'itération pour
-   * chaque valeur.
-   * \a path contient le répertoire où seront écrites les courbes
+   * Curve info is provided by \a infos
+   * Values are in the array \a values. \a times and \a iterations
+   * contain respectively the time and the iteration number for
+   * each value.
+   * \a path contains the directory where the curves will be written
    */
   virtual void writeCurve(const TimeHistoryCurveInfo& infos) = 0;
 
-  //! Nom de l'écrivain
+  //! Writer name
   virtual String name() const = 0;
 
   /*!
-   * \brief Répertoire de base où seront écrites les courbes.
+   * \brief Base directory where curves will be written.
    *
-   * Si nul, c'est le répertoire spécifié lors de beginWrite()
-   * qui est utilisé.
+   * If null, the directory specified during beginWrite()
+   * will be used.
    */
   virtual void setOutputPath(const String& path) = 0;
 
-  //! Répertoire de base où seront écrites les courbes.
+  //! Base directory where curves will be written.
   virtual String outputPath() const = 0;
 };
 

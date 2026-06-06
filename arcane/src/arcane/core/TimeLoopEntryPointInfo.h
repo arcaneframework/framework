@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TimeLoopEntryPointInfo.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Informations sur un point d'entrée de la boucle en temps.                 */
+/* Information about a time loop entry point.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_TIMELOOPENTRYPOINTINFO_H
 #define ARCANE_TIMELOOPENTRYPOINTINFO_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Infos d'un point d'entrée d'une boucle en temps.
+ * \brief Info about a time loop entry point.
  */
 class TimeLoopEntryPointInfo
 {
@@ -35,10 +36,12 @@ class TimeLoopEntryPointInfo
 
   TimeLoopEntryPointInfo() {}
   explicit TimeLoopEntryPointInfo(const String& aname)
-  : m_name(aname) { }
-  TimeLoopEntryPointInfo(const String& aname,const StringList& modules_depend)
-  : m_name(aname), m_modules_depend(modules_depend)
-  { }
+  : m_name(aname)
+  {}
+  TimeLoopEntryPointInfo(const String& aname, const StringList& modules_depend)
+  : m_name(aname)
+  , m_modules_depend(modules_depend)
+  {}
 
  public:
 
@@ -47,12 +50,12 @@ class TimeLoopEntryPointInfo
 
   bool operator==(const TimeLoopEntryPointInfo& rhs) const
   {
-    if (m_name!=rhs.m_name)
+    if (m_name != rhs.m_name)
       return false;
-    if (m_modules_depend.count()!=rhs.m_modules_depend.count())
+    if (m_modules_depend.count() != rhs.m_modules_depend.count())
       return false;
-    for( Integer i=0, is=m_modules_depend.count(); i<is; ++i )
-      if (m_modules_depend[i]!=rhs.m_modules_depend[i])
+    for (Integer i = 0, is = m_modules_depend.count(); i < is; ++i)
+      if (m_modules_depend[i] != rhs.m_modules_depend[i])
         return false;
     return true;
   }
@@ -71,5 +74,4 @@ class TimeLoopEntryPointInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

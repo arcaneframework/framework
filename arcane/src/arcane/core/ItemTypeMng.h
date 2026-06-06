@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ItemTypeMng.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire des types d'entité du maillage.                              */
+/* Mesh entity type manager.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_ITEMTYPEMNG_H
 #define ARCANE_CORE_ITEMTYPEMNG_H
@@ -46,20 +46,21 @@ class MultiBufferT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Mesh
- * \brief Gestionnaire des types d'entités d'un maillage.
+ * \brief Mesh entity type manager.
  *
- * Il faut appeler build(IMesh*) avant de pouvoir utiliser cette
+ * You must call build(IMesh*) before being able to use this
  * instance.
  *
- * Les types souhaités (autre que les types par défaut) doivent être ajoutés
- * avant que le premier maillage ne soit créé. Il n'est pas possible
- * de créer de nouveaux types pendant l'exécution.
+ * The desired types (other than the default types) must be added
+ * before the first mesh is created. It is not possible
+ * to create new types during execution.
  * 
- * Les types disponibles doivent être strictement identiques pour tous
- * les processus (i.e Tous les ItemTypeMng de tous les processus doivent
- * avoir les mêmes types).
+ * The available types must be strictly identical for all
+ * processes (i.e. All ItemTypeMngs of all processes must
+ * have the same types).
   */
 class ARCANE_CORE_EXPORT ItemTypeMng
 {
@@ -74,43 +75,43 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  protected:
 
-  //! Constructeur vide (non initialisé)
+  //! Empty constructor (uninitialized)
   ItemTypeMng();
   ~ItemTypeMng();
 
  public:
 
   /*!
-   * \brief Constructeur effectif.
+   * \brief Effective constructor.
    *
-   * Cette méthode ne doit être appelée que pout initialiser
-   * l'instance singleton qui est obsolète.
+   * This method should only be called before initializing
+   * the obsolete singleton instance.
    *
-   * \deprecated Utiliser build(IMesh*) à la place.
+   * \deprecated Use build(IMesh*) instead.
    */
   ARCCORE_DEPRECATED_REASON("Y2025: Use build(IMesh*) instead")
   void build(IParallelSuperMng* parallel_mng, ITraceMng* trace);
 
   /*!
-   * \brief Construit l'instance associée au maillage \a mesh.
+   * \brief Constructs the instance associated with the mesh \a mesh.
    */
   void build(IMesh* mesh);
 
  private:
 
-  /*! \brief Instance singleton du type
+  /*! \brief Singleton instance of the type
    *
-   * Le singleton est créé lors du premier appel à cette fonction.
-   * Il reste valide tant que destroySingleton() n'a pas été appelé
+   * The singleton is created upon the first call to this function.
+   * It remains valid until destroySingleton() has been called
    *
-   * \todo: a supprimer dès que plus personne ne fera d'accès à singleton()
+   * \todo: to be removed as soon as no one accesses singleton()
    */
   static ItemTypeMng* _singleton();
 
   /*!
-   * \brief Détruit le singleton
+   * \brief Destroys the singleton
    *
-   * Le singleton peut ensuite être reconstruit par appel à destroySingleton()
+   * The singleton can then be reconstructed by calling destroySingleton()
    */
   static void _destroySingleton();
 
@@ -119,72 +120,72 @@ class ARCANE_CORE_EXPORT ItemTypeMng
  public:
 
   /*!
-   * \brief Instance singleton du type
+   * \brief Singleton instance of the type
    *
-   * Le singleton est créé lors du premier appel à cette fonction.
-   * Il reste valide tant que destroySingleton() n'a pas été appelé
+   * The singleton is created upon the first call to this function.
+   * It remains valid until destroySingleton() has been called
    */
   ARCCORE_DEPRECATED_2021("Use IMesh::itemTypeMng() to get an instance of ItemTypeMng")
   static ItemTypeMng* singleton() { return _singleton(); }
 
   /*!
-   * \brief Détruit le singleton
+   * \brief Destroys the singleton
    *
-   * Le singleton peut ensuite être reconstruit par appel à singleton()
+   * The singleton can then be reconstructed by calling singleton()
    */
   ARCCORE_DEPRECATED_2021("Do not use this method")
   static void destroySingleton() { _destroySingleton(); }
 
  public:
 
-  //! Liste des types disponibles
+  //! List of available types
   ConstArrayView<ItemTypeInfo*> types() const;
 
-  //! Type correspondant au numéro \a id
+  //! Type corresponding to the number \a id
   ItemTypeInfo* typeFromId(Integer id) const;
 
-  //! Type correspondant au numéro \a id
+  //! Type corresponding to the number \a id
   ItemTypeInfo* typeFromId(ItemTypeId id) const;
 
-  //! Nom du type correspondant au numéro \a id
+  //! Name of the type corresponding to the number \a id
   String typeName(Integer id) const;
 
-  //! Nom du type correspondant au numéro \a id
+  //! Name of the type corresponding to the number \a id
   String typeName(ItemTypeId id) const;
 
-  //! Affiche les infos sur les types disponibles sur le flot \a ostr
+  //! Prints information about available types to the stream \a ostr
   void printTypes(std::ostream& ostr);
 
-  //! Indique si le maillage \a mesh contient des mailles génériques (en dehors des types intégrés ou additionnels)
+  //! Indicates if the mesh \a mesh contains generic cells (outside of built-in or additional types)
   bool hasGeneralCells(IMesh* mesh) const;
 
-  //! Permet au maillage d'indiquer à l'ItemTypeMng s'il a des mailles génériques
+  //! Allows the mesh to indicate to the ItemTypeMng if it has generic cells
   void setMeshWithGeneralCells(IMesh* mesh) noexcept;
 
   /*!
-   * \brief Construit les types pour gérer les polygones.
+   * \brief Builds types to manage polygons.
    *
-   * Cela permet de rendre accessible le type ITI_GenericPolygon.
-   * Si ces types ont déjà été construit, cette méthode est sans effet.
+   * This makes the ITI_GenericPolygon type accessible.
+   * If these types have already been built, this method has no effect.
    */
   void buildPolygonTypes();
 
   /*!
-   * \brief Retourne le type pour un polygone ayant \a nb_node.
+   * \brief Returns the type for a polygon having \a nb_node.
    *
-   * Si \a nb_node est comprise entre 3 et 8 inclus, retourne le type
-   * interne correspondant (ITI_Triangle3, ITI_Quad4, ..., ITI_Octogon8).
-   * Sinon, retourne le type additionnel à condition que buildPolygonTypes()
-   * ait été appelé avant.
+   * If \a nb_node is between 3 and 8 inclusive, it returns the corresponding internal type
+   * (ITI_Triangle3, ITI_Quad4, ..., ITI_Octogon8).
+   * Otherwise, it returns the additional type provided that buildPolygonTypes()
+   * has been called beforehand.
    *
-   * Lève une exception NotSupportedException si aucun type ne correspond.
+   * Throws a NotSupportedException if no type matches.
    */
   ItemTypeId getPolygonType(Int16 nb_node) const;
 
-  //! nombre de types disponibles
+  //! number of available types
   static Integer nbBasicItemType();
 
-  //! nombre de types intégrés (hors types additionnels)
+  //! number of built-in types (excluding additional types)
   static Integer nbBuiltInItemType();
 
   // AMR
@@ -192,42 +193,42 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  private:
 
-  //! Instance singleton
+  //! Singleton instance
   static ItemTypeMng* singleton_instance;
 
-  //! Nombre de types intégrés (hors types additionnels)
+  //! Number of built-in types (excluding additional types)
   static const Integer m_nb_builtin_item_type;
 
-  //! Flag d'initialisation
+  //! Initialization flag
   bool m_initialized = false;
 
   std::atomic<Int32> m_initialized_counter = 0;
 
-  //! Gestionnaire de traces
+  //! Trace manager
   ITraceMng* m_trace = nullptr;
 
-  //! Liste des types
+  //! List of types
   UniqueArray<ItemTypeInfo*> m_types;
 
-  //! Allocations des objets de type (il faut un pointeur pour éviter inclusion multiple)
+  //! Allocations of type objects (a pointer is needed to avoid multiple inclusion)
   MultiBufferT<ItemTypeInfoBuilder>* m_types_buffer = nullptr;
 
-  //! Ensemble des maillages contenant des mailles générales (sans type défini)
+  //! Set of meshes containing generic cells (without a defined type)
   std::set<IMesh*> m_mesh_with_general_cells;
 
-  //! Tableau contenant les données de type.
+  //! Array containing type data.
   UniqueArray<Integer> m_ids_buffer;
 
-  //! Indique si les types gérant les polygones ont déjà été construits.
+  //! Indicates if the types managing polygons have already been built.
   bool m_has_polygon_type = false;
 
  private:
 
   void _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace);
   void _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace);
-  //! Lecture des types a partir d'un fichier de nom filename
+  //! Reads types from a file named filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
-  void _addPolygonType(Int16 type_id,Int32 nb_node,const String& type_name);
+  void _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name);
 };
 
 /*---------------------------------------------------------------------------*/

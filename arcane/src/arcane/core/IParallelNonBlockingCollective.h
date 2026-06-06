@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IParallelNonBlockingCollective.h                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface des opérations parallèles collectives non bloquantes.           */
+/* Interface for non-blocking collective parallel operations.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IPARALLELNONBLOCKINGCOLLECTIVE_H
 #define ARCANE_CORE_IPARALLELNONBLOCKINGCOLLECTIVE_H
@@ -21,21 +21,21 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * NOTE:
- * Le but est est IParallelNonBlockingCollective possède les
- * mêmes méthodes collectives que IParallelMng. Cependant, certaines
- * méthodes collectives de IParallleMng font en fait appel dans leur
- * implémentation à plusieurs appels collectifs. Il n'est donc pas
- * possible de transformer cela directement en opérations collectives.
- * Pour implémenter cela avec MPI, il faudrait pouvoir associer un callback
- * à chaque requête (ce callback serait appelé lorsque la requête est terminée)
- * qui permettrait de poursuivre les opérations. Mais cela
- * n'est pas disponible actuellement (peut-être cela est-il possible
- * avec les requêtes généralisées).
- * En attendant, on supprime de l'interface ces appels en les protégeant
- * par un define _NEED_ADVANCED_NBC.
+ * The goal is that IParallelNonBlockingCollective possesses the same
+ * collective methods as IParallelMng. However, some collective methods in
+ * IParallleMng actually call multiple collective operations in their
+ * implementation. It is therefore not possible to transform this directly
+ * into collective operations. To implement this with MPI, it would be
+ * necessary to be able to associate a callback with each request (this
+ * callback would be called when the request is finished) which would allow
+ * operations to continue. But this is not currently available (perhaps this
+ * is possible with generalized requests). For now, we remove these calls
+ * from the interface by protecting them with a define _NEED_ADVANCED_NBC.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,15 +44,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Parallel
- * \brief Interface des opérations parallèles collectives non bloquantes.
+ * \brief Interface for non-blocking collective parallel operations.
  */
 class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 {
  public:
 
-  virtual ~IParallelNonBlockingCollective() = default; //!< Libère les ressources.
+  virtual ~IParallelNonBlockingCollective() = default; //!< Releases resources.
 
  public:
 
@@ -61,12 +62,12 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 
  public:
 
-  //! Construit l'instance.
+  //! Constructs the instance.
   virtual void build() = 0;
 
  public:
 
-  //! Gestionnaire de parallélisme associé.
+  //! Associated parallelism manager.
   virtual IParallelMng* parallelMng() const = 0;
 
  public:
@@ -74,11 +75,11 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
   //! @name allGather
   //@{
   /*!
-   * \brief Effectue un regroupement sur tous les processeurs.
-   * Il s'agit d'une opération collective. Le tableau \a send_buf
-   * doit avoir la même taille, notée \a n, pour tous les processeurs et
-   * le tableau \a recv_buf doit avoir une taille égale au nombre
-   * de processeurs multiplié par \a n.
+   * \brief Performs a gather on all processors.
+   * This is a collective operation. The array \a send_buf
+   * must have the same size, denoted \a n, for all processors and
+   * the array \a recv_buf must have a size equal to the number
+   * of processors multiplied by \a n.
    */
   virtual Request allGather(ConstArrayView<char> send_buf, ArrayView<char> recv_buf) = 0;
   virtual Request allGather(ConstArrayView<unsigned char> send_buf, ArrayView<unsigned char> recv_buf) = 0;
@@ -108,12 +109,12 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
   //! @name gather
   //@{
   /*!
-   * \brief Effectue un regroupement sur un processeurs.
-   * Il s'agit d'une opération collective. Le tableau \a send_buf
-   * doit avoir la même taille, notée \a n, pour tous les processeurs et
-   * le tableau \a recv_buf pour le processeur \a rank doit avoir une taille égale au nombre
-   * de processeurs multiplié par \a n. Ce tableau \a recv_buf est inutilisé pour
-   * les autres rangs que \a rank.
+   * \brief Performs a gather on one processor.
+   * This is a collective operation. The array \a send_buf
+   * must have the same size, denoted \a n, for all processors and
+   * the array \a recv_buf for processor \a rank must have a size equal to the number
+   * of processors multiplied by \a n. This array \a recv_buf is unused for
+   * ranks other than \a rank.
    */
   virtual Request gather(ConstArrayView<char> send_buf, ArrayView<char> recv_buf, Integer rank) = 0;
   virtual Request gather(ConstArrayView<unsigned char> send_buf, ArrayView<unsigned char> recv_buf, Integer rank) = 0;
@@ -145,13 +146,13 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 
 #if _NEED_ADVANCED_NBC
   /*!
-   * \brief Effectue un regroupement sur tous les processeurs.
+   * \brief Performs a gather on all processors.
    *
-   * Il s'agit d'une opération collective. Le nombre d'éléments du tableau
-   * \a send_buf peut être différent pour chaque processeur. Le tableau
-   * \a recv_buf contient en sortie la concaténation des tableaux \a send_buf
-   * de chaque processeur. Ce tableau \a recv_buf est éventuellement redimensionné
-   * pour le processeurs de rang \a rank.
+   * This is a collective operation. The number of elements in the array
+   * \a send_buf can be different for each processor. The array
+   * \a recv_buf contains the concatenation of the arrays \a send_buf
+   * from each processor as output. This array \a recv_buf may be resized
+   * for the processor of rank \a rank.
    */
   virtual Request gatherVariable(ConstArrayView<char> send_buf,
                                  Array<char>& recv_buf, Integer rank) = 0;
@@ -203,12 +204,12 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 
 #if _NEED_ADVANCED_NBC
   /*!
-   * \brief Effectue un regroupement sur tous les processeurs.
+   * \brief Performs a gather on all processors.
    *
-   * Il s'agit d'une opération collective. Le nombre d'éléments du tableau
-   * \a send_buf peut être différent pour chaque processeur. Le tableau
-   * \a recv_buf contient en sortie la concaténation des tableaux \a send_buf
-   * de chaque processeur. Ce tableau \a recv_buf est éventuellement redimensionné.
+   * This is a collective operation. The number of elements in the array
+   * \a send_buf can be different for each processor. The array
+   * \a recv_buf contains the concatenation of the arrays \a send_buf
+   * from each processor as output. This array \a recv_buf may be resized.
    */
   virtual Request allGatherVariable(ConstArrayView<char> send_buf,
                                     Array<char>& recv_buf) = 0;
@@ -256,10 +257,10 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 #endif
 
 #if _NEED_ADVANCED_NBC
-  //! @name opérations de réduction sur un scalaire
+  //! @name scalar reduction operations
   //@{
   /*!
-   * \brief Scinde un tableau sur plusieurs processeurs.
+   * \brief Splits an array across multiple processors.
    */
   virtual Request scatterVariable(ConstArrayView<char> send_buf,
                                   ArrayView<char> recv_buf, Integer root) = 0;
@@ -302,11 +303,11 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
   //@}
 #endif
 
-  //! @name opérations de réduction sur un tableau
+  //! @name Array reduction operations
   //@{
   /*!
-   * \brief Effectue la réduction de type \a rt sur le tableau \a send_buf et
-   * stoque le résultat dans \a recv_buf.
+   * \brief Performs the reduction of type \a rt on the array \a send_buf and
+   * stores the result in \a recv_buf.
    */
   virtual Request allReduce(eReduceType rt, ConstArrayView<char> send_buf, ArrayView<char> recv_buf) = 0;
   virtual Request allReduce(eReduceType rt, ConstArrayView<signed char> send_buf, ArrayView<signed char> recv_buf) = 0;
@@ -333,15 +334,15 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
   //@}
 
   /*!
-   * @name opérations de broadcast
+   * @name Broadcast operations
    *
-   * \brief Envoie un tableau de valeurs sur tous les sous-domaines.
+   * \brief Sends an array of values to all subdomains.
    *
-   * Cette opération envoie le tableau de valeur \a send_buf sur tous
-   * les sous-domaines. Le tableau utilisé est celui dont le rang (commRank) est \a rank.
-   * Tous les sous-domaines participants doivent appelés cette méthode avec
-   * le même paramètre \a rank et avoir un tableau \a send_buf
-   * contenant le même nombre d'éléments.
+   * This operation sends the value array \a send_buf to all
+   * subdomains. The array used is the one whose rank (commRank) is \a rank.
+   * All participating subdomains must call this method with
+   * the same parameter \a rank and have an array \a send_buf
+   * containing the same number of elements.
    */
   //@{
   virtual Request broadcast(ArrayView<char> send_buf, Integer rank) = 0;
@@ -369,12 +370,12 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
   //virtual Request broadcastString(String& str,Integer rank) =0;
 
   //virtual Request broadcastSerializer(ISerializer* values,Integer rank) =0;
-  /*! \brief Effectue un broadcast d'une zone mémoire.
+  /*! \brief Performs a broadcast of a memory region.
    *
-   * Le processeur qui effectue le broacast est donnée par \id. Le tableau
-   * envoyé est alors donnée par \a bytes. Les processeurs réceptionnent
-   * le tableau dans \a bytes. Ce tableau est alloué automatiquement, les processeurs
-   * réceptionnant n'ont pas besoin de connaitre le nombre d'octets devant être envoyés.
+   * The processor performing the broadcast is given by \id. The array
+   * sent is then given by \a bytes. The receiving processors receive
+   * the array in \a bytes. This array is allocated automatically; receiving
+   * processors do not need to know the number of bytes to be sent.
    *
    */
   //virtual Request broadcastMemoryBuffer(ByteArray& bytes,Integer rank) =0;
@@ -422,7 +423,7 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 
   /*! @name allToAll variable
    *
-   * \brief Effectue un allToAll variable
+   * \brief Performs a variable allToAll.
    *
    */
   //@{
@@ -490,20 +491,18 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
                                    Int32ConstArrayView recv_count, Int32ConstArrayView recv_index) = 0;
   //@}
 
-  //! @name opérations de synchronisation et opérations asynchrones
+  //! @name Synchronization and asynchronous operations
   //@{
-  //! Effectue une barière
+  //! Performs a barrier
   virtual Request barrier() = 0;
   //@}
 
   /*!
-   * \brief Indique si l'implémentation autorise les réductions sur les types
-   * dérivés.
+   * \brief Indicates if the implementation allows reductions on derived types.
    *
-   * Les version de OpenMPI jusqu'à la version 1.8.4 incluses semblent avoir
-   * un bug (qui se traduit par un plantage) avec les réductions non bloquantes
-   * lorsque l'opérateur de réduction est redéfini. C'est le cas avec les
-   * types dérivés tels que Real3, Real2, ...
+   * OpenMPI versions up to and including 1.8.4 seem to have a bug (which results in a crash)
+   * with non-blocking reductions when the reduction operator is redefined. This is the case with
+   * derived types such as Real3, Real2, ...
    */
   virtual bool hasValidReduceForDerivedType() const = 0;
 };
@@ -516,4 +515,4 @@ class ARCANE_CORE_EXPORT IParallelNonBlockingCollective
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

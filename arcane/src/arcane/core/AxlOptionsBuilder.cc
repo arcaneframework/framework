@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AxlOptionsBuilder.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Classes pour créer dynamiquement des options du jeu de données.           */
+/* Classes to dynamically create data set options.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,11 +28,11 @@
 
 namespace Arcane::AxlOptionsBuilder
 {
-// TODO: traiter en JSON le cas où une option avec le même nom est présente
-// plusieurs fois.
+// TODO: handle in JSON the case where an option with the same name is present
+// multiple times.
 
-// TODO: utiliser une union dans option pour conserver les valeurs comme les
-// réels sans les transformer immédiatement en chaîne de caractères.
+// TODO: use a union in option to keep values as
+// reals without immediately converting them to strings.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -179,7 +179,7 @@ clone() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Écrivain au format XML pour un jeu de données.
+//! XML writer for a data set.
 class DocumentXmlWriter
 {
  public:
@@ -230,7 +230,7 @@ class DocumentXmlWriter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Écrivain au format JSON pour un jeu de données.
+//! JSON writer for a data set.
 class DocumentJSONWriter
 {
  public:
@@ -248,10 +248,10 @@ class DocumentJSONWriter
   void _write(const Document& doc)
   {
     JSONWriter::Object o(m_json_writer);
-    m_json_writer.write("language",doc.language());
-    m_json_writer.write("version","1");
+    m_json_writer.write("language", doc.language());
+    m_json_writer.write("version", "1");
     {
-      JSONWriter::Object o2(m_json_writer,"options");
+      JSONWriter::Object o2(m_json_writer, "options");
       _write(doc.m_options.m_p.get());
     }
   }
@@ -260,11 +260,11 @@ class DocumentJSONWriter
   {
     if (!opt)
       return;
-    // TODO: traiter le cas où une option avec le même nom
-    // est présente plusieurs fois.
-    // En théorie on peut avoir plusieurs la même clé mais
-    // ce n'est pas recommandé. Le mieux dans ce cas est
-    // d'utiliser un tableau.
+    // TODO: handle the case where an option with the same name
+    // is present multiple times.
+    // In theory, you can have multiple with the same key, but
+    // this is not recommended. The best approach in this case is
+    // to use an array.
     for (OneOption& o : opt->m_options) {
       _write(o);
     }
@@ -273,32 +273,32 @@ class DocumentJSONWriter
   void _write(OneOption& o)
   {
     OneOptionImpl* sub_options = o.m_sub_option.get();
-    if (o.m_type==OneOption::Type::CO_ServiceInstance){
-      JSONWriter::Object j1(m_json_writer,o.m_name);
+    if (o.m_type == OneOption::Type::CO_ServiceInstance) {
+      JSONWriter::Object j1(m_json_writer, o.m_name);
       if (!o.m_service_name.null())
-        m_json_writer.write("$name",o.m_service_name);
+        m_json_writer.write("$name", o.m_service_name);
       _write(sub_options);
       return;
     }
 
-    if (o.m_type==OneOption::Type::CO_Complex){
-      JSONWriter::Object j1(m_json_writer,o.m_name);
+    if (o.m_type == OneOption::Type::CO_Complex) {
+      JSONWriter::Object j1(m_json_writer, o.m_name);
       _write(sub_options);
       return;
     }
 
-    // Valeur simple ou énuméréé ou étendu.
-    // Si pas de table de marche, on fait directement { "clé" : "valeur" }.
-    // Sinon on utilise un sous-objet:
+    // Simple or enumerated or extended value.
+    // If there is no table of march, we do directly { "key" : "value" }.
+    // Otherwise we use a sub-object:
     // {
-    //   "$function" : "nom_de_la_fonction,
-    //   "$value" : "valeur"
+    //   "$function" : "function_name",
+    //   "$value" : "value"
     // }
 
     if (!o.m_function_name.null()) {
-      JSONWriter::Object j1(m_json_writer,o.m_name);
-      m_json_writer.write(m_case_function_json_name,o.m_function_name);
-      m_json_writer.write("$value",o.m_value);
+      JSONWriter::Object j1(m_json_writer, o.m_name);
+      m_json_writer.write(m_case_function_json_name, o.m_function_name);
+      m_json_writer.write("$value", o.m_value);
       return;
     }
 
@@ -364,7 +364,7 @@ _testAxlOptionsBuilder()
                                    { Simple("service-option1", 25),
                                      Simple("service-option2", 3.2) }),
                    ServiceInstance("my-service2", "TestService2"),
-                   // TODO ajouter service avec nom par défaut.
+                   // TODO add service with default name.
                    ServiceInstance("my-service3", "TestService3", service_opt),
                    Complex("sub-opt1",
                            { Simple("max", 25),

@@ -1,21 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ItemCompatibility.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Méthodes assurant la compatibilité entre versions de Item.                */
+/* Methods ensuring compatibility between Item versions.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMCOMPATIBILITY_H
 #define ARCANE_ITEMCOMPATIBILITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE: Ce fichier est inclus directement par 'Item.h' et ne doit pas
-// être inclus directement par d'autres fichiers.
+// NOTE: This file is included directly by 'Item.h' and should not
+// be included directly by other files.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ namespace mesh
   class OneMeshItemAdder;
   class ParallelAMRConsistency;
   class MeshRefinement;
-}
+} // namespace mesh
 namespace AnyItem
 {
   class Group;
@@ -49,15 +49,15 @@ namespace AnyItem
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Méthodes pour conversions entre différentes classes de gestion
- * des entités
+ * \brief Methods for conversions between different entity management classes
+ * of entities
  *
- * Cette classe est temporaire et interne à Arcane. Seules les classes 'friend'
- * peuvent l'utiliser.
+ * This class is temporary and internal to Arcane. Only 'friend' classes
+ * can use it.
  */
 class ItemCompatibility
 {
-  // Pour accéder à _internal()
+  // For accessing _internal()
   friend Materials::ComponentItemInternal;
   friend class ItemSharedInfo;
   friend class IItemFamilyModifier;

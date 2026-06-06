@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMeshExchanger.h                                            (C) 2000-2022 */
 /*                                                                           */
-/* Gestion d'un échange de maillage entre sous-domaines.                     */
+/* Mesh exchange management between subdomains.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IMESHEXCHANGER_H
 #define ARCANE_IMESHEXCHANGER_H
@@ -31,17 +31,19 @@ class IItemFamilyExchanger;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'un échange de maillage entre sous-domaines.
+ * \brief Management of a mesh exchange between subdomains.
  *
- * Un échange se fait en plusieurs phases, qui doivent être effectuées
- * dans l'ordre dicté par l'énumération ePhase.
+ * An exchange takes place in several phases, which must be executed
+ * in the order dictated by the ePhase enumeration.
  *
  */
 class ARCANE_CORE_EXPORT IMeshExchanger
 {
  public:
-  //! Indique les différentes phases de l'échange
+
+  //! Indicates the different phases of the exchange
   enum class ePhase
   {
     Init = 0,
@@ -54,113 +56,114 @@ class ARCANE_CORE_EXPORT IMeshExchanger
     Finalize,
     Ended
   };
+
  public:
 
-  virtual ~IMeshExchanger() {} //<! Libère les ressources
+  virtual ~IMeshExchanger() {} //<! Releases resources
 
  public:
 
   /*!
-   * \brief Calcule les infos à envoyer/recevoir des autres sous-domaines.
+   * \brief Calculates the information to send/receive from other subdomains.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Le calcul des informations à envoyer se fait en connaissant le nouveau
-   * propriétaire de chaque entité. Cette information est conservée dans
-   * la variable IItemFamily::itemsNewOwner(). Par exemple, une maille
-   * sera migrée si le nouveau propriétaire est différent du propriétaire
-   * actuel (qui est donné par Item::owner()).
+   * The calculation of information to send is done by knowing the new
+   * owner of each entity. This information is stored in
+   * the IItemFamily::itemsNewOwner() variable. For example, a mesh
+   * will be migrated if the new owner is different from the current owner
+   * (which is given by Item::owner()).
    *
-   * Après appel à cette méthode chaque entité du maillage est modifiée comme suit:
-   * - le champ Item::owner() indique le nouveau propriétaire.
-   * - les entités qui seront supprimées après l'échange sont marquées par le flag
-   *   ItemFlags::II_NeedRemove (sauf pour l'instant pour les particules
-   *   sans notion de fantôme mais c'est temporaire).
+   * After calling this method, each mesh entity is modified as follows:
+   * - the Item::owner() field indicates the new owner.
+   * - the entities that will be deleted after the exchange are marked by the flag
+   *   ItemFlags::II_NeedRemove (except for now for particles
+   *   without the concept of ghosts, but this is temporary).
    *
-   * Retourne \a true s'il n'y a aucun échange à effectuer.
+   * Returns true if there is no exchange to perform.
    *
    * \pre phase()==ePhase::ComputeInfos
    * \post phase()==ePhase::ProcessExchange
    */
-  virtual bool computeExchangeInfos() =0;
+  virtual bool computeExchangeInfos() = 0;
 
   /*!
-   * \brief Procède à l'échange des informations entre les sous-domaines.
+   * \brief Performs the exchange of information between subdomains.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Cette opération ne fait aucune modification sur le maillage. Elle se
-   * contente juste d'envoyer et de recevoir les informations nécesaire pour
-   * la mise à jour du maillage.
+   * This operation makes no modification to the mesh. It simply
+   * sends and receives the necessary information for
+   * mesh update.
    *
    * \pre phase()==ePhase::ProcessExchange
    * \post phase()==ePhase::RemoveItems
    */
-  virtual void processExchange() =0;
+  virtual void processExchange() = 0;
 
   /*!
-   * \brief Supprime de ce sous-domaine les entités qui ne doivent plus
-   * s'y trouver suite à l'échange.
+   * \brief Deletes from this subdomain the entities that should no longer
+   * be there following the exchange.
    *
-   * Toutes les entités marquées avec le flag ItemFlags::II_NeedRemove
-   * sont supprimées.
+   * All entities marked with the ItemFlags::II_NeedRemove flag
+   * are deleted.
    *
    * \pre phase()==ePhase::RemoveItems
    * \post phase()==ePhase::AllocateItems
    */
-  virtual void removeNeededItems() =0;
+  virtual void removeNeededItems() = 0;
 
   /*!
-   * \brief Alloue les entités réceptionnées depuis les autre sous-domaines.
+   * \brief Allocates the entities received from other subdomains.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
    * \pre phase()==ePhase::AllocateItems
    * \post phase()==ePhase::UpdateItemGroups
    */
-  virtual void allocateReceivedItems() =0;
+  virtual void allocateReceivedItems() = 0;
 
   /*!
-   * \brief Mise à jour des groupes d'entités
+   * \brief Update of entity groups
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
    * \pre phase()==ePhase::UpdateItemGroups
    * \post phase()==ePhase::UpdateVariables
    */
-  virtual void updateItemGroups() =0;
+  virtual void updateItemGroups() = 0;
 
   /*!
-   * \brief Mise à jour des variables
+   * \brief Update of variables
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
    * \pre phase()==ePhase::UpdateVariables
    * \post phase()==ePhase::Finalize
    */
-  virtual void updateVariables() =0;
+  virtual void updateVariables() = 0;
 
   /*!
-   * \brief Finalise les échanges.
+   * \brief Finalizes the exchanges.
    *
-   * Cette opération est collective.
+   * This operation is collective.
    *
-   * Cette méthode effectue les dernières opérations nécessaires lors
-   * de l'échange.
+   * This method performs the last necessary operations during
+   * the exchange.
    *
    * \pre phase()==ePhase::Finalize
    * \post phase()==ePhase::Ended
    */
-  virtual void finalizeExchange() =0;
+  virtual void finalizeExchange() = 0;
 
-  //! Maillage associé à cet échangeur.
-  virtual IPrimaryMesh* mesh() const =0;
+  //! Mesh associated with this exchanger.
+  virtual IPrimaryMesh* mesh() const = 0;
 
-  //! Échangeur associé à la famille \a family. Lance une exception si non trouvé
-  virtual IItemFamilyExchanger* findExchanger(IItemFamily* family) =0;
+  //! Exchanger associated with the \a family. Throws an exception if not found.
+  virtual IItemFamilyExchanger* findExchanger(IItemFamily* family) = 0;
 
-  //! Phase de l'échange dans laquelle on se trouve.
-  virtual ePhase phase() const =0;
+  //! Phase of the exchange we are currently in.
+  virtual ePhase phase() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -171,4 +174,4 @@ class ARCANE_CORE_EXPORT IMeshExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

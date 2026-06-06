@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MeshKind.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Caractéristiques d'un maillage.                                           */
+/* Characteristics of a mesh.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MESHKIND_H
 #define ARCANE_CORE_MESHKIND_H
@@ -24,16 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Structure du maillage
+
+//! Mesh structure
 enum class eMeshStructure
 {
-  //! Structure inconnu ou pas initialisée
+  //! Unknown or not initialized
   Unknown,
-  //! Maillage non structuré
+  //! Unstructured mesh
   Unstructured,
-  //! Maillage cartésien
+  //! Cartesian mesh
   Cartesian,
-  //! Maillage polyedrique
+  //! Polyhedral mesh
   Polyhedral
 };
 
@@ -43,16 +44,16 @@ operator<<(std::ostream& o, eMeshStructure r);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Type de maillage AMR
+//! AMR mesh type
 enum class eMeshAMRKind
 {
-  //! Le maillage n'est pas AMR
+  //! The mesh is not AMR
   None,
-  //! Le maillage est AMR par maille
+  //! The mesh is AMR by cell
   Cell,
-  //! Le maillage est AMR par patch
+  //! The mesh is AMR by patch
   Patch,
-  //! Le maillage est AMR par patch cartésien (rectangulaire)
+  //! The mesh is AMR by Cartesian patch (rectangular)
   PatchCartesianMeshOnly
 };
 
@@ -63,29 +64,29 @@ operator<<(std::ostream& o, eMeshAMRKind r);
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Types de gestion de la dimension du maillage.
+ * \brief Types of mesh dimension management.
  *
- * \warning Les modes autres que eMeshCellDimensionKind::MonoDimension sont
- * expérimentaux et ne sont supportés que pour eMeshStructure::Unstructured.
+ * \warning Modes other than eMeshCellDimensionKind::MonoDimension are
+ * experimental and are only supported for eMeshStructure::Unstructured.
  */
 enum class eMeshCellDimensionKind
 {
-  //! Les mailles ont la même dimension que le maillage
+  //! The cells have the same dimension as the mesh
   MonoDimension,
   /*!
-   * \brief Les mailles ont la même dimension que le maillage ou une dimension inférieure.
+   * \brief The cells have the same dimension as the mesh or a lower dimension.
    *
-   ** \warning Ce mode est expérimental.
+   ** \warning This mode is experimental.
    */
   MultiDimension,
   /*!
-   * \brief Maillage non manifold.
+   * \brief Non-manifold mesh.
    *
-   * Le maillage est MultiDimension et non manifold.
-   * Dans ce cas, si le maillage est 3D, les mailles 2D ont des arêtes (Edge)
-   * au lieu des faces (Face).
+   * The mesh is MultiDimension and non-manifold.
+   * In this case, if the mesh is 3D, the 2D cells have edges (Edge)
+   * instead of faces (Face).
    *
-   * \warning Ce mode est expérimental.
+   * \warning This mode is experimental.
    */
   NonManifold
 };
@@ -95,17 +96,18 @@ operator<<(std::ostream& o, eMeshCellDimensionKind r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristiques d'un maillage.
+ * \brief Characteristics of a mesh.
  *
- * Pour l'instant les caractéristiques sont :
+ * For now, the characteristics are:
  *
- * - la structure du maillage (eMeshStructure)
- * - le type d'AMR
- * - la gestion de la dimension des mailles (eMeshDimensionKind). Cette dernière
+ * - the mesh structure (eMeshStructure)
+ * - the AMR type
+ * - the cell dimension management (eMeshDimensionKind). The latter
  *
- * \note Le support de maillages autres que eMeshDimensionKind.MonoDimension
- * est expérimental.
+ * \note Support for meshes other than eMeshDimensionKind.MonoDimension
+ * is experimental.
  */
 class ARCANE_CORE_EXPORT MeshKind
 {
@@ -114,9 +116,9 @@ class ARCANE_CORE_EXPORT MeshKind
   eMeshStructure meshStructure() const { return m_structure; }
   eMeshAMRKind meshAMRKind() const { return m_amr_kind; }
   eMeshCellDimensionKind meshDimensionKind() const { return m_dimension_kind; }
-  //! Vrai si la structure du maillage est eMeshCellDimensionKind::NonManifold
+  //! True if the mesh structure is eMeshCellDimensionKind::NonManifold
   bool isNonManifold() const { return m_dimension_kind == eMeshCellDimensionKind::NonManifold; }
-  //! Vrai si la structure du maillage est eMeshCellDimensionKind::MonoDimension
+  //! True if the mesh structure is eMeshCellDimensionKind::MonoDimension
   bool isMonoDimension() const { return m_dimension_kind == eMeshCellDimensionKind::MonoDimension; }
   void setMeshStructure(eMeshStructure v) { m_structure = v; }
   void setMeshAMRKind(eMeshAMRKind v) { m_amr_kind = v; }

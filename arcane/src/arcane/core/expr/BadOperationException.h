@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BadOperationException.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Exception sur une opération des expressions.                              */
+/* Exception on an expression operation.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_EXPR_BADOPERATIONEXCEPTION_H
 #define ARCANE_CORE_EXPR_BADOPERATIONEXCEPTION_H
@@ -26,21 +26,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exception sur une opération des expressions.
+ * \brief Exception on an expression operation.
  *
- * Cette exception est envoyée lorsqu'un script essaie d'utiliser une 
- * opération non définie sur des expressions.
+ * This exception is thrown when a script tries to use a 
+ * undefined operation on expressions.
  */
 class ARCANE_EXPR_EXPORT BadOperationException
 : public Exception
 {
  public:
-  
-  BadOperationException(const String& where,const String& operationName,
+
+  BadOperationException(const String& where, const String& operationName,
                         VariantBase::eType operandType);
   BadOperationException(const BadOperationException& ex);
-  ~BadOperationException() ARCANE_NOEXCEPT{}
+  ~BadOperationException() ARCANE_NOEXCEPT {}
 
  public:
 
@@ -55,10 +56,9 @@ class ARCANE_EXPR_EXPORT BadOperationException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
