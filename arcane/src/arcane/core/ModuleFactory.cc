@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,12 +17,12 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/ModuleFactory.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/IModule.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IServiceInfo.h"
-#include "arcane/IMesh.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IServiceInfo.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/utils/Iostream.h"
 
@@ -36,13 +36,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 ModuleFactory::
-ModuleFactory(Ref<IModuleFactory2> factory,bool is_autoload)
+ModuleFactory(Ref<IModuleFactory2> factory, bool is_autoload)
 : m_factory(factory)
 , m_is_autoload(is_autoload)
 , m_name(factory->moduleName())
 , m_nb_ref(0)
 {
-  //cerr << "** ADD MODULE FACTORY this=" << this 
+  //cerr << "** ADD MODULE FACTORY this=" << this
   //     << " service_info_name=" << m_service_info->localName()
   //     << " autoload=" << is_autoload << '\n';
 }
@@ -59,17 +59,17 @@ ModuleFactory::
 /*---------------------------------------------------------------------------*/
 
 Ref<IModule> ModuleFactory::
-createModule(ISubDomain* parent,const MeshHandle& mesh_handle)
+createModule(ISubDomain* parent, const MeshHandle& mesh_handle)
 {
   if (!m_factory)
-    ARCANE_FATAL("Null factory for module named '{0}'",moduleName());
+    ARCANE_FATAL("Null factory for module named '{0}'", moduleName());
 
-  Ref<IModule> module = m_factory->createModuleInstance(parent,mesh_handle);
+  Ref<IModule> module = m_factory->createModuleInstance(parent, mesh_handle);
 
   if (!module)
-    ARCANE_FATAL("Can not create module named '{0}'",moduleName());
+    ARCANE_FATAL("Can not create module named '{0}'", moduleName());
 
-  parent->checkId("ModuleFactory::createModule",module->name());
+  parent->checkId("ModuleFactory::createModule", module->name());
   parent->moduleMng()->addModule(module);
 
   return module;
@@ -111,8 +111,8 @@ removeReference()
   // Decrements and returns the previous value.
   // If it equals 1, it means there are no more references
   // to the object and it must be destroyed.
-  Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-  if (v==1)
+  Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+  if (v == 1)
     delete this;
 }
 
@@ -120,8 +120,8 @@ removeReference()
 /*---------------------------------------------------------------------------*/
 
 ModuleFactoryReference::
-ModuleFactoryReference(Ref<IModuleFactory2> factory,bool is_autoload)
-: Base(new ModuleFactory(factory,is_autoload))
+ModuleFactoryReference(Ref<IModuleFactory2> factory, bool is_autoload)
+: Base(new ModuleFactory(factory, is_autoload))
 {
 }
 
@@ -134,7 +134,7 @@ ModuleFactoryReference(Ref<IModuleFactory2> factory,bool is_autoload)
 ModuleFactory2::
 ~ModuleFactory2()
 {
-  if (m_service_info){
+  if (m_service_info) {
     delete m_service_info->factoryInfo();
     delete m_service_info;
   }

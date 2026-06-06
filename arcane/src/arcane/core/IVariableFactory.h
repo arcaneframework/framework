@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,40 +40,40 @@ namespace Arcane
 class IVariableFactory
 {
  public:
- 
+
   //! Type of the function that creates the variable
   using VariableFactoryFunc = VariableFactoryVariableRefCreateFunc;
 
  public:
- 
+
   virtual ~IVariableFactory() = default;
 
  public:
 
   //! Creates a variable with the \a build_info and returns its reference.
-  virtual VariableRef* createVariable(const VariableBuildInfo& build_info) =0;
+  virtual VariableRef* createVariable(const VariableBuildInfo& build_info) = 0;
 
  public:
 
   //! Kind of the data variables created by this factory
-  virtual eItemKind itemKind() const =0;
+  virtual eItemKind itemKind() const = 0;
 
   //! Data type of the variable created by this factory
-  virtual eDataType dataType() const =0;
+  virtual eDataType dataType() const = 0;
 
   //! Dimension of the variable created by this factory
-  virtual Integer dimension() const =0;
+  virtual Integer dimension() const = 0;
 
   //! Multi tag.
-  virtual Integer multiTag() const =0;
+  virtual Integer multiTag() const = 0;
 
   //! Full name of the variable type
-  virtual const String& fullTypeName() const =0;
+  virtual const String& fullTypeName() const = 0;
 
  public:
 
   //! Information about the variable type
-  virtual VariableTypeInfo variableTypeInfo() const =0;
+  virtual VariableTypeInfo variableTypeInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

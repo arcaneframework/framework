@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@
 namespace Arcane::Parallel
 {
 
-namespace  MP = Arccore::MessagePassing;
+namespace MP = Arccore::MessagePassing;
 using MP::OneStat;
 
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ class Stat
     Real m_total_time = 0.0;
   };
 
-  using CumulativeStatMap = std::map<String,CumulativeStat>;
+  using CumulativeStatMap = std::map<String, CumulativeStat>;
 
   //! Serialization info
   class SerializedStats
@@ -69,7 +69,7 @@ class Stat
 
     void save(const CumulativeStatMap& stat_map)
     {
-      for (auto& i : stat_map){
+      for (auto& i : stat_map) {
         const CumulativeStat& s = i.second;
         m_total_time_list.add(s.m_total_time);
         m_nb_message_list.add(s.m_nb_message);

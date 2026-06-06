@@ -11,10 +11,8 @@
 /* The segments of these windows are not contiguous in memory and can        */
 /* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_MACHINESHMEMWIN_H
 #define ARCANE_CORE_MACHINESHMEMWIN_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

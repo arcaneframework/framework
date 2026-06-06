@@ -67,7 +67,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   void init(SmallSpan<const Int32> nb_item, SmallSpan<const Int32> indexes,
             SmallSpan<const Int32> list_data, eItemKind source_kind, eItemKind target_kind)
   {
-    SmallSpan<Int32> mutable_list_data(const_cast<Int32*>(list_data.data()),list_data.size());
+    SmallSpan<Int32> mutable_list_data(const_cast<Int32*>(list_data.data()), list_data.size());
     m_container_view = ItemConnectivityContainerView(mutable_list_data, indexes, nb_item);
     m_source_kind = source_kind;
     m_target_kind = target_kind;
@@ -146,7 +146,7 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase2
 /*!
  * \brief Specialized view on unstructured connectivity between two entities.
  */
-template<typename ItemType1,typename ItemType2>
+template <typename ItemType1, typename ItemType2>
 class IndexedItemConnectivityGenericViewT
 : public IndexedItemConnectivityViewBase2
 {
@@ -166,7 +166,7 @@ class IndexedItemConnectivityGenericViewT
 #ifdef ARCANE_CHECK
     eItemKind k1 = ItemTraitsT<ItemType1>::kind();
     eItemKind k2 = ItemTraitsT<ItemType2>::kind();
-    view._checkValid(k1,k2);
+    view._checkValid(k1, k2);
 #endif
   }
   IndexedItemConnectivityGenericViewT() = default;
@@ -198,9 +198,9 @@ class IndexedItemConnectivityGenericViewT
 /*!
  * \brief View on ItemType->Node connectivity.
  */
-template<typename ItemType>
-class IndexedItemConnectivityViewT<ItemType,Node>
-: public IndexedItemConnectivityGenericViewT<ItemType,Node>
+template <typename ItemType>
+class IndexedItemConnectivityViewT<ItemType, Node>
+: public IndexedItemConnectivityGenericViewT<ItemType, Node>
 {
  public:
 
@@ -246,7 +246,7 @@ class IndexedItemConnectivityViewT<ItemType,Node>
 /*!
  * \brief View on ItemType->Edge connectivity.
  */
-template<typename ItemType>
+template <typename ItemType>
 class IndexedItemConnectivityViewT<ItemType, Edge>
 : public IndexedItemConnectivityGenericViewT<ItemType, Edge>
 {
@@ -294,7 +294,7 @@ class IndexedItemConnectivityViewT<ItemType, Edge>
 /*!
  * \brief View of ItemType->Face connectivity.
  */
-template<typename ItemType>
+template <typename ItemType>
 class IndexedItemConnectivityViewT<ItemType, Face>
 : public IndexedItemConnectivityGenericViewT<ItemType, Face>
 {
@@ -512,35 +512,35 @@ class ARCANE_CORE_EXPORT MutableIndexedParticleCellConnectivityView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using IndexedCellNodeConnectivityView = IndexedItemConnectivityViewT<Cell,Node>;
-using IndexedCellEdgeConnectivityView = IndexedItemConnectivityViewT<Cell,Edge>;
-using IndexedCellFaceConnectivityView = IndexedItemConnectivityViewT<Cell,Face>;
-using IndexedCellCellConnectivityView = IndexedItemConnectivityViewT<Cell,Cell>;
-using IndexedCellDoFConnectivityView = IndexedItemConnectivityViewT<Cell,DoF>;
+using IndexedCellNodeConnectivityView = IndexedItemConnectivityViewT<Cell, Node>;
+using IndexedCellEdgeConnectivityView = IndexedItemConnectivityViewT<Cell, Edge>;
+using IndexedCellFaceConnectivityView = IndexedItemConnectivityViewT<Cell, Face>;
+using IndexedCellCellConnectivityView = IndexedItemConnectivityViewT<Cell, Cell>;
+using IndexedCellDoFConnectivityView = IndexedItemConnectivityViewT<Cell, DoF>;
 
-using IndexedFaceNodeConnectivityView = IndexedItemConnectivityViewT<Face,Node>;
-using IndexedFaceEdgeConnectivityView = IndexedItemConnectivityViewT<Face,Edge>;
-using IndexedFaceFaceConnectivityView = IndexedItemConnectivityViewT<Face,Face>;
-using IndexedFaceCellConnectivityView = IndexedItemConnectivityViewT<Face,Cell>;
-using IndexedFaceDoFConnectivityView = IndexedItemConnectivityViewT<Face,DoF>;
+using IndexedFaceNodeConnectivityView = IndexedItemConnectivityViewT<Face, Node>;
+using IndexedFaceEdgeConnectivityView = IndexedItemConnectivityViewT<Face, Edge>;
+using IndexedFaceFaceConnectivityView = IndexedItemConnectivityViewT<Face, Face>;
+using IndexedFaceCellConnectivityView = IndexedItemConnectivityViewT<Face, Cell>;
+using IndexedFaceDoFConnectivityView = IndexedItemConnectivityViewT<Face, DoF>;
 
-using IndexedEdgeNodeConnectivityView = IndexedItemConnectivityViewT<Edge,Node>;
-using IndexedEdgeEdgeConnectivityView = IndexedItemConnectivityViewT<Edge,Edge>;
-using IndexedEdgeFaceConnectivityView = IndexedItemConnectivityViewT<Edge,Face>;
-using IndexedEdgeCellConnectivityView = IndexedItemConnectivityViewT<Edge,Cell>;
-using IndexedEdgeDoFConnectivityView = IndexedItemConnectivityViewT<Edge,DoF>;
+using IndexedEdgeNodeConnectivityView = IndexedItemConnectivityViewT<Edge, Node>;
+using IndexedEdgeEdgeConnectivityView = IndexedItemConnectivityViewT<Edge, Edge>;
+using IndexedEdgeFaceConnectivityView = IndexedItemConnectivityViewT<Edge, Face>;
+using IndexedEdgeCellConnectivityView = IndexedItemConnectivityViewT<Edge, Cell>;
+using IndexedEdgeDoFConnectivityView = IndexedItemConnectivityViewT<Edge, DoF>;
 
-using IndexedNodeNodeConnectivityView = IndexedItemConnectivityViewT<Node,Node>;
-using IndexedNodeEdgeConnectivityView = IndexedItemConnectivityViewT<Node,Edge>;
-using IndexedNodeFaceConnectivityView = IndexedItemConnectivityViewT<Node,Face>;
-using IndexedNodeCellConnectivityView = IndexedItemConnectivityViewT<Node,Cell>;
-using IndexedNodeDoFConnectivityView = IndexedItemConnectivityViewT<Node,DoF>;
+using IndexedNodeNodeConnectivityView = IndexedItemConnectivityViewT<Node, Node>;
+using IndexedNodeEdgeConnectivityView = IndexedItemConnectivityViewT<Node, Edge>;
+using IndexedNodeFaceConnectivityView = IndexedItemConnectivityViewT<Node, Face>;
+using IndexedNodeCellConnectivityView = IndexedItemConnectivityViewT<Node, Cell>;
+using IndexedNodeDoFConnectivityView = IndexedItemConnectivityViewT<Node, DoF>;
 
-using IndexedDoFNodeConnectivityView = IndexedItemConnectivityViewT<DoF,Node>;
-using IndexedDoFEdgeConnectivityView = IndexedItemConnectivityViewT<DoF,Edge>;
-using IndexedDoFFaceConnectivityView = IndexedItemConnectivityViewT<DoF,Face>;
-using IndexedDoFCellConnectivityView = IndexedItemConnectivityViewT<DoF,Cell>;
-using IndexedDoFDoFConnectivityView = IndexedItemConnectivityViewT<DoF,DoF>;
+using IndexedDoFNodeConnectivityView = IndexedItemConnectivityViewT<DoF, Node>;
+using IndexedDoFEdgeConnectivityView = IndexedItemConnectivityViewT<DoF, Edge>;
+using IndexedDoFFaceConnectivityView = IndexedItemConnectivityViewT<DoF, Face>;
+using IndexedDoFCellConnectivityView = IndexedItemConnectivityViewT<DoF, Cell>;
+using IndexedDoFDoFConnectivityView = IndexedItemConnectivityViewT<DoF, DoF>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

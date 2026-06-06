@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,10 +45,10 @@ class ARCANE_CORE_EXPORT IMeshBuilder
    * may optionally override them. In particular, it is possible
    * to specify the mesh factory to use.
    */
-  virtual void fillMeshBuildInfo(MeshBuildInfo& build_info) =0;
+  virtual void fillMeshBuildInfo(MeshBuildInfo& build_info) = 0;
 
   //! Allocates the mesh entities managed by this service.
-  virtual void allocateMeshItems(IPrimaryMesh* pm) =0;
+  virtual void allocateMeshItems(IPrimaryMesh* pm) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,8 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-RANDOM_BEGIN_NAMESPACE
+namespace Arcane::random
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,15 +51,16 @@ RANDOM_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 
 // uniform integer distribution on a small range [min, max]
-template<class UniformRandomNumberGenerator, class IntType = int>
+template <class UniformRandomNumberGenerator, class IntType = int>
 class UniformSmallInt
 {
-public:
+ public:
+
   typedef UniformRandomNumberGenerator base_type;
   typedef IntType result_type;
   static const bool has_fixed_range = false;
 
-  UniformSmallInt(base_type & rng, IntType min, IntType max);
+  UniformSmallInt(base_type& rng, IntType min, IntType max);
   result_type operator()()
   {
     // we must not use the low bits here, because LCGs perform very poorly then
@@ -67,36 +68,42 @@ public:
   }
   result_type min() const { return _min; }
   result_type max() const { return _max; }
-private:
+
+ private:
+
   typedef typename base_type::result_type base_result;
-  base_type & _rng;
+  base_type& _rng;
   IntType _min, _max;
   base_result _range;
   int _factor;
 };
 
-template<class UniformRandomNumberGenerator, class IntType>
+template <class UniformRandomNumberGenerator, class IntType>
 UniformSmallInt<UniformRandomNumberGenerator, IntType>::
-UniformSmallInt(base_type & rng, IntType min, IntType max) 
-  : _rng(rng), _min(min), _max(max),
-    _range(static_cast<base_result>(_max-_min)+1), _factor(1)
+UniformSmallInt(base_type& rng, IntType min, IntType max)
+: _rng(rng)
+, _min(min)
+, _max(max)
+, _range(static_cast<base_result>(_max - _min) + 1)
+, _factor(1)
 {
   // LCGs perform poorly when only taking the low bits.
   // (probably put this logic into a partial template specialization)
   // Check how many low bits we can ignore before we get too much
   // quantization error.
   base_result r_base = _rng.max() - _rng.min();
-  if(r_base == std::numeric_limits<base_result>::max()) {
+  if (r_base == std::numeric_limits<base_result>::max()) {
     _factor = 2;
     r_base /= 2;
   }
   r_base += 1;
-  if(r_base % _range == 0) {
+  if (r_base % _range == 0) {
     // No quantization effects, good
     _factor = r_base / _range;
-  } else {
+  }
+  else {
     // carefully avoid overflow; pessimizing heree
-    for( ; r_base/_range/32 >= _range; _factor *= 2)
+    for (; r_base / _range / 32 >= _range; _factor *= 2)
       r_base /= 2;
   }
 }
@@ -104,8 +111,7 @@ UniformSmallInt(base_type & rng, IntType min, IntType max)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RANDOM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

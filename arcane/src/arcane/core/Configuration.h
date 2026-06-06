@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,19 +38,19 @@ class ARCANE_CORE_EXPORT IConfigurationSection
 
  public:
 
-  virtual Int32 value(const String& name,Int32 default_value) const =0;
-  virtual Int64 value(const String& name,Int64 default_value) const =0;
-  virtual Real value(const String& name,Real default_value) const =0;
-  virtual bool value(const String& name,bool default_value) const =0;
-  virtual String value(const String& name,const String& default_value) const =0;
-  virtual String value(const String& name,const char* default_value) const =0;
+  virtual Int32 value(const String& name, Int32 default_value) const = 0;
+  virtual Int64 value(const String& name, Int64 default_value) const = 0;
+  virtual Real value(const String& name, Real default_value) const = 0;
+  virtual bool value(const String& name, bool default_value) const = 0;
+  virtual String value(const String& name, const String& default_value) const = 0;
+  virtual String value(const String& name, const char* default_value) const = 0;
 
-  virtual Integer valueAsInteger(const String& name,Integer default_value) const =0;
-  virtual Int32 valueAsInt32(const String& name,Int32 default_value) const =0;
-  virtual Int64 valueAsInt64(const String& name,Int64 default_value) const =0;
-  virtual Real valueAsReal(const String& name,Real default_value) const =0;
-  virtual bool valueAsBool(const String& name,bool default_value) const =0;
-  virtual String valueAsString(const String& name,const String& default_value) const =0;
+  virtual Integer valueAsInteger(const String& name, Integer default_value) const = 0;
+  virtual Int32 valueAsInt32(const String& name, Int32 default_value) const = 0;
+  virtual Int64 valueAsInt64(const String& name, Int64 default_value) const = 0;
+  virtual Real valueAsReal(const String& name, Real default_value) const = 0;
+  virtual bool valueAsBool(const String& name, bool default_value) const = 0;
+  virtual String valueAsString(const String& name, const String& default_value) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ class ARCANE_CORE_EXPORT IConfiguration
    *
    * The returned instance must be destroyed by the delete operator.
    */
-  virtual IConfigurationSection* createSection(const String& name) const =0;
+  virtual IConfigurationSection* createSection(const String& name) const = 0;
 
   /*!
    * \brief Main section.
@@ -79,7 +79,7 @@ class ARCANE_CORE_EXPORT IConfiguration
    * The returned instance remains the property of this instance
    * and should not be destroyed.
    */
-  virtual IConfigurationSection* mainSection() const =0;
+  virtual IConfigurationSection* mainSection() const = 0;
 
   /*!
    * \brief Adds a value to the configuration.
@@ -89,12 +89,12 @@ class ARCANE_CORE_EXPORT IConfiguration
    * \a name already exists, it is replaced by \a value if \a priority
    * is lower than the current priority.
    */
-  virtual void addValue(const String& name,const String& value,Integer priority) =0;
-  
+  virtual void addValue(const String& name, const String& value, Integer priority) = 0;
+
   /*!
    * \brief Clones this configuration.
    */
-  virtual IConfiguration* clone() const =0;
+  virtual IConfiguration* clone() const = 0;
 
   /*!
    * \brief Merges this configuration with configuration \a c.
@@ -102,13 +102,13 @@ class ARCANE_CORE_EXPORT IConfiguration
    * If an option exists in both this configuration and \a c, the one
    * with the lowest priority is kept.
    */
-  virtual void merge(const IConfiguration* c) =0;
+  virtual void merge(const IConfiguration* c) = 0;
 
   //! Displays the values of the configuration parameters via traceMng()
-  virtual void dump() const =0;
+  virtual void dump() const = 0;
 
   //! Displays the values of the configuration parameters to the stream o
-  virtual void dump(std::ostream& ostr) const =0;
+  virtual void dump(std::ostream& ostr) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,14 +126,14 @@ class ARCANE_CORE_EXPORT IConfigurationMng
  public:
 
   //! Default configuration.
-  virtual IConfiguration* defaultConfiguration() const =0;
+  virtual IConfiguration* defaultConfiguration() const = 0;
 
   /*!
    * \brief Creates a new configuration.
    *
    * The returned instance must be destroyed by the delete operator.
    */
-  virtual IConfiguration* createConfiguration() =0;
+  virtual IConfiguration* createConfiguration() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

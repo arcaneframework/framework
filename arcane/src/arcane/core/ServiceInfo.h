@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,10 +24,14 @@
 namespace Arcane
 {
 //TODO: to be removed. This is kept for compatibility with the axl generator.
-using Internal::ServiceInfo;
 using Internal::ServiceAllInterfaceRegisterer;
+using Internal::ServiceInfo;
+} // namespace Arcane
 
-namespace Internal
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Internal
 {
 
 /*---------------------------------------------------------------------------*/
@@ -38,7 +42,7 @@ class ServiceInfoPrivate;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  /*!
+/*!
  * \internal
  * \brief Information about a service.
  */
@@ -48,7 +52,7 @@ class ARCANE_CORE_EXPORT ServiceInfo
  public:
 
   //! Constructor
-  ServiceInfo(const String& local_name,const VersionInfo& version,
+  ServiceInfo(const String& local_name, const VersionInfo& version,
               Integer valid_dimension);
 
   //! Destructor
@@ -76,7 +80,7 @@ class ARCANE_CORE_EXPORT ServiceInfo
   virtual void setCaseOptionsFileName(const String& fn);
   virtual void addFactory(IServiceFactory2* factory);
   virtual void setDefaultTagName(const String& value);
-  virtual void setTagName(const String& value,const String& lang);
+  virtual void setTagName(const String& value, const String& lang);
   virtual void setSingletonFactory(Internal::ISingletonServiceFactory* f);
   //!@}
 
@@ -89,14 +93,14 @@ class ARCANE_CORE_EXPORT ServiceInfo
   int usageType() const override;
 
  public:
-  
+
   // Creation function used by C++ macros.
-  static ServiceInfo* create(const ServiceProperty& sp,const char* filename,int lineno);
-  
+  static ServiceInfo* create(const ServiceProperty& sp, const char* filename, int lineno);
+
   // Creation function used by C#.
   // (C# cannot use the C++ method because of ServiceProperty
   // which contains a const char* that will be collected by the garbage collector)
-  static ServiceInfo* create(const String& name,int service_type);
+  static ServiceInfo* create(const String& name, int service_type);
 
  private:
 
@@ -106,8 +110,7 @@ class ARCANE_CORE_EXPORT ServiceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Internal
-} // End namespace Arcane
+} // namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

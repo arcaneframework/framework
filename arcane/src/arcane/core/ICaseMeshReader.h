@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,6 +39,7 @@ namespace Arcane
 class CaseMeshReaderReadInfo
 {
  public:
+
   const String& fileName() const { return m_file_name; }
   const String& directoryName() const { return m_directory_name; }
   bool isParallelRead() const { return m_is_parallel_read; }
@@ -47,7 +48,9 @@ class CaseMeshReaderReadInfo
   void setDirectoryName(const String& v) { m_directory_name = v; }
   void setParallelRead(bool v) { m_is_parallel_read = v; }
   void setFormat(const String& v) { m_format = v; }
+
  private:
+
   String m_file_name;
   String m_directory_name;
   String m_format;
@@ -79,7 +82,7 @@ class ARCANE_CORE_EXPORT ICaseMeshReader
    * If this reader does not support the format specified in \a read_info,
    * it returns null.
    */
-  virtual Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const =0;
+  virtual Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -48,7 +48,7 @@ ComponentCellEnumerator(const ComponentItemVectorView& v)
 , m_component(v.component())
 {
 #ifdef ARCANE_CHECK
-  if (m_index<m_size)
+  if (m_index < m_size)
     _check();
 #endif
 }
@@ -317,7 +317,7 @@ create(AllEnvCellVectorView items)
 /*---------------------------------------------------------------------------*/
 
 AllEnvCellEnumerator AllEnvCellEnumerator::
-create(IMeshMaterialMng* mng,const CellVectorView& view)
+create(IMeshMaterialMng* mng, const CellVectorView& view)
 {
   return create(mng->view(view));
 }
@@ -326,7 +326,7 @@ create(IMeshMaterialMng* mng,const CellVectorView& view)
 /*---------------------------------------------------------------------------*/
 
 AllEnvCellEnumerator AllEnvCellEnumerator::
-create(IMeshMaterialMng* mng,const CellGroup& group)
+create(IMeshMaterialMng* mng, const CellGroup& group)
 {
   return create(mng->view(group));
 }
@@ -349,14 +349,14 @@ create(IMeshBlock* block)
 ComponentPartCellEnumerator ComponentPartCellEnumerator::
 create(ComponentPartItemVectorView v)
 {
-  return ComponentPartCellEnumerator(v,0);
+  return ComponentPartCellEnumerator(v, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ComponentPartCellEnumerator ComponentPartCellEnumerator::
-create(IMeshComponent* component,eMatPart part)
+create(IMeshComponent* component, eMatPart part)
 {
   return create(component->partItems(part));
 }
@@ -365,7 +365,7 @@ create(IMeshComponent* component,eMatPart part)
 /*---------------------------------------------------------------------------*/
 
 ComponentPartCellEnumerator::
-ComponentPartCellEnumerator(const ComponentPartItemVectorView& v,Integer base_index)
+ComponentPartCellEnumerator(const ComponentPartItemVectorView& v, Integer base_index)
 : m_index(0)
 , m_size(v.itemIndexes().size())
 , m_var_idx(v.componentPartIndex())
@@ -382,7 +382,7 @@ ComponentPartCellEnumerator(const ComponentPartItemVectorView& v,Integer base_in
 
 MatPartCellEnumerator::
 MatPartCellEnumerator(const MatPartItemVectorView& v)
-: ComponentPartCellEnumerator(v,0)
+: ComponentPartCellEnumerator(v, 0)
 {
 }
 
@@ -390,7 +390,7 @@ MatPartCellEnumerator(const MatPartItemVectorView& v)
 /*---------------------------------------------------------------------------*/
 
 MatPartCellEnumerator MatPartCellEnumerator::
-create(IMeshMaterial* mat,eMatPart part)
+create(IMeshMaterial* mat, eMatPart part)
 {
   MatPartItemVectorView v(mat->partMatItems(part));
   return MatPartCellEnumerator(v);
@@ -410,7 +410,7 @@ create(MatPartItemVectorView v)
 
 EnvPartCellEnumerator::
 EnvPartCellEnumerator(const EnvPartItemVectorView& v)
-: ComponentPartCellEnumerator(v,0)
+: ComponentPartCellEnumerator(v, 0)
 {
 }
 
@@ -418,7 +418,7 @@ EnvPartCellEnumerator(const EnvPartItemVectorView& v)
 /*---------------------------------------------------------------------------*/
 
 EnvPartCellEnumerator EnvPartCellEnumerator::
-create(IMeshEnvironment* env,eMatPart part)
+create(IMeshEnvironment* env, eMatPart part)
 {
   EnvPartItemVectorView v(env->partEnvItems(part));
   return EnvPartCellEnumerator(v);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 #include "arcane/utils/ArcaneGlobal.h"
 
 #include "arcane/expr/IExpressionImpl.h"
@@ -23,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,14 +40,15 @@ class ARCANE_EXPR_EXPORT ExpressionImpl
 : public IExpressionImpl
 {
  public:
+
   ExpressionImpl();
 
  public:
 
   virtual void addRef();
   virtual void removeRef();
-  virtual void setTrace(bool v){ m_do_trace = v; }
-  virtual void dumpIf(IExpressionImpl* test_expr,Array<Expression>& exprs);
+  virtual void setTrace(bool v) { m_do_trace = v; }
+  virtual void dumpIf(IExpressionImpl* test_expr, Array<Expression>& exprs);
 
  protected:
 
@@ -63,7 +64,7 @@ class ARCANE_EXPR_EXPORT ExpressionImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

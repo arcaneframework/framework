@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,13 +11,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/IVariableAccessor.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/VariableExpressionImpl.h"
+#include "arcane/core/IVariableAccessor.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/VariableExpressionImpl.h"
 
 #include "arcane/expr/OperatorMng.h"
 #include "arcane/expr/BadOperationException.h"
@@ -25,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ VariableExpressionImpl(IVariable* var)
   VariantBase::eType type = VariantBase::fromDataType(m_variable->dataType());
   m_op = m_op_mng->find(this, type);
   if (!m_op)
-    throw BadOperationException("VariableExpressionImpl::VariableExpressionImpl","",type);
+    throw BadOperationException("VariableExpressionImpl::VariableExpressionImpl", "", type);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ assign(IExpressionImpl* expr, IntegerConstArrayView indices)
   ExpressionResult result(indices);
   result.allocate(VariantBase::fromDataType(m_variable->dataType()));
   expr->apply(&result);
-  m_op->assign(&result, m_variable);  
+  m_op->assign(&result, m_variable);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ apply(ExpressionResult* result)
 Integer VariableExpressionImpl::
 vectorSize() const
 {
-  if (m_variable->dimension()!=1)
+  if (m_variable->dimension() != 1)
     return 0;
   return m_variable->nbElement();
 }
@@ -86,7 +86,7 @@ vectorSize() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

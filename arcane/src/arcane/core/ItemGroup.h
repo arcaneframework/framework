@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class IVariableSynchronizer;
 class ARCANE_CORE_EXPORT ItemGroup
 {
  public:
-	
+
   //! Constructs a null group.
   ItemGroup();
 
@@ -59,7 +59,9 @@ class ARCANE_CORE_EXPORT ItemGroup
   // but we haven't added it yet for compatibility reasons
   /*explicit*/ ItemGroup(ItemGroupImpl* prv);
   //! Constructs a reference to the group \a from.
-  ItemGroup(const ItemGroup& from) : m_impl(from.m_impl) {}
+  ItemGroup(const ItemGroup& from)
+  : m_impl(from.m_impl)
+  {}
 
   //! Assigns a reference to the group \a from to this instance.
   ItemGroup& operator=(const ItemGroup& from) = default;
@@ -86,7 +88,7 @@ class ARCANE_CORE_EXPORT ItemGroup
   {
     return m_impl->fullName();
   }
-		
+
   //! Number of elements in the group
   inline Integer size() const
   {
@@ -231,11 +233,11 @@ class ARCANE_CORE_EXPORT ItemGroup
   }
 
   /*! \brief Sets the boolean indicating if the group is local to the subdomain.
-    
+
     By default upon creation, a group is common to all subdomains,
     meaning that each subdomain must possess an instance of this group,
     even if that instance is empty.
-    
+
     A group local to the subdomain is not transferred during a rebalancing.
   */
   void setLocalToSubDomain(bool v)
@@ -244,21 +246,21 @@ class ARCANE_CORE_EXPORT ItemGroup
   }
 
   /*! \brief Invalidates the group.
-    
+
     For a dynamically computed group (such as the group of elements belonging
     to the subdomain), this means it must be recalculated.
-    
+
     If \a force_recompute is false, the group is just invalidated and will be
     recalculated the first time it is accessed. Otherwise, it is immediately
     recalculated.
   */
-  void invalidate(bool force_recompute=false) { m_impl->invalidate(force_recompute); }
+  void invalidate(bool force_recompute = false) { m_impl->invalidate(force_recompute); }
 
   //! Adds entities.
-  void addItems(Int32ConstArrayView items_local_id,bool check_if_present=true);
+  void addItems(Int32ConstArrayView items_local_id, bool check_if_present = true);
 
   //! Removes entities.
-  void removeItems(Int32ConstArrayView items_local_id,bool check_if_present=true);
+  void removeItems(Int32ConstArrayView items_local_id, bool check_if_present = true);
 
   //! Sets the entities of the group.
   void setItems(Int32ConstArrayView items_local_id);
@@ -268,7 +270,7 @@ class ARCANE_CORE_EXPORT ItemGroup
    *
    * If \a do_sort is true, the entities are sorted by increasing uniqueId.
    */
-  void setItems(Int32ConstArrayView items_local_id,bool do_sort);
+  void setItems(Int32ConstArrayView items_local_id, bool do_sort);
 
   //! Internal check of group validity
   void checkValid();
@@ -296,7 +298,7 @@ class ARCANE_CORE_EXPORT ItemGroup
   {
     return m_impl->timestamp();
   }
-  
+
   /*!
    * \brief Increments the last modification time of the group.
    *
@@ -311,7 +313,7 @@ class ARCANE_CORE_EXPORT ItemGroup
   {
     return m_impl->localIdToIndex();
   }
- 
+
   //! Group synchronizer
   IVariableSynchronizer* synchronizer() const;
 
@@ -338,7 +340,7 @@ class ARCANE_CORE_EXPORT ItemGroup
  public:
 
   //! Internal Arcane API
- ItemGroupImplInternal* _internalApi() const;
+  ItemGroupImplInternal* _internalApi() const;
 
  public:
 
@@ -360,9 +362,9 @@ class ARCANE_CORE_EXPORT ItemGroup
  protected:
 
   //! Returns the group \a impl if it is of kind \a kt, the null group otherwise
-  static ItemGroupImpl* _check(ItemGroupImpl* impl,eItemKind ik)
+  static ItemGroupImpl* _check(ItemGroupImpl* impl, eItemKind ik)
   {
-    return impl->itemKind()==ik ? impl : ItemGroupImpl::checkSharedNull();
+    return impl->itemKind() == ik ? impl : ItemGroupImpl::checkSharedNull();
   }
 
   ItemVectorView _view(bool do_padding) const;
@@ -377,9 +379,9 @@ class ARCANE_CORE_EXPORT ItemGroup
  * \retval false otherwise.
  */
 inline bool
-operator==(const ItemGroup& g1,const ItemGroup& g2)
+operator==(const ItemGroup& g1, const ItemGroup& g2)
 {
-  return g1.internal()==g2.internal();
+  return g1.internal() == g2.internal();
 }
 
 /*!
@@ -390,9 +392,9 @@ operator==(const ItemGroup& g1,const ItemGroup& g2)
  * \retval false otherwise.
  */
 inline bool
-operator<(const ItemGroup& g1,const ItemGroup& g2)
+operator<(const ItemGroup& g1, const ItemGroup& g2)
 {
-  return g1.internal()<g2.internal();
+  return g1.internal() < g2.internal();
 }
 
 /*!
@@ -401,9 +403,9 @@ operator<(const ItemGroup& g1,const ItemGroup& g2)
  * \retval false otherwise.
  */
 inline bool
-operator!=(const ItemGroup& g1,const ItemGroup& g2)
+operator!=(const ItemGroup& g1, const ItemGroup& g2)
 {
-  return g1.internal()!=g2.internal();
+  return g1.internal() != g2.internal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -412,7 +414,7 @@ operator!=(const ItemGroup& g1,const ItemGroup& g2)
 /*!
  * \brief Reference to a group of a given kind.
  */
-template<typename T>
+template <typename T>
 class ItemGroupT
 : public ItemGroup
 {
@@ -434,18 +436,27 @@ class ItemGroupT
 
   inline ItemGroupT() = default;
   inline explicit ItemGroupT(ItemGroupImpl* from)
-  : ItemGroup(_check(from,TraitsType::kind())){}
+  : ItemGroup(_check(from, TraitsType::kind()))
+  {}
   inline ItemGroupT(const ItemGroup& from)
-  : ItemGroup(_check(from.internal(),TraitsType::kind())) {}
+  : ItemGroup(_check(from.internal(), TraitsType::kind()))
+  {}
   inline ItemGroupT(const ItemGroupT<T>& from)
-  : ItemGroup(from) {}
+  : ItemGroup(from)
+  {}
   inline const ItemGroupT<T>& operator=(const ItemGroupT<T>& from)
-  { m_impl = from.internal(); return (*this); }
+  {
+    m_impl = from.internal();
+    return (*this);
+  }
   inline const ItemGroupT<T>& operator=(const ItemGroup& from)
-  { _assign(from); return (*this); }
+  {
+    _assign(from);
+    return (*this);
+  }
 
  public:
-  
+
   ThatClass own() const
   {
     return ThatClass(ItemGroup::own());
@@ -460,7 +471,7 @@ class ItemGroupT
 
   void _assign(const ItemGroup& from)
   {
-    m_impl = _check(from.internal(),TraitsType::kind());
+    m_impl = _check(from.internal(), TraitsType::kind());
   }
 };
 

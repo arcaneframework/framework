@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class ARCANE_CORE_EXPORT CaseTable
   {
     CurveUnknown = 0, //!< Unknown curve type
     CurveConstant = 1, //!< Piecewise constant curve
-    CurveLinear = 2  //!< Piecewise linear curve
+    CurveLinear = 2 //!< Piecewise linear curve
   };
 
  public:
@@ -73,7 +73,7 @@ class ARCANE_CORE_EXPORT CaseTable
   /*! \brief Constructs a lookup table from the data set.
    * \param curve_type type of the lookup table curve
    */
-  CaseTable(const CaseFunctionBuildInfo& info,eCurveType curve_type);
+  CaseTable(const CaseFunctionBuildInfo& info, eCurveType curve_type);
   virtual ~CaseTable();
 
  public:
@@ -82,12 +82,12 @@ class ARCANE_CORE_EXPORT CaseTable
   virtual Integer nbElement() const;
 
   //! The i-th value in the string \a str
-  virtual void valueToString(Integer id,String& str) const;
+  virtual void valueToString(Integer id, String& str) const;
 
   //! The i-th parameter in the string \a str
-  virtual void paramToString(Integer id,String& param) const;
+  virtual void paramToString(Integer id, String& param) const;
 
-   /*!
+  /*!
    * \brief Modifies the parameter of element \a id.
    *
    * Uses \a value as the new value for the parameter.
@@ -95,9 +95,9 @@ class ARCANE_CORE_EXPORT CaseTable
    *
    * \return the error value, ErrNo otherwise.
    */
-  virtual eError setParam(Integer id,const String& value);
+  virtual eError setParam(Integer id, const String& value);
 
-   /*!
+  /*!
    * \brief Modifies the value of element \a id.
    *
    * Uses \a value as the new value.
@@ -105,7 +105,7 @@ class ARCANE_CORE_EXPORT CaseTable
    *
    * \return the error value, ErrNo otherwise.
    */
-  virtual eError setValue(Integer id,const String& value);
+  virtual eError setValue(Integer id, const String& value);
 
   /*! \brief Adds an element to the table.
    *
@@ -113,9 +113,9 @@ class ARCANE_CORE_EXPORT CaseTable
    *
    * \return the error value, ErrNo otherwise.
    */
-  virtual eError appendElement(const String& param,const String& value);
-  
-   /*!
+  virtual eError appendElement(const String& param, const String& value);
+
+  /*!
    * \brief Inserts a couple (parameter,value) into the function.
    *
    * Inserts a couple (parameter,value) identical to the one found at position
@@ -127,7 +127,7 @@ class ARCANE_CORE_EXPORT CaseTable
    * the function.
    */
   virtual void insertElement(Integer id);
-  
+
   /*!
    * \brief Removes a couple (parameter,value) from the function.
    *
@@ -146,19 +146,18 @@ class ARCANE_CORE_EXPORT CaseTable
 
   virtual bool checkIfValid() const;
 
-  virtual void value(Real param,Real& v) const;
-  virtual void value(Real param,Integer& v) const;
-  virtual void value(Real param,bool& v) const;
-  virtual void value(Real param,String& v) const;
-  virtual void value(Real param,Real3& v) const;
-  virtual void value(Integer param,Real& v) const;
-  virtual void value(Integer param,Integer& v) const;
-  virtual void value(Integer param,bool& v) const;
-  virtual void value(Integer param,String& v) const;
-  virtual void value(Integer param,Real3& v) const;
+  virtual void value(Real param, Real& v) const;
+  virtual void value(Real param, Integer& v) const;
+  virtual void value(Real param, bool& v) const;
+  virtual void value(Real param, String& v) const;
+  virtual void value(Real param, Real3& v) const;
+  virtual void value(Integer param, Real& v) const;
+  virtual void value(Integer param, Integer& v) const;
+  virtual void value(Integer param, bool& v) const;
+  virtual void value(Integer param, String& v) const;
+  virtual void value(Integer param, Real3& v) const;
 
  public:
-
  private:
 
   CaseTableParams* m_param_list;
@@ -168,17 +167,17 @@ class ARCANE_CORE_EXPORT CaseTable
 
  private:
 
-  template<typename U,typename V> void _findValue(U param,V& value) const;
-  template<typename U,typename V> void _findValueAndApplyTransform(U param,V& value) const;
+  template <typename U, typename V> void _findValue(U param, V& value) const;
+  template <typename U, typename V> void _findValueAndApplyTransform(U param, V& value) const;
 
   bool _isValidIndex(Integer index) const;
-  eError _setValue(Integer index,const String& value_str);
+  eError _setValue(Integer index, const String& value_str);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

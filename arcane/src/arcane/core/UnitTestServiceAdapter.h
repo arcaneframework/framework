@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ namespace Arcane
  * \ingroup StandardService
  * \brief Adapts a service that declares tests to the IUnitTest interface.
  */
-template<typename T>
+template <typename T>
 class UnitTestServiceAdapter
 : public IXmlUnitTest
 , public Assertion
@@ -45,7 +45,8 @@ class UnitTestServiceAdapter
  public:
 
   explicit UnitTestServiceAdapter(T* service)
-  : m_service(service) {}
+  : m_service(service)
+  {}
 
  public:
 
@@ -55,8 +56,8 @@ class UnitTestServiceAdapter
   void setTestTearDownFunction(FuncPtr f) { m_tear_down_function = f; }
   void addTestFunction(FuncPtr f, String name, String method_name)
   {
-	  TestFuncInfo info(f, name, method_name);
-	  m_test_functions.add(info);
+    TestFuncInfo info(f, name, method_name);
+    m_test_functions.add(info);
   }
 
  public:
@@ -73,7 +74,7 @@ class UnitTestServiceAdapter
   {
     bool success = true;
     report.setAttrValue("name", m_service->serviceInfo()->localName());
-    for ( TestFuncInfo func_info : m_test_functions ) {
+    for (TestFuncInfo func_info : m_test_functions) {
       XmlNode xunittest = report.createAndAppendElement("unit-test");
       try {
         xunittest.setAttrValue("name", func_info.m_name);
@@ -110,15 +111,18 @@ class UnitTestServiceAdapter
 
  private:
 
-   struct TestFuncInfo
-   {
- 	  TestFuncInfo(FuncPtr test_func, String name, String method_name)
- 	  : m_test_func(test_func), m_name(name), m_method_name(method_name) {}
+  struct TestFuncInfo
+  {
+    TestFuncInfo(FuncPtr test_func, String name, String method_name)
+    : m_test_func(test_func)
+    , m_name(name)
+    , m_method_name(method_name)
+    {}
 
-     FuncPtr m_test_func;
-     String m_name;
-     String m_method_name;
-   };
+    FuncPtr m_test_func;
+    String m_name;
+    String m_method_name;
+  };
 
  private:
 

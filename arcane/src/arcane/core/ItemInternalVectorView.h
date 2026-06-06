@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,21 +38,26 @@ namespace Arcane
 class ItemInternalVectorViewConstIterator
 {
   friend class ItemInternalVectorView;
-  template<int Extent> friend class ItemConnectedListView;
+  template <int Extent> friend class ItemConnectedListView;
   typedef ItemInternal* ItemInternalPtr;
 
  private:
 
   ItemInternalVectorViewConstIterator(const ItemInternalPtr* items,
                                       const Int32* ARCANE_RESTRICT local_ids,
-                                      Integer index,Int32 local_id_offset)
-  : m_items(items), m_local_ids(local_ids), m_index(index), m_local_id_offset(local_id_offset){}
+                                      Integer index, Int32 local_id_offset)
+  : m_items(items)
+  , m_local_ids(local_ids)
+  , m_index(index)
+  , m_local_id_offset(local_id_offset)
+  {}
 
  public:
 
   typedef ItemInternalVectorViewConstIterator ThatClass;
 
  public:
+
   typedef std::random_access_iterator_tag iterator_category;
   //! Type indexing the array
   typedef const ItemInternalPtr* pointer;
@@ -64,40 +69,50 @@ class ItemInternalVectorViewConstIterator
   typedef Integer size_type;
   //! Type of a difference between iterator elements in the array
   typedef Integer difference_type;
+
  public:
-  value_type operator*() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
-  value_type operator->() const { return m_items[ m_local_id_offset + m_local_ids[m_index] ]; }
-  ThatClass& operator++() { ++m_index; return (*this); }
-  ThatClass& operator--() { --m_index; return (*this); }
+
+  value_type operator*() const { return m_items[m_local_id_offset + m_local_ids[m_index]]; }
+  value_type operator->() const { return m_items[m_local_id_offset + m_local_ids[m_index]]; }
+  ThatClass& operator++()
+  {
+    ++m_index;
+    return (*this);
+  }
+  ThatClass& operator--()
+  {
+    --m_index;
+    return (*this);
+  }
   void operator+=(difference_type v) { m_index += v; }
   void operator-=(difference_type v) { m_index -= v; }
-  friend Integer operator-(const ThatClass& a,const ThatClass& b)
+  friend Integer operator-(const ThatClass& a, const ThatClass& b)
   {
     return a.m_index - b.m_index;
   }
-  friend ThatClass operator-(const ThatClass& a,difference_type v)
+  friend ThatClass operator-(const ThatClass& a, difference_type v)
   {
     Integer index = a.m_index - v;
-    return ThatClass(a.m_items,a.m_local_ids,index,a.m_local_id_offset);
+    return ThatClass(a.m_items, a.m_local_ids, index, a.m_local_id_offset);
   }
-  friend ThatClass operator+(const ThatClass& a,difference_type v)
+  friend ThatClass operator+(const ThatClass& a, difference_type v)
   {
     Integer index = a.m_index + v;
-    return ThatClass(a.m_items,a.m_local_ids,index,a.m_local_id_offset);
+    return ThatClass(a.m_items, a.m_local_ids, index, a.m_local_id_offset);
   }
-  friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
+  friend bool operator<(const ThatClass& lhs, const ThatClass& rhs)
   {
-    return lhs.m_index<=rhs.m_index;
+    return lhs.m_index <= rhs.m_index;
   }
-  friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
+  friend bool operator==(const ThatClass& lhs, const ThatClass& rhs)
   {
     // TODO: check if these three comparisons cause performance problems.
     // If so, we can only use the last one.
-    return lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
+    return lhs.m_items == rhs.m_items && lhs.m_local_ids == rhs.m_local_ids && lhs.m_index == rhs.m_index;
   }
-  friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
+  friend bool operator!=(const ThatClass& lhs, const ThatClass& rhs)
   {
-    return !(lhs==rhs);
+    return !(lhs == rhs);
   }
 
  private:
@@ -131,7 +146,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   friend class ItemEnumeratorBase;
   friend class SimdItemEnumeratorBase;
   friend class ItemInternalEnumerator;
-  template<int Extent> friend class ItemConnectedListView;
+  template <int Extent> friend class ItemConnectedListView;
   friend ItemInternal;
   template <typename T> friend class ItemEnumeratorBaseT;
   using const_iterator = ItemInternalVectorViewConstIterator;

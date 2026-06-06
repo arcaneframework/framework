@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,16 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/EntryPoint.h"
+#include "arcane/core/EntryPoint.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/IModule.h"
-#include "arcane/IEntryPointMng.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/Timer.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/IEntryPointMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/Timer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ class ARCANE_CORE_EXPORT IUserMeshEnvironment
 {
  public:
 
-  virtual ~IUserMeshEnvironment(){}
+  virtual ~IUserMeshEnvironment() {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -55,15 +55,15 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
 {
  public:
 
-  virtual ~IMeshEnvironment(){}
+  virtual ~IMeshEnvironment() {}
 
  public:
 
   //! List of materials in this environment
-  virtual ConstArrayView<IMeshMaterial*> materials() =0;
+  virtual ConstArrayView<IMeshMaterial*> materials() = 0;
 
   //! Number of materials in the environment
-  virtual Integer nbMaterial() const =0;
+  virtual Integer nbMaterial() const = 0;
 
   /*!
    * \brief Environment identifier.
@@ -73,10 +73,10 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
   //virtual Int32 id() const =0;
 
   //! Associated user environment
-  virtual IUserMeshEnvironment* userEnvironment() const =0;
+  virtual IUserMeshEnvironment* userEnvironment() const = 0;
 
   //! Sets the associated user environment
-  virtual void setUserEnvironment(IUserMeshEnvironment* umm) =0;
+  virtual void setUserEnvironment(IUserMeshEnvironment* umm) = 0;
 
   /*!
    * \brief Mesh of this environment for mesh \a c.
@@ -86,20 +86,20 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
    *
    * The cost of this function is proportional to the number of materials
    * present in the mesh.
-   */   
-  virtual EnvCell findEnvCell(AllEnvCell c) const =0;
+   */
+  virtual EnvCell findEnvCell(AllEnvCell c) const = 0;
 
   //! View associated with this environment
-  virtual EnvItemVectorView envView() const =0;
+  virtual EnvItemVectorView envView() const = 0;
 
   //! View of the list of pure entities (associated with the global mesh) in the environment
-  virtual EnvPurePartItemVectorView pureEnvItems() const =0;
+  virtual EnvPurePartItemVectorView pureEnvItems() const = 0;
 
   //! View of the list of impure (partial) entities in the environment
-  virtual EnvImpurePartItemVectorView impureEnvItems() const =0;
+  virtual EnvImpurePartItemVectorView impureEnvItems() const = 0;
 
   //! View of the pure or impure part of the environment entities
-  virtual EnvPartItemVectorView partEnvItems(eMatPart part) const =0;
+  virtual EnvPartItemVectorView partEnvItems(eMatPart part) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

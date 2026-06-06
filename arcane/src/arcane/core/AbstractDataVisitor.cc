@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ _throwException(eDataType dt)
 {
   String s = String::format("scalar visitor not implemented for data type '{0}'",
                             dataTypeName(dt));
-  throw NotImplementedException(A_FUNCINFO,s);
+  throw NotImplementedException(A_FUNCINFO, s);
 }
 
 void AbstractScalarDataVisitor::
@@ -161,7 +161,7 @@ _throwException(eDataType dt)
 {
   String s = String::format("array visitor not implemented for data type '{0}'",
                             dataTypeName(dt));
-  throw NotImplementedException(A_FUNCINFO,s);
+  throw NotImplementedException(A_FUNCINFO, s);
 }
 
 void AbstractArrayDataVisitor::
@@ -270,7 +270,7 @@ _throwException(eDataType dt)
 {
   String s = String::format("array2 visitor not implemented for data type '{0}'",
                             dataTypeName(dt));
-  throw NotImplementedException(A_FUNCINFO,s);
+  throw NotImplementedException(A_FUNCINFO, s);
 }
 
 void AbstractArray2DataVisitor::
@@ -372,13 +372,13 @@ _throwException(eDataType dt)
 {
   String s = String::format("multiarray2 visitor not implemented for data type '{0}'",
                             dataTypeName(dt));
-  throw NotImplementedException(A_FUNCINFO,s);
+  throw NotImplementedException(A_FUNCINFO, s);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

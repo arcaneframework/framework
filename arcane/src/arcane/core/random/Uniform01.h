@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -57,16 +57,18 @@ namespace Arcane::random
  * which caused the program to crash when calling NormalDistribution,
  * which uses log(1.0 - r).
  */
-template<class UniformRandomNumberGenerator>
+template <class UniformRandomNumberGenerator>
 class Uniform01
 {
  public:
+
   typedef UniformRandomNumberGenerator base_type;
   typedef Real result_type;
   static const bool has_fixed_range = false;
 
-  explicit Uniform01(base_type & rng)
-  : _rng(rng) { }
+  explicit Uniform01(base_type& rng)
+  : _rng(rng)
+  {}
   // compiler-generated copy ctor is fine
   // assignment is disallowed because there is a reference member
 
@@ -86,13 +88,13 @@ class Uniform01
     // as long as the returned value is 1.0. To avoid an infinite loop,
     // it performs a maximum of 100 iterations (the probability of
     // drawing the value 1.0 100 times should be almost zero).
-    Real rng_val = _apply(_rng,_rng());
-    for(int x=0;x<100;++x){
-      if (rng_val<1.0)
+    Real rng_val = _apply(_rng, _rng());
+    for (int x = 0; x < 100; ++x) {
+      if (rng_val < 1.0)
         return rng_val;
-      rng_val = _apply(_rng,_rng());
+      rng_val = _apply(_rng, _rng());
     }
-    return 1.0-1.0e-10;
+    return 1.0 - 1.0e-10;
   }
 
   /*!
@@ -101,13 +103,13 @@ class Uniform01
    * workaround to ensure that the returned value is different from 1.0.
    * However, this workaround is not necessarily very relevant statistically.
    */
-  static ARCANE_DEPRECATED_122 Real apply(const base_type& _rng,typename base_type::result_type rng_val)
+  static ARCANE_DEPRECATED_122 Real apply(const base_type& _rng, typename base_type::result_type rng_val)
   {
-    Real r = _apply(_rng,rng_val);
-    if (r<1.0)
+    Real r = _apply(_rng, rng_val);
+    if (r < 1.0)
       return r;
     // Returns a number close to 1 but less than it.
-    return (1.0-1.0e-10);
+    return (1.0 - 1.0e-10);
   }
   //! Minimum returned value.
   static Real min() { return 0.0; }
@@ -116,23 +118,23 @@ class Uniform01
 
  private:
 
-  static Real _apply(const base_type& _rng,typename base_type::result_type rng_val)
+  static Real _apply(const base_type& _rng, typename base_type::result_type rng_val)
   {
     return static_cast<Real>(rng_val - _rng.min()) /
-      (static_cast<Real>(_rng.max()-_rng.min()) +
-       (std::numeric_limits<base_result>::is_integer ? 1.0 : 0.0));
+    (static_cast<Real>(_rng.max() - _rng.min()) +
+     (std::numeric_limits<base_result>::is_integer ? 1.0 : 0.0));
   }
 
  private:
 
   typedef typename base_type::result_type base_result;
-  base_type & _rng;
+  base_type& _rng;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

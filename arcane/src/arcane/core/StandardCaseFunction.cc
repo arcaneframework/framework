@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,12 +16,13 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Real3.h"
-#include "arcane/StandardCaseFunction.h"
+#include "arcane/core/StandardCaseFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,7 @@ StandardCaseFunction::
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Real param,Real& v) const
+value(Real param, Real& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -55,7 +56,7 @@ value(Real param,Real& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Real param,Integer& v) const
+value(Real param, Integer& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -66,7 +67,7 @@ value(Real param,Integer& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Real param,bool& v) const
+value(Real param, bool& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -77,7 +78,7 @@ value(Real param,bool& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Real param,String& v) const
+value(Real param, String& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -88,7 +89,7 @@ value(Real param,String& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Real param,Real3& v) const
+value(Real param, Real3& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -99,7 +100,7 @@ value(Real param,Real3& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Integer param,Real& v) const
+value(Integer param, Real& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -110,7 +111,7 @@ value(Integer param,Real& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Integer param,Integer& v) const
+value(Integer param, Integer& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -121,7 +122,7 @@ value(Integer param,Integer& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Integer param,bool& v) const
+value(Integer param, bool& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -132,7 +133,7 @@ value(Integer param,bool& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Integer param,String& v) const
+value(Integer param, String& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -143,7 +144,7 @@ value(Integer param,String& v) const
 /*---------------------------------------------------------------------------*/
 
 void StandardCaseFunction::
-value(Integer param,Real3& v) const
+value(Integer param, Real3& v) const
 {
   ARCANE_UNUSED(param);
   ARCANE_UNUSED(v);
@@ -153,7 +154,7 @@ value(Integer param,Real3& v) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IBinaryMathFunctor<Real,Real,Real>* StandardCaseFunction::
+IBinaryMathFunctor<Real, Real, Real>* StandardCaseFunction::
 getFunctorRealRealToReal()
 {
   return 0;
@@ -162,7 +163,7 @@ getFunctorRealRealToReal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IBinaryMathFunctor<Real,Real3,Real>* StandardCaseFunction::
+IBinaryMathFunctor<Real, Real3, Real>* StandardCaseFunction::
 getFunctorRealReal3ToReal()
 {
   return 0;
@@ -171,7 +172,7 @@ getFunctorRealReal3ToReal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IBinaryMathFunctor<Real,Real,Real3>* StandardCaseFunction::
+IBinaryMathFunctor<Real, Real, Real3>* StandardCaseFunction::
 getFunctorRealRealToReal3()
 {
   return 0;
@@ -180,7 +181,7 @@ getFunctorRealRealToReal3()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IBinaryMathFunctor<Real,Real3,Real3>* StandardCaseFunction::
+IBinaryMathFunctor<Real, Real3, Real3>* StandardCaseFunction::
 getFunctorRealReal3ToReal3()
 {
   return 0;
@@ -189,7 +190,7 @@ getFunctorRealReal3ToReal3()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

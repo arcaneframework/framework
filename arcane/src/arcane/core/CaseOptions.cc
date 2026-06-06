@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,13 +42,12 @@ namespace Arcane
 
 namespace AxlOptionsBuilder
 {
-extern "C++" IXmlDocumentHolder*
-documentToXml(const Document& d);
+  extern "C++" IXmlDocumentHolder*
+  documentToXml(const Document& d);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,15 +58,19 @@ class CaseOptionsPrivate
 {
  public:
 
-  CaseOptionsPrivate(ICaseMng* cm,const String& name)
-  : m_case_mng(cm), m_name(name), m_true_name(name)
+  CaseOptionsPrivate(ICaseMng* cm, const String& name)
+  : m_case_mng(cm)
+  , m_name(name)
+  , m_true_name(name)
   , m_mesh_handle(cm->meshMng()->defaultMeshHandle())
   {
   }
 
-  CaseOptionsPrivate(ICaseOptionList* co_list,const String& name)
-  : m_case_mng(co_list->caseMng()), m_name(name), m_true_name(name),
-    m_mesh_handle(co_list->meshHandle())
+  CaseOptionsPrivate(ICaseOptionList* co_list, const String& name)
+  : m_case_mng(co_list->caseMng())
+  , m_name(name)
+  , m_true_name(name)
+  , m_mesh_handle(co_list->meshHandle())
   {
     if (m_mesh_handle.isNull())
       m_mesh_handle = m_case_mng->meshMng()->defaultMeshHandle();
@@ -83,8 +86,8 @@ class CaseOptionsPrivate
   ICaseOptionList* m_parent = nullptr;
   ICaseMng* m_case_mng;
   ReferenceCounter<ICaseOptionList> m_config_list;
-  IModule* m_module = nullptr;  //!< Associated module or 0 if none.
-  IServiceInfo* m_service_info = nullptr;  //!< Associated service or 0 if none.
+  IModule* m_module = nullptr; //!< Associated module or 0 if none.
+  IServiceInfo* m_service_info = nullptr; //!< Associated service or 0 if none.
   String m_name;
   String m_true_name;
   bool m_is_multi = false;
@@ -103,10 +106,10 @@ class CaseOptionsPrivate
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseMng* cm,const String& name)
-: m_p(new CaseOptionsPrivate(cm,name))
+CaseOptions(ICaseMng* cm, const String& name)
+: m_p(new CaseOptionsPrivate(cm, name))
 {
-  m_p->m_config_list = ICaseOptionListInternal::create(cm,this,XmlNode());
+  m_p->m_config_list = ICaseOptionListInternal::create(cm, this, XmlNode());
   m_p->m_is_case_mng_registered = true;
   cm->registerOptions(this);
 }
@@ -115,10 +118,10 @@ CaseOptions(ICaseMng* cm,const String& name)
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseOptionList* parent,const String& aname)
-: m_p(new CaseOptionsPrivate(parent,aname))
+CaseOptions(ICaseOptionList* parent, const String& aname)
+: m_p(new CaseOptionsPrivate(parent, aname))
 {
-  m_p->m_config_list = ICaseOptionListInternal::create(parent,this,XmlNode());
+  m_p->m_config_list = ICaseOptionListInternal::create(parent, this, XmlNode());
   _setParent(parent);
 }
 
@@ -126,10 +129,10 @@ CaseOptions(ICaseOptionList* parent,const String& aname)
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseMng* cm,const String& aname,const XmlNode& parent_elem)
-: m_p(new CaseOptionsPrivate(cm,aname))
+CaseOptions(ICaseMng* cm, const String& aname, const XmlNode& parent_elem)
+: m_p(new CaseOptionsPrivate(cm, aname))
 {
-  m_p->m_config_list = ICaseOptionListInternal::create(cm,this,parent_elem);
+  m_p->m_config_list = ICaseOptionListInternal::create(cm, this, parent_elem);
   m_p->m_is_case_mng_registered = true;
   cm->registerOptions(this);
 }
@@ -138,11 +141,11 @@ CaseOptions(ICaseMng* cm,const String& aname,const XmlNode& parent_elem)
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseOptionList* parent,const String& aname,
-            const XmlNode& parent_elem,bool is_optional,bool is_multi)
-: m_p(new CaseOptionsPrivate(parent,aname))
+CaseOptions(ICaseOptionList* parent, const String& aname,
+            const XmlNode& parent_elem, bool is_optional, bool is_multi)
+: m_p(new CaseOptionsPrivate(parent, aname))
 {
-  ICaseOptionList* col = ICaseOptionListInternal::create(parent,this,parent_elem,is_optional,is_multi);
+  ICaseOptionList* col = ICaseOptionListInternal::create(parent, this, parent_elem, is_optional, is_multi);
   m_p->m_config_list = col;
   _setParent(parent);
   if (is_multi)
@@ -153,8 +156,8 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseMng* cm,const String& aname,ICaseOptionList* config_list)
-: m_p(new CaseOptionsPrivate(cm,aname))
+CaseOptions(ICaseMng* cm, const String& aname, ICaseOptionList* config_list)
+: m_p(new CaseOptionsPrivate(cm, aname))
 {
   m_p->m_config_list = config_list;
   m_p->m_is_case_mng_registered = true;
@@ -165,9 +168,9 @@ CaseOptions(ICaseMng* cm,const String& aname,ICaseOptionList* config_list)
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseOptionList* parent,const String& aname,
+CaseOptions(ICaseOptionList* parent, const String& aname,
             ICaseOptionList* config_list)
-: m_p(new CaseOptionsPrivate(parent->caseMng(),aname))
+: m_p(new CaseOptionsPrivate(parent->caseMng(), aname))
 {
   m_p->m_config_list = config_list;
   _setParent(parent);
@@ -177,13 +180,13 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
-CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
-: m_p(new CaseOptionsPrivate(cm,"dynamic-options"))
+CaseOptions(ICaseMng* cm, const XmlContent& xml_content)
+: m_p(new CaseOptionsPrivate(cm, "dynamic-options"))
 {
   // This constructor is for dynamically created options
   IXmlDocumentHolder* xml_doc = xml_content.m_document;
   XmlNode parent_elem = xml_doc->documentNode().documentElement();
-  m_p->m_config_list = ICaseOptionListInternal::create(cm,this,parent_elem);
+  m_p->m_config_list = ICaseOptionListInternal::create(cm, this, parent_elem);
   m_p->m_own_case_document_fragment = cm->_internalImpl()->createDocumentFragment(xml_doc);
   // Keeps a reference to the ICaseMng in case this option
   // is destroyed after the end of the calculation and the destruction of subdomains.
@@ -257,7 +260,7 @@ xpathFullName() const
 /*---------------------------------------------------------------------------*/
 
 void CaseOptions::
-addAlternativeNodeName(const String& lang,const String& name)
+addAlternativeNodeName(const String& lang, const String& name)
 {
   // Translations should not be modified once the translated name
   // has been set. This can happen with services if they have a translation
@@ -265,7 +268,7 @@ addAlternativeNodeName(const String& lang,const String& name)
   // which can make the names inconsistent.
   if (m_p->m_is_translated_name_set)
     return;
-  m_p->m_name_translations.add(lang,name);
+  m_p->m_name_translations.add(lang, name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -430,18 +433,18 @@ _setParent(ICaseOptionList* parent)
 bool CaseOptions::
 _setMeshHandleAndCheckDisabled(const String& mesh_name)
 {
-  if (mesh_name.empty()){
+  if (mesh_name.empty()) {
     // My mesh is that of my parent
     if (m_p->m_parent)
       _setMeshHandle(m_p->m_parent->meshHandle());
   }
-  else{
+  else {
     // A mesh different from the default mesh is associated with the option.
     // Retrieve the associated MeshHandle if it exists. If it doesn't,
     // disable the option.
     // If no mesh with the name we are looking for exists, do not allocate the service
-    MeshHandle* handle = caseMng()->meshMng()->findMeshHandle(mesh_name,false);
-    if (!handle){
+    MeshHandle* handle = caseMng()->meshMng()->findMeshHandle(mesh_name, false);
+    if (!handle) {
       m_p->m_config_list->disable();
       return true;
     }
@@ -458,12 +461,12 @@ _setTranslatedName()
 {
   String lang = caseDocumentFragment()->language();
   if (m_p->m_is_translated_name_set)
-    traceMng()->info() << "WARNING: translated name already set for " << m_p->m_name; 
+    traceMng()->info() << "WARNING: translated name already set for " << m_p->m_name;
   if (lang.null())
     m_p->m_name = m_p->m_true_name;
-  else{
+  else {
     String tr = m_p->m_name_translations.find(lang);
-    if (!tr.null()){
+    if (!tr.null()) {
       m_p->m_name = tr;
     }
   }
@@ -476,7 +479,7 @@ _setTranslatedName()
 String CaseOptions::
 translatedName(const String& lang) const
 {
-  if (!lang.null()){
+  if (!lang.null()) {
     String tr = m_p->m_name_translations.find(lang);
     if (!tr.null())
       return tr;
@@ -500,7 +503,7 @@ void CaseOptions::
 read(eCaseOptionReadPhase read_phase)
 {
   ITraceMng* tm = traceMng();
-  bool is_phase1 = read_phase==eCaseOptionReadPhase::Phase1;
+  bool is_phase1 = read_phase == eCaseOptionReadPhase::Phase1;
   if (is_phase1 && m_p->m_is_phase1_read)
     return;
 
@@ -509,40 +512,40 @@ read(eCaseOptionReadPhase read_phase)
 
   m_p->m_config_list->readChildren(is_phase1);
 
-  if (is_phase1){
+  if (is_phase1) {
     ICaseDocumentFragment* doc = caseDocumentFragment();
     // Read the activation function (if present)
     XmlNode velem = m_p->m_config_list->rootElement();
     CaseNodeNames* cnn = doc->caseNodeNames();
     String func_activation_name = velem.attrValue(cnn->function_activation_ref);
-    if (!func_activation_name.null()){
+    if (!func_activation_name.null()) {
       ICaseFunction* func = caseMng()->findFunction(func_activation_name);
-      if (!func){
-        CaseOptionError::addError(doc,A_FUNCINFO,velem.xpathFullName(),
+      if (!func) {
+        CaseOptionError::addError(doc, A_FUNCINFO, velem.xpathFullName(),
                                   String::format("No function with the name '{0}' exists",
                                                  func_activation_name));
       }
-      else if (func->paramType()!=ICaseFunction::ParamReal){
-        CaseOptionError::addError(doc,A_FUNCINFO,velem.xpathFullName(),
+      else if (func->paramType() != ICaseFunction::ParamReal) {
+        CaseOptionError::addError(doc, A_FUNCINFO, velem.xpathFullName(),
                                   String::format("The function '{0}' requires a parameter of type 'time'",
                                                  func_activation_name));
       }
-      else if (func->valueType()!=ICaseFunction::ValueBool){
-        CaseOptionError::addError(doc,A_FUNCINFO,velem.xpathFullName(),
+      else if (func->valueType() != ICaseFunction::ValueBool) {
+        CaseOptionError::addError(doc, A_FUNCINFO, velem.xpathFullName(),
                                   String::format("The function '{0}' requires a parameter of type 'bool'",
                                                  func_activation_name));
       }
       else {
         m_p->m_activate_function = func;
         tm->info() << "Use the function '" << func->name() << "' to activate the option "
-                    << velem.xpathFullName();
+                   << velem.xpathFullName();
       }
     }
     // Check that the 'function' element is not present
     {
       String func_name = velem.attrValue(cnn->function_ref);
       if (!func_name.null())
-        CaseOptionError::addError(doc,A_FUNCINFO,velem.xpathFullName(),
+        CaseOptionError::addError(doc, A_FUNCINFO, velem.xpathFullName(),
                                   String::format("Attribute <{0}> invalid.",
                                                  cnn->function_ref));
     }
@@ -555,7 +558,7 @@ read(eCaseOptionReadPhase read_phase)
 
 /*!
  * \brief Adds unrecognized elements to \a nlist.
- */ 
+ */
 void CaseOptions::
 addInvalidChildren(XmlNodeList& nlist)
 {
@@ -566,9 +569,9 @@ addInvalidChildren(XmlNodeList& nlist)
 /*---------------------------------------------------------------------------*/
 
 void CaseOptions::
-printChildren(const String& lang,int indent)
+printChildren(const String& lang, int indent)
 {
-  m_p->m_config_list->printChildren(lang,indent);
+  m_p->m_config_list->printChildren(lang, indent);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -600,7 +603,7 @@ createDynamic(ICaseMng* cm, const AxlOptionsBuilder::Document& options_doc)
   IXmlDocumentHolder* xml_doc = AxlOptionsBuilder::documentToXml(options_doc);
   content.m_document = xml_doc;
 
-  auto* opt = new CaseOptions(cm,content);
+  auto* opt = new CaseOptions(cm, content);
   return ReferenceCounter<ICaseOptions>(opt);
 }
 
@@ -620,11 +623,11 @@ toReference()
 /*---------------------------------------------------------------------------*/
 
 CaseOptionsMulti::
-CaseOptionsMulti(ICaseMng* cm,const String& aname,const XmlNode& parent_element,
-                 Integer min_occurs,Integer max_occurs)
-: CaseOptions(cm,aname,
-              ICaseOptionListInternal::create(this,this,cm,parent_element,
-                                              min_occurs,max_occurs))
+CaseOptionsMulti(ICaseMng* cm, const String& aname, const XmlNode& parent_element,
+                 Integer min_occurs, Integer max_occurs)
+: CaseOptions(cm, aname,
+              ICaseOptionListInternal::create(this, this, cm, parent_element,
+                                              min_occurs, max_occurs))
 {
 }
 
@@ -632,12 +635,12 @@ CaseOptionsMulti(ICaseMng* cm,const String& aname,const XmlNode& parent_element,
 /*---------------------------------------------------------------------------*/
 
 CaseOptionsMulti::
-CaseOptionsMulti(ICaseOptionList* parent,const String& aname,
+CaseOptionsMulti(ICaseOptionList* parent, const String& aname,
                  const XmlNode& parent_element,
-                 Integer min_occurs,Integer max_occurs)
-: CaseOptions(parent,aname,
-              ICaseOptionListInternal::create(this,this,parent,
-                                              parent_element,min_occurs,max_occurs))
+                 Integer min_occurs, Integer max_occurs)
+: CaseOptions(parent, aname,
+              ICaseOptionListInternal::create(this, this, parent,
+                                              parent_element, min_occurs, max_occurs))
 {
 }
 
@@ -652,9 +655,6 @@ _arcaneDeprecatedGetSubDomain(ICaseOptions* opt)
 {
   return opt->subDomain();
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

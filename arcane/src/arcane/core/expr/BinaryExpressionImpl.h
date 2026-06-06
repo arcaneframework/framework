@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,6 +40,7 @@ class BinaryExpressionImpl
 : public ExpressionImpl
 {
  public:
+
   enum eOperationType
   {
     Add = 0,
@@ -57,13 +59,15 @@ class BinaryExpressionImpl
     Equal,
     NbOperationType
   };
-  
- public:
-  BinaryExpressionImpl (IExpressionImpl* first,
-                        IExpressionImpl* second,
-                        eOperationType operation);
 
  public:
+
+  BinaryExpressionImpl(IExpressionImpl* first,
+                       IExpressionImpl* second,
+                       eOperationType operation);
+
+ public:
+
   virtual void assign(IExpressionImpl*) {}
   virtual void assign(IExpressionImpl*, IntegerConstArrayView) {}
   virtual void apply(ExpressionResult* result);
@@ -72,6 +76,7 @@ class BinaryExpressionImpl
   static String operationName(eOperationType type);
 
  private:
+
   Expression m_first;
   Expression m_second;
   eOperationType m_operation;
@@ -86,45 +91,47 @@ class BinaryExpressionImpl
 class BinaryOperator
 {
  public:
+
   virtual ~BinaryOperator() {}
-  virtual void evaluate(ExpressionResult* res, 
-                        ArrayVariant* a, 
-                        ArrayVariant* b)=0;
+  virtual void evaluate(ExpressionResult* res,
+                        ArrayVariant* a,
+                        ArrayVariant* b) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T> class DefaultBinaryOperator
+template <class T> class DefaultBinaryOperator
 : public BinaryOperator
 {
  public:
-  virtual void evaluate(ArrayView<T> res, 
-                        ArrayView<T> a, 
-                        ArrayView<T> b)=0;
 
-  virtual void evaluate(ExpressionResult* res, 
-                        ArrayVariant* a, 
+  virtual void evaluate(ArrayView<T> res,
+                        ArrayView<T> a,
+                        ArrayView<T> b) = 0;
+
+  virtual void evaluate(ExpressionResult* res,
+                        ArrayVariant* a,
                         ArrayVariant* b)
   {
     // Check operation validity
     if (a->type() != b->type())
       throw BadOperandException("DefaultBinaryOperator::evaluate");
-    
+
     Integer size = res->size();
     if (size != a->size() || size != b->size())
       throw BadOperandException("DefaultBinaryOperator::evaluate");
-    
+
     // Allocate the result based on the type of a
     res->allocate(a->type());
-    
+
     // Retrieve operand values
     ArrayView<T> res_val;
     res->data()->value(res_val);
     ArrayView<T> a_val;
     a->value(a_val);
     ArrayView<T> b_val;
-    b->value(b_val);    
+    b->value(b_val);
 
     // Evaluate arrays
     evaluate(res_val, a_val, b_val);
@@ -134,50 +141,54 @@ template<class T> class DefaultBinaryOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define DEFAULT_BINARY_OP(classname,expression) \
-template<class T> \
-class classname : public DefaultBinaryOperator<T> \
-{ \
- public:\
-  virtual void evaluate(ExpressionResult* res, \
-                        ArrayVariant* a, \
-                        ArrayVariant* b)\
-  { DefaultBinaryOperator<T>::evaluate(res,a,b); } \
-  virtual void evaluate(ArrayView<T> res, \
-                        ArrayView<T> a, \
-                        ArrayView<T> b) \
+#define DEFAULT_BINARY_OP(classname, expression) \
+  template <class T> \
+  class classname : public DefaultBinaryOperator<T> \
   { \
-    Integer size=res.size(); \
-    for (Integer i=0 ; i<size ; ++i) \
-      expression; \
-  } \
-};
+   public: \
+\
+    virtual void evaluate(ExpressionResult* res, \
+                          ArrayVariant* a, \
+                          ArrayVariant* b) \
+    { \
+      DefaultBinaryOperator<T>::evaluate(res, a, b); \
+    } \
+    virtual void evaluate(ArrayView<T> res, \
+                          ArrayView<T> a, \
+                          ArrayView<T> b) \
+    { \
+      Integer size = res.size(); \
+      for (Integer i = 0; i < size; ++i) \
+        expression; \
+    } \
+  };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-DEFAULT_BINARY_OP(AddOperator,res[i]=a[i]+b[i])
-DEFAULT_BINARY_OP(SubstractOperator,res[i]=a[i]-b[i])
-DEFAULT_BINARY_OP(MultiplyOperator,res[i]=a[i]*b[i])
-DEFAULT_BINARY_OP(DivideOperator,res[i]=a[i]/b[i])
-DEFAULT_BINARY_OP(MinimumOperator,(a[i]<b[i])?res[i]=a[i]:res[i]=b[i])
-DEFAULT_BINARY_OP(MaximumOperator,(a[i]<b[i])?res[i]=b[i]:res[i]=a[i])
-DEFAULT_BINARY_OP(PowOperator,res[i]=pow(a[i],b[i]))
+DEFAULT_BINARY_OP(AddOperator, res[i] = a[i] + b[i])
+DEFAULT_BINARY_OP(SubstractOperator, res[i] = a[i] - b[i])
+DEFAULT_BINARY_OP(MultiplyOperator, res[i] = a[i] * b[i])
+DEFAULT_BINARY_OP(DivideOperator, res[i] = a[i] / b[i])
+DEFAULT_BINARY_OP(MinimumOperator, (a[i] < b[i]) ? res[i] = a[i] : res[i] = b[i])
+DEFAULT_BINARY_OP(MaximumOperator, (a[i] < b[i]) ? res[i] = b[i] : res[i] = a[i])
+DEFAULT_BINARY_OP(PowOperator, res[i] = pow(a[i], b[i]))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T>
+template <class T>
 class BoolBinaryOperator
 : public BinaryOperator
 {
  public:
-  virtual void evaluate(ArrayView<bool> res, 
-                        ArrayView<T> a, 
-                        ArrayView<T> b)=0;
 
-  virtual void evaluate(ExpressionResult* res, 
-                        ArrayVariant* a, 
+  virtual void evaluate(ArrayView<bool> res,
+                        ArrayView<T> a,
+                        ArrayView<T> b) = 0;
+
+  virtual void evaluate(ExpressionResult* res,
+                        ArrayVariant* a,
                         ArrayVariant* b)
   {
     // Check operation validity
@@ -197,7 +208,7 @@ class BoolBinaryOperator
     ArrayView<T> a_val;
     a->value(a_val);
     ArrayView<T> b_val;
-    b->value(b_val);    
+    b->value(b_val);
 
     // Evaluate arrays
     evaluate(res_val, a_val, b_val);
@@ -207,40 +218,43 @@ class BoolBinaryOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define BOOL_BINARY_OP(classname,expression) \
-template<class T> \
-class classname : public BoolBinaryOperator<T> \
-{ \
- public:\
-  virtual void evaluate(ExpressionResult* res, \
-                        ArrayVariant* a, \
-                        ArrayVariant* b)\
-  { BoolBinaryOperator<T>::evaluate(res,a,b); }\
-  virtual void evaluate(ArrayView<bool> res, \
-                        ArrayView<T> a, \
-                        ArrayView<T> b) \
+#define BOOL_BINARY_OP(classname, expression) \
+  template <class T> \
+  class classname : public BoolBinaryOperator<T> \
   { \
-    Integer size=res.size(); \
-    for (Integer i=0 ; i<size ; ++i) \
-      expression; \
-  } \
-};
+   public: \
+\
+    virtual void evaluate(ExpressionResult* res, \
+                          ArrayVariant* a, \
+                          ArrayVariant* b) \
+    { \
+      BoolBinaryOperator<T>::evaluate(res, a, b); \
+    } \
+    virtual void evaluate(ArrayView<bool> res, \
+                          ArrayView<T> a, \
+                          ArrayView<T> b) \
+    { \
+      Integer size = res.size(); \
+      for (Integer i = 0; i < size; ++i) \
+        expression; \
+    } \
+  };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-BOOL_BINARY_OP(EQOperator,res[i]=(a[i]==b[i]))
-BOOL_BINARY_OP(LTOperator,res[i]=(a[i]<b[i]))
-BOOL_BINARY_OP(GTOperator,res[i]=(a[i]>b[i]))
-BOOL_BINARY_OP(LOETOperator,res[i]=(a[i]<=b[i]))
-BOOL_BINARY_OP(GOETOperator,res[i]=(a[i]>=b[i]))
-BOOL_BINARY_OP(AndOperator,res[i]=(a[i]&&b[i]))
-BOOL_BINARY_OP(OrOperator,res[i]=(a[i]||b[i]))
+BOOL_BINARY_OP(EQOperator, res[i] = (a[i] == b[i]))
+BOOL_BINARY_OP(LTOperator, res[i] = (a[i] < b[i]))
+BOOL_BINARY_OP(GTOperator, res[i] = (a[i] > b[i]))
+BOOL_BINARY_OP(LOETOperator, res[i] = (a[i] <= b[i]))
+BOOL_BINARY_OP(GOETOperator, res[i] = (a[i] >= b[i]))
+BOOL_BINARY_OP(AndOperator, res[i] = (a[i] && b[i]))
+BOOL_BINARY_OP(OrOperator, res[i] = (a[i] || b[i]))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

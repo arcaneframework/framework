@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -52,21 +52,27 @@ namespace Arcane::random
 /*---------------------------------------------------------------------------*/
 
 // deterministic polar method, uses trigonometric functions
-template<class UniformRandomNumberGenerator>
+template <class UniformRandomNumberGenerator>
 class NormalDistribution
 {
  public:
 
   typedef UniformRandomNumberGenerator base_type;
 
-  explicit NormalDistribution(base_type & rng,Real mean = 0.0,Real sigma = 1.0)
-  : _rng(rng), _mean(mean), _sigma(sigma), _valid(false)
+  explicit NormalDistribution(base_type& rng, Real mean = 0.0, Real sigma = 1.0)
+  : _rng(rng)
+  , _mean(mean)
+  , _sigma(sigma)
+  , _valid(false)
   {
   }
 
   // compiler-generated copy constructor is NOT fine, need to purge cache
   NormalDistribution(const NormalDistribution& other)
-  : _rng(other._rng), _mean(other._mean), _sigma(other._sigma), _valid(false)
+  : _rng(other._rng)
+  , _mean(other._mean)
+  , _sigma(other._sigma)
+  , _valid(false)
   {
   }
   // uniform_01 cannot be assigned, neither can this class
@@ -76,15 +82,15 @@ class NormalDistribution
     if (!_valid) {
       _r1 = _rng();
       _r2 = _rng();
-      _cached_rho = math::sqrt(-2 * math::log(1.0-_r2));
+      _cached_rho = math::sqrt(-2 * math::log(1.0 - _r2));
       _valid = true;
     }
     else
       _valid = false;
     // Can we have a boost::mathconst please?
     const double pi = 3.14159265358979323846;
-    
-    return _cached_rho * (_valid ? cos(2*pi*_r1) : sin(2*pi*_r1)) * _sigma + _mean;
+
+    return _cached_rho * (_valid ? cos(2 * pi * _r1) : sin(2 * pi * _r1)) * _sigma + _mean;
   }
 
  private:

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,19 +50,19 @@ class ARCANE_EXPR_EXPORT IExpressionImpl
    * If the expression is a vector and a terminal symbol (a leaf),
    * it returns its number of elements. Otherwise, it returns 0.
    */
-  virtual Integer vectorSize() const =0;
+  virtual Integer vectorSize() const = 0;
 
-  virtual void dumpIf(IExpressionImpl* test_expr,Array<Expression>& exprs) =0;
+  virtual void dumpIf(IExpressionImpl* test_expr, Array<Expression>& exprs) = 0;
   virtual void apply(ExpressionResult* result) = 0;
   virtual void addRef() = 0;
   virtual void removeRef() = 0;
-  virtual void setTrace(bool v) =0;
+  virtual void setTrace(bool v) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

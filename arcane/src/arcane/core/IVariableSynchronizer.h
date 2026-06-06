@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * in this list for any other subdomain that owns this entity.
    */
   virtual void synchronize(IVariable* var, Int32ConstArrayView local_ids);
-  
+
   /*!
    * \brief Synchronizes the variables \a vars in blocking mode.
    *
@@ -105,7 +105,7 @@ class ARCANE_CORE_EXPORT IVariableSynchronizer
    * in this list for any other subdomain that owns this entity.
    */
   virtual void synchronize(VariableCollection vars, Int32ConstArrayView local_ids);
-  
+
   /*!
    * \brief Ranks of subdomains with which communication occurs.
    */

@@ -126,7 +126,7 @@ Vector(Integer size)
 /*---------------------------------------------------------------------------*/
 
 Vector::
-Vector(Integer size,Real init_value)
+Vector(Integer size, Real init_value)
 : m_impl(new VectorImpl(size, init_value))
 {
   m_impl->addReference();

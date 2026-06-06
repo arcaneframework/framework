@@ -139,15 +139,15 @@ createExchangerRef(IParallelMng* pm)
 }
 
 Ref<IVariableSynchronizer>
-createSynchronizerRef(IParallelMng* pm,IItemFamily* family)
+createSynchronizerRef(IParallelMng* pm, IItemFamily* family)
 {
-  return ParallelMngUtilsAccessor::createSynchronizer(pm,family);
+  return ParallelMngUtilsAccessor::createSynchronizer(pm, family);
 }
 
 Ref<IVariableSynchronizer>
-createSynchronizerRef(IParallelMng* pm,const ItemGroup& group)
+createSynchronizerRef(IParallelMng* pm, const ItemGroup& group)
 {
-  return ParallelMngUtilsAccessor::createSynchronizer(pm,group);
+  return ParallelMngUtilsAccessor::createSynchronizer(pm, group);
 }
 
 Ref<IParallelTopology>
@@ -162,8 +162,7 @@ createSubParallelMngRef(IParallelMng* pm, Int32 color, Int32 key)
   return ParallelMngUtilsAccessor::createSubParallelMngRef(pm, color, key);
 }
 
-bool
-isMachineShMemWinAvailable(IParallelMng* pm)
+bool isMachineShMemWinAvailable(IParallelMng* pm)
 {
   ARCANE_CHECK_POINTER(pm);
   return pm->_internalApi()->isMachineShMemWinAvailable();

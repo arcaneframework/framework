@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -138,19 +138,25 @@ class ItemPairGroup::CustomFunctorWrapper
 : public IFunctor
 {
  public:
-  CustomFunctorWrapper(ItemPairGroupImpl* g,ItemPairGroup::CustomFunctor* f)
-  : m_group(g), m_functor(f){}
+
+  CustomFunctorWrapper(ItemPairGroupImpl* g, ItemPairGroup::CustomFunctor* f)
+  : m_group(g)
+  , m_functor(f)
+  {}
   ~CustomFunctorWrapper()
   {
     delete m_functor;
   }
+
  public:
+
   void executeFunctor() override
   {
     ItemPairGroup pair_group(m_group);
     ItemPairGroupBuilder builder(pair_group);
     m_functor->executeFunctor(builder);
   }
+
  public:
 
   ItemPairGroupImpl* m_group = nullptr;
@@ -161,7 +167,7 @@ class ItemPairGroup::CustomFunctorWrapper
 /*---------------------------------------------------------------------------*/
 
 ItemPairGroup::
-ItemPairGroup(const ItemGroup& group,const ItemGroup& sub_item_group,
+ItemPairGroup(const ItemGroup& group, const ItemGroup& sub_item_group,
               eItemKind link_kind)
 : m_impl(nullptr)
 {
@@ -174,13 +180,13 @@ ItemPairGroup(const ItemGroup& group,const ItemGroup& sub_item_group,
 /*---------------------------------------------------------------------------*/
 
 ItemPairGroup::
-ItemPairGroup(const ItemGroup& group,const ItemGroup& sub_item_group,
+ItemPairGroup(const ItemGroup& group, const ItemGroup& sub_item_group,
               CustomFunctor* functor)
 : m_impl(nullptr)
 {
   ARCANE_CHECK_POINTER(functor);
-  m_impl = new ItemPairGroupImpl(group,sub_item_group);
-  IFunctor* f = new CustomFunctorWrapper(m_impl.get(),functor);
+  m_impl = new ItemPairGroupImpl(group, sub_item_group);
+  IFunctor* f = new CustomFunctorWrapper(m_impl.get(), functor);
   m_impl->setComputeFunctor(f);
   m_impl->invalidate(true);
 }
@@ -215,7 +221,7 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

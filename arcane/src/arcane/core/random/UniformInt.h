@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -51,21 +51,26 @@ namespace Arcane::random
 /*---------------------------------------------------------------------------*/
 
 // uniform integer distribution on [min, max]
-template<class UniformRandomNumberGenerator,class IntType = int>
+template <class UniformRandomNumberGenerator, class IntType = int>
 class UniformInt
 {
-public:
+ public:
+
   typedef UniformRandomNumberGenerator base_type;
   typedef IntType result_type;
   static const bool has_fixed_range = false;
 
-  UniformInt(base_type & rng, IntType min, IntType max) 
-    : _rng(rng), _min(min), _max(max), _range(_max - _min),
-      _bmin(_rng.min()), _brange(_rng.max() - _bmin)
+  UniformInt(base_type& rng, IntType min, IntType max)
+  : _rng(rng)
+  , _min(min)
+  , _max(max)
+  , _range(_max - _min)
+  , _bmin(_rng.min())
+  , _brange(_rng.max() - _bmin)
   {
-    if(utils::equal_signed_unsigned(_brange, _range))
+    if (utils::equal_signed_unsigned(_brange, _range))
       _range_comparison = 0;
-    else if(utils::lessthan_signed_unsigned(_brange, _range))
+    else if (utils::lessthan_signed_unsigned(_brange, _range))
       _range_comparison = -1;
     else
       _range_comparison = 1;
@@ -73,62 +78,68 @@ public:
   result_type operator()();
   result_type min() const { return _min; }
   result_type max() const { return _max; }
+
  private:
+
   typedef typename base_type::result_type base_result;
-  base_type & _rng;
+  base_type& _rng;
   result_type _min, _max, _range;
   base_result _bmin, _brange;
   int _range_comparison;
 };
 
-template<class UniformRandomNumberGenerator, class IntType>
+template <class UniformRandomNumberGenerator, class IntType>
 inline IntType UniformInt<UniformRandomNumberGenerator, IntType>::operator()()
 {
-  if(_range_comparison == 0) {
+  if (_range_comparison == 0) {
     // this will probably never happen in real life
     // basically nothing to do; just take care we don't overflow / underflow
     return static_cast<result_type>(_rng() - _bmin) + _min;
-  } else if(_range_comparison < 0) {
+  }
+  else if (_range_comparison < 0) {
     // use rejection method to handle things like 0..3 --> 0..4
-    for(;;) {
+    for (;;) {
       // concatenate several invocations of the base RNG
       // take extra care to avoid overflows
       result_type limit;
-      if(_range == std::numeric_limits<result_type>::max()) {
-        limit = _range/(static_cast<result_type>(_brange)+1);
-        if(_range % static_cast<result_type>(_brange)+1 == static_cast<result_type>(_brange))
+      if (_range == std::numeric_limits<result_type>::max()) {
+        limit = _range / (static_cast<result_type>(_brange) + 1);
+        if (_range % static_cast<result_type>(_brange) + 1 == static_cast<result_type>(_brange))
           ++limit;
-      } else {
-        limit = (_range+1)/(static_cast<result_type>(_brange)+1);
+      }
+      else {
+        limit = (_range + 1) / (static_cast<result_type>(_brange) + 1);
       }
       // we consider "result" as expressed to base (_brange+1)
       // for every power of (_brange+1), we determine a random factor
       result_type result = 0;
       result_type mult = 1;
-      while(mult <= limit) {
+      while (mult <= limit) {
         result += (_rng() - _bmin) * mult;
-        mult *= static_cast<result_type>(_brange)+1;
+        mult *= static_cast<result_type>(_brange) + 1;
       }
-      if(mult == limit)
+      if (mult == limit)
         // _range+1 is an integer power of _brange+1: no rejections required
         return result;
       // _range/mult < _brange+1  -> no endless loop
-      result += UniformInt<base_type,result_type>(_rng, 0, _range/mult)() * mult;
-      if(result <= _range)
+      result += UniformInt<base_type, result_type>(_rng, 0, _range / mult)() * mult;
+      if (result <= _range)
         return result + _min;
     }
-  } else {                   // brange > range
-    if(_brange / _range > 4 /* quantization_cutoff */ ) {
+  }
+  else { // brange > range
+    if (_brange / _range > 4 /* quantization_cutoff */) {
       // the new range is vastly smaller than the source range,
       // so quantization effects are not relevant
-      return UniformSmallInt<base_type,result_type>(_rng, _min, _max)();
-    } else {
+      return UniformSmallInt<base_type, result_type>(_rng, _min, _max)();
+    }
+    else {
       // use rejection method to handle things like 0..5 -> 0..4
-      for(;;) {
+      for (;;) {
         base_result result = _rng() - _bmin;
         // result and range are non-negative, and result is possibly larger
         // than range, so the cast is safe
-        if(result <= static_cast<base_result>(_range))
+        if (result <= static_cast<base_result>(_range))
           return result + _min;
       }
     }
@@ -138,7 +149,7 @@ inline IntType UniformInt<UniformRandomNumberGenerator, IntType>::operator()()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

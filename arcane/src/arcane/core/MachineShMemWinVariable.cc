@@ -44,8 +44,7 @@ MachineShMemWinVariableCommon(IVariable* var)
 /*---------------------------------------------------------------------------*/
 
 MachineShMemWinVariableCommon::
-~MachineShMemWinVariableCommon()
-= default;
+~MachineShMemWinVariableCommon() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -10,6 +10,7 @@
 /* Class allowing the creation of a shared memory window between             */
 /* processes on the same node.                                               */
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/core/ContigMachineShMemWinBase.h"
 

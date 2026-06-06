@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -44,13 +44,13 @@ class DataTypeScalarReal;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class DataTypeTraitsT;
 class Real2Proxy;
 class Real3Proxy;
 class Real3x3Proxy;
 class Real2x2Proxy;
-template<typename Type>
+template <typename Type>
 class BuiltInProxy;
 
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ class BuiltInProxy;
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c bool.
  */
-template<>
+template <>
 class DataTypeTraitsT<bool>
 {
  public:
@@ -105,7 +105,7 @@ class DataTypeTraitsT<bool>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c Byte.
  */
-template<>
+template <>
 class DataTypeTraitsT<Byte>
 {
  public:
@@ -148,7 +148,7 @@ class DataTypeTraitsT<Byte>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c Real.
  */
-template<>
+template <>
 class DataTypeTraitsT<Real>
 {
  public:
@@ -189,7 +189,7 @@ class DataTypeTraitsT<Real>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c Float128
  */
-template<>
+template <>
 class DataTypeTraitsT<Float128>
 {
  public:
@@ -230,7 +230,7 @@ class DataTypeTraitsT<Float128>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c Float32.
  */
-template<>
+template <>
 class DataTypeTraitsT<Float32>
 {
  public:
@@ -271,7 +271,7 @@ class DataTypeTraitsT<Float32>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c BFloat16.
  */
-template<>
+template <>
 class DataTypeTraitsT<BFloat16>
 {
  public:
@@ -312,7 +312,7 @@ class DataTypeTraitsT<BFloat16>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type \c Float16.
  */
-template<>
+template <>
 class DataTypeTraitsT<Float16>
 {
  public:
@@ -353,7 +353,7 @@ class DataTypeTraitsT<Float16>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Integer</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Int8>
 {
  public:
@@ -393,7 +393,7 @@ class DataTypeTraitsT<Int8>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Integer</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Int16>
 {
  public:
@@ -433,7 +433,7 @@ class DataTypeTraitsT<Int16>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Int32</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Int32>
 {
  public:
@@ -473,7 +473,7 @@ class DataTypeTraitsT<Int32>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Int64</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Int64>
 {
  public:
@@ -513,7 +513,7 @@ class DataTypeTraitsT<Int64>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Int128</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Int128>
 {
  public:
@@ -553,7 +553,7 @@ class DataTypeTraitsT<Int128>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>String</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<String>
 {
  public:
@@ -590,7 +590,7 @@ class DataTypeTraitsT<String>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Real2</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Real2>
 {
  public:
@@ -641,7 +641,7 @@ class DataTypeTraitsT<Real2>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Real3</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Real3>
 {
  public:
@@ -691,7 +691,7 @@ class DataTypeTraitsT<Real3>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Real2x2</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Real2x2>
 {
  public:
@@ -746,7 +746,7 @@ class DataTypeTraitsT<Real2x2>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>Real3x3</tt>.
  */
-template<>
+template <>
 class DataTypeTraitsT<Real3x3>
 {
  public:
@@ -807,8 +807,8 @@ class DataTypeTraitsT<Real3x3>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>NumVector<Real,Size></tt>.
  */
-template<int Size>
-class DataTypeTraitsT<NumVector<Real,Size>>
+template <int Size>
+class DataTypeTraitsT<NumVector<Real, Size>>
 {
  public:
 
@@ -835,8 +835,8 @@ class DataTypeTraitsT<NumVector<Real,Size>>
  * \internal
  * \brief Specialization of DataTypeTraitsT for the type <tt>NumMatrix<Real,RowSize,ColumnSize></tt>.
  */
-template<int RowSize,int ColumnSize>
-class DataTypeTraitsT<NumMatrix<Real,RowSize,ColumnSize>>
+template <int RowSize, int ColumnSize>
+class DataTypeTraitsT<NumMatrix<Real, RowSize, ColumnSize>>
 {
  public:
 

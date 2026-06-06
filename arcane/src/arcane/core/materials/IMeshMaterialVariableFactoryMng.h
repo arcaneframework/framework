@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,24 +33,24 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 {
  public:
-  
+
   virtual ~IMeshMaterialVariableFactoryMng() = default;
 
  public:
 
   //! Builds the instance
-  virtual void build() =0;
+  virtual void build() = 0;
 
   //! Associated trace manager
-  virtual ITraceMng* traceMng() const =0;
+  virtual ITraceMng* traceMng() const = 0;
 
   //! Registers the factory \a factory.
-  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
+  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) = 0;
 
   //! Creates a material variable.
   virtual IMeshMaterialVariable*
   createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info) =0;
+                 const MaterialVariableBuildInfo& build_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

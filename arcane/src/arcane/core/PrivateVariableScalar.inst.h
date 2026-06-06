@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,11 +25,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableScalarT<DataType>::
 PrivateVariableScalarT(const VariableBuildInfo& vbi, const VariableInfo& vi)
 : MeshVariableRef(vbi)
-, m_private_part(PrivatePartType::getReference(vbi,vi))
+, m_private_part(PrivatePartType::getReference(vbi, vi))
 , m_memory_trace(nullptr)
 {
 }
@@ -37,7 +37,7 @@ PrivateVariableScalarT(const VariableBuildInfo& vbi, const VariableInfo& vi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableScalarT<DataType>::
 PrivateVariableScalarT(IVariable* var)
 : MeshVariableRef(var)
@@ -49,7 +49,7 @@ PrivateVariableScalarT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableScalarT<DataType>::
 PrivateVariableScalarT(const PrivateVariableScalarT& rhs)
 : MeshVariableRef(rhs)
@@ -63,7 +63,7 @@ PrivateVariableScalarT(const PrivateVariableScalarT& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableScalarT<DataType>::
 PrivateVariableScalarT()
 {
@@ -72,7 +72,7 @@ PrivateVariableScalarT()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void 
+template <class DataType> void
 PrivateVariableScalarT<DataType>::
 operator=(const PrivateVariableScalarT& rhs)
 {
@@ -85,7 +85,7 @@ operator=(const PrivateVariableScalarT& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void 
+template <class DataType> void
 PrivateVariableScalarT<DataType>::
 updateFromInternal()
 {
@@ -93,13 +93,13 @@ updateFromInternal()
 
   m_view.setArray(m_private_part->valueView());
   m_memory_trace = m_private_part->memoryAccessTrace();
-#ifdef ARCANE_TRACE 
-  m_access_infos = m_private_part->memoryAccessInfos(); 
+#ifdef ARCANE_TRACE
+  m_access_infos = m_private_part->memoryAccessInfos();
   m_trace_infos = m_private_part->traceInfos();
 #endif
   MeshVariableRef::updateFromInternal();
 
-	//cout << "** UPDATE FROM INTERNAL name=" << name()
+  //cout << "** UPDATE FROM INTERNAL name=" << name()
   //     << " this=" << this
   //     << '\n';
   //cout.flush();
@@ -110,7 +110,7 @@ updateFromInternal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> ItemGroup
+template <class DataType> ItemGroup
 PrivateVariableScalarT<DataType>::
 itemGroup() const
 {

@@ -9,6 +9,7 @@
 /*                                                                           */
 /* Memory allocator using the MachineShMemWinBase class.                     */
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/MachineShMemWinMemoryAllocator.h"
 

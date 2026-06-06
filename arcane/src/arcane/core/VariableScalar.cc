@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType>
+template <class DataType>
 class ScalarVariableDiff
 : public VariableDiff<DataType>
 {
@@ -55,10 +55,11 @@ class ScalarVariableDiff
   typedef typename VariableDiff<DataType>::DiffInfo DiffInfo;
 
  public:
+
   //TODO: a simplifier car recopie de ArrayVariableDiff
   // but for scalar variables there is only one value and no associated group.
   VariableComparerResults
-  check(IVariable* var,ConstArrayView<DataType> ref,ConstArrayView<DataType> current,
+  check(IVariable* var, ConstArrayView<DataType> ref, ConstArrayView<DataType> current,
         const VariableComparerArgs& compare_args)
   {
     const bool compare_ghost = compare_args.isCompareGhost();
@@ -76,40 +77,39 @@ class ScalarVariableDiff
     int nb_diff = 0;
     bool compare_failed = false;
     Integer ref_size = ref.size();
-    ENUMERATE_ITEM(i,group){
+    ENUMERATE_ITEM (i, group) {
       const Item& item = *i;
       if (!item.isOwn() && !compare_ghost)
         continue;
       Integer index = item.localId();
-      if (group_index_table){
+      if (group_index_table) {
         index = (*group_index_table)[index];
-        if (index<0)
+        if (index < 0)
           continue;
       }
 
       DataType diff = DataType();
-      if (index>=ref_size){
+      if (index >= ref_size) {
         ++nb_diff;
         compare_failed = true;
       }
-      else{
+      else {
         DataType dref = ref[index];
         DataType dcurrent = current[index];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
-          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,NULL_ITEM_ID));
+        if (VarDataTypeTraits::verifDifferent(dref, dcurrent, diff, true)) {
+          this->m_diffs_info.add(DiffInfo(dcurrent, dref, diff, item, NULL_ITEM_ID));
           ++nb_diff;
         }
       }
     }
-    if (compare_failed){
+    if (compare_failed) {
       Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << " Unable to compare : elements numbers are different !"
                    << " for the variable " << var_name << " ref_size=" << ref_size;
-        
     }
-    if (nb_diff!=0)
+    if (nb_diff != 0)
       this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
@@ -126,7 +126,7 @@ class ScalarVariableDiff
     // Calls the correct specialization to ensure the template type has
     // the reduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
-    if constexpr(std::is_same<TrueType,ReduceType>::value)
+    if constexpr (std::is_same<TrueType, ReduceType>::value)
       return _checkReplica2(replica_pm, var_value);
     ARCANE_UNUSED(replica_pm);
     ARCANE_UNUSED(var);
@@ -141,21 +141,20 @@ class ScalarVariableDiff
   _checkReplica2(IParallelMng* pm, const DataType& var_value)
   {
     Int32 nb_rank = pm->commSize();
-    if (nb_rank==1)
+    if (nb_rank == 1)
       return {};
 
-    DataType max_value = pm->reduce(Parallel::ReduceMax,var_value);
-    DataType min_value = pm->reduce(Parallel::ReduceMin,var_value);
+    DataType max_value = pm->reduce(Parallel::ReduceMax, var_value);
+    DataType min_value = pm->reduce(Parallel::ReduceMin, var_value);
 
     Integer nb_diff = 0;
     DataType diff = DataType();
-    if (VarDataTypeTraits::verifDifferent(min_value,max_value,diff,true)){
-      this->m_diffs_info.add(DiffInfo(min_value,max_value,diff,0,NULL_ITEM_ID));
+    if (VarDataTypeTraits::verifDifferent(min_value, max_value, diff, true)) {
+      this->m_diffs_info.add(DiffInfo(min_value, max_value, diff, 0, NULL_ITEM_ID));
       ++nb_diff;
     }
     return VariableComparerResults(nb_diff);
   }
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -164,15 +163,15 @@ class ScalarVariableDiff
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableScalarT<T>::
-VariableScalarT(const VariableBuildInfo& v,const VariableInfo& info)
-: Variable(v,info)
+template <typename T> VariableScalarT<T>::
+VariableScalarT(const VariableBuildInfo& v, const VariableInfo& info)
+: Variable(v, info)
 , m_value(nullptr)
 {
   IDataFactoryMng* df = v.dataFactoryMng();
   DataStorageBuildInfo storage_build_info(v.traceMng());
   String storage_full_type = info.storageTypeInfo().fullName();
-  Ref<IData> data = df->createSimpleDataRef(storage_full_type,storage_build_info);
+  Ref<IData> data = df->createSimpleDataRef(storage_full_type, storage_build_info);
   m_value = dynamic_cast<ValueDataType*>(data.get());
   _setData(makeRef(m_value));
 }
@@ -180,16 +179,16 @@ VariableScalarT(const VariableBuildInfo& v,const VariableInfo& info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> auto VariableScalarT<T>::
-getReference(const VariableBuildInfo& vb,const VariableInfo& vi) -> ThatClass*
+template <typename T> auto VariableScalarT<T>::
+getReference(const VariableBuildInfo& vb, const VariableInfo& vi) -> ThatClass*
 {
   ThatClass* true_ptr = 0;
   IVariableMng* vm = vb.variableMng();
   IVariable* var = vm->checkVariable(vi);
   if (var)
     true_ptr = dynamic_cast<ThatClass*>(var);
-  else{
-    true_ptr = new ThatClass(vb,vi);
+  else {
+    true_ptr = new ThatClass(vb, vi);
     vm->_internalApi()->addVariable(true_ptr);
   }
   ARCANE_CHECK_PTR(true_ptr);
@@ -199,14 +198,14 @@ getReference(const VariableBuildInfo& vb,const VariableInfo& vi) -> ThatClass*
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableScalarT<T>* VariableScalarT<T>::
+template <typename T> VariableScalarT<T>* VariableScalarT<T>::
 getReference(IVariable* var)
 {
   if (!var)
-    throw ArgumentException(A_FUNCINFO,"null variable");
+    throw ArgumentException(A_FUNCINFO, "null variable");
   ThatClass* true_ptr = dynamic_cast<ThatClass*>(var);
   if (!true_ptr)
-    ARCANE_FATAL("Can not build a reference from variable {0}",var->name());
+    ARCANE_FATAL("Can not build a reference from variable {0}", var->name());
   return true_ptr;
 }
 
@@ -235,12 +234,12 @@ namespace
     ScalarVariableDiff<Integer> csa;
     return csa.checkReplica(var, int_value, compare_args);
   }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableComparerResults VariableScalarT<T>::
+template <typename T> VariableComparerResults VariableScalarT<T>::
 _compareVariable(const VariableComparerArgs& compare_args)
 {
   switch (compare_args.compareMode()) {
@@ -274,7 +273,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 print(std::ostream& o) const
 {
   o << m_value->value();
@@ -283,7 +282,7 @@ print(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 synchronize()
 {
   // Nothing to do for scalar variables
@@ -292,7 +291,7 @@ synchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 synchronize(Int32ConstArrayView local_ids)
 {
   // Nothing to do for scalar variables
@@ -302,7 +301,7 @@ synchronize(Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Real VariableScalarT<T>::
+template <typename T> Real VariableScalarT<T>::
 allocatedMemory() const
 {
   return static_cast<Real>(sizeof(T));
@@ -311,7 +310,7 @@ allocatedMemory() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
   ARCANE_UNUSED(source);
@@ -321,7 +320,7 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,
                     Int32ConstArrayView destination)
@@ -334,7 +333,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 compact(Int32ConstArrayView new_to_old_ids)
 {
   ARCANE_UNUSED(new_to_old_ids);
@@ -343,7 +342,7 @@ compact(Int32ConstArrayView new_to_old_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 setIsSynchronized()
 {
 }
@@ -351,7 +350,7 @@ setIsSynchronized()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableScalarT<T>::
+template <typename T> void VariableScalarT<T>::
 setIsSynchronized(const ItemGroup& group)
 {
   ARCANE_UNUSED(group);
@@ -360,7 +359,7 @@ setIsSynchronized(const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 VariableScalarT<DataType>::
 swapValues(ThatClass& rhs)
 {

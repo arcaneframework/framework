@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,8 +27,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 BadIDException::
-BadIDException(const String& where,const String& invalid_name)
-: Exception("BadID",where)
+BadIDException(const String& where, const String& invalid_name)
+: Exception("BadID", where)
 , m_invalid_name(invalid_name)
 {
 }
@@ -52,8 +52,8 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 
 BadItemIdException::
-BadItemIdException(const String& where,Integer bad_id)
-: Exception("BadItemId",where)
+BadItemIdException(const String& where, Integer bad_id)
+: Exception("BadItemId", where)
 , m_bad_id(bad_id)
 {
 }
@@ -74,8 +74,8 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 
 InternalErrorException::
-InternalErrorException(const String& where,const String& why)
-: Exception("InternalError",where)
+InternalErrorException(const String& where, const String& why)
+: Exception("InternalError", where)
 , m_why(why)
 {
 }
@@ -84,8 +84,8 @@ InternalErrorException(const String& where,const String& why)
 /*---------------------------------------------------------------------------*/
 
 InternalErrorException::
-InternalErrorException(const TraceInfo& where,const String& why)
-: Exception("InternalError",where)
+InternalErrorException(const TraceInfo& where, const String& why)
+: Exception("InternalError", where)
 , m_why(why)
 {
 }
@@ -117,9 +117,9 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 
 BadVariableKindTypeException::
-BadVariableKindTypeException(const TraceInfo& where,IVariable* prv,
-                      eItemKind kind,eDataType data_type,int dimension)
-: Exception("BadVariableKindType",where)
+BadVariableKindTypeException(const TraceInfo& where, IVariable* prv,
+                             eItemKind kind, eDataType data_type, int dimension)
+: Exception("BadVariableKindType", where)
 , m_valid_var(prv)
 , m_item_kind(kind)
 , m_data_type(data_type)
@@ -146,9 +146,9 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 
 BadPartialVariableItemGroupNameException::
-BadPartialVariableItemGroupNameException(const TraceInfo& where,IVariable* prv,
+BadPartialVariableItemGroupNameException(const TraceInfo& where, IVariable* prv,
                                          const String& item_group_name)
-: Exception("BadVariableKindType",where)
+: Exception("BadVariableKindType", where)
 , m_valid_var(prv)
 , m_item_group_name(item_group_name)
 {
@@ -172,8 +172,8 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 
 UnknownItemTypeException::
-UnknownItemTypeException(const String& where,Integer nb_node,Integer item_id)
-: Exception("UnknownItemType",where)
+UnknownItemTypeException(const String& where, Integer nb_node, Integer item_id)
+: Exception("UnknownItemType", where)
 , m_nb_node(nb_node)
 , m_item_id(item_id)
 {
@@ -208,7 +208,7 @@ explain(std::ostream& m) const
 
 BadReferenceException::
 BadReferenceException(const String& where)
-: Exception("BadReference",where)
+: Exception("BadReference", where)
 {
 }
 
@@ -228,8 +228,8 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 
 ReaderWriterException::
-ReaderWriterException(const String& where,const String& message)
-: Exception("ReaderWriterException",where, message)
+ReaderWriterException(const String& where, const String& message)
+: Exception("ReaderWriterException", where, message)
 {
 }
 
@@ -237,8 +237,8 @@ ReaderWriterException(const String& where,const String& message)
 /*---------------------------------------------------------------------------*/
 
 ReaderWriterException::
-ReaderWriterException(const TraceInfo& where,const String& message)
-: Exception("ReaderWriterException",where, message)
+ReaderWriterException(const TraceInfo& where, const String& message)
+: Exception("ReaderWriterException", where, message)
 {
 }
 

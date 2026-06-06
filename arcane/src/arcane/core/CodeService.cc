@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -49,8 +49,11 @@ namespace Arcane
 class CodeServicePrivate
 {
  public:
-  CodeServicePrivate(IApplication* application,IServiceInfo* si);
+
+  CodeServicePrivate(IApplication* application, IServiceInfo* si);
+
  public:
+
   IServiceInfo* m_service_info;
   IApplication* m_application;
   StringList m_extensions;
@@ -60,7 +63,7 @@ class CodeServicePrivate
 /*---------------------------------------------------------------------------*/
 
 CodeServicePrivate::
-CodeServicePrivate(IApplication* application,IServiceInfo* si)
+CodeServicePrivate(IApplication* application, IServiceInfo* si)
 : m_service_info(si)
 , m_application(application)
 {
@@ -74,7 +77,7 @@ CodeServicePrivate(IApplication* application,IServiceInfo* si)
 
 CodeService::
 CodeService(const ServiceBuildInfo& sbi)
-: m_p(new CodeServicePrivate(sbi.application(),sbi.serviceInfo()))
+: m_p(new CodeServicePrivate(sbi.application(), sbi.serviceInfo()))
 {
 }
 
@@ -109,7 +112,7 @@ validExtensions() const
 /*---------------------------------------------------------------------------*/
 
 ISubDomain* CodeService::
-createAndLoadCase(ISession* session,const SubDomainBuildInfo& sdbi)
+createAndLoadCase(ISession* session, const SubDomainBuildInfo& sdbi)
 {
   ITraceMng* trace = session->traceMng();
 
@@ -118,19 +121,18 @@ createAndLoadCase(ISession* session,const SubDomainBuildInfo& sdbi)
   // Allows the derived class to make its modifications
   _preInitializeSubDomain(sub_domain);
 
-  try{
+  try {
     sub_domain->readCaseMeshes();
   }
-  catch(const Exception& ex)
-  {
+  catch (const Exception& ex) {
     trace->error() << ex;
     throw;
   }
-  catch(...){
+  catch (...) {
     trace->error() << "Unknown exception thrown";
     throw;
   }
-  
+
   return sub_domain;
 }
 
@@ -138,12 +140,12 @@ createAndLoadCase(ISession* session,const SubDomainBuildInfo& sdbi)
 /*---------------------------------------------------------------------------*/
 
 void CodeService::
-initCase(ISubDomain* sub_domain,bool is_continue)
+initCase(ISubDomain* sub_domain, bool is_continue)
 {
   IProfilingService* ps = nullptr;
   bool is_profile_init = false;
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PROFILE_INIT", true))
-    is_profile_init = (v.value()!=0);
+    is_profile_init = (v.value() != 0);
   if (is_profile_init)
     ps = platform::getProfilingService();
   {
@@ -160,7 +162,7 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     if (is_continue)
       sub_domain->setIsContinue();
     sub_domain->allocateMeshes();
-    if (is_continue){
+    if (is_continue) {
       ICheckpointMng* cm = sub_domain->checkpointMng();
       CheckpointInfo ci = cm->readDefaultCheckpointInfo();
       ci.setIsRestart(true);
@@ -186,7 +188,7 @@ initCase(ISubDomain* sub_domain,bool is_continue)
     sub_domain->setIsInitialized();
   }
 
-  if (is_profile_init && ps){
+  if (is_profile_init && ps) {
     // Generates a JSON file with profiling information
     // of the initialization.
     JSONWriter json_writer(JSONWriter::FormatFlags::None);
@@ -238,7 +240,7 @@ _application() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

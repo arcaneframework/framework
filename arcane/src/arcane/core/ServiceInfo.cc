@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,10 +18,10 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/ServiceInfo.h"
-#include "arcane/ServiceFactory.h"
-#include "arcane/StringDictionary.h"
-#include "arcane/IBase.h"
+#include "arcane/core/ServiceInfo.h"
+#include "arcane/core/ServiceFactory.h"
+#include "arcane/core/StringDictionary.h"
+#include "arcane/core/IBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,27 +35,36 @@ namespace Arcane::Internal
 class ServiceInfoPrivate
 {
  public:
-  ServiceInfoPrivate(const String& local_name,const VersionInfo& version,
+
+  ServiceInfoPrivate(const String& local_name, const VersionInfo& version,
                      Integer valid_dimension);
   ~ServiceInfoPrivate();
+
  public:
+
   List<IServiceFactory2*> factories() { return m_factories; }
   void addFactory(IServiceFactory2* factory)
   {
     m_factories.add(factory);
     m_ref_factories.add(ReferenceCounter<IServiceFactory2>(factory));
   }
+
  public:
+
   String m_namespace_uri;
-  String  m_local_name;
+  String m_local_name;
   VersionInfo m_version;
   Integer m_valid_dimension;
   StringList m_implemented_interfaces;
   String m_case_options_file_name;
+
  private:
+
   List<IServiceFactory2*> m_factories;
   UniqueArray<ReferenceCounter<IServiceFactory2>> m_ref_factories;
+
  public:
+
   ISingletonServiceFactory* m_singleton_factory;
   StringDictionary m_tag_names;
   String m_default_tag_name;
@@ -69,7 +78,7 @@ class ServiceInfoPrivate
 /*---------------------------------------------------------------------------*/
 
 ServiceInfoPrivate::
-ServiceInfoPrivate(const String& local_name,const VersionInfo& version,
+ServiceInfoPrivate(const String& local_name, const VersionInfo& version,
                    Integer valid_dimension)
 : m_namespace_uri(arcaneNamespaceURI())
 , m_local_name(local_name)
@@ -100,9 +109,9 @@ ServiceInfoPrivate::
 /*---------------------------------------------------------------------------*/
 
 ServiceInfo::
-ServiceInfo(const String& local_name,const VersionInfo& version,
+ServiceInfo(const String& local_name, const VersionInfo& version,
             Integer valid_dimension)
-: m_p(new ServiceInfoPrivate(local_name,version,valid_dimension))
+: m_p(new ServiceInfoPrivate(local_name, version, valid_dimension))
 {
 }
 
@@ -148,11 +157,11 @@ version() const
 bool ServiceInfo::
 allowDimension(Integer n) const
 {
-  if (n==3 && (m_p->m_valid_dimension & Dim3))
+  if (n == 3 && (m_p->m_valid_dimension & Dim3))
     return true;
-  if (n==2 && (m_p->m_valid_dimension & Dim2))
+  if (n == 2 && (m_p->m_valid_dimension & Dim2))
     return true;
-  if (n==1 && (m_p->m_valid_dimension & Dim1))
+  if (n == 1 && (m_p->m_valid_dimension & Dim1))
     return true;
   return false;
 }
@@ -257,9 +266,9 @@ setDefaultTagName(const String& value)
 /*---------------------------------------------------------------------------*/
 
 void ServiceInfo::
-setTagName(const String& value,const String& lang)
+setTagName(const String& value, const String& lang)
 {
-  m_p->m_tag_names.add(lang,value);
+  m_p->m_tag_names.add(lang, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -323,7 +332,7 @@ usageType() const
 /*---------------------------------------------------------------------------*/
 
 ServiceInfo* ServiceInfo::
-create(const ServiceProperty& sp,const char* filename,int lineno)
+create(const ServiceProperty& sp, const char* filename, int lineno)
 {
   ARCANE_UNUSED(filename);
   ARCANE_UNUSED(lineno);
@@ -331,22 +340,22 @@ create(const ServiceProperty& sp,const char* filename,int lineno)
 
   // Attention to properly copy the string from sp because it is a const char*.
   String name = std::string_view(sp.name());
-  ServiceInfo* si = new ServiceInfo(name,VersionInfo("0.0"),IServiceInfo::Dim2|IServiceInfo::Dim3);
+  ServiceInfo* si = new ServiceInfo(name, VersionInfo("0.0"), IServiceInfo::Dim2 | IServiceInfo::Dim3);
   ServiceFactoryInfo* sfi = new ServiceFactoryInfo(si);
   si->setFactoryInfo(sfi);
   sfi->initProperties(sp.properties());
   si->m_p->m_usage_type = sp.type();
-  return si;                                    
+  return si;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ServiceInfo* ServiceInfo::
-create(const String& name,int service_type)
+create(const String& name, int service_type)
 {
-  ServiceProperty sp(name.localstr(),service_type);
-  return create(sp,"none",0);
+  ServiceProperty sp(name.localstr(), service_type);
+  return create(sp, "none", 0);
 }
 
 /*---------------------------------------------------------------------------*/

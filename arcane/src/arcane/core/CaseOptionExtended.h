@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,14 +36,16 @@ class ARCANE_CORE_EXPORT CaseOptionExtended
 {
  public:
 
-  CaseOptionExtended(const CaseOptionBuildInfo& cob,const String& type_name)
-  : CaseOptionSimple(cob), m_type_name(type_name) {}
+  CaseOptionExtended(const CaseOptionBuildInfo& cob, const String& type_name)
+  : CaseOptionSimple(cob)
+  , m_type_name(type_name)
+  {}
 
  public:
 
-  void print(const String& lang,std::ostream& o) const override;
+  void print(const String& lang, std::ostream& o) const override;
   ICaseFunction* function() const override { return 0; }
-  void updateFromFunction(Real /*current_time*/,Integer /*current_iteration*/) override {}
+  void updateFromFunction(Real /*current_time*/, Integer /*current_iteration*/) override {}
   void visit(ICaseDocumentVisitor* visitor) const override;
 
   /*!
@@ -56,8 +58,8 @@ class ARCANE_CORE_EXPORT CaseOptionExtended
 
  protected:
 
-  virtual bool _tryToConvert(const String& s) =0;
-  
+  virtual bool _tryToConvert(const String& s) = 0;
+
   void _search(bool is_phase1) override;
   bool _allowPhysicalUnit() override { return false; }
 
@@ -88,14 +90,15 @@ class ARCANE_CORE_EXPORT CaseOptionExtended
  If the object is found, it is stored in \a obj.
  */
 #ifndef SWIG
-template<class T>
+template <class T>
 class CaseOptionExtendedT
 : public CaseOptionExtended
 {
  public:
 
-  CaseOptionExtendedT(const CaseOptionBuildInfo& cob,const String& type_name)
-  : CaseOptionExtended(cob,type_name) {}
+  CaseOptionExtendedT(const CaseOptionBuildInfo& cob, const String& type_name)
+  : CaseOptionExtended(cob, type_name)
+  {}
 
  public:
 
@@ -120,13 +123,13 @@ class CaseOptionExtendedT
   }
 
  protected:
-	
+
   virtual bool _tryToConvert(const String& s)
   {
     // The _caseOptionConvert() function must be declared before
     // the instantiation of this template. Normally, the automatic config generator
     // performs this operation.
-    return _caseOptionConvert(*this,s,m_value);
+    return _caseOptionConvert(*this, s, m_value);
   }
 
  private:
@@ -147,24 +150,26 @@ class ARCANE_CORE_EXPORT CaseOptionMultiExtended
 {
  public:
 
-  CaseOptionMultiExtended(const CaseOptionBuildInfo& cob,const String& type_name)
-  : CaseOptionBase(cob), m_type_name(type_name) {}
+  CaseOptionMultiExtended(const CaseOptionBuildInfo& cob, const String& type_name)
+  : CaseOptionBase(cob)
+  , m_type_name(type_name)
+  {}
   ~CaseOptionMultiExtended() {}
 
  public:
 
-  void print(const String& lang,std::ostream& o) const override;
+  void print(const String& lang, std::ostream& o) const override;
   ICaseFunction* function() const override { return 0; }
-  void updateFromFunction(Real /*current_time*/,Integer /*current_iteration*/) override {}
+  void updateFromFunction(Real /*current_time*/, Integer /*current_iteration*/) override {}
   void visit(ICaseDocumentVisitor* visitor) const override;
 
  protected:
 
-  virtual bool _tryToConvert(const String& s,Integer pos) =0;
-  virtual void _allocate(Integer size) =0;
+  virtual bool _tryToConvert(const String& s, Integer pos) = 0;
+  virtual void _allocate(Integer size) = 0;
   virtual bool _allowPhysicalUnit() { return false; }
-  virtual Integer _nbElem() const =0;
-  String _typeName() const { return m_type_name; } 
+  virtual Integer _nbElem() const = 0;
+  String _typeName() const { return m_type_name; }
   void _search(bool is_phase1) override;
 
  private:
@@ -183,7 +188,7 @@ class ARCANE_CORE_EXPORT CaseOptionMultiExtended
  * \sa CaseOptionExtendedT
  */
 #ifndef SWIG
-template<class T>
+template <class T>
 class CaseOptionMultiExtendedT
 : public CaseOptionMultiExtended
 , public ArrayView<T>
@@ -194,21 +199,21 @@ class CaseOptionMultiExtendedT
 
  public:
 
-  CaseOptionMultiExtendedT(const CaseOptionBuildInfo& cob,const String& type_name)
-  : CaseOptionMultiExtended(cob,type_name) {}
+  CaseOptionMultiExtendedT(const CaseOptionBuildInfo& cob, const String& type_name)
+  : CaseOptionMultiExtended(cob, type_name)
+  {}
   virtual ~CaseOptionMultiExtendedT() {} // delete[] _ptr(); }
 
  public:
-
  protected:
 
-  bool _tryToConvert(const String& s,Integer pos) override
+  bool _tryToConvert(const String& s, Integer pos) override
   {
     // The _caseOptionConvert() function must be declared before
     // the instantiation of this template. Normally, the automatic config generator
     // of options (axl2cc) performs this operation.
     T& value = this->operator[](pos);
-    return _caseOptionConvert(*this,s,value);
+    return _caseOptionConvert(*this, s, value);
   }
   void _allocate(Integer size) override
   {

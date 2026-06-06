@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/CaseFunction.h"
+#include "arcane/core/CaseFunction.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
@@ -19,9 +19,9 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/TraceInfo.h"
 
-#include "arcane/MathUtils.h"
+#include "arcane/core/MathUtils.h"
 
-#include "arcane/ISubDomain.h"
+#include "arcane/core/ISubDomain.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,8 +34,8 @@ namespace Arcane
 
 //! \deprecated Use CaseFunctionBuildInfo(ITraceMng* tm,const String& name)
 CaseFunctionBuildInfo::
-CaseFunctionBuildInfo(ISubDomain* sd,const String& name)
-: CaseFunctionBuildInfo(sd->traceMng(),name)
+CaseFunctionBuildInfo(ISubDomain* sd, const String& name)
+: CaseFunctionBuildInfo(sd->traceMng(), name)
 {
 }
 
@@ -82,7 +82,7 @@ setName(const String& new_name)
 void CaseFunction::
 setParamType(eParamType new_type)
 {
-  if (new_type==m_param_type)
+  if (new_type == m_param_type)
     return;
   m_param_type = new_type;
 }
@@ -93,14 +93,13 @@ setParamType(eParamType new_type)
 void CaseFunction::
 setValueType(eValueType new_type)
 {
-  if (new_type==m_value_type)
+  if (new_type == m_value_type)
     return;
   m_value_type = new_type;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -133,29 +132,29 @@ checkIfValid() const
 /*---------------------------------------------------------------------------*/
 
 Real CaseFunction::
-_applyValueComulTransform(Real v,Real comul) const
+_applyValueComulTransform(Real v, Real comul) const
 {
   return v * comul;
 }
 Integer CaseFunction::
-_applyValueComulTransform(Integer v,Integer comul) const
+_applyValueComulTransform(Integer v, Integer comul) const
 {
   return v * comul;
 }
 Real3 CaseFunction::
-_applyValueComulTransform(Real3 v,Real3 comul) const
+_applyValueComulTransform(Real3 v, Real3 comul) const
 {
   return v * comul;
 }
 String CaseFunction::
-_applyValueComulTransform(const String& v,const String& comul) const
+_applyValueComulTransform(const String& v, const String& comul) const
 {
   ARCANE_UNUSED(v);
   ARCANE_UNUSED(comul);
   ARCANE_FATAL("Invalid for type 'String'");
 }
 bool CaseFunction::
-_applyValueComulTransform(bool v,bool comul) const
+_applyValueComulTransform(bool v, bool comul) const
 {
   ARCANE_UNUSED(v);
   ARCANE_UNUSED(comul);
@@ -165,7 +164,7 @@ _applyValueComulTransform(bool v,bool comul) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ValueType> void CaseFunction::
+template <typename ValueType> void CaseFunction::
 _applyValueTransform2(ValueType& value) const
 {
   // Applies the transformation...
@@ -173,10 +172,10 @@ _applyValueTransform2(ValueType& value) const
   if (m_transform_value_func.null())
     return;
   ValueType comul = ValueType();
-  bool is_bad = builtInGetValue(comul,m_transform_value_func);
+  bool is_bad = builtInGetValue(comul, m_transform_value_func);
   if (is_bad)
-    ARCANE_FATAL("Can not convert 'comul' value '{0}'",m_transform_value_func);
-  value = _applyValueComulTransform(value,comul);
+    ARCANE_FATAL("Can not convert 'comul' value '{0}'", m_transform_value_func);
+  value = _applyValueComulTransform(value, comul);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -211,18 +210,18 @@ _applyValueTransform(bool& value) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ParamType> void CaseFunction::
+template <typename ParamType> void CaseFunction::
 _applyParamTransform2(ParamType& param) const
 {
   // Applies the transformation...
   // For now, only a multiplicative coefficient.
   if (m_transform_param_func.null())
     return;
-  
+
   ParamType comul = ParamType();
-  bool is_bad = builtInGetValue(comul,m_transform_param_func);
+  bool is_bad = builtInGetValue(comul, m_transform_param_func);
   if (is_bad)
-    ARCANE_FATAL("Can not convert 'comul-x' value '{0}'",m_transform_param_func);
+    ARCANE_FATAL("Can not convert 'comul-x' value '{0}'", m_transform_param_func);
   if (math::isZero(comul))
     ARCANE_FATAL("The parameter 'comul-x' can not be zero");
   param = param / comul;

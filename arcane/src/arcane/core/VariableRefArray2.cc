@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,16 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableRefArray2.h"
+#include "arcane/core/VariableRefArray2.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/Array2Variable.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/VariableDataTypeTraits.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/VariableFactoryRegisterer.h"
+#include "arcane/core/Array2Variable.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/VariableDataTypeTraits.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/VariableFactoryRegisterer.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -32,36 +32,36 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> VariableFactoryRegisterer
+template <class DataType> VariableFactoryRegisterer
 VariableRefArray2T<DataType>::
-m_auto_registerer(_autoCreate,_internalVariableTypeInfo());
+m_auto_registerer(_autoCreate, _internalVariableTypeInfo());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableTypeInfo
+template <typename DataType> VariableTypeInfo
 VariableRefArray2T<DataType>::
 _internalVariableTypeInfo()
 {
-  return VariableTypeInfo(IK_Unknown,VariableDataTypeTraitsT<DataType>::type(),2,0,false);
+  return VariableTypeInfo(IK_Unknown, VariableDataTypeTraitsT<DataType>::type(), 2, 0, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableInfo
+template <typename DataType> VariableInfo
 VariableRefArray2T<DataType>::
 _internalVariableInfo(const VariableBuildInfo& vbi)
 {
   VariableTypeInfo vti = _internalVariableTypeInfo();
   DataStorageTypeInfo sti = vti._internalDefaultDataStorage();
-  return VariableInfo(vbi.name(),vbi.itemFamilyName(),vbi.itemGroupName(),vbi.meshName(),vti,sti);
+  return VariableInfo(vbi.name(), vbi.itemFamilyName(), vbi.itemGroupName(), vbi.meshName(), vti, sti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> VariableRef*
+template <class DataType> VariableRef*
 VariableRefArray2T<DataType>::
 _autoCreate(const VariableBuildInfo& vb)
 {
@@ -71,11 +71,11 @@ _autoCreate(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> 
+template <typename DataType>
 VariableRefArray2T<DataType>::
 VariableRefArray2T(const VariableBuildInfo& vbi)
 : VariableRef(vbi)
-, m_private_part(PrivatePartType::getReference(vbi,_internalVariableInfo(vbi)))
+, m_private_part(PrivatePartType::getReference(vbi, _internalVariableInfo(vbi)))
 {
   _internalInit(m_private_part);
 }
@@ -83,7 +83,7 @@ VariableRefArray2T(const VariableBuildInfo& vbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 VariableRefArray2T<DataType>::
 VariableRefArray2T(const VariableRefArray2T<DataType>& rhs)
 : VariableRef(rhs)
@@ -96,7 +96,7 @@ VariableRefArray2T(const VariableRefArray2T<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> VariableRefArray2T<DataType>::
+template <class DataType> VariableRefArray2T<DataType>::
 VariableRefArray2T(IVariable* var)
 : VariableRef(var)
 , m_private_part(PrivatePartType::getReference(var))
@@ -107,7 +107,7 @@ VariableRefArray2T(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 VariableRefArray2T<DataType>::
 operator=(const VariableRefArray2T<DataType>& rhs)
 {
@@ -119,7 +119,7 @@ operator=(const VariableRefArray2T<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableRefArray2T<DataType>::
+template <typename DataType> VariableRefArray2T<DataType>::
 ~VariableRefArray2T()
 {
 }
@@ -127,7 +127,7 @@ template<typename DataType> VariableRefArray2T<DataType>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 VariableRefArray2T<DataType>::
 refersTo(const VariableRefArray2T<DataType>& rhs)
 {
@@ -139,7 +139,7 @@ refersTo(const VariableRefArray2T<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 VariableRefArray2T<DataType>::
 resize(Integer s)
 {
@@ -149,17 +149,17 @@ resize(Integer s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 VariableRefArray2T<DataType>::
-resize(Integer dim1_size,Integer dim2_size)
+resize(Integer dim1_size, Integer dim2_size)
 {
-  m_private_part->directResize(dim1_size,dim2_size);
+  m_private_part->directResize(dim1_size, dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 VariableRefArray2T<DataType>::
 fill(const DataType& value)
 {
@@ -169,7 +169,7 @@ fill(const DataType& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void VariableRefArray2T<DataType>::
+template <typename DataType> void VariableRefArray2T<DataType>::
 updateFromInternal()
 {
   ArrayBase::operator=(m_private_part->valueView());
@@ -179,7 +179,7 @@ updateFromInternal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> auto VariableRefArray2T<T>::
+template <typename T> auto VariableRefArray2T<T>::
 internalContainer() -> ContainerType&
 {
   return _internalTrueData()->_internalDeprecatedValue();

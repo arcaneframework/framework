@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ class ItemConnectedEnumerator
   friend class ItemVector;
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
-  template<int Extent> friend class ItemConnectedListView;
+  template <int Extent> friend class ItemConnectedListView;
   // NOTE: Normally, it would suffice to do this:
   //   template<class T> friend class ItemConnectedEnumeratorBase;
   // but this does not work with GCC 8. So we do the specialization
@@ -74,8 +74,9 @@ class ItemConnectedEnumerator
   : BaseClass(rhs)
   {}
 
-  template<int E> ItemConnectedEnumerator(const ItemConnectedListView<E>& rhs)
-  : BaseClass(ItemConnectedListViewT<Item,E>(rhs)){}
+  template <int E> ItemConnectedEnumerator(const ItemConnectedListView<E>& rhs)
+  : BaseClass(ItemConnectedListViewT<Item, E>(rhs))
+  {}
 
  protected:
 
@@ -96,7 +97,7 @@ class ItemConnectedEnumerator
 /*!
  * \brief Enumerator over a typed list of connected entities of type \a ItemType
  */
-template<typename ItemType>
+template <typename ItemType>
 class ItemConnectedEnumeratorT
 : public ItemConnectedEnumeratorBaseT<ItemType>
 {
@@ -105,13 +106,18 @@ class ItemConnectedEnumeratorT
  public:
 
   ItemConnectedEnumeratorT() = default;
-  template<int E> ItemConnectedEnumeratorT(const ItemConnectedListView<E>& rhs) : BaseClass(rhs){}
-  ItemConnectedEnumeratorT(const ItemConnectedListViewT<ItemType>& rhs) : BaseClass(rhs){}
+  template <int E> ItemConnectedEnumeratorT(const ItemConnectedListView<E>& rhs)
+  : BaseClass(rhs)
+  {}
+  ItemConnectedEnumeratorT(const ItemConnectedListViewT<ItemType>& rhs)
+  : BaseClass(rhs)
+  {}
 
  private:
 
-  ItemConnectedEnumeratorT(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
-  : BaseClass(s,local_ids){}
+  ItemConnectedEnumeratorT(ItemSharedInfo* s, const Int32ConstArrayView& local_ids)
+  : BaseClass(s, local_ids)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -140,20 +146,20 @@ class ItemConnectedEnumeratorT
  */
 #ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
 
-#define ENUMERATE_CONNECTED_(type,iterator_name,item,connectivity_func) \
-  for( ::Arcane::ItemConnectedEnumeratorT< type > iterator_name( (item) . connectivity_func ); iterator_name . hasNext(); ++iterator_name )
+#define ENUMERATE_CONNECTED_(type, iterator_name, item, connectivity_func) \
+  for (::Arcane::ItemConnectedEnumeratorT<type> iterator_name((item).connectivity_func); iterator_name.hasNext(); ++iterator_name)
 
 #else
 
-#define ENUMERATE_CONNECTED_(type,iterator_name,item,connectivity_func) \
-  for( ::Arcane::ItemEnumeratorT< type > iterator_name( (item) . connectivity_func ); iterator_name . hasNext(); ++iterator_name )
+#define ENUMERATE_CONNECTED_(type, iterator_name, item, connectivity_func) \
+  for (::Arcane::ItemEnumeratorT<type> iterator_name((item).connectivity_func); iterator_name.hasNext(); ++iterator_name)
 
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

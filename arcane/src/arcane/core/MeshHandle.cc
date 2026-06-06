@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,16 +11,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshHandle.h"
+#include "arcane/core/MeshHandle.h"
 
 #include "arcane/utils/UserDataList.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Observable.h"
 #include "arcane/utils/ValueConvert.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshBase.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ namespace Arcane
 // TODO make this constructor private to IMeshMng to avoid
 // possible duplicates for MeshHandles associated with the same mesh name.
 MeshHandle::MeshHandleRef::
-MeshHandleRef(ISubDomain* sd,const String& name)
+MeshHandleRef(ISubDomain* sd, const String& name)
 : m_mesh_name(name)
 , m_sub_domain(sd)
 , m_is_null(name.null())
@@ -46,8 +46,8 @@ MeshHandleRef(ISubDomain* sd,const String& name)
   m_mesh_mng = sd->meshMng();
   m_variable_mng = sd->variableMng();
   m_on_destroy_observable = new Observable();
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DO_FATAL_IN_MESHHANDLE",true))
-    m_do_fatal_in_mesh_method = v.value()!=0;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DO_FATAL_IN_MESHHANDLE", true))
+    m_do_fatal_in_mesh_method = v.value() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -94,8 +94,8 @@ _destroyMesh()
 /*---------------------------------------------------------------------------*/
 
 MeshHandle::
-MeshHandle(ISubDomain* sd,const String& name)
-: m_ref(new MeshHandleRef(sd,name))
+MeshHandle(ISubDomain* sd, const String& name)
+: m_ref(new MeshHandleRef(sd, name))
 {
 }
 
@@ -197,7 +197,8 @@ onDestroyObservable() const
 
 MeshHandleOrMesh::
 MeshHandleOrMesh(const MeshHandle& handle)
-: m_handle(handle){}
+: m_handle(handle)
+{}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

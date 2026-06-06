@@ -18,12 +18,12 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/VariableRef.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IModule.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/ArcaneException.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ArcaneException.h"
 
 #include <set>
 
@@ -52,18 +52,27 @@ namespace Arcane
 class VariableRef::UpdateNotifyFunctorList
 {
  public:
+
   typedef void (*ChangedFunc)();
+
  public:
-  UpdateNotifyFunctorList() : m_is_destroyed(false){}
+
+  UpdateNotifyFunctorList()
+  : m_is_destroyed(false)
+  {}
+
  private:
+
   std::set<ChangedFunc> m_funcs;
   bool m_is_destroyed;
+
  public:
+
   void execute()
   {
     std::set<ChangedFunc>::const_iterator begin = m_funcs.begin();
     std::set<ChangedFunc>::const_iterator end = m_funcs.end();
-    for( ; begin!=end; ++begin ){
+    for (; begin != end; ++begin) {
       ChangedFunc f = *begin;
       (*f)();
     }
@@ -88,15 +97,17 @@ class VariableRef::UpdateNotifyFunctorList
     m_funcs.erase(f);
     _checkDestroy();
   }
+
  public:
-  static void* _add(VariableRef* var,void (*func)())
+
+  static void* _add(VariableRef* var, void (*func)())
   {
     //std::cout << "_SET_MESH_VARIABLE_CHANGED_DELEGATE"
     //          << " name=" << var->name()
     //          << " func=" << (void*)func
     //          << " this=" << var
     //          << '\n';
-    if (!var->m_notify_functor_list){
+    if (!var->m_notify_functor_list) {
       var->m_notify_functor_list = new VariableRef::UpdateNotifyFunctorList();
     }
     var->m_notify_functor_list->add(func);
@@ -110,6 +121,7 @@ class VariableRef::UpdateNotifyFunctorList
     //          << '\n';
     functor_list->remove(func);
   }
+
  private:
 
   void _checkDestroy()
@@ -213,9 +225,9 @@ void VariableRef::
 _setAssignmentStackTrace()
 {
   m_assignment_stack_trace = String();
-  if (hasTraceCreation()){
+  if (hasTraceCreation()) {
     IStackTraceService* stack_service = platform::getStackTraceService();
-    if (stack_service){
+    if (stack_service) {
       m_assignment_stack_trace = stack_service->stackTrace().toString();
     }
   }
@@ -254,7 +266,7 @@ _internalInit(IVariable* variable)
   updateFromInternal();
   // Variables other than those on the mesh are always used
   // by default
-  if (variable->itemKind()==IK_Unknown)
+  if (variable->itemKind() == IK_Unknown)
     setUsed(true);
 }
 
@@ -262,7 +274,7 @@ _internalInit(IVariable* variable)
 /*---------------------------------------------------------------------------*/
 
 eDataType VariableRef::
-dataType() const 
+dataType() const
 {
   _checkValid();
   return m_variable->dataType();
@@ -272,7 +284,7 @@ dataType() const
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-print(std::ostream& o) const 
+print(std::ostream& o) const
 {
   _checkValid();
   m_variable->print(o);
@@ -362,7 +374,7 @@ void VariableRef::
 _throwInvalid() const
 {
   String msg("Using a reference on a uninitialized variable");
-  throw InternalErrorException(A_FUNCINFO,msg);
+  throw InternalErrorException(A_FUNCINFO, msg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -372,7 +384,7 @@ void VariableRef::
 setProperty(int property)
 {
   if (!_checkValidPropertyChanged(property))
-    throw InvalidArgumentException(A_FUNCINFO,"property",property);
+    throw InvalidArgumentException(A_FUNCINFO, "property", property);
   m_reference_property |= property;
   m_variable->notifyReferencePropertyChanged();
 }
@@ -384,7 +396,7 @@ void VariableRef::
 unsetProperty(int property)
 {
   if (!_checkValidPropertyChanged(property))
-    throw InvalidArgumentException(A_FUNCINFO,"property",property);
+    throw InvalidArgumentException(A_FUNCINFO, "property", property);
   m_reference_property &= ~property;
   m_variable->notifyReferencePropertyChanged();
 }
@@ -398,7 +410,7 @@ unsetProperty(int property)
 bool VariableRef::
 _checkValidPropertyChanged(int property)
 {
-  switch(property){
+  switch (property) {
   case IVariable::PNoDump:
   case IVariable::PNoNeedSync:
   case IVariable::PSubDomainDepend:
@@ -455,7 +467,7 @@ modifiedTime()
 void VariableRef::
 addDependCurrentTime(const VariableRef& var)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_CurrentTime);
+  m_variable->addDepend(var.variable(), IVariable::DPT_CurrentTime);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -464,25 +476,25 @@ addDependCurrentTime(const VariableRef& var)
 void VariableRef::
 addDependPreviousTime(const VariableRef& var)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_PreviousTime);
+  m_variable->addDepend(var.variable(), IVariable::DPT_PreviousTime);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-addDependCurrentTime(const VariableRef& var,const TraceInfo& tinfo)
+addDependCurrentTime(const VariableRef& var, const TraceInfo& tinfo)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_CurrentTime,tinfo);
+  m_variable->addDepend(var.variable(), IVariable::DPT_CurrentTime, tinfo);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-addDependPreviousTime(const VariableRef& var,const TraceInfo& tinfo)
+addDependPreviousTime(const VariableRef& var, const TraceInfo& tinfo)
 {
-  m_variable->addDepend(var.variable(),IVariable::DPT_PreviousTime,tinfo);
+  m_variable->addDepend(var.variable(), IVariable::DPT_PreviousTime, tinfo);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,9 +519,9 @@ _setComputeFunction(IVariableComputeFunction* v)
 /*---------------------------------------------------------------------------*/
 
 void VariableRef::
-addTag(const String& tagname,const String& tagvalue)
+addTag(const String& tagname, const String& tagvalue)
 {
-  m_variable->addTag(tagname,tagvalue);
+  m_variable->addTag(tagname, tagvalue);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -638,22 +650,22 @@ _internalAssignVariable(const VariableRef& var)
 /*
  * \internal
  * \brief Adds a functor for C# wrapping.
- */ 
+ */
 extern "C" ARCANE_CORE_EXPORT void*
-_AddVariableChangedDelegate(VariableRef* var,void (*func)())
+_AddVariableChangedDelegate(VariableRef* var, void (*func)())
 {
-  return VariableRef::UpdateNotifyFunctorList::_add(var,func);
+  return VariableRef::UpdateNotifyFunctorList::_add(var, func);
 }
 
 /*
  * \internal
  * \brief Removes a functor for C# wrapping.
- */ 
+ */
 extern "C" ARCANE_CORE_EXPORT void
 _RemoveVariableChangedDelegate(VariableRef::UpdateNotifyFunctorList* functor_list,
                                void (*func)())
 {
-  VariableRef::UpdateNotifyFunctorList::_remove(functor_list,func);
+  VariableRef::UpdateNotifyFunctorList::_remove(functor_list, func);
 }
 
 /*---------------------------------------------------------------------------*/

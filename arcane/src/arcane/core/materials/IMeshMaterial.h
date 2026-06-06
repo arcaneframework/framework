@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class ARCANE_CORE_EXPORT IUserMeshMaterial
 {
  public:
 
-  virtual ~IUserMeshMaterial(){}
+  virtual ~IUserMeshMaterial() {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -55,21 +55,21 @@ class ARCANE_CORE_EXPORT IMeshMaterial
 {
  public:
 
-  virtual ~IMeshMaterial(){}
+  virtual ~IMeshMaterial() {}
 
  public:
 
   //! Material information.
-  virtual MeshMaterialInfo* infos() const =0;
+  virtual MeshMaterialInfo* infos() const = 0;
 
   //! Environment to which this material belongs.
-  virtual IMeshEnvironment* environment() const =0;
+  virtual IMeshEnvironment* environment() const = 0;
 
   //! Associated user material
-  virtual IUserMeshMaterial* userMaterial() const =0;
+  virtual IUserMeshMaterial* userMaterial() const = 0;
 
   //! Sets the associated user material
-  virtual void setUserMaterial(IUserMeshMaterial* umm) =0;
+  virtual void setUserMaterial(IUserMeshMaterial* umm) = 0;
 
   /*!
    * \brief Mesh of this material for mesh \a c.
@@ -79,24 +79,24 @@ class ARCANE_CORE_EXPORT IMeshMaterial
    *
    * The cost of this function is proportional to the number of materials
    * present in the mesh.
-   */   
-  virtual MatCell findMatCell(AllEnvCell c) const =0;
+   */
+  virtual MatCell findMatCell(AllEnvCell c) const = 0;
 
   //! View associated with this material
-  virtual MatItemVectorView matView() const =0;
+  virtual MatItemVectorView matView() const = 0;
 
   //! View on the list of pure entities (associated with the global mesh) of the material
-  virtual MatPurePartItemVectorView pureMatItems() const =0;
+  virtual MatPurePartItemVectorView pureMatItems() const = 0;
 
   //! View on the list of impure (partial) entities of the material
-  virtual MatImpurePartItemVectorView impureMatItems() const =0;
+  virtual MatImpurePartItemVectorView impureMatItems() const = 0;
 
   //! View on the pure or impure part of the material entities
-  virtual MatPartItemVectorView partMatItems(eMatPart part) const =0;
+  virtual MatPartItemVectorView partMatItems(eMatPart part) const = 0;
 
  public:
 
-  void setImiInfo(Int32 first_imi,Int32 nb_imi)
+  void setImiInfo(Int32 first_imi, Int32 nb_imi)
   {
     m_first_imi = first_imi;
     m_nb_imi = nb_imi;
@@ -106,7 +106,10 @@ class ARCANE_CORE_EXPORT IMeshMaterial
 
  protected:
 
-  IMeshMaterial() : m_first_imi(-1), m_nb_imi(0){}
+  IMeshMaterial()
+  : m_first_imi(-1)
+  , m_nb_imi(0)
+  {}
 
  private:
 

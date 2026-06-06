@@ -52,7 +52,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType>
+template <class DataType>
 class Array2VariableDiff
 : public VariableDiff<DataType>
 {
@@ -75,7 +75,7 @@ class Array2VariableDiff
     ITraceMng* msg = mesh->traceMng();
     IParallelMng* pm = mesh->parallelMng();
 
-    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+    GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : 0;
 
     int nb_diff = 0;
     Int32 sid = pm->commRank();
@@ -87,17 +87,17 @@ class Array2VariableDiff
       << " ref: " << ref.totalNbElement();
       return current_total_nb_element;
       }*/
-    if (current_total_nb_element==0)
+    if (current_total_nb_element == 0)
       return {};
     Integer ref_size1 = ref.dim1Size();
     Integer current_size1 = current.dim1Size();
     Integer ref_size2 = ref.dim2Size();
     Integer current_size2 = current.dim2Size();
-    if (ref_size2!=current_size2){
+    if (ref_size2 != current_size2) {
       msg->pinfo() << "Processor: " << sid << " VDIFF: Variable '" << var->name()
                    << " bad dim2 size: ref=" << ref_size2 << " current=" << current_size2;
     }
-    ENUMERATE_ITEM(i,group){
+    ENUMERATE_ITEM (i, group) {
       Item item = *i;
       if (!item.isOwn() && !compare_ghost)
         continue;
@@ -105,7 +105,7 @@ class Array2VariableDiff
       if (group_index_table)
         index = (*group_index_table)[index];
 
-      if (index>=ref_size1 || index>=current_size1){
+      if (index >= ref_size1 || index >= current_size1) {
         ++nb_diff;
         msg->pinfo() << "Processor: " << sid << " VDIFF: Variable '" << var->name()
                      << "wrong number of elements : impossible comparison";
@@ -113,17 +113,17 @@ class Array2VariableDiff
       }
       ConstArrayView<DataType> lref = ref[index];
       ConstArrayView<DataType> lcurrent = current[index];
-      for( Integer z=0; z<ref_size2; ++z ){
+      for (Integer z = 0; z < ref_size2; ++z) {
         DataType diff = DataType();
         DataType dref = lref[z];
         DataType dcurrent = lcurrent[z];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
-          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,z));
+        if (VarDataTypeTraits::verifDifferent(dref, dcurrent, diff, true)) {
+          this->m_diffs_info.add(DiffInfo(dcurrent, dref, diff, item, z));
           ++nb_diff;
         }
       }
     }
-    if (nb_diff!=0)
+    if (nb_diff != 0)
       this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
@@ -138,7 +138,7 @@ class Array2VariableDiff
       return {};
     // Calls the correct specialization to ensure the template type has reduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
-    if constexpr(std::is_same<TrueType,ReduceType>::value)
+    if constexpr (std::is_same<TrueType, ReduceType>::value)
       return _checkReplica2(replica_pm, var, var_values, compare_args);
 
     ARCANE_UNUSED(replica_pm);
@@ -159,7 +159,7 @@ class Array2VariableDiff
     //TODO: handle variables that are not on mesh elements.
     if (group.null())
       return {};
-    GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
+    GroupIndexTable* group_index_table = (var->isPartial()) ? group.localIdToIndex().get() : 0;
     // Checks that all replicas have the same number of elements in each
     // dimension for the variable.
     Integer total_nb_element = var_values.totalNbElement();
@@ -167,38 +167,38 @@ class Array2VariableDiff
     Integer ref_size2 = var_values.dim2Size();
 
     Integer a_min_dims[2];
-    ArrayView<Integer> min_dims(2,a_min_dims);
+    ArrayView<Integer> min_dims(2, a_min_dims);
     Integer a_max_dims[2];
-    ArrayView<Integer> max_dims(2,a_max_dims);
+    ArrayView<Integer> max_dims(2, a_max_dims);
     max_dims[0] = min_dims[0] = ref_size1;
     max_dims[1] = min_dims[1] = ref_size2;
 
-    pm->reduce(Parallel::ReduceMax,max_dims);
-    pm->reduce(Parallel::ReduceMin,min_dims);
+    pm->reduce(Parallel::ReduceMax, max_dims);
+    pm->reduce(Parallel::ReduceMin, min_dims);
     msg->info(4) << "Array2Variable::CheckReplica2 rep_size=" << pm->commSize() << " rank=" << pm->commRank();
-    if (max_dims[0]!=min_dims[0] || max_dims[1]!=min_dims[1]){
+    if (max_dims[0] != min_dims[0] || max_dims[1] != min_dims[1]) {
       const String& var_name = var->name();
       msg->info() << "Can not compare values on replica for variable '" << var_name << "'"
                   << " because the number of elements is not the same on all the replica "
                   << " min=" << min_dims[0] << "," << min_dims[1]
-                  << " max="<< max_dims[0] << "," << max_dims[1];
+                  << " max=" << max_dims[0] << "," << max_dims[1];
       return VariableComparerResults(total_nb_element);
     }
-    if (total_nb_element==0)
+    if (total_nb_element == 0)
       return {};
     Integer nb_diff = 0;
     UniqueArray2<DataType> min_values(var_values);
     UniqueArray2<DataType> max_values(var_values);
-    pm->reduce(Parallel::ReduceMax,max_values.viewAsArray());
-    pm->reduce(Parallel::ReduceMin,min_values.viewAsArray());
+    pm->reduce(Parallel::ReduceMax, max_values.viewAsArray());
+    pm->reduce(Parallel::ReduceMin, min_values.viewAsArray());
 
-    ENUMERATE_ITEM(i,group){
+    ENUMERATE_ITEM (i, group) {
       Item item = *i;
       Integer index = item.localId();
       if (group_index_table)
         index = (*group_index_table)[index];
 
-      if (index>=ref_size1){
+      if (index >= ref_size1) {
         ++nb_diff;
         msg->pinfo() << "Processor: " << msg->traceId() << " VDIFF: Variable '" << var->name()
                      << "wrong number of elements : impossible comparison";
@@ -206,23 +206,22 @@ class Array2VariableDiff
       }
       ConstArrayView<DataType> lref = min_values[index];
       ConstArrayView<DataType> lcurrent = max_values[index];
-      for( Integer z=0; z<ref_size2; ++z ){
+      for (Integer z = 0; z < ref_size2; ++z) {
         DataType diff = DataType();
         DataType dref = lref[z];
         DataType dcurrent = lcurrent[z];
-        if (VarDataTypeTraits::verifDifferent(dref,dcurrent,diff,true)){
-          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,item,z));
+        if (VarDataTypeTraits::verifDifferent(dref, dcurrent, diff, true)) {
+          this->m_diffs_info.add(DiffInfo(dcurrent, dref, diff, item, z));
           ++nb_diff;
         }
       }
     }
 
-    if (nb_diff!=0)
+    if (nb_diff != 0)
       this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
   }
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -231,15 +230,15 @@ class Array2VariableDiff
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Array2VariableT<T>::
-Array2VariableT(const VariableBuildInfo& vb,const VariableInfo& info)
-: Variable(vb,info)
+template <typename T> Array2VariableT<T>::
+Array2VariableT(const VariableBuildInfo& vb, const VariableInfo& info)
+: Variable(vb, info)
 , m_data(nullptr)
 {
   IDataFactoryMng* df = vb.dataFactoryMng();
   DataStorageBuildInfo storage_build_info(vb.traceMng());
   String storage_full_type = info.storageTypeInfo().fullName();
-  Ref<IData> data = df->createSimpleDataRef(storage_full_type,storage_build_info);
+  Ref<IData> data = df->createSimpleDataRef(storage_full_type, storage_build_info);
   m_data = dynamic_cast<ValueDataType*>(data.get());
   _setData(makeRef(m_data));
 }
@@ -247,8 +246,8 @@ Array2VariableT(const VariableBuildInfo& vb,const VariableInfo& info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Array2VariableT<T>* Array2VariableT<T>::
-getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
+template <typename T> Array2VariableT<T>* Array2VariableT<T>::
+getReference(const VariableBuildInfo& vb, const VariableInfo& vi)
 {
   if (vb.isNull())
     return nullptr;
@@ -257,8 +256,8 @@ getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
   IVariable* var = vm->checkVariable(vi);
   if (var)
     true_ptr = dynamic_cast<ThatClass*>(var);
-  else{
-    true_ptr = new ThatClass(vb,vi);
+  else {
+    true_ptr = new ThatClass(vb, vi);
     vm->_internalApi()->addVariable(true_ptr);
   }
   ARCANE_CHECK_PTR(true_ptr);
@@ -268,21 +267,21 @@ getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Array2VariableT<T>* Array2VariableT<T>::
+template <typename T> Array2VariableT<T>* Array2VariableT<T>::
 getReference(IVariable* var)
 {
   if (!var)
-    throw ArgumentException(A_FUNCINFO,"null variable");
+    throw ArgumentException(A_FUNCINFO, "null variable");
   ThatClass* true_ptr = dynamic_cast<ThatClass*>(var);
   if (!true_ptr)
-    ARCANE_FATAL("Cannot build a reference from variable {0}",var->name());
+    ARCANE_FATAL("Cannot build a reference from variable {0}", var->name());
   return true_ptr;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 directResize(Integer s)
 {
   /*info() << "RESIZE(1) " << fullName()
@@ -296,8 +295,8 @@ directResize(Integer s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void Array2VariableT<DataType>::
-directResize(Integer dim1_size,Integer dim2_size)
+template <typename DataType> void Array2VariableT<DataType>::
+directResize(Integer dim1_size, Integer dim2_size)
 {
   /*info() << "RESIZE(2) " << fullName()
          << " wanted_dim1_size=" << dim1_size
@@ -305,7 +304,7 @@ directResize(Integer dim1_size,Integer dim2_size)
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
          << " dim2_size=" << m_data->value().dim2Size();*/
-  m_data->_internal()->resize(dim1_size,dim2_size);
+  m_data->_internal()->resize(dim1_size, dim2_size);
   /*info() << "RESIZE(2) AFTER " << fullName()
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
@@ -317,13 +316,13 @@ directResize(Integer dim1_size,Integer dim2_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void Array2VariableT<DataType>::
+template <typename DataType> void Array2VariableT<DataType>::
 directResizeAndReshape(const ArrayShape& shape)
 {
   Int32 dim1_size = valueView().dim1Size();
   Int32 dim2_size = CheckedConvert::toInt32(shape.totalNbElement());
 
-  m_data->_internal()->resize(dim1_size,dim2_size);
+  m_data->_internal()->resize(dim1_size, dim2_size);
   m_data->setShape(shape);
 
   syncReferences();
@@ -332,7 +331,7 @@ directResizeAndReshape(const ArrayShape& shape)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void Array2VariableT<DataType>::
+template <typename DataType> void Array2VariableT<DataType>::
 shrinkMemory()
 {
   m_data->_internal()->shrink();
@@ -342,7 +341,7 @@ shrinkMemory()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 print(std::ostream&) const
 {
   //ConstArray2View<T> x(m_data->value().constView());
@@ -352,15 +351,15 @@ print(std::ostream&) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 synchronize()
 {
-  if (itemKind()==IK_Unknown)
-    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  if (itemKind() == IK_Unknown)
+    ARCANE_THROW(NotSupportedException, "variable '{0}' is not a mesh variable", fullName());
   IItemFamily* family = itemGroup().itemFamily();
   if (!family)
-    ARCANE_FATAL("variable '{0}' without family",fullName());
-  if(isPartial())
+    ARCANE_FATAL("variable '{0}' without family", fullName());
+  if (isPartial())
     itemGroup().synchronizer()->synchronize(this);
   else
     family->allItemsSynchronizer()->synchronize(this);
@@ -369,15 +368,15 @@ synchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 synchronize(Int32ConstArrayView local_ids)
 {
-  if (itemKind()==IK_Unknown)
-    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  if (itemKind() == IK_Unknown)
+    ARCANE_THROW(NotSupportedException, "variable '{0}' is not a mesh variable", fullName());
   IItemFamily* family = itemGroup().itemFamily();
   if (!family)
-    ARCANE_FATAL("variable '{0}' without family",fullName());
-  if(isPartial())
+    ARCANE_FATAL("variable '{0}' without family", fullName());
+  if (isPartial())
     itemGroup().synchronizer()->synchronize(this, local_ids);
   else
     family->allItemsSynchronizer()->synchronize(this, local_ids);
@@ -386,12 +385,12 @@ synchronize(Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Real Array2VariableT<T>::
+template <typename T> Real Array2VariableT<T>::
 allocatedMemory() const
 {
   Real v1 = static_cast<Real>(sizeof(T));
   Real v2 = static_cast<Real>(m_data->view().totalNbElement());
-  return v1*v2;
+  return v1 * v2;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -417,19 +416,19 @@ namespace
   {
     Integer dim1_size = values.dim1Size();
     Integer dim2_size = values.dim2Size();
-    UniqueArray2<Integer> int_values(dim1_size,dim2_size);
-    for( Integer i=0; i<dim1_size; ++i )
-      for( Integer j=0; j<dim2_size; ++j )
+    UniqueArray2<Integer> int_values(dim1_size, dim2_size);
+    for (Integer i = 0; i < dim1_size; ++i)
+      for (Integer j = 0; j < dim2_size; ++j)
         int_values[i][j] = values[i][j];
     Array2VariableDiff<Integer> csa;
     return csa.checkReplica(var, int_values, compare_args);
   }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableComparerResults Array2VariableT<T>::
+template <typename T> VariableComparerResults Array2VariableT<T>::
 _compareVariable(const VariableComparerArgs& compare_args)
 {
   switch (compare_args.compareMode()) {
@@ -477,7 +476,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 _internalResize(const VariableResizeArgs& resize_args)
 {
   Int32 new_size = resize_args.newSize();
@@ -497,12 +496,12 @@ _internalResize(const VariableResizeArgs& resize_args)
 
   const bool is_collective_allocator = data_values.allocator()->isCollective();
   if (is_collective_allocator) {
-    data_values.reserve(new_size+nb_additional_element*dim2_size);
+    data_values.reserve(new_size + nb_additional_element * dim2_size);
   }
   else if (nb_additional_element != 0) {
     Integer capacity = data_values.capacity();
-    if (new_size>capacity)
-      data_values.reserve(new_size+nb_additional_element*dim2_size);
+    if (new_size > capacity)
+      data_values.reserve(new_size + nb_additional_element * dim2_size);
   }
 
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
@@ -515,22 +514,22 @@ _internalResize(const VariableResizeArgs& resize_args)
          << " dim1_size=" << value().dim1Size()
          << " dim2size=" << dim2_size
          << " total=" << value().totalNbElement();*/
-  if (use_no_init || (init_policy!=DIP_InitWithDefault))
-    data_values.resizeNoInit(new_size,dim2_size);
+  if (use_no_init || (init_policy != DIP_InitWithDefault))
+    data_values.resizeNoInit(new_size, dim2_size);
   else
-    data_values.resize(new_size,dim2_size);
+    data_values.resize(new_size, dim2_size);
 
-  if (new_size>current_size){
-    bool use_nan = (init_policy==DIP_InitWithNan);
-    bool use_nan2 = (init_policy==DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
-    if (use_nan || use_nan2){
-      for( Integer i=current_size; i<new_size; ++i )
+  if (new_size > current_size) {
+    bool use_nan = (init_policy == DIP_InitWithNan);
+    bool use_nan2 = (init_policy == DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
+    if (use_nan || use_nan2) {
+      for (Integer i = current_size; i < new_size; ++i)
         DataTypeTraitsT<T>::fillNan(data_values[i]);
     }
   }
 
   // Compacts the memory if requested
-  if (_wantShrink()){
+  if (_wantShrink()) {
     if (container_ref.totalNbElement() < container_ref.capacity())
       container_ref.shrink();
   }
@@ -544,18 +543,18 @@ _internalResize(const VariableResizeArgs& resize_args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
-  ARCANE_ASSERT(source.size()==destination.size(),
-		("Unable to copy: source and destination have different sizes !"));
+  ARCANE_ASSERT(source.size() == destination.size(),
+                ("Unable to copy: source and destination have different sizes !"));
 
   const Integer dim2_size = valueView().dim2Size();
   const Integer nb_copy = source.size();
   Array2View<T> value = m_data->view();
 
-  for( Integer i=0; i<nb_copy; ++i ){
-    for( Integer j=0; j<dim2_size; ++j )
+  for (Integer i = 0; i < nb_copy; ++i) {
+    for (Integer j = 0; j < dim2_size; ++j)
       value[destination[i]][j] = value[source[i]][j];
   }
   syncReferences();
@@ -564,21 +563,21 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,
                     Int32ConstArrayView destination)
 {
-  ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
+  ARCANE_ASSERT((first_source.size() == destination.size()) && (second_source.size() == destination.size()),
                 ("Unable to copy: source and destination have different sizes !"));
 
   const Integer dim2_size = valueView().dim2Size();
   const Integer nb_copy = first_source.size();
   Array2View<T> value = m_data->view();
 
-  for( Integer i=0; i<nb_copy; ++i ){
-    for( Integer j=0; j<dim2_size; ++j )
-      value[destination[i]][j] = (T)((value[first_source[i]][j]+value[second_source[i]][j])/2);
+  for (Integer i = 0; i < nb_copy; ++i) {
+    for (Integer j = 0; j < dim2_size; ++j)
+      value[destination[i]][j] = (T)((value[first_source[i]][j] + value[second_source[i]][j]) / 2);
   }
   syncReferences();
 }
@@ -586,7 +585,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 compact(Int32ConstArrayView new_to_old_ids)
 {
   if (isPartial()) {
@@ -596,35 +595,35 @@ compact(Int32ConstArrayView new_to_old_ids)
 
   ValueType& current_value = m_data->_internal()->_internalDeprecatedValue();
   Integer current_size = current_value.dim1Size();
-  if (current_size==0)
+  if (current_size == 0)
     return;
 
   Integer dim2_size = current_value.dim2Size();
-  if (dim2_size==0)
+  if (dim2_size == 0)
     return;
 
   //TODO: avoid the clone
   UniqueArray2<T> old_value(current_value);
 
   Integer new_size = new_to_old_ids.size();
-  current_value.resize(new_size,dim2_size);
+  current_value.resize(new_size, dim2_size);
   /*info() << "Variable: " << name() << " Compacte2D: size=" << current_size
          << " dim2_size=" << dim2_size
          << " new_size=" << new_size;*/
-  
-  if (arcaneIsCheck()){
-    for( Integer i=0; i<new_size; ++i ){
+
+  if (arcaneIsCheck()) {
+    for (Integer i = 0; i < new_size; ++i) {
       Integer nto = new_to_old_ids[i];
       ArrayView<T> v = current_value.at(i);
       ArrayView<T> ov = old_value.at(nto);
-      for( Integer j=0; j<dim2_size; ++j )
-        v.setAt(j,ov.at(j));
+      for (Integer j = 0; j < dim2_size; ++j)
+        v.setAt(j, ov.at(j));
     }
   }
-  else{
-    for( Integer i=0; i<new_size; ++i ){
+  else {
+    for (Integer i = 0; i < new_size; ++i) {
       Integer nto = new_to_old_ids[i];
-      for( Integer j=0; j<dim2_size; ++j )
+      for (Integer j = 0; j < dim2_size; ++j)
         current_value[i][j] = old_value[nto][j];
     }
   }
@@ -635,7 +634,7 @@ compact(Int32ConstArrayView new_to_old_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 setIsSynchronized()
 {
 }
@@ -643,7 +642,7 @@ setIsSynchronized()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void Array2VariableT<T>::
+template <typename T> void Array2VariableT<T>::
 setIsSynchronized(const ItemGroup&)
 {
 }
@@ -651,7 +650,7 @@ setIsSynchronized(const ItemGroup&)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 Array2VariableT<DataType>::
 swapValues(ThatClass& rhs)
 {
@@ -667,7 +666,7 @@ swapValues(ThatClass& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> auto
+template <typename DataType> auto
 Array2VariableT<DataType>::
 value() -> ValueType&
 {
@@ -677,7 +676,7 @@ value() -> ValueType&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 Array2VariableT<DataType>::
 fillShape(ArrayShape& shape_with_item)
 {
@@ -701,9 +700,6 @@ fillShape(ArrayShape& shape_with_item)
     shape_with_item.setDimension(i, 1);
   }
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

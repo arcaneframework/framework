@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -176,8 +176,8 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 {
   template <typename ItemType> friend class ItemLocalIdListViewT;
   friend class ItemVectorView;
-  using impl::ItemLocalIdListContainerView::m_size;
   using impl::ItemLocalIdListContainerView::localId;
+  using impl::ItemLocalIdListContainerView::m_size;
 
  public:
 
@@ -187,7 +187,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
  private:
 
   constexpr ARCCORE_HOST_DEVICE ItemLocalIdListView(const Int32* ids, Int32 s, Int32 local_id_offset)
-  : BaseClass(ids,s,local_id_offset)
+  : BaseClass(ids, s, local_id_offset)
   {}
   explicit constexpr ARCCORE_HOST_DEVICE ItemLocalIdListView(const BaseClass& view)
   : BaseClass(view)

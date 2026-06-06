@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,13 +41,13 @@ class ICaseDocumentFragment;
 class ARCANE_CORE_EXPORT CaseOptionError
 {
  public:
-	
+
   //! Generic error
-  CaseOptionError(const TraceInfo& where,const String& node_name,
-                  const String& message,bool is_collective=false);
-  
+  CaseOptionError(const TraceInfo& where, const String& node_name,
+                  const String& message, bool is_collective = false);
+
  public:
-  
+
   /*!
    * \brief Error when a dataset value is not of the correct type.
    * This error is collective.
@@ -76,22 +76,22 @@ class ARCANE_CORE_EXPORT CaseOptionError
    * This error is collective.
    */
   static void addOptionNotFoundError(ICaseDocumentFragment* document,
-                                const TraceInfo& where,
-                                const String& node_name,
-                                const XmlNode& parent);
+                                     const TraceInfo& where,
+                                     const String& node_name,
+                                     const XmlNode& parent);
 
   //! Generic error
   static void addError(ICaseDocumentFragment* document,
-                       const TraceInfo& where,const String& node_name,
-                       const String& message,bool is_collective=false);
+                       const TraceInfo& where, const String& node_name,
+                       const String& message, bool is_collective = false);
 
   //! Generic error
   static void addWarning(ICaseDocumentFragment* document,
-                         const TraceInfo& where,const String& node_name,
-                         const String& message,bool is_collective=false);
+                         const TraceInfo& where, const String& node_name,
+                         const String& message, bool is_collective = false);
 
  public:
-	
+
   const String& nodeName() const { return m_node_name; }
 
   const String& message() const { return m_message; }

@@ -23,7 +23,7 @@ arcane_register_library(arcane_core)
 # of Arcane for which the header files were not
 # in 'core'.
 set(SED_REGEX)
-foreach(file ${ARCANE_ORIGINAL_SOURCES})
+foreach (file ${ARCANE_ORIGINAL_SOURCES})
   if (${file} MATCHES "\.(h|H)$")
     string(TOUPPER ${file} upper_name1)
     string(REPLACE "." "_" upper_name2 ${upper_name1})
@@ -32,8 +32,8 @@ foreach(file ${ARCANE_ORIGINAL_SOURCES})
     configure_file(${Arcane_SOURCE_DIR}/cmake/IncludeCompat.h.in "${ARCANE_COMPATIBILITY_DIRECTORY}/arcane/${file}" @ONLY)
     install(FILES "${ARCANE_COMPATIBILITY_DIRECTORY}/arcane/${file}" DESTINATION "include/arcane/${_file_dir}")
     set(SED_REGEX "${SED_REGEX}s-#include \\\"arcane/${file}\\\"-#include \\\"arcane/core/${file}\\\"-g\n")
-  endif()
-endforeach()
+  endif ()
+endforeach ()
 # Generates a file containing regular expressions to modify
 # a file by replacing 'arcane/Toto.h' with 'arcane/core/Toto.h'
 file(WRITE ${CMAKE_BINARY_DIR}/share/change_core_header_sed_regex.txt ${SED_REGEX})
@@ -41,7 +41,7 @@ file(WRITE ${CMAKE_BINARY_DIR}/share/do_change_core_header_sed_regex.sh "#!/bin/
 
 if (GTEST_FOUND)
   add_subdirectory(tests)
-endif()
+endif ()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

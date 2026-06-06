@@ -25,9 +25,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Interface of the variable manager.
  *
@@ -135,7 +132,7 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    * The variable will be destroyed by calling the operator delete()
    * when calling IVariableMng::removeAllVariables().
    */
-  virtual void addAutoDestroyVariable(VariableRef* var) =0;
+  virtual void addAutoDestroyVariable(VariableRef* var) = 0;
 
  public:
 

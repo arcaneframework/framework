@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,9 +40,9 @@ namespace Arcane
 class IExtraGhostParticlesBuilder
 {
  public:
-  
+
   virtual ~IExtraGhostParticlesBuilder() {} //!< Releases resources.
-  
+
  public:
 
   /*!
@@ -51,7 +51,7 @@ class IExtraGhostParticlesBuilder
    * Performs the calculation of "extraordinary" meshes following
    * a construction algorithm.
    */
-  virtual void computeExtraParticlesToSend() =0;
+  virtual void computeExtraParticlesToSend() = 0;
 
   /*!
    * \brief Local indices of "extraordinary" meshes for sending
@@ -59,7 +59,7 @@ class IExtraGhostParticlesBuilder
    * Retrieves the array of "extraordinary" meshes destined for
    * the sub-domain \a rank.
    */
-  virtual Int32ConstArrayView extraParticlesToSend(const String& family_name,Int32 rank) const =0;
+  virtual Int32ConstArrayView extraParticlesToSend(const String& family_name, Int32 rank) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

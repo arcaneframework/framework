@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,14 +54,14 @@ class ARCANE_CORE_EXPORT IItemFamilyModifier
 
   // DEPRECATED
   ARCANE_DEPRECATED_REASON("Y2022: Use allocOne() overload with ItemTypeId")
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info);
+  ItemInternal* allocOne(Int64 uid, ItemTypeInfo* type, mesh::MeshInfos& mesh_info);
   // DEPRECATED
   ARCANE_DEPRECATED_REASON("Y2022: Use findOrAllocOne() overload with ItemTypeId")
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc);
+  ItemInternal* findOrAllocOne(Int64 uid, ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc);
 
   //! Allocates an element in the family and updates the corresponding \a mesh_info
-  virtual Item allocOne(Int64 uid,ItemTypeId type_id, mesh::MeshInfos& mesh_info) =0;
-  virtual Item findOrAllocOne(Int64 uid,ItemTypeId type_id, mesh::MeshInfos& mesh_info, bool& is_alloc) = 0;
+  virtual Item allocOne(Int64 uid, ItemTypeId type_id, mesh::MeshInfos& mesh_info) = 0;
+  virtual Item findOrAllocOne(Int64 uid, ItemTypeId type_id, mesh::MeshInfos& mesh_info, bool& is_alloc) = 0;
   virtual IItemFamily* family() = 0;
 };
 
@@ -73,4 +73,4 @@ class ARCANE_CORE_EXPORT IItemFamilyModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* IITEMFAMILYMODIFIER_H_ */
+#endif

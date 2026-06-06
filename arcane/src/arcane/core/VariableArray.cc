@@ -53,7 +53,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType>
+template <class DataType>
 class ArrayVariableDiff
 : public VariableDiff<DataType>
 {
@@ -168,7 +168,7 @@ class ArrayVariableDiff
       return {};
     // Calls the correct specialization to ensure the template type has reduction.
     using ReduceType = typename VariableDataTypeTraitsT<DataType>::HasReduceMinMax;
-    if constexpr(std::is_same<TrueType,ReduceType>::value)
+    if constexpr (std::is_same<TrueType, ReduceType>::value)
       return _checkReplica2(replica_pm, var, var_value, compare_args);
 
     ARCANE_UNUSED(replica_pm);
@@ -216,30 +216,29 @@ class ArrayVariableDiff
       }
     }
     // We calculate the normalized errors
-    for( Integer index=0; index<current_size; ++index ){
+    for (Integer index = 0; index < current_size; ++index) {
       DataType diff = DataType();
-      if (index>=ref_size){
+      if (index >= ref_size) {
         ++nb_diff;
         compare_failed = true;
       }
-      else{
+      else {
         DataType dref = ref[index];
         DataType dcurrent = current[index];
         if (_computeDifference(dref, dcurrent, diff, local_norm_max, diff_method)) {
-          this->m_diffs_info.add(DiffInfo(dcurrent,dref,diff,index,NULL_ITEM_ID));
+          this->m_diffs_info.add(DiffInfo(dcurrent, dref, diff, index, NULL_ITEM_ID));
           ++nb_diff;
         }
       }
     }
-    if (compare_failed){
+    if (compare_failed) {
       Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << " comparison impossible because the number of elements is different"
                    << " for the variable " << var_name << " ref_size=" << ref_size;
-        
     }
-    if (nb_diff!=0)
+    if (nb_diff != 0)
       this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
@@ -252,32 +251,32 @@ class ArrayVariableDiff
     ITraceMng* msg = pm->traceMng();
     Integer size = var_values.size();
     // Checks that all replicas have the same number of elements for the variable.
-    Integer max_size = pm->reduce(Parallel::ReduceMax,size);
-    Integer min_size = pm->reduce(Parallel::ReduceMin,size);
+    Integer max_size = pm->reduce(Parallel::ReduceMax, size);
+    Integer min_size = pm->reduce(Parallel::ReduceMin, size);
     msg->info(5) << "CheckReplica2 rep_size=" << pm->commSize() << " rank=" << pm->commRank();
-    if (max_size!=min_size){
+    if (max_size != min_size) {
       const String& var_name = var->name();
       msg->info() << "Can not compare values on replica for variable '" << var_name << "'"
                   << " because the number of elements is not the same on all the replica "
-                  << " min=" << min_size << " max="<< max_size;
+                  << " min=" << min_size << " max=" << max_size;
       return VariableComparerResults(max_size);
     }
     Integer nb_diff = 0;
     UniqueArray<DataType> min_values(var_values);
     UniqueArray<DataType> max_values(var_values);
-    pm->reduce(Parallel::ReduceMax,max_values);
-    pm->reduce(Parallel::ReduceMin,min_values);
+    pm->reduce(Parallel::ReduceMax, max_values);
+    pm->reduce(Parallel::ReduceMin, min_values);
 
-    for( Integer index=0; index<size; ++index ){
+    for (Integer index = 0; index < size; ++index) {
       DataType diff = DataType();
       DataType min_val = min_values[index];
       DataType max_val = max_values[index];
-      if (VarDataTypeTraits::verifDifferent(min_val,max_val,diff,true)){
-        this->m_diffs_info.add(DiffInfo(min_val,max_val,diff,index,NULL_ITEM_ID));
+      if (VarDataTypeTraits::verifDifferent(min_val, max_val, diff, true)) {
+        this->m_diffs_info.add(DiffInfo(min_val, max_val, diff, index, NULL_ITEM_ID));
         ++nb_diff;
       }
     }
-    if (nb_diff!=0)
+    if (nb_diff != 0)
       this->_sortAndDump(var, pm, compare_args);
 
     return VariableComparerResults(nb_diff);
@@ -305,15 +304,15 @@ class ArrayVariableDiff
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableArrayT<T>::
-VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
-: Variable(vb,info)
+template <typename T> VariableArrayT<T>::
+VariableArrayT(const VariableBuildInfo& vb, const VariableInfo& info)
+: Variable(vb, info)
 , m_value(nullptr)
 {
   IDataFactoryMng* df = vb.dataFactoryMng();
   DataStorageBuildInfo storage_build_info(vb.traceMng());
   String storage_full_type = info.storageTypeInfo().fullName();
-  Ref<IData> data = df->createSimpleDataRef(storage_full_type,storage_build_info);
+  Ref<IData> data = df->createSimpleDataRef(storage_full_type, storage_build_info);
   m_value = dynamic_cast<ValueDataType*>(data.get());
   ARCANE_CHECK_POINTER(m_value);
   _setData(makeRef(m_value));
@@ -322,7 +321,7 @@ VariableArrayT(const VariableBuildInfo& vb,const VariableInfo& info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableArrayT<T>::
+template <typename T> VariableArrayT<T>::
 ~VariableArrayT()
 {
 }
@@ -330,8 +329,8 @@ template<typename T> VariableArrayT<T>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableArrayT<T>* VariableArrayT<T>::
-getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
+template <typename T> VariableArrayT<T>* VariableArrayT<T>::
+getReference(const VariableBuildInfo& vb, const VariableInfo& vi)
 {
   if (vb.isNull())
     return nullptr;
@@ -340,8 +339,8 @@ getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
   IVariable* var = vm->checkVariable(vi);
   if (var)
     true_ptr = dynamic_cast<ThatClass*>(var);
-  else{
-    true_ptr = new ThatClass(vb,vi);
+  else {
+    true_ptr = new ThatClass(vb, vi);
     vm->_internalApi()->addVariable(true_ptr);
   }
   ARCANE_CHECK_PTR(true_ptr);
@@ -351,45 +350,45 @@ getReference(const VariableBuildInfo& vb,const VariableInfo& vi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableArrayT<T>* VariableArrayT<T>::
+template <typename T> VariableArrayT<T>* VariableArrayT<T>::
 getReference(IVariable* var)
 {
   if (!var)
-    throw ArgumentException(A_FUNCINFO,"null variable");
+    throw ArgumentException(A_FUNCINFO, "null variable");
   auto* true_ptr = dynamic_cast<ThatClass*>(var);
   if (!true_ptr)
-    ARCANE_FATAL("Can not build a reference from variable {0}",var->name());
+    ARCANE_FATAL("Can not build a reference from variable {0}", var->name());
   return true_ptr;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 print(std::ostream& o) const
 {
-	ConstArrayView<T> x(m_value->view());
-	Integer size = x.size();
-	o << "(dimension=" << size << ") ";
-	if (size<=150){
-		for( auto& i : x ){
-			o << i << '\n';
-		}
-	}
+  ConstArrayView<T> x(m_value->view());
+  Integer size = x.size();
+  o << "(dimension=" << size << ") ";
+  if (size <= 150) {
+    for (auto& i : x) {
+      o << i << '\n';
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 synchronize()
 {
-  if (itemKind()==IK_Unknown)
-    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  if (itemKind() == IK_Unknown)
+    ARCANE_THROW(NotSupportedException, "variable '{0}' is not a mesh variable", fullName());
   IItemFamily* family = itemGroup().itemFamily();
   if (!family)
-    ARCANE_FATAL("variable '{0}' without family",fullName());
-  if(isPartial())
+    ARCANE_FATAL("variable '{0}' without family", fullName());
+  if (isPartial())
     itemGroup().synchronizer()->synchronize(this);
   else
     family->allItemsSynchronizer()->synchronize(this);
@@ -398,15 +397,15 @@ synchronize()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 synchronize(Int32ConstArrayView local_ids)
 {
-  if (itemKind()==IK_Unknown)
-    ARCANE_THROW(NotSupportedException,"variable '{0}' is not a mesh variable",fullName());
+  if (itemKind() == IK_Unknown)
+    ARCANE_THROW(NotSupportedException, "variable '{0}' is not a mesh variable", fullName());
   IItemFamily* family = itemGroup().itemFamily();
   if (!family)
-    ARCANE_FATAL("variable '{0}' without family",fullName());
-  if(isPartial())
+    ARCANE_FATAL("variable '{0}' without family", fullName());
+  if (isPartial())
     itemGroup().synchronizer()->synchronize(this, local_ids);
   else
     family->allItemsSynchronizer()->synchronize(this, local_ids);
@@ -415,7 +414,7 @@ synchronize(Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> Real VariableArrayT<T>::
+template <typename T> Real VariableArrayT<T>::
 allocatedMemory() const
 {
   Real v1 = (Real)(sizeof(T));
@@ -446,17 +445,17 @@ namespace
   {
     Integer size = values.size();
     UniqueArray<Integer> int_values(size);
-    for( Integer i=0; i<size; ++i )
+    for (Integer i = 0; i < size; ++i)
       int_values[i] = values[i];
     ArrayVariableDiff<Integer> csa;
     return csa.checkReplica(var, int_values, compare_args);
   }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> VariableComparerResults VariableArrayT<T>::
+template <typename T> VariableComparerResults VariableArrayT<T>::
 _compareVariable(const VariableComparerArgs& compare_args)
 {
   switch (compare_args.compareMode()) {
@@ -504,7 +503,7 @@ _compareVariable(const VariableComparerArgs& compare_args)
  * \brief Initializes the variable.
  *
  Initializes the variable with the value \a value on the group \a group.
- 
+
  Since the value is passed as a character string, it verifies that
  the conversion to the variable's type is possible. It also verifies
  that the group \a group is of type #GroupType. If either of these two points
@@ -513,31 +512,31 @@ _compareVariable(const VariableComparerArgs& compare_args)
  \retval true in case of error,
  \retval false in case of success.
 */
-template<typename T> bool VariableArrayT<T>::
-initialize(const ItemGroup& group,const String& value)
+template <typename T> bool VariableArrayT<T>::
+initialize(const ItemGroup& group, const String& value)
 {
   //TODO: maybe check if the variable is used?
 
   // Tries to convert value into a value of the variable's type.
   T v = T();
-  bool is_bad = VariableDataTypeTraitsT<T>::getValue(v,value);
+  bool is_bad = VariableDataTypeTraitsT<T>::getValue(v, value);
 
-  if (is_bad){
+  if (is_bad) {
     error() << String::format("Can not convert the string '{0}' to type '{1}'",
-                              value,dataType());
+                              value, dataType());
     return true;
   }
 
   bool is_ok = false;
 
   ArrayView<T> values(m_value->view());
-  if (group.itemFamily()==itemFamily()){
+  if (group.itemFamily() == itemFamily()) {
     is_ok = true;
     // VERY IMPORTANT
     //TODO must use an indirection and a hierarchy between groups
     // Finally, assign the value \a v to all entities in the group.
     //ValueType& var_value = this->value();
-    ENUMERATE_ITEM(i,group){
+    ENUMERATE_ITEM (i, group) {
       Item elem = *i;
       values[elem.localId()] = v;
     }
@@ -557,14 +556,14 @@ initialize(const ItemGroup& group,const String& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 {
-  ARCANE_ASSERT(source.size()==destination.size(),
+  ARCANE_ASSERT(source.size() == destination.size(),
                 ("Impossible to copy: source and destination of different sizes !"));
-  ArrayView<T> value =  m_value->view();
+  ArrayView<T> value = m_value->view();
   const Integer size = source.size();
-  for(Integer i=0; i<size; ++i )
+  for (Integer i = 0; i < size; ++i)
     value[destination[i]] = value[source[i]];
   syncReferences();
 }
@@ -572,17 +571,17 @@ copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,
                     Int32ConstArrayView destination)
 {
-  ARCANE_ASSERT((first_source.size()==destination.size()) && (second_source.size()==destination.size()),
+  ARCANE_ASSERT((first_source.size() == destination.size()) && (second_source.size() == destination.size()),
                 ("Impossible to copy: source and destination of different sizes !"));
-  ArrayView<T> value =  m_value->view();
+  ArrayView<T> value = m_value->view();
   const Integer size = first_source.size();
-  for(Integer i=0; i<size; ++i ) {
-    value[destination[i]] = (T)((value[first_source[i]]+value[second_source[i]])/2);
+  for (Integer i = 0; i < size; ++i) {
+    value[destination[i]] = (T)((value[first_source[i]] + value[second_source[i]]) / 2);
   }
   syncReferences();
 }
@@ -590,7 +589,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<> void VariableArrayT<String>::
+template <> void VariableArrayT<String>::
 copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,
                     Int32ConstArrayView destination);
@@ -598,7 +597,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 compact(Int32ConstArrayView new_to_old_ids)
 {
   if (isPartial()) {
@@ -610,13 +609,13 @@ compact(Int32ConstArrayView new_to_old_ids)
   Integer new_size = new_to_old_ids.size();
   m_value->resize(new_size);
   ArrayView<T> current_value = m_value->view();
-  if (arcaneIsCheck()){
-    for( Integer i=0; i<new_size; ++i )
-      current_value.setAt(i,old_value.at(new_to_old_ids[i]));
+  if (arcaneIsCheck()) {
+    for (Integer i = 0; i < new_size; ++i)
+      current_value.setAt(i, old_value.at(new_to_old_ids[i]));
   }
-  else{
-    for( Integer i=0; i<new_size; ++i )
-			RawCopy<T>::copy(current_value[i], old_value[ new_to_old_ids[i] ]); // current_value[i] = old_value[ new_to_old_ids[i] ];
+  else {
+    for (Integer i = 0; i < new_size; ++i)
+      RawCopy<T>::copy(current_value[i], old_value[new_to_old_ids[i]]); // current_value[i] = old_value[ new_to_old_ids[i] ];
   }
   syncReferences();
 }
@@ -624,7 +623,7 @@ compact(Int32ConstArrayView new_to_old_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 setIsSynchronized()
 {
   setIsSynchronized(itemGroup());
@@ -633,7 +632,7 @@ setIsSynchronized()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 setIsSynchronized(const ItemGroup& group)
 {
   ARCANE_UNUSED(group);
@@ -642,7 +641,7 @@ setIsSynchronized(const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> void VariableArrayT<T>::
+template <typename T> void VariableArrayT<T>::
 _internalResize(const VariableResizeArgs& resize_args)
 {
   Int32 new_size = resize_args.newSize();
@@ -656,17 +655,17 @@ _internalResize(const VariableResizeArgs& resize_args)
   if (is_collective_allocator) {
     value_internal->reserve(new_size + nb_additional_element);
   }
-  else if (nb_additional_element!=0){
+  else if (nb_additional_element != 0) {
     Integer capacity = value_internal->capacity();
-    if (new_size>capacity)
-      value_internal->reserve(new_size+nb_additional_element);
+    if (new_size > capacity)
+      value_internal->reserve(new_size + nb_additional_element);
   }
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
   // If the new size is greater than the old one,
   // initialize the new elements following
   // the desired policy
   Integer current_size = m_value->view().size();
-  if (!isUsed()){
+  if (!isUsed()) {
     // If the variable is no longer used, free the memory
     // associated with it.
     value_internal->dispose();
@@ -675,25 +674,25 @@ _internalResize(const VariableResizeArgs& resize_args)
     value_internal->_internalDeprecatedValue().resizeNoInit(new_size);
   else
     value_internal->resize(new_size);
-  if (new_size>current_size){
-    if (init_policy==DIP_InitWithDefault){
+  if (new_size > current_size) {
+    if (init_policy == DIP_InitWithDefault) {
       ArrayView<T> values = this->valueView();
-      for(Integer i=current_size; i<new_size; ++i)
+      for (Integer i = current_size; i < new_size; ++i)
         values[i] = T();
     }
-    else{
-      bool use_nan = (init_policy==DIP_InitWithNan);
-      bool use_nan2 = (init_policy==DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
-      if (use_nan || use_nan2){
+    else {
+      bool use_nan = (init_policy == DIP_InitWithNan);
+      bool use_nan2 = (init_policy == DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
+      if (use_nan || use_nan2) {
         ArrayView<T> view = this->valueView();
-        DataTypeTraitsT<T>::fillNan(view.subView(current_size,new_size-current_size));
+        DataTypeTraitsT<T>::fillNan(view.subView(current_size, new_size - current_size));
       }
     }
   }
 
   // Compresses the memory if requested
-  if (_wantShrink()){
-    if (m_value->view().size() < value_internal->capacity()){
+  if (_wantShrink()) {
+    if (m_value->view().size() < value_internal->capacity()) {
       value_internal->shrink();
     }
   }
@@ -705,23 +704,23 @@ _internalResize(const VariableResizeArgs& resize_args)
   // element if a specific allocator is used, which is the case
   // for variables.
   Int64 capacity = value_internal->capacity();
-  if ( !((isUsed() || capacity<=AlignedMemoryAllocator::simdAlignment())) )
-    ARCANE_FATAL("Wrong unused data size {0}",capacity);
+  if (!((isUsed() || capacity <= AlignedMemoryAllocator::simdAlignment())))
+    ARCANE_FATAL("Wrong unused data size {0}", capacity);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void VariableArrayT<DataType>::
-resizeWithReserve(Integer n,Integer nb_additional)
+template <typename DataType> void VariableArrayT<DataType>::
+resizeWithReserve(Integer n, Integer nb_additional)
 {
-  _resize(VariableResizeArgs(n,nb_additional));
+  _resize(VariableResizeArgs(n, nb_additional));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void VariableArrayT<DataType>::
+template <typename DataType> void VariableArrayT<DataType>::
 shrinkMemory()
 {
   m_value->_internal()->shrink();
@@ -731,7 +730,7 @@ shrinkMemory()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> Integer VariableArrayT<DataType>::
+template <typename DataType> Integer VariableArrayT<DataType>::
 capacity()
 {
   return m_value->_internal()->capacity();
@@ -740,7 +739,7 @@ capacity()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void VariableArrayT<DataType>::
+template <typename DataType> void VariableArrayT<DataType>::
 fill(const DataType& value)
 {
   m_value->view().fill(value);
@@ -749,8 +748,8 @@ fill(const DataType& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void VariableArrayT<DataType>::
-fill(const DataType& value,const ItemGroup& group)
+template <typename DataType> void VariableArrayT<DataType>::
+fill(const DataType& value, const ItemGroup& group)
 {
   ARCANE_UNUSED(group);
   this->fill(value);
@@ -759,7 +758,7 @@ fill(const DataType& value,const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 VariableArrayT<DataType>::
 swapValues(ThatClass& rhs)
 {
@@ -776,19 +775,19 @@ swapValues(ThatClass& rhs)
 /*---------------------------------------------------------------------------*/
 
 // SDP: Specialization
-template<> void VariableArrayT<String>::
+template <> void VariableArrayT<String>::
 copyItemsMeanValues(Int32ConstArrayView first_source,
                     Int32ConstArrayView second_source,
                     Int32ConstArrayView destination)
 {
   Integer dsize = destination.size();
-  bool is_ok = (first_source.size()==dsize) && (second_source.size()==dsize);
+  bool is_ok = (first_source.size() == dsize) && (second_source.size() == dsize);
   if (!is_ok)
-		ARCANE_FATAL("Unable to copy: source and destination of different sizes !");
+    ARCANE_FATAL("Unable to copy: source and destination of different sizes !");
 
-  ArrayView<String> value =  m_value->view();
+  ArrayView<String> value = m_value->view();
   const Integer size = first_source.size();
-  for(Integer i=0; i<size; ++i )
+  for (Integer i = 0; i < size; ++i)
     value[destination[i]] = value[first_source[i]];
   syncReferences();
 }
@@ -796,7 +795,7 @@ copyItemsMeanValues(Int32ConstArrayView first_source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> auto VariableArrayT<DataType>::
+template <typename DataType> auto VariableArrayT<DataType>::
 value() -> ValueType&
 {
   return m_value->_internal()->_internalDeprecatedValue();

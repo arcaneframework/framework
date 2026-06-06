@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -29,10 +29,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void ExternalPartitionConstraint::
-addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
+addLinkedCells(Int64Array& linked_cells, Int32Array& linked_owners)
 {
-  m_mesh->traceMng()->info()<<"ExternalPartitionConstraint::addLinkedCells(...)";
-  
+  m_mesh->traceMng()->info() << "ExternalPartitionConstraint::addLinkedCells(...)";
+
   // Setting up a filter on the cells to prevent them from being included
   // multiple times in the cells array
   UniqueArray<Integer> filtre_cell;
@@ -40,40 +40,40 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
   Integer marque = 0;
   filtre_cell.fill(marque);
 
-  for( ItemGroup& group : m_constraints ){
+  for (ItemGroup& group : m_constraints) {
     // Array containing the list of meshes to keep together
-    // This list is distributed across the processors 
+    // This list is distributed across the processors
     // and includes ghost meshes as common elements
     UniqueArray<Cell> cells;
-    if (group.itemKind() == IK_Cell){
-      ENUMERATE_CELL(icell,group.cellGroup()){
+    if (group.itemKind() == IK_Cell) {
+      ENUMERATE_CELL (icell, group.cellGroup()) {
         cells.add(*icell);
       }
     }
     // This method allows retrieving the meshes in the case of semi-conformity
     // We filter the cells to select them only once
-    else if (group.itemKind() == IK_Face){
+    else if (group.itemKind() == IK_Face) {
       marque++;
-      ENUMERATE_FACE(iface,group.faceGroup()){
-        for( Node node : iface->nodes()){
-          for( Cell cell : node.cells()){
-            if (filtre_cell[cell.localId()]!=marque){
+      ENUMERATE_FACE (iface, group.faceGroup()) {
+        for (Node node : iface->nodes()) {
+          for (Cell cell : node.cells()) {
+            if (filtre_cell[cell.localId()] != marque) {
               cells.add(cell);
-              filtre_cell[cell.localId()]=marque;
+              filtre_cell[cell.localId()] = marque;
             }
           }
         }
       }
     }
-    else if (group.itemKind() == IK_Node){
-      ENUMERATE_NODE(inode,group.nodeGroup()){
-        for( Cell cell : inode->cells()){
+    else if (group.itemKind() == IK_Node) {
+      ENUMERATE_NODE (inode, group.nodeGroup()) {
+        for (Cell cell : inode->cells()) {
           cells.add(cell);
         }
       }
     }
-    
-    if (cells.size()==0)
+
+    if (cells.size() == 0)
       continue;
 
     // We populate the constraints in the form of pairs of meshes
@@ -81,9 +81,9 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
     Int32 owner0 = cell0.owner();
     ItemUniqueId uid0 = cell0.uniqueId();
 
-    for (Integer i=1; i<cells.size(); ++i){
+    for (Integer i = 1; i < cells.size(); ++i) {
       ItemUniqueId uidi = cells[i].uniqueId();
-      if (uid0<uidi){
+      if (uid0 < uidi) {
         linked_cells.add(uid0);
         linked_cells.add(uidi);
       }
@@ -94,17 +94,15 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
       linked_owners.add(owner0);
     } // end for i=1; i<cells.size()
 
-    m_mesh->traceMng()->info()<<"cells.size() = "<<cells.size();
-
+    m_mesh->traceMng()->info() << "cells.size() = " << cells.size();
 
   } // end for iter=m_constraints.begin()
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

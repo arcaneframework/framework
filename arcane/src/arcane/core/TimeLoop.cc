@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,18 +16,19 @@
 #include "arcane/utils/List.h"
 #include "arcane/utils/String.h"
 
-#include "arcane/TimeLoop.h"
-#include "arcane/TimeLoopEntryPointInfo.h"
-#include "arcane/TimeLoopSingletonServiceInfo.h"
-#include "arcane/Configuration.h"
-#include "arcane/IApplication.h"
+#include "arcane/core/TimeLoop.h"
+#include "arcane/core/TimeLoopEntryPointInfo.h"
+#include "arcane/core/TimeLoopSingletonServiceInfo.h"
+#include "arcane/core/Configuration.h"
+#include "arcane/core/IApplication.h"
 
 #include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,12 +57,12 @@ class TimeLoopPrivate
 {
  public:
 
-  typedef std::map<String,List< TimeLoopEntryPointInfo > > EntryPointInfoMap;
+  typedef std::map<String, List<TimeLoopEntryPointInfo>> EntryPointInfoMap;
 
  public:
-  
-  TimeLoopPrivate(IApplication * mng, const String & name);
-  ~TimeLoopPrivate(){ delete m_configuration; }
+
+  TimeLoopPrivate(IApplication* mng, const String& name);
+  ~TimeLoopPrivate() { delete m_configuration; }
 
  public:
 
@@ -82,9 +83,9 @@ class TimeLoopPrivate
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_CORE_EXPORT ITimeLoop*
-arcaneCreateTimeLoop(IApplication* app,const String& name)
+arcaneCreateTimeLoop(IApplication* app, const String& name)
 {
-  ITimeLoop * tm = new TimeLoop(app,name);
+  ITimeLoop* tm = new TimeLoop(app, name);
   tm->build();
   return tm;
 }
@@ -93,7 +94,7 @@ arcaneCreateTimeLoop(IApplication* app,const String& name)
 /*---------------------------------------------------------------------------*/
 
 TimeLoopPrivate::
-TimeLoopPrivate(IApplication* app,const String& name)
+TimeLoopPrivate(IApplication* app, const String& name)
 : m_application(app)
 , m_name(name)
 , m_is_old(false)
@@ -105,8 +106,8 @@ TimeLoopPrivate(IApplication* app,const String& name)
 /*---------------------------------------------------------------------------*/
 
 TimeLoop::
-TimeLoop(IApplication* app,const String& name)
-: m_p(new TimeLoopPrivate(app,name))
+TimeLoop(IApplication* app, const String& name)
+: m_p(new TimeLoopPrivate(app, name))
 {
 }
 
@@ -153,7 +154,7 @@ TimeLoopEntryPointInfoCollection TimeLoop::
 entryPoints(const String& where) const
 {
   TimeLoopPrivate::EntryPointInfoMap::const_iterator it = m_p->m_entry_points.find(where);
-  if (it==m_p->m_entry_points.end()){
+  if (it == m_p->m_entry_points.end()) {
     return List<TimeLoopEntryPointInfo>();
   }
   return it->second;
@@ -168,7 +169,7 @@ setEntryPoints(const String& where,
 {
   TimeLoopEntryPointInfoList entry_points;
   entry_points.clone(calls);
-  m_p->m_entry_points.insert(TimeLoopPrivate::EntryPointInfoMap::value_type(where,entry_points));
+  m_p->m_entry_points.insert(TimeLoopPrivate::EntryPointInfoMap::value_type(where, entry_points));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -183,7 +184,7 @@ setUserClasses(const StringCollection& user_classes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IApplication * TimeLoop::
+IApplication* TimeLoop::
 application() const
 {
   return m_p->m_application;
@@ -279,7 +280,7 @@ configuration()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

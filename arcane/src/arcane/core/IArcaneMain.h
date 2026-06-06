@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT IArcaneMain
    * called. This method must be called before initialize().
    * \warning This method must only be called once.
    */
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
    * \brief Initializes the instance.
@@ -92,7 +92,7 @@ class ARCANE_CORE_EXPORT IArcaneMain
    * called.
    * \warning This method must only be called once.
    */
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
  public:
 
@@ -103,64 +103,64 @@ class ARCANE_CORE_EXPORT IArcaneMain
    * \retval true if execution must stop,
    * \retval false if it continues normally
    */
-  virtual bool parseArgs(StringList args) =0;
+  virtual bool parseArgs(StringList args) = 0;
 
   /*! \brief Starts execution.
    * This method only returns when the program exits.
    * \return the Arcane return code, 0 if everything is okay.
    */
-  virtual int execute() =0;
+  virtual int execute() = 0;
 
   //! Performs the last operations before instance destruction
-  virtual void finalize() =0;
-  
+  virtual void finalize() = 0;
+
   //! Execution error code
-  virtual int errorCode() const =0;
-  
+  virtual int errorCode() const = 0;
+
   //! Sets the return code
-  virtual void setErrorCode(int errcode) =0;
+  virtual void setErrorCode(int errcode) = 0;
 
   //! Performs an abort.
-  virtual void doAbort() =0;
+  virtual void doAbort() = 0;
 
  public:
 
   //! Executable information
-  virtual const ApplicationInfo& applicationInfo() const =0;
+  virtual const ApplicationInfo& applicationInfo() const = 0;
 
   //! Information to build the IApplication instance.
-  virtual const ApplicationBuildInfo& applicationBuildInfo() const =0;
+  virtual const ApplicationBuildInfo& applicationBuildInfo() const = 0;
 
   //! .Net runtime initialization information.
-  virtual const DotNetRuntimeInitialisationInfo& dotnetRuntimeInitialisationInfo() const =0;
+  virtual const DotNetRuntimeInitialisationInfo& dotnetRuntimeInitialisationInfo() const = 0;
 
   //! Runtime initialization information for accelerators
-  virtual const AcceleratorRuntimeInitialisationInfo& acceleratorRuntimeInitialisationInfo() const =0;
+  virtual const AcceleratorRuntimeInitialisationInfo& acceleratorRuntimeInitialisationInfo() const = 0;
 
   //! Main factory
-  virtual IMainFactory* mainFactory() const =0;
+  virtual IMainFactory* mainFactory() const = 0;
 
   //! Application
-  virtual IApplication* application() const =0;
+  virtual IApplication* application() const = 0;
 
  public:
-  
+
   /*!
    * \brief Indicates that certain objects are managed via a garbage collector.
    */
-  virtual bool hasGarbageCollector() const =0;
+  virtual bool hasGarbageCollector() const = 0;
 
  public:
 
   //! List of registered service factories
-  virtual ServiceFactoryInfoCollection registeredServiceFactoryInfos() =0;
+  virtual ServiceFactoryInfoCollection registeredServiceFactoryInfos() = 0;
 
   //! List of registered module factories
-  virtual ModuleFactoryInfoCollection registeredModuleFactoryInfos() =0;
+  virtual ModuleFactoryInfoCollection registeredModuleFactoryInfos() = 0;
 
  public:
 
-  virtual void setDirectExecuteFunctor(IDirectSubDomainExecuteFunctor* f) =0;
+  virtual void setDirectExecuteFunctor(IDirectSubDomainExecuteFunctor* f) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

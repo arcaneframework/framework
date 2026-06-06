@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,14 +45,15 @@ namespace Arcane::random
  *   is managed outside the class. The \c seed and \c getState() methods 
  *   are meaningless in this usage.
 */
-template<typename IntType, IntType a, IntType c, IntType m, IntType val>
+template <typename IntType, IntType a, IntType c, IntType m, IntType val>
 class InversiveCongruential
 {
  public:
+
   typedef IntType result_type;
   static const bool has_fixed_range = true;
-  static const result_type min_value = ( c == 0 ? 1 : 0 );
-  static const result_type max_value = m-1;
+  static const result_type min_value = (c == 0 ? 1 : 0);
+  static const result_type max_value = m - 1;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -72,7 +73,7 @@ class InversiveCongruential
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
    */
-  result_type max() const { return m-1; }
+  result_type max() const { return m - 1; }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -82,10 +83,10 @@ class InversiveCongruential
    *
    * \author Patrick Rathouit (origine bibliotheque BOOST)
    * \date 28/07/2006
-   */  
+   */
   explicit InversiveCongruential(IntType x0 = 1)
-    : _x(x0)
-  { 
+  : _x(x0)
+  {
   }
 
   /*---------------------------------------------------------------------------*/
@@ -123,10 +124,10 @@ class InversiveCongruential
     return _x;
   }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-/*! \brief Returns the pseudo-random value from the state \c x. The
+  /*! \brief Returns the pseudo-random value from the state \c x. The
  * private member \c _x of the generator is not used and is not  
  * modified. 
  *
@@ -136,7 +137,7 @@ class InversiveCongruential
   static IntType apply(IntType x)
   {
     typedef utils::const_mod<IntType, m> do_mod;
-    return x = do_mod::mult_add(a,do_mod::invert(x), c);
+    return x = do_mod::mult_add(a, do_mod::invert(x), c);
   }
 
   /*---------------------------------------------------------------------------*/
@@ -158,7 +159,9 @@ class InversiveCongruential
    * \date 28/07/2006
    */
   bool operator==(const InversiveCongruential& rhs) const
-    { return _x == rhs._x; }
+  {
+    return _x == rhs._x;
+  }
 
  private:
 
@@ -168,13 +171,14 @@ class InversiveCongruential
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef InversiveCongruential<Int32, 9102, 2147483647-36884165,
-  2147483647, 0> Hellekalek1995;
+typedef InversiveCongruential<Int32, 9102, 2147483647 - 36884165,
+                              2147483647, 0>
+Hellekalek1995;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

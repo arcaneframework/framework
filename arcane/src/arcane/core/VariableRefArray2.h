@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,18 +31,18 @@ namespace Arcane
  *
  * This variable manages classic 2D arrays.
  */
-template<typename T>
+template <typename T>
 class VariableRefArray2T
 : public VariableRef
 , public Array2View<T>
 {
  public:
-  
+
   typedef T DataType;
   typedef Array2<T> ValueType;
   typedef ConstArrayView<T> ConstReturnReferenceType;
   typedef ArrayView<T> ReturnReferenceType;
-  
+
   //! Type of the variable elements
   typedef DataType ElementType;
   //! Type of the base class
@@ -89,7 +89,7 @@ class VariableRefArray2T
    * dimension and \a dim2_size as the size of the second.
    * \warning reallocation does not preserve previous values.
    */
-  ARCANE_CORE_EXPORT void resize(Integer dim1_size,Integer dim2_size);
+  ARCANE_CORE_EXPORT void resize(Integer dim1_size, Integer dim2_size);
 
   //! Fills the variable with the value \a value
   ARCANE_CORE_EXPORT void fill(const DataType& value);

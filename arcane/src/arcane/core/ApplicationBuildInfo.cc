@@ -38,11 +38,11 @@ namespace Arcane
 
 namespace
 {
-void _clamp(Int32& x,Int32 min_value,Int32 max_value)
-{
-  x = std::min(std::max(x,min_value),max_value);
-}
-}
+  void _clamp(Int32& x, Int32 min_value, Int32 max_value)
+  {
+    x = std::min(std::max(x, min_value), max_value);
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -62,14 +62,12 @@ class ApplicationBuildInfo::Impl
     // Sets a hard limit to prevent having too many sub-domains
     // in shared memory (the maximum is generally the number of cores per
     // node)
-    m_nb_shared_memory_sub_domain.setValidator([](Int32& x){ _clamp(x,0,1024); });
-    m_nb_replication_sub_domain.setValidator([](Int32& x){ x = std::max(x,0); });
-    m_nb_processus_sub_domain.setValidator([](Int32& x){ x = std::max(x,0); });
+    m_nb_shared_memory_sub_domain.setValidator([](Int32& x) { _clamp(x, 0, 1024); });
+    m_nb_replication_sub_domain.setValidator([](Int32& x) { x = std::max(x, 0); });
+    m_nb_processus_sub_domain.setValidator([](Int32& x) { x = std::max(x, 0); });
   }
 
  public:
-
-
  public:
 
   FieldProperty<String> m_message_passing_service;
@@ -86,7 +84,6 @@ class ApplicationBuildInfo::Impl
   ApplicationInfo m_app_info;
   CaseDatasetSource m_case_dataset_source;
   String m_default_message_passing_service;
-
 };
 
 /*---------------------------------------------------------------------------*/
@@ -205,7 +202,7 @@ setDefaultServices()
   {
     StringList list1;
     String thread_str = m_core->getValue({ "ARCANE_THREAD_IMPLEMENTATION" }, "ThreadService", "Std");
-    list1.add(thread_str+"ThreadImplementationService");
+    list1.add(thread_str + "ThreadImplementationService");
     list1.add("TBBThreadImplementationService");
     PropertyImpl::checkSet(m_core->m_thread_implementation_services, list1);
   }
@@ -218,10 +215,10 @@ void ApplicationBuildInfo::
 setDefaultServices()
 {
   ArccoreApplicationBuildInfo::setDefaultServices();
-  bool has_shm = nbSharedMemorySubDomain()>0;
+  bool has_shm = nbSharedMemorySubDomain() > 0;
   {
     String def_name = (has_shm) ? "Thread" : "Sequential";
-    String default_service_name = def_name+"ParallelSuperMng";
+    String default_service_name = def_name + "ParallelSuperMng";
     // Sets the default value if it hasn't been set already.
     if (m_p->m_default_message_passing_service.null())
       m_p->m_default_message_passing_service = default_service_name;
@@ -472,7 +469,7 @@ threadBindingStrategy(const String& v)
 /*---------------------------------------------------------------------------*/
 
 void ArccoreApplicationBuildInfo::
-addParameter(const String& name,const String& value)
+addParameter(const String& name, const String& value)
 {
   m_core->addKeyValue(name, value);
 }
@@ -487,9 +484,9 @@ parseArgumentsAndSetDefaultsValues(const CommandLineArguments& command_line_args
   //   -A,x=b,y=c
   StringList names;
   StringList values;
-  command_line_args.fillParameters(names,values);
-  for( Integer i=0, n=names.count(); i<n; ++i ){
-    addParameter(names[i],values[i]);
+  command_line_args.fillParameters(names, values);
+  for (Integer i = 0, n = names.count(); i < n; ++i) {
+    addParameter(names[i], values[i]);
   }
   setDefaultValues();
 }

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param m associated module
    * \param property variable properties
    */
-  VariableBuildInfo(IModule* m,const String& name,int property=0);
+  VariableBuildInfo(IModule* m, const String& name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable without associating it with
@@ -74,7 +74,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param name variable name
    * \param property variable properties
    */
-  VariableBuildInfo(ISubDomain* sub_domain,const String& name,int property=0);
+  VariableBuildInfo(ISubDomain* sub_domain, const String& name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable without associating it with
@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param name variable name
    * \param property variable properties
    */
-  VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property=0);
+  VariableBuildInfo(IVariableMng* variable_mng, const String& name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh other
@@ -94,7 +94,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param name variable name
    * \param property variable properties
    */
-  VariableBuildInfo(IMesh* mesh,const String& name,int property=0);
+  VariableBuildInfo(IMesh* mesh, const String& name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh other
@@ -104,7 +104,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param name variable name
    * \param property variable properties
    */
-  VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,int property=0);
+  VariableBuildInfo(const MeshHandle& mesh_handle, const String& name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable.
@@ -114,8 +114,8 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param item_family_name entity family name
    * \param property variable properties
    */
-  VariableBuildInfo(IModule* m,const String& name,
-                    const String& item_family_name,int property=0);
+  VariableBuildInfo(IModule* m, const String& name,
+                    const String& item_family_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh
@@ -126,8 +126,8 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param item_family_name entity family name
    * \param property variable properties
    */
-  VariableBuildInfo(IMesh* mesh,const String& name,
-                    const String& item_family_name,int property=0);
+  VariableBuildInfo(IMesh* mesh, const String& name,
+                    const String& item_family_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh
@@ -138,8 +138,8 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param item_family_name entity family name
    * \param property variable properties
    */
-  VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
-                    const String& item_family_name,int property=0);
+  VariableBuildInfo(const MeshHandle& mesh_handle, const String& name,
+                    const String& item_family_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable not associated with a mesh.
@@ -150,8 +150,8 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param item_family_name entity family name
    * \param property variable properties
    */
-  VariableBuildInfo(ISubDomain* sd,const String& name, const String& mesh_name,
-                    const String& item_family_name,int property=0);
+  VariableBuildInfo(ISubDomain* sd, const String& name, const String& mesh_name,
+                    const String& item_family_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable not associated with a mesh.
@@ -162,8 +162,8 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param item_family_name entity family name
    * \param property variable properties
    */
-  VariableBuildInfo(IVariableMng* variable_mng,const String& name, const String& mesh_name,
-                    const String& item_family_name,int property=0);
+  VariableBuildInfo(IVariableMng* variable_mng, const String& name, const String& mesh_name,
+                    const String& item_family_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh
@@ -173,7 +173,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param name variable name
    * \param property variable properties
    */
-  VariableBuildInfo(IItemFamily* family,const String& name,int property=0);
+  VariableBuildInfo(IItemFamily* family, const String& name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable.
@@ -184,9 +184,9 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param item_group_name associated group name (for partial variables)
    * \param property variable properties
    */
-  VariableBuildInfo(IModule* m,const String& name,
+  VariableBuildInfo(IModule* m, const String& name,
                     const String& item_family_name,
-                    const String& item_group_name,int property=0);
+                    const String& item_group_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh
@@ -198,9 +198,9 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param group_name associated group name (for partial variables)
    * \param property variable properties
    */
-  VariableBuildInfo(IMesh* mesh,const String& name,
+  VariableBuildInfo(IMesh* mesh, const String& name,
                     const String& item_family_name,
-                    const String& item_group_name,int property=0);
+                    const String& item_group_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable associated with a mesh
@@ -212,9 +212,9 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param group_name associated group name (for partial variables)
    * \param property variable properties
    */
-  VariableBuildInfo(const MeshHandle& mesh_handle,const String& name,
+  VariableBuildInfo(const MeshHandle& mesh_handle, const String& name,
                     const String& item_family_name,
-                    const String& item_group_name,int property=0);
+                    const String& item_group_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable not associated with a mesh
@@ -226,10 +226,10 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param group_name associated group name (for partial variables)
    * \param property variable properties
    */
-  VariableBuildInfo(ISubDomain* sd,const String& name,
+  VariableBuildInfo(ISubDomain* sd, const String& name,
                     const String& mesh_name,
                     const String& item_family_name,
-                    const String& item_group_name,int property=0);
+                    const String& item_group_name, int property = 0);
 
   /*!
    * \brief Constructs an initializer for a variable not associated with a mesh
@@ -241,10 +241,10 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param group_name associated group name (for partial variables)
    * \param property variable properties
    */
-  VariableBuildInfo(IVariableMng* variable_mng,const String& name,
+  VariableBuildInfo(IVariableMng* variable_mng, const String& name,
                     const String& mesh_name,
                     const String& item_family_name,
-                    const String& item_group_name,int property=0);
+                    const String& item_group_name, int property = 0);
 
  private:
 
@@ -274,7 +274,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
 
   ISubDomain* m_sub_domain = nullptr; //!< Subdomain manager
   IModule* m_module = nullptr; //!< Module associated with the variable
-  MeshHandle m_mesh_handle;  //!< Handle on the mesh
+  MeshHandle m_mesh_handle; //!< Handle on the mesh
   String m_name; //!< Variable name
   String m_item_family_name; //!< Entity family name
   String m_item_group_name; //!< Supported entity group name

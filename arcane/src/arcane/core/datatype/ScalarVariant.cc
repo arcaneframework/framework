@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,10 +28,10 @@ ScalarVariant()
 , m_real_value(0.)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,7 +46,7 @@ ScalarVariant(const ScalarVariant& v)
 , m_int32_value(v.m_int32_value)
 , m_int64_value(v.m_int64_value)
 , m_bool_value(v.m_bool_value)
-, m_string_value(v.m_string_value) 
+, m_string_value(v.m_string_value)
 {
 }
 
@@ -59,7 +59,7 @@ ScalarVariant(Real v)
 , m_real_value(v)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -73,7 +73,7 @@ ScalarVariant(Real2 v)
 , m_real2_value(v)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -87,7 +87,7 @@ ScalarVariant(Real3 v)
 , m_real3_value(v)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -101,7 +101,7 @@ ScalarVariant(Real2x2 v)
 , m_real2x2_value(v)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -115,7 +115,7 @@ ScalarVariant(Real3x3 v)
 , m_real3x3_value(v)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -130,7 +130,7 @@ ScalarVariant(Int32 v)
 , m_real3_value(Real3::null())
 , m_int32_value(v)
 , m_int64_value(0)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -143,7 +143,7 @@ ScalarVariant(Int64 v)
 , m_real_value(0.)
 , m_int32_value(0)
 , m_int64_value(v)
-, m_bool_value(false) 
+, m_bool_value(false)
 {
 }
 
@@ -156,7 +156,7 @@ ScalarVariant(bool v)
 , m_real_value(0.)
 , m_int32_value(0)
 , m_int64_value(0)
-, m_bool_value(v) 
+, m_bool_value(v)
 {
 }
 
@@ -165,12 +165,12 @@ ScalarVariant(bool v)
 
 ScalarVariant::
 ScalarVariant(const String& v)
-: VariantBase(0,TString)
+: VariantBase(0, TString)
 , m_real_value(0.)
 , m_int32_value(0)
 , m_int64_value(0)
 , m_bool_value(false)
-, m_string_value(v) 
+, m_string_value(v)
 {
 }
 
@@ -178,20 +178,20 @@ ScalarVariant(const String& v)
 /*---------------------------------------------------------------------------*/
 
 ScalarVariant& ScalarVariant::
-operator= (const ScalarVariant& v)
-{ 
+operator=(const ScalarVariant& v)
+{
   m_dim = 0;
   m_type = v.m_type;
-  m_real_value = v.m_real_value; 
-  m_real2_value = v.m_real2_value; 
-  m_real3_value = v.m_real3_value; 
-  m_real2x2_value = v.m_real2x2_value; 
-  m_real3x3_value = v.m_real3x3_value; 
-  m_int64_value = v.m_int64_value; 
-  m_int32_value = v.m_int32_value; 
-  m_bool_value = v.m_bool_value; 
-  m_string_value = v.m_string_value; 
-  return (*this); 
+  m_real_value = v.m_real_value;
+  m_real2_value = v.m_real2_value;
+  m_real3_value = v.m_real3_value;
+  m_real2x2_value = v.m_real2x2_value;
+  m_real3x3_value = v.m_real3x3_value;
+  m_int64_value = v.m_int64_value;
+  m_int32_value = v.m_int32_value;
+  m_bool_value = v.m_bool_value;
+  m_string_value = v.m_string_value;
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/

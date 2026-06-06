@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,9 +25,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Module creation properties.
  *
@@ -45,8 +42,9 @@ class ARCANE_CORE_EXPORT ModuleProperty
   /*!
    * \brief Constructs an instance for a module named \a aname.
    */
-  ModuleProperty(const char* aname,bool is_autoload) ARCANE_NOEXCEPT
-  : m_name(aname), m_is_autoload(is_autoload)
+  ModuleProperty(const char* aname, bool is_autoload) ARCANE_NOEXCEPT
+  : m_name(aname)
+  , m_is_autoload(is_autoload)
   {
   }
 
@@ -54,7 +52,8 @@ class ARCANE_CORE_EXPORT ModuleProperty
    * \brief Constructs an instance for a module named \a aname.
    */
   explicit ModuleProperty(const char* aname) ARCANE_NOEXCEPT
-  : m_name(aname), m_is_autoload(false)
+  : m_name(aname)
+  , m_is_autoload(false)
   {
   }
 
@@ -62,7 +61,7 @@ class ARCANE_CORE_EXPORT ModuleProperty
 
   //! Module name.
   const char* name() const { return m_name; }
-  
+
   //! Indicates if the module is automatically loaded.
   bool isAutoload() const { return m_is_autoload; }
 

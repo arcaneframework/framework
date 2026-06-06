@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -29,45 +29,50 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief DataTracer for a data of type \a DataType.
  */
-template<typename DataType>
+template <typename DataType>
 class DataTracerT
 : public IDataTracerT<DataType>
 {
  public:
-  DataTracerT(ITraceMng* msg,Integer index,eTraceType trace_type,const String& var_name)
-    : m_msg(msg), m_index(index), m_trace_type(trace_type), m_var_name(var_name)
-    {
-    }
+
+  DataTracerT(ITraceMng* msg, Integer index, eTraceType trace_type, const String& var_name)
+  : m_msg(msg)
+  , m_index(index)
+  , m_trace_type(trace_type)
+  , m_var_name(var_name)
+  {
+  }
   virtual ~DataTracerT() {}
+
  public:
+
   virtual void traceAccess(const DataType& value)
-    {
-      m_msg->info() << "TraceAccess " << m_var_name << " i=" << m_index
-                    << " V=" << value;
-      arcaneTraceBreakpoint();
-   }
+  {
+    m_msg->info() << "TraceAccess " << m_var_name << " i=" << m_index
+                  << " V=" << value;
+    arcaneTraceBreakpoint();
+  }
   virtual void traceRead(const DataType& value)
-    {
-      if (m_trace_type==TT_Read)
-        m_msg->info() << "TraceRead " << m_var_name << " i=" << m_index
-                      << " V=" << value;
-      arcaneTraceBreakpoint();
-   }
-  virtual void traceWrite(const DataType& old_value,const DataType& new_value)
-    {
-      if (m_trace_type==TT_Write)
-        m_msg->info() << "TraceWrite " << m_var_name << " i=" << m_index
-                      << " V=" << old_value << ' ' << new_value;
-      arcaneTraceBreakpoint();
-   }
+  {
+    if (m_trace_type == TT_Read)
+      m_msg->info() << "TraceRead " << m_var_name << " i=" << m_index
+                    << " V=" << value;
+    arcaneTraceBreakpoint();
+  }
+  virtual void traceWrite(const DataType& old_value, const DataType& new_value)
+  {
+    if (m_trace_type == TT_Write)
+      m_msg->info() << "TraceWrite " << m_var_name << " i=" << m_index
+                    << " V=" << old_value << ' ' << new_value;
+    arcaneTraceBreakpoint();
+  }
+
  private:
+
   ITraceMng* m_msg;
   Integer m_index;
   eTraceType m_trace_type;
@@ -77,7 +82,7 @@ class DataTracerT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

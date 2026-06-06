@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,10 +11,6 @@
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IITEMFAMILYSERIALIZERMNGINTERNAL_H
 #define ARCANE_CORE_IITEMFAMILYSERIALIZERMNGINTERNAL_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,7 +32,7 @@ class ARCANE_CORE_EXPORT IItemFamilySerializerMngInternal
 
  public:
 
-   /*!
+  /*!
    * \brief Finalizes the allocations performed by the serializers registered in the manager.
    *
    * Used for polyhedral meshing where allocations are only performed after

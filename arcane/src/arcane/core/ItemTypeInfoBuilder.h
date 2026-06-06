@@ -196,7 +196,7 @@ class ItemTypeInfoBuilder
 
  private:
 
-  void _setNbEdgeAndFace(Integer nb_edge,Integer nb_face);
+  void _setNbEdgeAndFace(Integer nb_edge, Integer nb_face);
   void _checkDimension(Int16 dim);
   void _checkSetIsPolygon();
 };

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -29,18 +29,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ENUMERATE_ANY_ITEM(name, group)                           \
-  for(AnyItem::Group::Enumerator __e((group).enumerator()); __e.hasNext(); ++__e) \
-    for(AnyItem::Group::BlockItemEnumerator name(__e.enumerator()); name.hasNext(); ++name)
+#define ENUMERATE_ANY_ITEM(name, group) \
+  for (AnyItem::Group::Enumerator __e((group).enumerator()); __e.hasNext(); ++__e) \
+    for (AnyItem::Group::BlockItemEnumerator name(__e.enumerator()); name.hasNext(); ++name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ENUMERATE_ANY_ITEM_LINK(name, container)             \
-  for(AnyItem::LinkFamily::Enumerator name((container).enumerator()); \
-      name.hasNext(); ++name )
+#define ENUMERATE_ANY_ITEM_LINK(name, container) \
+  for (AnyItem::LinkFamily::Enumerator name((container).enumerator()); \
+       name.hasNext(); ++name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-     
-#endif /* ARCANE_ANYITEM_ANYITEM_H */
+
+#endif

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -55,11 +55,11 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
 
  public:
 
-  void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) override;
-  void setGlobalNbCells(Int64 x,Int64 y,Int64 z) override;
-  void setSubDomainOffsets(Int32 x,Int32 y,Int32 z) override;
-  void setNbSubDomains(Int32 x,Int32 y,Int32 z) override;
-  void setOwnNbCells(Int32 x,Int32 y,Int32 z) override;
+  void setOwnCellOffsets(Int64 x, Int64 y, Int64 z) override;
+  void setGlobalNbCells(Int64 x, Int64 y, Int64 z) override;
+  void setSubDomainOffsets(Int32 x, Int32 y, Int32 z) override;
+  void setNbSubDomains(Int32 x, Int32 y, Int32 z) override;
+  void setOwnNbCells(Int32 x, Int32 y, Int32 z) override;
   void setFirstOwnCellUniqueId(Int64 uid) override;
   void setGlobalOrigin(Real3 pos) override;
   void setGlobalLength(Real3 length) override;
@@ -94,7 +94,7 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

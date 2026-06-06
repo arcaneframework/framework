@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,45 +41,46 @@
 namespace Arcane
 {
 
-namespace {
-
-void
-_getAvailableServiceNames(ICaseOptionServiceContainer* container,IApplication* app,
-                          StringArray& names)
+namespace
 {
-  for( ServiceFactory2Collection::Enumerator i(app->serviceFactories2()); ++i; ){
-    Internal::IServiceFactory2* sf2 = *i;
-    IServiceInfo* si = sf2->serviceInfo();
-    // The service must be authorized for the dataset.
-    if (!(si->usageType() & Arcane::ST_CaseOption))
-      continue;
-    if (container->hasInterfaceImplemented(sf2)){
-      names.add(sf2->serviceInfo()->localName());
+
+  void
+  _getAvailableServiceNames(ICaseOptionServiceContainer* container, IApplication* app,
+                            StringArray& names)
+  {
+    for (ServiceFactory2Collection::Enumerator i(app->serviceFactories2()); ++i;) {
+      Internal::IServiceFactory2* sf2 = *i;
+      IServiceInfo* si = sf2->serviceInfo();
+      // The service must be authorized for the dataset.
+      if (!(si->usageType() & Arcane::ST_CaseOption))
+        continue;
+      if (container->hasInterfaceImplemented(sf2)) {
+        names.add(sf2->serviceInfo()->localName());
+      }
     }
   }
-}
 
-bool
-_tryCreateService(ICaseOptionServiceContainer* container,IApplication* app,
-                  const String& service_name,Integer index,ICaseOptions* opt)
-{
-  // Iterates through the list of factories and tries to create a service with the desired name
-  // that implements the correct interface.
-  bool is_found = false;
-  ServiceBuildInfoBase sbi(_arcaneDeprecatedGetSubDomain(opt),opt);
-  for( ServiceFactory2Collection::Enumerator i(app->serviceFactories2()); ++i; ){
-    Internal::IServiceFactory2* sf2 = *i;
-    IServiceInfo* si = sf2->serviceInfo();
-    if (si->localName()==service_name && container->tryCreateService(index,sf2,sbi)){
-      opt->setCaseServiceInfo(si);
-      is_found = true;
-      break;
+  bool
+  _tryCreateService(ICaseOptionServiceContainer* container, IApplication* app,
+                    const String& service_name, Integer index, ICaseOptions* opt)
+  {
+    // Iterates through the list of factories and tries to create a service with the desired name
+    // that implements the correct interface.
+    bool is_found = false;
+    ServiceBuildInfoBase sbi(_arcaneDeprecatedGetSubDomain(opt), opt);
+    for (ServiceFactory2Collection::Enumerator i(app->serviceFactories2()); ++i;) {
+      Internal::IServiceFactory2* sf2 = *i;
+      IServiceInfo* si = sf2->serviceInfo();
+      if (si->localName() == service_name && container->tryCreateService(index, sf2, sbi)) {
+        opt->setCaseServiceInfo(si);
+        is_found = true;
+        break;
+      }
     }
+    return is_found;
   }
-  return is_found;
-}
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,8 +125,8 @@ meshName() const
 /*---------------------------------------------------------------------------*/
 
 CaseOptionServiceImpl::
-CaseOptionServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
-: CaseOptions(cob.caseOptionList(),cob.name())
+CaseOptionServiceImpl(const CaseOptionBuildInfo& cob, bool allow_null, bool is_optional)
+: CaseOptions(cob.caseOptionList(), cob.name())
 , m_name(cob.name())
 , m_default_value(cob.defaultValue())
 , m_element(cob.element())
@@ -140,7 +141,7 @@ CaseOptionServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null,bool is_opt
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionServiceImpl::
-print(const String& lang,std::ostream& o) const
+print(const String& lang, std::ostream& o) const
 {
   ARCANE_UNUSED(lang);
   o << serviceName();
@@ -180,7 +181,7 @@ _readPhase1()
   _setTranslatedName();
   ICaseOptionList* col = configList();
 
-  XmlNode child = m_element.child(rootTagName());  
+  XmlNode child = m_element.child(rootTagName());
 
   if (child.null()) {
     col->_internalApi()->setRootElementWithParent(m_element);
@@ -221,7 +222,6 @@ _readPhase1()
               << " mesh-name=" << mesh_name
               << "\n";
 
-
   if (_setMeshHandleAndCheckDisabled(mesh_name))
     return;
 
@@ -236,16 +236,16 @@ _readPhase1()
 
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
 
-  if (str_val.null()){
+  if (str_val.null()) {
     // Uses the default value:
     // - if it was specified by the user, use this one.
     // - otherwise use the one associated with the default category.
     // - otherwise, the classic default value.
-    if (!m_is_override_default){
+    if (!m_is_override_default) {
       String category = doc->defaultCategory();
-      if (!category.null()){
+      if (!category.null()) {
         String v = m_default_values.find(category);
-        if (!v.null()){
+        if (!v.null()) {
           m_default_value = v;
         }
       }
@@ -256,8 +256,8 @@ _readPhase1()
     // In an else block: Symbol replacement does not apply to default values in .axl.
     str_val = StringVariableReplace::replaceWithCmdLineArgs(params, str_val, true);
   }
-  if (str_val.null() && !isOptional()){
-    CaseOptionError::addOptionNotFoundError(doc,A_FUNCINFO,"@name",element);
+  if (str_val.null() && !isOptional()) {
+    CaseOptionError::addOptionNotFoundError(doc, A_FUNCINFO, "@name", element);
     return;
   }
   m_service_name = str_val;
@@ -266,18 +266,19 @@ _readPhase1()
   // it is considered that it should not be loaded.
   bool need_create = col->isPresent() || !isOptional();
 
-  if (need_create){
+  if (need_create) {
     m_container->allocate(1);
-    bool is_found = _tryCreateService(m_container,caseMng()->application(),str_val,0,this);
+    bool is_found = _tryCreateService(m_container, caseMng()->application(), str_val, 0, this);
 
-    if (!is_found && !m_allow_null){
+    if (!is_found && !m_allow_null) {
       // The desired service was not found. This is an error.
       // Searches for the names of valid implementations to display in the corresponding error message.
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
-      CaseOptionError::addError(doc,A_FUNCINFO,element.xpathFullName(),
+      CaseOptionError::addError(doc, A_FUNCINFO, element.xpathFullName(),
                                 String::format("Unable to find a service named '{0}' (valid values:{1})",
-                                               str_val,valid_names),true);
+                                               str_val, valid_names),
+                                true);
     }
   }
 }
@@ -288,7 +289,7 @@ _readPhase1()
 void CaseOptionServiceImpl::
 read(eCaseOptionReadPhase read_phase)
 {
-  if (read_phase==eCaseOptionReadPhase::Phase1)
+  if (read_phase == eCaseOptionReadPhase::Phase1)
     _readPhase1();
   CaseOptions::read(read_phase);
 }
@@ -299,7 +300,7 @@ read(eCaseOptionReadPhase read_phase)
 void CaseOptionServiceImpl::
 setDefaultValue(const String& def_value)
 {
-  if (!m_service_name.null()){
+  if (!m_service_name.null()) {
     String xpath_name = configList()->rootElement().xpathFullName();
     ARCANE_FATAL("Can not set default service name because service is already allocated (option='{0}')",
                  xpath_name);
@@ -312,9 +313,9 @@ setDefaultValue(const String& def_value)
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionServiceImpl::
-addDefaultValue(const String& category,const String& value)
+addDefaultValue(const String& category, const String& value)
 {
-  m_default_values.add(category,value);
+  m_default_values.add(category, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -323,7 +324,7 @@ addDefaultValue(const String& category,const String& value)
 void CaseOptionServiceImpl::
 getAvailableNames(StringArray& names) const
 {
-  _getAvailableServiceNames(m_container,caseMng()->application(),names);
+  _getAvailableServiceNames(m_container, caseMng()->application(), names);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -333,8 +334,8 @@ getAvailableNames(StringArray& names) const
 /*---------------------------------------------------------------------------*/
 
 CaseOptionMultiServiceImpl::
-CaseOptionMultiServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null)
-: CaseOptionsMulti(cob.caseOptionList(),cob.name(),cob.element(),cob.minOccurs(),cob.maxOccurs())
+CaseOptionMultiServiceImpl(const CaseOptionBuildInfo& cob, bool allow_null)
+: CaseOptionsMulti(cob.caseOptionList(), cob.name(), cob.element(), cob.minOccurs(), cob.maxOccurs())
 , m_allow_null(allow_null)
 , m_default_value(cob.defaultValue())
 , m_notify_functor(nullptr)
@@ -366,10 +367,10 @@ void CaseOptionMultiServiceImpl::
 visit(ICaseDocumentVisitor* visitor) const
 {
   Integer index = 0;
-  for( const auto& o : m_allocated_options ){
-    visitor->beginVisit(this,index);
+  for (const auto& o : m_allocated_options) {
+    visitor->beginVisit(this, index);
     o->visit(visitor);
-    visitor->endVisit(this,index);
+    visitor->endVisit(this, index);
     ++index;
   }
 }
@@ -557,7 +558,7 @@ multiAllocate(const XmlNodeList& elem_list)
 void CaseOptionMultiServiceImpl::
 getAvailableNames(StringArray& names) const
 {
-  _getAvailableServiceNames(m_container,caseMng()->application(),names);
+  _getAvailableServiceNames(m_container, caseMng()->application(), names);
 }
 
 /*---------------------------------------------------------------------------*/

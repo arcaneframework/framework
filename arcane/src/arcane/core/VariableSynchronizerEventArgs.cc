@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableSynchronizerEventArgs.h"
-#include "arcane/VariableCollection.h"
+#include "arcane/core/VariableSynchronizerEventArgs.h"
+#include "arcane/core/VariableCollection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
-VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs,
+VariableSynchronizerEventArgs(IVariable* var, IVariableSynchronizer* vs,
                               Real elapsed_time, State state)
 : m_var_syncer(vs)
 {
@@ -37,7 +37,7 @@ VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs,
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
-VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs,
+VariableSynchronizerEventArgs(VariableCollection vars, IVariableSynchronizer* vs,
                               Real elapsed_time, State state)
 : m_var_syncer(vs)
 {
@@ -50,7 +50,7 @@ VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs,
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
-VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs)
+VariableSynchronizerEventArgs(IVariable* var, IVariableSynchronizer* vs)
 : m_var_syncer(vs)
 {
   initialize(var);
@@ -60,7 +60,7 @@ VariableSynchronizerEventArgs(IVariable* var,IVariableSynchronizer* vs)
 /*---------------------------------------------------------------------------*/
 
 VariableSynchronizerEventArgs::
-VariableSynchronizerEventArgs(VariableCollection vars,IVariableSynchronizer* vs)
+VariableSynchronizerEventArgs(VariableCollection vars, IVariableSynchronizer* vs)
 : m_var_syncer(vs)
 {
   initialize(vars);
@@ -85,7 +85,7 @@ initialize(const VariableCollection& vars)
   _reset();
   m_variables.reserve(vars.count());
   m_compare_status_list.reserve(vars.count());
-  for( VariableCollectionEnumerator v(vars); ++v; ){
+  for (VariableCollectionEnumerator v(vars); ++v;) {
     m_variables.add(*v);
     m_compare_status_list.add(CompareStatus::Unknown);
   }
@@ -117,7 +117,7 @@ _reset()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

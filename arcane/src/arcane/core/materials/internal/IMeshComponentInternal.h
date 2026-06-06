@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,19 +38,19 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
  public:
 
   //! Indexer to access partial variables.
-  virtual MeshMaterialVariableIndexer* variableIndexer() const =0;
+  virtual MeshMaterialVariableIndexer* variableIndexer() const = 0;
 
   //! View of the constituent meshes.
-  virtual ConstituentItemLocalIdListView constituentItemListView() const =0;
+  virtual ConstituentItemLocalIdListView constituentItemListView() const = 0;
 
   //! Index to access partial variables.
-  virtual Int32 variableIndexerIndex() const =0;
+  virtual Int32 variableIndexerIndex() const = 0;
 
   //! Create an instance of the 'ConstituentItemVectorImpl' implementation
-  virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl() const =0;
+  virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl() const = 0;
 
   //! Create an instance of the 'ConstituentItemVectorImpl' implementation
-  virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const =0;
+  virtual Ref<IConstituentItemVectorImpl> createItemVectorImpl(ComponentItemVectorView rhs) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

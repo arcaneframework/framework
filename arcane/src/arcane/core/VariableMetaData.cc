@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/VariableMetaData.h"
+#include "arcane/core/VariableMetaData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,8 +25,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 VariableMetaData::
-VariableMetaData(const String& base_name,const String& mesh_name,
-                 const String& item_family_name,const String& item_group_name,
+VariableMetaData(const String& base_name, const String& mesh_name,
+                 const String& item_family_name, const String& item_group_name,
                  bool is_partial)
 : m_base_name(base_name)
 , m_mesh_name(mesh_name)
@@ -45,11 +45,11 @@ void VariableMetaData::
 _buildFullName()
 {
   StringBuilder full_name_b;
-  if (!m_mesh_name.null()){
+  if (!m_mesh_name.null()) {
     full_name_b += m_mesh_name;
     full_name_b += "_";
   }
-  if (!m_item_family_name.null()){
+  if (!m_item_family_name.null()) {
     full_name_b += m_item_family_name;
     full_name_b += "_";
   }

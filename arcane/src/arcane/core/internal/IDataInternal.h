@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -192,22 +192,22 @@ class IArrayDataInternalT
  public:
 
   //! Reserves memory for \a new_capacity elements
-  virtual void reserve(Integer new_capacity) =0;
+  virtual void reserve(Integer new_capacity) = 0;
 
   //! Container associated with the data.
   virtual Array<DataType>& _internalDeprecatedValue() = 0;
 
   //! Capacity allocated by the container
-  virtual Integer capacity() const =0;
+  virtual Integer capacity() const = 0;
 
   //! Frees additional allocated memory
-  virtual void shrink() const =0;
+  virtual void shrink() const = 0;
 
   //! Resizes the container.
-  virtual void resize(Integer new_size) =0;
+  virtual void resize(Integer new_size) = 0;
 
   //! Clears the container and frees allocated memory.
-  virtual void dispose() =0;
+  virtual void dispose() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

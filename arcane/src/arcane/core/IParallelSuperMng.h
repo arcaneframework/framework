@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
   typedef Parallel::eReduceType eReduceType;
 
  public:
-	
+
   virtual ~IParallelSuperMng() {} //!< Frees resources.
 
  public:
@@ -59,7 +59,7 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    *
    * \warning This method must only be called once.
    */
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
    * \brief Initializes the instance.
@@ -67,27 +67,27 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    * The instance is not usable until this method has been called.
    * \warning This method must only be called once.
    */
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
  public:
 
   //! Returns the main manager.
-  virtual IApplication* application() const =0;
+  virtual IApplication* application() const = 0;
 
   //! Thread manager.
-  virtual IThreadMng* threadMng() const =0;
-	
+  virtual IThreadMng* threadMng() const = 0;
+
   //! Returns true if the execution is parallel
-  virtual bool isParallel() const =0;
+  virtual bool isParallel() const = 0;
 
   //! Returns the process number (between 0 and nbProcess()-1)
-  virtual Int32 commRank() const =0;
+  virtual Int32 commRank() const = 0;
 
   //! Returns the total number of processes used
-  virtual Int32 commSize() const =0;
+  virtual Int32 commSize() const = 0;
 
   //! Rank of this instance for traces.
-  virtual Int32 traceRank() const =0;
+  virtual Int32 traceRank() const = 0;
 
   /*!
    * \brief Address of the MPI communicator associated with this manager.
@@ -96,14 +96,14 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    * is 0. The returned value is of type (MPI_Comm*).
    */
 
-  virtual void* getMPICommunicator() =0;
+  virtual void* getMPICommunicator() = 0;
 
   /*!
    * \brief MPI communicator associated with this manager
    *
    * \sa IParallelMng::communicator()
    */
-  virtual Parallel::Communicator communicator() const =0;
+  virtual Parallel::Communicator communicator() const = 0;
 
   /*!
    * \internal
@@ -123,7 +123,7 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    *
    * For internal use only.
    */
-  virtual Ref<IParallelMng> internalCreateWorldParallelMng(Int32 local_rank) =0;
+  virtual Ref<IParallelMng> internalCreateWorldParallelMng(Int32 local_rank) = 0;
 
   /*!
    * \brief Number of subdomains to create locally.
@@ -131,7 +131,7 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    * - 1 if pure MPI
    * - n if THREAD or THREAD/MPI
    */
-  virtual Int32 nbLocalSubDomain() =0;
+  virtual Int32 nbLocalSubDomain() = 0;
 
   /*!
    * \brief Attempts to abort.
@@ -140,17 +140,17 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    * current execution case must stop. It allows performing cleanup operations
    * on the manager if necessary.
    */
-  virtual void tryAbort() =0;
+  virtual void tryAbort() = 0;
 
   //! Returns true if the instance is a master I/O manager.
-  virtual bool isMasterIO() const =0;
+  virtual bool isMasterIO() const = 0;
 
   /*!
     \brief Rank of the instance managing input/output (for which isMasterIO() is true)
     *
     * In the current implementation, this is always the rank 0 processor.
     */
-  virtual Int32 masterIORank() const =0;
+  virtual Int32 masterIORank() const = 0;
 
   /*!
    * \brief Parallelism manager for all allocated resources.
@@ -158,7 +158,7 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
   //virtual IParallelMng* worldParallelMng() const =0;
 
   //! Performs a barrier
-  virtual void barrier() =0;
+  virtual void barrier() = 0;
 
  public:
 
@@ -173,10 +173,10 @@ class ARCANE_CORE_EXPORT IParallelSuperMng
    * the same parameter process_id and have a send_buf array
    * containing the same number of elements.
    */
-  virtual void broadcast(ByteArrayView send_buf,Integer process_id) =0;
-  virtual void broadcast(Int32ArrayView send_buf,Integer process_id) =0;
-  virtual void broadcast(Int64ArrayView send_buf,Integer process_id) =0;
-  virtual void broadcast(RealArrayView send_buf,Integer process_id) =0;
+  virtual void broadcast(ByteArrayView send_buf, Integer process_id) = 0;
+  virtual void broadcast(Int32ArrayView send_buf, Integer process_id) = 0;
+  virtual void broadcast(Int64ArrayView send_buf, Integer process_id) = 0;
+  virtual void broadcast(RealArrayView send_buf, Integer process_id) = 0;
   //@}
 };
 

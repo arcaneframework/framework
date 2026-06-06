@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
 {
  public:
 
-  virtual ~IItemFamilyExchanger(){}
+  virtual ~IItemFamilyExchanger() {}
 
  public:
 
@@ -80,21 +80,21 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
    *
    * \todo To be removed
    */
-  virtual void computeExchangeItems() =0;
-  
+  virtual void computeExchangeItems() = 0;
+
   //! Positions the list of entities to exchange.
-  virtual void setExchangeItems(ConstArrayView< std::set<Int32> > items_to_send) =0;
+  virtual void setExchangeItems(ConstArrayView<std::set<Int32>> items_to_send) = 0;
 
   /*!
    * \brief Determines the information necessary for the exchanges.
    * \retval true if there is nothing to exchange
    * \retval false otherwise.
    */
-  virtual bool computeExchangeInfos() =0;
+  virtual bool computeExchangeInfos() = 0;
 
   //! Prepares the sending structures
-  virtual void prepareToSend() =0;
-  virtual void releaseBuffer() =0;
+  virtual void prepareToSend() = 0;
+  virtual void releaseBuffer() = 0;
 
   /*!
    * \brief After receiving messages, reads and creates the transferred entities.
@@ -110,15 +110,15 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
    * \warning Before calling this method, you must be certain that entities no longer
    * belonging to this sub-domain have been destroyed
    */
-  virtual void readAndAllocItems() =0;
-  virtual void readAndAllocSubMeshItems() =0;
-  virtual void readAndAllocItemRelations() =0;
+  virtual void readAndAllocItems() = 0;
+  virtual void readAndAllocSubMeshItems() = 0;
+  virtual void readAndAllocItemRelations() = 0;
 
   //! After receiving messages, reads the groups
-  virtual void readGroups() =0;
+  virtual void readGroups() = 0;
 
   //! After receiving messages, reads the variable values
-  virtual void readVariables() =0;
+  virtual void readVariables() = 0;
 
   /*!
    * \internal
@@ -132,10 +132,10 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
    * ghost particles.
    * \todo To be removed
    */
-  virtual void removeSentItems() =0;
+  virtual void removeSentItems() = 0;
 
   //! Sends the exchange messages
-  virtual void processExchange() =0;
+  virtual void processExchange() = 0;
 
   /*!
    * \brief Finalizes the exchange.
@@ -143,13 +143,13 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
    * Performs the final updates following an exchange. This method is called
    * when all entities and variables have been exchanged.
    */
-  virtual void finalizeExchange() =0;
+  virtual void finalizeExchange() = 0;
 
   //! Associated family
-  virtual IItemFamily* itemFamily() =0;
+  virtual IItemFamily* itemFamily() = 0;
 
   //! Sets the options used during entity exchange
-  virtual void setParallelExchangerOption(const ParallelExchangerOptions& options) =0;
+  virtual void setParallelExchangerOption(const ParallelExchangerOptions& options) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class ARCANE_CORE_EXPORT CommonVariables
   virtual ~CommonVariables() {} //!< Releases resources.
 
  public:
-	
+
   //! Current iteration number
   Int32 globalIteration() const;
   //! Current time
@@ -75,9 +75,8 @@ class ARCANE_CORE_EXPORT CommonVariables
   Real globalOldElapsedTime() const;
 
  private:
-
  public:
-	
+
   VariableScalarInt32 m_global_iteration; //!< Current iteration
   VariableScalarReal m_global_time; //!< Current time
   VariableScalarReal m_global_deltat; //!< Global Delta T

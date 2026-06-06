@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -116,10 +116,10 @@ class CellEnvironmentVariableScalarRef
    * \brief Value of the variable for the environment index \a env_id of
    * cell \a or 0 if absent from the cell.
    */
-  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c,Int32 env_id) const;
+  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c, Int32 env_id) const;
 
  public:
-  
+
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   ARCANE_CORE_EXPORT void fillPartialValues(const DataType& value);
 
@@ -155,14 +155,14 @@ class CellEnvironmentVariableScalarRef
  * \brief Array variable on the cells of a mesh material.
  * For now, this class is only instantiated for cells
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellEnvironmentVariableArrayRef
 : public MeshMaterialVariableRef
 {
  public:
 
   using DataType = DataType_;
-  using PrivatePartType = IArrayMeshMaterialVariable<Cell,DataType>;
+  using PrivatePartType = IArrayMeshMaterialVariable<Cell, DataType>;
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
   using ThatClass = CellEnvironmentVariableArrayRef<DataType>;
@@ -207,7 +207,6 @@ class CellEnvironmentVariableArrayRef
    * Only the second component is resized.
    */
   ARCANE_CORE_EXPORT void resize(Integer dim2_size);
-
 
  protected:
 

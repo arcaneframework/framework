@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,13 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableTypeInfo.h"
+#include "arcane/core/VariableTypeInfo.h"
 
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/String.h"
 
 #include "arcane/datatype/DataStorageTypeInfo.h"
-#include "arcane/VariableInfo.h"
+#include "arcane/core/VariableInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ fullName() const
 DataStorageTypeInfo VariableTypeInfo::
 _internalDefaultDataStorage() const
 {
-  return VariableInfo::_internalGetStorageTypeInfo(m_data_type,m_dimension,m_multi_tag);
+  return VariableInfo::_internalGetStorageTypeInfo(m_data_type, m_dimension, m_multi_tag);
 }
 
 /*---------------------------------------------------------------------------*/

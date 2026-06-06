@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ namespace Arcane
 extern "C++" ARCANE_CORE_EXPORT IModuleMaster*
 arcaneCreateModuleMaster(ISubDomain* sd)
 {
-  ModuleBuildInfo mbi(sd,sd->defaultMeshHandle(),"ArcaneMasterInternal");
+  ModuleBuildInfo mbi(sd, sd->defaultMeshHandle(), "ArcaneMasterInternal");
   ModuleMaster* m = new ModuleMaster(mbi);
   return m;
 }
@@ -62,31 +62,31 @@ ModuleMaster(const ModuleBuildInfo& mb)
 {
   m_case_options_main = new CaseOptionsMain(mb.subDomain()->caseMng());
 
-  addEntryPoint(this,"ArcaneTimeLoopBegin",
+  addEntryPoint(this, "ArcaneTimeLoopBegin",
                 &ModuleMaster::timeLoopBegin,
-                IEntryPoint::WComputeLoop,IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"ArcaneTimeLoopEnd",
+                IEntryPoint::WComputeLoop, IEntryPoint::PAutoLoadBegin);
+  addEntryPoint(this, "ArcaneTimeLoopEnd",
                 &ModuleMaster::timeLoopEnd,
-                IEntryPoint::WComputeLoop,IEntryPoint::PAutoLoadEnd);
-  addEntryPoint(this,"ArcaneMasterStartInit",
+                IEntryPoint::WComputeLoop, IEntryPoint::PAutoLoadEnd);
+  addEntryPoint(this, "ArcaneMasterStartInit",
                 &ModuleMaster::masterStartInit,
-                IEntryPoint::WStartInit,IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"ArcaneMasterInit",
+                IEntryPoint::WStartInit, IEntryPoint::PAutoLoadBegin);
+  addEntryPoint(this, "ArcaneMasterInit",
                 &ModuleMaster::masterInit,
-                IEntryPoint::WInit,IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"ArcaneMasterContinueInit",
+                IEntryPoint::WInit, IEntryPoint::PAutoLoadBegin);
+  addEntryPoint(this, "ArcaneMasterContinueInit",
                 &ModuleMaster::masterContinueInit,
                 IEntryPoint::WContinueInit,
                 IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"ArcaneMasterLoopExit",
+  addEntryPoint(this, "ArcaneMasterLoopExit",
                 &ModuleMaster::_masterLoopExit,
                 IEntryPoint::WExit,
                 IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"ArcaneMasterLoopMeshChanged",
+  addEntryPoint(this, "ArcaneMasterLoopMeshChanged",
                 &ModuleMaster::_masterMeshChanged,
                 IEntryPoint::WOnMeshChanged,
                 IEntryPoint::PAutoLoadBegin);
-  addEntryPoint(this,"ArcaneMasterLoopRestore",
+  addEntryPoint(this, "ArcaneMasterLoopRestore",
                 &ModuleMaster::_masterRestore,
                 IEntryPoint::WRestore,
                 IEntryPoint::PAutoLoadBegin);
@@ -118,7 +118,7 @@ masterStartInit()
 
   // Updates the dataset options that depend on a marching table.
   ICaseMng* com = subDomain()->caseMng();
-  com->updateOptions(0.0,0.0,0);
+  com->updateOptions(0.0, 0.0, 0);
 
   _masterStartInit();
 }
@@ -147,7 +147,7 @@ masterContinueInit()
          << " time=" << m_global_old_time()
          << " dt=" << m_global_old_deltat()
          << " iteration=" << opt_iteration;
-  com->updateOptions(m_global_old_time(),m_global_old_deltat(),opt_iteration);
+  com->updateOptions(m_global_old_time(), m_global_old_deltat(), opt_iteration);
 
   _masterContinueInit();
 }
@@ -168,27 +168,26 @@ void ModuleMaster::
 timeStepInformation()
 {
   Integer precision = FloatInfo<Real>::maxDigit();
-  Integer digit = FloatInfo<Real>::maxDigit()+5;
+  Integer digit = FloatInfo<Real>::maxDigit() + 5;
 
-  info()<<" ";
+  info() << " ";
   info(0) << "***"
           << " ITERATION " << Trace::Width(8) << m_global_iteration()
-          << "  TIME " << Trace::Width(digit) << Trace::Precision(precision,m_global_time(),true)
+          << "  TIME " << Trace::Width(digit) << Trace::Precision(precision, m_global_time(), true)
           << "  LOOP " << Trace::Width(8) << m_nb_loop
-          << "  DELTAT " << Trace::Width(digit) << Trace::Precision(precision,m_global_deltat(),true)
+          << "  DELTAT " << Trace::Width(digit) << Trace::Precision(precision, m_global_deltat(), true)
           << " ***";
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 void ModuleMaster::
 timeLoopBegin()
 {
   // First loop, initializes the time and displays info
   // on consumption
-  if (m_is_first_loop){
+  if (m_is_first_loop) {
     info() << "Information on consumption (unit:second): Con(R=...,I=...,C=...)";
     info() << " R -> consumption in real time (clock) since the beginning of the computation";
     info() << " I -> real time (clock) spent during the last iteration";
@@ -204,7 +203,7 @@ timeLoopBegin()
 
   // Updates the dataset options that depend on a marching table.
   ICaseMng* com = subDomain()->caseMng();
-  com->updateOptions(m_global_time(),m_global_deltat(),m_global_iteration());
+  com->updateOptions(m_global_time(), m_global_deltat(), m_global_iteration());
 
   Real mem_used = platform::getMemoryUsed();
 
@@ -214,7 +213,7 @@ timeLoopBegin()
 
   // Infos for curves
   m_thm_mem_used = mem_used;
-  
+
   // Adds the deltat to the current time
   //info() << "[ModuleMaster::timeLoopBegin] Add deltat to the current time";
   timeIncrementation();
@@ -224,28 +223,28 @@ timeLoopBegin()
 
   //info() << "[ModuleMaster::timeLoopBegin] breakpoint_requested?";
   IOnlineDebuggerService* hyoda = platform::getOnlineDebuggerService();
- 
+
   // It is absolutely necessary that this value is the same for all subdomains
   Real cpu_time = (Real)platform::getCPUTime();
   Real elapsed_time = platform::getRealTime();
   {
     Real values[3];
-    ArrayView<Real> vals(3,values);
+    ArrayView<Real> vals(3, values);
     values[0] = cpu_time;
     values[1] = elapsed_time;
-    values[2] = (hyoda)?hyoda->loopbreak(subDomain()):0.0;
-    subDomain()->allReplicaParallelMng()->reduce(Parallel::ReduceMax,vals);
+    values[2] = (hyoda) ? hyoda->loopbreak(subDomain()) : 0.0;
+    subDomain()->allReplicaParallelMng()->reduce(Parallel::ReduceMax, vals);
     cpu_time = values[0];
     elapsed_time = values[1];
-    if (hyoda && values[2]>0.0)
-      hyoda->hook(subDomain(),values[2]);
+    if (hyoda && values[2] > 0.0)
+      hyoda->hook(subDomain(), values[2]);
   }
-  if (m_is_first_loop){
+  if (m_is_first_loop) {
     m_old_cpu_time = cpu_time;
     m_old_elapsed_time = elapsed_time;
   }
-  Real diff_cpu =  (cpu_time - m_old_cpu_time) / CLOCKS_PER_SEC;
-  Real diff_elapsed =  (elapsed_time - m_old_elapsed_time);
+  Real diff_cpu = (cpu_time - m_old_cpu_time) / CLOCKS_PER_SEC;
+  Real diff_elapsed = (elapsed_time - m_old_elapsed_time);
   m_global_old_cpu_time = diff_cpu;
   m_global_old_elapsed_time = diff_elapsed;
   m_global_cpu_time = m_global_cpu_time() + diff_cpu;
@@ -258,15 +257,15 @@ timeLoopBegin()
 
   m_old_cpu_time = cpu_time;
   m_old_elapsed_time = elapsed_time;
-  
+
   timeStepInformation();
-  
+
   Real mem_sum = 0.0;
   Real mem_min = 0.0;
   Real mem_max = 0.0;
   Int32 mem_min_rank = 0;
   Int32 mem_max_rank = 0;
-  pm->computeMinMaxSum(mem_used,mem_min,mem_max,mem_sum,mem_min_rank,mem_max_rank);
+  pm->computeMinMaxSum(mem_used, mem_min, mem_max, mem_sum, mem_min_rank, mem_max_rank);
   // Truncate to millisecond
   Int64 i_elapsed = (Int64)(m_global_elapsed_time() * 1000.0);
   Int64 i_diff_elapsed = (Int64)(diff_elapsed * 1000.0);
@@ -275,12 +274,12 @@ timeLoopBegin()
           << " Conso=(R=" << (((Real)i_elapsed) / 1000.0)
           << ",I=" << (((Real)i_diff_elapsed) / 1000.0)
           << ",C=" << ((Real)i_cpu / 1000.0)
-          << ") Mem=(" << (Int64)(mem_used/1e6)
-          << ",m=" << (Int64)(mem_min/1e6)
+          << ") Mem=(" << (Int64)(mem_used / 1e6)
+          << ",m=" << (Int64)(mem_min / 1e6)
           << ":" << mem_min_rank
-          << ",M=" << (Int64)(mem_max/1e6)
+          << ",M=" << (Int64)(mem_max / 1e6)
           << ":" << mem_max_rank
-          << ",avg=" << (Int64)(mem_sum/1e6) / pm->commSize()
+          << ",avg=" << (Int64)(mem_sum / 1e6) / pm->commSize()
           << ")";
 
   _masterBeginLoop();
@@ -304,14 +303,14 @@ timeLoopEnd()
   // this method explicitly so that it performs the outputs when it
   // wishes during the iteration.
   dumpStandardCurves();
- 
+
   // Increments the iteration counter
   m_global_iteration = m_global_iteration() + 1;
 
-  if (subDomain()->timeLoopMng()->finalTimeReached()){
-    info() <<"===============================================================";
-    info() <<"======   END OF COMPUTATION REACHED...  =======================";
-    info() <<"===============================================================";
+  if (subDomain()->timeLoopMng()->finalTimeReached()) {
+    info() << "===============================================================";
+    info() << "======   END OF COMPUTATION REACHED...  =======================";
+    info() << "===============================================================";
   }
 }
 
@@ -335,19 +334,19 @@ dumpStandardCurves()
 
   Real cpu_time = (Real)platform::getCPUTime();
   Real elapsed_time = platform::getRealTime();
-  Real diff_cpu =  (cpu_time - m_old_cpu_time) / 1000000.0;
-  Real diff_elapsed =  (elapsed_time - m_old_elapsed_time);
+  Real diff_cpu = (cpu_time - m_old_cpu_time) / 1000000.0;
+  Real diff_elapsed = (elapsed_time - m_old_elapsed_time);
   Real mem_used = platform::getMemoryUsed();
   Real global_cpu_time = diff_cpu + m_global_cpu_time();
   Real global_elapsed_time = diff_elapsed + m_global_elapsed_time();
 
   ITimeHistoryMng* thm = subDomain()->timeHistoryMng();
-  thm->addValue("TotalMemory",mem_used);
-  thm->addValue("CpuTime",diff_cpu);
-  thm->addValue("GlobalCpuTime",global_cpu_time);
-  thm->addValue("ElapsedTime",diff_elapsed);
-  thm->addValue("GlobalElapsedTime",global_elapsed_time);
-  thm->addValue(m_global_time.name(),m_thm_global_time);
+  thm->addValue("TotalMemory", mem_used);
+  thm->addValue("CpuTime", diff_cpu);
+  thm->addValue("GlobalCpuTime", global_cpu_time);
+  thm->addValue("ElapsedTime", diff_elapsed);
+  thm->addValue("GlobalElapsedTime", global_elapsed_time);
+  thm->addValue(m_global_time.name(), m_thm_global_time);
   m_has_thm_dump_at_iteration = true;
 
   Int64 i_elapsed = (Int64)(global_elapsed_time * 1000.0);
@@ -358,7 +357,7 @@ dumpStandardCurves()
           << " Conso=(R=" << (((Real)i_elapsed) / 1000.0)
           << ",I=" << (((Real)i_diff_elapsed) / 1000.0)
           << ",C=" << ((Real)i_cpu / 1000.0)
-          << ") Mem=(" << (Int64)(mem_used/1e6)
+          << ") Mem=(" << (Int64)(mem_used / 1e6)
           << ")";
 }
 
@@ -380,7 +379,7 @@ addTimeLoopService(ITimeLoopService* tls)
 void ModuleMaster::
 _masterBeginLoop()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopBeginLoop();
   }
@@ -392,7 +391,7 @@ _masterBeginLoop()
 void ModuleMaster::
 _masterEndLoop()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopEndLoop();
   }
@@ -404,7 +403,7 @@ _masterEndLoop()
 void ModuleMaster::
 _masterStartInit()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopStartInit();
   }
@@ -416,7 +415,7 @@ _masterStartInit()
 void ModuleMaster::
 _masterContinueInit()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopContinueInit();
   }
@@ -428,7 +427,7 @@ _masterContinueInit()
 void ModuleMaster::
 _masterLoopExit()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopExit();
   }
@@ -440,7 +439,7 @@ _masterLoopExit()
 void ModuleMaster::
 _masterMeshChanged()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopMeshChanged();
   }
@@ -452,7 +451,7 @@ _masterMeshChanged()
 void ModuleMaster::
 _masterRestore()
 {
-  for( Integer i=0, is=m_timeloop_services.size(); i<is; ++i ){
+  for (Integer i = 0, is = m_timeloop_services.size(); i < is; ++i) {
     ITimeLoopService* service = m_timeloop_services[i];
     service->onTimeLoopRestore();
   }
@@ -461,7 +460,7 @@ _masterRestore()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

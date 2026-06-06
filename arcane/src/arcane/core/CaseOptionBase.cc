@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ CaseOptionBase::
 CaseOptionBase(const CaseOptionBuildInfo& cob)
 : m_p(new CaseOptionBasePrivate(cob))
 {
-  cob.caseOptionList()->_internalApi()->addConfig(this,cob.element());
+  cob.caseOptionList()->_internalApi()->addConfig(this, cob.element());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,9 +245,9 @@ _setTranslatedName()
   String lang = caseDocumentFragment()->language();
   if (lang.null())
     m_p->m_name = m_p->m_true_name;
-  else{
+  else {
     String tr = m_p->m_name_translations.find(lang);
-    if (!tr.null()){
+    if (!tr.null()) {
       //cerr << "** TRANSLATION FOR " << m_p->m_true_name << " is " << tr << " in " << lang << '\n';
       m_p->m_name = tr;
     }
@@ -266,9 +266,9 @@ _setCategoryDefaultValue()
   String category = caseDocumentFragment()->defaultCategory();
   if (category.null())
     m_p->m_default_value = m_p->m_axl_default_value;
-  else{
+  else {
     String v = m_p->m_default_values.find(category);
-    if (!v.null()){
+    if (!v.null()) {
       m_p->m_default_value = v;
     }
   }
@@ -280,7 +280,7 @@ _setCategoryDefaultValue()
 String CaseOptionBase::
 translatedName(const String& lang) const
 {
-  if (!lang.null()){
+  if (!lang.null()) {
     String tr = m_p->m_name_translations.find(lang);
     if (!tr.null())
       return tr;
@@ -310,18 +310,18 @@ rootElement() const
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionBase::
-addAlternativeNodeName(const String& lang,const String& name)
+addAlternativeNodeName(const String& lang, const String& name)
 {
-  m_p->m_name_translations.add(lang,name);
+  m_p->m_name_translations.add(lang, name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionBase::
-addDefaultValue(const String& category,const String& value)
+addDefaultValue(const String& category, const String& value)
 {
-  m_p->m_default_values.add(category,value);
+  m_p->m_default_values.add(category, value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -348,8 +348,8 @@ _isInitialized() const
 void CaseOptionBase::
 _checkIsInitialized() const
 {
-  if (!_isInitialized()){
-    ARCANE_THROW(CaseOptionException,"option non initialisée '{0}'",name());
+  if (!_isInitialized()) {
+    ARCANE_THROW(CaseOptionException, "option non initialisée '{0}'", name());
   }
 }
 
@@ -367,7 +367,7 @@ _checkMinMaxOccurs(Integer nb_occur)
     return;
   }
 
-  if (nb_occur<min_occurs){
+  if (nb_occur < min_occurs) {
     StringBuilder msg = "Bad number of occurences (less than min)";
     msg += " nb_occur=";
     msg += nb_occur;
@@ -377,10 +377,10 @@ _checkMinMaxOccurs(Integer nb_occur)
     msg += m_p->m_root_element.xpathFullName();
     msg += "/";
     msg += name();
-    throw CaseOptionException(A_FUNCINFO,msg.toString(),true);
+    throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
   }
-  if (max_occurs>=0)
-    if (nb_occur>max_occurs){
+  if (max_occurs >= 0)
+    if (nb_occur > max_occurs) {
       StringBuilder msg = "Bad number of occurences (greater than max)";
       msg += " nb_occur=";
       msg += nb_occur;
@@ -390,7 +390,7 @@ _checkMinMaxOccurs(Integer nb_occur)
       msg += m_p->m_root_element.xpathFullName();
       msg += "/";
       msg += name();
-      throw CaseOptionException(A_FUNCINFO,msg.toString(),true);
+      throw CaseOptionException(A_FUNCINFO, msg.toString(), true);
     }
 }
 
@@ -406,7 +406,7 @@ _xpathFullName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

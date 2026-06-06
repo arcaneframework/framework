@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class VariableFactoryRegisterer;
  * use the assign() method or the operator operator=(). Note that
  * assignment triggers a reference update and can be costly.
  */
-template<typename DataType>
+template <typename DataType>
 class VariableRefScalarT
 : public VariableRef
 {
@@ -65,12 +65,15 @@ class VariableRefScalarT
 
 #ifdef ARCANE_DOTNET
  public:
+
 #else
  protected:
 #endif
 
   //! Default constructor
-  VariableRefScalarT() : m_private_part(nullptr) {}
+  VariableRefScalarT()
+  : m_private_part(nullptr)
+  {}
 
  public:
 
@@ -80,11 +83,11 @@ class VariableRefScalarT
 
  public:
 
-  ArrayView<DataType> asArray() { return ArrayView<DataType>(1,&(m_private_part->value())); }
-  ConstArrayView<DataType> asArray() const { return ConstArrayView<DataType>(1,&(m_private_part->value())); }
+  ArrayView<DataType> asArray() { return ArrayView<DataType>(1, &(m_private_part->value())); }
+  ConstArrayView<DataType> asArray() const { return ConstArrayView<DataType>(1, &(m_private_part->value())); }
 
  public:
-	
+
   void operator=(const DataType& v) { assign(v); }
   VariableRefScalarT<DataType>& operator=(const VariableRefScalarT<DataType>& v)
   {
@@ -105,14 +108,18 @@ class VariableRefScalarT
    * \brief Compares the variable with the value \a v.
    */
   bool isEqual(const DataType& v) const
-    { return math::isEqual(m_private_part->value(),v); }
+  {
+    return math::isEqual(m_private_part->value(), v);
+  }
 
   /*!
    * \brief Compares the variable with the value 0.
    * \sa isEqual().
    */
   bool isZero() const
-    { return math::isZero(m_private_part->value()); }
+  {
+    return math::isZero(m_private_part->value());
+  }
 
   /*!
    * \brief Compares the variable with the value \a v.
@@ -121,13 +128,17 @@ class VariableRefScalarT
    * defined in float_info<T>::nearlyEpsilon().
    */
   bool isNearlyEqual(const DataType& v) const
-    { return math::isNearlyEqual(m_private_part->value(),v); }
+  {
+    return math::isNearlyEqual(m_private_part->value(), v);
+  }
   /*!
    * \brief Compares the variable with the value 0.
    * \sa isEqual().
    */
   bool isNearlyZero() const
-    { return math::isNearlyZero(m_private_part->value()); }
+  {
+    return math::isNearlyZero(m_private_part->value());
+  }
 
   //! Assigns the value \a v to the variable
   ARCANE_CORE_EXPORT void assign(const DataType& v);
@@ -138,7 +149,6 @@ class VariableRefScalarT
   ARCANE_CORE_EXPORT void swapValues(VariableRefScalarT<DataType>& rhs);
 
  protected:
-  
  private:
 
   PrivatePartType* m_private_part;

@@ -39,7 +39,7 @@ namespace Arcane::Materials::matimpl
 {
 using ::Arcane::ItemBase;
 class ConstituentItemBase;
-}
+} // namespace Arcane::Materials::matimpl
 
 namespace Arcane::Materials
 {

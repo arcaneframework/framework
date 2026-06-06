@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,8 +54,8 @@ class ARCANE_CORE_EXPORT SubDomainBuildInfo
 {
  public:
 
-  SubDomainBuildInfo(Ref<IParallelMng> pm,Int32 index);
-  SubDomainBuildInfo(Ref<IParallelMng> pm,Int32 index,Ref<IParallelMng> all_replica_pm);
+  SubDomainBuildInfo(Ref<IParallelMng> pm, Int32 index);
+  SubDomainBuildInfo(Ref<IParallelMng> pm, Int32 index, Ref<IParallelMng> all_replica_pm);
 
  public:
 
@@ -83,7 +83,7 @@ class ARCANE_CORE_EXPORT SubDomainBuildInfo
   {
     return m_all_replica_parallel_mng;
   }
- 
+
  private:
 
   Ref<IParallelMng> m_parallel_mng;

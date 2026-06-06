@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -15,12 +15,12 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "arcane/SimpleSVGMeshExporter.h"
+#include "arcane/core/SimpleSVGMeshExporter.h"
 
 #include "arcane/utils/Iostream.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/VariableTypes.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/VariableTypes.h"
 
 #include <set>
 #include <map>
@@ -38,10 +38,15 @@ using std::ostream;
 class SimpleSVGMeshExporter::Impl
 {
  public:
-  Impl(ostream& ofile) : m_ofile(ofile){}
-  void _writeText(Real x,Real y,StringView color,StringView text,double rotation,bool do_background);
+
+  Impl(ostream& ofile)
+  : m_ofile(ofile)
+  {}
+  void _writeText(Real x, Real y, StringView color, StringView text, double rotation, bool do_background);
   void write(const CellGroup& cells);
+
  private:
+
   ostream& m_ofile;
   double m_font_size = 3.0;
 };
@@ -50,19 +55,19 @@ class SimpleSVGMeshExporter::Impl
 /*---------------------------------------------------------------------------*/
 
 void SimpleSVGMeshExporter::Impl::
-_writeText(Real x,Real y,StringView color,StringView text,double rotation,bool do_background)
+_writeText(Real x, Real y, StringView color, StringView text, double rotation, bool do_background)
 {
   // Displays a white background beneath the text.
-  if (do_background){
+  if (do_background) {
     m_ofile << "<text x='" << x << "' y='" << y << "' dominant-baseline='central' text-anchor='middle'"
             << " style='stroke:white; stroke-width:0.6em'";
-    if (rotation!=0.0)
+    if (rotation != 0.0)
       m_ofile << " transform='rotate(" << rotation << "," << x << "," << y << ")'";
     m_ofile << " font-size='" << m_font_size << "'>" << text << "</text>\n";
   }
   m_ofile << "<text x='" << x << "' y='" << y << "' dominant-baseline='central' text-anchor='middle'"
           << " fill='" << color << "'";
-  if (rotation!=0.0)
+  if (rotation != 0.0)
     m_ofile << " transform='rotate(" << rotation << "," << x << "," << y << ")'";
   m_ofile << " font-size='" << m_font_size << "'>" << text << "</text>\n";
 }
@@ -198,7 +203,7 @@ write(const CellGroup& cells)
         faces_done.insert(lid);
         // In the case of multi-dimensional meshing, it is possible
         // to have faces reduced to a point.
-        if (face.nbNode()<2)
+        if (face.nbNode() < 2)
           continue;
         Real3 node0_coord = nodes_coord[face.node(0)];
         Real3 node1_coord = nodes_coord[face.node(1)];

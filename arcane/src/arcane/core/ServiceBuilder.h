@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ namespace Arcane
 {
 namespace AxlOptionsBuilder
 {
-class Document;
+  class Document;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -97,36 +97,36 @@ enum eServiceBuilderProperties
  * via getSingleton(). The available singleton instances
  * are referenced in the code configuration file (see \ref arcanedoc_core_types_codeconfig).
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class ServiceBuilder
 {
  public:
 
   //! Instantiation to create a subdomain service.
   ServiceBuilder(ISubDomain* sd)
-  : m_service_finder(sd->application(),ServiceBuildInfoBase(sd))
+  : m_service_finder(sd->application(), ServiceBuildInfoBase(sd))
   {}
   //! Instantiation to create a subdomain service associated with the \a mesh_handle
   ServiceBuilder(const MeshHandle& mesh_handle)
-  : m_service_finder(mesh_handle.application(),ServiceBuildInfoBase(mesh_handle))
+  : m_service_finder(mesh_handle.application(), ServiceBuildInfoBase(mesh_handle))
   {}
   //! Instantiation to create a session service.
   ServiceBuilder(ISession* session)
-  : m_service_finder(session->application(),ServiceBuildInfoBase(session))
+  : m_service_finder(session->application(), ServiceBuildInfoBase(session))
   {}
   //! Instantiation to create an application service.
   ServiceBuilder(IApplication* app)
-  : m_service_finder(app,ServiceBuildInfoBase(app))
+  : m_service_finder(app, ServiceBuildInfoBase(app))
   {}
   //! Instantiation to create a dataset options service
-  ServiceBuilder(IApplication* app,ICaseOptions* opt)
-  : m_service_finder(app,ServiceBuildInfoBase(_arcaneDeprecatedGetSubDomain(opt),opt))
+  ServiceBuilder(IApplication* app, ICaseOptions* opt)
+  : m_service_finder(app, ServiceBuildInfoBase(_arcaneDeprecatedGetSubDomain(opt), opt))
   {}
-  
-  ~ServiceBuilder(){ }
+
+  ~ServiceBuilder() {}
 
  public:
-  
+
   /*!
    * \brief Creates an instance implementing the \a InterfaceType interface.
    *
@@ -137,13 +137,13 @@ class ServiceBuilder
    * in which case the function returns a null pointer if the specified service does not exist.
    */
   Ref<InterfaceType>
-  createReference(const String& name,eServiceBuilderProperties properties=SB_None)
+  createReference(const String& name, eServiceBuilderProperties properties = SB_None)
   {
     Ref<InterfaceType> mf = m_service_finder.createReference(name);
-    if (!mf){
+    if (!mf) {
       if (properties & SB_AllowNull)
         return {};
-      _throwFatal(name,properties);
+      _throwFatal(name, properties);
     }
     return mf;
   }
@@ -163,14 +163,14 @@ class ServiceBuilder
    * in which case the function returns a null pointer if the specified service does not exist.
    */
   Ref<InterfaceType>
-  createReference(const String& name,IMesh* mesh,
-                  eServiceBuilderProperties properties=SB_None)
+  createReference(const String& name, IMesh* mesh,
+                  eServiceBuilderProperties properties = SB_None)
   {
-    Ref<InterfaceType> mf = m_service_finder.createReference(name,mesh);
-    if (!mf){
+    Ref<InterfaceType> mf = m_service_finder.createReference(name, mesh);
+    if (!mf) {
       if (properties & SB_AllowNull)
         return {};
-      _throwFatal(name,properties);
+      _throwFatal(name, properties);
     }
     return mf;
   }
@@ -195,10 +195,10 @@ class ServiceBuilder
    * It is possible to change this behavior by specifying SB_AllowNull in \a properties,
    * in which case the function returns a null pointer if the specified service does not exist.
    */
-  InterfaceType* getSingleton(eServiceBuilderProperties properties=SB_None)
+  InterfaceType* getSingleton(eServiceBuilderProperties properties = SB_None)
   {
     InterfaceType* mf = m_service_finder.getSingleton();
-    if (!mf){
+    if (!mf) {
       if (properties & SB_AllowNull)
         return 0;
       _throwFatal(properties);
@@ -211,10 +211,10 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
-  createReference(ISubDomain* sd,const String& name,
-                  eServiceBuilderProperties properties=SB_None)
+  createReference(ISubDomain* sd, const String& name,
+                  eServiceBuilderProperties properties = SB_None)
   {
-    return createReference(sd,name,0,properties);
+    return createReference(sd, name, 0, properties);
   }
 
   /*!
@@ -222,13 +222,13 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
-  createReference(ISession* session,const String& name,
-                  eServiceBuilderProperties properties=SB_None)
+  createReference(ISession* session, const String& name,
+                  eServiceBuilderProperties properties = SB_None)
   {
     Ref<InterfaceType> it;
     {
       ServiceBuilder sb(session);
-      it = sb.createReference(name,properties);
+      it = sb.createReference(name, properties);
     }
     return it;
   }
@@ -238,13 +238,13 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
-  createReference(IApplication* app,const String& name,
-                  eServiceBuilderProperties properties=SB_None)
+  createReference(IApplication* app, const String& name,
+                  eServiceBuilderProperties properties = SB_None)
   {
     Ref<InterfaceType> it;
     {
       ServiceBuilder sb(app);
-      it = sb.createReference(name,properties);
+      it = sb.createReference(name, properties);
     }
     return it;
   }
@@ -254,13 +254,13 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   static Ref<InterfaceType>
-  createReference(ISubDomain* sd,const String& name,IMesh* mesh,
-                  eServiceBuilderProperties properties=SB_None)
+  createReference(ISubDomain* sd, const String& name, IMesh* mesh,
+                  eServiceBuilderProperties properties = SB_None)
   {
     Ref<InterfaceType> it;
     {
       ServiceBuilder sb(sd);
-      it = sb.createReference(name,mesh,properties);
+      it = sb.createReference(name, mesh, properties);
     }
     return it;
   }
@@ -272,6 +272,7 @@ class ServiceBuilder
   }
 
  public:
+
   /*!
    * \brief Creates an instance of every service that implements \a InterfaceType.
    *
@@ -299,13 +300,13 @@ class ServiceBuilder
    * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
-  InterfaceType* createInstance(const String& name,eServiceBuilderProperties properties=SB_None)
+  InterfaceType* createInstance(const String& name, eServiceBuilderProperties properties = SB_None)
   {
     InterfaceType* mf = m_service_finder.create(name);
-    if (!mf){
+    if (!mf) {
       if (properties & SB_AllowNull)
         return 0;
-      _throwFatal(name,properties);
+      _throwFatal(name, properties);
     }
     return mf;
   }
@@ -317,10 +318,10 @@ class ServiceBuilder
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
   static InterfaceType*
-  createInstance(ISubDomain* sd,const String& name,
-                 eServiceBuilderProperties properties=SB_None)
+  createInstance(ISubDomain* sd, const String& name,
+                 eServiceBuilderProperties properties = SB_None)
   {
-    return createInstance(sd,name,0,properties);
+    return createInstance(sd, name, 0, properties);
   }
 
   /*!
@@ -340,14 +341,14 @@ class ServiceBuilder
    * \deprecated Use createReference() instead.
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
-  InterfaceType* createInstance(const String& name,IMesh* mesh,
-                                eServiceBuilderProperties properties=SB_None)
+  InterfaceType* createInstance(const String& name, IMesh* mesh,
+                                eServiceBuilderProperties properties = SB_None)
   {
-    InterfaceType* mf = m_service_finder.create(name,mesh);
-    if (!mf){
+    InterfaceType* mf = m_service_finder.create(name, mesh);
+    if (!mf) {
       if (properties & SB_AllowNull)
         return 0;
-      _throwFatal(name,properties);
+      _throwFatal(name, properties);
     }
     return mf;
   }
@@ -357,13 +358,13 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
-  static InterfaceType* createInstance(ISession* session,const String& name,
-                                       eServiceBuilderProperties properties=SB_None)
+  static InterfaceType* createInstance(ISession* session, const String& name,
+                                       eServiceBuilderProperties properties = SB_None)
   {
     InterfaceType* it = 0;
     {
       ServiceBuilder sb(session);
-      it = sb.createInstance(name,properties);
+      it = sb.createInstance(name, properties);
     }
     return it;
   }
@@ -373,13 +374,13 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
-  static InterfaceType* createInstance(IApplication* app,const String& name,
-                                       eServiceBuilderProperties properties=SB_None)
+  static InterfaceType* createInstance(IApplication* app, const String& name,
+                                       eServiceBuilderProperties properties = SB_None)
   {
     InterfaceType* it = 0;
     {
       ServiceBuilder sb(app);
-      it = sb.createInstance(name,properties);
+      it = sb.createInstance(name, properties);
     }
     return it;
   }
@@ -389,13 +390,13 @@ class ServiceBuilder
    * \sa createInstance(const String& name,eServiceBuilderProperties properties)
    */
   ARCCORE_DEPRECATED_2019("Use createReference() instead")
-  static InterfaceType* createInstance(ISubDomain* sd,const String& name,IMesh* mesh,
-                                       eServiceBuilderProperties properties=SB_None)
+  static InterfaceType* createInstance(ISubDomain* sd, const String& name, IMesh* mesh,
+                                       eServiceBuilderProperties properties = SB_None)
   {
     InterfaceType* it = 0;
     {
       ServiceBuilder sb(sd);
-      it = sb.createInstance(name,mesh,properties);
+      it = sb.createInstance(name, mesh, properties);
     }
     return it;
   }
@@ -405,34 +406,34 @@ class ServiceBuilder
   Internal::ServiceFinderBase2T<InterfaceType> m_service_finder;
 
  private:
-  
+
   String _getErrorMessage(String wanted_name)
   {
     StringUniqueArray valid_names;
     m_service_finder.getServicesNames(valid_names);
-    if (valid_names.size()!=0)
+    if (valid_names.size() != 0)
       return String::format("no service named '{0}' found (valid values = {1})",
-                            wanted_name,String::join(", ",valid_names));
+                            wanted_name, String::join(", ", valid_names));
     // No service available
     return String::format("no service named '{0}' found and no implementation available",
                           wanted_name);
   }
 
-  void _throwFatal(const String& name,eServiceBuilderProperties properties)
+  void _throwFatal(const String& name, eServiceBuilderProperties properties)
   {
-      String err_msg = _getErrorMessage(name);
-      if (properties & SB_Collective)
-        throw ParallelFatalErrorException(A_FUNCINFO,err_msg);
-      else
-        throw FatalErrorException(A_FUNCINFO,err_msg);
+    String err_msg = _getErrorMessage(name);
+    if (properties & SB_Collective)
+      throw ParallelFatalErrorException(A_FUNCINFO, err_msg);
+    else
+      throw FatalErrorException(A_FUNCINFO, err_msg);
   }
   void _throwFatal(eServiceBuilderProperties properties)
   {
     String err_msg = "No singleton service found for that interface";
     if (properties & SB_Collective)
-      throw ParallelFatalErrorException(A_FUNCINFO,err_msg);
+      throw ParallelFatalErrorException(A_FUNCINFO, err_msg);
     else
-      throw FatalErrorException(A_FUNCINFO,err_msg);
+      throw FatalErrorException(A_FUNCINFO, err_msg);
   }
 };
 
@@ -470,24 +471,26 @@ class ARCANE_CORE_EXPORT ServiceBuilderWithOptionsBase
  *
  * \warning Experimental API. Do not use outside of %Arcane
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class ServiceBuilderWithOptions
 : private ServiceBuilderWithOptionsBase
 {
  public:
 
-  ServiceBuilderWithOptions(ICaseMng* cm) : ServiceBuilderWithOptionsBase(cm){}
+  ServiceBuilderWithOptions(ICaseMng* cm)
+  : ServiceBuilderWithOptionsBase(cm)
+  {}
 
  public:
 
   Ref<InterfaceType>
-  createReference(const String& service_name,const AxlOptionsBuilder::Document& options_doc,
-                  eServiceBuilderProperties properties=SB_None)
+  createReference(const String& service_name, const AxlOptionsBuilder::Document& options_doc,
+                  eServiceBuilderProperties properties = SB_None)
   {
     ReferenceCounter<ICaseOptions> opt(_buildCaseOptions(options_doc));
-    ServiceBuilder<InterfaceType> sbi(_application(),opt.get());
-    Ref<InterfaceType> s = sbi.createReference(service_name,properties);
-    if (s.get()){
+    ServiceBuilder<InterfaceType> sbi(_application(), opt.get());
+    Ref<InterfaceType> s = sbi.createReference(service_name, properties);
+    if (s.get()) {
       _readOptions(opt.get());
     }
     return s;

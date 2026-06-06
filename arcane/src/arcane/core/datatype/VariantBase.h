@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,6 +33,7 @@ namespace Arcane
 class ARCANE_DATATYPE_EXPORT VariantBase
 {
  public:
+
   enum eType
   {
     TReal = 0,
@@ -48,10 +49,15 @@ class ARCANE_DATATYPE_EXPORT VariantBase
   };
 
  public:
+
   VariantBase(Integer dim, eType atype)
-  : m_dim(dim), m_type(atype) {}
+  : m_dim(dim)
+  , m_type(atype)
+  {}
   virtual ~VariantBase() {}
+
  public:
+
   /*!
     \brief Variant dimension.
     
@@ -66,6 +72,7 @@ class ARCANE_DATATYPE_EXPORT VariantBase
   static eType fromDataType(eDataType type);
 
  protected:
+
   Integer m_dim; //!< variant dimension.
   eType m_type; //!< Guaranteed valid type of the value.
 };
@@ -73,7 +80,7 @@ class ARCANE_DATATYPE_EXPORT VariantBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

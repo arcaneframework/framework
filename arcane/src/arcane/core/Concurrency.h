@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -231,7 +231,7 @@ template <typename LambdaType> inline void
 arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
-  arcaneParallelFor(i0, size, ForLoopRunInfo(options),lambda_function);
+  arcaneParallelFor(i0, size, ForLoopRunInfo(options), lambda_function);
 }
 
 /*!
@@ -258,8 +258,8 @@ template <typename LambdaType, typename... Views> inline void
 arcaneParallelForVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
 {
   // Asserting every views have the size
-  typename std::tuple_element_t<0, std::tuple<Views...>>::size_type sizes[] = {views.size()...};
-  if (!std::all_of(std::begin(sizes), std::end(sizes),[&sizes](auto cur){return cur == sizes[0];}))
+  typename std::tuple_element_t<0, std::tuple<Views...>>::size_type sizes[] = { views.size()... };
+  if (!std::all_of(std::begin(sizes), std::end(sizes), [&sizes](auto cur) { return cur == sizes[0]; }))
     ARCANE_FATAL("Every views must have the same size");
 
   LambdaRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function);

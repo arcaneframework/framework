@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -124,7 +124,7 @@ setNextReference(MeshMaterialVariableRef* v)
 void MeshMaterialVariableRef::
 _throwInvalid() const
 {
-  ARCANE_THROW(InternalErrorException,"Trying to use uninitialized variable reference");
+  ARCANE_THROW(InternalErrorException, "Trying to use uninitialized variable reference");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,24 +174,24 @@ update()
 void MeshMaterialVariableRef::
 addDependCurrentTime(const VariableRef& var)
 {
-  m_global_variable->addDepend(var.variable(),IVariable::DPT_CurrentTime);
+  m_global_variable->addDepend(var.variable(), IVariable::DPT_CurrentTime);
 }
 void MeshMaterialVariableRef::
-addDependCurrentTime(const VariableRef& var,const TraceInfo& tinfo)
+addDependCurrentTime(const VariableRef& var, const TraceInfo& tinfo)
 {
-  m_global_variable->addDepend(var.variable(),IVariable::DPT_CurrentTime,tinfo);
+  m_global_variable->addDepend(var.variable(), IVariable::DPT_CurrentTime, tinfo);
 }
 
 void MeshMaterialVariableRef::
 addDependCurrentTime(const MeshMaterialVariableRef& var)
 {
-  m_global_variable->addDepend(var.m_global_variable,IVariable::DPT_CurrentTime);
+  m_global_variable->addDepend(var.m_global_variable, IVariable::DPT_CurrentTime);
 }
 
 void MeshMaterialVariableRef::
 addDependPreviousTime(const MeshMaterialVariableRef& var)
 {
-  m_global_variable->addDepend(var.m_global_variable,IVariable::DPT_PreviousTime);
+  m_global_variable->addDepend(var.m_global_variable, IVariable::DPT_PreviousTime);
 }
 
 void MeshMaterialVariableRef::
@@ -222,9 +222,9 @@ addMaterialDepend(const VariableRef& var)
 }
 
 void MeshMaterialVariableRef::
-addMaterialDepend(const VariableRef& var,const TraceInfo& tinfo)
+addMaterialDepend(const VariableRef& var, const TraceInfo& tinfo)
 {
-  m_material_variable->addDepend(var.variable(),tinfo);
+  m_material_variable->addDepend(var.variable(), tinfo);
 }
 
 void MeshMaterialVariableRef::
@@ -234,9 +234,9 @@ addMaterialDepend(const MeshMaterialVariableRef& var)
 }
 
 void MeshMaterialVariableRef::
-addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo)
+addMaterialDepend(const MeshMaterialVariableRef& var, const TraceInfo& tinfo)
 {
-  m_material_variable->addDepend(var.materialVariable(),tinfo);
+  m_material_variable->addDepend(var.materialVariable(), tinfo);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,18 +245,18 @@ addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> CellMaterialVariableScalarRef<DataType>::
+template <typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
-: CellMaterialVariableScalarRef(MaterialVariableBuildInfo(nullptr,vb))
+: CellMaterialVariableScalarRef(MaterialVariableBuildInfo(nullptr, vb))
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> CellMaterialVariableScalarRef<DataType>::
+template <typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(PrivatePartType::BuilderType::getVariableReference(vb, MatVarSpace::MaterialAndEnvironment))
 {
   _init();
 }
@@ -264,7 +264,7 @@ CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>  CellMaterialVariableScalarRef<DataType>::
+template <typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const CellMaterialVariableScalarRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
 {
@@ -279,7 +279,7 @@ CellMaterialVariableScalarRef(const CellMaterialVariableScalarRef<DataType>& rhs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>  CellMaterialVariableScalarRef<DataType>::
+template <typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(IMeshMaterialVariable* var)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(var))
 {
@@ -296,11 +296,11 @@ CellMaterialVariableScalarRef(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 _init()
 {
-  if (m_private_part){
+  if (m_private_part) {
     _setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
@@ -309,11 +309,11 @@ _init()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 refersTo(const CellMaterialVariableScalarRef<DataType>& rhs)
 {
-  if (rhs.m_private_part==m_private_part)
+  if (rhs.m_private_part == m_private_part)
     return;
   if (_isRegistered())
     unregisterVariable();
@@ -331,7 +331,7 @@ refersTo(const CellMaterialVariableScalarRef<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 updateFromInternal()
 {
@@ -341,15 +341,15 @@ updateFromInternal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> DataType
+template <typename DataType> DataType
 CellMaterialVariableScalarRef<DataType>::
-matValue(AllEnvCell c,Int32 mat_id) const
+matValue(AllEnvCell c, Int32 mat_id) const
 {
-  ENUMERATE_CELL_ENVCELL(ienvcell,c){
-    ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+  ENUMERATE_CELL_ENVCELL (ienvcell, c) {
+    ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
       MatCell mc = *imatcell;
       Int32 mid = mc.materialId();
-      if (mid==mat_id)
+      if (mid == mat_id)
         return this->operator[](imatcell);
     }
   }
@@ -359,14 +359,14 @@ matValue(AllEnvCell c,Int32 mat_id) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> DataType
+template <typename DataType> DataType
 CellMaterialVariableScalarRef<DataType>::
-envValue(AllEnvCell c,Int32 env_id) const
+envValue(AllEnvCell c, Int32 env_id) const
 {
-  ENUMERATE_CELL_ENVCELL(ienvcell,c){
+  ENUMERATE_CELL_ENVCELL (ienvcell, c) {
     EnvCell ec = *ienvcell;
     Int32 eid = ec.environmentId();
-    if (eid==env_id)
+    if (eid == env_id)
       return this->operator[](ienvcell);
   }
   return DataType();
@@ -387,11 +387,11 @@ envValue(AllEnvCell c,Int32 env_id) const
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
-fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
+fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values)
 {
-  m_private_part->fillFromArray(mat,values);
+  m_private_part->fillFromArray(mat, values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -409,11 +409,11 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values)
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
-fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArrayView indexes)
+fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values, Int32ConstArrayView indexes)
 {
-  m_private_part->fillFromArray(mat,values,indexes);
+  m_private_part->fillFromArray(mat, values, indexes);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -431,11 +431,11 @@ fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArray
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
-fillToArray(IMeshMaterial* mat,ArrayView<DataType> values)
+fillToArray(IMeshMaterial* mat, ArrayView<DataType> values)
 {
-  m_private_part->fillToArray(mat,values);
+  m_private_part->fillToArray(mat, values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -453,11 +453,11 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values)
  * }
  \endcode
 */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
-fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes)
+fillToArray(IMeshMaterial* mat, ArrayView<DataType> values, Int32ConstArrayView indexes)
 {
-  m_private_part->fillToArray(mat,values,indexes);
+  m_private_part->fillToArray(mat, values, indexes);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -468,12 +468,12 @@ fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView in
  *
  * The array \a values is resized if necessary.
  */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
-fillToArray(IMeshMaterial* mat,Array<DataType>& values)
+fillToArray(IMeshMaterial* mat, Array<DataType>& values)
 {
   values.resize(mat->cells().size());
-  fillToArray(mat,values.view());
+  fillToArray(mat, values.view());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -484,12 +484,12 @@ fillToArray(IMeshMaterial* mat,Array<DataType>& values)
  *
  * The array \a values is resized if necessary.
  */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
-fillToArray(IMeshMaterial* mat,Array<DataType>& values,Int32ConstArrayView indexes)
+fillToArray(IMeshMaterial* mat, Array<DataType>& values, Int32ConstArrayView indexes)
 {
   values.resize(mat->cells().size());
-  fillToArray(mat,values.view(),indexes);
+  fillToArray(mat, values.view(), indexes);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -498,7 +498,7 @@ fillToArray(IMeshMaterial* mat,Array<DataType>& values,Int32ConstArrayView index
 /*!
  * \brief Fills the partial and global values of the variable with the value \a value
  */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 fill(const DataType& value)
 {
@@ -512,7 +512,7 @@ fill(const DataType& value)
 /*!
  * \brief Fills the partial values of the variable with the value \a value
  */
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 fillPartialValues(const DataType& value)
 {
@@ -525,7 +525,7 @@ fillPartialValues(const DataType& value)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> MeshVariableScalarRefT<Cell,DataType>&
+template <typename DataType> MeshVariableScalarRefT<Cell, DataType>&
 CellMaterialVariableScalarRef<DataType>::
 globalVariable()
 {
@@ -538,7 +538,7 @@ globalVariable()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> const MeshVariableScalarRefT<Cell,DataType>&
+template <typename DataType> const MeshVariableScalarRefT<Cell, DataType>&
 CellMaterialVariableScalarRef<DataType>::
 globalVariable() const
 {
@@ -551,15 +551,15 @@ globalVariable() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 _setContainerView()
 {
-  if (m_private_part){
+  if (m_private_part) {
     m_container_value = m_private_part->_internalFullValuesView();
     m_value = m_container_value.data();
   }
-  else{
+  else {
     m_container_value = {};
     m_value = nullptr;
   }
@@ -572,9 +572,9 @@ _setContainerView()
 /*---------------------------------------------------------------------------*/
 
 // TODO: merge with the scalar version
-template<typename DataType> CellMaterialVariableArrayRef<DataType>::
+template <typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
-: CellMaterialVariableArrayRef(MaterialVariableBuildInfo(nullptr,vb))
+: CellMaterialVariableArrayRef(MaterialVariableBuildInfo(nullptr, vb))
 {
 }
 
@@ -582,9 +582,9 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 
 // TODO: merge with the scalar version
-template<typename DataType> CellMaterialVariableArrayRef<DataType>::
+template <typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(PrivatePartType::BuilderType::getVariableReference(vb, MatVarSpace::MaterialAndEnvironment))
 {
   _init();
 }
@@ -592,7 +592,7 @@ CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> CellMaterialVariableArrayRef<DataType>::
+template <typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(IMeshMaterialVariable* var)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(var))
 {
@@ -607,7 +607,7 @@ CellMaterialVariableArrayRef(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 // TODO: merge with the scalar version
-template<typename DataType>  CellMaterialVariableArrayRef<DataType>::
+template <typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
 , m_value(nullptr)
@@ -624,11 +624,11 @@ CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 
 // TODO: merge with the scalar version
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 _init()
 {
-  if (m_private_part){
+  if (m_private_part) {
     _setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
@@ -638,11 +638,11 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 // TODO: merge with the scalar version
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
 {
-  if (rhs.m_private_part==m_private_part)
+  if (rhs.m_private_part == m_private_part)
     return;
   if (_isRegistered())
     unregisterVariable();
@@ -662,7 +662,7 @@ refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 
 // TODO: merge with the scalar version
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 updateFromInternal()
 {
@@ -672,7 +672,7 @@ updateFromInternal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> MeshVariableArrayRefT<Cell,DataType>&
+template <typename DataType> MeshVariableArrayRefT<Cell, DataType>&
 CellMaterialVariableArrayRef<DataType>::
 globalVariable()
 {
@@ -685,7 +685,7 @@ globalVariable()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> const MeshVariableArrayRefT<Cell,DataType>&
+template <typename DataType> const MeshVariableArrayRefT<Cell, DataType>&
 CellMaterialVariableArrayRef<DataType>::
 globalVariable() const
 {
@@ -698,7 +698,7 @@ globalVariable() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 resize(Integer dim2_size)
 {
@@ -708,15 +708,15 @@ resize(Integer dim2_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> void
+template <typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 _setContainerView()
 {
-  if (m_private_part){
+  if (m_private_part) {
     m_container_value = m_private_part->_internalFullValuesView();
     m_value = m_container_value.data();
   }
-  else{
+  else {
     m_container_value = {};
     m_value = nullptr;
   }
@@ -729,7 +729,7 @@ _setContainerView()
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableScalarRef<type>;\
+  template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableScalarRef<type>; \
   template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableArrayRef<type>
 
 ARCANE_INSTANTIATE_MAT(Byte);

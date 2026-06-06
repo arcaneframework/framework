@@ -29,7 +29,7 @@ namespace MessagePassing
 {
   class IContigMachineShMemWinBaseInternal;
   class IMachineShMemWinBaseInternal;
-}
+} // namespace MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

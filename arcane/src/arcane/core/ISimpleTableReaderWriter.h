@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,22 +31,23 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Class containing two static methods
+ * \brief Class containing two static methods
  * useful for implementations.
  * 
  */
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
+
   /**
-   * @brief Static method allowing the creation of a directory with multiple
+   * \brief Static method allowing the creation of a directory with multiple
    * processes.
-   * @note This is a collective method that must be called by all processes.
+   * \note This is a collective method that must be called by all processes.
    * 
-   * @param parallel_mng The parallel manager of the current context.
-   * @param directory The directory to create.
-   * @return true If the directory was successfully created.
-   * @return false If the directory could not be created.
+   * \param parallel_mng The parallel manager of the current context.
+   * \param directory The directory to create.
+   * \return true If the directory was successfully created.
+   * \return false If the directory could not be created.
    */
   static bool createDirectoryOnlyProcess0(IParallelMng* parallel_mng, const Directory& directory)
   {
@@ -61,12 +62,12 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
   };
 
   /**
-   * @brief Static method allowing verification of file existence.
+   * \brief Static method allowing verification of file existence.
    * 
-   * @param directory The directory where the file is located.
-   * @param file The file name (with extension).
-   * @return true If the file already exists.
-   * @return false If the file does not exist.
+   * \param directory The directory where the file is located.
+   * \param file The file name (with extension).
+   * \return true If the file already exists.
+   * \return false If the file does not exist.
    */
   static bool isFileExist(const Directory& directory, const String& file)
   {
@@ -82,7 +83,7 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Class interface allowing reading a file and writing
+ * \brief Class interface allowing reading a file and writing
  * a file with or from a SimpleTableInternal.
  * 
  * The file read must preferably have been written by an implementation 
@@ -97,11 +98,13 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 {
  public:
+
   virtual ~ISimpleTableReaderWriter() = default;
 
  public:
+
   /**
-   * @brief Method allowing writing a simple table to a file.
+   * \brief Method allowing writing a simple table to a file.
    * 
    * The extension will be added by the implementation.
    * 
@@ -116,15 +119,15 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * 
    * Other SimpleTableInternal elements are not mandatory.
    * 
-   * @param dst The destination directory.
-   * @param file_name The file name (without extension).
-   * @return true If the file was successfully written.
-   * @return false If the file could not be written.
+   * \param dst The destination directory.
+   * \param file_name The file name (without extension).
+   * \return true If the file was successfully written.
+   * \return false If the file could not be written.
    */
   virtual bool writeTable(const Directory& dst, const String& file_name) = 0;
 
   /**
-   * @brief Method allowing reading a file containing a simple table.
+   * \brief Method allowing reading a file containing a simple table.
    * 
    * The extension will be added by the implementation.
    * 
@@ -149,21 +152,21 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * - m_column_sizes[*]   = m_values.dim1Size()
    * 
    * 
-   * @param src The source directory.
-   * @param file_name The file name (without extension).
-   * @return true If the file was successfully read.
-   * @return false If the file could not be read.
+   * \param src The source directory.
+   * \param file_name The file name (without extension).
+   * \return true If the file was successfully read.
+   * \return false If the file could not be read.
    */
   virtual bool readTable(const Directory& src, const String& file_name) = 0;
 
   /**
-   * @brief Method allowing clearing the content of the
+   * \brief Method allowing clearing the content of the
    * SimpleTableInternal object.
    */
   virtual void clearInternal() = 0;
 
   /**
-   * @brief Method allowing writing the table to the
+   * \brief Method allowing writing the table to the
    * standard output.
    * 
    * The writing format is free (for the csv implementation, the
@@ -172,19 +175,19 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
   virtual void print() = 0;
 
   /**
-   * @brief Method allowing retrieval of the precision currently
+   * \brief Method allowing retrieval of the precision currently
    * used for writing values.
    * 
-   * @return Integer The precision.
+   * \return Integer The precision.
    */
   virtual Integer precision() = 0;
 
   /**
-   * @brief Method allowing modification of the print precision.
+   * \brief Method allowing modification of the print precision.
    * 
    * For both the 'print()' method and the 'writetable()' method.
    * 
-   * @warning The "std::fixed" flag modifies the behavior of "setPrecision()";
+   * \warning The "std::fixed" flag modifies the behavior of "setPrecision()";
    *          if the "std::fixed" flag is disabled, the precision defines the
    *          total number of digits (before and after the comma);
    *          if the "std::fixed" flag is enabled, the precision defines the
@@ -193,20 +196,20 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    *          (for writing) or "std::numeric_limits<Real>::digits10"
    *          (for reading), which should be used without the "std::fixed" flag.
    * 
-   * @param precision The new precision.
+   * \param precision The new precision.
    */
   virtual void setPrecision(Integer precision) = 0;
 
   /**
-   * @brief Method allowing checking if the 'std::fixed' flag is
+   * \brief Method allowing checking if the 'std::fixed' flag is
    * active or not for writing values.
    * 
-   * @return true If yes.
-   * @return false If no.
+   * \return true If yes.
+   * \return false If no.
    */
   virtual bool isFixed() = 0;
   /**
-   * @brief Method allowing setting or unsetting the 'std::fixed' flag.
+   * \brief Method allowing setting or unsetting the 'std::fixed' flag.
    * 
    * For both the 'print()' method and the 'writetable()' method.
    * 
@@ -214,7 +217,7 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * the desired precision. For example, if 'setPrecision(4)' was called,
    * and 'setFixed(true)' is called, the print of '6.1' will yield '6.1000'.
    * 
-   * @warning The "std::fixed" flag modifies the behavior of "setPrecision()";
+   * \warning The "std::fixed" flag modifies the behavior of "setPrecision()";
    *          if the "std::fixed" flag is disabled, the precision defines the
    *          total number of digits (before and after the comma);
    *          if the "std::fixed" flag is enabled, the precision defines the
@@ -223,52 +226,52 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    *          (for writing) or "std::numeric_limits<Real>::digits10"
    *          (for reading), which should be used without the "std::fixed" flag.
    * 
-   * @param fixed Whether the 'std::fixed' flag should be set or not.
+   * \param fixed Whether the 'std::fixed' flag should be set or not.
    */
   virtual void setFixed(bool fixed) = 0;
 
   /**
-   * @brief Method allowing checking if the 'std::scientific' flag is
+   * \brief Method allowing checking if the 'std::scientific' flag is
    * active or not for writing values.
    * 
-   * @return true If yes.
-   * @return false If no.
+   * \return true If yes.
+   * \return false If no.
    */
   virtual bool isForcedToUseScientificNotation() = 0;
   /**
-   * @brief Method allowing setting or unsetting the 'std::scientific' flag.
+   * \brief Method allowing setting or unsetting the 'std::scientific' flag.
    * 
    * For both the 'print()' method and the 'writetable()' method.
    * 
    * This flag allows 'forcing' the display of values in scientific
    * notation during writing.
    * 
-   * @param use_scientific Whether the 'std::scientific' flag should be set or not.
+   * \param use_scientific Whether the 'std::scientific' flag should be set or not.
    */
   virtual void setForcedToUseScientificNotation(bool use_scientific) = 0;
 
   /**
-   * @brief Method allowing retrieval of the file type
+   * \brief Method allowing retrieval of the file type
    * that will be written by the implementation. ("csv" will be returned
    * for the csv implementation).
    * 
-   * @return String The file type/extension used.
+   * \return String The file type/extension used.
    */
   virtual String fileType() = 0;
 
   /**
-   * @brief Method allowing retrieval of a reference to the
+   * \brief Method allowing retrieval of a reference to the
    * SimpleTableInternal object used.
    * 
-   * @return Ref<SimpleTableInternal> A copy of the reference. 
+   * \return Ref<SimpleTableInternal> A copy of the reference. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Method allowing setting a reference to a
+   * \brief Method allowing setting a reference to a
    * SimpleTableInternal.
    * 
-   * @param simple_table_internal The reference to a SimpleTableInternal.
+   * \param simple_table_internal The reference to a SimpleTableInternal.
    */
   virtual void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
@@ -282,6 +285,3 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

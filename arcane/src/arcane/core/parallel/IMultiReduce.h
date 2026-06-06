@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +39,8 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
  public:
 
   ReduceSumOfRealHelper(bool is_strict)
-  : m_reduced_value(0.0), m_is_strict(is_strict)
+  : m_reduced_value(0.0)
+  , m_is_strict(is_strict)
   {
     if (!m_is_strict)
       m_values.add(0.0);
@@ -54,16 +56,16 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
     else
       m_values[0] += v;
   }
-  
+
   //! Clears the accumulated values.
   void clear()
   {
     m_values.clear();
   }
-  
+
   //! List of accumulated values.
   RealConstArrayView values() const { return m_values; }
-  
+
   //! Reduced value
   Real reducedValue() const { return m_reduced_value; }
 
@@ -71,6 +73,7 @@ class ARCANE_CORE_EXPORT ReduceSumOfRealHelper
   void setReducedValue(Real v) { m_reduced_value = v; }
 
  private:
+
   SharedArray<Real> m_values;
   Real m_reduced_value;
   bool m_is_strict;
@@ -99,22 +102,22 @@ class ARCANE_CORE_EXPORT IMultiReduce
 {
  public:
 
-  virtual ~IMultiReduce(){} //!< Frees resources
+  virtual ~IMultiReduce() {} //!< Frees resources
 
  public:
 
   static IMultiReduce* create(IParallelMng* pm);
 
  public:
-  
+
   //! Executes the reductions
-  virtual void execute() =0;
+  virtual void execute() = 0;
 
   //! Indicates if strict mode is used
-  virtual bool isStrict() const =0;
+  virtual bool isStrict() const = 0;
 
   //! Sets the strict mode
-  virtual void setStrict(bool is_strict) =0;
+  virtual void setStrict(bool is_strict) = 0;
 
  public:
 
@@ -125,13 +128,13 @@ class ARCANE_CORE_EXPORT IMultiReduce
    * be explicitly destroyed. It will be when this instance is
    * destroyed.
    */
-  virtual ReduceSumOfRealHelper* getSumOfReal(const String& name) =0;
+  virtual ReduceSumOfRealHelper* getSumOfReal(const String& name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

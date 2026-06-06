@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,25 +31,32 @@ namespace Arcane::properties
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class ConfigurationPropertyReader
 : public PropertyVisitor<T>
 {
  public:
-  ConfigurationPropertyReader(IConfigurationSection* cs,T& instance)
-  : m_configuration_section(cs), m_instance(instance){}
+
+  ConfigurationPropertyReader(IConfigurationSection* cs, T& instance)
+  : m_configuration_section(cs)
+  , m_instance(instance)
+  {}
+
  private:
+
   IConfigurationSection* m_configuration_section;
   T& m_instance;
+
  public:
+
   void visit(const PropertySettingBase<T>& s) override
   {
     const String& pname = s.setting()->name();
-    String value = m_configuration_section->value(pname,String());
+    String value = m_configuration_section->value(pname, String());
     if (value.null())
       return;
-    s.setFromString(value,m_instance);
-    s.print(std::cout,m_instance);
+    s.setFromString(value, m_instance);
+    s.print(std::cout, m_instance);
   }
 };
 
@@ -62,15 +69,15 @@ class ConfigurationPropertyReader
  * The property values must be in a subsection
  * of \a c whose name is that of the class \a T.
  */
-template<typename T> inline void
-readFromConfiguration(IConfiguration* c,T& instance)
+template <typename T> inline void
+readFromConfiguration(IConfiguration* c, T& instance)
 {
   if (!c)
     return;
-  const char* instance_property_name = T :: propertyClassName();
+  const char* instance_property_name = T ::propertyClassName();
   ScopedPtrT<IConfigurationSection> cs(c->createSection(instance_property_name));
-  ConfigurationPropertyReader reader(cs.get(),instance);
-  T :: applyPropertyVisitor(reader);
+  ConfigurationPropertyReader reader(cs.get(), instance);
+  T ::applyPropertyVisitor(reader);
 }
 
 /*---------------------------------------------------------------------------*/

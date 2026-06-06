@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 #include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/datatype/ArrayVariant.h"
@@ -20,15 +19,13 @@
 #include "arcane/expr/OperatorMng.h"
 #include "arcane/expr/BadOperationException.h"
 
-#include "arcane/MathUtils.h"
+#include "arcane/core/MathUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,21 +36,25 @@ ARCANE_BEGIN_NAMESPACE
 class ArrayOperator
 {
  public:
+
   virtual ~ArrayOperator() {}
+
  public:
-  virtual void assign(ExpressionResult* res, ArrayVariant* var)=0;
-  virtual void evaluate(ExpressionResult* res, ArrayVariant* var)=0;
+
+  virtual void assign(ExpressionResult* res, ArrayVariant* var) = 0;
+  virtual void evaluate(ExpressionResult* res, ArrayVariant* var) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T>
+template <class T>
 class ArrayOperatorT
 : public ArrayOperator
 {
  public:
-  virtual void assign(ExpressionResult* res,ArrayVariant* var)
+
+  virtual void assign(ExpressionResult* res, ArrayVariant* var)
   {
     // Note that the size of the variable may be larger
     // than that of the result following the retained indices (cf WhereExpression)
@@ -67,18 +68,18 @@ class ArrayOperatorT
     var_res.data()->value(var_val);
     IntegerConstArrayView res_indices = res->indices();
 
-    for( Integer i=0 ; i<size ; ++i)
+    for (Integer i = 0; i < size; ++i)
       var_val[res_indices[i]] = res_val[i];
-  }  
+  }
 
-  virtual void evaluate(ExpressionResult* res,ArrayVariant* var)
+  virtual void evaluate(ExpressionResult* res, ArrayVariant* var)
   {
     // Note that the size of the variable may be larger
     // than that of the result following the retained indices (cf WhereExpression)
     Integer size = res->size();
     Integer vsize = var->size();
     cerr << "** SIZE res=" << size << " var=" << vsize << " res=" << res << '\n';
-    Integer max_size = math::min(size,vsize);
+    Integer max_size = math::min(size, vsize);
     //if (size > var->size())
     //throw BadOperandException("VariableOperatorT::evaluate");
 
@@ -94,7 +95,7 @@ class ArrayOperatorT
     var_res.data()->value(var_val);
     IntegerConstArrayView res_indices = res->indices();
 
-    for( Integer i=0 ; i<max_size ; ++i)
+    for (Integer i = 0; i < max_size; ++i)
       res_val[i] = var_val[res_indices[i]];
   }
 };
@@ -108,13 +109,13 @@ ArrayExpressionImpl(ArrayVariant* variant)
 , m_variant(variant)
 , m_op(0)
 {
-  switch(variant->type()){
+  switch (variant->type()) {
   case VariantBase::TReal:
     m_op = new ArrayOperatorT<Real>();
     break;
   default:
     throw BadOperationException("ArrayExpressionImpl::ArrayExpressionImpl",
-				"bad type",variant->type());
+                                "bad type", variant->type());
   }
 }
 
@@ -143,12 +144,12 @@ assign(IExpressionImpl* expr)
 /*---------------------------------------------------------------------------*/
 
 void ArrayExpressionImpl::
-assign(IExpressionImpl* expr,ConstArrayView<Integer> indices)
+assign(IExpressionImpl* expr, ConstArrayView<Integer> indices)
 {
   ExpressionResult result(indices);
   result.allocate(m_variant->type());
   expr->apply(&result);
-  m_op->assign(&result, m_variant);  
+  m_op->assign(&result, m_variant);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,7 +173,7 @@ vectorSize() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,7 +10,6 @@
 /* Implementation of a literal expression containing a scalar.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #include "arcane/utils/ArcanePrecomp.h"
 
@@ -46,7 +45,7 @@ apply(ExpressionResult* result)
   ScalarVariant::eType type = m_value.type();
   LitteralOperator* op = m_op_mng->find(this, type);
   if (!op)
-    throw BadOperationException("LitteralExpressionImpl::apply","",type);
+    throw BadOperationException("LitteralExpressionImpl::apply", "", type);
 
   op->evaluate(result, m_value);
 

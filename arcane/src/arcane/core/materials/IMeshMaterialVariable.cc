@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename TrueType> MaterialVariableTypeInfo
+template <typename TrueType> MaterialVariableTypeInfo
 MeshMaterialVariableBuildTraits<TrueType>::
 _buildVarTypeInfo(MatVarSpace space)
 {
@@ -43,7 +43,7 @@ _buildVarTypeInfo(MatVarSpace space)
   int dim = TrueType::dimension();
   eItemKind ik = ItemTraitsT<ItemType>::kind();
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return MaterialVariableTypeInfo(ik,dt,dim,space);
+  return MaterialVariableTypeInfo(ik, dt, dim, space);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -57,7 +57,7 @@ _buildVarTypeInfo(MatVarSpace space)
  */
 template <typename TrueType> TrueType*
 MeshMaterialVariableBuildTraits<TrueType>::
-getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+getVariableReference(const MaterialVariableBuildInfo& v, MatVarSpace mvs)
 {
   MaterialVariableTypeInfo x = _buildVarTypeInfo(mvs);
 
@@ -69,10 +69,10 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
   IMeshMaterialMng* mat_mng = v.materialMng();
   // TODO: check if a lock is necessary
   if (!mat_mng)
-    mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
+    mat_mng = IMeshMaterialMng::getReference(mesh_handle, true);
 
   IMeshMaterialVariableFactoryMng* vm = mat_mng->variableFactoryMng();
-  IMeshMaterialVariable* var = vm->createVariable(x.fullName(),v);
+  IMeshMaterialVariable* var = vm->createVariable(x.fullName(), v);
 
   auto* true_var = dynamic_cast<TrueType*>(var);
   ARCANE_CHECK_POINTER(true_var);
@@ -103,8 +103,8 @@ getVariableReference(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IScalarMeshMaterialVariable<Cell,type>>; \
-  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IArrayMeshMaterialVariable<Cell,type>>
+  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IScalarMeshMaterialVariable<Cell, type>>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IArrayMeshMaterialVariable<Cell, type>>
 
 ARCANE_INSTANTIATE_MAT(Byte);
 ARCANE_INSTANTIATE_MAT(Int8);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
   void search(bool is_phase1);
 
   //! Prints the option value in the language \a lang, to the stream \a o
-  virtual void print(const String& lang,std::ostream& o) const =0;
+  virtual void print(const String& lang, std::ostream& o) const = 0;
 
   //! Case manager
   ICaseMng* caseMng() const;
@@ -86,11 +86,11 @@ class ARCANE_CORE_EXPORT CaseOptionBase
   //! Sub-domain manager
   ARCCORE_DEPRECATED_2019("Do not use subDomain(). Try to get subDomain from an other way.")
   ISubDomain* subDomain() const;
-  
+
   //! Returns the document manager
   ARCANE_DEPRECATED_REASON("Y2023: use caseMng()->caseDocument() instead.")
   ICaseDocument* caseDocument() const;
-  
+
   //! Returns the document associated with this option
   ICaseDocumentFragment* caseDocumentFragment() const;
 
@@ -99,9 +99,9 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 
   //! Returns the root element of the DOM
   XmlNode rootElement() const;
-  
+
   //! Returns the function linked to this option or `nullptr` if none exists
-  virtual ICaseFunction* function() const =0;
+  virtual ICaseFunction* function() const = 0;
 
   //! Minimum number of occurrences (for a multiple option)
   Integer minOccurs() const;
@@ -119,7 +119,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
    * option value. This value will then be normally accessible via
    * the operator() method.
    */
-  virtual void updateFromFunction(Real current_time,Integer current_iteration) =0;
+  virtual void updateFromFunction(Real current_time, Integer current_iteration) = 0;
 
   /*!
     \brief Adds a translation for the option name.
@@ -128,13 +128,13 @@ class ARCANE_CORE_EXPORT CaseOptionBase
     If a translation already exists for this language, it is replaced by
     this one.
   */
-  void addAlternativeNodeName(const String& lang,const String& name);
+  void addAlternativeNodeName(const String& lang, const String& name);
 
   //! Adds the default value \a value to the category \a category
-  void addDefaultValue(const String& category,const String& value);
+  void addDefaultValue(const String& category, const String& value);
 
   //! Applies the visitor to this option
-  virtual void visit(ICaseDocumentVisitor* visitor) const =0;
+  virtual void visit(ICaseDocumentVisitor* visitor) const = 0;
 
   //! Throws an exception if the option has not been initialized.
   void checkIsInitialized() const { _checkIsInitialized(); }
@@ -148,7 +148,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 
  protected:
 
-  virtual void _search(bool is_phase1) =0;
+  virtual void _search(bool is_phase1) = 0;
   void _setIsInitialized();
   bool _isInitialized() const;
   void _checkIsInitialized() const;
@@ -167,7 +167,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
    *
    * The copy constructor is private because the option should not be
    * copied, notably due to the ICaseFunction which is unique.
-   */  
+   */
   CaseOptionBase(const CaseOptionBase& from) = delete;
   //! Copy assignment operator
   CaseOptionBase& operator=(const CaseOptionBase& from) = delete;

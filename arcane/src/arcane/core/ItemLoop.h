@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,63 +38,77 @@ namespace Arcane
 namespace Loop
 {
 
-/*!
+  /*!
  * \internal
  * \brief Entity loop functor that allows for the removal of
  * indirections if the local indices of a view are consecutive.
  */
-template<typename IterType,typename Lambda> inline void
-_InternalSimpleItemLoop(ItemVectorView view,const Lambda& lambda)
-{
-  if (view.size()==0)
-    return;
-  bool is_contigous = view.indexes().isContigous();
-  //is_contigous = false;
-  if (is_contigous){
-    Int32 x0 = view.localIds()[0];
-    // Assuming iterations are independent
-    ARCANE_PRAGMA_IVDEP
-    for( Int32 i=0, n=view.size(); i<n; ++i )
-      lambda(IterType(x0+i));
-  }
-  else{
-    ENUMERATE_ITEM(iitem,view){
-      lambda(IterType(iitem.localId()));
+  template <typename IterType, typename Lambda> inline void
+  _InternalSimpleItemLoop(ItemVectorView view, const Lambda& lambda)
+  {
+    if (view.size() == 0)
+      return;
+    bool is_contigous = view.indexes().isContigous();
+    //is_contigous = false;
+    if (is_contigous) {
+      Int32 x0 = view.localIds()[0];
+      // Assuming iterations are independent
+      ARCANE_PRAGMA_IVDEP
+      for (Int32 i = 0, n = view.size(); i < n; ++i)
+        lambda(IterType(x0 + i));
+    }
+    else {
+      ENUMERATE_ITEM (iitem, view) {
+        lambda(IterType(iitem.localId()));
+      }
     }
   }
-}
 
   /*!
  * \brief Template class to encapsulate a loop over entities.
  */
-template<typename ItemType>
-class ItemLoopFunctor
-{
- public:
-  typedef typename ItemType::Index IterType;
-  typedef ItemVectorViewT<ItemType> VectorViewType;
-  typedef ItemGroupT<ItemType> ItemGroupType;
-  typedef ItemLoopFunctor<ItemType> ThatClass;
- private:
-  ItemLoopFunctor(ItemVectorView items)
-  : m_items(items){}
- public:
-  static ThatClass create(const ItemGroupType& items)
-  { return ThatClass(items.view()); }
-  static ThatClass create(VectorViewType items)
-  { return ThatClass(items); }
- public:
-  template<typename Lambda>
-  void operator<<(Lambda&& lambda)
+  template <typename ItemType>
+  class ItemLoopFunctor
   {
-    _InternalSimpleItemLoop<IterType>(m_items,lambda);
-  }
- private:
-  ItemVectorView m_items;
-};
+   public:
 
-typedef ItemLoopFunctor<Cell> ItemLoopFunctorCell;
-typedef ItemLoopFunctor<Node> ItemLoopFunctorNode;
+    typedef typename ItemType::Index IterType;
+    typedef ItemVectorViewT<ItemType> VectorViewType;
+    typedef ItemGroupT<ItemType> ItemGroupType;
+    typedef ItemLoopFunctor<ItemType> ThatClass;
+
+   private:
+
+    ItemLoopFunctor(ItemVectorView items)
+    : m_items(items)
+    {}
+
+   public:
+
+    static ThatClass create(const ItemGroupType& items)
+    {
+      return ThatClass(items.view());
+    }
+    static ThatClass create(VectorViewType items)
+    {
+      return ThatClass(items);
+    }
+
+   public:
+
+    template <typename Lambda>
+    void operator<<(Lambda&& lambda)
+    {
+      _InternalSimpleItemLoop<IterType>(m_items, lambda);
+    }
+
+   private:
+
+    ItemVectorView m_items;
+  };
+
+  typedef ItemLoopFunctor<Cell> ItemLoopFunctorCell;
+  typedef ItemLoopFunctor<Node> ItemLoopFunctorNode;
 
 } // End of namespace Loop
 
@@ -134,8 +148,8 @@ typedef ItemLoopFunctor<Node> ItemLoopFunctorNode;
  * \warning The syntax and semantics of this macro are experimental.
  * This macro should only be used for testing.
  */
-#define ENUMERATE_ITEM_LAMBDA(item_type,iter,container) \
-  Arcane::Loop:: ItemLoopFunctor ## item_type :: create ( (container) ) << [=]( Arcane::Loop:: ItemLoopFunctor ## item_type :: IterType iter)
+#define ENUMERATE_ITEM_LAMBDA(item_type, iter, container) \
+  Arcane::Loop::ItemLoopFunctor##item_type ::create((container)) << [=](Arcane::Loop::ItemLoopFunctor##item_type ::IterType iter)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

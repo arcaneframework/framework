@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,11 +25,11 @@ namespace Arcane
 {
 namespace
 {
-IMemoryAllocator* _getAllocator()
-{
-  return MemoryUtils::getDefaultDataAllocator();
-}
-}
+  IMemoryAllocator* _getAllocator()
+  {
+    return MemoryUtils::getDefaultDataAllocator();
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids)
 {
   _init();
   m_local_ids.resize(local_ids.size());
-  MemoryUtils::copy(m_local_ids.span(),Span<const Int32>(local_ids));
+  MemoryUtils::copy(m_local_ids.span(), Span<const Int32>(local_ids));
 }
 
 /*---------------------------------------------------------------------------*/

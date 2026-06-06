@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -53,17 +53,17 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
  public:
 
   //! Name of the variable.
-  virtual String name() const =0;
+  virtual String name() const = 0;
 
   //! Associated global variable on the mesh.
-  virtual IVariable* globalVariable() const =0;
+  virtual IVariable* globalVariable() const = 0;
 
   /*!
    * \internal
    * \brief Builds the variable information.
    * For internal use in Arcane.
    */
-  virtual void buildFromManager(bool is_continue) =0;
+  virtual void buildFromManager(bool is_continue) = 0;
 
   /*!
    * \brief Synchronizes references.
@@ -72,14 +72,14 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    * with the current value of the variable. This method is called
    * automatically when the number of elements of an array variable changes.
    */
-  virtual void syncReferences() =0;
+  virtual void syncReferences() = 0;
 
   /*!
    * \brief Adds a reference to this variable
    *
    * Precondition: var_ref must not already reference a variable.
    */
-  virtual void addVariableRef(MeshMaterialVariableRef* var_ref) =0;
+  virtual void addVariableRef(MeshMaterialVariableRef* var_ref) = 0;
 
   /*!
    * \brief Removes a reference to this variable
@@ -87,26 +87,26 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    * Precondition: var_ref must reference this variable (a call to addVariableRef()
    * must have been made on this variable).
    */
-  virtual void removeVariableRef(MeshMaterialVariableRef* var_ref) =0;
+  virtual void removeVariableRef(MeshMaterialVariableRef* var_ref) = 0;
 
   //! \internal
-  virtual MeshMaterialVariableRef* firstReference() const =0;
+  virtual MeshMaterialVariableRef* firstReference() const = 0;
 
   /*!
    * \internal
    * \brief Variable containing the specific values of the material mat.
    */
-  virtual IVariable* materialVariable(IMeshMaterial* mat) =0;
+  virtual IVariable* materialVariable(IMeshMaterial* mat) = 0;
 
   /*!
    * \brief Indicates whether the variable value should be kept after a change in the list of materials.
    */
-  virtual void setKeepOnChange(bool v) =0;
+  virtual void setKeepOnChange(bool v) = 0;
 
   /*!
    * \brief Indicates whether the variable value should be kept after a change in the list of materials.
    */
-  virtual bool keepOnChange() const =0;
+  virtual bool keepOnChange() const = 0;
 
   /*!
    * \brief Synchronizes the variable.
@@ -115,24 +115,24 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    * It is essential that all ghost cells already have the correct
    * number of materials.
    */
-  virtual void synchronize() =0;
+  virtual void synchronize() = 0;
 
-  virtual void synchronize(MeshMaterialVariableSynchronizerList& sync_list) =0;
+  virtual void synchronize(MeshMaterialVariableSynchronizerList& sync_list) = 0;
 
   /*!
    * \brief Dumps the variable values to the stream ostr.
    */
-  virtual void dumpValues(std::ostream& ostr) =0;
+  virtual void dumpValues(std::ostream& ostr) = 0;
 
   /*!
    * \brief Dumps the variable values for the view view to the stream ostr.
    */
-  virtual void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) =0;
+  virtual void dumpValues(std::ostream& ostr, AllEnvCellVectorView view) = 0;
 
   /*!
    * \brief Fills partial values with the value of the associated global mesh.
    */
-  virtual void fillPartialValuesWithGlobalValues() =0;
+  virtual void fillPartialValuesWithGlobalValues() = 0;
 
   /*!
    * \brief Fills partial values with the value of the super mesh.
@@ -143,13 +143,13 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    * with the global mesh's value (this makes this method equivalent to
    * fillGlobalValuesWithGlobalValues()).
    */
-  virtual void fillPartialValuesWithSuperValues(Int32 level) =0;
+  virtual void fillPartialValuesWithSuperValues(Int32 level) = 0;
 
   //! Serializes the variable for local ID entities ids.
-  virtual void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) =0;
+  virtual void serialize(ISerializer* sbuffer, Int32ConstArrayView ids) = 0;
 
   //! Variable definition space (material+environment or environment only)
-  virtual MatVarSpace space() const =0;
+  virtual MatVarSpace space() const = 0;
 
  public:
 
@@ -164,47 +164,47 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    *
    * Precondition: computeFunction() != 0
    */
-  virtual void update(IMeshMaterial* mat) =0;
+  virtual void update(IMeshMaterial* mat) = 0;
 
   /*! \brief Indicates that the variable has just been updated.
    *
    * For correct dependency management, this property must be called every
    * time a variable has been updated.
    */
-  virtual void setUpToDate(IMeshMaterial* mat) =0;
+  virtual void setUpToDate(IMeshMaterial* mat) = 0;
 
   //! Time when the variable was updated
-  virtual Int64 modifiedTime(IMeshMaterial* mat) =0;
+  virtual Int64 modifiedTime(IMeshMaterial* mat) = 0;
 
   //! Adds var to the dependency list
-  virtual void addDepend(IMeshMaterialVariable* var) =0;
+  virtual void addDepend(IMeshMaterialVariable* var) = 0;
 
   //! Adds var to the dependency list with trace info tinfo
-  virtual void addDepend(IMeshMaterialVariable* var,const TraceInfo& tinfo) =0;
+  virtual void addDepend(IMeshMaterialVariable* var, const TraceInfo& tinfo) = 0;
 
   //! Adds var to the dependency list
-  virtual void addDepend(IVariable* var) =0;
+  virtual void addDepend(IVariable* var) = 0;
 
   //! Adds var to the dependency list with trace info tinfo
-  virtual void addDepend(IVariable* var,const TraceInfo& tinfo) =0;
+  virtual void addDepend(IVariable* var, const TraceInfo& tinfo) = 0;
 
   /*! \brief Removes var from the dependency list
    */
-  virtual void removeDepend(IMeshMaterialVariable* var) =0;
+  virtual void removeDepend(IMeshMaterialVariable* var) = 0;
 
   /*! \brief Removes var from the dependency list
    */
-  virtual void removeDepend(IVariable* var) =0;
+  virtual void removeDepend(IVariable* var) = 0;
 
   /*! \brief Sets the variable's recalculation function.
    *
    * If a recalculation function already existed, it is destroyed
    * and replaced by this one.
    */
-  virtual void setComputeFunction(IMeshMaterialVariableComputeFunction* v) =0;
+  virtual void setComputeFunction(IMeshMaterialVariableComputeFunction* v) = 0;
 
   //! Function used to update the variable
-  virtual IMeshMaterialVariableComputeFunction* computeFunction() =0;
+  virtual IMeshMaterialVariableComputeFunction* computeFunction() = 0;
 
   /*!
    * \brief Dependency information.
@@ -213,12 +213,12 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
    * and the array mat_infos with those on material variables.
    */
   virtual void dependInfos(Array<VariableDependInfo>& infos,
-                           Array<MeshMaterialVariableDependInfo>& mat_infos) =0;
+                           Array<MeshMaterialVariableDependInfo>& mat_infos) = 0;
   //@}
 
  public:
 
-  virtual IMeshMaterialVariableInternal* _internalApi() =0;
+  virtual IMeshMaterialVariableInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -227,12 +227,13 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
  * \internal
  * \brief Class for managing the creation of the concrete type of the material variable.
  */
-template<typename TrueType>
+template <typename TrueType>
 class MeshMaterialVariableBuildTraits
 {
  public:
+
   static ARCANE_CORE_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo(MatVarSpace space);
-  static ARCANE_CORE_EXPORT TrueType* getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
+  static ARCANE_CORE_EXPORT TrueType* getVariableReference(const MaterialVariableBuildInfo& v, MatVarSpace mvs);
   static ARCANE_CORE_EXPORT TrueType* getVariableReference(IMeshMaterialVariable* var);
 };
 

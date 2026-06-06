@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -53,14 +53,14 @@ class ARCANE_CORE_EXPORT IMeshCompactMng
  public:
 
   //! Associated mesh
-  virtual IMesh* mesh() const =0;
+  virtual IMesh* mesh() const = 0;
 
   /*!
    * \brief Starts a compaction on all families of the mesh.
    *
    * \pre compacter()==nullptr.
    */
-  virtual IMeshCompacter* beginCompact() =0;
+  virtual IMeshCompacter* beginCompact() = 0;
 
   /*!
    * \brief Starts a compaction for the entity family \a family
@@ -68,7 +68,7 @@ class ARCANE_CORE_EXPORT IMeshCompactMng
    * \pre compacter()==nullptr.
    *
    */
-  virtual IMeshCompacter* beginCompact(IItemFamily* family) =0;
+  virtual IMeshCompacter* beginCompact(IItemFamily* family) = 0;
 
   /*!
    * \brief Signals that the compaction is finished.
@@ -76,7 +76,7 @@ class ARCANE_CORE_EXPORT IMeshCompactMng
    * This allows the deallocation of structures associated with the compaction.
    * \post exchanger()==nullptr.
    */
-  virtual void endCompact() =0;
+  virtual void endCompact() = 0;
 
   /*!
    * \brief Current active compacter.
@@ -84,7 +84,7 @@ class ARCANE_CORE_EXPORT IMeshCompactMng
    * The compacter is non-null only if we are between a beginCompact()
    * and an endCompact()
    */
-  virtual IMeshCompacter* compacter() =0;
+  virtual IMeshCompacter* compacter() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -65,12 +65,11 @@ class ItemBase;
 class MutableItemBase;
 namespace impl
 {
-using ItemBase = ::Arcane::ItemBase;
-using MutableItemBase = ::Arcane::MutableItemBase;
-template<int Extent = DynExtent> class ItemIndexedListView;
-class ItemLocalIdListContainerView;
-}
-
+  using ItemBase = ::Arcane::ItemBase;
+  using MutableItemBase = ::Arcane::MutableItemBase;
+  template <int Extent = DynExtent> class ItemIndexedListView;
+  class ItemLocalIdListContainerView;
+} // namespace impl
 
 class IMesh;
 class IPrimaryMesh;
@@ -80,7 +79,7 @@ class IDoFFamily;
 
 class ItemLocalId;
 class ItemTypeId;
-template<typename T> class ItemLocalIdT;
+template <typename T> class ItemLocalIdT;
 using NodeLocalId = ItemLocalIdT<Node>;
 using EdgeLocalId = ItemLocalIdT<Edge>;
 using FaceLocalId = ItemLocalIdT<Face>;
@@ -95,25 +94,25 @@ class ItemInternalVectorView;
 class ItemIndexArrayView;
 class ItemLocalIdListView;
 
-template<typename T> class ItemLocalIdListViewT;
-template<typename ItemType> using ItemLocalIdViewT ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdListView' type instead") = ItemLocalIdListViewT<ItemType>;
+template <typename T> class ItemLocalIdListViewT;
+template <typename ItemType> using ItemLocalIdViewT ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdListView' type instead") = ItemLocalIdListViewT<ItemType>;
 
 class ItemGroup;
 class ItemGroupImpl;
-template<typename T> class ItemGroupT;
+template <typename T> class ItemGroupT;
 
 class ItemPairGroup;
-template<typename ItemKind,typename SubItemKind> class ItemPairGroupT;
+template <typename ItemKind, typename SubItemKind> class ItemPairGroupT;
 
 class ItemVector;
-template<typename T> class ItemVectorT;
+template <typename T> class ItemVectorT;
 
 class ItemVectorViewConstIterator;
-template<typename ItemType>
+template <typename ItemType>
 class ItemVectorViewConstIteratorT;
 
 class ItemConnectedListViewConstIterator;
-template<typename ItemType>
+template <typename ItemType>
 class ItemConnectedListViewConstIteratorT;
 
 // (April 2022) Creates a typedef of 'ItemLocalIdViewT' to 'ItemLocalIdView'
@@ -121,43 +120,43 @@ class ItemConnectedListViewConstIteratorT;
 template <typename ItemType>
 using ItemLocalIdView ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdViewT' instead") = ItemLocalIdListViewT<ItemType>;
 
-template<typename ItemType1,typename ItemType2>
+template <typename ItemType1, typename ItemType2>
 class IndexedItemConnectivityViewT;
 
 // (April 2022) Creates a typedef of 'IndexedItemConnectivityView' to 'IndexedItemConnectivityViewT'
 // for compatibility with existing code. To be removed as soon as possible.
-template<typename ItemType1,typename ItemType2>
-using IndexedItemConnectivityView ARCANE_DEPRECATED_REASON("Use 'IndexedItemConnectivityViewT' instead") = IndexedItemConnectivityViewT<ItemType1,ItemType2>;
+template <typename ItemType1, typename ItemType2>
+using IndexedItemConnectivityView ARCANE_DEPRECATED_REASON("Use 'IndexedItemConnectivityViewT' instead") = IndexedItemConnectivityViewT<ItemType1, ItemType2>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Group of nodes connected to nodes
-typedef ItemPairGroupT<Node,Node> NodeNodeGroup;
+typedef ItemPairGroupT<Node, Node> NodeNodeGroup;
 //! Group of edges connected to nodes
-typedef ItemPairGroupT<Edge,Node> EdgeNodeGroup;
+typedef ItemPairGroupT<Edge, Node> EdgeNodeGroup;
 //! Group of faces connected to nodes
-typedef ItemPairGroupT<Face,Node> FaceNodeGroup;
+typedef ItemPairGroupT<Face, Node> FaceNodeGroup;
 //! Group of cells connected to nodes
-typedef ItemPairGroupT<Cell,Node> CellNodeGroup;
+typedef ItemPairGroupT<Cell, Node> CellNodeGroup;
 
 //! Group of nodes connected to faces
-typedef ItemPairGroupT<Node,Face> NodeFaceGroup;
+typedef ItemPairGroupT<Node, Face> NodeFaceGroup;
 //! Group of edges connected to faces
-typedef ItemPairGroupT<Edge,Face> EdgeFaceGroup;
+typedef ItemPairGroupT<Edge, Face> EdgeFaceGroup;
 //! Group of faces connected to faces
-typedef ItemPairGroupT<Face,Face> FaceFaceGroup;
+typedef ItemPairGroupT<Face, Face> FaceFaceGroup;
 //! Group of cells connected to faces
-typedef ItemPairGroupT<Cell,Face> CellFaceGroup;
+typedef ItemPairGroupT<Cell, Face> CellFaceGroup;
 
 //! Group of nodes connected to cells
-typedef ItemPairGroupT<Node,Cell> NodeCellGroup;
+typedef ItemPairGroupT<Node, Cell> NodeCellGroup;
 //! Group of edges connected to cells
-typedef ItemPairGroupT<Edge,Cell> EdgeCellGroup;
+typedef ItemPairGroupT<Edge, Cell> EdgeCellGroup;
 //! Group of faces connected to cells
-typedef ItemPairGroupT<Face,Cell> FaceCellGroup;
+typedef ItemPairGroupT<Face, Cell> FaceCellGroup;
 //! Group of cells connected to cells
-typedef ItemPairGroupT<Cell,Cell> CellCellGroup;
+typedef ItemPairGroupT<Cell, Cell> CellCellGroup;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -200,11 +199,11 @@ typedef ItemGroupT<DoF> DoFGroup;
  */
 class ItemInternalEnumerator;
 class ItemEnumerator;
-template<typename ItemType>
+template <typename ItemType>
 class ItemEnumeratorT;
 
 class ItemConnectedEnumerator;
-template<typename ItemType>
+template <typename ItemType>
 class ItemConnectedEnumeratorT;
 
 /*---------------------------------------------------------------------------*/
@@ -214,15 +213,15 @@ class EnumeratorTraceInfo;
 class SimdItemEnumeratorBase;
 
 class ItemEnumeratorBase;
-template<typename ItemType>
+template <typename ItemType>
 class ItemEnumeratorBaseT;
 
-template<typename ItemType>
+template <typename ItemType>
 class ItemConnectedEnumeratorBaseT;
 
-template<typename ItemType>
+template <typename ItemType>
 class SimdItemEnumeratorT;
-template<typename ItemType>
+template <typename ItemType>
 class SimdItemT;
 
 /*!
@@ -230,15 +229,15 @@ class SimdItemT;
  * \brief View over an entity vector.
  */
 class ItemVectorView;
-template<typename ItemType>
+template <typename ItemType>
 class ItemVectorViewT;
 
 /*!
  * \ingroup Mesh
  * \brief View over a connectivity list
  */
-template<int Extent = DynExtent> class ItemConnectedListView;
-template<typename ItemType, int Extent = DynExtent>
+template <int Extent = DynExtent> class ItemConnectedListView;
+template <typename ItemType, int Extent = DynExtent>
 class ItemConnectedListViewT;
 
 /*!
@@ -246,7 +245,7 @@ class ItemConnectedListViewT;
  * \brief Enumerator over an entity pair.
  */
 class ItemPairEnumerator;
-template<typename ItemType,typename SubItemType>
+template <typename ItemType, typename SubItemType>
 class ItemPairEnumeratorT;
 
 /*!
@@ -356,7 +355,7 @@ using FaceConnectedListViewType = FaceConnectedListView;
 //! List of connected cells
 using CellConnectedListViewType = CellConnectedListView;
 //! Generic list of connected entities
-template<typename ItemType> using ItemConnectedListViewTypeT = ItemConnectedListViewT<ItemType>;
+template <typename ItemType> using ItemConnectedListViewTypeT = ItemConnectedListViewT<ItemType>;
 #else
 //! List of connected entities
 using ItemConnectedListViewType = ItemVectorView;
@@ -369,7 +368,7 @@ using FaceConnectedListViewType = FaceVectorView;
 //! List of connected cells
 using CellConnectedListViewType = CellVectorView;
 //! Generic list of connected entities
-template<typename ItemType> using ItemConnectedListViewTypeT = ItemVectorViewT<ItemType>;
+template <typename ItemType> using ItemConnectedListViewTypeT = ItemVectorViewT<ItemType>;
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -387,7 +386,6 @@ typedef Collection<CellGroup> CellGroupCollection;
 typedef Collection<ParticleGroup> ParticleGroupCollection;
 /*! \brief Collection of degrees of freedom groups. */
 typedef Collection<DoFGroup> DoFGroupCollection;
-
 
 /*! \brief Array of node groups. */
 typedef List<NodeGroup> NodeGroupList;
@@ -461,9 +459,9 @@ typedef ItemLocalIdListViewT<DoF> DoFLocalIdView;
 using DoFLocalIdListView = ItemLocalIdListViewT<DoF>;
 
 /*! \brief Type of the internal list of entities
-  
+
   \deprecated Use ItemInternalArrayView.
-  
+
 */
 typedef ConstArrayView<ItemInternal*> ItemInternalList;
 
@@ -489,7 +487,7 @@ class DoFInfoListView;
 /*---------------------------------------------------------------------------*/
 
 class ItemEnumeratorIndex;
-template<typename ItemType>
+template <typename ItemType>
 class ItemEnumeratorIndexT;
 //! Index of an enumeration on nodes
 using NodeEnumeratorIndex = ItemEnumeratorIndexT<Node>;
@@ -566,6 +564,7 @@ enum class InternalConnectivityPolicy
 class ARCANE_CORE_EXPORT InternalConnectivityInfo
 {
  public:
+
   //! True if legacy connectivities are active
   static constexpr bool hasLegacyConnectivity(InternalConnectivityPolicy) { return false; }
   //! True if new connectivities are active
@@ -621,11 +620,12 @@ typedef ItemVectorT<DoF> DoFVector;
  *
  * To be specialized by element type.
  */
-template<class T>
+template <class T>
 class ItemTraitsT
 {
  public:
-   //! Entity kind
+
+  //! Entity kind
   static eItemKind kind() { return IK_Unknown; }
 };
 
@@ -636,7 +636,7 @@ class ItemTraitsT
  * \internal
  * \brief Characteristics of mesh entities of type \c Node.
  */
-template<>
+template <>
 class ItemTraitsT<Node>
 {
  public:
@@ -666,7 +666,7 @@ class ItemTraitsT<Node>
  * \internal
  * \brief Characteristics of mesh entities of type \c Edge.
  */
-template<>
+template <>
 class ItemTraitsT<Edge>
 {
  public:
@@ -696,7 +696,7 @@ class ItemTraitsT<Edge>
  * \internal
  * \brief Characteristics of mesh entities of type \c Face.
  */
-template<>
+template <>
 class ItemTraitsT<Face>
 {
  public:
@@ -726,7 +726,7 @@ class ItemTraitsT<Face>
  * \internal
  * \brief Characteristics of mesh entities of type \c Cell.
  */
-template<>
+template <>
 class ItemTraitsT<Cell>
 {
  public:
@@ -756,7 +756,7 @@ class ItemTraitsT<Cell>
  * \internal
  * \brief Characteristics of mesh entities of type \c Particle.
  */
-template<>
+template <>
 class ItemTraitsT<Particle>
 {
  public:
@@ -779,7 +779,6 @@ class ItemTraitsT<Particle>
   static const char* defaultFamilyName() { return nullptr; }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -787,7 +786,7 @@ class ItemTraitsT<Particle>
  * \internal
  * \brief Characteristics of mesh entities of type \c DoF
  */
-template<>
+template <>
 class ItemTraitsT<DoF>
 {
  public:
@@ -817,7 +816,7 @@ class ItemTraitsT<DoF>
 /*!
  * \brief Characteristics associated with 'localId()'.
  */
-template<typename ItemType>
+template <typename ItemType>
 class ItemLocalIdTraitsT
 {
  public:
@@ -827,10 +826,11 @@ class ItemLocalIdTraitsT
 };
 
 //! Specialization for 'Item' which does not have 'ItemTraitsT'.
-template<>
+template <>
 class ItemLocalIdTraitsT<Item>
 {
  public:
+
   //! Type of the localId()
   using LocalIdType = ItemLocalId;
 };

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,33 +31,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableTypeInfo
+template <typename DataType> VariableTypeInfo
 ItemVariableScalarRefT<DataType>::
 _internalVariableTypeInfo(eItemKind ik)
 {
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return VariableTypeInfo(ik,dt,1,0,false);
+  return VariableTypeInfo(ik, dt, 1, 0, false);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> VariableInfo
+template <typename DataType> VariableInfo
 ItemVariableScalarRefT<DataType>::
-_internalVariableInfo(const VariableBuildInfo& vbi,eItemKind ik)
+_internalVariableInfo(const VariableBuildInfo& vbi, eItemKind ik)
 {
   VariableTypeInfo vti = _internalVariableTypeInfo(ik);
   DataStorageTypeInfo sti = vti._internalDefaultDataStorage();
-  return VariableInfo(vbi.name(),vbi.itemFamilyName(),vbi.itemGroupName(),vbi.meshName(),vti,sti);
+  return VariableInfo(vbi.name(), vbi.itemFamilyName(), vbi.itemGroupName(), vbi.meshName(), vti, sti);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> 
+template <class DataTypeT>
 ItemVariableScalarRefT<DataTypeT>::
-ItemVariableScalarRefT(const VariableBuildInfo& vb,eItemKind ik)
-: PrivateVariableScalarT<DataTypeT>(vb,_internalVariableInfo(vb,ik))
+ItemVariableScalarRefT(const VariableBuildInfo& vb, eItemKind ik)
+: PrivateVariableScalarT<DataTypeT>(vb, _internalVariableInfo(vb, ik))
 {
   if (!vb.isNull()) {
     this->_internalInit();
@@ -69,7 +69,7 @@ ItemVariableScalarRefT(const VariableBuildInfo& vb,eItemKind ik)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> 
+template <class DataTypeT>
 ItemVariableScalarRefT<DataTypeT>::
 ItemVariableScalarRefT(IVariable* var)
 : PrivateVariableScalarT<DataTypeT>(var)
@@ -82,7 +82,7 @@ ItemVariableScalarRefT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> 
+template <class DataTypeT>
 ItemVariableScalarRefT<DataTypeT>::
 ItemVariableScalarRefT(const ItemVariableScalarRefT<DataTypeT>& rhs)
 : PrivateVariableScalarT<DataTypeT>(rhs)
@@ -92,21 +92,21 @@ ItemVariableScalarRefT(const ItemVariableScalarRefT<DataTypeT>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> void 
+template <class DataTypeT> void
 ItemVariableScalarRefT<DataTypeT>::
 fill(const DataTypeT& v)
 {
-  this->m_private_part->fill(v,this->m_private_part->itemGroup());
+  this->m_private_part->fill(v, this->m_private_part->itemGroup());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> void 
+template <class DataTypeT> void
 ItemVariableScalarRefT<DataTypeT>::
-fill(const DataTypeT& value,const ItemGroup& group)
+fill(const DataTypeT& value, const ItemGroup& group)
 {
-  ENUMERATE_ITEM(iitem,group){
+  ENUMERATE_ITEM (iitem, group) {
     operator[](iitem) = value;
   }
 }
@@ -114,11 +114,11 @@ fill(const DataTypeT& value,const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataTypeT> void 
+template <typename DataTypeT> void
 ItemVariableScalarRefT<DataTypeT>::
-copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group)
+copy(const ItemVariableScalarRefT<DataTypeT>& v, const ItemGroup& group)
 {
-  ENUMERATE_ITEM(iitem,group){
+  ENUMERATE_ITEM (iitem, group) {
     operator[](iitem) = v[iitem];
   }
 }
@@ -126,11 +126,11 @@ copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataTypeT> void
+template <typename DataTypeT> void
 ItemVariableScalarRefT<DataTypeT>::
-copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue)
+copy(const ItemVariableScalarRefT<DataTypeT>& v, RunQueue* queue)
 {
-  if (!queue){
+  if (!queue) {
     copy(v);
     return;
   }
@@ -140,11 +140,11 @@ copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> void
+template <class DataTypeT> void
 ItemVariableScalarRefT<DataTypeT>::
 fill(const DataTypeT& v, RunQueue* queue)
 {
-  if (!queue){
+  if (!queue) {
     fill(v);
     return;
   }
@@ -154,7 +154,7 @@ fill(const DataTypeT& v, RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataTypeT> void 
+template <class DataTypeT> void
 ItemVariableScalarRefT<DataTypeT>::
 operator=(const ItemVariableScalarRefT<DataTypeT>& rhs)
 {
@@ -169,25 +169,25 @@ operator=(const ItemVariableScalarRefT<DataTypeT>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> VariableFactoryRegisterer
-MeshVariableScalarRefT<ItemType,DataType>::
-m_auto_registerer(_autoCreate,_internalVariableTypeInfo());
+template <class ItemType, class DataType> VariableFactoryRegisterer
+MeshVariableScalarRefT<ItemType, DataType>::
+m_auto_registerer(_autoCreate, _internalVariableTypeInfo());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType> VariableInfo
-MeshVariableScalarRefT<ItemType,DataType>::
+template <typename ItemType, typename DataType> VariableInfo
+MeshVariableScalarRefT<ItemType, DataType>::
 _internalVariableInfo(const VariableBuildInfo& vbi)
 {
-  return BaseClass::_internalVariableInfo(vbi,ItemTraitsT<ItemType>::kind());
+  return BaseClass::_internalVariableInfo(vbi, ItemTraitsT<ItemType>::kind());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType> VariableTypeInfo
-MeshVariableScalarRefT<ItemType,DataType>::
+template <typename ItemType, typename DataType> VariableTypeInfo
+MeshVariableScalarRefT<ItemType, DataType>::
 _internalVariableTypeInfo()
 {
   return BaseClass::_internalVariableTypeInfo(ItemTraitsT<ItemType>::kind());
@@ -196,8 +196,8 @@ _internalVariableTypeInfo()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataType> 
-VariableRef* MeshVariableScalarRefT<ItemType,DataType>::
+template <class ItemType, class DataType>
+VariableRef* MeshVariableScalarRefT<ItemType, DataType>::
 _autoCreate(const VariableBuildInfo& vb)
 {
   return new ThatClass(vb);
@@ -206,18 +206,18 @@ _autoCreate(const VariableBuildInfo& vb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT> 
-MeshVariableScalarRefT<ItemType,DataTypeT>::
+template <class ItemType, class DataTypeT>
+MeshVariableScalarRefT<ItemType, DataTypeT>::
 MeshVariableScalarRefT(const VariableBuildInfo& vb)
-: ItemVariableScalarRefT<DataTypeT>(vb,ItemTraitsT<ItemType>::kind())
+: ItemVariableScalarRefT<DataTypeT>(vb, ItemTraitsT<ItemType>::kind())
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT> 
-MeshVariableScalarRefT<ItemType,DataTypeT>::
+template <class ItemType, class DataTypeT>
+MeshVariableScalarRefT<ItemType, DataTypeT>::
 MeshVariableScalarRefT(IVariable* var)
 : ItemVariableScalarRefT<DataTypeT>(var)
 {
@@ -226,9 +226,9 @@ MeshVariableScalarRefT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT> 
-MeshVariableScalarRefT<ItemType,DataTypeT>::
-MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs)
+template <class ItemType, class DataTypeT>
+MeshVariableScalarRefT<ItemType, DataTypeT>::
+MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType, DataTypeT>& rhs)
 : ItemVariableScalarRefT<DataTypeT>(rhs)
 {
   // Normally, this class should handle the initialization, but
@@ -241,9 +241,9 @@ MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT> void
-MeshVariableScalarRefT<ItemType,DataTypeT>::
-refersTo(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs)
+template <class ItemType, class DataTypeT> void
+MeshVariableScalarRefT<ItemType, DataTypeT>::
+refersTo(const MeshVariableScalarRefT<ItemType, DataTypeT>& rhs)
 {
   BaseClass::operator=(rhs);
 }
@@ -251,7 +251,7 @@ refersTo(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT>
+template <class ItemType, class DataTypeT>
 typename Arcane::MeshVariableScalarRefT<ItemType, DataTypeT>::GroupType
 MeshVariableScalarRefT<ItemType, DataTypeT>::
 itemGroup() const
@@ -262,8 +262,8 @@ itemGroup() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT> void
-MeshVariableScalarRefT<ItemType,DataTypeT>::
+template <class ItemType, class DataTypeT> void
+MeshVariableScalarRefT<ItemType, DataTypeT>::
 setIsSynchronized(const GroupType& group)
 {
   this->m_private_part->setIsSynchronized(group);
@@ -272,8 +272,8 @@ setIsSynchronized(const GroupType& group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class ItemType,class DataTypeT> void
-MeshVariableScalarRefT<ItemType,DataTypeT>::
+template <class ItemType, class DataTypeT> void
+MeshVariableScalarRefT<ItemType, DataTypeT>::
 setIsSynchronized()
 {
   this->m_private_part->setIsSynchronized();
@@ -290,9 +290,9 @@ setIsSynchronized()
  * same mesh, the same family, and the same group. They must also
  * be allocated (IVariable::setUsed()==true)
  */
-template<class ItemType,class DataTypeT> void
-MeshVariableScalarRefT<ItemType,DataTypeT>::
-swapValues(MeshVariableScalarRefT<ItemType,DataType>& rhs)
+template <class ItemType, class DataTypeT> void
+MeshVariableScalarRefT<ItemType, DataTypeT>::
+swapValues(MeshVariableScalarRefT<ItemType, DataType>& rhs)
 {
   this->m_private_part->swapValues(*(rhs.m_private_part));
 }
@@ -301,20 +301,20 @@ swapValues(MeshVariableScalarRefT<ItemType,DataType>& rhs)
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MESHVARIABLE_SCALAR(datatype) \
-template class ARCANE_TEMPLATE_EXPORT ItemVariableScalarRefT<datatype>;\
-template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableScalarRefT<datatype>;\
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Node,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Edge,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Face,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Cell,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DoF,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Node,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Edge,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Face,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Cell,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Particle,datatype>; \
-template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DoF,datatype>
+  template class ARCANE_TEMPLATE_EXPORT ItemVariableScalarRefT<datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT ItemPartialVariableScalarRefT<datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Node, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Edge, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Face, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Cell, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<Particle, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshVariableScalarRefT<DoF, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Node, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Edge, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Face, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Cell, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<Particle, datatype>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshPartialVariableScalarRefT<DoF, datatype>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

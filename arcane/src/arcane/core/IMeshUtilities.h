@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
                                         IntegerConstArrayView items_nb_node,
                                         Int64ConstArrayView items_connectivity,
                                         Int32ArrayView local_ids,
-                                        bool allow_null=false) =0;
+                                        bool allow_null = false) = 0;
 
   /*!
    * \brief Searches for the local IDs of faces based on their connectivity.
@@ -105,7 +105,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * Generally, this is IMesh::nodesCoordinates().
    */
   virtual Real3 computeNormal(const FaceGroup& face_group,
-                              const VariableNodeReal3& nodes_coord) =0;
+                              const VariableNodeReal3& nodes_coord) = 0;
 
   /*!
    * \brief Calculates the direction vector of a line.
@@ -128,12 +128,12 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    */
   virtual Real3 computeDirection(const NodeGroup& node_group,
                                  const VariableNodeReal3& nodes_coord,
-                                 Real3* n1,Real3* n2) =0;
+                                 Real3* n1, Real3* n2) = 0;
 
   //! Calculates adjacencies, stored in \a adjacency_array
   ARCANE_DEPRECATED_REASON("Y2020: Use computeAdjacency() instead")
   virtual void computeAdjency(ItemPairGroup adjacency_array, eItemKind link_kind,
-                              Integer nb_layer) =0;
+                              Integer nb_layer) = 0;
 
   //! Calculates adjacencies, stored in \a adjacency_array
   virtual void computeAdjacency(const ItemPairGroup& adjacency_array, eItemKind link_kind,
@@ -153,7 +153,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * information, you must use computeAndSetOwnersForNodes()
    * or computeAndSetOwnersForFaces().
    */
-  virtual void changeOwnersFromCells() =0;
+  virtual void changeOwnersFromCells() = 0;
 
   /*!
    * \brief Determines the owners of the nodes.
@@ -164,7 +164,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * This operation is collective.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForNodes() instead")
-  virtual void computeAndSetOwnersForNodes() =0;
+  virtual void computeAndSetOwnersForNodes() = 0;
 
   /*!
    * \brief Determines the owners of the edges.
@@ -186,7 +186,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * This operation is collective.
    */
   ARCANE_DEPRECATED_REASON("Y2025: Use MeshUtils::computeAndSetOwnerForFaces() instead")
-  virtual void computeAndSetOwnersForFaces() =0;
+  virtual void computeAndSetOwnersForFaces() = 0;
 
   /*!
    * \brief Writes the mesh to a file.
@@ -197,8 +197,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * \retval true if the specified service is not available.
    * \retval false if everything is ok.
    */
-  virtual bool writeToFile(const String& file_name,const String& service_name) =0;
-
+  virtual bool writeToFile(const String& file_name, const String& service_name) = 0;
 
   /*!
    * \brief Repartitions and exchanges the mesh while managing replication.
@@ -228,7 +227,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * \param initial_partition Indicates if it is the initial partitioning.
    */
   virtual void partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
-                                                       bool initial_partition) =0;
+                                                       bool initial_partition) = 0;
 
   /*!
    * \brief Merges nodes.
@@ -268,7 +267,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
    * It assumes that the uniqueId() of the entities are constructed from
    * generateHashUniqueId().
    */
-  virtual void recomputeItemsUniqueIdFromNodesUniqueId() =0;
+  virtual void recomputeItemsUniqueIdFromNodesUniqueId() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

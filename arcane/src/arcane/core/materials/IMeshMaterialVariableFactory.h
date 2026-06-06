@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,17 +33,17 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
 {
  public:
-  
+
   virtual ~IMeshMaterialVariableFactory() = default;
 
  public:
 
   //! Create a material variable
   virtual IMeshMaterialVariable*
-  createVariable(const MaterialVariableBuildInfo& build_info) =0;
+  createVariable(const MaterialVariableBuildInfo& build_info) = 0;
 
   //! Information about the created variable type
-  virtual MaterialVariableTypeInfo materialVariableTypeInfo() const =0;
+  virtual MaterialVariableTypeInfo materialVariableTypeInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

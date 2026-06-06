@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,6 +37,7 @@ class Timer;
 class ARCANE_CORE_EXPORT EntryPointBuildInfo
 {
  public:
+
   /*!
    * \brief Entry point build information.
    *
@@ -53,11 +54,15 @@ class ARCANE_CORE_EXPORT EntryPointBuildInfo
    * via a garbage collector, so in this case \a is_destroy_caller must
    * be \a false.
    */
-  EntryPointBuildInfo(IModule* module,const String& name,
-                      IFunctor* caller,const String& where,int property,
+  EntryPointBuildInfo(IModule* module, const String& name,
+                      IFunctor* caller, const String& where, int property,
                       bool is_destroy_caller)
-  : m_module(module), m_name(name), m_caller(caller), m_where(where),
-    m_property(property), m_is_destroy_caller(is_destroy_caller)
+  : m_module(module)
+  , m_name(name)
+  , m_caller(caller)
+  , m_where(where)
+  , m_property(property)
+  , m_is_destroy_caller(is_destroy_caller)
   {
   }
 
@@ -66,7 +71,7 @@ class ARCANE_CORE_EXPORT EntryPointBuildInfo
   IModule* module() const { return m_module; }
   const String& name() const { return m_name; }
   IFunctor* caller() const { return m_caller; }
-  const String& where () const { return m_where; }
+  const String& where() const { return m_where; }
   int property() const { return m_property; }
   bool isDestroyCaller() const { return m_is_destroy_caller; }
 
@@ -107,7 +112,7 @@ class ARCANE_CORE_EXPORT EntryPoint
   static EntryPoint* create(const EntryPointBuildInfo& bi);
 
  public:
-	
+
   String name() const override { return m_name; }
   String fullName() const override { return m_full_name; }
   ISubDomain* subDomain() const override { return m_sub_domain; }
@@ -142,12 +147,12 @@ class ARCANE_CORE_EXPORT EntryPoint
 
  public:
 
-  EntryPoint(const EntryPoint&) =delete;
-  void operator=(const EntryPoint&) =delete;
+  EntryPoint(const EntryPoint&) = delete;
+  void operator=(const EntryPoint&) = delete;
 
  private:
 
-  void _getAddressForHyoda(void* =nullptr);
+  void _getAddressForHyoda(void* = nullptr);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -165,13 +170,13 @@ class ARCANE_CORE_EXPORT EntryPoint
  * \param property properties of the entry point (see IEntryPoint)
  * \param name name of the function for Arcane
  */
-template<typename ModuleType> inline void
-addEntryPoint(ModuleType* module,const char* name,void (ModuleType::*func)(),
+template <typename ModuleType> inline void
+addEntryPoint(ModuleType* module, const char* name, void (ModuleType::*func)(),
               const String& where = IEntryPoint::WComputeLoop,
               int property = IEntryPoint::PNone)
 {
-  IFunctorWithAddress* caller = new FunctorWithAddressT<ModuleType>(module,func);
-  EntryPoint::create(EntryPointBuildInfo(module,name,caller,where,property,true));
+  IFunctorWithAddress* caller = new FunctorWithAddressT<ModuleType>(module, func);
+  EntryPoint::create(EntryPointBuildInfo(module, name, caller, where, property, true));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -189,13 +194,13 @@ addEntryPoint(ModuleType* module,const char* name,void (ModuleType::*func)(),
  * \param property properties of the entry point (see IEntryPoint)
  * \param name name of the function for Arcane
  */
-template<typename ModuleType> inline void
-addEntryPoint(ModuleType* module,const String& name,void (ModuleType::*func)(),
+template <typename ModuleType> inline void
+addEntryPoint(ModuleType* module, const String& name, void (ModuleType::*func)(),
               const String& where = IEntryPoint::WComputeLoop,
               int property = IEntryPoint::PNone)
 {
-  IFunctorWithAddress* caller = new FunctorWithAddressT<ModuleType>(module,func);
-  EntryPoint::create(EntryPointBuildInfo(module,name,caller,where,property,true));
+  IFunctorWithAddress* caller = new FunctorWithAddressT<ModuleType>(module, func);
+  EntryPoint::create(EntryPointBuildInfo(module, name, caller, where, property, true));
 }
 
 /*---------------------------------------------------------------------------*/

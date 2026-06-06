@@ -508,7 +508,6 @@ _applySolver(const Matrix& a, const Vector& b, Vector& x, Real epsilon, IPrecond
   //Real norm0 = r.normInf();
   const Real delta0 = delta_new;
 
-
   //cout << " TOL=" << epsilon << " delta0=" << delta0 << '\n';
   //cout << " deltanew=" << delta_new << '\n';
   Integer nb_iter = 0;

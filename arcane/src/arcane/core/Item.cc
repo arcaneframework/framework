@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ void Item::
 _badConversion() const
 {
 #ifdef ARCANE_DEBUG
-  ARCANE_FATAL("Bad conversion from {0}",kind());
+  ARCANE_FATAL("Bad conversion from {0}", kind());
 #else /* ARCANE_DEBUG */
   ARCANE_FATAL("Bad conversion");
 #endif /* ARCANE_DEBUG */
@@ -81,10 +81,10 @@ _badConversion() const
 /*---------------------------------------------------------------------------*/
 
 void IndexedItemConnectivityViewBase::
-_badConversion(eItemKind k1,eItemKind k2) const
+_badConversion(eItemKind k1, eItemKind k2) const
 {
   ARCANE_FATAL("Can not convert connectivity view ({0},{1}) to ({2},{3})",
-               m_source_kind,m_target_kind,k1,k2);
+               m_source_kind, m_target_kind, k1, k2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -109,7 +109,6 @@ resetStats()
   m_nb_set_from_internal = 0;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -122,7 +121,7 @@ template class ItemConnectedEnumeratorT<Item>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namesapce Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

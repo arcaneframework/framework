@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,11 +35,19 @@ namespace Arcane
 class ARCANE_CORE_EXPORT ServiceInstanceRef
 {
   typedef Ref<IServiceInstance> RefType;
+
  private:
-  ServiceInstanceRef(const RefType& r) : m_instance(r){}
+
+  ServiceInstanceRef(const RefType& r)
+  : m_instance(r)
+  {}
+
  public:
+
   ServiceInstanceRef() = default;
+
  public:
+
   static ServiceInstanceRef createRef(IServiceInstance* p)
   {
     return ServiceInstanceRef(RefType::create(p));
@@ -48,28 +56,32 @@ class ARCANE_CORE_EXPORT ServiceInstanceRef
   {
     return ServiceInstanceRef(RefType::_createNoDestroy(p));
   }
-  static ServiceInstanceRef createWithHandle(IServiceInstance* p,Internal::ExternalRef handle)
+  static ServiceInstanceRef createWithHandle(IServiceInstance* p, Internal::ExternalRef handle)
   {
-    return ServiceInstanceRef(RefType::createWithHandle(p,handle));
+    return ServiceInstanceRef(RefType::createWithHandle(p, handle));
   }
+
  public:
+
   IServiceInstance* get() const { return m_instance.get(); }
   void reset() { m_instance.reset(); }
+
  private:
+
   RefType m_instance;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline bool operator==(const ServiceInstanceRef& a,const ServiceInstanceRef& b)
+inline bool operator==(const ServiceInstanceRef& a, const ServiceInstanceRef& b)
 {
-  return a.get()==b.get();
+  return a.get() == b.get();
 }
 
-inline bool operator!=(const ServiceInstanceRef& a,const ServiceInstanceRef& b)
+inline bool operator!=(const ServiceInstanceRef& a, const ServiceInstanceRef& b)
 {
-  return a.get()!=b.get();
+  return a.get() != b.get();
 }
 
 /*---------------------------------------------------------------------------*/

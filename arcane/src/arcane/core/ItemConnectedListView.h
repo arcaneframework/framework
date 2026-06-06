@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -249,11 +249,11 @@ class ItemConnectedListView
  protected:
 
   ItemConnectedListView(const impl::ItemIndexedListView<DynExtent>& view)
-  : m_index_view(view.m_local_ids,view.m_local_id_offset,0)
+  : m_index_view(view.m_local_ids, view.m_local_id_offset, 0)
   , m_shared_info(view.m_shared_info)
   {}
   ItemConnectedListView(ItemSharedInfo* shared_info, ConstArrayView<Int32> local_ids, Int32 local_id_offset)
-  : m_index_view(local_ids,local_id_offset,0)
+  : m_index_view(local_ids, local_id_offset, 0)
   , m_shared_info(shared_info)
   {}
 

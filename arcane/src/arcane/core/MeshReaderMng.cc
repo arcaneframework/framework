@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -94,11 +94,11 @@ MeshReaderMng::
 /*---------------------------------------------------------------------------*/
 
 IMesh* MeshReaderMng::
-readMesh(const String& mesh_name,const String& file_name)
+readMesh(const String& mesh_name, const String& file_name)
 {
   ISubDomain* sd = m_p->m_sub_domain;
   IParallelMng* pm = sd->parallelMng()->sequentialParallelMng();
-  return readMesh(mesh_name,file_name,pm);
+  return readMesh(mesh_name, file_name, pm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +106,7 @@ readMesh(const String& mesh_name,const String& file_name)
 
 // TODO: merge this method with ISubDomain::cell.
 IMesh* MeshReaderMng::
-readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_mng)
+readMesh(const String& mesh_name, const String& file_name, IParallelMng* parallel_mng)
 {
   m_p->checkInit();
   String extension;
@@ -114,16 +114,15 @@ readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_
     // Searches for the file extension and keeps it in \a extension
     std::string_view fview = file_name.toStdStringView();
     std::size_t extension_pos = fview.find_last_of('.');
-    if (extension_pos==std::string_view::npos)
-      ARCANE_FATAL("file name '{0}' has no extension",file_name);
-    fview.remove_prefix(extension_pos+1);
+    if (extension_pos == std::string_view::npos)
+      ARCANE_FATAL("file name '{0}' has no extension", file_name);
+    fview.remove_prefix(extension_pos + 1);
     extension = fview;
-
   }
   // TODO: eventually, create the mesh via the reader.
   ISubDomain* sd = m_p->m_sub_domain;
   IParallelMng* pm = parallel_mng;
-  IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
+  IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd, pm, mesh_name);
 
   // Mesh created.
   // The mesh may already exist.
@@ -134,34 +133,34 @@ readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_
   mesh->properties()->setBool("dump", false);
 
   String use_unit_str = (m_p->m_is_use_unit) ? "true" : "false";
-  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='"+use_unit_str+"' />";
+  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='" + use_unit_str + "' />";
 
   ITraceMng* tm = sd->traceMng();
-  ScopedPtrT<IXmlDocumentHolder> xml_doc(IXmlDocumentHolder::loadFromBuffer(use_unit_xml.bytes(), String(),tm));
+  ScopedPtrT<IXmlDocumentHolder> xml_doc(IXmlDocumentHolder::loadFromBuffer(use_unit_xml.bytes(), String(), tm));
   XmlNode mesh_xml_node = xml_doc->documentNode().documentElement();
 
   String dir_name;
   bool is_bad = true;
   bool use_internal_partition = pm->isParallel();
-  for( auto& reader_ref : m_p->readers() ){
+  for (auto& reader_ref : m_p->readers()) {
     IMeshReader* reader = reader_ref.get();
     if (!reader->allowExtension(extension))
       continue;
 
-    auto ret = reader->readMeshFromFile(mesh,mesh_xml_node,
-                                        file_name,dir_name,
+    auto ret = reader->readMeshFromFile(mesh, mesh_xml_node,
+                                        file_name, dir_name,
                                         use_internal_partition);
-    if (ret==IMeshReader::RTOk){
+    if (ret == IMeshReader::RTOk) {
       is_bad = false;
       break;
     }
-    if (ret==IMeshReader::RTError){
-      ARCANE_FATAL("Can not read mesh file '{0}'",file_name);
+    if (ret == IMeshReader::RTError) {
+      ARCANE_FATAL("Can not read mesh file '{0}'", file_name);
     }
   }
 
   if (is_bad)
-    ARCANE_FATAL("No mesh reader is available for mesh file '{0}'",file_name);
+    ARCANE_FATAL("No mesh reader is available for mesh file '{0}'", file_name);
 
   return mesh;
 }

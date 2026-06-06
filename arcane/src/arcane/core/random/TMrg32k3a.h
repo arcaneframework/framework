@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,15 +45,16 @@ namespace Arcane::random
  *   managed outside the class. The \c seed and \c getState methods are meaningless 
  *   in this usage.
 */
-template<typename RealType, Int32 val>
+template <typename RealType, Int32 val>
 class TMrg32k3a
 {
  public:
+
   typedef RealType result_type;
   typedef RealType state_type;
   static const bool has_fixed_range = true;
-  static const Int32 min_value=0;
-  static const Int32 max_value=1;
+  static const Int32 min_value = 0;
+  static const Int32 max_value = 1;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -61,9 +62,9 @@ class TMrg32k3a
   /*! \brief Constructor initializing the seed array from
    * the value \c x0. The \c seed(x0) method is called.
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date   28/07/2006
-   */  
+   */
   explicit TMrg32k3a(Int32 x0 = 1)
   {
     seed(x0);
@@ -73,35 +74,36 @@ class TMrg32k3a
   /*---------------------------------------------------------------------------*/
 
   /*! \brief Constructor initializing the seed array from
-   * the \c state array. \c state must be an array of six elements. 
+   * the \c state array. \c state must be an array of six elements.
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date   28/07/2006
-   */  
-  explicit TMrg32k3a(state_type *state)
+   */
+  explicit TMrg32k3a(state_type* state)
   {
-    for(Integer  i=0;i<6;i++)
-    _state[i] = state[i];
+    for (Integer i = 0; i < 6; i++)
+      _state[i] = state[i];
   }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   /*! \brief Initialization of the seed array from the value \c x0.
-   *          The seed array of this generator consists of six elements. 
+   *          The seed array of this generator consists of six elements.
    *
-   * \author  Patrick Rathouit 
+   * \author  Patrick Rathouit
    * \date    28/07/2006
    */
-  void seed(Int32 x0) { 
+  void seed(Int32 x0)
+  {
     x0 = (x0 | 1);
-    _state[0] = (state_type) x0;
+    _state[0] = (state_type)x0;
     _state[1] = _state[0];
     _state[2] = _state[1];
     _state[3] = _state[2];
     _state[4] = _state[3];
-    _state[5] = _state[4]; 
-}
+    _state[5] = _state[4];
+  }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -110,18 +112,18 @@ class TMrg32k3a
    * state of the generator is given by the index values \c i ranging
    * between 0 and 5 ( 0 < \c i <=5 ).
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date   28/07/2006
-   */ 
-  RealType  getState(Integer i) const { return _state[i]; }
+   */
+  RealType getState(Integer i) const { return _state[i]; }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   /*! \brief Overloading of the \c () operator which returns the pseudo
-   * random value of the generator. The generator state is modified. 
+   * random value of the generator. The generator state is modified.
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date   28/07/2006
    */
   RealType operator()()
@@ -137,23 +139,35 @@ class TMrg32k3a
   /*! \brief Returns the pseudo-random value from the \c state.
    * The generator state state must consist of six elements.
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date 28/07/2006
    */
   static RealType apply(state_type* state)
   {
     long k;
     Real p;
-    p = 1403580.0*state[1] - 810728.0*state[0];
-    k = static_cast<long>(p/4294967087.0); p-=k*4294967087.0; if (p <0.0) p+=4294967087.0;
-    state[0] = state[1]; state[1]=state[2]; state[2]=p;
+    p = 1403580.0 * state[1] - 810728.0 * state[0];
+    k = static_cast<long>(p / 4294967087.0);
+    p -= k * 4294967087.0;
+    if (p < 0.0)
+      p += 4294967087.0;
+    state[0] = state[1];
+    state[1] = state[2];
+    state[2] = p;
 
-    p=527612.0*state[5] - 1370589.0*state[3];
-    k=static_cast<long>(p/4294944443.0); p-= k*4294944443.0; if(p<0.0) p+=4294944443.0;
-    state[3] = state[4]; state[4]=state[5]; state[5]=p;
+    p = 527612.0 * state[5] - 1370589.0 * state[3];
+    k = static_cast<long>(p / 4294944443.0);
+    p -= k * 4294944443.0;
+    if (p < 0.0)
+      p += 4294944443.0;
+    state[3] = state[4];
+    state[4] = state[5];
+    state[5] = p;
 
-    if(state[2] <= state[5]) return ((state[2]-state[5]+4294967087.0)/4294967087.0);
-    else return ((state[2]-state[5]) / 4294967087.0);
+    if (state[2] <= state[5])
+      return ((state[2] - state[5] + 4294967087.0) / 4294967087.0);
+    else
+      return ((state[2] - state[5]) / 4294967087.0);
   }
 
   /*---------------------------------------------------------------------------*/
@@ -161,17 +175,17 @@ class TMrg32k3a
 
   /*! \brief Returns the minimum possible value of a sequence.
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date 28/07/2006
    */
-  result_type min() const  { return static_cast<result_type>(min_value); }
+  result_type min() const { return static_cast<result_type>(min_value); }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   /*! \brief Returns the maximum possible value of a sequence.
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date   28/07/2006
    */
   result_type max() const { return static_cast<result_type>(max_value); }
@@ -191,11 +205,13 @@ class TMrg32k3a
 
   /*! \brief Overloading of the == operator
    *
-   * \author Patrick Rathouit 
+   * \author Patrick Rathouit
    * \date   28/07/2006
    */
   bool operator==(const TMrg32k3a& rhs) const
-  { return (_state[0]  == rhs._state[0]) && (_state[1] == rhs._state[1]) &&  (_state[2] == rhs._state[2])  &&  (_state[3] == rhs._state[3]) &&  (_state[4] == rhs._state[4]) &&  (_state[5] == rhs._state[5]) ; }
+  {
+    return (_state[0] == rhs._state[0]) && (_state[1] == rhs._state[1]) && (_state[2] == rhs._state[2]) && (_state[3] == rhs._state[3]) && (_state[4] == rhs._state[4]) && (_state[5] == rhs._state[5]);
+  }
 
  private:
 
@@ -205,12 +221,12 @@ class TMrg32k3a
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef TMrg32k3a<Real,0> Mrg32k3a;
+typedef TMrg32k3a<Real, 0> Mrg32k3a;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

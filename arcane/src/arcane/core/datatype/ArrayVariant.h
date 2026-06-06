@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,7 +46,8 @@ class ARCANE_DATATYPE_EXPORT ArrayVariant
 : public VariantBase
 {
  public:
-  ArrayVariant(eType type,Integer size);
+
+  ArrayVariant(eType type, Integer size);
   ArrayVariant(ArrayView<Real> data);
   ArrayVariant(ArrayView<Real2> data);
   ArrayVariant(ArrayView<Real3> data);
@@ -94,9 +95,8 @@ class ARCANE_DATATYPE_EXPORT ArrayVariant
   ConstArrayView<String> asString() const { return m_string_value; }
 
  public:
-
-
  private:
+
   ArrayView<Real> m_real_value; //!< Value of array type of reals
   ArrayView<Real2> m_real2_value; //!< Value of array type of Real2
   ArrayView<Real3> m_real3_value; //!< Value of array type of Real3
@@ -117,7 +117,7 @@ operator<<(std::ostream& s, const ArrayVariant& x);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

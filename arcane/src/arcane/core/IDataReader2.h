@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,9 @@ class IData;
 class ARCANE_CORE_EXPORT DataReaderInfo
 {
  public:
-  DataReaderInfo(){}
+
+  DataReaderInfo() {}
+
  public:
 };
 
@@ -50,12 +52,19 @@ class ARCANE_CORE_EXPORT DataReaderInfo
 class ARCANE_CORE_EXPORT VariableDataReadInfo
 {
  public:
-  VariableDataReadInfo(VariableMetaData* varmd,IData* data)
-  : m_varmd(varmd), m_data(data){}
+
+  VariableDataReadInfo(VariableMetaData* varmd, IData* data)
+  : m_varmd(varmd)
+  , m_data(data)
+  {}
+
  public:
+
   VariableMetaData* variableMetaData() const { return m_varmd; }
   IData* data() const { return m_data; }
+
  private:
+
   VariableMetaData* m_varmd;
   IData* m_data;
 };
@@ -83,23 +92,23 @@ class ARCANE_CORE_EXPORT VariableDataReadInfo
  * reader->endRead();
  * \endcode
  */
- class IDataReader2
+class IDataReader2
 {
  public:
 
   //! Releases resources
-  virtual ~IDataReader2(){}
+  virtual ~IDataReader2() {}
 
  public:
 
   //! Fills \a bytes with the metadata content
-  virtual void fillMetaData(ByteArray& bytes) =0;
+  virtual void fillMetaData(ByteArray& bytes) = 0;
   //! Notifies the start of data reading
-  virtual void beginRead(const DataReaderInfo& infos) =0;
+  virtual void beginRead(const DataReaderInfo& infos) = 0;
   //! Reads the data specified by \a infos
-  virtual void read(const VariableDataReadInfo& infos) =0;
+  virtual void read(const VariableDataReadInfo& infos) = 0;
   //! Notifies the end of data reading
-  virtual void endRead() =0;
+  virtual void endRead() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

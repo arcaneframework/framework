@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,30 +22,32 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/Dom.h"
-#include "arcane/DomUtils.h"
-#include "arcane/XmlNode.h"
-#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/core/Dom.h"
+#include "arcane/core/DomUtils.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/IXmlDocumentHolder.h"
 
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
-ARCANE_BEGIN_NAMESPACE_DOMUTILS
+namespace domutils
+{
 
-extern "C++" ARCANE_CORE_EXPORT void
-removeAllChildren(const dom::Node& parent);
+  extern "C++" ARCANE_CORE_EXPORT void
+  removeAllChildren(const dom::Node& parent);
 
-extern "C++" ARCANE_CORE_EXPORT bool
-writeNode(std::ostream& ostr,const dom::Node&);
+  extern "C++" ARCANE_CORE_EXPORT bool
+  writeNode(std::ostream& ostr, const dom::Node&);
 
-extern "C++" ARCANE_CORE_EXPORT bool
-writeNodeChildren(std::ostream& ostr,const dom::Node&);
+  extern "C++" ARCANE_CORE_EXPORT bool
+  writeNodeChildren(std::ostream& ostr, const dom::Node&);
 
-ARCANE_END_NAMESPACE_DOMUTILS
+} // namespace domutils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,31 +55,29 @@ ARCANE_END_NAMESPACE_DOMUTILS
 namespace
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-void
-_notImplemented(const char* reason)
-{
-  cerr << "* DOMUTILS NOT YET IMPLEMENTED: " << reason << '\n';
-  throw dom::DOMException(dom::NOT_IMPLEMENTED_ERR);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void
-_writeNodeChildren(std::ostream& o,const dom::Node& node)
-{
-  // Recursively writes child nodes
-  dom::Node next = node.firstChild();
-  while (!next._null()){
-    domutils::writeNode(o,next);
-    next = next.nextSibling();
+  void _notImplemented(const char* reason)
+  {
+    cerr << "* DOMUTILS NOT YET IMPLEMENTED: " << reason << '\n';
+    throw dom::DOMException(dom::NOT_IMPLEMENTED_ERR);
   }
-}
 
-}
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  void _writeNodeChildren(std::ostream& o, const dom::Node& node)
+  {
+    // Recursively writes child nodes
+    dom::Node next = node.firstChild();
+    while (!next._null()) {
+      domutils::writeNode(o, next);
+      next = next.nextSibling();
+    }
+  }
+
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -90,17 +90,17 @@ textContent(const dom::Node& node)
   if (node._null())
     return str.toString();
 
-  if (node.nodeType()!=Node::ELEMENT_NODE)
-    ARCANE_THROW(NotImplementedException,"get text value for non ELEMENT_NODE");
-  for( Node i=node.firstChild(); !i._null(); i=i.nextSibling() ){
+  if (node.nodeType() != Node::ELEMENT_NODE)
+    ARCANE_THROW(NotImplementedException, "get text value for non ELEMENT_NODE");
+  for (Node i = node.firstChild(); !i._null(); i = i.nextSibling()) {
     UShort ntype = i.nodeType();
-    if (ntype==Node::TEXT_NODE)
+    if (ntype == Node::TEXT_NODE)
       str += i.nodeValue();
-    else if (ntype==Node::CDATA_SECTION_NODE){
+    else if (ntype == Node::CDATA_SECTION_NODE) {
       str += i.nodeValue();
     }
-    else if (ntype==Node::ENTITY_REFERENCE_NODE){
-      ARCANE_THROW(NotImplementedException,"get text value for non ENTITY_REFERENCE_NODE");
+    else if (ntype == Node::ENTITY_REFERENCE_NODE) {
+      ARCANE_THROW(NotImplementedException, "get text value for non ENTITY_REFERENCE_NODE");
     }
   }
   return str.toString();
@@ -110,16 +110,16 @@ textContent(const dom::Node& node)
 /*---------------------------------------------------------------------------*/
 
 void domutils::
-textContent(dom::Node& node,const String& new_value)
+textContent(dom::Node& node, const String& new_value)
 {
   // Same semantics as Node::textContent of DOM3:
   // - Removes all child nodes.
   // - creation of a single text node containing the new value
   using namespace dom;
-  if (node.nodeType()!=Node::ELEMENT_NODE)
-    ARCANE_THROW(NotImplementedException,"set text value for non ELEMENT_NODE");
+  if (node.nodeType() != Node::ELEMENT_NODE)
+    ARCANE_THROW(NotImplementedException, "set text value for non ELEMENT_NODE");
   removeAllChildren(node);
-  if (!new_value.null()){
+  if (!new_value.null()) {
     Text text_node = node.ownerDocument().createTextNode(new_value);
     node.appendChild(text_node);
   }
@@ -138,16 +138,16 @@ textValue(const dom::Node& node)
 /*---------------------------------------------------------------------------*/
 
 void domutils::
-textValue(dom::Node& node,const String& new_value)
+textValue(dom::Node& node, const String& new_value)
 {
-  textContent(node,new_value);
+  textContent(node, new_value);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 dom::Element domutils::
-createElement(const dom::Node& parent,const String& name,const String& value)
+createElement(const dom::Node& parent, const String& name, const String& value)
 {
   if (parent._null())
     return dom::Element();
@@ -155,7 +155,7 @@ createElement(const dom::Node& parent,const String& name,const String& value)
   if (doc._null())
     return dom::Element();
   dom::Element elem = doc.createElement(name);
-  textContent(elem,value);
+  textContent(elem, value);
   parent.appendChild(elem);
   return elem;
 }
@@ -164,7 +164,7 @@ createElement(const dom::Node& parent,const String& name,const String& value)
 /*---------------------------------------------------------------------------*/
 
 String domutils::
-attrValue(const dom::Node& node,const String& attr_name)
+attrValue(const dom::Node& node, const String& attr_name)
 {
   // TODO: Use DOM methods directly such as getAttribute()
   // but for that, namespaces must be handled.
@@ -196,22 +196,22 @@ attrValue(const dom::Node& node,const String& attr_name)
 /*---------------------------------------------------------------------------*/
 
 void domutils::
-setAttr(const dom::Element& elem,const String& name,const String& value)
+setAttr(const dom::Element& elem, const String& name, const String& value)
 {
   if (elem._null())
     return;
-  elem.setAttribute(name,value);
+  elem.setAttribute(name, value);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 dom::Node domutils::
-childNode(const dom::Node& parent,const String& child_name)
+childNode(const dom::Node& parent, const String& child_name)
 {
   dom::DOMString ref_name(child_name);
-  for( dom::Node i=parent.firstChild(); !i._null(); i=i.nextSibling() ){
-    if (i.nodeName()==ref_name)
+  for (dom::Node i = parent.firstChild(); !i._null(); i = i.nextSibling()) {
+    if (i.nodeName() == ref_name)
       return i;
   }
   return dom::Node();
@@ -228,7 +228,7 @@ removeAllChildren(const dom::Node& parent)
 
   // Removes child nodes.
   dom::Node n = parent.firstChild();
-  while (!n._null()){
+  while (!n._null()) {
     parent.removeChild(n);
     // TODO RELEASE MEMORY
     n = parent.firstChild();
@@ -246,37 +246,37 @@ removeAllChildren(const dom::Node& parent)
  * - a/b*.
  */
 dom::Node domutils::
-nodeFromXPath(const dom::Node& context_node,const String& xpath_expr)
+nodeFromXPath(const dom::Node& context_node, const String& xpath_expr)
 {
   const char* expr = xpath_expr.localstr();
-  if (context_node._null()){
+  if (context_node._null()) {
     return dom::Node();
   }
-  if (!expr){
+  if (!expr) {
     return dom::Node();
   }
-  const char* separator = ::strchr(expr,'/');
-  if (separator){
+  const char* separator = ::strchr(expr, '/');
+  if (separator) {
     // String of type \a a/b. Searches for the child node named \a a and
     // recursively applies this function to it with \a b as the expression.
-    std::string_view buf1(expr,(Int64)(separator-expr));
+    std::string_view buf1(expr, (Int64)(separator - expr));
     String buf(buf1);
-    dom::Node child = childNode(context_node,buf);
-    if (child._null()){
+    dom::Node child = childNode(context_node, buf);
+    if (child._null()) {
       return dom::Node();
     }
-    return nodeFromXPath(child,String(std::string_view(separator+1)));
+    return nodeFromXPath(child, String(std::string_view(separator + 1)));
   }
-  return childNode(context_node,xpath_expr);
+  return childNode(context_node, xpath_expr);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool domutils::
-writeNodeChildren(std::ostream& ostr,const dom::Node& node)
+writeNodeChildren(std::ostream& ostr, const dom::Node& node)
 {
-  _writeNodeChildren(ostr,node);
+  _writeNodeChildren(ostr, node);
   return true;
 }
 
@@ -284,63 +284,61 @@ writeNodeChildren(std::ostream& ostr,const dom::Node& node)
 /*---------------------------------------------------------------------------*/
 
 bool domutils::
-writeNode(std::ostream& o,const dom::Node& node)
+writeNode(std::ostream& o, const dom::Node& node)
 {
   using namespace dom;
-  switch(node.nodeType()){
-   case Node::ELEMENT_NODE:
-     {
-       o << '<' << node.nodeName();
-       NamedNodeMap attr_list = node.attributes();
-       for( ULong i=0, s=attr_list.length(); i<s; ++i ){
-         o << ' ';
-         writeNode(o,attr_list.item(i));
-       }
-       o << '>';
-       writeNodeChildren(o,node);
-       o << "</" << node.nodeName() << '>';
-     }
-     break;
-   case Node::ATTRIBUTE_NODE:
-     o << node.nodeName() << '='
-       << '"' << node.nodeValue() << '"';
-     break;
-   case Node::TEXT_NODE:
-     o << node.nodeValue();
-     //_notImplemented("Dom::writeNode() for TEXT_NODE");
-     break;
-   case Node::CDATA_SECTION_NODE:
-     o << node.nodeValue();
-     cerr << "** Dom::writeNode() for CDATA_SECTION_NODE Not fully implemented\n";
-     //_notImplemented("Dom::writeNode() for CDATA_SECTION_NODE");
-     break;
-   case Node::ENTITY_REFERENCE_NODE:
-     _notImplemented("Dom::writeNode() for ENTITY_REFERENCE_NODE");
-     break;
-   case Node::ENTITY_NODE:
-     _notImplemented("Dom::writeNode() for ENTITY_NODE");
-     break;
-   case Node::PROCESSING_INSTRUCTION_NODE:
-     _notImplemented("Dom::writeNode() for PROCESSING_INSTRUCTION_NODE");
-     break;
-   case Node::COMMENT_NODE:
-     o << "<!--" << node.nodeValue() << "-->";
-     break;
-   case Node::DOCUMENT_NODE:
-     _writeNodeChildren(o,node);
-     break;
-   case Node::DOCUMENT_TYPE_NODE:
-     _writeNodeChildren(o,node);
-     break;
-   case Node::DOCUMENT_FRAGMENT_NODE:
-     _notImplemented("Dom::writeNode() for DOCUMENT_FRAGMENT_NODE");
-     break;
-   case Node::NOTATION_NODE:
-     _notImplemented("Dom::writeNode() for NOTATION_NODE");
-     break;
-   default:
-     _notImplemented("Dom::writeNode() for unknown node");
-     break;
+  switch (node.nodeType()) {
+  case Node::ELEMENT_NODE: {
+    o << '<' << node.nodeName();
+    NamedNodeMap attr_list = node.attributes();
+    for (ULong i = 0, s = attr_list.length(); i < s; ++i) {
+      o << ' ';
+      writeNode(o, attr_list.item(i));
+    }
+    o << '>';
+    writeNodeChildren(o, node);
+    o << "</" << node.nodeName() << '>';
+  } break;
+  case Node::ATTRIBUTE_NODE:
+    o << node.nodeName() << '='
+      << '"' << node.nodeValue() << '"';
+    break;
+  case Node::TEXT_NODE:
+    o << node.nodeValue();
+    //_notImplemented("Dom::writeNode() for TEXT_NODE");
+    break;
+  case Node::CDATA_SECTION_NODE:
+    o << node.nodeValue();
+    cerr << "** Dom::writeNode() for CDATA_SECTION_NODE Not fully implemented\n";
+    //_notImplemented("Dom::writeNode() for CDATA_SECTION_NODE");
+    break;
+  case Node::ENTITY_REFERENCE_NODE:
+    _notImplemented("Dom::writeNode() for ENTITY_REFERENCE_NODE");
+    break;
+  case Node::ENTITY_NODE:
+    _notImplemented("Dom::writeNode() for ENTITY_NODE");
+    break;
+  case Node::PROCESSING_INSTRUCTION_NODE:
+    _notImplemented("Dom::writeNode() for PROCESSING_INSTRUCTION_NODE");
+    break;
+  case Node::COMMENT_NODE:
+    o << "<!--" << node.nodeValue() << "-->";
+    break;
+  case Node::DOCUMENT_NODE:
+    _writeNodeChildren(o, node);
+    break;
+  case Node::DOCUMENT_TYPE_NODE:
+    _writeNodeChildren(o, node);
+    break;
+  case Node::DOCUMENT_FRAGMENT_NODE:
+    _notImplemented("Dom::writeNode() for DOCUMENT_FRAGMENT_NODE");
+    break;
+  case Node::NOTATION_NODE:
+    _notImplemented("Dom::writeNode() for NOTATION_NODE");
+    break;
+  default:
+    _notImplemented("Dom::writeNode() for unknown node");
+    break;
   }
   return false;
 }
@@ -349,11 +347,11 @@ writeNode(std::ostream& o,const dom::Node& node)
 /*---------------------------------------------------------------------------*/
 
 bool domutils::
-saveDocument(std::ostream& ostr,const dom::Document& doc,int indent_level)
+saveDocument(std::ostream& ostr, const dom::Document& doc, int indent_level)
 {
   ByteUniqueArray bytes;
-  saveDocument(bytes,doc,indent_level);
-  ostr.write((const char*)bytes.data(),bytes.size());
+  saveDocument(bytes, doc, indent_level);
+  ostr.write((const char*)bytes.data(), bytes.size());
   return true;
 }
 
@@ -361,12 +359,12 @@ saveDocument(std::ostream& ostr,const dom::Document& doc,int indent_level)
 /*---------------------------------------------------------------------------*/
 
 bool domutils::
-saveDocument(ByteArray& bytes,const dom::Document& doc,int indent_level)
+saveDocument(ByteArray& bytes, const dom::Document& doc, int indent_level)
 {
   dom::DOMImplementation domimp;
-  domimp._save(bytes,doc,indent_level);
+  domimp._save(bytes, doc, indent_level);
   Integer nb_byte = bytes.size();
-  if (nb_byte>=1 && bytes[nb_byte-1]=='\0'){
+  if (nb_byte >= 1 && bytes[nb_byte - 1] == '\0') {
     ARCANE_FATAL("Invalid null charactere at end of XML stream");
   }
   return true;
@@ -389,7 +387,7 @@ createXmlDocument()
 /*---------------------------------------------------------------------------*/
 
 domutils::NameIterator::
-NameIterator(const dom::Node& from,const String& ref_name)
+NameIterator(const dom::Node& from, const String& ref_name)
 : m_parent(from)
 , m_current()
 , m_ref_name(ref_name)
@@ -405,13 +403,13 @@ _findNextValid(bool is_init)
 {
   if (is_init)
     m_current = m_parent.firstChild();
-  else{
+  else {
     if (m_current._null())
       return;
     m_current = m_current.nextSibling();
   }
-  while (!m_current._null()){
-    if (m_current.nodeName()==m_ref_name)
+  while (!m_current._null()) {
+    if (m_current.nodeName() == m_ref_name)
       break;
     m_current = m_current.nextSibling();
   }
@@ -424,44 +422,44 @@ _findNextValid(bool is_init)
 /*---------------------------------------------------------------------------*/
 
 IXmlDocumentHolder* IXmlDocumentHolder::
-loadFromBuffer(Span<const Byte> buffer,const String& name,ITraceMng* tm)
+loadFromBuffer(Span<const Byte> buffer, const String& name, ITraceMng* tm)
 {
   dom::DOMImplementation domimp;
   // Reading the file containing internal information.
-  return domimp._load(asBytes(buffer),name,tm);
+  return domimp._load(asBytes(buffer), name, tm);
 }
 
 IXmlDocumentHolder* IXmlDocumentHolder::
-loadFromBuffer(ByteConstSpan buffer,const String& name,ITraceMng* tm)
+loadFromBuffer(ByteConstSpan buffer, const String& name, ITraceMng* tm)
 {
   dom::DOMImplementation domimp;
   // Reading the file containing internal information.
-  return domimp._load(buffer,name,tm);
+  return domimp._load(buffer, name, tm);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IXmlDocumentHolder* IXmlDocumentHolder::
-loadFromFile(const String& filename,ITraceMng* tm)
+loadFromFile(const String& filename, ITraceMng* tm)
 {
-  return loadFromFile(filename,String(),tm);
+  return loadFromFile(filename, String(), tm);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IXmlDocumentHolder* IXmlDocumentHolder::
-loadFromFile(const String& filename,const String& schema_filename,ITraceMng* tm)
+loadFromFile(const String& filename, const String& schema_filename, ITraceMng* tm)
 {
   dom::DOMImplementation domimp;
-  return domimp._load(filename,tm,schema_filename);
+  return domimp._load(filename, tm, schema_filename);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

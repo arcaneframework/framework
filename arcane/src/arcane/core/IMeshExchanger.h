@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,6 +42,7 @@ class IItemFamilyExchanger;
 class ARCANE_CORE_EXPORT IMeshExchanger
 {
  public:
+
   //! Indicates the different phases of the exchange
   enum class ePhase
   {
@@ -55,6 +56,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
     Finalize,
     Ended
   };
+
  public:
 
   virtual ~IMeshExchanger() {} //<! Releases resources
@@ -83,7 +85,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::ComputeInfos
    * \post phase()==ePhase::ProcessExchange
    */
-  virtual bool computeExchangeInfos() =0;
+  virtual bool computeExchangeInfos() = 0;
 
   /*!
    * \brief Performs the exchange of information between subdomains.
@@ -97,7 +99,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::ProcessExchange
    * \post phase()==ePhase::RemoveItems
    */
-  virtual void processExchange() =0;
+  virtual void processExchange() = 0;
 
   /*!
    * \brief Deletes from this subdomain the entities that should no longer
@@ -109,7 +111,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::RemoveItems
    * \post phase()==ePhase::AllocateItems
    */
-  virtual void removeNeededItems() =0;
+  virtual void removeNeededItems() = 0;
 
   /*!
    * \brief Allocates the entities received from other subdomains.
@@ -119,7 +121,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::AllocateItems
    * \post phase()==ePhase::UpdateItemGroups
    */
-  virtual void allocateReceivedItems() =0;
+  virtual void allocateReceivedItems() = 0;
 
   /*!
    * \brief Update of entity groups
@@ -129,7 +131,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::UpdateItemGroups
    * \post phase()==ePhase::UpdateVariables
    */
-  virtual void updateItemGroups() =0;
+  virtual void updateItemGroups() = 0;
 
   /*!
    * \brief Update of variables
@@ -139,7 +141,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::UpdateVariables
    * \post phase()==ePhase::Finalize
    */
-  virtual void updateVariables() =0;
+  virtual void updateVariables() = 0;
 
   /*!
    * \brief Finalizes the exchanges.
@@ -152,16 +154,16 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \pre phase()==ePhase::Finalize
    * \post phase()==ePhase::Ended
    */
-  virtual void finalizeExchange() =0;
+  virtual void finalizeExchange() = 0;
 
   //! Mesh associated with this exchanger.
-  virtual IPrimaryMesh* mesh() const =0;
+  virtual IPrimaryMesh* mesh() const = 0;
 
   //! Exchanger associated with the \a family. Throws an exception if not found.
-  virtual IItemFamilyExchanger* findExchanger(IItemFamily* family) =0;
+  virtual IItemFamilyExchanger* findExchanger(IItemFamily* family) = 0;
 
   //! Phase of the exchange we are currently in.
-  virtual ePhase phase() const =0;
+  virtual ePhase phase() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -64,20 +64,19 @@ class IMesh
 
  public:
 
-  virtual void build() =0;
-
+  virtual void build() = 0;
 
   //! Name of the factory used to create the mesh
-  virtual String factoryName() const =0;
+  virtual String factoryName() const = 0;
 
   //! Internal array of mesh elements of type \a type
-  virtual ItemInternalList itemsInternal(eItemKind) =0;
+  virtual ItemInternalList itemsInternal(eItemKind) = 0;
 
   //! Node coordinates
-  virtual SharedVariableNodeReal3 sharedNodesCoordinates() =0;
+  virtual SharedVariableNodeReal3 sharedNodesCoordinates() = 0;
 
   //! Check for the validity of internal mesh structures (internal)
-  virtual void checkValidMesh() =0;
+  virtual void checkValidMesh() = 0;
 
   /*!
    * \brief Mesh validity check.
@@ -90,14 +89,14 @@ class IMesh
    * The check can be quite CPU intensive.
    * This method is collective.
    */
-  virtual void checkValidMeshFull() =0;
+  virtual void checkValidMeshFull() = 0;
 
   /*!
    * \brief Synchronizes all mesh groups and variables.
    *
    * This operation is collective
    */
-  virtual void synchronizeGroupsAndVariables()=0;
+  virtual void synchronizeGroupsAndVariables() = 0;
 
  public:
 
@@ -106,7 +105,7 @@ class IMesh
    * A mesh is allocated as soon as an entity has been added, by allocateCells(),
    *  or reloadMesh()
    */
-  virtual bool isAllocated() =0;
+  virtual bool isAllocated() = 0;
 
   /*!
    * \brief Counter indicating the time of the last mesh modification.
@@ -115,18 +114,18 @@ class IMesh
    * initialization. It allows, for example, checking if the mesh topology
    * has changed between two parts of the code.
    */
-  virtual Int64 timestamp() =0;
-  
+  virtual Int64 timestamp() = 0;
+
  public:
 
   //! Associated subdomain
   ARCANE_DEPRECATED_LONG_TERM("Y2020: Do not use this method. Try to get 'ISubDomain' from another way")
-  virtual ISubDomain* subDomain() =0;
+  virtual ISubDomain* subDomain() = 0;
 
  public:
 
   //! Parallelism manager
-  virtual IParallelMng* parallelMng() =0;
+  virtual IParallelMng* parallelMng() = 0;
 
  public:
 
@@ -136,59 +135,59 @@ class IMesh
 
   //! AMR
   //! Group of all active meshes
-  virtual CellGroup allActiveCells()=0;
+  virtual CellGroup allActiveCells() = 0;
 
   //! Group of all active meshes specific to the domain
-  virtual CellGroup ownActiveCells()=0;
+  virtual CellGroup ownActiveCells() = 0;
 
   //! Group of all meshes of level \p level
-  virtual CellGroup allLevelCells(const Integer& level) =0;
+  virtual CellGroup allLevelCells(const Integer& level) = 0;
 
   //! Group of all meshes specific to the domain of level \p level
-  virtual CellGroup ownLevelCells(const Integer& level) =0;
+  virtual CellGroup ownLevelCells(const Integer& level) = 0;
 
   //! Group of all active faces
-   virtual FaceGroup allActiveFaces()=0;
+  virtual FaceGroup allActiveFaces() = 0;
 
-   //! Group of all active faces specific to the domain.
-   virtual FaceGroup ownActiveFaces()=0;
+  //! Group of all active faces specific to the domain.
+  virtual FaceGroup ownActiveFaces() = 0;
 
   //! Group of all active faces
-  virtual FaceGroup innerActiveFaces()=0;
+  virtual FaceGroup innerActiveFaces() = 0;
 
   //! Group of all active faces on the boundary.
-  virtual FaceGroup outerActiveFaces()=0;
+  virtual FaceGroup outerActiveFaces() = 0;
 
  public:
 
   //! List of groups
-  virtual ItemGroupCollection groups()=0;
+  virtual ItemGroupCollection groups() = 0;
 
   //! Returns the group with name \a name or a null group if none exists.
-  virtual ItemGroup findGroup(const String& name) =0;
+  virtual ItemGroup findGroup(const String& name) = 0;
 
   //! Destroys all groups of all families.
-  virtual void destroyGroups() =0;
+  virtual void destroyGroups() = 0;
 
  public:
 
-  virtual MeshItemInternalList* meshItemInternalList() =0;
+  virtual MeshItemInternalList* meshItemInternalList() = 0;
 
  public:
 
-  virtual void updateGhostLayers(bool remove_old_ghost) =0;
+  virtual void updateGhostLayers(bool remove_old_ghost) = 0;
 
   /*!
    * \internal
    * \deprecated Use IMesh::cellFamily()->policyMng()->createSerializer() instead.
    */
-  ARCANE_DEPRECATED_240 virtual void serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id) =0;
+  ARCANE_DEPRECATED_240 virtual void serializeCells(ISerializer* buffer, Int32ConstArrayView cells_local_id) = 0;
 
   //! Prepares the instance for dumping
-  virtual void prepareForDump() =0;
-  
+  virtual void prepareForDump() = 0;
+
   //! Initializes variables with values from the configuration file (internal)
-  virtual void initializeVariables(const XmlNode& init_node) =0;
+  virtual void initializeVariables(const XmlNode& init_node) = 0;
 
   /*!
    * \brief Sets the mesh check level.
@@ -197,46 +196,46 @@ class IMesh
    * 1 - partial tests, after endUpdate()
    * 2 - full tests, after endUpdate()
    */
-  virtual void setCheckLevel(Integer level) =0;
-  
+  virtual void setCheckLevel(Integer level) = 0;
+
   //! Current check level
-  virtual Integer checkLevel() const =0;
+  virtual Integer checkLevel() const = 0;
 
   //! Indicates if the mesh is dynamic (can evolve)
-  virtual bool isDynamic() const =0;
+  virtual bool isDynamic() const = 0;
 
   //!
-  virtual bool isAmrActivated() const =0;
+  virtual bool isAmrActivated() const = 0;
 
  public:
 
   //! \name Management of semi-conforming interfaces
   //@{
   //! Determines the semi-conforming interfaces
-  virtual void computeTiedInterfaces(const XmlNode& mesh_node) =0;
+  virtual void computeTiedInterfaces(const XmlNode& mesh_node) = 0;
 
   //! True if semi-conforming interfaces exist in the mesh
-  virtual bool hasTiedInterface() =0;
-  
+  virtual bool hasTiedInterface() = 0;
+
   //! List of semi-conforming interfaces
-  virtual TiedInterfaceCollection tiedInterfaces() =0;
+  virtual TiedInterfaceCollection tiedInterfaces() = 0;
   //@}
 
   //! Manager of partitioning constraints associated with this mesh.
-  virtual IMeshPartitionConstraintMng* partitionConstraintMng() =0;
+  virtual IMeshPartitionConstraintMng* partitionConstraintMng() = 0;
 
  public:
 
   //! Associated utility functions interface
-  virtual IMeshUtilities* utilities() =0;
+  virtual IMeshUtilities* utilities() = 0;
 
   //! Properties associated with this mesh
-  virtual Properties* properties() =0;
+  virtual Properties* properties() = 0;
 
  public:
 
   //! Associated modifier interface
-  virtual IMeshModifier* modifier() =0;
+  virtual IMeshModifier* modifier() = 0;
 
  public:
 
@@ -246,7 +245,7 @@ class IMesh
    * Returns a native array (not shared like SharedVariable) of coordinates.
    * This call is only valid on a primary mesh (not a sub-mesh).
    */
-  virtual VariableNodeReal3& nodesCoordinates() =0;
+  virtual VariableNodeReal3& nodesCoordinates() = 0;
 
   //@{ @name Sub-mesh interface
   /*!
@@ -254,7 +253,7 @@ class IMesh
    *
    *  Must be set on the mesh being constructed _before_ the build() phase
    */
-  virtual void defineParentForBuild(IMesh * mesh, ItemGroup group) =0;
+  virtual void defineParentForBuild(IMesh* mesh, ItemGroup group) = 0;
 
   /*!
    * \brief Access to the parent mesh.
@@ -271,7 +270,7 @@ class IMesh
   virtual ItemGroup parentGroup() const = 0;
 
   //! Adds a sub-mesh to the parent mesh
-  virtual void addChildMesh(IMesh * sub_mesh) = 0;
+  virtual void addChildMesh(IMesh* sub_mesh) = 0;
 
   //! List of sub-meshes of the current mesh
   virtual MeshCollection childMeshes() const = 0;
@@ -287,7 +286,7 @@ class IMesh
    * and not be a sub-mesh, meaning it
    * does not have a parent mesh (parentMesh()==nullptr).
    */
-  virtual bool isPrimaryMesh() const =0;
+  virtual bool isPrimaryMesh() const = 0;
 
   /*!
    * \brief Returns the instance in the form of an IPrimaryMesh.
@@ -295,68 +294,68 @@ class IMesh
    * Throws a BadCastException if the instance
    * is not of type IPrimaryMesh and if isPrimaryMesh() is false.
    */
-  virtual IPrimaryMesh* toPrimaryMesh() =0;
+  virtual IPrimaryMesh* toPrimaryMesh() = 0;
 
  public:
 
   //! Associated user data manager
-  virtual IUserDataList* userDataList() =0;
+  virtual IUserDataList* userDataList() = 0;
 
   //! Associated user data manager
-  virtual const IUserDataList* userDataList() const =0;
+  virtual const IUserDataList* userDataList() const = 0;
 
  public:
 
   //! Associated ghost layer manager
-  virtual IGhostLayerMng* ghostLayerMng() const =0;
+  virtual IGhostLayerMng* ghostLayerMng() const = 0;
 
   //! Unique ID numbering manager
-  virtual IMeshUniqueIdMng* meshUniqueIdMng() const =0;
+  virtual IMeshUniqueIdMng* meshUniqueIdMng() const = 0;
 
   //! Checker interface.
-  virtual IMeshChecker* checker() const =0;
+  virtual IMeshChecker* checker() const = 0;
 
   //! Mesh part information
-  virtual const MeshPartInfo& meshPartInfo() const =0;
+  virtual const MeshPartInfo& meshPartInfo() const = 0;
 
   //! check if the network itemFamily dependencies is activated
-  virtual bool useMeshItemFamilyDependencies() const =0;
+  virtual bool useMeshItemFamilyDependencies() const = 0;
 
   //! Family network interface (connected families)
-  virtual IItemFamilyNetwork* itemFamilyNetwork() =0;
+  virtual IItemFamilyNetwork* itemFamilyNetwork() = 0;
 
   //! Interface of the indexed incremental connectivity manager.
-  virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() =0;
+  virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() = 0;
 
   //! Mesh characteristics
-  virtual const MeshKind meshKind() const =0;
+  virtual const MeshKind meshKind() const = 0;
 
  public:
 
   //! Observable for an event
-  virtual EventObservable<const MeshEventArgs&>& eventObservable(eMeshEventType type) =0;
+  virtual EventObservable<const MeshEventArgs&>& eventObservable(eMeshEventType type) = 0;
 
  public:
 
   //! \internal
-  virtual IMeshCompactMng* _compactMng() =0;
+  virtual IMeshCompactMng* _compactMng() = 0;
 
   /*!
    * \internal
    * \brief Connectivity usage policy
    */
-  virtual InternalConnectivityPolicy _connectivityPolicy() const =0;
+  virtual InternalConnectivityPolicy _connectivityPolicy() const = 0;
 
  public:
 
   //! Associated mesh manager
-  virtual IMeshMng* meshMng() const =0;
+  virtual IMeshMng* meshMng() const = 0;
 
   //! Associated variable manager
-  virtual IVariableMng* variableMng() const =0;
+  virtual IVariableMng* variableMng() const = 0;
 
   //! Associated entity type manager
-  virtual ItemTypeMng* itemTypeMng() const =0;
+  virtual ItemTypeMng* itemTypeMng() const = 0;
 
  public:
 
@@ -369,12 +368,12 @@ class IMesh
    * necessary. However, it can happen following certain internal modifications
    * that the information for synchronization needs to be manually updated.
    */
-  virtual void computeSynchronizeInfos() =0;
+  virtual void computeSynchronizeInfos() = 0;
 
  public:
 
   //! Internal Arcane API
-  virtual IMeshInternal* _internalApi() =0;
+  virtual IMeshInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

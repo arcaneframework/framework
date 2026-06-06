@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -77,7 +77,7 @@ addVariable(IVariable* variable)
 {
   if (!m_item_family)
     ARCANE_FATAL("family not set. call setItemFamily()");
-  if (variable->itemGroup().itemFamily()!=m_item_family)
+  if (variable->itemGroup().itemFamily() != m_item_family)
     ARCANE_FATAL("variable->itemFamily() and itemFamily() differ");
   m_variables.add(variable);
 }
@@ -105,19 +105,19 @@ applyOperation(IDataOperation* operation)
   UniqueArray<ISerializeMessage*> m_messages;
   m_messages.reserve(nb_rank);
 
-  auto exchanger {ParallelMngUtils::createExchangerRef(pm)};
-  
-  for( Integer i=0; i<nb_rank; ++i )
+  auto exchanger{ ParallelMngUtils::createExchangerRef(pm) };
+
+  for (Integer i = 0; i < nb_rank; ++i)
     if (!m_items_to_send[i].empty())
       exchanger->addSender(i);
-  
+
   bool no_exchange = exchanger->initializeCommunicationsMessages();
   if (no_exchange)
-    return;  
+    return;
 
   ItemInfoListView item_list(m_item_family);
   // Generates info for each processor to which we will send entities
-  for( Integer i=0, is=exchanger->nbSender(); i<is; ++i ){
+  for (Integer i = 0, is = exchanger->nbSender(); i < is; ++i) {
     ISerializeMessage* comm = exchanger->messageToSend(i);
     Int32 dest_sub_domain = comm->destination().value();
     ConstArrayView<ItemLocalId> dest_items_internal = m_items_to_send[dest_sub_domain];
@@ -127,7 +127,7 @@ applyOperation(IDataOperation* operation)
 
     UniqueArray<Int32> dest_items_local_id(nb_item);
     UniqueArray<Int64> dest_items_unique_id(nb_item);
-    for( Integer z=0; z<nb_item; ++z ){
+    for (Integer z = 0; z < nb_item; ++z) {
       Item item = item_list[dest_items_internal[z]];
       dest_items_local_id[z] = item.localId();
       dest_items_unique_id[z] = item.uniqueId().asInt64();
@@ -145,10 +145,10 @@ applyOperation(IDataOperation* operation)
     sbuf->reserveSpan(dest_items_unique_id);
 
     // Reserves for each variable
-    for( VariableList::Enumerator i_var(m_variables); ++i_var; ){
+    for (VariableList::Enumerator i_var(m_variables); ++i_var;) {
       IVariable* var = *i_var;
       debug(Trace::High) << "Serialize variable (reserve)" << var->name();
-      var->serialize(sbuf,dest_items_local_id);
+      var->serialize(sbuf, dest_items_local_id);
     }
 
     sbuf->allocateBuffer();
@@ -162,10 +162,10 @@ applyOperation(IDataOperation* operation)
     // Serializes the list of uniqueId() of transferred entities
     sbuf->putInt64(nb_item);
     sbuf->putSpan(dest_items_unique_id);
-    for( VariableList::Enumerator i_var(m_variables); ++i_var; ){
+    for (VariableList::Enumerator i_var(m_variables); ++i_var;) {
       IVariable* var = *i_var;
       debug(Trace::High) << "Serialise variable (put)" << var->name();
-      var->serialize(sbuf,dest_items_local_id);
+      var->serialize(sbuf, dest_items_local_id);
     }
   }
 
@@ -173,12 +173,12 @@ applyOperation(IDataOperation* operation)
 
   {
     debug() << "VariableParallelOperationBase::readVariables()";
-    
+
     UniqueArray<Int64> items_unique_id;
     UniqueArray<Int32> items_local_id;
-    
+
     // Retrieves info for variables and fills them
-    for( Integer i=0, n=exchanger->nbReceiver(); i<n; ++i ){
+    for (Integer i = 0, n = exchanger->nbReceiver(); i < n; ++i) {
       ISerializeMessage* comm = exchanger->messageToReceive(i);
       ISerializer* sbuf = comm->serializer();
 
@@ -186,9 +186,9 @@ applyOperation(IDataOperation* operation)
       {
         // Serializes the magic number
         Int64 magic_number = sbuf->getInt64();
-        if (magic_number!=SERIALIZE_MAGIC_NUMBER)
+        if (magic_number != SERIALIZE_MAGIC_NUMBER)
           ARCANE_FATAL("Bad magic number actual={0} expected={1}. This is probably due to incoherent messaging",
-                       magic_number,SERIALIZE_MAGIC_NUMBER);
+                       magic_number, SERIALIZE_MAGIC_NUMBER);
 
         // Retrieves the list of uniqueId() of transferred entities
         Int64 nb_item = sbuf->getInt64();
@@ -197,16 +197,16 @@ applyOperation(IDataOperation* operation)
         items_local_id.resize(nb_item);
         debug(Trace::High) << "Receiving " << nb_item << " items from " << comm->destination().value();
 
-        if (is_debug_print){
-          for( Integer iz=0; iz<nb_item; ++iz )
+        if (is_debug_print) {
+          for (Integer iz = 0; iz < nb_item; ++iz)
             debug(Trace::Highest) << "Receiving uid=" << items_unique_id[iz];
         }
 
-        itemFamily()->itemsUniqueIdToLocalId(items_local_id,items_unique_id);
-        
-        for( VariableList::Enumerator ivar(m_variables); ++ivar; ){
+        itemFamily()->itemsUniqueIdToLocalId(items_local_id, items_unique_id);
+
+        for (VariableList::Enumerator ivar(m_variables); ++ivar;) {
           IVariable* var = *ivar;
-          var->serialize(sbuf,items_local_id,operation);
+          var->serialize(sbuf, items_local_id, operation);
         }
       }
     }

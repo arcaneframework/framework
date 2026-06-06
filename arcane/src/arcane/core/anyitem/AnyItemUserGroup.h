@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 /*                                                                           */
 /* Aggregated user group of arbitrary types.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H 
+#ifndef ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H
 #define ARCANE_CORE_ANYITEM_ANYITEMUSERGROUP_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,22 +47,22 @@ namespace Arcane::AnyItem
  *           << AnyItem::GroupBuilder( allFaces() );
  */
 class UserGroup
-  : public Group
-  , public IFamilyObserver
-{  
-private:
-  
+: public Group
+, public IFamilyObserver
+{
+ private:
+
   typedef Private::GroupIndexMapping GroupIndexMapping;
-  
-public:
-  
-  UserGroup(const Family& family)  
-    : Group(m_currents)
-    , m_family(family)
+
+ public:
+
+  UserGroup(const Family& family)
+  : Group(m_currents)
+  , m_family(family)
   {
     m_family.registerObserver(*this);
-  } 
-  
+  }
+
   ~UserGroup()
   {
     arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
@@ -73,40 +73,43 @@ public:
   {
     ItemGroup group = builder.group();
     if (m_groups.findGroupInfo(group.internal()) != NULL)
-      throw FatalErrorException(String::format("Group '{0}' in user group already registered",group.name()));
+      throw FatalErrorException(String::format("Group '{0}' in user group already registered", group.name()));
 
-    const Private::GroupIndexInfo * info = m_family.internal()->findGroupInfo(group);
+    const Private::GroupIndexInfo* info = m_family.internal()->findGroupInfo(group);
     if (info == NULL)
-      throw FatalErrorException(String::format("Group '{0}' in user group not registered in family",group.name()));
+      throw FatalErrorException(String::format("Group '{0}' in user group not registered in family", group.name()));
 
-    if(builder.isPartial() != info->is_partial)
-      throw FatalErrorException(String::format("Group '{0}' in user group is not same in family",group.name()));
-    
+    if (builder.isPartial() != info->is_partial)
+      throw FatalErrorException(String::format("Group '{0}' in user group is not same in family", group.name()));
+
     m_currents.add(*info);
     return *this;
   }
-  
+
   //! Clears the group
-  inline void clear() {
+  inline void clear()
+  {
     m_currents.clear();
   }
 
   //! Action if the family is invalidated: clears the group
-  inline void notifyFamilyIsInvalidate() {
+  inline void notifyFamilyIsInvalidate()
+  {
     // If the family changes, the group is invalidated
     clear();
   }
 
   //! If the family is increased, no impact on the group
-  inline void notifyFamilyIsIncreased() {
+  inline void notifyFamilyIsIncreased()
+  {
     // Nothing is done in this case
   }
-  
-private:
-  
+
+ private:
+
   //! AnyItem Family (flyweight copy)
   const Family m_family;
-  
+
   //! Group Table - offset
   GroupIndexMapping m_currents;
 };
@@ -119,4 +122,4 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_ANYITEM_ANYITEMUSERGROUP_H */
+#endif

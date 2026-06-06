@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,11 +40,20 @@ namespace Arcane
 class XmlNodeSameName
 {
  public:
-  XmlNodeSameName(const String& name) : m_name(name) {}
+
+  XmlNodeSameName(const String& name)
+  : m_name(name)
+  {}
+
  public:
+
   bool operator()(const XmlNode& node)
-    { return node.name()==m_name; }
+  {
+    return node.name() == m_name;
+  }
+
  private:
+
   String m_name;
 };
 
@@ -66,8 +75,8 @@ child(const String& child_name) const
   if (m_node._null())
     return _nullNode();
   XmlNodeSameName same_name(child_name);
-  XmlNodeConstIterator i = ARCANE_STD::find_if(begin(),end(),same_name);
-  if (i!=end())
+  XmlNodeConstIterator i = ARCANE_STD::find_if(begin(), end(), same_name);
+  if (i != end())
     return *i;
   return XmlNode(m_rm);
 }
@@ -82,7 +91,7 @@ expectedChild(const String& child_name) const
     return _nullNode();
   XmlNode c = child(child_name);
   if (c.null())
-    ARCANE_FATAL("Can not find a child named '{0}' for node '{1}'",child_name,xpathFullName());
+    ARCANE_FATAL("Can not find a child named '{0}' for node '{1}'", child_name, xpathFullName());
   return c;
 }
 
@@ -96,7 +105,7 @@ children(const String& child_name) const
   if (m_node._null())
     return nodes;
   XmlNodeSameName same_name(child_name);
-  for( XmlNodeConstIterator n = begin(); n!=end(); ++n )
+  for (XmlNodeConstIterator n = begin(); n != end(); ++n)
     if (same_name(*n))
       nodes.add(*n);
   return nodes;
@@ -111,7 +120,7 @@ children() const
   XmlNodeList nodes;
   if (m_node._null())
     return nodes;
-  for( XmlNodeConstIterator n = begin(); n!=end(); ++n )
+  for (XmlNodeConstIterator n = begin(); n != end(); ++n)
     nodes.add(*n);
   return nodes;
 }
@@ -147,21 +156,21 @@ xpathFullName() const
     return full_name;
 
   XmlNode p = parent();
-  if (!p.null()){
+  if (!p.null()) {
     full_name = p.xpathFullName();
     full_name.append("/");
 
-    if (m_node.nodeType()==dom::Node::ATTRIBUTE_NODE){
+    if (m_node.nodeType() == dom::Node::ATTRIBUTE_NODE) {
       full_name += "@";
       full_name += name();
     }
-    else if (m_node.nodeType()==dom::Node::ELEMENT_NODE){
+    else if (m_node.nodeType() == dom::Node::ELEMENT_NODE) {
       full_name.append(name());
       Integer nb_occurence = 1;
-      for( XmlNode i=p.front(); i!=(*this); ++i )
+      for (XmlNode i = p.front(); i != (*this); ++i)
         if (i.isNamed(name()))
           ++nb_occurence;
-      if (nb_occurence>1){
+      if (nb_occurence > 1) {
         full_name += "[";
         full_name += nb_occurence;
         full_name += "]";
@@ -170,13 +179,13 @@ xpathFullName() const
     else
       full_name += "?";
   }
-  else{
-    if (m_node.nodeType()==dom::Node::ATTRIBUTE_NODE){
+  else {
+    if (m_node.nodeType() == dom::Node::ATTRIBUTE_NODE) {
       full_name = ownerElement().xpathFullName();
       full_name += "/@";
       full_name += name();
     }
-    else{
+    else {
       full_name = String("/");
     }
   }
@@ -189,7 +198,7 @@ xpathFullName() const
 bool XmlNode::
 isNamed(const String& name) const
 {
-  return m_node.nodeName()==name;
+  return m_node.nodeName() == name;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -211,8 +220,8 @@ setValue(const String& v)
 {
   if (m_node._null())
     return;
-  if (m_node.nodeType()==dom::Node::ELEMENT_NODE){
-    domutils::textContent(m_node,v);
+  if (m_node.nodeType() == dom::Node::ELEMENT_NODE) {
+    domutils::textContent(m_node, v);
     return;
   }
   m_node.nodeValue(v);
@@ -222,12 +231,12 @@ setValue(const String& v)
 /*---------------------------------------------------------------------------*/
 
 String XmlNode::
-attrValue(const String& name,bool throw_exception) const
+attrValue(const String& name, bool throw_exception) const
 {
-  String s = domutils::attrValue(m_node,name);
-  if (s.null() && throw_exception){
-    ARCANE_THROW(XmlException,"No attribute named '{0}' child of '{1}'",
-                 name,xpathFullName());
+  String s = domutils::attrValue(m_node, name);
+  if (s.null() && throw_exception) {
+    ARCANE_THROW(XmlException, "No attribute named '{0}' child of '{1}'",
+                 name, xpathFullName());
   }
   return s;
 }
@@ -236,25 +245,25 @@ attrValue(const String& name,bool throw_exception) const
 /*---------------------------------------------------------------------------*/
 
 void XmlNode::
-setAttrValue(const String& name,const String& value)
+setAttrValue(const String& name, const String& value)
 {
-  domutils::setAttr(m_node,name,value);
+  domutils::setAttr(m_node, name, value);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-attr(const String& name,bool throw_exception) const
+attr(const String& name, bool throw_exception) const
 {
   dom::Element elem(m_node);
   if (elem._null())
     return _nullNode();
 
-  XmlNode attr_node(m_rm,elem.getAttributeNode(name));
-  if (throw_exception && attr_node.null()){
-    ARCANE_THROW(XmlException,"No attribute named '{0}' child of '{1}'",
-                 name,xpathFullName());
+  XmlNode attr_node(m_rm, elem.getAttributeNode(name));
+  if (throw_exception && attr_node.null()) {
+    ARCANE_THROW(XmlException, "No attribute named '{0}' child of '{1}'",
+                 name, xpathFullName());
   }
   return attr_node;
 }
@@ -269,11 +278,11 @@ forceAttr(const String& name)
   if (elem._null())
     return _nullNode();
   dom::Attr attr = elem.getAttributeNode(name);
-  if (attr._null()){
+  if (attr._null()) {
     attr = elem.ownerDocument().createAttribute(name);
     attr = elem.setAttributeNode(attr);
   }
-  return XmlNode(m_rm,attr);
+  return XmlNode(m_rm, attr);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -294,7 +303,7 @@ clear()
 {
   // Removes child nodes.
   XmlNode n = front();
-  while (!n.null()){
+  while (!n.null()) {
     remove(n);
     n = front();
   }
@@ -334,7 +343,7 @@ nextWithName(const String& name) const
   if (m_node._null())
     return _nullNode();
   XmlNode n(next());
-  while(!n.null() && !n.isNamed(name))
+  while (!n.null() && !n.isNamed(name))
     ++n;
   return n;
 }
@@ -349,7 +358,7 @@ prevWithName(const String& name) const
   if (m_node._null())
     return _nullNode();
   XmlNode n(prev());
-  while(!n.null() && !n.isNamed(name))
+  while (!n.null() && !n.isNamed(name))
     --n;
   return n;
 }
@@ -364,7 +373,7 @@ nextSameType() const
   if (m_node._null())
     return _nullNode();
   XmlNode n(next());
-  while(!n.null() && n.type()!=type())
+  while (!n.null() && n.type() != type())
     ++n;
   return n;
 }
@@ -379,7 +388,7 @@ prevSameType() const
   if (m_node._null())
     return _nullNode();
   XmlNode n(prev());
-  while(!n.null() && n.type()!=type())
+  while (!n.null() && n.type() != type())
     --n;
   return n;
 }
@@ -388,21 +397,21 @@ prevSameType() const
 /*---------------------------------------------------------------------------*/
 
 void XmlNode::
-replace(const XmlNode& new_node,XmlNode& ref_node)
+replace(const XmlNode& new_node, XmlNode& ref_node)
 {
   if (m_node._null() || new_node.null() || ref_node.null())
     return;
-  m_node.replaceChild(new_node.domNode(),ref_node.domNode());
+  m_node.replaceChild(new_node.domNode(), ref_node.domNode());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void XmlNode::
-_throwBadConvert(const char* type_name,const String& value) const
+_throwBadConvert(const char* type_name, const String& value) const
 {
-  ARCANE_THROW(XmlException,"XML Node '{0}' can not convert value '{1}' to type '{2}'",
-               xpathFullName(),value,type_name);
+  ARCANE_THROW(XmlException, "XML Node '{0}' can not convert value '{1}' to type '{2}'",
+               xpathFullName(), value, type_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -414,14 +423,14 @@ valueAsBoolean(bool throw_exception) const
   if (null())
     return false;
   String value = _value();
-  if (value=="false" || value=="0")
+  if (value == "false" || value == "0")
     return false;
-  if (value=="true" || value=="1")
+  if (value == "true" || value == "1")
     return true;
   if (throw_exception)
-    ARCANE_THROW(XmlException,"XML Node '{0}' can not convert value '{1}' to type 'bool'."
-                 " Valid values are 'true', 'false', '0' (zero) or '1'.",
-                 xpathFullName(),value);
+    ARCANE_THROW(XmlException, "XML Node '{0}' can not convert value '{1}' to type 'bool'."
+                               " Valid values are 'true', 'false', '0' (zero) or '1'.",
+                 xpathFullName(), value);
   return false;
 }
 
@@ -435,9 +444,9 @@ valueAsInteger(bool throw_exception) const
     return 0;
   String value = _value();
   Integer v = 0;
-  if (builtInGetValue(v,value))
+  if (builtInGetValue(v, value))
     if (throw_exception)
-      _throwBadConvert("Integer",value);
+      _throwBadConvert("Integer", value);
   return v;
 }
 
@@ -451,9 +460,9 @@ valueAsInt64(bool throw_exception) const
     return 0;
   String value = _value();
   Int64 v = 0;
-  if (builtInGetValue(v,value))
+  if (builtInGetValue(v, value))
     if (throw_exception)
-      _throwBadConvert("Int64",value);
+      _throwBadConvert("Int64", value);
   return v;
 }
 
@@ -467,9 +476,9 @@ valueAsReal(bool throw_exception) const
     return 0.0;
   String value = _value();
   Real v = 0.0;
-  if (builtInGetValue(v,value))
+  if (builtInGetValue(v, value))
     if (throw_exception)
-      _throwBadConvert("Real",value);
+      _throwBadConvert("Real", value);
   return v;
 }
 
@@ -477,17 +486,17 @@ valueAsReal(bool throw_exception) const
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-childWithAttr(const String& elem_name,const String& attr_name,
+childWithAttr(const String& elem_name, const String& attr_name,
               const String& attr_value) const
 {
   String name;
   if (null())
     return _nullNode();
-  for( XmlNode::const_iter i(*this); i(); ++i ){
+  for (XmlNode::const_iter i(*this); i(); ++i) {
     if (!i->isNamed(elem_name))
       continue;
     name = i->attrValue(attr_name);
-    if (name==attr_value)
+    if (name == attr_value)
       return *i;
   }
   return XmlNode(m_rm);
@@ -497,9 +506,9 @@ childWithAttr(const String& elem_name,const String& attr_name,
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-childWithNameAttr(const String& elem_name,const String& attr_value) const
+childWithNameAttr(const String& elem_name, const String& attr_value) const
 {
-  return childWithAttr(elem_name,String("name"),attr_value);
+  return childWithAttr(elem_name, String("name"), attr_value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -508,7 +517,7 @@ childWithNameAttr(const String& elem_name,const String& attr_value) const
 XmlNode XmlNode::
 xpathNode(const String& xpath_expr) const
 {
-  return XmlNode(m_rm,domutils::nodeFromXPath(m_node,xpath_expr));
+  return XmlNode(m_rm, domutils::nodeFromXPath(m_node, xpath_expr));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -517,7 +526,7 @@ xpathNode(const String& xpath_expr) const
 String XmlNode::
 _value() const
 {
-  if (m_node.nodeType()==dom::Node::ELEMENT_NODE)
+  if (m_node.nodeType() == dom::Node::ELEMENT_NODE)
     return domutils::textContent(m_node);
   return String(m_node.nodeValue());
 }
@@ -535,7 +544,7 @@ assignDomNode(const dom::Node& node)
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-insertAfter(const XmlNode& new_child,const XmlNode& ref_node)
+insertAfter(const XmlNode& new_child, const XmlNode& ref_node)
 {
   if (new_child.null())
     return _nullNode();
@@ -545,7 +554,7 @@ insertAfter(const XmlNode& new_child,const XmlNode& ref_node)
   if (next.null())
     append(new_child);
   else
-    m_node.insertBefore(new_child.domNode(),next.domNode());
+    m_node.insertBefore(new_child.domNode(), next.domNode());
   return new_child;
 }
 
@@ -579,16 +588,16 @@ ownerElement() const
 XmlNode XmlNode::
 createElement(const String& name)
 {
-  return createNode(ELEMENT,name);
+  return createNode(ELEMENT, name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-createAndAppendElement(const String& name,const String& value)
+createAndAppendElement(const String& name, const String& value)
 {
-  XmlNode n = createNode(ELEMENT,name,value);
+  XmlNode n = createNode(ELEMENT, name, value);
   append(n);
   return n;
 }
@@ -599,7 +608,7 @@ createAndAppendElement(const String& name,const String& value)
 XmlNode XmlNode::
 createAndAppendElement(const String& name)
 {
-  XmlNode n = createNode(ELEMENT,name);
+  XmlNode n = createNode(ELEMENT, name);
   append(n);
   return n;
 }
@@ -608,23 +617,23 @@ createAndAppendElement(const String& name)
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-createNode(eType type,const String& name_or_value)
+createNode(eType type, const String& name_or_value)
 {
   dom::Document doc(m_node);
   if (doc._null())
     doc = m_node.ownerDocument();
   XmlNode ret_node(m_rm);
   String nov = name_or_value;
-  switch(type){
-   case ELEMENT:
-     ret_node.assignDomNode(doc.createElement(nov));
-     break;
-   case TEXT:
-     ret_node.assignDomNode(doc.createTextNode(nov));
-     break;
-   default:
-     ARCANE_THROW(NotImplementedException,
-                  "createNode() not implemented for node type {0}",(int)type);
+  switch (type) {
+  case ELEMENT:
+    ret_node.assignDomNode(doc.createElement(nov));
+    break;
+  case TEXT:
+    ret_node.assignDomNode(doc.createTextNode(nov));
+    break;
+  default:
+    ARCANE_THROW(NotImplementedException,
+                 "createNode() not implemented for node type {0}", (int)type);
   }
   return ret_node;
 }
@@ -635,30 +644,30 @@ createNode(eType type,const String& name_or_value)
 XmlNode XmlNode::
 createText(const String& value)
 {
-  return createNode(TEXT,value);
+  return createNode(TEXT, value);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 XmlNode XmlNode::
-createNode(eType type,const String& name,const String& value)
+createNode(eType type, const String& name, const String& value)
 {
   dom::Document doc(m_node);
   if (doc._null())
     doc = m_node.ownerDocument();
   XmlNode ret_node(m_rm);
-  switch(type){
-   case ELEMENT:
-     ret_node.assignDomNode(doc.createElement(name));
-     ret_node.setValue(value);
-     break;
-   case TEXT:
-     ret_node.assignDomNode(doc.createTextNode(value));
-     break;
-   default:
-     ARCANE_THROW(NotImplementedException,
-                  "createNode() not implemented for node type {0}",(int)type);
+  switch (type) {
+  case ELEMENT:
+    ret_node.assignDomNode(doc.createElement(name));
+    ret_node.setValue(value);
+    break;
+  case TEXT:
+    ret_node.assignDomNode(doc.createTextNode(value));
+    break;
+  default:
+    ARCANE_THROW(NotImplementedException,
+                 "createNode() not implemented for node type {0}", (int)type);
   }
   return ret_node;
 }
@@ -669,7 +678,7 @@ createNode(eType type,const String& name,const String& value)
 XmlNode XmlNode::
 _build(const dom::Node& node) const
 {
-  return XmlNode(m_rm,node);
+  return XmlNode(m_rm, node);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -679,17 +688,17 @@ _build(const dom::Node& node) const
 /*---------------------------------------------------------------------------*/
 
 XmlElement::
-XmlElement(XmlNode& parent,const String& name,const String& value)
+XmlElement(XmlNode& parent, const String& name, const String& value)
 : XmlNode(parent)
 {
-  _setNode(parent.createAndAppendElement(name,value).domNode());
+  _setNode(parent.createAndAppendElement(name, value).domNode());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 XmlElement::
-XmlElement(XmlNode& parent,const String& name)
+XmlElement(XmlNode& parent, const String& name)
 : XmlNode(parent)
 {
   _setNode(parent.createAndAppendElement(name).domNode());
@@ -702,10 +711,10 @@ XmlElement(XmlNode& parent,const String& name)
 /*---------------------------------------------------------------------------*/
 
 XmlNodeNameIterator::
-XmlNodeNameIterator(const XmlNode& from,const String& ref_name)
-: m_parent   (from)
-, m_current  (0)
-, m_ref_name (ref_name)
+XmlNodeNameIterator(const XmlNode& from, const String& ref_name)
+: m_parent(from)
+, m_current(0)
+, m_ref_name(ref_name)
 {
   _findNextValid(true);
 }
@@ -714,10 +723,10 @@ XmlNodeNameIterator(const XmlNode& from,const String& ref_name)
 /*---------------------------------------------------------------------------*/
 
 XmlNodeNameIterator::
-XmlNodeNameIterator(const XmlNode& from,const char* ref_name)
-: m_parent   (from)
-, m_current  (0)
-, m_ref_name (String(ref_name))
+XmlNodeNameIterator(const XmlNode& from, const char* ref_name)
+: m_parent(from)
+, m_current(0)
+, m_ref_name(String(ref_name))
 {
   _findNextValid(true);
 }
@@ -730,12 +739,12 @@ _findNextValid(bool is_init)
 {
   if (is_init)
     m_current = m_parent.front();
-  else{
+  else {
     if (m_current.null())
       return;
     ++m_current;
   }
-  while (!m_current.null()){
+  while (!m_current.null()) {
     if (m_current.isNamed(m_ref_name))
       break;
     ++m_current;
@@ -745,7 +754,7 @@ _findNextValid(bool is_init)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

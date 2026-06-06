@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/SubDomainBuildInfo.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/SubDomainBuildInfo.h"
+#include "arcane/core/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 SubDomainBuildInfo::
-SubDomainBuildInfo(Ref<IParallelMng> pm,Int32 index)
+SubDomainBuildInfo(Ref<IParallelMng> pm, Int32 index)
 : m_parallel_mng(pm)
 , m_index(index)
 , m_all_replica_parallel_mng(m_parallel_mng)
@@ -35,7 +35,7 @@ SubDomainBuildInfo(Ref<IParallelMng> pm,Int32 index)
 /*---------------------------------------------------------------------------*/
 
 SubDomainBuildInfo::
-SubDomainBuildInfo(Ref<IParallelMng> pm,Int32 index,Ref<IParallelMng> all_replica_pm)
+SubDomainBuildInfo(Ref<IParallelMng> pm, Int32 index, Ref<IParallelMng> all_replica_pm)
 : m_parallel_mng(pm)
 , m_index(index)
 , m_all_replica_parallel_mng(all_replica_pm)
@@ -48,7 +48,7 @@ SubDomainBuildInfo(Ref<IParallelMng> pm,Int32 index,Ref<IParallelMng> all_replic
 ByteConstArrayView SubDomainBuildInfo::
 caseBytes() const
 {
-  ConstArrayView<std::byte> x { m_case_content.view() };
+  ConstArrayView<std::byte> x{ m_case_content.view() };
   return ByteConstArrayView(x.size(), reinterpret_cast<const Byte*>(x.data()));
 }
 
@@ -56,7 +56,7 @@ void SubDomainBuildInfo::
 setCaseBytes(ByteConstArrayView bytes)
 {
   auto d = reinterpret_cast<const std::byte*>(bytes.data());
-  m_case_content = ByteConstSpan(d,bytes.size());
+  m_case_content = ByteConstSpan(d, bytes.size());
 }
 
 /*---------------------------------------------------------------------------*/

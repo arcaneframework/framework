@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -201,7 +201,7 @@ namespace Arcane::Materials
 inline constexpr matimpl::ConstituentItemBase ComponentItemSharedInfo::
 _item(ConstituentItemIndex id)
 {
-  return matimpl::ConstituentItemBase(this,id);
+  return matimpl::ConstituentItemBase(this, id);
 }
 
 ARCCORE_HOST_DEVICE inline matimpl::ConstituentItemBase ComponentItemSharedInfo::
@@ -213,7 +213,7 @@ _superItemBase(ConstituentItemIndex id) const
 }
 
 inline ARCCORE_HOST_DEVICE matimpl::ConstituentItemBase ComponentItemSharedInfo::
-_subItemBase(ConstituentItemIndex id,Int32 sub_index) const
+_subItemBase(ConstituentItemIndex id, Int32 sub_index) const
 {
   ARCCORE_CHECK_RANGE(id.localId(), -1, m_storage_size);
   ConstituentItemIndex lid(m_first_sub_constituent_item_id_data[id.localId()].localId() + sub_index);

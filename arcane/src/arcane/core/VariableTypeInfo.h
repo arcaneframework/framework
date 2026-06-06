@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,10 +36,14 @@ class ARCANE_CORE_EXPORT VariableTypeInfo
 {
  public:
 
-  constexpr VariableTypeInfo(eItemKind item_kind,eDataType data_type,Integer dimension,
-                             Integer multi_tag,bool is_partial)
- : m_item_kind(item_kind), m_data_type(data_type), m_dimension(dimension),
-   m_multi_tag(multi_tag), m_is_partial(is_partial){}
+  constexpr VariableTypeInfo(eItemKind item_kind, eDataType data_type, Integer dimension,
+                             Integer multi_tag, bool is_partial)
+  : m_item_kind(item_kind)
+  , m_data_type(data_type)
+  , m_dimension(dimension)
+  , m_multi_tag(multi_tag)
+  , m_is_partial(is_partial)
+  {}
 
  public:
 

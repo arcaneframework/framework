@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,23 +38,24 @@ namespace Arcane::random
  * corresponding to MinstdRand and MinstdRand0.
  *
  */
-template<typename IntType, IntType a, IntType c, IntType m, IntType val>
+template <typename IntType, IntType a, IntType c, IntType m, IntType val>
 class LinearCongruential
 {
  public:
+
   typedef IntType result_type;
   static const bool has_fixed_range = true;
-  static const result_type min_value = ( c == 0 ? 1 : 0 );
-  static const result_type max_value = m-1;
+  static const result_type min_value = (c == 0 ? 1 : 0);
+  static const result_type max_value = m - 1;
   static const IntType multiplier = a;
   static const IntType increment = c;
   static const IntType modulus = m;
 
   result_type min() const { return c == 0 ? 1 : 0; }
-  result_type max() const { return m-1; }
+  result_type max() const { return m - 1; }
   explicit LinearCongruential(IntType x0 = 1)
-    : _x(x0)
-  { 
+  : _x(x0)
+  {
 #ifdef ARCANE_CHECK
     checkSeed(_x);
 #endif
@@ -79,12 +80,14 @@ class LinearCongruential
   }
   bool validation(IntType x) const { return val == x; }
   bool operator==(const LinearCongruential& rhs) const
-    { return _x == rhs._x; }
+  {
+    return _x == rhs._x;
+  }
 
   inline void checkSeed(IntType x)
   {
-    if (_x<min() || _x>=max())
-      throw FatalErrorException(A_FUNCINFO,String::format("Invalid seed v={0} min={1} max={2}",x,min(),max()));
+    if (_x < min() || _x >= max())
+      throw FatalErrorException(A_FUNCINFO, String::format("Invalid seed v={0} min={1} max={2}", x, min(), max()));
   }
 
  private:
@@ -95,13 +98,13 @@ class LinearCongruential
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-typedef LinearCongruential<Int32,16807,0,2147483647,1043618065> MinstdRand0;
-typedef LinearCongruential<Int32,48271,0,2147483647,399268537> MinstdRand;
+typedef LinearCongruential<Int32, 16807, 0, 2147483647, 1043618065> MinstdRand0;
+typedef LinearCongruential<Int32, 48271, 0, 2147483647, 399268537> MinstdRand;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

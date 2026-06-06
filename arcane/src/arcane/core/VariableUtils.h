@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,15 +36,13 @@ namespace Arcane::VariableUtils
  * If \a queue_or_null is null, no operation is performed.
  * The operation is asynchronous.
  */
-extern "C++" ARCANE_CORE_EXPORT
-void prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null);
+extern "C++" ARCANE_CORE_EXPORT void prefetchVariableAsync(IVariable* var, const RunQueue* queue_or_null);
 
 /*!
  * \brief Prefetches the memory associated with the variable \a var.
  * \sa void prefetchVariableAsync(IVariable* var, RunQueue* queue_or_null);
  */
-extern "C++" ARCANE_CORE_EXPORT
-void prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null);
+extern "C++" ARCANE_CORE_EXPORT void prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null);
 
 /*!
  * \brief Indicates that the variable is mostly read-only.
@@ -52,35 +50,29 @@ void prefetchVariableAsync(VariableRef& var, const RunQueue* queue_or_null);
  * This is used only with accelerators and prevents memory transfers
  * between the accelerator and the CPU.
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markVariableAsMostlyReadOnly(IVariable* var);
+extern "C++" ARCANE_CORE_EXPORT void markVariableAsMostlyReadOnly(IVariable* var);
 
 /*!
  * \brief Indicates that the variable is mostly read-only.
  * \a void markVariableAsMostlyReadOnly(IVariableRef* var);
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markVariableAsMostlyReadOnly(VariableRef& var);
+extern "C++" ARCANE_CORE_EXPORT void markVariableAsMostlyReadOnly(VariableRef& var);
 
 /*!
  * \brief Indicates that the variable is mostly read-only.
  * \a void markVariableAsMostlyReadOnly(IVariableRef* var);
  */
-extern "C++" ARCANE_CORE_EXPORT
-void markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var);
+extern "C++" ARCANE_CORE_EXPORT void markVariableAsMostlyReadOnly(::Arcane::Materials::MeshMaterialVariableRef& var);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CORE_EXPORT
-void experimentalChangeAllocator(::Arcane::Materials::IMeshMaterialVariable* var,
-                                 eMemoryRessource mem);
+extern "C++" ARCANE_CORE_EXPORT void experimentalChangeAllocator(::Arcane::Materials::IMeshMaterialVariable* var,
+                                                                 eMemoryRessource mem);
 
-extern "C++" ARCANE_CORE_EXPORT
-void experimentalChangeAllocator(IVariable* var, eMemoryRessource mem);
+extern "C++" ARCANE_CORE_EXPORT void experimentalChangeAllocator(IVariable* var, eMemoryRessource mem);
 
-extern "C++" ARCANE_CORE_EXPORT
-void experimentalChangeAllocator(VariableRef& var, eMemoryRessource mem);
+extern "C++" ARCANE_CORE_EXPORT void experimentalChangeAllocator(VariableRef& var, eMemoryRessource mem);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

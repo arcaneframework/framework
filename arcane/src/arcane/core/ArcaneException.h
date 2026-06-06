@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class ARCANE_CORE_EXPORT BadIDException
    * Constructs an exception related to the manager \a m, originating from the function
    * \a where and with the invalid name \a invalid_name.
    */
-  BadIDException(const String& where,const String& invalid_name);
+  BadIDException(const String& where, const String& invalid_name);
   ~BadIDException() ARCANE_NOEXCEPT override {}
 
  public:
@@ -85,7 +85,7 @@ class ARCANE_CORE_EXPORT BadItemIdException
    Constructs an exception related to the message manager \a m,
    originating from the function \a where and with the invalid ID \a id.
    */
-  BadItemIdException(const String& where,Integer bad_id);
+  BadItemIdException(const String& where, Integer bad_id);
   ~BadItemIdException() ARCANE_NOEXCEPT override {}
 
  public:
@@ -108,14 +108,14 @@ class ARCANE_CORE_EXPORT InternalErrorException
 : public Exception
 {
  public:
-	
-  InternalErrorException(const String& where,const String& why);
-  InternalErrorException(const TraceInfo& where,const String& why);
+
+  InternalErrorException(const String& where, const String& why);
+  InternalErrorException(const TraceInfo& where, const String& why);
   InternalErrorException(const InternalErrorException& ex) ARCANE_NOEXCEPT;
   ~InternalErrorException() ARCANE_NOEXCEPT override {}
 
  public:
-	
+
   void explain(std::ostream& m) const override;
 
  private:
@@ -137,18 +137,18 @@ class ARCANE_CORE_EXPORT BadVariableKindTypeException
 : public Exception
 {
  public:
-	
-  BadVariableKindTypeException(const TraceInfo& where,IVariable* valid_var,
-                               eItemKind kind,eDataType datatype,int dimension);
+
+  BadVariableKindTypeException(const TraceInfo& where, IVariable* valid_var,
+                               eItemKind kind, eDataType datatype, int dimension);
   ~BadVariableKindTypeException() ARCANE_NOEXCEPT override {}
-  
+
  public:
 
   void explain(std::ostream& m) const override;
 
  private:
 
-  IVariable *m_valid_var;
+  IVariable* m_valid_var;
   eItemKind m_item_kind;
   eDataType m_data_type;
   int m_dimension;
@@ -169,7 +169,7 @@ class ARCANE_CORE_EXPORT BadPartialVariableItemGroupNameException
 {
  public:
 
-  BadPartialVariableItemGroupNameException(const TraceInfo& where,IVariable* valid_var,
+  BadPartialVariableItemGroupNameException(const TraceInfo& where, IVariable* valid_var,
                                            const String& item_group_name);
   ~BadPartialVariableItemGroupNameException() ARCANE_NOEXCEPT override {}
 
@@ -179,10 +179,9 @@ class ARCANE_CORE_EXPORT BadPartialVariableItemGroupNameException
 
  private:
 
-  IVariable *m_valid_var;
+  IVariable* m_valid_var;
   String m_item_group_name;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -195,13 +194,13 @@ class ARCANE_CORE_EXPORT UnknownItemTypeException
 : public Exception
 {
  public:
-	
-  UnknownItemTypeException(const String& where,Integer nb_node,Integer item_id);
+
+  UnknownItemTypeException(const String& where, Integer nb_node, Integer item_id);
   UnknownItemTypeException(const UnknownItemTypeException& ex) ARCANE_NOEXCEPT;
   ~UnknownItemTypeException() ARCANE_NOEXCEPT override {}
 
  public:
-	
+
   void explain(std::ostream& m) const override;
 
  private:
@@ -221,12 +220,12 @@ class ARCANE_CORE_EXPORT BadReferenceException
 : public Exception
 {
  public:
-	
+
   explicit BadReferenceException(const String& where);
   ~BadReferenceException() ARCANE_NOEXCEPT override {}
 
  public:
-	
+
   void explain(std::ostream& m) const override;
 
  private:
@@ -243,14 +242,14 @@ class ARCANE_CORE_EXPORT ReaderWriterException
 : public Exception
 {
  public:
-	
-  ReaderWriterException(const String& where,const String& message);
-  ReaderWriterException(const TraceInfo& where,const String& message);
+
+  ReaderWriterException(const String& where, const String& message);
+  ReaderWriterException(const TraceInfo& where, const String& message);
   ReaderWriterException(const ReaderWriterException& ex) ARCANE_NOEXCEPT;
   ~ReaderWriterException() ARCANE_NOEXCEPT override {}
 
  public:
-	
+
   void explain(std::ostream& m) const override;
 };
 
@@ -289,8 +288,8 @@ class ARCANE_CORE_EXPORT AssertionException
 
  public:
 
-  using Exception::where;
   using Exception::message;
+  using Exception::where;
 
  private:
 

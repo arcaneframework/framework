@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ class ARCANE_CORE_EXPORT Assertion
 {
  private:
 
-  void _checkAssertion(bool is_error,const TraceInfo& where,
+  void _checkAssertion(bool is_error, const TraceInfo& where,
                        const String& expected, const String& actual, IParallelMng* pm);
 
  public:
@@ -56,7 +56,7 @@ class ARCANE_CORE_EXPORT Assertion
   }
 
   //! Throws an AssertException if \a condition is false.
- void assertTrue(const TraceInfo& where, bool condition, IParallelMng* pm = nullptr)
+  void assertTrue(const TraceInfo& where, bool condition, IParallelMng* pm = nullptr)
   {
     bool is_error = (!condition);
     _checkAssertion(is_error, where, "true", "false", pm);
@@ -76,46 +76,46 @@ class ARCANE_CORE_EXPORT Assertion
   void assertEqual(const TraceInfo& where, const String& expected,
                    const String& actual, IParallelMng* pm = nullptr)
   {
-	  bool is_error = (expected != actual);
-    _checkAssertion(is_error,where,expected,actual,pm);
+    bool is_error = (expected != actual);
+    _checkAssertion(is_error, where, expected, actual, pm);
   }
 
-  template<typename T>
+  template <typename T>
   void assertEqual(const TraceInfo& where, const T& expected, const T& actual, IParallelMng* pm = nullptr)
   {
-	  // using the == operator for numeric types and not !=
-	  bool is_error = (! (expected == actual));
-    _checkAssertion(is_error,where,String::fromNumber(expected),String::fromNumber(actual),pm);
-  }
-
-  template<typename T>
-  void assertNearlyEqual(const TraceInfo& where, const T& expected,
-                         const T& actual, IParallelMng* pm = nullptr)
-  {
-	  bool is_error = (!math::isNearlyEqual(expected,actual));
-    _checkAssertion(is_error,where,String::fromNumber(expected),String::fromNumber(actual),pm);
-  }
-
-  template<typename T>
-  void assertNearlyZero(const TraceInfo& where, const T& actual, IParallelMng* pm = nullptr)
-  {
-	  bool is_error = (!math::isNearlyZero(actual));
-    _checkAssertion(is_error, where, "0", String::fromNumber(actual),pm);
-  }
-
-  template<typename T>
-  void assertNearlyEqualWithEpsilon(const TraceInfo& where, const T& expected,
-                                    const T& actual,const T& epsilon, IParallelMng* pm = nullptr)
-  {
-	  bool is_error = (!math::isNearlyEqualWithEpsilon(expected,actual,epsilon));
+    // using the == operator for numeric types and not !=
+    bool is_error = (!(expected == actual));
     _checkAssertion(is_error, where, String::fromNumber(expected), String::fromNumber(actual), pm);
   }
 
-  template<typename T>
+  template <typename T>
+  void assertNearlyEqual(const TraceInfo& where, const T& expected,
+                         const T& actual, IParallelMng* pm = nullptr)
+  {
+    bool is_error = (!math::isNearlyEqual(expected, actual));
+    _checkAssertion(is_error, where, String::fromNumber(expected), String::fromNumber(actual), pm);
+  }
+
+  template <typename T>
+  void assertNearlyZero(const TraceInfo& where, const T& actual, IParallelMng* pm = nullptr)
+  {
+    bool is_error = (!math::isNearlyZero(actual));
+    _checkAssertion(is_error, where, "0", String::fromNumber(actual), pm);
+  }
+
+  template <typename T>
+  void assertNearlyEqualWithEpsilon(const TraceInfo& where, const T& expected,
+                                    const T& actual, const T& epsilon, IParallelMng* pm = nullptr)
+  {
+    bool is_error = (!math::isNearlyEqualWithEpsilon(expected, actual, epsilon));
+    _checkAssertion(is_error, where, String::fromNumber(expected), String::fromNumber(actual), pm);
+  }
+
+  template <typename T>
   void assertNearlyZeroWithEpsilon(const TraceInfo& where, const T& actual,
                                    const T& epsilon, IParallelMng* pm = nullptr)
   {
-	  bool is_error = (!math::isNearlyZeroWithEpsilon(actual,epsilon));
+    bool is_error = (!math::isNearlyZeroWithEpsilon(actual, epsilon));
     _checkAssertion(is_error, where, "0", String::fromNumber(actual), pm);
   }
 };
@@ -126,7 +126,7 @@ class ARCANE_CORE_EXPORT Assertion
  * \brief Checks that \a condition is true.
  */
 #define ASSERT_TRUE(condition) \
-assertTrue(A_FUNCINFO, condition)
+  assertTrue(A_FUNCINFO, condition)
 
 /*!
  * \brief Checks in parallel that \a condition is true.
@@ -138,12 +138,12 @@ assertTrue(A_FUNCINFO, condition)
  * \brief Checks that \a condition is false.
  */
 #define ASSERT_FALSE(condition) \
-assertFalse(A_FUNCINFO, condition)
+  assertFalse(A_FUNCINFO, condition)
 
 /*!
  * \brief Checks that \a condition is false.
  */
-#define PARALLEL_ASSERT_FALSE(condition, parallel_mng)  \
+#define PARALLEL_ASSERT_FALSE(condition, parallel_mng) \
   assertFalse(A_FUNCINFO, condition, parallel_mng)
 
 /*!
@@ -151,13 +151,13 @@ assertFalse(A_FUNCINFO, condition)
  * The comparison is done via the type's ==() operator.
  */
 #define ASSERT_EQUAL(expected, actual) \
-assertEqual(A_FUNCINFO, expected, actual)
+  assertEqual(A_FUNCINFO, expected, actual)
 
 /*!
  * \brief Checks that \a expected and \a actual are equal.
  * The comparison is done via the type's ==() operator.
  */
-#define PARALLEL_ASSERT_EQUAL(expected, actual, parallel_mng)  \
+#define PARALLEL_ASSERT_EQUAL(expected, actual, parallel_mng) \
   assertEqual(A_FUNCINFO, expected, actual, parallel_mng)
 
 /*!
@@ -165,7 +165,7 @@ assertEqual(A_FUNCINFO, expected, actual)
  * \sa math::isNearlyEqual()
  */
 #define ASSERT_NEARLY_EQUAL(expected, actual) \
-assertNearlyEqual(A_FUNCINFO, expected, actual)
+  assertNearlyEqual(A_FUNCINFO, expected, actual)
 
 /*!
  * \brief Checks that \a expected and \a actual are nearly equal.
@@ -180,7 +180,7 @@ assertNearlyEqual(A_FUNCINFO, expected, actual)
  * \sa math::isNearlyZero()
  */
 #define ASSERT_NEARLY_ZERO(actual) \
-assertNearlyZero(A_FUNCINFO, actual)
+  assertNearlyZero(A_FUNCINFO, actual)
 
 /*!
  * \brief Checks that \a actual is almost equal to zero
@@ -195,7 +195,7 @@ assertNearlyZero(A_FUNCINFO, actual)
  * \sa math::isNearlyEqualWithEpsilon()
  */
 #define ASSERT_NEARLY_EQUAL_EPSILON(expected, actual, epsilon) \
-assertNearlyEqualWithEpsilon(A_FUNCINFO, expected, actual, epsilon)
+  assertNearlyEqualWithEpsilon(A_FUNCINFO, expected, actual, epsilon)
 
 /*!
  * \brief Checks that \a expected and \a actual are nearly equal.
@@ -209,15 +209,15 @@ assertNearlyEqualWithEpsilon(A_FUNCINFO, expected, actual, epsilon)
  * using the specified epsilon \a epsilon
  * \sa math::isNearlyZero()
  */
-#define ASSERT_NEARLY_ZERO_EPSILON(actual,epsilon) \
-assertNearlyZeroWithEpsilon(A_FUNCINFO, actual, epsilon)
+#define ASSERT_NEARLY_ZERO_EPSILON(actual, epsilon) \
+  assertNearlyZeroWithEpsilon(A_FUNCINFO, actual, epsilon)
 
 /*!
  * \brief Checks that \a actual is almost equal to zero
  * using the specified epsilon \a epsilon
  * \sa math::isNearlyZero()
  */
-#define PARALLEL_ASSERT_NEARLY_ZERO_EPSILON(actual,epsilon, parallel_mng)  \
+#define PARALLEL_ASSERT_NEARLY_ZERO_EPSILON(actual, epsilon, parallel_mng) \
   assertNearlyZeroWithEpsilon(A_FUNCINFO, actual, epsilon, parallel_mng)
 
 /*!
@@ -226,7 +226,7 @@ assertNearlyZeroWithEpsilon(A_FUNCINFO, actual, epsilon)
  * \deprecated Use ASSERT_EQUAL() (without the S)
  */
 #define ASSERT_EQUALS(expected, actual) \
-assertEqual(A_FUNCINFO, expected, actual)
+  assertEqual(A_FUNCINFO, expected, actual)
 
 /*!
  * \brief Checks that \a expected and \a actual are nearly equal.
@@ -234,7 +234,7 @@ assertEqual(A_FUNCINFO, expected, actual)
  * \deprecated Use ASSERT_NEARLY_EQUAL() (without the S)
  */
 #define ASSERT_NEARLY_EQUALS(expected, actual) \
-assertNearlyEqual(A_FUNCINFO, expected, actual)
+  assertNearlyEqual(A_FUNCINFO, expected, actual)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

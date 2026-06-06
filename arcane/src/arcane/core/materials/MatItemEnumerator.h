@@ -50,12 +50,16 @@ class EnvItemVectorView;
 
 // Les 4 classes suivantes servent uniquement pour spécialiser
 // ComponentItemEnumeratorTraitsT
-class MatPartCell {};
-class EnvPartCell {};
-class ComponentPartCell {};
-class ComponentPartSimdCell {};
+class MatPartCell
+{};
+class EnvPartCell
+{};
+class ComponentPartCell
+{};
+class ComponentPartSimdCell
+{};
 
-template<typename T> class ComponentItemEnumeratorTraitsT;
+template <typename T> class ComponentItemEnumeratorTraitsT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -126,11 +130,11 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
   {
     ++m_index;
 #ifdef ARCANE_CHECK
-    if (m_index<m_size)
+    if (m_index < m_size)
       _check();
 #endif
   }
-  bool hasNext() const { return m_index<m_size; }
+  bool hasNext() const { return m_index < m_size; }
 
   ComponentCell operator*() const
   {
@@ -157,14 +161,14 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
     MatVarIndex mvi = m_constituent_list_view._matVarIndex(m_index);
     Int32 i_var_array_index = mvi.arrayIndex();
     Int32 mv_array_index = _varArrayIndex();
-    if (i_var_array_index!=mv_array_index)
+    if (i_var_array_index != mv_array_index)
       ARCANE_FATAL("Bad 'var_array_index' in ComponentCell matvar='{0}' registered='{1}' index={2}",
-                   mvi,m_matvar_indexes[m_index],m_index);
+                   mvi, m_matvar_indexes[m_index], m_index);
     Int32 i_var_value_index = mvi.valueIndex();
     Int32 mv_value_index = _varValueIndex();
-    if (i_var_value_index!=mv_value_index)
+    if (i_var_value_index != mv_value_index)
       ARCANE_FATAL("Bad 'var_value_index' for ComponentCell matvar='{0}' registered='{1}' index={2}",
-                   mvi,m_matvar_indexes[m_index],m_index);
+                   mvi, m_matvar_indexes[m_index], m_index);
   }
 
  protected:
@@ -262,22 +266,22 @@ class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 {
  protected:
 
-  ComponentPartCellEnumerator(const ComponentPartItemVectorView& view,Integer base_index);
+  ComponentPartCellEnumerator(const ComponentPartItemVectorView& view, Integer base_index);
 
  public:
 
   static ComponentPartCellEnumerator create(ComponentPartItemVectorView v);
-  static ComponentPartCellEnumerator create(IMeshComponent* c,eMatPart part);
+  static ComponentPartCellEnumerator create(IMeshComponent* c, eMatPart part);
 
  public:
 
- void operator++()
+  void operator++()
   {
     ++m_index;
   }
-  bool hasNext() const { return m_index<m_size; }
+  bool hasNext() const { return m_index < m_size; }
 
-  MatVarIndex _varIndex() const { return MatVarIndex(m_var_idx,m_value_indexes[m_index]); }
+  MatVarIndex _varIndex() const { return MatVarIndex(m_var_idx, m_value_indexes[m_index]); }
 
   operator ComponentItemLocalId() const
   {
@@ -318,10 +322,14 @@ class ARCANE_CORE_EXPORT MatPartCellEnumerator
 : public ComponentPartCellEnumerator
 {
  public:
+
   explicit MatPartCellEnumerator(const MatPartItemVectorView& v);
+
  public:
+
   static MatPartCellEnumerator create(MatPartItemVectorView v);
-  static MatPartCellEnumerator create(IMeshMaterial* mat,eMatPart part);
+  static MatPartCellEnumerator create(IMeshMaterial* mat, eMatPart part);
+
  public:
 
   MatCell operator*() const
@@ -336,14 +344,18 @@ class ARCANE_CORE_EXPORT MatPartCellEnumerator
 /*!
  * \brief Enumerator over pure or impure entities of an environment.
  */
-class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
+class ARCANE_CORE_EXPORT EnvPartCellEnumerator
 : public ComponentPartCellEnumerator
 {
  public:
+
   explicit EnvPartCellEnumerator(const EnvPartItemVectorView& v);
+
  public:
+
   static EnvPartCellEnumerator create(EnvPartItemVectorView v);
-  static EnvPartCellEnumerator create(IMeshEnvironment* env,eMatPart part);
+  static EnvPartCellEnumerator create(IMeshEnvironment* env, eMatPart part);
+
  public:
 
   EnvCell operator*() const
@@ -361,6 +373,7 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
 class ARCANE_CORE_EXPORT CellGenericEnumerator
 {
  public:
+
   static EnvCellEnumerator create(IMeshEnvironment* env);
   static EnvCellEnumerator create(const EnvCellVector& ecv);
   static EnvCellEnumerator create(EnvItemVectorView v);
@@ -382,20 +395,31 @@ class ARCANE_CORE_EXPORT CellGenericEnumerator
 class ARCANE_CORE_EXPORT AllEnvCellEnumerator
 {
   friend class EnumeratorTracer;
+
  protected:
+
   explicit AllEnvCellEnumerator(AllEnvCellVectorView items)
-  : m_index(0), m_size(items.size()), m_items(items) { }
+  : m_index(0)
+  , m_size(items.size())
+  , m_items(items)
+  {}
+
  public:
+
   static AllEnvCellEnumerator create(AllEnvCellVectorView items);
-  static AllEnvCellEnumerator create(IMeshMaterialMng* mng,const CellGroup& group);
-  static AllEnvCellEnumerator create(IMeshMaterialMng* mng,const CellVectorView& view);
+  static AllEnvCellEnumerator create(IMeshMaterialMng* mng, const CellGroup& group);
+  static AllEnvCellEnumerator create(IMeshMaterialMng* mng, const CellVectorView& view);
   static AllEnvCellEnumerator create(IMeshBlock* block);
+
  public:
+
   void operator++() { ++m_index; }
-  bool hasNext() const { return m_index<m_size; }
+  bool hasNext() const { return m_index < m_size; }
   AllEnvCell operator*() { return m_items[m_index]; }
   Integer index() const { return m_index; }
+
  public:
+
   Integer m_index;
   Integer m_size;
   AllEnvCellVectorView m_items;
@@ -417,7 +441,7 @@ class ARCANE_CORE_EXPORT ComponentEnumerator
 
  public:
 
-  bool hasNext() const { return m_index<m_size; }
+  bool hasNext() const { return m_index < m_size; }
   void operator++() { ++m_index; }
   IMeshComponent* operator*() const { return m_components[m_index]; }
 
@@ -444,7 +468,7 @@ class ARCANE_CORE_EXPORT MatEnumerator
 
  public:
 
-  bool hasNext() const { return m_index<m_size; }
+  bool hasNext() const { return m_index < m_size; }
   void operator++() { ++m_index; }
   IMeshMaterial* operator*() const { return m_mats[m_index]; }
 
@@ -471,7 +495,7 @@ class ARCANE_CORE_EXPORT EnvEnumerator
 
  public:
 
-  bool hasNext() const { return m_index<m_size; }
+  bool hasNext() const { return m_index < m_size; }
   void operator++() { ++m_index; }
   IMeshEnvironment* operator*() const { return m_envs[m_index]; }
 
@@ -485,46 +509,53 @@ class ARCANE_CORE_EXPORT EnvEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<ComponentCell>
 {
  public:
+
   using EnumeratorType = ComponentCellEnumerator;
 };
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<MatCell>
 {
  public:
+
   using EnumeratorType = MatCellEnumerator;
 };
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<MatPartCell>
 {
  public:
+
   using EnumeratorType = MatPartCellEnumerator;
 };
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<EnvPartCell>
 {
  public:
+
   using EnumeratorType = EnvPartCellEnumerator;
 };
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<EnvCell>
 {
  public:
+
   using EnumeratorType = EnvCellEnumerator;
 };
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<ComponentPartCell>
 {
  public:
+
   using EnumeratorType = ComponentPartCellEnumerator;
 };
-template<>
+template <>
 class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
 {
  public:
+
   using EnumeratorType = ComponentPartSimdCellEnumerator;
 };
 
@@ -539,13 +570,13 @@ arcaneImplCreateConstituentEnumerator(AllEnvCell, AllEnvCellVectorView items)
 }
 //! Enumerator over AllEnvCell of meshes in \a group
 inline AllEnvCellEnumerator
-arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng,const CellGroup& group)
+arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng, const CellGroup& group)
 {
   return AllEnvCellEnumerator::create(mng, group);
 }
 //! Enumerator over AllEnvCell of meshes in \a view
 inline AllEnvCellEnumerator
-arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng,const CellVectorView& view)
+arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng, const CellVectorView& view)
 {
   return AllEnvCellEnumerator::create(mng, view);
 }
@@ -561,13 +592,13 @@ arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshBlock* block)
 
 //! Enumerator over ComponentCell of constituent \a component
 inline ComponentCellEnumerator
-arcaneImplCreateConstituentEnumerator(ComponentCell,IMeshComponent* component)
+arcaneImplCreateConstituentEnumerator(ComponentCell, IMeshComponent* component)
 {
   return ComponentCellEnumerator::create(component);
 }
 //! Enumerator over ComponentCell of vector \a v
 inline ComponentCellEnumerator
-arcaneImplCreateConstituentEnumerator(ComponentCell,const ComponentItemVector& v)
+arcaneImplCreateConstituentEnumerator(ComponentCell, const ComponentItemVector& v)
 {
   return ComponentCellEnumerator::create(v);
 }
@@ -580,13 +611,13 @@ arcaneImplCreateConstituentEnumerator(ComponentCell, ComponentItemVectorView v);
 
 //! Enumerator over MatCell of material \a component
 inline MatCellEnumerator
-arcaneImplCreateConstituentEnumerator(MatCell,IMeshMaterial* component)
+arcaneImplCreateConstituentEnumerator(MatCell, IMeshMaterial* component)
 {
   return MatCellEnumerator::create(component);
 }
 //! Enumerator over MatCell of vector \a v
 inline MatCellEnumerator
-arcaneImplCreateConstituentEnumerator(MatCell,const MatCellVector& v)
+arcaneImplCreateConstituentEnumerator(MatCell, const MatCellVector& v)
 {
   return MatCellEnumerator::create(v);
 }
@@ -599,13 +630,13 @@ arcaneImplCreateConstituentEnumerator(MatCell, MatItemVectorView v);
 
 //! Enumerator over EnvCell of environment \a component
 inline EnvCellEnumerator
-arcaneImplCreateConstituentEnumerator(EnvCell,IMeshEnvironment* component)
+arcaneImplCreateConstituentEnumerator(EnvCell, IMeshEnvironment* component)
 {
   return EnvCellEnumerator::create(component);
 }
 //! Enumerator over EnvCell of vector \a v
 inline EnvCellEnumerator
-arcaneImplCreateConstituentEnumerator(EnvCell,const EnvCellVector& v)
+arcaneImplCreateConstituentEnumerator(EnvCell, const EnvCellVector& v)
 {
   return EnvCellEnumerator::create(v);
 }
@@ -620,7 +651,7 @@ ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 arcaneImplCreateConstituentEnumerator(ComponentPartCell, ComponentPartItemVectorView v);
 
 inline ComponentPartCellEnumerator
-arcaneImplCreateConstituentEnumerator(ComponentPartCell, IMeshComponent* c,eMatPart part)
+arcaneImplCreateConstituentEnumerator(ComponentPartCell, IMeshComponent* c, eMatPart part)
 {
   return ComponentPartCellEnumerator::create(c, part);
 }
@@ -628,7 +659,7 @@ ARCANE_CORE_EXPORT MatPartCellEnumerator
 arcaneImplCreateConstituentEnumerator(MatPartCell, MatPartItemVectorView v);
 
 inline MatPartCellEnumerator
-arcaneImplCreateConstituentEnumerator(MatPartCell, IMeshMaterial* c,eMatPart part)
+arcaneImplCreateConstituentEnumerator(MatPartCell, IMeshMaterial* c, eMatPart part)
 {
   return MatPartCellEnumerator::create(c, part);
 }
@@ -636,7 +667,7 @@ ARCANE_CORE_EXPORT EnvPartCellEnumerator
 arcaneImplCreateConstituentEnumerator(EnvPartCell, EnvPartItemVectorView v);
 
 inline EnvPartCellEnumerator
-arcaneImplCreateConstituentEnumerator(EnvPartCell, IMeshEnvironment* c,eMatPart part)
+arcaneImplCreateConstituentEnumerator(EnvPartCell, IMeshEnvironment* c, eMatPart part)
 {
   return EnvPartCellEnumerator::create(c, part);
 }
@@ -647,28 +678,28 @@ arcaneImplCreateConstituentEnumerator(EnvPartCell, IMeshEnvironment* c,eMatPart 
 namespace Impl
 {
 
-/*!
+  /*!
  * \brief Wrapper function to detect the enumerator type for constituents.
  */
-template <typename ConstituentItemType, typename ConstituentItemContainerType, typename... RemainingArgs> auto
-makeConstituentItemEnumeratorLoop(ConstituentItemType x,
-                                  const ConstituentItemContainerType& container,
-                                  const RemainingArgs&... remaining_args)
-{
-  auto container_instance = arcaneImplCreateConstituentEnumerator(x, container, remaining_args...);
-  return container_instance;
-}
+  template <typename ConstituentItemType, typename ConstituentItemContainerType, typename... RemainingArgs> auto
+  makeConstituentItemEnumeratorLoop(ConstituentItemType x,
+                                    const ConstituentItemContainerType& container,
+                                    const RemainingArgs&... remaining_args)
+  {
+    auto container_instance = arcaneImplCreateConstituentEnumerator(x, container, remaining_args...);
+    return container_instance;
+  }
 
-}
+} // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
-  ::Arcane::EnumeratorTraceWrapper< ::Arcane::Materials::_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
-#define A_TRACE_COMPONENT_DIRECT_CLASS(_EnumeratorClassName)                        \
-  ::Arcane::EnumeratorTraceWrapper< _EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
+  ::Arcane::EnumeratorTraceWrapper<::Arcane::Materials::_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer>
+#define A_TRACE_COMPONENT_DIRECT_CLASS(_EnumeratorClassName) \
+  ::Arcane::EnumeratorTraceWrapper<_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer>
 #else
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
   ::Arcane::Materials::_EnumeratorClassName
@@ -676,14 +707,14 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
   _EnumeratorClassName
 #endif
 
-#define A_ENUMERATE_COMPONENTCELL_OLD(_EnumeratorClassName,iname,...) \
-  for( A_TRACE_COMPONENT(_EnumeratorClassName) iname(Arcane::Materials::_EnumeratorClassName::create(__VA_ARGS__) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+#define A_ENUMERATE_COMPONENTCELL_OLD(_EnumeratorClassName, iname, ...) \
+  for (A_TRACE_COMPONENT(_EnumeratorClassName) iname(Arcane::Materials::_EnumeratorClassName::create(__VA_ARGS__) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname)
 
-#define A_ENUMERATE_COMPONENT(_EnumeratorClassName,iname,container)     \
-  for( A_TRACE_COMPONENT(_EnumeratorClassName) iname((::Arcane::Materials::_EnumeratorClassName)(container) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+#define A_ENUMERATE_COMPONENT(_EnumeratorClassName, iname, container) \
+  for (A_TRACE_COMPONENT(_EnumeratorClassName) iname((::Arcane::Materials::_EnumeratorClassName)(container)A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname)
 
-#define A_ENUMERATE_CELL_COMPONENTCELL(_EnumeratorClassName,iname,component_cell) \
-  for( ::Arcane::Materials::_EnumeratorClassName iname((::Arcane::Materials::_EnumeratorClassName)(component_cell)); iname.hasNext(); ++iname )
+#define A_ENUMERATE_CELL_COMPONENTCELL(_EnumeratorClassName, iname, component_cell) \
+  for (::Arcane::Materials::_EnumeratorClassName iname((::Arcane::Materials::_EnumeratorClassName)(component_cell)); iname.hasNext(); ++iname)
 
 #define A_ENUMERATEBUILDER_HELPER(ClassName_, ...) \
   ::Arcane::Materials::EnumeratorBuilder<::Arcane::Materials::ClassName_>::create(__VA_ARGS__)
@@ -711,7 +742,7 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * Arcane::Materials::arcaneImplCreateConstituentEnumerator()
  * taking these two arguments.
  */
-#define ENUMERATE_COMPONENTITEM(ClassName_,iname, container, ...) \
+#define ENUMERATE_COMPONENTITEM(ClassName_, iname, container, ...) \
   A_ENUMERATE_COMPONENTCELL(ClassName_, iname, container, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
@@ -727,8 +758,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param matmng material manager of type \a IMeshMaterialMng.
  * \param igroup mesh group, of type \a CellGroup.
  */
-#define ENUMERATE_ALLENVCELL(iname,...) \
-  for( A_TRACE_COMPONENT(AllEnvCellEnumerator) iname( ::Arcane::Materials::AllEnvCellEnumerator::create(__VA_ARGS__) ); iname.hasNext(); ++iname )
+#define ENUMERATE_ALLENVCELL(iname, ...) \
+  for (A_TRACE_COMPONENT(AllEnvCellEnumerator) iname(::Arcane::Materials::AllEnvCellEnumerator::create(__VA_ARGS__)); iname.hasNext(); ++iname)
 
 /*!
  * \brief Macro to iterate over all MatCell meshes of a material.
@@ -736,8 +767,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param iname name of the iterator, of type MatCellEnumerator.
  * \param mat material, of type IMeshMaterial*, MatCellVector, MatVectorView
  */
-#define ENUMERATE_MATCELL(iname,mat) \
-  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::MatCell,iname,mat)
+#define ENUMERATE_MATCELL(iname, mat) \
+  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::MatCell, iname, mat)
 
 /*!
  * \brief Macro to iterate over all EnvCell meshes of an environment.
@@ -746,8 +777,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param env environment, of type IMeshEnvironment*, EnvCellVector,
  * EvnVectorView or EnvCellVectorSelectionView
  */
-#define ENUMERATE_ENVCELL(iname,env) \
-  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::EnvCell,iname,env)
+#define ENUMERATE_ENVCELL(iname, env) \
+  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::EnvCell, iname, env)
 
 /*!
  * \brief Macro to iterate over all ComponentCell meshes of a component.
@@ -755,8 +786,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param iname name of the iterator, of type EnvCellEnumerator.
  * \param component component, of type IMeshComponent*
  */
-#define ENUMERATE_COMPONENTCELL(iname,component) \
-  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::ComponentCell,iname,component)
+#define ENUMERATE_COMPONENTCELL(iname, component) \
+  A_ENUMERATE_COMPONENTCELL(Arcane::Materials::ComponentCell, iname, component)
 
 /*!
  * \brief Macro to iterate over a list of components
@@ -765,8 +796,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \a container can be an object of the following type:
  * - ConstArrayView<IMeshComponent*> to iterate over a specific list of components
  */
-#define ENUMERATE_COMPONENT(icomponent,container) \
-  A_ENUMERATE_COMPONENT(ComponentEnumerator,icomponent,container)
+#define ENUMERATE_COMPONENT(icomponent, container) \
+  A_ENUMERATE_COMPONENT(ComponentEnumerator, icomponent, container)
 
 /*!
  * \brief Macro to iterate over a list of materials
@@ -777,8 +808,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * - IMeshEnvironment* to iterate over all materials of an environment
  * - ConstArrayView<IMeshMaterial*> to iterate over a specific list of materials
  */
-#define ENUMERATE_MAT(imat,container) \
-  A_ENUMERATE_COMPONENT(MatEnumerator,imat,container)
+#define ENUMERATE_MAT(imat, container) \
+  A_ENUMERATE_COMPONENT(MatEnumerator, imat, container)
 
 /*!
  * \brief Macro to iterate over a list of environments.
@@ -789,8 +820,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * - IMeshBlock* to iterate over all environments in the block
  * - ConstArrayView<IMeshEnvironment*> to iterate over a specific list of environments.
  */
-#define ENUMERATE_ENV(ienv,container) \
-  A_ENUMERATE_COMPONENT(EnvEnumerator,ienv,container)
+#define ENUMERATE_ENV(ienv, container) \
+  A_ENUMERATE_COMPONENT(EnvEnumerator, ienv, container)
 
 /*!
  * \brief Macro to iterate over all ComponentCell meshes of a mesh.
@@ -798,8 +829,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param iname name of the iterator, of type CellComponentCellEnumerator.
  * \param component_cell mesh component, of type ComponentCell.
  */
-#define ENUMERATE_CELL_COMPONENTCELL(iname,component_cell) \
-  A_ENUMERATE_CELL_COMPONENTCELL(CellComponentCellEnumerator,iname,component_cell)
+#define ENUMERATE_CELL_COMPONENTCELL(iname, component_cell) \
+  A_ENUMERATE_CELL_COMPONENTCELL(CellComponentCellEnumerator, iname, component_cell)
 
 /*!
  * \brief Macro to iterate over all MatCell meshes of a mesh.
@@ -807,8 +838,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param iname name of the iterator, of type CellMatCellEnumerator.
  * \param env_cell mesh environment, of type EnvCell.
  */
-#define ENUMERATE_CELL_MATCELL(iname,env_cell) \
-  A_ENUMERATE_CELL_COMPONENTCELL(CellMatCellEnumerator,iname,env_cell)
+#define ENUMERATE_CELL_MATCELL(iname, env_cell) \
+  A_ENUMERATE_CELL_COMPONENTCELL(CellMatCellEnumerator, iname, env_cell)
 
 /*!
  * \brief Macro to iterate over all EnvCell meshes of a mesh.
@@ -816,8 +847,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param iname name of the iterator, of type CellEnvCellEnumerator.
  * \param all_env_cell mesh with environment info, of type AllEnvCell.
  */
-#define ENUMERATE_CELL_ENVCELL(iname,all_env_cell) \
-  A_ENUMERATE_CELL_COMPONENTCELL(CellEnvCellEnumerator,iname,all_env_cell)
+#define ENUMERATE_CELL_ENVCELL(iname, all_env_cell) \
+  A_ENUMERATE_CELL_COMPONENTCELL(CellEnvCellEnumerator, iname, all_env_cell)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -830,8 +861,8 @@ makeConstituentItemEnumeratorLoop(ConstituentItemType x,
  * \param mat_or_env_or_group an object that can be passed as an argument to
  * ENUMERATE_CELL, ENUMERATE_MATCELL or ENUMERATE_ENVCELL.
  */
-#define ENUMERATE_GENERIC_CELL(iname,mat_or_env_or_group) \
-  for( auto iname = ::Arcane::Materials::CellGenericEnumerator::create(mat_or_env_or_group); iname.hasNext(); ++iname )
+#define ENUMERATE_GENERIC_CELL(iname, mat_or_env_or_group) \
+  for (auto iname = ::Arcane::Materials::CellGenericEnumerator::create(mat_or_env_or_group); iname.hasNext(); ++iname)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

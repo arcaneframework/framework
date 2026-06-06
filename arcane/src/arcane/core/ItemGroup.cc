@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ ItemGroup(ItemGroupImpl* grp)
   // This is done (version 2.3) for compatibility reasons.
   // Eventually, this constructor will be explicit, and in that case, you will have to do:
   //   ARCANE_CHECK_POINTER(grp);
-  if (!grp){
+  if (!grp) {
     std::cerr << "Creating group with null pointer is not allowed\n";
     m_impl = ItemGroupImpl::checkSharedNull();
   }
@@ -195,7 +195,7 @@ ItemGroup ItemGroup::
 ghost() const
 {
   if (null())
-  	return ItemGroup();
+    return ItemGroup();
   m_impl->checkNeedUpdate();
   return ItemGroup(m_impl->ghostGroup());
 }
@@ -209,7 +209,7 @@ ItemGroup ItemGroup::
 interface() const
 {
   if (null())
-  	return ItemGroup();
+    return ItemGroup();
   m_impl->checkNeedUpdate();
   return ItemGroup(m_impl->interfaceGroup());
 }
@@ -395,19 +395,19 @@ outerActiveFaceGroup() const
 /*---------------------------------------------------------------------------*/
 
 ItemGroup ItemGroup::
-createSubGroup(const String & suffix, IItemFamily * family, ItemGroupComputeFunctor * functor) const
+createSubGroup(const String& suffix, IItemFamily* family, ItemGroupComputeFunctor* functor) const
 {
   if (null())
     return ItemGroup();
   m_impl->checkNeedUpdate();
-  return ItemGroup(m_impl->createSubGroup(suffix,family,functor));
+  return ItemGroup(m_impl->createSubGroup(suffix, family, functor));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemGroup ItemGroup::
-findSubGroup(const String & suffix) const
+findSubGroup(const String& suffix) const
 {
   if (null())
     return ItemGroup();
@@ -436,14 +436,14 @@ clear()
  * parameter \a check_if_present to \a false, which speeds up the addition.
  */
 void ItemGroup::
-addItems(Int32ConstArrayView items_local_id,bool check_if_present)
+addItems(Int32ConstArrayView items_local_id, bool check_if_present)
 {
   if (null())
-    throw ArgumentException(A_FUNCINFO,"Can not addItems() to null group");
+    throw ArgumentException(A_FUNCINFO, "Can not addItems() to null group");
   if (isAllItems())
-    throw ArgumentException(A_FUNCINFO,"Can not addItems() to all-items group");
+    throw ArgumentException(A_FUNCINFO, "Can not addItems() to all-items group");
   m_impl->_checkNeedUpdateNoPadding();
-  m_impl->addItems(items_local_id,check_if_present);
+  m_impl->addItems(items_local_id, check_if_present);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -459,14 +459,14 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
  * parameter \a check_if_present to \a false, which speeds up the removal.
  */
 void ItemGroup::
-removeItems(Int32ConstArrayView items_local_id,bool check_if_present)
-{ 
+removeItems(Int32ConstArrayView items_local_id, bool check_if_present)
+{
   if (null())
-    throw ArgumentException(A_FUNCINFO,"Can not removeItems() to null group");
+    throw ArgumentException(A_FUNCINFO, "Can not removeItems() to null group");
   if (isAllItems())
-    throw ArgumentException(A_FUNCINFO,"Can not removeItems() to all-items group");
+    throw ArgumentException(A_FUNCINFO, "Can not removeItems() to all-items group");
   m_impl->_checkNeedUpdateNoPadding();
-  m_impl->removeItems(items_local_id,check_if_present);
+  m_impl->removeItems(items_local_id, check_if_present);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -484,7 +484,7 @@ void ItemGroup::
 setItems(Int32ConstArrayView items_local_id)
 {
   if (null())
-    throw ArgumentException(A_FUNCINFO,"Can not setItems() to null group");
+    throw ArgumentException(A_FUNCINFO, "Can not setItems() to null group");
   m_impl->setItems(items_local_id);
 }
 
@@ -502,11 +502,11 @@ setItems(Int32ConstArrayView items_local_id)
  * before being added to the group.
  */
 void ItemGroup::
-setItems(Int32ConstArrayView items_local_id,bool do_sort)
+setItems(Int32ConstArrayView items_local_id, bool do_sort)
 {
   if (null())
-    throw ArgumentException(A_FUNCINFO,"Can not setItems() to null group");
-  m_impl->setItems(items_local_id,do_sort);
+    throw ArgumentException(A_FUNCINFO, "Can not setItems() to null group");
+  m_impl->setItems(items_local_id, do_sort);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -542,7 +542,7 @@ enumerator() const
   if (null())
     return ItemEnumerator();
   m_impl->_checkNeedUpdateNoPadding();
-  return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
+  return ItemEnumerator(m_impl->itemInfoListView(), m_impl->itemsLocalId(), m_impl.get());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -554,7 +554,7 @@ _simdEnumerator() const
   if (null())
     return ItemEnumerator();
   m_impl->_checkNeedUpdateWithPadding();
-  return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
+  return ItemEnumerator(m_impl->itemInfoListView(), m_impl->itemsLocalId(), m_impl.get());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -570,7 +570,7 @@ _view(bool do_padding) const
   if (m_impl->isContiguousLocalIds())
     flags |= ItemIndexArrayView::F_Contigous;
   // TODO: gérer l'offset
-  return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),0,flags));
+  return ItemVectorView(m_impl->itemFamily(), ItemIndexArrayView(m_impl->itemsLocalId(), 0, flags));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -626,12 +626,12 @@ isAutoComputed() const
 {
   return m_impl->hasComputeFunctor();
 }
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool ItemGroup::
-hasSynchronizer() const 
+hasSynchronizer() const
 {
   return m_impl->hasSynchronizer();
 }
@@ -668,7 +668,7 @@ incrementTimestamp() const
 /*---------------------------------------------------------------------------*/
 
 extern ARCANE_CORE_EXPORT bool
-_caseOptionConvert(const CaseOptionBase& co,const String& name,ItemGroup& obj)
+_caseOptionConvert(const CaseOptionBase& co, const String& name, ItemGroup& obj)
 {
   IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
   obj = mesh->findGroup(name);
@@ -676,7 +676,7 @@ _caseOptionConvert(const CaseOptionBase& co,const String& name,ItemGroup& obj)
 }
 
 extern ARCANE_CORE_EXPORT bool
-_caseOptionConvert(const CaseOptionBase& co,const String& name,NodeGroup& obj)
+_caseOptionConvert(const CaseOptionBase& co, const String& name, NodeGroup& obj)
 {
   IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
   obj = mesh->nodeFamily()->findGroup(name);
@@ -684,7 +684,7 @@ _caseOptionConvert(const CaseOptionBase& co,const String& name,NodeGroup& obj)
 }
 
 extern ARCANE_CORE_EXPORT bool
-_caseOptionConvert(const CaseOptionBase& co,const String& name,EdgeGroup& obj)
+_caseOptionConvert(const CaseOptionBase& co, const String& name, EdgeGroup& obj)
 {
   IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
   obj = mesh->edgeFamily()->findGroup(name);
@@ -692,7 +692,7 @@ _caseOptionConvert(const CaseOptionBase& co,const String& name,EdgeGroup& obj)
 }
 
 extern ARCANE_CORE_EXPORT bool
-_caseOptionConvert(const CaseOptionBase& co,const String& name,FaceGroup& obj)
+_caseOptionConvert(const CaseOptionBase& co, const String& name, FaceGroup& obj)
 {
   IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
   obj = mesh->faceFamily()->findGroup(name);
@@ -700,7 +700,7 @@ _caseOptionConvert(const CaseOptionBase& co,const String& name,FaceGroup& obj)
 }
 
 extern ARCANE_CORE_EXPORT bool
-_caseOptionConvert(const CaseOptionBase& co,const String& name,CellGroup& obj)
+_caseOptionConvert(const CaseOptionBase& co, const String& name, CellGroup& obj)
 {
   IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
   obj = mesh->cellFamily()->findGroup(name);

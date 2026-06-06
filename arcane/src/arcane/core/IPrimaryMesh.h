@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class IPrimaryMesh
  public:
 
   //! Node coordinates
-  virtual VariableNodeReal3& nodesCoordinates() =0;
+  virtual VariableNodeReal3& nodesCoordinates() = 0;
 
   /*!
    * \brief Positions the mesh dimension (1D, 2D, or 3D).
@@ -60,15 +60,15 @@ class IPrimaryMesh
    * The dimension must be set before allocating meshes if one
    * uses allocateCells(), and must not be modified afterward.
    */
-  virtual void setDimension(Integer dim) =0;  
+  virtual void setDimension(Integer dim) = 0;
 
   /*! \brief Reloads the mesh from protected variables
    */
-  virtual void reloadMesh() =0;
+  virtual void reloadMesh() = 0;
 
   //NOTE: Complete documentation for this method is in Mesh.dox
   //! Allocation of a mesh.
-  virtual void allocateCells(Integer nb_cell,Int64ConstArrayView cells_infos,bool one_alloc=true) =0;
+  virtual void allocateCells(Integer nb_cell, Int64ConstArrayView cells_infos, bool one_alloc = true) = 0;
 
   /*!
    * \brief Indicates the end of mesh allocation.
@@ -78,7 +78,7 @@ class IPrimaryMesh
    *
    * This method is collective.
    */
-  virtual void endAllocate() =0;
+  virtual void endAllocate() = 0;
 
   /*!
    * \brief Deallocates the mesh.
@@ -95,7 +95,7 @@ class IPrimaryMesh
    * possible. Notably, the current implementation does not support deallocation
    * when there are partial variables on the mesh.
    */
-  virtual void deallocate() =0;
+  virtual void deallocate() = 0;
 
   /*!
    * \brief Specific initial allocator.
@@ -116,10 +116,10 @@ class IPrimaryMesh
    between subdomains and must not
    be modified.
    */
-  virtual VariableItemInt32& itemsNewOwner(eItemKind kind) =0;
+  virtual VariableItemInt32& itemsNewOwner(eItemKind kind) = 0;
 
   //! Changes the owning subdomains of entities
-  virtual void exchangeItems() =0;
+  virtual void exchangeItems() = 0;
 
  public:
 
@@ -134,13 +134,13 @@ class IPrimaryMesh
    *
    This operation is collective.
    */
-  virtual void setOwnersFromCells() =0;
+  virtual void setOwnersFromCells() = 0;
 
   /*!
    * \internal
    * \brief Positions partitioning information.
    */
-  virtual void setMeshPartInfo(const MeshPartInfo& mpi) =0;
+  virtual void setMeshPartInfo(const MeshPartInfo& mpi) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

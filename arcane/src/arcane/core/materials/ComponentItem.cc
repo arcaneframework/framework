@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,10 +37,10 @@ operator<<(std::ostream& o, const ComponentCell& mvi)
 /*---------------------------------------------------------------------------*/
 
 void ComponentCell::
-_badConversion(matimpl::ConstituentItemBase item_base, Int32 level,Int32 expected_level)
+_badConversion(matimpl::ConstituentItemBase item_base, Int32 level, Int32 expected_level)
 {
   ARCANE_FATAL("bad level for internal component cell level={0} expected={1} cid={2} component_id={3}",
-               level,expected_level, item_base.m_constituent_item_index,item_base.componentId());
+               level, expected_level, item_base.m_constituent_item_index, item_base.componentId());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -49,6 +49,7 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 {
  public:
+
   class Enumerator
   {
    public:
@@ -110,8 +111,8 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
   //! Unregisters the variable (internal)
   void unregisterVariable();
 
-  virtual void updateFromInternal() =0;
-  
+  virtual void updateFromInternal() = 0;
+
   //! Associated material variable.
   IMeshMaterialVariable* materialVariable() const { return m_material_variable; }
 
@@ -144,34 +145,38 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
   // will derive from the classic variable.
   //@{ Functions inherited from VariablesRef. These functions apply to the associated global variable.
   String name() const;
-	void setUpToDate();
-	bool isUsed() const;
-	void update();
-	void addDependCurrentTime(const VariableRef& var);
-	void addDependCurrentTime(const VariableRef& var,const TraceInfo& tinfo);
+  void setUpToDate();
+  bool isUsed() const;
+  void update();
+  void addDependCurrentTime(const VariableRef& var);
+  void addDependCurrentTime(const VariableRef& var, const TraceInfo& tinfo);
   void addDependCurrentTime(const MeshMaterialVariableRef& var);
   void addDependPreviousTime(const MeshMaterialVariableRef& var);
   void removeDepend(const MeshMaterialVariableRef& var);
-	template<typename ClassType> void
-	setComputeFunction(ClassType* instance,void (ClassType::*func)())
-	{ m_global_variable->setComputeFunction(new VariableComputeFunction(instance,func)); }
+  template <typename ClassType> void
+  setComputeFunction(ClassType* instance, void (ClassType::*func)())
+  {
+    m_global_variable->setComputeFunction(new VariableComputeFunction(instance, func));
+  }
   //@}
 
   //! Functions to manage dependencies on the material part of the variable.
   //@{
-	void setUpToDate(IMeshMaterial*);
-	void update(IMeshMaterial*);
-	void addMaterialDepend(const VariableRef& var);
-	void addMaterialDepend(const VariableRef& var,const TraceInfo& tinfo);
-	void addMaterialDepend(const MeshMaterialVariableRef& var);
-	void addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo);
-	template<typename ClassType> void
-	setMaterialComputeFunction(ClassType* instance,void (ClassType::*func)(IMeshMaterial*))
-	{ m_material_variable->setComputeFunction(new MeshMaterialVariableComputeFunction(instance,func)); }
+  void setUpToDate(IMeshMaterial*);
+  void update(IMeshMaterial*);
+  void addMaterialDepend(const VariableRef& var);
+  void addMaterialDepend(const VariableRef& var, const TraceInfo& tinfo);
+  void addMaterialDepend(const MeshMaterialVariableRef& var);
+  void addMaterialDepend(const MeshMaterialVariableRef& var, const TraceInfo& tinfo);
+  template <typename ClassType> void
+  setMaterialComputeFunction(ClassType* instance, void (ClassType::*func)(IMeshMaterial*))
+  {
+    m_material_variable->setComputeFunction(new MeshMaterialVariableComputeFunction(instance, func));
+  }
   //@}
 
  protected:
-  
+
   void _internalInit(IMeshMaterialVariable* mat_variable);
   bool _isRegistered() const { return m_is_registered; }
 
@@ -192,6 +197,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
   bool m_is_registered = false;
 
  private:
+
   void _checkValid() const
   {
 #ifdef ARCANE_CHECK
@@ -211,7 +217,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
  *
  * For now, this class is only instantiated for meshes
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellMaterialVariableScalarRef
 : public MeshMaterialVariableRef
 {
@@ -320,22 +326,22 @@ class CellMaterialVariableScalarRef
    * \brief Value of the variable for the material with index `mat_id` of
    * the cell, or 0 if absent from the cell.
    */
-  ARCANE_CORE_EXPORT DataType matValue(AllEnvCell c,Int32 mat_id) const;
+  ARCANE_CORE_EXPORT DataType matValue(AllEnvCell c, Int32 mat_id) const;
 
   /*!
    * \brief Value of the variable for the environment with index `env_id` of
    * the cell, or 0 if absent from the cell.
    */
-  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c,Int32 env_id) const;
+  ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c, Int32 env_id) const;
 
  public:
-  
-  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values);
-  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArrayView indexes);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,Array<DataType>& values);
-  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat,Array<DataType>& values,Int32ConstArrayView indexes);
+
+  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values);
+  ARCANE_CORE_EXPORT void fillFromArray(IMeshMaterial* mat, ConstArrayView<DataType> values, Int32ConstArrayView indexes);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, ArrayView<DataType> values);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, ArrayView<DataType> values, Int32ConstArrayView indexes);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, Array<DataType>& values);
+  ARCANE_CORE_EXPORT void fillToArray(IMeshMaterial* mat, Array<DataType>& values, Int32ConstArrayView indexes);
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   ARCANE_CORE_EXPORT void fillPartialValues(const DataType& value);
 
@@ -379,7 +385,7 @@ class CellMaterialVariableScalarRef
  * \brief Array variable over the cells of a material in the mesh.
  * For now, this class is only instantiated for cells.
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellMaterialVariableArrayRef
 : public MeshMaterialVariableRef
 {

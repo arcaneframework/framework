@@ -47,7 +47,7 @@ namespace
   // Number of nodes for additional polygon types.
   // Types up to ITI_Octogon8 still exist.
   Int16 global_polygon_begin_nb_node = 9;
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1291,7 +1291,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     ifile >> typeId >> nbF >> nbE;
     if (typeId >= nb_type || typeId < 0)
-      ARCANE_THROW(IOException,"Polyhedron reader cannot allow typeId {0}", typeId);
+      ARCANE_THROW(IOException, "Polyhedron reader cannot allow typeId {0}", typeId);
     typeId += ItemTypeMng::nbBuiltInItemType(); // index translation
     if (known_types.find(typeId) != known_types.end())
       ARCANE_FATAL("Already existing typeId {0}", typeId);

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,14 +41,17 @@ class CaseOptionBuildInfo;
 class ARCANE_CORE_EXPORT ICaseOptionServiceContainer
 {
  public:
+
   virtual ~ICaseOptionServiceContainer() = default;
+
  public:
-  virtual bool tryCreateService(Integer index,Internal::IServiceFactory2* factory,const ServiceBuildInfoBase& sbi) =0;
-  virtual bool hasInterfaceImplemented(Internal::IServiceFactory2*) const =0;
+
+  virtual bool tryCreateService(Integer index, Internal::IServiceFactory2* factory, const ServiceBuildInfoBase& sbi) = 0;
+  virtual bool hasInterfaceImplemented(Internal::IServiceFactory2*) const = 0;
   //! Allocates an array for \a size elements
-  virtual void allocate(Integer size) =0;
+  virtual void allocate(Integer size) = 0;
   //! Returns the number of elements in the array.
-  virtual Integer nbElem() const =0;
+  virtual Integer nbElem() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -66,7 +69,7 @@ class ARCANE_CORE_EXPORT CaseOptionServiceImpl
 {
  public:
 
-  CaseOptionServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional);
+  CaseOptionServiceImpl(const CaseOptionBuildInfo& cob, bool allow_null, bool is_optional);
 
  public:
 
@@ -79,7 +82,7 @@ class ARCANE_CORE_EXPORT CaseOptionServiceImpl
   void visit(ICaseDocumentVisitor* visitor) const override;
 
   void setDefaultValue(const String& def_value);
-  void addDefaultValue(const String& category,const String& value);
+  void addDefaultValue(const String& category, const String& value);
 
   /*!
    * \brief Positions the instance container.
@@ -94,7 +97,7 @@ class ARCANE_CORE_EXPORT CaseOptionServiceImpl
 
  protected:
 
-  virtual void print(const String& lang,std::ostream& o) const;
+  virtual void print(const String& lang, std::ostream& o) const;
 
  protected:
 
@@ -134,7 +137,7 @@ class ARCANE_CORE_EXPORT CaseOptionMultiServiceImpl
 {
  public:
 
-  CaseOptionMultiServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null);
+  CaseOptionMultiServiceImpl(const CaseOptionBuildInfo& cob, bool allow_null);
   ~CaseOptionMultiServiceImpl();
 
  public:

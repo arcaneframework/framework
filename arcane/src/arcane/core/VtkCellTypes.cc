@@ -13,7 +13,7 @@
 
 #include "arcane/core/internal/VtkCellTypes.h"
 
-#include "ItemTypeInfo.h"
+#include "arcane/core/ItemTypeInfo.h"
 #include "arcane/utils/IOException.h"
 #include "arcane/utils/FatalErrorException.h"
 
@@ -185,7 +185,7 @@ arcaneToVtkCellType(const ItemTypeInfo* arcane_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::VtkUtils
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

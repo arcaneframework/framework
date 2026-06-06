@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,14 +43,14 @@ class ICriteriaLoadBalanceMng
    *
    * \param count A cell variable with a weight per cell.
    */
-  virtual void addCriterion(VariableCellInt32& count) =0;
+  virtual void addCriterion(VariableCellInt32& count) = 0;
 
   /*!
    * \brief Method allowing a criterion to be added for each cell.
    *
    * \param count A cell variable with a weight per cell.
    */
-  virtual void addCriterion(VariableCellReal& count) =0;
+  virtual void addCriterion(VariableCellReal& count) = 0;
 
   // TODO Understand how PartitionerMemoryInfo works
   /*!
@@ -72,7 +72,7 @@ class ICriteriaLoadBalanceMng
   /*!
    * \brief Method allowing the criteria already added to be cleared.
    */
-  virtual void reset() =0;
+  virtual void reset() = 0;
 
   /*!
    * \brief Method allowing to specify if the data mass of each

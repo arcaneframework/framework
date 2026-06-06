@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -248,10 +248,10 @@ class DocumentJSONWriter
   void _write(const Document& doc)
   {
     JSONWriter::Object o(m_json_writer);
-    m_json_writer.write("language",doc.language());
-    m_json_writer.write("version","1");
+    m_json_writer.write("language", doc.language());
+    m_json_writer.write("version", "1");
     {
-      JSONWriter::Object o2(m_json_writer,"options");
+      JSONWriter::Object o2(m_json_writer, "options");
       _write(doc.m_options.m_p.get());
     }
   }
@@ -273,16 +273,16 @@ class DocumentJSONWriter
   void _write(OneOption& o)
   {
     OneOptionImpl* sub_options = o.m_sub_option.get();
-    if (o.m_type==OneOption::Type::CO_ServiceInstance){
-      JSONWriter::Object j1(m_json_writer,o.m_name);
+    if (o.m_type == OneOption::Type::CO_ServiceInstance) {
+      JSONWriter::Object j1(m_json_writer, o.m_name);
       if (!o.m_service_name.null())
-        m_json_writer.write("$name",o.m_service_name);
+        m_json_writer.write("$name", o.m_service_name);
       _write(sub_options);
       return;
     }
 
-    if (o.m_type==OneOption::Type::CO_Complex){
-      JSONWriter::Object j1(m_json_writer,o.m_name);
+    if (o.m_type == OneOption::Type::CO_Complex) {
+      JSONWriter::Object j1(m_json_writer, o.m_name);
       _write(sub_options);
       return;
     }
@@ -296,9 +296,9 @@ class DocumentJSONWriter
     // }
 
     if (!o.m_function_name.null()) {
-      JSONWriter::Object j1(m_json_writer,o.m_name);
-      m_json_writer.write(m_case_function_json_name,o.m_function_name);
-      m_json_writer.write("$value",o.m_value);
+      JSONWriter::Object j1(m_json_writer, o.m_name);
+      m_json_writer.write(m_case_function_json_name, o.m_function_name);
+      m_json_writer.write("$value", o.m_value);
       return;
     }
 

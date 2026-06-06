@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,8 +16,8 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/VariableFactory.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/VariableFactory.h"
 
 #include <iostream>
 
@@ -31,10 +31,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 VariableFactory::
-VariableFactory(VariableFactoryFunc func,eDataType data_type,
-                eItemKind item_kind,Integer dimension,Integer multi_tag,
+VariableFactory(VariableFactoryFunc func, eDataType data_type,
+                eItemKind item_kind, Integer dimension, Integer multi_tag,
                 bool is_partial)
-: VariableFactory(func,VariableTypeInfo(item_kind,data_type,dimension,multi_tag,is_partial))
+: VariableFactory(func, VariableTypeInfo(item_kind, data_type, dimension, multi_tag, is_partial))
 {
 }
 
@@ -42,7 +42,7 @@ VariableFactory(VariableFactoryFunc func,eDataType data_type,
 /*---------------------------------------------------------------------------*/
 
 VariableFactory::
-VariableFactory(VariableFactoryFunc func,const VariableTypeInfo& var_type_info)
+VariableFactory(VariableFactoryFunc func, const VariableTypeInfo& var_type_info)
 : m_function(func)
 , m_variable_type_info(var_type_info)
 {

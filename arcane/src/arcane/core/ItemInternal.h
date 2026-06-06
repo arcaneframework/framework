@@ -51,7 +51,7 @@ class PolyhedralFamily;
 class PolyhedralMeshImpl;
 class FaceFamily;
 class MeshRefinement;
-}
+} // namespace Arcane::mesh
 namespace Arcane::Materials
 {
 class ConstituentItemSharedInfo;
@@ -70,10 +70,15 @@ class ItemInternalCompatibility;
 class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 {
  public:
+
   ItemBaseBuildInfo() = default;
-  constexpr ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
-  : m_local_id(local_id), m_shared_info(shared_info) {}
+  constexpr ItemBaseBuildInfo(Int32 local_id, ItemSharedInfo* shared_info)
+  : m_local_id(local_id)
+  , m_shared_info(shared_info)
+  {}
+
  public:
+
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
   ItemSharedInfo* m_shared_info = nullptr;
 };
@@ -115,16 +120,17 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   struct Int32View
   {
    public:
+
     constexpr Int32 operator[](Int32 index) const
     {
 #ifdef ARCANE_CHECK
-      if (index==NULL_ITEM_LOCAL_ID){
+      if (index == NULL_ITEM_LOCAL_ID) {
         // For the null entity, the size must be 0.
-        if (m_size!=0)
-          arcaneRangeError(index,m_size);
+        if (m_size != 0)
+          arcaneRangeError(index, m_size);
       }
       else
-        ARCANE_CHECK_AT(index,m_size);
+        ARCANE_CHECK_AT(index, m_size);
 #endif
       return m_data[index];
     }
@@ -142,13 +148,15 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     }
     operator ConstArrayView<Int32>() const
     {
-      return ConstArrayView<Int32>(m_size,m_data);
+      return ConstArrayView<Int32>(m_size, m_data);
     }
     operator SmallSpan<const Int32>() const
     {
-      return SmallSpan<const Int32>(m_data,m_size);
+      return SmallSpan<const Int32>(m_data, m_size);
     }
+
    private:
+
     Int32 m_size;
     const Int32* m_data;
   };
@@ -175,13 +183,13 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemInternalConnectivityList()
   : m_items(nullptr)
   {
-    for( Integer i=0; i<MAX_ITEM_KIND; ++i ){
+    for (Integer i = 0; i < MAX_ITEM_KIND; ++i) {
       m_kind_info[i].m_nb_item_null_data[0] = 0;
       m_kind_info[i].m_nb_item_null_data[1] = 0;
       m_kind_info[i].m_max_nb_item = 0;
     }
 
-    for( Integer i=0; i<MAX_ITEM_KIND; ++i ){
+    for (Integer i = 0; i < MAX_ITEM_KIND; ++i) {
       m_container[i].m_nb_item.setNull(&m_kind_info[i].m_nb_item_null_data[1]);
       m_container[i].m_offset = ConstArrayView<Int32>{};
     }
@@ -205,9 +213,9 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    * \brief localId() of the \a index-th entity of type \a item_kind
    * connected to the entity with localid() \a lid.
    */
-  constexpr Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
+  constexpr Int32 itemLocalId(Int32 item_kind, Int32 lid, Integer index) const
   {
-    return m_container[item_kind].itemLocalId(lid,index);
+    return m_container[item_kind].itemLocalId(lid, index);
   }
   //! Number of calls to itemLocalId()
   Int64 nbAccess() const { return 0; }
@@ -217,7 +225,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  private:
 
   //! Positions the connectivity index array
-  void _setConnectivityIndex(Int32 item_kind,ConstArrayView<Int32> v)
+  void _setConnectivityIndex(Int32 item_kind, ConstArrayView<Int32> v)
   {
     m_container[item_kind].m_indexes = v;
   }
@@ -228,12 +236,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     m_container[item_kind].m_offset = ConstArrayView<Int32>{};
   }
   //! Positions the array containing the number of connected entities.
-  void _setConnectivityNbItem(Int32 item_kind,ConstArrayView<Int32> v)
+  void _setConnectivityNbItem(Int32 item_kind, ConstArrayView<Int32> v)
   {
     m_container[item_kind].m_nb_item = v;
   }
   //! Positions the maximum number of connected entities.
-  void _setMaxNbConnectedItem(Int32 item_kind,Int32 v)
+  void _setMaxNbConnectedItem(Int32 item_kind, Int32 v)
   {
     m_kind_info[item_kind].m_max_nb_item = v;
   }
@@ -274,14 +282,22 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
-  constexpr ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),A_INTERNAL_SI(node)); }
-  constexpr ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),A_INTERNAL_SI(edge)); }
-  constexpr ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),A_INTERNAL_SI(face)); }
-  constexpr ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
+  constexpr ItemBaseBuildInfo nodeBase(Int32 lid, Int32 aindex) const
+  {
+    return ItemBaseBuildInfo(_nodeLocalIdV2(lid, aindex), A_INTERNAL_SI(node));
+  }
+  constexpr ItemBaseBuildInfo edgeBase(Int32 lid, Int32 aindex) const
+  {
+    return ItemBaseBuildInfo(_edgeLocalIdV2(lid, aindex), A_INTERNAL_SI(edge));
+  }
+  constexpr ItemBaseBuildInfo faceBase(Int32 lid, Int32 aindex) const
+  {
+    return ItemBaseBuildInfo(_faceLocalIdV2(lid, aindex), A_INTERNAL_SI(face));
+  }
+  constexpr ItemBaseBuildInfo cellBase(Int32 lid, Int32 aindex) const
+  {
+    return ItemBaseBuildInfo(_cellLocalIdV2(lid, aindex), A_INTERNAL_SI(cell));
+  }
   ItemBaseBuildInfo hParentBase(Int32 lid, Int32 aindex, ItemSharedInfo* isf) const
   {
     return ItemBaseBuildInfo(_hParentLocalIdV2(lid, aindex), isf);
@@ -291,42 +307,42 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     return ItemBaseBuildInfo(_hChildLocalIdV2(lid, aindex), isf);
   }
 
-  auto nodeList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(node),_itemLocalIdListView(NODE_IDX,lid) }; }
-  auto edgeList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(edge),_itemLocalIdListView(EDGE_IDX,lid) }; }
-  auto faceList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(face),_itemLocalIdListView(FACE_IDX,lid) }; }
-  auto cellList(Int32 lid) const { return impl::ItemIndexedListView { A_INTERNAL_SI(cell),_itemLocalIdListView(CELL_IDX,lid) }; }
+  auto nodeList(Int32 lid) const { return impl::ItemIndexedListView{ A_INTERNAL_SI(node), _itemLocalIdListView(NODE_IDX, lid) }; }
+  auto edgeList(Int32 lid) const { return impl::ItemIndexedListView{ A_INTERNAL_SI(edge), _itemLocalIdListView(EDGE_IDX, lid) }; }
+  auto faceList(Int32 lid) const { return impl::ItemIndexedListView{ A_INTERNAL_SI(face), _itemLocalIdListView(FACE_IDX, lid) }; }
+  auto cellList(Int32 lid) const { return impl::ItemIndexedListView{ A_INTERNAL_SI(cell), _itemLocalIdListView(CELL_IDX, lid) }; }
 
  private:
 
   // These 4 methods are still used by ItemBase via internalNodes(), internalEdges(), ...
   // They can be removed when these obsolete methods are removed
-  ItemInternalVectorView nodesV2(Int32 lid) const { return { A_INTERNAL_SI(node),_itemLocalIdListView(NODE_IDX,lid) }; }
-  ItemInternalVectorView edgesV2(Int32 lid) const { return { A_INTERNAL_SI(edge),_itemLocalIdListView(EDGE_IDX,lid) }; }
-  ItemInternalVectorView facesV2(Int32 lid) const { return { A_INTERNAL_SI(face),_itemLocalIdListView(FACE_IDX,lid) }; }
-  ItemInternalVectorView cellsV2(Int32 lid) const { return { A_INTERNAL_SI(cell),_itemLocalIdListView(CELL_IDX,lid) }; }
+  ItemInternalVectorView nodesV2(Int32 lid) const { return { A_INTERNAL_SI(node), _itemLocalIdListView(NODE_IDX, lid) }; }
+  ItemInternalVectorView edgesV2(Int32 lid) const { return { A_INTERNAL_SI(edge), _itemLocalIdListView(EDGE_IDX, lid) }; }
+  ItemInternalVectorView facesV2(Int32 lid) const { return { A_INTERNAL_SI(face), _itemLocalIdListView(FACE_IDX, lid) }; }
+  ItemInternalVectorView cellsV2(Int32 lid) const { return { A_INTERNAL_SI(cell), _itemLocalIdListView(CELL_IDX, lid) }; }
 
-  NodeLocalIdView nodeLocalIdsView(Int32 lid) const { return NodeLocalIdView(_itemLocalIdListView(NODE_IDX,lid)); }
-  EdgeLocalIdView edgeLocalIdsView(Int32 lid) const { return EdgeLocalIdView(_itemLocalIdListView(EDGE_IDX,lid)); }
-  FaceLocalIdView faceLocalIdsView(Int32 lid) const { return FaceLocalIdView(_itemLocalIdListView(FACE_IDX,lid)); }
-  CellLocalIdView cellLocalIdsView(Int32 lid) const { return CellLocalIdView(_itemLocalIdListView(CELL_IDX,lid)); }
-
- private:
-
-  constexpr Int32 _nodeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(NODE_IDX,lid,index); }
-  constexpr Int32 _edgeLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(EDGE_IDX,lid,index); }
-  constexpr Int32 _faceLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(FACE_IDX,lid,index); }
-  constexpr Int32 _cellLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(CELL_IDX,lid,index); }
-  constexpr Int32 _hParentLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HPARENT_IDX,lid,index); }
-  constexpr Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const { return itemLocalId(HCHILD_IDX,lid,index); }
+  NodeLocalIdView nodeLocalIdsView(Int32 lid) const { return NodeLocalIdView(_itemLocalIdListView(NODE_IDX, lid)); }
+  EdgeLocalIdView edgeLocalIdsView(Int32 lid) const { return EdgeLocalIdView(_itemLocalIdListView(EDGE_IDX, lid)); }
+  FaceLocalIdView faceLocalIdsView(Int32 lid) const { return FaceLocalIdView(_itemLocalIdListView(FACE_IDX, lid)); }
+  CellLocalIdView cellLocalIdsView(Int32 lid) const { return CellLocalIdView(_itemLocalIdListView(CELL_IDX, lid)); }
 
  private:
 
-  ItemInternal* _nodeV2(Int32 lid,Int32 aindex) const { return m_items->nodes[ _nodeLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _edgeV2(Int32 lid,Int32 aindex) const { return m_items->edges[ _edgeLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _faceV2(Int32 lid,Int32 aindex) const { return m_items->faces[ _faceLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _cellV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _cellLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _hParentV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
-  ItemInternal* _hChildV2(Int32 lid,Int32 aindex) const { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
+  constexpr Int32 _nodeLocalIdV2(Int32 lid, Int32 index) const { return itemLocalId(NODE_IDX, lid, index); }
+  constexpr Int32 _edgeLocalIdV2(Int32 lid, Int32 index) const { return itemLocalId(EDGE_IDX, lid, index); }
+  constexpr Int32 _faceLocalIdV2(Int32 lid, Int32 index) const { return itemLocalId(FACE_IDX, lid, index); }
+  constexpr Int32 _cellLocalIdV2(Int32 lid, Int32 index) const { return itemLocalId(CELL_IDX, lid, index); }
+  constexpr Int32 _hParentLocalIdV2(Int32 lid, Int32 index) const { return itemLocalId(HPARENT_IDX, lid, index); }
+  constexpr Int32 _hChildLocalIdV2(Int32 lid, Int32 index) const { return itemLocalId(HCHILD_IDX, lid, index); }
+
+ private:
+
+  ItemInternal* _nodeV2(Int32 lid, Int32 aindex) const { return m_items->nodes[_nodeLocalIdV2(lid, aindex)]; }
+  ItemInternal* _edgeV2(Int32 lid, Int32 aindex) const { return m_items->edges[_edgeLocalIdV2(lid, aindex)]; }
+  ItemInternal* _faceV2(Int32 lid, Int32 aindex) const { return m_items->faces[_faceLocalIdV2(lid, aindex)]; }
+  ItemInternal* _cellV2(Int32 lid, Int32 aindex) const { return m_items->cells[_cellLocalIdV2(lid, aindex)]; }
+  ItemInternal* _hParentV2(Int32 lid, Int32 aindex) const { return m_items->cells[_hParentLocalIdV2(lid, aindex)]; }
+  ItemInternal* _hChildV2(Int32 lid, Int32 aindex) const { return m_items->cells[_hChildLocalIdV2(lid, aindex)]; }
 
  private:
 
@@ -343,11 +359,11 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   Int32 _edgeOffset(Int32 lid) const { return m_container[EDGE_IDX].itemOffset(lid); }
   Int32 _faceOffset(Int32 lid) const { return m_container[FACE_IDX].itemOffset(lid); }
   Int32 _cellOffset(Int32 lid) const { return m_container[CELL_IDX].itemOffset(lid); }
-  Int32 _itemOffset(Int32 item_kind,Int32 lid) const { return m_container[item_kind].itemOffset(lid); }
+  Int32 _itemOffset(Int32 item_kind, Int32 lid) const { return m_container[item_kind].itemOffset(lid); }
 
  private:
 
-  impl::ItemLocalIdListContainerView _itemLocalIdListView(Int32 item_kind,Int32 lid) const
+  impl::ItemLocalIdListContainerView _itemLocalIdListView(Int32 item_kind, Int32 lid) const
   {
     return m_container[item_kind].itemLocalIdListView(lid);
   }
@@ -360,19 +376,19 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   {
     impl::ItemLocalIdListContainerView itemLocalIdListView(Int32 lid) const
     {
-      return impl::ItemLocalIdListContainerView(itemLocalIdsData(lid),m_nb_item[lid],itemOffset(lid));
+      return impl::ItemLocalIdListContainerView(itemLocalIdsData(lid), m_nb_item[lid], itemOffset(lid));
     }
     const Int32* itemLocalIdsData(Int32 lid) const
     {
-      return &(m_list[ m_indexes[lid] ]);
+      return &(m_list[m_indexes[lid]]);
     }
-    constexpr Int32 itemLocalId(Int32 lid,Integer index) const
+    constexpr Int32 itemLocalId(Int32 lid, Integer index) const
     {
-      return m_list[ m_indexes[lid] + index] + itemOffset(lid);
+      return m_list[m_indexes[lid] + index] + itemOffset(lid);
     }
     ItemConnectivityContainerView containerView() const
     {
-      return ItemConnectivityContainerView( m_list, m_indexes, m_nb_item );
+      return ItemConnectivityContainerView(m_list, m_indexes, m_nb_item);
     }
     constexpr Int32 itemOffset([[maybe_unused]] Int32 lid) const
     {
@@ -447,13 +463,20 @@ class ARCANE_CORE_EXPORT ItemBase
 
  private:
 
-  constexpr ItemBase(Int32 local_id,ItemSharedInfo* shared_info)
-  : m_local_id(local_id), m_shared_info(shared_info) {}
+  constexpr ItemBase(Int32 local_id, ItemSharedInfo* shared_info)
+  : m_local_id(local_id)
+  , m_shared_info(shared_info)
+  {}
 
  public:
 
-  ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
-  constexpr ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
+  ItemBase()
+  : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer)
+  {}
+  constexpr ItemBase(ItemBaseBuildInfo x)
+  : m_local_id(x.m_local_id)
+  , m_shared_info(x.m_shared_info)
+  {}
 
  public:
 
@@ -470,8 +493,8 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemUniqueId uniqueId() const
   {
 #ifdef ARCANE_CHECK
-    if (m_local_id!=NULL_ITEM_LOCAL_ID)
-      arcaneCheckAt((Integer)m_local_id,m_shared_info->m_unique_ids.size());
+    if (m_local_id != NULL_ITEM_LOCAL_ID)
+      arcaneCheckAt((Integer)m_local_id, m_shared_info->m_unique_ids.size());
 #endif
     // Do not use the normal accessor because this array can be used for the
     // null mesh and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
@@ -537,7 +560,7 @@ class ARCANE_CORE_EXPORT ItemBase
   }
   //! @returns \p true if the item has children (active or not), \p false
   //! otherwise. Always returns \p false if AMR is disabled.
-  inline bool hasHChildren () const
+  inline bool hasHChildren() const
   {
     if (this->nbHChildren() == 0) // TODO ? to check!
       return false;
@@ -550,7 +573,7 @@ class ARCANE_CORE_EXPORT ItemBase
   //! child. Always returns \p true if AMR is disabled.
   inline bool isActive() const
   {
-    if ( (flags() & II_Inactive) | (flags() & II_CoarsenInactive))
+    if ((flags() & II_Inactive) | (flags() & II_CoarsenInactive))
       return false;
     else
       return true;
@@ -559,7 +582,7 @@ class ARCANE_CORE_EXPORT ItemBase
   //! @returns \p true if the item is subactive (i.e., not active and has
   //! no descendants), \p false otherwise. Always returns \p false if AMR
   //! is disabled.
-  inline  bool isSubactive() const
+  inline bool isSubactive() const
   {
     if (this->isActive())
       return false;
@@ -573,9 +596,9 @@ class ARCANE_CORE_EXPORT ItemBase
   //! Kind of the entity
   eItemKind kind() const { return m_shared_info->m_item_kind; }
   //! True if the entity is the null entity
-  bool null() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
+  bool null() const { return m_local_id == NULL_ITEM_LOCAL_ID; }
   //! True if the entity is the null entity
-  bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
+  bool isNull() const { return m_local_id == NULL_ITEM_LOCAL_ID; }
   //! True if the entity belongs to the subdomain
   bool isOwn() const { return ItemFlags::isOwn(flags()); }
   /*!
@@ -587,9 +610,9 @@ class ARCANE_CORE_EXPORT ItemBase
   bool isShared() const { return ItemFlags::isShared(flags()); }
 
   //! True if the entity is suppressed
-  bool isSuppressed() const { return (flags() & II_Suppressed)!=0; }
+  bool isSuppressed() const { return (flags() & II_Suppressed) != 0; }
   //! True if the entity is detached
-  bool isDetached() const { return (flags() & II_Detached)!=0; }
+  bool isDetached() const { return (flags() & II_Detached) != 0; }
 
   //! \a true if the entity is on the boundary
   bool isBoundary() const { return ItemFlags::isBoundary(flags()); }
@@ -635,15 +658,15 @@ class ARCANE_CORE_EXPORT ItemBase
   //! \a true if it is a slave face of an interface
   inline bool isSlaveFace() const { return flags() & II_SlaveFace; }
 
-  Int32 parentId(Integer index) const { return m_shared_info->_parentLocalIdV2(m_local_id,index); }
+  Int32 parentId(Integer index) const { return m_shared_info->_parentLocalIdV2(m_local_id, index); }
 
   //@{
-  Int32 nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
-  Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
-  Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
-  Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
-  Int32 hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id,index); }
-  Int32 hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id,index); }
+  Int32 nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id, index); }
+  Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id, index); }
+  Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id, index); }
+  Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id, index); }
+  Int32 hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id, index); }
+  Int32 hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id, index); }
   //@}
 
   /*!
@@ -687,10 +710,10 @@ class ARCANE_CORE_EXPORT ItemBase
   impl::ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
   //@}
 
-  ItemBase nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id,index); }
-  ItemBase edgeBase(Int32 index) const { return _connectivity()->edgeBase(m_local_id,index); }
-  ItemBase faceBase(Int32 index) const { return _connectivity()->faceBase(m_local_id,index); }
-  ItemBase cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id,index); }
+  ItemBase nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id, index); }
+  ItemBase edgeBase(Int32 index) const { return _connectivity()->edgeBase(m_local_id, index); }
+  ItemBase faceBase(Int32 index) const { return _connectivity()->faceBase(m_local_id, index); }
+  ItemBase cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id, index); }
   ItemBase hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id, index, m_shared_info); }
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id, index, m_shared_info); }
   inline ItemBase parentBase(Int32 index) const;
@@ -700,7 +723,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
- /*!
+  /*!
    * @returns the rank of the child \p (iitem).
    * example: if rank = m_internal->whichChildAmI(iitem); then
    * m_internal->hChild(rank) would be iitem;
@@ -785,13 +808,16 @@ class ARCANE_CORE_EXPORT MutableItemBase
 
  private:
 
-  MutableItemBase(Int32 local_id,ItemSharedInfo* shared_info)
-  : ItemBase(local_id, shared_info) {}
+  MutableItemBase(Int32 local_id, ItemSharedInfo* shared_info)
+  : ItemBase(local_id, shared_info)
+  {}
 
  public:
 
   MutableItemBase() = default;
-  MutableItemBase(ItemBaseBuildInfo x) : ItemBase(x) {}
+  MutableItemBase(ItemBaseBuildInfo x)
+  : ItemBase(x)
+  {}
   explicit MutableItemBase(const ItemBase& x)
   : ItemBase(x)
   {}
@@ -823,11 +849,11 @@ class ARCANE_CORE_EXPORT MutableItemBase
     necessary to call this method for every call to setOwn. Only one
     call after all modifications is necessary.
   */
-  void setOwner(Integer suid,Int32 current_sub_domain)
+  void setOwner(Integer suid, Int32 current_sub_domain)
   {
-    m_shared_info->_setOwnerV2(m_local_id,suid);
+    m_shared_info->_setOwnerV2(m_local_id, suid);
     int f = flags();
-    if (suid==current_sub_domain)
+    if (suid == current_sub_domain)
       f |= II_Own;
     else
       f &= ~II_Own;
@@ -835,7 +861,7 @@ class ARCANE_CORE_EXPORT MutableItemBase
   }
 
   //! Sets the entity flags
-  void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id,f); }
+  void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id, f); }
 
   //! Adds the flags \a added_flags to those of the entity
   void addFlags(Int32 added_flags)
@@ -864,11 +890,11 @@ class ARCANE_CORE_EXPORT MutableItemBase
     setFlags(f);
   }
 
-  void reinitialize(Int64 uid,Int32 aowner,Int32 owner_rank)
+  void reinitialize(Int64 uid, Int32 aowner, Int32 owner_rank)
   {
     setUniqueId(uid);
     setFlags(0);
-    setOwner(aowner,owner_rank);
+    setOwner(aowner, owner_rank);
   }
 
   void setLocalId(Int32 local_id)
@@ -877,9 +903,9 @@ class ARCANE_CORE_EXPORT MutableItemBase
   }
 
   //! Sets the \a i-th parent (currently aindex must be 0)
-  void setParent(Int32 aindex,Int32 parent_local_id)
+  void setParent(Int32 aindex, Int32 parent_local_id)
   {
-    m_shared_info->_setParentV2(m_local_id,aindex,parent_local_id);
+    m_shared_info->_setParentV2(m_local_id, aindex, parent_local_id);
   }
 
  private:
@@ -975,19 +1001,19 @@ class ARCANE_CORE_EXPORT ItemInternal
  public:
 
   ARCANE_DEPRECATED_REASON("Y2023: Use nodeBase() instead.")
-  ItemInternal* internalNode(Int32 index) const { return _connectivity()->_nodeV2(m_local_id,index); }
+  ItemInternal* internalNode(Int32 index) const { return _connectivity()->_nodeV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use edgeBase() instead.")
-  ItemInternal* internalEdge(Int32 index) const { return _connectivity()->_edgeV2(m_local_id,index); }
+  ItemInternal* internalEdge(Int32 index) const { return _connectivity()->_edgeV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use faceBase() instead.")
-  ItemInternal* internalFace(Int32 index) const { return _connectivity()->_faceV2(m_local_id,index); }
+  ItemInternal* internalFace(Int32 index) const { return _connectivity()->_faceV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use cellBase() instead.")
-  ItemInternal* internalCell(Int32 index) const { return _connectivity()->_cellV2(m_local_id,index); }
+  ItemInternal* internalCell(Int32 index) const { return _connectivity()->_cellV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use hParentBase() instead.")
-  ItemInternal* internalHParent(Int32 index) const { return _connectivity()->_hParentV2(m_local_id,index); }
+  ItemInternal* internalHParent(Int32 index) const { return _connectivity()->_hParentV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use hChildBase() instead.")
-  ItemInternal* internalHChild(Int32 index) const { return _connectivity()->_hChildV2(m_local_id,index); }
+  ItemInternal* internalHChild(Int32 index) const { return _connectivity()->_hChildV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use parentBase() instead.")
-  ItemInternal* parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
+  ItemInternal* parent(Integer index) const { return m_shared_info->_parentV2(m_local_id, index); }
 
  public:
 
@@ -1020,7 +1046,7 @@ class ARCANE_CORE_EXPORT ItemInternal
    * Example: if rank = m_internal->whichChildAmI(iitem); then
    * m_internal->hChild(rank) would be iitem;
    */
-  Int32 whichChildAmI(const ItemInternal *iitem) const;
+  Int32 whichChildAmI(const ItemInternal* iitem) const;
 
  public:
 
@@ -1035,13 +1061,13 @@ class ARCANE_CORE_EXPORT ItemInternal
  public:
 
   ARCANE_DEPRECATED_REASON("Y2023: Use nodeId() instead")
-  Int32 nodeLocalId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
+  Int32 nodeLocalId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use edgeId() instead")
-  Int32 edgeLocalId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
+  Int32 edgeLocalId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use faceId() instead")
-  Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
+  Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id, index); }
   ARCANE_DEPRECATED_REASON("Y2023: Use cellId() instead")
-  Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+  Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id, index); }
 
  public:
 
@@ -1049,9 +1075,9 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setDataIndex(Integer);
 
   ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
-  void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
+  void setSharedInfo(ItemSharedInfo* shared_infos, ItemTypeId type_id)
   {
-    _setSharedInfo(shared_infos,type_id);
+    _setSharedInfo(shared_infos, type_id);
   }
 
  public:
@@ -1068,10 +1094,10 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  private:
 
-  void _setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
+  void _setSharedInfo(ItemSharedInfo* shared_infos, ItemTypeId type_id)
   {
     m_shared_info = shared_infos;
-    shared_infos->_setTypeId(m_local_id,type_id.typeId());
+    shared_infos->_setTypeId(m_local_id, type_id.typeId());
   }
 
   ItemInternal* _internalFace(Int32 index) const { return _connectivity()->_faceV2(m_local_id, index); }
@@ -1110,7 +1136,7 @@ ItemLocalId(ItemInternal* item)
 /*---------------------------------------------------------------------------*/
 
 // TODO: add type check
-template<typename ItemType> inline ItemLocalIdT<ItemType>::
+template <typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemInternal* item)
 : ItemLocalId(item->localId())
 {
@@ -1122,7 +1148,7 @@ ItemLocalIdT(ItemInternal* item)
 inline ItemInternal* impl::ItemBase::
 itemInternal() const
 {
-  if (m_local_id!=NULL_ITEM_LOCAL_ID)
+  if (m_local_id != NULL_ITEM_LOCAL_ID)
     return m_shared_info->m_items_internal[m_local_id];
   return ItemInternal::nullItem();
 }
@@ -1133,7 +1159,7 @@ itemInternal() const
 inline ItemInternal* impl::ItemBase::
 _itemInternal() const
 {
-  if (m_local_id!=NULL_ITEM_LOCAL_ID)
+  if (m_local_id != NULL_ITEM_LOCAL_ID)
     return m_shared_info->m_items_internal[m_local_id];
   return ItemInternal::nullItem();
 }
@@ -1144,7 +1170,7 @@ _itemInternal() const
 inline impl::ItemBase impl::ItemBase::
 parentBase(Int32 index) const
 {
-  return ItemBase(m_shared_info->_parentV2(m_local_id,index));
+  return ItemBase(m_shared_info->_parentV2(m_local_id, index));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1153,7 +1179,7 @@ parentBase(Int32 index) const
 inline impl::MutableItemBase impl::ItemBase::
 toMutable()
 {
-  return MutableItemBase(m_local_id,m_shared_info);
+  return MutableItemBase(m_local_id, m_shared_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1179,13 +1205,13 @@ class ItemInternalCompatibility
 {
   friend class SimdItemBase;
   friend class SimdItemDirectBase;
-	friend class SimdItem;
+  friend class SimdItem;
   friend class SimdItemEnumeratorBase;
   friend class ItemVectorView;
-  template<typename T> friend class ItemEnumeratorBaseT;
+  template <typename T> friend class ItemEnumeratorBaseT;
   friend class mesh::DynamicMeshKindInfos;
   friend class TotalviewAdapter;
-  template<int Extent> friend class ItemConnectedListView;
+  template <int Extent> friend class ItemConnectedListView;
 
  private:
 
@@ -1195,9 +1221,9 @@ class ItemInternalCompatibility
   {
     return item->m_shared_info;
   }
-  static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items,Int32 count)
+  static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items, Int32 count)
   {
-    return ((items && count>0) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
+    return ((items && count > 0) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
   }
   static const ItemInternalPtr* _getItemInternalPtr(ItemSharedInfo* shared_info)
   {

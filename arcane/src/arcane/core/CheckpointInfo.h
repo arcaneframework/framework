@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ class ARCANE_CORE_EXPORT CheckpointInfo
   void setDirectory(const String& v) { m_directory = v; }
   const String& directory() const { return m_directory; }
 
-  Int32 checkpointIndex() const { return m_checkpoint_index ; }
+  Int32 checkpointIndex() const { return m_checkpoint_index; }
   void setCheckpointIndex(Int32 v) { m_checkpoint_index = v; }
 
   Real checkpointTime() const { return m_checkpoint_time; }
@@ -93,15 +93,23 @@ class ARCANE_CORE_EXPORT CheckpointInfo
 class CheckpointReadInfo
 {
  public:
+
   explicit CheckpointReadInfo(const CheckpointInfo& ci)
-  : m_checkpoint_info(ci), m_reader(nullptr), m_parallel_mng(nullptr){}
+  : m_checkpoint_info(ci)
+  , m_reader(nullptr)
+  , m_parallel_mng(nullptr)
+  {}
+
  public:
-  const CheckpointInfo& checkpointInfo() const { return  m_checkpoint_info; }
+
+  const CheckpointInfo& checkpointInfo() const { return m_checkpoint_info; }
   ICheckpointReader2* reader() const { return m_reader; }
   void setReader(ICheckpointReader2* v) { m_reader = v; }
   IParallelMng* parallelMng() const { return m_parallel_mng; }
   void setParallelMng(IParallelMng* v) { m_parallel_mng = v; }
+
  private:
+
   CheckpointInfo m_checkpoint_info;
   ICheckpointReader2* m_reader;
   IParallelMng* m_parallel_mng;

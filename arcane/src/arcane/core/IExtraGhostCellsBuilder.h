@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,9 +38,9 @@ namespace Arcane
 class IExtraGhostCellsBuilder
 {
  public:
-  
+
   virtual ~IExtraGhostCellsBuilder() {} //!< Frees resources.
-  
+
  public:
 
   /*!
@@ -49,7 +49,7 @@ class IExtraGhostCellsBuilder
    * Performs the calculation of "extraordinary" cells following
    * a construction algorithm
    */
-  virtual void computeExtraCellsToSend() =0;
+  virtual void computeExtraCellsToSend() = 0;
 
   /*!
    * \brief Local indices of "extraordinary" cells for sending.
@@ -57,7 +57,7 @@ class IExtraGhostCellsBuilder
    * Retrieves the array of "extraordinary" cells destined
    * for subdomain \a sid
    */
-  virtual Int32ConstArrayView extraCellsToSend(Int32 rank) const =0;
+  virtual Int32ConstArrayView extraCellsToSend(Int32 rank) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

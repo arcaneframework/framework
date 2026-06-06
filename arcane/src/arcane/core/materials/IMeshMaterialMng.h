@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
  * \brief Interface for the material and environment manager of a mesh.
@@ -72,7 +73,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * with the mesh, a null pointer is returned.
    * The returned instance remains valid as long as the mesh \a mesh exists.
    */
-  static IMeshMaterialMng* getReference(const MeshHandleOrMesh& mesh_handle,bool create=true);
+  static IMeshMaterialMng* getReference(const MeshHandleOrMesh& mesh_handle, bool create = true);
 
   /*!
    * \brief Retrieves or creates the reference associated with \a mesh.
@@ -83,15 +84,15 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * with the mesh, a null pointer is returned.
    * The returned instance remains valid as long as the mesh \a mesh exists.
    */
-  static Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool create=true);
+  static Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle, bool create = true);
 
  public:
 
   //! Associated mesh.
-  virtual IMesh* mesh() =0;
+  virtual IMesh* mesh() = 0;
 
   //! Trace manager
-  virtual ITraceMng* traceMng() =0;
+  virtual ITraceMng* traceMng() = 0;
 
  public:
 
@@ -102,7 +103,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * This information is then used when creating the environment
    * via createEnvironment().
    */
-  virtual MeshMaterialInfo* registerMaterialInfo(const String& name) =0;
+  virtual MeshMaterialInfo* registerMaterialInfo(const String& name) = 0;
 
   /*!
    * \brief Creates an environment with the info \a infos
@@ -111,7 +112,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * The materials constituting the environment must have previously been registered via
    * \a registerMaterialInfo(). A material can belong to several environments.
    */
-  virtual IMeshEnvironment* createEnvironment(const MeshEnvironmentBuildInfo& infos) =0;
+  virtual IMeshEnvironment* createEnvironment(const MeshEnvironmentBuildInfo& infos) = 0;
 
   /*!
    * \brief Creates a block.
@@ -121,7 +122,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * The creation of a block can only take place during initialization,
    * (i.e., before calling endCreate()), but after the creation of environments.
    */
-  virtual IMeshBlock* createBlock(const MeshBlockBuildInfo& infos) =0;
+  virtual IMeshBlock* createBlock(const MeshBlockBuildInfo& infos) = 0;
 
   /*!
    * \brief Adds an environment to an existing block.
@@ -134,7 +135,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * \warning This method does not modify the block->cells() group, and it is
    * up to the caller to add the environment's cells to the group if necessary.
    */
-  virtual void addEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) =0;
+  virtual void addEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) = 0;
 
   /*!
    * \brief Removes an environment from an existing block.
@@ -147,7 +148,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * \warning This method does not modify the block->cells() group, and it is
    * up to the caller to add the environment's cells to the group if necessary.
    */
-  virtual void removeEnvironmentToBlock(IMeshBlock* block,IMeshEnvironment* env) =0;
+  virtual void removeEnvironmentToBlock(IMeshBlock* block, IMeshEnvironment* env) = 0;
 
   /*!
    * \brief Indicates that environment creation is finished.
@@ -157,7 +158,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * If \a is_continue is true, it rebuilds for each material and environment
    * the list of their cells from the recovery information.
    */
-  virtual void endCreate(bool is_continue=false) =0;
+  virtual void endCreate(bool is_continue = false) = 0;
 
   /*!
    * \brief Recreates the material and environment info from the dump info.
@@ -165,7 +166,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * This method replaces endCreate() and can only be used during recovery
    * and during initialization.
    */
-  virtual void recreateFromDump() =0;
+  virtual void recreateFromDump() = 0;
 
   /*!
    * \brief Sets the saving of values between two modifications of the
@@ -174,10 +175,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * If active, the values of partial variables are preserved between
    * two modifications of the material list.
    */
-  virtual void setKeepValuesAfterChange(bool v) =0;
-  
+  virtual void setKeepValuesAfterChange(bool v) = 0;
+
   //! Indicates if variable values are preserved between modifications
-  virtual bool isKeepValuesAfterChange() const =0;
+  virtual bool isKeepValuesAfterChange() const = 0;
 
   /*!
    * \brief Indicates how to initialize new values in
@@ -187,10 +188,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * following the data type. If false, initialization is done with
    * the global value.
    */
-  virtual void setDataInitialisationWithZero(bool v) =0;
-  
+  virtual void setDataInitialisationWithZero(bool v) = 0;
+
   //! Indicates how to initialize new values in material and environment cells.
-  virtual bool isDataInitialisationWithZero() const =0;
+  virtual bool isDataInitialisationWithZero() const = 0;
 
   /*!
    * \brief Indicates if environments and materials follow changes
@@ -202,10 +203,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * of changes in the mesh topology. In this case, all
    * associated data is invalidated.
    */
-  virtual void setMeshModificationNotified(bool v) =0;
+  virtual void setMeshModificationNotified(bool v) = 0;
 
   //! Indicates if environments and materials follow changes in the mesh topology.
-  virtual bool isMeshModificationNotified() const =0;
+  virtual bool isMeshModificationNotified() const = 0;
 
   /*!
    * \brief Sets the flags to parameterize material/environment modifications.
@@ -221,10 +222,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    *
    * This method must be enabled before calling endCreate() to be taken into account.
    */
-  virtual void setModificationFlags(int v) =0;
+  virtual void setModificationFlags(int v) = 0;
 
   //! Flags to parameterize modifications
-  virtual int modificationFlags() const =0;
+  virtual int modificationFlags() const = 0;
 
   /*!
    * \brief Sets the option indicating whether scalar variables
@@ -239,35 +240,35 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    *
    * This method must be enabled before calling endCreate() to be taken into account.
    */
-  virtual void setAllocateScalarEnvironmentVariableAsMaterial(bool v) =0;
+  virtual void setAllocateScalarEnvironmentVariableAsMaterial(bool v) = 0;
 
   //! Indicates if environment scalar variables are allocated on materials.
-  virtual bool isAllocateScalarEnvironmentVariableAsMaterial() const =0;
+  virtual bool isAllocateScalarEnvironmentVariableAsMaterial() const = 0;
 
   //! Manager name
-  virtual String name() const =0;
+  virtual String name() const = 0;
 
   /*!
    * \brief Name of the service used to compress data during forceRecompute().
    *
    * If null (the default), no compression is performed.
    */
-  virtual void setDataCompressorServiceName(const String& name) =0;
+  virtual void setDataCompressorServiceName(const String& name) = 0;
 
   //! Virtual name of the service used to compress data
-  virtual String dataCompressorServiceName() const =0;
+  virtual String dataCompressorServiceName() const = 0;
 
   //! List of materials
-  virtual ConstArrayView<IMeshMaterial*> materials() const =0;
+  virtual ConstArrayView<IMeshMaterial*> materials() const = 0;
 
   //! List of materials viewed as components
-  virtual MeshComponentList materialsAsComponents() const =0;
+  virtual MeshComponentList materialsAsComponents() const = 0;
 
   //! List of environments
-  virtual ConstArrayView<IMeshEnvironment*> environments() const =0;
+  virtual ConstArrayView<IMeshEnvironment*> environments() const = 0;
 
   //! List of environments viewed as components
-  virtual MeshComponentList environmentsAsComponents() const =0;
+  virtual MeshComponentList environmentsAsComponents() const = 0;
 
   /*!
    * \brief List of all components.
@@ -275,10 +276,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * This list is the concatenation of environmentsAsComponents() and
    * materialsAsComponents(). It is only valid once endCreate() has been called.
    */
-  virtual MeshComponentList components() const =0;
+  virtual MeshComponentList components() const = 0;
 
   //! List of blocks
-  virtual ConstArrayView<IMeshBlock*> blocks() const =0;
+  virtual ConstArrayView<IMeshBlock*> blocks() const = 0;
 
   /*!
    * \brief Returns the environment with name \a name.
@@ -286,7 +287,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * If no environment with this name exists, returns null if \a throw_exception is \a false
    * and throws an exception if \a throw_exception is \a true.
    */
-  virtual IMeshEnvironment* findEnvironment(const String& name,bool throw_exception=true) =0;
+  virtual IMeshEnvironment* findEnvironment(const String& name, bool throw_exception = true) = 0;
 
   /*!
    * \brief Returns the block with name \a name.
@@ -294,54 +295,54 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * If no block with this name exists, returns null if \a throw_exception is \a false
    * and throws an exception if \a throw_exception is \a true.
    */
-  virtual IMeshBlock* findBlock(const String& name,bool throw_exception=true) =0;
+  virtual IMeshBlock* findBlock(const String& name, bool throw_exception = true) = 0;
 
   /*!
    * \brief Fills the array \a variables with the list of used material variables.
    *
    * The array \a variables is cleared before the call.
    */
-  virtual void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) =0;
+  virtual void fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables) = 0;
 
   //! Variable with name \a name or \a nullptr if none of this name exists.
-  virtual IMeshMaterialVariable* findVariable(const String& name) =0;
+  virtual IMeshMaterialVariable* findVariable(const String& name) = 0;
 
   //! Material variable associated with the global variable \a global_var (\a nullptr if none)
-  virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) =0;
+  virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) = 0;
 
   //! Writes the material and environment info to the stream \a o
-  virtual void dumpInfos(std::ostream& o) =0;
+  virtual void dumpInfos(std::ostream& o) = 0;
 
   //! Writes the cell info \a cell to the stream \a o
-  virtual void dumpCellInfos(Cell cell,std::ostream& o) =0;
+  virtual void dumpCellInfos(Cell cell, std::ostream& o) = 0;
 
   //! Checks the validity of internal structures
-  virtual void checkValid() =0;
+  virtual void checkValid() = 0;
 
   //! View of environment cells corresponding to the group \a cells
-  virtual AllEnvCellVectorView view(const CellGroup& cells) =0;
+  virtual AllEnvCellVectorView view(const CellGroup& cells) = 0;
 
   //! View of environment cells corresponding to the group \a cells
-  virtual AllEnvCellVectorView view(CellVectorView cells) =0;
+  virtual AllEnvCellVectorView view(CellVectorView cells) = 0;
 
   //! View of environment cells corresponding to local cell IDs cells_local_id
-  virtual AllEnvCellVectorView view(SmallSpan<const Int32> cell_local_id) =0;
+  virtual AllEnvCellVectorView view(SmallSpan<const Int32> cell_local_id) = 0;
 
   //! Creates an instance to convert from 'Cell' to 'AllEnvCell'
-  virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() =0;
+  virtual CellToAllEnvCellConverter cellToAllEnvCellConverter() = 0;
 
   /*!
    * \brief Forces the recalculation of material information.
-   * 
+   *
    * This method allows forcing the recalculation of information on cells
    * mixed, for example, following a mesh change.
    * This is a temporary method that will eventually be removed.
    * Mixed values are invalidated after calling this method.
    */
-  virtual void forceRecompute() =0;
+  virtual void forceRecompute() = 0;
 
   //! Lock used for multi-threading
-  virtual Mutex* variableLock() =0;
+  virtual Mutex* variableLock() = 0;
 
   /*!
    * \brief Synchronizes material cells.
@@ -364,7 +365,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * Returns \a true if the materials of this subdomain have been modified following
    * the synchronization, \a false otherwise.
    */
-  virtual bool synchronizeMaterialsInCells() =0;
+  virtual bool synchronizeMaterialsInCells() = 0;
 
   /*!
    * \brief Checks that material cells are consistent between
@@ -380,10 +381,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * \a max_print indicates the maximum number of errors to display in case of an error.
    * If it is negative, all cells are displayed.
    */
-  virtual void checkMaterialsInCells(Integer max_print=10) =0;
+  virtual void checkMaterialsInCells(Integer max_print = 10) = 0;
 
   //! Applies the functor \a functor to all material variables
-  virtual void visitVariables(IFunctorWithArgumentT<IMeshMaterialVariable*>* functor) =0;
+  virtual void visitVariables(IFunctorWithArgumentT<IMeshMaterialVariable*>* functor) = 0;
 
   /*!
    * \brief Counter for the number of modifications of the material list
@@ -395,36 +396,36 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * \note Currently, this counter is not saved during a
    * protection and will therefore be 0 during recovery.
    */
-  virtual Int64 timestamp() const =0;
+  virtual Int64 timestamp() const = 0;
 
   /*!
    * \brief Sets the version of the implementation for synchronizing
    * material variables.
    */
-  virtual void setSynchronizeVariableVersion(Integer version) =0;
+  virtual void setSynchronizeVariableVersion(Integer version) = 0;
 
   /*!
    * \brief Version of the implementation for synchronizing
    * material variables.
    */
-  virtual Integer synchronizeVariableVersion() const =0;
+  virtual Integer synchronizeVariableVersion() const = 0;
 
   //! True if a mesh exchange with material management is underway.
-  virtual bool isInMeshMaterialExchange() const =0;
+  virtual bool isInMeshMaterialExchange() const = 0;
 
   //! Interface of the variable factory
-  virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const =0;
+  virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const = 0;
 
   /*!
-   * \brief Activates or deactivates the construction and update of the table of 
+   * \brief Activates or deactivates the construction and update of the table of
    * "connectivity" CellLocalId -> AllEnvCell for RUNCOMMAND
    *
    * It can also be activated by the environment variable ARCANE_ALLENVCELL_FOR_RUNCOMMAND.
    * Optionally, the table can be forced to be created, which can be useful during a late call
    * of this method compared to ForceRecompute()
    */
-  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create=false) =0;
-  virtual bool isCellToAllEnvCellForRunCommand() const =0;
+  virtual void enableCellToAllEnvCellForRunCommand(bool is_enable, bool force_create = false) = 0;
+  virtual bool isCellToAllEnvCellForRunCommand() const = 0;
 
   /*!
    * \brief Indicates whether the material or environment value is used when transforming a cell
@@ -439,8 +440,8 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
    * If this property is true, it allows using the material value
    * in all cases.
    */
-  virtual void setUseMaterialValueWhenRemovingPartialValue(bool v) =0;
-  virtual bool isUseMaterialValueWhenRemovingPartialValue() const =0;
+  virtual void setUseMaterialValueWhenRemovingPartialValue(bool v) = 0;
+  virtual bool isUseMaterialValueWhenRemovingPartialValue() const = 0;
 
  public:
 
@@ -448,8 +449,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   class IFactory
   {
    public:
+
     virtual ~IFactory() = default;
-    virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) =0;
+    virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle, bool is_create) = 0;
   };
 
  private:
@@ -460,7 +462,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
  public:
 
   //! Internal API for %Arcane
-  virtual IMeshMaterialMngInternal* _internalApi() const =0;
+  virtual IMeshMaterialMngInternal* _internalApi() const = 0;
 
   /*!
    * \internal

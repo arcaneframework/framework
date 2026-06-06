@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,6 +23,9 @@ namespace Arcane
 {
 class ItemTypeInfo;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane::VtkUtils
 {
@@ -141,7 +144,6 @@ enum PointGhostTypes
   DUPLICATEPOINT = 1, // the point is present on multiple processors
   HIDDENPOINT = 2 // the point is needed to maintain connectivity, but the data values should be ignored.
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

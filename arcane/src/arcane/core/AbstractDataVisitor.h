@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class ARCANE_CORE_EXPORT AbstractScalarDataVisitor
   virtual void applyVisitor(IScalarDataT<String>* data);
 
  protected:
-  
+
   void _throwException(eDataType dt);
 };
 
@@ -92,7 +92,7 @@ class ARCANE_CORE_EXPORT AbstractArrayDataVisitor
   virtual void applyVisitor(IArrayDataT<String>* data);
 
  protected:
-  
+
   void _throwException(eDataType dt);
 };
 
@@ -124,7 +124,7 @@ class ARCANE_CORE_EXPORT AbstractArray2DataVisitor
   virtual void applyVisitor(IArray2DataT<Float32>* data);
 
  protected:
-  
+
   void _throwException(eDataType dt);
 };
 
@@ -167,7 +167,7 @@ class ARCANE_CORE_EXPORT AbstractDataVisitor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

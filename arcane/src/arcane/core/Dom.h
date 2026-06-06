@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ namespace Arcane
 {
 class IStringImpl;
 class IXmlDocumentHolder;
-}
+} // namespace Arcane
 
 namespace Arcane::dom
 {
@@ -56,7 +56,7 @@ typedef String DOMString;
 const UShort INDEX_SIZE_ERR = 1;
 /*! If the specified range of text does not fit into a DOMString */
 const UShort DOMSTRING_SIZE_ERR = 2;
-//! If any node is inserted somewhere it doesn't belong 
+//! If any node is inserted somewhere it doesn't belong
 const UShort HIERARCHY_REQUEST_ERR = 3;
 /*! If a node is used in a different document than the one that
   created it (that doesn't support it) */
@@ -66,7 +66,7 @@ const UShort WRONG_DOCUMENT_ERR = 4;
   a legal character, and production 5 for the definition of a legal name
   character. */
 const UShort INVALID_CHARACTER_ERR = 5;
-//! If data is specified for a node which does not support data 
+//! If data is specified for a node which does not support data
 const UShort NO_DATA_ALLOWED_ERR = 6;
 /*! If an attempt is made to modify an object where modifications are
   not allowed */
@@ -103,8 +103,13 @@ const UShort NOT_IMPLEMENTED_ERR = 2500;
 class ARCANE_CORE_EXPORT DOMException
 {
  public:
-  DOMException(UShort _code) : code(_code) {}
+
+  DOMException(UShort _code)
+  : code(_code)
+  {}
+
  public:
+
   UShort code; //!< The code of the exception
 };
 
@@ -114,19 +119,24 @@ class ARCANE_CORE_EXPORT DOMException
 class ARCANE_CORE_EXPORT DOMWriter
 {
  public:
+
   /*! @name Constructors and Destructors */
   //@{
   DOMWriter();
   DOMWriter(DOMWriterPrv*);
-  DOMWriter(const DOMWriter& dw); 
- ~DOMWriter();
+  DOMWriter(const DOMWriter& dw);
+  ~DOMWriter();
   //@}
   const DOMWriter& operator=(const DOMWriter& from);
+
  public:
+
   ByteUniqueArray writeNode(const Node& node) const;
   void encoding(const String& encoding);
   String encoding() const;
+
  private:
+
   DOMWriterPrv* m_p;
   DOMWriterPrv* _impl() const;
   bool _null() const;
@@ -142,18 +152,21 @@ class ARCANE_CORE_EXPORT DOMImplementation
 
   /*! @name DOM Level 1 operations */
   //@{
-  bool hasFeature(const DOMString& feature,const DOMString& version) const;
+  bool hasFeature(const DOMString& feature, const DOMString& version) const;
   //@}
 
   /*! @name DOM Level 2 operations */
   //@{
-  DocumentType createDocumentType(const DOMString& qualified_name,const DOMString& public_id,
+  DocumentType createDocumentType(const DOMString& qualified_name, const DOMString& public_id,
                                   const DOMString& system_id) const;
 
  private:
-  Document createDocument(const DOMString& namespace_uri,const DOMString& qualified_name,
+
+  Document createDocument(const DOMString& namespace_uri, const DOMString& qualified_name,
                           const DocumentType& doctype) const;
+
  public:
+
   //@}
 
   /*! @name DOM Level 3 operations */
@@ -164,6 +177,7 @@ class ARCANE_CORE_EXPORT DOMImplementation
   DOMWriter createDOMWriter() const;
 
  public:
+
   /*! @name Constructors and Destructors */
   //@{
   DOMImplementation();
@@ -172,19 +186,23 @@ class ARCANE_CORE_EXPORT DOMImplementation
   //@}
 
  public:
+
   //! The following methods are internal to Arcane.
   //@{
   IXmlDocumentHolder* _newDocument();
-  IXmlDocumentHolder* _load(const String& fname,ITraceMng* msg,const String& schemaname);
-  IXmlDocumentHolder* _load(const String& fname,ITraceMng* msg,const String& schemaname, ByteConstArrayView schema_data);
-  IXmlDocumentHolder* _load(ByteConstSpan buffer,const String& name,ITraceMng* trace);
-  void _save(ByteArray& bytes,const Document& document,int indent_level);
+  IXmlDocumentHolder* _load(const String& fname, ITraceMng* msg, const String& schemaname);
+  IXmlDocumentHolder* _load(const String& fname, ITraceMng* msg, const String& schemaname, ByteConstArrayView schema_data);
+  IXmlDocumentHolder* _load(ByteConstSpan buffer, const String& name, ITraceMng* trace);
+  void _save(ByteArray& bytes, const Document& document, int indent_level);
   String _implementationName() const;
   //@}
  public:
+
   static void initialize();
   static void terminate();
+
  private:
+
   ImplementationPrv* m_p;
   ImplementationPrv* _impl() const;
   void _checkValid() const;
@@ -193,8 +211,8 @@ class ARCANE_CORE_EXPORT DOMImplementation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_CORE_EXPORT bool operator==(const Node& n1,const Node& n2);
-ARCANE_CORE_EXPORT bool operator!=(const Node& n1,const Node& n2);
+ARCANE_CORE_EXPORT bool operator==(const Node& n1, const Node& n2);
+ARCANE_CORE_EXPORT bool operator!=(const Node& n1, const Node& n2);
 //class NodePrv;
 
 /*!
@@ -296,8 +314,8 @@ class ARCANE_CORE_EXPORT Node
 
   /*! @name DOM Level 1 operations */
   //@{
-  Node insertBefore(const Node& new_child,const Node& ref_child) const;
-  Node replaceChild(const Node& new_child,const Node& old_child) const;
+  Node insertBefore(const Node& new_child, const Node& ref_child) const;
+  Node replaceChild(const Node& new_child, const Node& old_child) const;
   Node removeChild(const Node& old_child) const;
   Node appendChild(const Node& new_child) const;
   bool hasChildNodes() const;
@@ -313,7 +331,7 @@ class ARCANE_CORE_EXPORT Node
   /*! @name DOM Level 2 operations */
   //@{
   void normalize() const;
-  bool isSupported(const DOMString& feature,const DOMString& version) const;
+  bool isSupported(const DOMString& feature, const DOMString& version) const;
   DOMString namespaceURI() const;
 
   DOMString localName() const;
@@ -323,11 +341,11 @@ class ARCANE_CORE_EXPORT Node
     A bitmask indicating the relative tree position of a node with
     respect to another node.
 
-    Issue TreePosition-1: 
-    Should we use fewer bits? 
-    
-    Issue TreePosition-2: 
-    How does a node compare to itself? 
+    Issue TreePosition-1:
+    Should we use fewer bits?
+
+    Issue TreePosition-2:
+    How does a node compare to itself?
   */
   //@{
   //! The node precedes the reference node
@@ -361,7 +379,6 @@ class ARCANE_CORE_EXPORT Node
   //@{
   DOMString baseURI() const;
   //@}
-  
 
   /*! @name DOM Level 3 operations */
   //@{
@@ -369,11 +386,11 @@ class ARCANE_CORE_EXPORT Node
   UShort compareTreePosition(const Node& other) const;
   bool isEqualNode(const Node& other) const;
   Node getInterface(const DOMString& feature) const;
-  DOMString lookupNamespacePrefix(const DOMString& namespace_uri,bool use_default) const;
+  DOMString lookupNamespacePrefix(const DOMString& namespace_uri, bool use_default) const;
   bool isDefaultNamespace(const DOMString& namespace_uri) const;
   DOMString lookupNamespaceURI(const DOMString& prefix) const;
   //void normalizeNS() const;
-  DOMObject setUserData(const DOMString& key,const DOMObject& data,
+  DOMObject setUserData(const DOMString& key, const DOMObject& data,
                         const UserDataHandler& handler) const;
   DOMObject getUserData(const DOMString& key) const;
   //@}
@@ -391,7 +408,7 @@ class ARCANE_CORE_EXPORT Node
   void releaseNode();
 
  public:
-  
+
   bool _null() const;
 
  public:
@@ -403,10 +420,10 @@ class ARCANE_CORE_EXPORT Node
   friend class Document;
   friend class DOMImplementation;
   friend class NamedNodeMap;
-	friend class CharacterData;
-	friend class Text;
+  friend class CharacterData;
+  friend class Text;
   friend class DOMWriter;
-  friend bool ARCANE_CORE_EXPORT operator==(const Node& n1,const Node& n2);
+  friend bool ARCANE_CORE_EXPORT operator==(const Node& n1, const Node& n2);
 
  protected:
 
@@ -415,15 +432,22 @@ class ARCANE_CORE_EXPORT Node
   void _assign(const Node&);
 
  public:
+
   Node();
   Node(const Node&);
   virtual ~Node();
   const Node& operator=(const Node& from);
+
  public:
+
   Node(NodePrv*);
+
  protected:
+
   void _checkValid() const;
+
  protected:
+
   NodePrv* _impl() const;
   friend NodePrv* toNodePrv(const Node& node);
 };
@@ -471,10 +495,10 @@ class ARCANE_CORE_EXPORT Document
 
   //! @name DOM Level 2 operations
   //@{
-  Node importNode(const Node& imported_node,bool deep) const;
-  Element createElementNS(const DOMString& namespace_uri,const DOMString& qualified_name) const;
-  Attr createAttributeNS(const DOMString& namespace_uri,const DOMString& qualified_name) const;
-  NodeList getElementsByTagNameNS(const DOMString& namespace_uri,const DOMString& local_name) const;
+  Node importNode(const Node& imported_node, bool deep) const;
+  Element createElementNS(const DOMString& namespace_uri, const DOMString& qualified_name) const;
+  Attr createAttributeNS(const DOMString& namespace_uri, const DOMString& qualified_name) const;
+  NodeList getElementsByTagNameNS(const DOMString& namespace_uri, const DOMString& local_name) const;
   Element getElementById(const DOMString& element_id) const;
   //@}
 
@@ -528,18 +552,23 @@ class ARCANE_CORE_EXPORT Document
   void setNormalizationFeature(const DOMString& name,bool state);
   bool getNormalizationFeature(const DOMString& name) const;
   */
-  Node renameNode(const Node& node,const DOMString& namespace_uri,
+  Node renameNode(const Node& node, const DOMString& namespace_uri,
                   const DOMString& name);
   //@}
 
  public:
+
   friend class IDOM_Document;
   friend class DOMImplementation;
+
  public:
+
   Document();
   Document(const Node&);
   Document(DocumentPrv*);
+
  private:
+
   DocumentPrv* _impl() const;
 };
 
@@ -547,6 +576,7 @@ class ARCANE_CORE_EXPORT DocumentFragment
 : public Node
 {
  public:
+
   DocumentFragment();
   DocumentFragment(DocumentFragmentPrv*);
 };
@@ -561,15 +591,19 @@ class ARCANE_CORE_EXPORT DocumentFragment
 class ARCANE_CORE_EXPORT NodeList
 {
  public:
+
   //! @name DOM Level 1 operations
   //@{
   Node item(ULong index) const;
   ULong length() const;
   //@}
  public:
+
   NodeList();
   NodeList(NodeListPrv*);
+
  private:
+
   NodeListPrv* _impl() const;
   NodeListPrv* m_p;
   void _checkValid() const;
@@ -586,6 +620,7 @@ class ARCANE_CORE_EXPORT CharacterData
 : public Node
 {
  public:
+
   /*! @name Attribute data (DOM Level 1) */
   //@{
   DOMString data() const;
@@ -599,13 +634,14 @@ class ARCANE_CORE_EXPORT CharacterData
 
   //! @name DOM Level 1 operations
   //@{
-  DOMString substringData(ULong offset,ULong count) const;
+  DOMString substringData(ULong offset, ULong count) const;
   void appendData(const DOMString& arg) const;
-  void insertData(ULong offset,const DOMString& arg) const;
-  void deleteData(ULong offset,ULong count) const;
-  void replaceData(ULong offset,ULong count,const DOMString& arg) const;
+  void insertData(ULong offset, const DOMString& arg) const;
+  void deleteData(ULong offset, ULong count) const;
+  void replaceData(ULong offset, ULong count, const DOMString& arg) const;
   //@}
  protected:
+
   CharacterData();
   CharacterData(const Node& from);
   CharacterData(const CharacterData& from);
@@ -617,6 +653,7 @@ class ARCANE_CORE_EXPORT Attr
 : public Node
 {
  public:
+
   /*! @name Attribute name (DOM Level 1) */
   //@{
   DOMString name() const;
@@ -639,14 +676,19 @@ class ARCANE_CORE_EXPORT Attr
   //@}
 
  public:
+
   friend class IDOM_Attr;
   friend class IDOM_Node;
   friend class Element;
+
  public:
+
   Attr() = default;
   Attr(const Node&);
   Attr(AttrPrv*);
+
  private:
+
   AttrPrv* _impl() const;
 };
 
@@ -666,7 +708,7 @@ class ARCANE_CORE_EXPORT Element
   /*! @name DOM Level 1 operations */
   //@{
   DOMString getAttribute(const DOMString& name) const;
-  void setAttribute(const DOMString& name,const DOMString& value) const;
+  void setAttribute(const DOMString& name, const DOMString& value) const;
   void removeAttribute(const DOMString& name) const;
   Attr getAttributeNode(const DOMString& name) const;
   Attr setAttributeNode(const Attr& new_attr) const;
@@ -674,21 +716,24 @@ class ARCANE_CORE_EXPORT Element
   NodeList getElementsByTagName(const DOMString& name) const;
   //@}
   //@{ @name DOM Level 2 operations
-  DOMString getAttributeNS(const DOMString& namespace_uri,const DOMString& local_name) const;
-  void setAttributeNS(const DOMString& namespace_uri,const DOMString& qualified_name,
-		      const DOMString& value) const;
-  void removeAttributeNS(const DOMString& namespace_uri,const DOMString& local_name) const;
-  Attr getAttributeNodeNS(const DOMString& namespace_uri,const DOMString& local_name) const;
+  DOMString getAttributeNS(const DOMString& namespace_uri, const DOMString& local_name) const;
+  void setAttributeNS(const DOMString& namespace_uri, const DOMString& qualified_name,
+                      const DOMString& value) const;
+  void removeAttributeNS(const DOMString& namespace_uri, const DOMString& local_name) const;
+  Attr getAttributeNodeNS(const DOMString& namespace_uri, const DOMString& local_name) const;
   Attr setAttributeNodeNS(const Attr& new_attr) const;
-  NodeList getElementsByTagNameNS(const DOMString& namespace_uri,const DOMString& local_name) const;
+  NodeList getElementsByTagNameNS(const DOMString& namespace_uri, const DOMString& local_name) const;
   bool hasAttribute(const DOMString& name) const;
-  bool hasAttributeNS(const DOMString& namespace_uri,const DOMString& local_name) const;
+  bool hasAttributeNS(const DOMString& namespace_uri, const DOMString& local_name) const;
   //@}
  public:
+
   Element();
   Element(const Element&);
   Element(const Node&);
+
  private:
+
   Element(ElementPrv*);
   friend class IDOM_Element;
   friend class Attr;
@@ -703,6 +748,7 @@ class ARCANE_CORE_EXPORT Text
 : public CharacterData
 {
  public:
+
   /*! @name DOM Level 1 operations */
   //@{
   Text splitText(ULong offset) const;
@@ -720,6 +766,7 @@ class ARCANE_CORE_EXPORT Text
   Text replaceWholeText(const DOMString& content) const;
   //@}
  public:
+
   Text();
   Text(const Text&);
   Text(const Node&);
@@ -735,9 +782,12 @@ class ARCANE_CORE_EXPORT Comment
 : public CharacterData
 {
  public:
+
   Comment();
   Comment(CommentPrv*);
+
  private:
+
   CommentPrv* _impl() const;
 };
 
@@ -745,9 +795,12 @@ class ARCANE_CORE_EXPORT CDATASection
 : public Text
 {
  public:
+
   CDATASection();
   CDATASection(CDATASectionPrv*);
+
  private:
+
   CDATASectionPrv* _impl() const;
 };
 
@@ -755,6 +808,7 @@ class DocumentType
 : public Node
 {
  public:
+
   /*! @name Attribute name() (DOM Level 1) */
   //@{
   DOMString name() const;
@@ -784,9 +838,12 @@ class DocumentType
   DOMString internalSubset() const;
   //@}
  public:
+
   DocumentType(DocumentTypePrv*);
   DocumentType();
+
  private:
+
   friend class Arcane::dom::DOMImplementation;
   DocumentTypePrv* _impl() const;
 };
@@ -798,6 +855,7 @@ class ARCANE_CORE_EXPORT Notation
 : public Node
 {
  public:
+
   /*! @name Attribute publicId() (DOM Level 1) */
   //@{
   DOMString publicId() const;
@@ -808,6 +866,7 @@ class ARCANE_CORE_EXPORT Notation
   DOMString systemId() const;
   //@}
  private:
+
   NotationPrv* _impl() const;
 };
 
@@ -818,6 +877,7 @@ class ARCANE_CORE_EXPORT Entity
 : public Node
 {
  public:
+
   /*! @name Attribute publicId() (DOM Level 1) */
   //@{
   DOMString publicId() const;
@@ -850,6 +910,7 @@ class ARCANE_CORE_EXPORT Entity
   void version(const DOMString&) const;
   //@}
  private:
+
   EntityPrv* _impl() const;
 };
 
@@ -860,9 +921,12 @@ class EntityReference
 : public Node
 {
  public:
+
   EntityReference();
   EntityReference(EntityReferencePrv*);
+
  private:
+
   EntityReferencePrv* _impl() const;
 };
 
@@ -885,9 +949,12 @@ class ARCANE_CORE_EXPORT ProcessingInstruction
   void data(const DOMString& value) const;
   //@}
  public:
+
   ProcessingInstruction();
   ProcessingInstruction(ProcessingInstructionPrv*);
+
  private:
+
   ProcessingInstructionPrv* _impl() const;
 };
 
@@ -897,6 +964,7 @@ class ARCANE_CORE_EXPORT ProcessingInstruction
 class ARCANE_CORE_EXPORT NamedNodeMap
 {
  public:
+
   /*! @name Attribute length (DOM Level 1)*/
   //@{
   ULong length() const;
@@ -910,13 +978,16 @@ class ARCANE_CORE_EXPORT NamedNodeMap
   //@}
   /*! @name DOM Level 2 operations */
   //@{
-  Node getNamedItemNS(const DOMString& namespace_uri,const DOMString& local_name) const;
+  Node getNamedItemNS(const DOMString& namespace_uri, const DOMString& local_name) const;
   Node setNamedItemNS(const Node& arg) const;
-  Node removeNamedItemNS(const DOMString& namespace_uri,const DOMString& local_name) const;
+  Node removeNamedItemNS(const DOMString& namespace_uri, const DOMString& local_name) const;
   //@}
  public:
+
   bool _null() const;
+
  public:
+
   friend class IDOM_Node;
   friend class IDOM_Element;
   NamedNodeMap();
@@ -924,7 +995,9 @@ class ARCANE_CORE_EXPORT NamedNodeMap
   ~NamedNodeMap();
   NamedNodeMap(const NamedNodeMap& from);
   const NamedNodeMap& operator=(const NamedNodeMap& from);
+
  private:
+
   //AutoRefT<NamedNodeMapPrv> m_p;
   NamedNodeMapPrv* m_p;
   NamedNodeMapPrv* _impl() const;
@@ -936,6 +1009,7 @@ class ARCANE_CORE_EXPORT NamedNodeMap
 class DOMImplementationSource
 {
  public:
+
   DOMImplementation getDOMImplementation(const DOMString& features) const;
 };
 
@@ -945,18 +1019,19 @@ class DOMImplementationSource
 class UserDataHandler
 {
  public:
+
   //! @name OperationType
   //@{
   //! The node is cloned.
-  static const UShort  CLONED     = 1;
+  static const UShort CLONED = 1;
   //! The node is imported.
-  static const UShort  IMPORTED   = 2;
+  static const UShort IMPORTED = 2;
   //! The node is deleted.
-  static const UShort  DELETED    = 3;
+  static const UShort DELETED = 3;
   //@}
 
-  void handle(UShort operation,const DOMString& key,const DOMObject& data,
-	      const Node& src,const Node& dest) const;
+  void handle(UShort operation, const DOMString& key, const DOMObject& data,
+              const Node& src, const Node& dest) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -965,14 +1040,15 @@ class UserDataHandler
 class DOMError
 {
  public:
+
   //! @name ErrorType
   //@{
-  //! The severity of the error described by the DOMError is warning 
-  static const UShort SEVERITY_WARNING       = 0;
+  //! The severity of the error described by the DOMError is warning
+  static const UShort SEVERITY_WARNING = 0;
   //! The severity of the error described by the DOMError is error
-  static const UShort SEVERITY_ERROR         = 1;
+  static const UShort SEVERITY_ERROR = 1;
   //! The severity of the error described by the DOMError is fatal error
-  static const UShort SEVERITY_FATAL_ERROR   = 2;
+  static const UShort SEVERITY_FATAL_ERROR = 2;
   //@}
 
   /*! @name Attribute severity (DOM Level 3) */
@@ -995,12 +1071,15 @@ class DOMError
   DOMLocator location() const;
   //@}
  public:
+
   DOMError();
   DOMError(DOMErrorPrv*);
   ~DOMError();
   DOMError(const DOMError& from);
   const DOMError& operator=(const DOMError& from);
+
  private:
+
   DOMErrorPrv* m_p;
   DOMErrorPrv* _impl() const;
   bool _null() const;
@@ -1013,6 +1092,7 @@ class DOMError
 class DOMErrorHandler
 {
  public:
+
   /*! @name DOM Level 3 operations */
   //@{
   bool handleError(const DOMError& error) const;
@@ -1025,6 +1105,7 @@ class DOMErrorHandler
 class DOMLocator
 {
  public:
+
   /*! @name Attribute lineNumber (DOM Level 3) */
   //@{
   long lineNumber() const;
@@ -1046,13 +1127,16 @@ class DOMLocator
   DOMString uri() const;
   //@}
  public:
+
   friend class DOMError;
   DOMLocator();
   DOMLocator(DOMLocatorPrv*);
   ~DOMLocator();
   DOMLocator(const DOMLocator& from);
   const DOMLocator& operator=(const DOMLocator& from);
+
  private:
+
   DOMLocatorPrv* m_p;
   DOMLocatorPrv* _impl() const;
   bool _null() const;
@@ -1073,7 +1157,7 @@ class DOMLocator
 */
 const unsigned short INVALID_EXPRESSION_ERR = 1;
 /*!
-  If the expression cannot be converted to return the specified type. 
+  If the expression cannot be converted to return the specified type.
   Interface XPathEvaluator
 */
 const unsigned short TYPE_ERR = 2;
@@ -1085,6 +1169,7 @@ const unsigned short TYPE_ERR = 2;
 class XPathException
 {
  public:
+
   unsigned short code;
 };
 
@@ -1094,20 +1179,21 @@ class XPathException
 class XPathEvaluator
 {
  public:
-  XPathExpression createExpression(const DOMString& expression, 
-				   const XPathNSResolver& resolver) const;
+
+  XPathExpression createExpression(const DOMString& expression,
+                                   const XPathNSResolver& resolver) const;
   XPathResult createResult() const;
   XPathNSResolver createNSResolver(const Node& node_resolver) const;
-  XPathResult evaluate(const DOMString& expression, 
-		       const Node& context_node, 
-		       const XPathNSResolver& resolver, 
-		       UShort type, 
-		       const XPathResult& result) const;
-  
-  XPathResult evaluateExpression(const XPathExpression& expression, 
-				 const Node& context_node, 
-				 UShort type, 
-				 const XPathResult& result) const;
+  XPathResult evaluate(const DOMString& expression,
+                       const Node& context_node,
+                       const XPathNSResolver& resolver,
+                       UShort type,
+                       const XPathResult& result) const;
+
+  XPathResult evaluateExpression(const XPathExpression& expression,
+                                 const Node& context_node,
+                                 UShort type,
+                                 const XPathResult& result) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1123,6 +1209,7 @@ class XPathExpression
 class XPathNSResolver
 {
  public:
+
   DOMString lookupNamespaceURI(const DOMString& prefix) const;
 };
 
@@ -1132,6 +1219,7 @@ class XPathNSResolver
 class XPathResult
 {
  public:
+
   //! @name XPathResultType
   //@{
   /*!
@@ -1145,7 +1233,7 @@ class XPathResult
   static const UShort NUMBER_TYPE = 1;
   //! The result is a string as defined by XPath 1.0.
   static const UShort STRING_TYPE = 2;
-  //! The result is a boolean as defined by XPath 1.0. 
+  //! The result is a boolean as defined by XPath 1.0.
   static const UShort BOOLEAN_TYPE = 3;
   //! The result is a node set as defined by XPath 1.0.
   static const UShort NODE_SET_TYPE = 4;
@@ -1210,6 +1298,7 @@ class XPathSetIterator
 class XPathSetSnapshot
 {
  public:
+
   /*! @name Attribute length (DOM Level 3) */
   //@{
   ULong length() const;
@@ -1228,9 +1317,10 @@ class XPathNamespace
 : public Node
 {
  public:
+
   //! @name XPathNodeType
   //@{
-  //! The node is a Namespace. 
+  //! The node is a Namespace.
   static const UShort XPATH_NAMESPACE_NODE = 13;
   //@}
 
@@ -1243,7 +1333,7 @@ class XPathNamespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::dom
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

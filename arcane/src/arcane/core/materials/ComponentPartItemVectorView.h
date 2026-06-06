@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -192,7 +192,7 @@ class ARCANE_CORE_EXPORT MatPartItemVectorView
  public:
 
   //! Constructs a view for the material \a material.
-  MatPartItemVectorView(IMeshMaterial* material,const ComponentPartItemVectorView& view);
+  MatPartItemVectorView(IMeshMaterial* material, const ComponentPartItemVectorView& view);
 
   //! Constructs an uninitialized view
   MatPartItemVectorView() = default;
@@ -220,11 +220,14 @@ class ARCANE_CORE_EXPORT MatPurePartItemVectorView
  public:
 
   //! Constructs a view for the material \a material.
-  MatPurePartItemVectorView(IMeshMaterial* material,const ComponentPurePartItemVectorView& view)
-  : MatPartItemVectorView(material,view) {}
+  MatPurePartItemVectorView(IMeshMaterial* material, const ComponentPurePartItemVectorView& view)
+  : MatPartItemVectorView(material, view)
+  {}
 
   //! Constructs an uninitialized view
-  MatPurePartItemVectorView() : MatPartItemVectorView(){}
+  MatPurePartItemVectorView()
+  : MatPartItemVectorView()
+  {}
 
  public:
 
@@ -248,11 +251,14 @@ class ARCANE_CORE_EXPORT MatImpurePartItemVectorView
  public:
 
   //! Constructs a view for the material \a material.
-  MatImpurePartItemVectorView(IMeshMaterial* material,const ComponentImpurePartItemVectorView& view)
-  : MatPartItemVectorView(material,view) {}
+  MatImpurePartItemVectorView(IMeshMaterial* material, const ComponentImpurePartItemVectorView& view)
+  : MatPartItemVectorView(material, view)
+  {}
 
   //! Constructs an uninitialized view
-  MatImpurePartItemVectorView() : MatPartItemVectorView(){}
+  MatImpurePartItemVectorView()
+  : MatPartItemVectorView()
+  {}
 
  public:
 
@@ -280,7 +286,7 @@ class ARCANE_CORE_EXPORT EnvPartItemVectorView
  public:
 
   //! Constructs a view for the environment \a env.
-  EnvPartItemVectorView(IMeshEnvironment* env,const ComponentPartItemVectorView& view);
+  EnvPartItemVectorView(IMeshEnvironment* env, const ComponentPartItemVectorView& view);
 
   //! Constructs an uninitialized view
   EnvPartItemVectorView() = default;
@@ -308,11 +314,14 @@ class ARCANE_CORE_EXPORT EnvPurePartItemVectorView
  public:
 
   //! Constructs a view for the environment \a env.
-  EnvPurePartItemVectorView(IMeshEnvironment* env,const ComponentPurePartItemVectorView& view)
-  : EnvPartItemVectorView(env,view) {}
+  EnvPurePartItemVectorView(IMeshEnvironment* env, const ComponentPurePartItemVectorView& view)
+  : EnvPartItemVectorView(env, view)
+  {}
 
   //! Constructs an uninitialized view
-  EnvPurePartItemVectorView() : EnvPartItemVectorView(){}
+  EnvPurePartItemVectorView()
+  : EnvPartItemVectorView()
+  {}
 
  public:
 
@@ -336,11 +345,14 @@ class ARCANE_CORE_EXPORT EnvImpurePartItemVectorView
  public:
 
   //! Constructs a view for the environment \a env.
-  EnvImpurePartItemVectorView(IMeshEnvironment* env,const ComponentImpurePartItemVectorView& view)
-  : EnvPartItemVectorView(env,view) {}
+  EnvImpurePartItemVectorView(IMeshEnvironment* env, const ComponentImpurePartItemVectorView& view)
+  : EnvPartItemVectorView(env, view)
+  {}
 
   //! Constructs an uninitialized view
-  EnvImpurePartItemVectorView() : EnvPartItemVectorView(){}
+  EnvImpurePartItemVectorView()
+  : EnvPartItemVectorView()
+  {}
 
  public:
 

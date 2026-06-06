@@ -975,14 +975,14 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "<groups>\n";
     // Sort groups alphabetically to ensure they are
     // always written in the same order.
-    std::map<String,ItemGroup> sorted_groups;
+    std::map<String, ItemGroup> sorted_groups;
     for (ItemGroupCollection::Enumerator i_group(mesh->groups()); ++i_group;) {
       const ItemGroup& group = *i_group;
       if (group.isLocalToSubDomain())
         continue;
-      sorted_groups.insert(std::make_pair(group.name(),group));
+      sorted_groups.insert(std::make_pair(group.name(), group));
     }
-    for ( const auto& [name,group] : sorted_groups ){
+    for (const auto& [name, group] : sorted_groups) {
       ofile << "<group name='" << group.name()
             << "' kind='" << itemKindName(group.itemKind())
             << "' count='" << group.size() << "'>\n";
@@ -1448,17 +1448,15 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
   }
   Int64 next_node = before_ids[(min_node_index + 1) % nb_node];
   Int64 prev_node = before_ids[(min_node_index + (nb_node - 1)) % nb_node];
-  Integer incr = 0 ;
-  Integer incr2 = 0 ;
-  if(next_node==min_node)
-  {
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
     next_node = before_ids[(min_node_index + (nb_node + 2)) % nb_node];
-    incr = 1 ;
+    incr = 1;
   }
-  if(prev_node==min_node)
-  {
+  if (prev_node == min_node) {
     prev_node = before_ids[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1 ;
+    incr2 = nb_node - 1;
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
@@ -1524,17 +1522,15 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
   }
   Int64 next_node = nodes_unique_id[(min_node_index + 1) % nb_node];
   Int64 prev_node = nodes_unique_id[(min_node_index + (nb_node - 1)) % nb_node];
-  Integer incr = 0 ;
-  Integer incr2 = 0 ;
-  if(next_node==min_node)
-  {
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
     next_node = nodes_unique_id[(min_node_index + 2) % nb_node];
-    incr = 1 ;
+    incr = 1;
   }
-  if(prev_node==min_node)
-  {
+  if (prev_node == min_node) {
     prev_node = nodes_unique_id[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1 ;
+    incr2 = nb_node - 1;
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
@@ -1918,7 +1914,7 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
 /*---------------------------------------------------------------------------*/
 
 void MeshUtils::
-fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
+fillUniqueIds(ItemVectorView items, Array<Int64>& uids)
 {
   Integer nb_item = items.size();
   uids.resize(nb_item);

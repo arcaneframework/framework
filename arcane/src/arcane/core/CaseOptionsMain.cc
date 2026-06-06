@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,26 +13,27 @@
 
 #include "arcane/utils/ArcanePrecomp.h"
 
-#include "arcane/CaseOptionsMain.h"
-#include "arcane/CaseOptionBuildInfo.h"
+#include "arcane/core/CaseOptionsMain.h"
+#include "arcane/core/CaseOptionBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 CaseOptionsMain::
 CaseOptionsMain(ICaseMng* cm)
-: CaseOptions(cm,String("main"))
-, doTimeHistory(CaseOptionBuildInfo(configList(),String("do-time-history"),XmlNode(0),String("true"),1,1),String())
-, writeHistoryPeriod(CaseOptionBuildInfo(configList(),String("write-history-period"),XmlNode(0),String("0"),1,1),String())
+: CaseOptions(cm, String("main"))
+, doTimeHistory(CaseOptionBuildInfo(configList(), String("do-time-history"), XmlNode(0), String("true"), 1, 1), String())
+, writeHistoryPeriod(CaseOptionBuildInfo(configList(), String("write-history-period"), XmlNode(0), String("0"), 1, 1), String())
 {
-  doTimeHistory.addAlternativeNodeName(String("fr"),String("avec-historique"));
-  writeHistoryPeriod.addAlternativeNodeName(String("fr"),String("periode-ecriture-historique"));
-  addAlternativeNodeName(String("fr"),String("maitre"));
+  doTimeHistory.addAlternativeNodeName(String("fr"), String("avec-historique"));
+  writeHistoryPeriod.addAlternativeNodeName(String("fr"), String("periode-ecriture-historique"));
+  addAlternativeNodeName(String("fr"), String("maitre"));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -45,7 +46,7 @@ CaseOptionsMain::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

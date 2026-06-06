@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,12 +39,12 @@ class ARCANE_CORE_EXPORT VariableInfo
  public:
 
   ARCCORE_DEPRECATED_2020("Use overload with 'DataStorageTypeInfo' argument")
-  VariableInfo(const String& local_name,const String& item_family_name,
+  VariableInfo(const String& local_name, const String& item_family_name,
                const String& item_group_name,
-               const String& mesh_name,eItemKind item_kind,
-               Integer dimension,Integer multi_tag,eDataType type);
+               const String& mesh_name, eItemKind item_kind,
+               Integer dimension, Integer multi_tag, eDataType type);
 
-  VariableInfo(const String& local_name,const String& item_family_name,
+  VariableInfo(const String& local_name, const String& item_family_name,
                const String& item_group_name,
                const String& mesh_name,
                const VariableTypeInfo& var_type_info,
@@ -92,7 +92,7 @@ class ARCANE_CORE_EXPORT VariableInfo
  public:
 
   static DataStorageTypeInfo
-  _internalGetStorageTypeInfo(eDataType data_type,Integer dimension,Integer multi_tag);
+  _internalGetStorageTypeInfo(eDataType data_type, Integer dimension, Integer multi_tag);
 
  private:
 

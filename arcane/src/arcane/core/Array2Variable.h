@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ namespace Arcane
  * \internal
  * \brief Variable on a 2D array.
  */
-template<class T>
+template <class T>
 class Array2VariableT
 : public Variable
 {
@@ -45,12 +45,12 @@ class Array2VariableT
  protected:
 
   //! Constructs a variable based on the reference \a v
-  Array2VariableT(const VariableBuildInfo& v,const VariableInfo& vi);
+  Array2VariableT(const VariableBuildInfo& v, const VariableInfo& vi);
 
  public:
 
   static ARCANE_CORE_EXPORT ThatClass* getReference(IVariable* var);
-  static ARCANE_CORE_EXPORT ThatClass* getReference(const VariableBuildInfo& v,const VariableInfo& vi);
+  static ARCANE_CORE_EXPORT ThatClass* getReference(const VariableBuildInfo& v, const VariableInfo& vi);
 
  public:
 
@@ -78,14 +78,14 @@ class Array2VariableT
  public:
 
   ARCANE_CORE_EXPORT void directResize(Integer dim1);
-  ARCANE_CORE_EXPORT void directResize(Integer dim1,Integer dim2);
+  ARCANE_CORE_EXPORT void directResize(Integer dim1, Integer dim2);
   ARCANE_CORE_EXPORT void directResizeAndReshape(const ArrayShape& shape);
   ARCANE_CORE_EXPORT void swapValues(ThatClass& rhs);
   ARCANE_CORE_EXPORT void fillShape(ArrayShape& shape);
   ValueDataType* trueData() { return m_data; }
 
  protected:
-  
+
   void _internalResize(const VariableResizeArgs& resize_args) override;
   VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) final;
 

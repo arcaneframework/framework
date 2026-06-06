@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -151,18 +151,18 @@ _search(bool is_phase1)
       // Now, this crash also concerns the case where there are no default values and there are
       // not enough options to reach min_occurs.
       if (str_val.null()) {
-        CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
-                                                name(),rootElement());
+        CaseOptionError::addOptionNotFoundError(caseDocumentFragment(), A_FUNCINFO,
+                                                name(), rootElement());
         continue;
       }
       tm->info(5) << "TryConvert opt=" << _xpathFullName() << " i=" << i
                   << " mesh_name=" << parentOptionList()->meshHandle().meshName()
                   << " value=" << str_val;
-      bool is_bad = _tryToConvert(str_val,i);
-      if (is_bad){
+      bool is_bad = _tryToConvert(str_val, i);
+      if (is_bad) {
         m_values[i] = String();
-        CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
-                                             name(),rootElement(),str_val,_typeName());
+        CaseOptionError::addInvalidTypeError(caseDocumentFragment(), A_FUNCINFO,
+                                             name(), rootElement(), str_val, _typeName());
         continue;
       }
       m_values[i] = str_val;
@@ -176,10 +176,10 @@ _search(bool is_phase1)
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionMultiExtended::
-print(const String& lang,std::ostream& o) const
+print(const String& lang, std::ostream& o) const
 {
   ARCANE_UNUSED(lang);
-  for( Integer i=0, s=_nbElem(); i<s; ++i )
+  for (Integer i = 0, s = _nbElem(); i < s; ++i)
     o << m_values[i] << " ";
 }
 
@@ -204,12 +204,12 @@ setDefaultValue(const String& def_value)
 
   // Value already initialized. In this case, we also replace the
   // current value.
-  if (_isInitialized()){
+  if (_isInitialized()) {
     bool is_bad = _tryToConvert(def_value);
-    if (is_bad){
+    if (is_bad) {
       m_value = String();
       ARCANE_FATAL("Can not convert '{0}' to type '{1}' (option='{2}')",
-                   def_value,_typeName(),xpathFullName());
+                   def_value, _typeName(), xpathFullName());
     }
     m_value = def_value;
   }
@@ -242,24 +242,24 @@ _search(bool is_phase1)
   bool has_valid_value = true;
   if (str_val.null()) {
     m_value = String();
-    if (!isOptional()){
-      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
-                                              name(),rootElement());
+    if (!isOptional()) {
+      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(), A_FUNCINFO,
+                                              name(), rootElement());
       return;
     }
     else
       has_valid_value = false;
   }
   _setHasValidValue(has_valid_value);
-  if (has_valid_value){
+  if (has_valid_value) {
     tm->info(5) << "TryConvert opt=" << xpathFullName()
                 << " mesh_name=" << parentOptionList()->meshHandle().meshName()
                 << " value=" << str_val;
     bool is_bad = _tryToConvert(str_val);
-    if (is_bad){
+    if (is_bad) {
       m_value = String();
-      CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
-                                           name(),rootElement(),str_val,_typeName());
+      CaseOptionError::addInvalidTypeError(caseDocumentFragment(), A_FUNCINFO,
+                                           name(), rootElement(), str_val, _typeName());
       return;
     }
     m_value = str_val;
@@ -271,7 +271,7 @@ _search(bool is_phase1)
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionExtended::
-print(const String& lang,std::ostream& o) const
+print(const String& lang, std::ostream& o) const
 {
   ARCANE_UNUSED(lang);
   _checkIsInitialized();

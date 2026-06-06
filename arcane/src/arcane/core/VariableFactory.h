@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,9 +48,9 @@ class VariableFactory
    * \param is_partial indicates if it is a partial variable.
    */
   ARCCORE_DEPRECATED_2020("Use overload with 'VariableTypeInfo' argument")
-  VariableFactory(VariableFactoryFunc func,eDataType data_type,
-                  eItemKind item_kind,Integer dimension,Integer multi_tag,bool is_partial);
-  VariableFactory(VariableFactoryFunc func,const VariableTypeInfo& var_type_info);
+  VariableFactory(VariableFactoryFunc func, eDataType data_type,
+                  eItemKind item_kind, Integer dimension, Integer multi_tag, bool is_partial);
+  VariableFactory(VariableFactoryFunc func, const VariableTypeInfo& var_type_info);
 
  public:
 
@@ -64,7 +64,7 @@ class VariableFactory
   VariableTypeInfo variableTypeInfo() const override { return m_variable_type_info; }
 
  private:
-  
+
   //! Creation function for IVariableFactoryFactory
   VariableFactoryFunc m_function;
 

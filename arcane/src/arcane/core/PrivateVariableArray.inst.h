@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,18 +25,18 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableArrayT<DataType>::
 PrivateVariableArrayT(const VariableBuildInfo& vb, const VariableInfo& vi)
 : MeshVariableRef(vb)
-, m_private_part(PrivatePartType::getReference(vb,vi))
+, m_private_part(PrivatePartType::getReference(vb, vi))
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableArrayT<DataType>::
 PrivateVariableArrayT(IVariable* var)
 : MeshVariableRef(var)
@@ -47,7 +47,7 @@ PrivateVariableArrayT(IVariable* var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> 
+template <class DataType>
 PrivateVariableArrayT<DataType>::
 PrivateVariableArrayT(const PrivateVariableArrayT& rhs)
 : MeshVariableRef(rhs)
@@ -60,7 +60,7 @@ PrivateVariableArrayT(const PrivateVariableArrayT& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void 
+template <class DataType> void
 PrivateVariableArrayT<DataType>::
 operator=(const PrivateVariableArrayT& rhs)
 {
@@ -75,7 +75,7 @@ operator=(const PrivateVariableArrayT& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 PrivateVariableArrayT<DataType>::
 updateFromInternal()
 {
@@ -88,19 +88,19 @@ updateFromInternal()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 PrivateVariableArrayT<DataType>::
 resize(Integer dim2_size)
 {
   ARCANE_CHECK_POINTER(m_private_part);
-  m_private_part->directResize(m_private_part->valueView().dim1Size(),dim2_size);
+  m_private_part->directResize(m_private_part->valueView().dim1Size(), dim2_size);
   updateFromInternal();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> void
+template <class DataType> void
 PrivateVariableArrayT<DataType>::
 resizeAndReshape(const ArrayShape& shape)
 {
@@ -111,7 +111,7 @@ resizeAndReshape(const ArrayShape& shape)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class DataType> ItemGroup
+template <class DataType> ItemGroup
 PrivateVariableArrayT<DataType>::
 itemGroup() const
 {

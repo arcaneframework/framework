@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Collection.h"
 

@@ -13,11 +13,11 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/ItemPrinter.h"
-#include "arcane/ItemInternalEnumerator.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/MeshPartInfo.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ItemInternalEnumerator.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/MeshPartInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

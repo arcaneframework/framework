@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class ARCANE_CORE_EXPORT MeshVariableRef
 
   void synchronize();
   void synchronize(Int32ConstArrayView local_ids);
-  
+
  protected:
 
   void _internalInit(IVariable*);
@@ -66,7 +66,7 @@ class ARCANE_CORE_EXPORT MeshVariableRef
 
 //! Macro to check that an entity has the same kind as the group
 #define ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i) \
-  ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+  ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()), ("Item and group kind not same"));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

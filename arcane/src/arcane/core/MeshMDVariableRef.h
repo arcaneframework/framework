@@ -152,7 +152,7 @@ class MeshMDVariableRefT
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 3, "Only Extents of rank 0, 1, 2 or 3 are implemented");
-  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
+  static_assert(std::is_same_v<DataType, BasicType>, "DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
@@ -179,7 +179,6 @@ class MeshMDVariableRefT
   {
     return this->m_mdspan(id.localId());
   }
-
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   DataType& operator()(ItemLocalIdType id, Int32 i1)

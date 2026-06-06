@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,16 +20,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 UnaryExpressionImpl::
-UnaryExpressionImpl (IExpressionImpl* first,eOperationType operation)
+UnaryExpressionImpl(IExpressionImpl* first, eOperationType operation)
 : ExpressionImpl()
 , m_first(first)
-, m_operation(operation) 
+, m_operation(operation)
 {
 }
 
@@ -39,27 +40,45 @@ UnaryExpressionImpl (IExpressionImpl* first,eOperationType operation)
 String UnaryExpressionImpl::
 operationName(eOperationType type)
 {
-  switch(type)
-  {
-  case UnarySubstract: return "UnarySubstract";
-  case Inverse: return "Inverse";
-  case Acos: return "Acos";
-  case Asin: return "Asin";
-  case Atan: return "Atan";
-  case Ceil: return "Ceil";
-  case Cos: return "Cos";
-  case Cosh: return "Cosh";
-  case Exp: return "Exp";
-  case Fabs: return "Fabs";
-  case Floor: return "Floor";
-  case Log: return "Log";
-  case Log10: return "Log10";
-  case Sin: return "Sin";
-  case Sinh: return "Sinh";
-  case Sqrt: return "Sqrt";
-  case Tan: return "Tan";
-  case Tanh: return "Tanh";
-  default: return "Unknown";
+  switch (type) {
+  case UnarySubstract:
+    return "UnarySubstract";
+  case Inverse:
+    return "Inverse";
+  case Acos:
+    return "Acos";
+  case Asin:
+    return "Asin";
+  case Atan:
+    return "Atan";
+  case Ceil:
+    return "Ceil";
+  case Cos:
+    return "Cos";
+  case Cosh:
+    return "Cosh";
+  case Exp:
+    return "Exp";
+  case Fabs:
+    return "Fabs";
+  case Floor:
+    return "Floor";
+  case Log:
+    return "Log";
+  case Log10:
+    return "Log10";
+  case Sin:
+    return "Sin";
+  case Sinh:
+    return "Sinh";
+  case Sqrt:
+    return "Sqrt";
+  case Tan:
+    return "Tan";
+  case Tanh:
+    return "Tanh";
+  default:
+    return "Unknown";
   }
 }
 
@@ -95,7 +114,7 @@ apply(ExpressionResult* result)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

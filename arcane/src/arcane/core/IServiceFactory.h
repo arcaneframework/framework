@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,7 +24,6 @@
 
 namespace Arcane
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -51,9 +50,9 @@ class ARCANE_CORE_EXPORT IServiceFactoryInfo
 
   //! true if the service is a module and must be loaded automatically
   //TODO: check if autoload is still useful for these services.
-  virtual bool isAutoload() const =0;
+  virtual bool isAutoload() const = 0;
   //! true if the service is a singleton service (a single instance)
-  virtual bool isSingleton() const =0;
+  virtual bool isSingleton() const = 0;
 
  public:
 
@@ -61,17 +60,25 @@ class ARCANE_CORE_EXPORT IServiceFactoryInfo
    *
    * The returned instance remains the property of the application that created it
    * and must neither be modified nor destroyed.
-   */  
-  virtual IServiceInfo* serviceInfo() const =0;
+   */
+  virtual IServiceInfo* serviceInfo() const = 0;
 };
 
-namespace Internal
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Internal
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  /*!
+/*!
  * \brief internal.
  * \brief Interface for a service factory (new version).
  *
@@ -80,24 +87,29 @@ namespace Internal
 class ARCANE_CORE_EXPORT IServiceFactory2
 {
  protected:
+
   virtual ~IServiceFactory2() = default;
+
  public:
+
   //! Add a reference.
-  virtual void addReference() =0;
+  virtual void addReference() = 0;
   //! Remove a reference.
-  virtual void removeReference() =0;
+  virtual void removeReference() = 0;
+
  public:
+
   //! Create a service instance from the info in \a sbi.
-  virtual ServiceInstanceRef createServiceInstance(const ServiceBuildInfoBase& sbi) =0;
-  
+  virtual ServiceInstanceRef createServiceInstance(const ServiceBuildInfoBase& sbi) = 0;
+
   //! Returns the IServiceInfo associated with this factory.
-  virtual IServiceInfo* serviceInfo() const =0;
+  virtual IServiceInfo* serviceInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  /*!
+/*!
  * \brief internal.
  * \brief Base class for a service factory.
  *
@@ -107,27 +119,35 @@ class ARCANE_CORE_EXPORT AbstractServiceFactory
 : public IServiceFactory2
 {
  protected:
-  AbstractServiceFactory() : m_nb_ref(0){}
+
+  AbstractServiceFactory()
+  : m_nb_ref(0)
+  {}
+
  public:
+
   void addReference() override;
   void removeReference() override;
+
  private:
+
   std::atomic<Int32> m_nb_ref;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  /*!
+/*!
  * \internal
  * \brief Factory for a service implementing the \a InterfaceType interface.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class IServiceFactory2T
 : public AbstractServiceFactory
 {
  public:
-  virtual Ref<InterfaceType> createServiceReference(const ServiceBuildInfoBase& sbi) =0;
+
+  virtual Ref<InterfaceType> createServiceReference(const ServiceBuildInfoBase& sbi) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -146,25 +166,21 @@ class IServiceFactory2T
 class ARCANE_CORE_EXPORT ISingletonServiceFactory
 {
  public:
+
   virtual ~ISingletonServiceFactory() = default;
 
   //! Create an instance of a singleton service.
   virtual Ref<ISingletonServiceInstance>
-  createSingletonServiceInstance(const ServiceBuildInfoBase& sbi) =0;
+  createSingletonServiceInstance(const ServiceBuildInfoBase& sbi) = 0;
 
   //! Returns the IServiceInfo associated with this factory.
-  virtual IServiceInfo* serviceInfo() const =0;
+  virtual IServiceInfo* serviceInfo() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Internal
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane
+} // namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

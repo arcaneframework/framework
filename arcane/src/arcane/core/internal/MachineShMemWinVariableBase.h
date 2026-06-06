@@ -10,10 +10,8 @@
 /* Base classes allowing the exploitation of the MachineShMemWinVariable     */
 /* pointed to the shared memory variable zone.                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_INTERNAL_MACHINESHMEMWINVARIABLEBASE_H
 #define ARCANE_CORE_INTERNAL_MACHINESHMEMWINVARIABLEBASE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -64,13 +64,13 @@ class IVariableMng
 
   //! Sub-domain manager
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
-  virtual ISubDomain* subDomain() =0;
+  virtual ISubDomain* subDomain() = 0;
 
   //! Associated parallelism manager
-  virtual IParallelMng* parallelMng() const =0;
+  virtual IParallelMng* parallelMng() const = 0;
 
   //! Message manager
-  virtual ITraceMng* traceMng() =0;
+  virtual ITraceMng* traceMng() = 0;
 
   /*!
    * \brief Checks a variable.
@@ -83,7 +83,7 @@ class IVariableMng
    * its type and kind match \a infos.
    *
    * If the variable is not valid, an exception is thrown.
-   * 
+   *
    * This operation is used when you want to create a
    * new reference to a variable and ensure that it
    * will be valid.
@@ -93,20 +93,19 @@ class IVariableMng
    *
    * \return the variable named \a infos.name() if it exists, 0 otherwise
    */
-  virtual IVariable* checkVariable(const VariableInfo& infos) =0;
+  virtual IVariable* checkVariable(const VariableInfo& infos) = 0;
   /*! \brief Generates a name for a temporary variable.
    *
    * To ensure the consistency of this name, all sub-domains
    * must call this function.
    */
-  virtual String generateTemporaryVariableName() =0;
-  
+  virtual String generateTemporaryVariableName() = 0;
+
   //! Displays the list of variables managed by a module
-  virtual void dumpList(std::ostream&,IModule*) =0;
+  virtual void dumpList(std::ostream&, IModule*) = 0;
 
   //! Displays the list of all variables managed by the manager
-  virtual void dumpList(std::ostream&) =0;
-
+  virtual void dumpList(std::ostream&) = 0;
 
   /*!
    * \brief Estimated size for exporting variables.
@@ -114,7 +113,7 @@ class IVariableMng
    This operation estimates the number of megabytes that the
    exportation of variables \a vars will generate. If \a vars is empty, the estimation
    is based on all referenced variables.
-   
+
    The estimation only takes into account the memory used
    by the variables and not the writer used.
 
@@ -126,7 +125,7 @@ class IVariableMng
 
    \todo use 8-byte integers or more...
    */
-  virtual Real exportSize(const VariableCollection& vars) =0;
+  virtual Real exportSize(const VariableCollection& vars) = 0;
 
   /*!
    * \brief Observable for variables being written.
@@ -135,7 +134,7 @@ class IVariableMng
    * before writing variables (operation writeCheckpoint(),
    * writeVariables() or writePostProcessing()).
    */
-  virtual IObservable* writeObservable() =0;
+  virtual IObservable* writeObservable() = 0;
 
   /*!
    * \brief Observable for variables being read.
@@ -143,7 +142,7 @@ class IVariableMng
    * Observers registered in this observable are called
    * after reading variables (operation readVariables() or readCheckpoint()).
    */
-  virtual IObservable* readObservable() =0;
+  virtual IObservable* readObservable() = 0;
 
   /*! \brief Writes the variables.
    *
@@ -153,7 +152,7 @@ class IVariableMng
    *
    * This method is collective
    */
-  virtual void writeVariables(IDataWriter* writer,IVariableFilter* filter=0) =0;
+  virtual void writeVariables(IDataWriter* writer, IVariableFilter* filter = 0) = 0;
 
   /*!
    * \brief Exports the variables.
@@ -161,7 +160,7 @@ class IVariableMng
    * Exports the variables in the list \a vars. If \a vars is
    * empty, it exports all variables in the base that are used.
    */
-  virtual void writeVariables(IDataWriter* writer,const VariableCollection& vars) =0;
+  virtual void writeVariables(IDataWriter* writer, const VariableCollection& vars) = 0;
 
   /*!
    * \internal
@@ -175,7 +174,7 @@ class IVariableMng
    * a checkpoint is done via an instance of ICheckpointMng,
    * accessible via ISubDomain::checkpointMng().
    */
-  virtual void writeCheckpoint(ICheckpointWriter* writer) =0;
+  virtual void writeCheckpoint(ICheckpointWriter* writer) = 0;
 
   /*! \brief Writes variables for post-processing.
    *
@@ -187,7 +186,7 @@ class IVariableMng
    *
    * This method is collective.
    */
-  virtual void writePostProcessing(IPostProcessorWriter* writer) =0;
+  virtual void writePostProcessing(IPostProcessorWriter* writer) = 0;
 
   /*!
    *\brief Reads all variables.
@@ -201,7 +200,7 @@ class IVariableMng
    *
    * This method is collective.
    */
-  virtual void readVariables(IDataReader* reader,IVariableFilter* filter=0) =0;
+  virtual void readVariables(IDataReader* reader, IVariableFilter* filter = 0) = 0;
 
   /*!
    * \internal
@@ -216,7 +215,7 @@ class IVariableMng
    * a checkpoint is done via an instance of ICheckpointMng,
    * accessible via ISubDomain::checkpointMng().
    */
-  virtual void readCheckpoint(ICheckpointReader* reader) =0;
+  virtual void readCheckpoint(ICheckpointReader* reader) = 0;
 
   /*!
    * \internal
@@ -231,50 +230,50 @@ class IVariableMng
    * a checkpoint is done via an instance of ICheckpointMng,
    * accessible via ISubDomain::checkpointMng().
    */
-  virtual void readCheckpoint(const CheckpointReadInfo& infos) =0;
+  virtual void readCheckpoint(const CheckpointReadInfo& infos) = 0;
 
   //! Gets all variables of module \a i
-  virtual void variables(VariableRefCollection v,IModule* i) =0;
+  virtual void variables(VariableRefCollection v, IModule* i) = 0;
 
   //! List of variables
-  virtual VariableCollection variables() =0;
+  virtual VariableCollection variables() = 0;
 
   //! List of used variables
-  virtual VariableCollection usedVariables() =0;
-  
+  virtual VariableCollection usedVariables() = 0;
+
   //! Notifies the manager that a variable's state has changed
-  virtual void notifyUsedVariableChanged() =0;
-  
+  virtual void notifyUsedVariableChanged() = 0;
+
   //! Returns the variable named \a name or 0 if no such name exists.
-  virtual IVariable* findVariable(const String& name) =0;
+  virtual IVariable* findVariable(const String& name) = 0;
 
   //! Returns the mesh variable named \a name or 0 if no such name exists.
-  virtual IVariable* findMeshVariable(IMesh* mesh,const String& name) =0;
+  virtual IVariable* findMeshVariable(IMesh* mesh, const String& name) = 0;
 
   //! Returns the fully qualified variable named \a name or 0 if no such name exists.
-  virtual IVariable* findVariableFullyQualified(const String& name) =0;
+  virtual IVariable* findVariableFullyQualified(const String& name) = 0;
 
   //! Writes statistics about variables to the stream \a ostr
-  virtual void dumpStats(std::ostream& ostr,bool is_verbose) =0;
+  virtual void dumpStats(std::ostream& ostr, bool is_verbose) = 0;
 
   //! Writes statistics with the writer \a writer.
-  virtual void dumpStatsJSON(JSONWriter& writer) =0;
+  virtual void dumpStatsJSON(JSONWriter& writer) = 0;
 
   //! Interface of associated utility functions
-  virtual IVariableUtilities* utilities() const =0;
+  virtual IVariableUtilities* utilities() const = 0;
 
   //! Interface of the variable synchronization manager.
-  virtual IVariableSynchronizerMng* synchronizerMng() const =0;
+  virtual IVariableSynchronizerMng* synchronizerMng() const = 0;
 
  public:
 
   //! \name Events
   //@{
   //! Event sent when a variable is created
-  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableAdded() =0;
+  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableAdded() = 0;
 
   //! Event sent when a variable is destroyed
-  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableRemoved() =0;
+  virtual EventObservable<const VariableStatusChangedEventArgs&>& onVariableRemoved() = 0;
   //@}
 
  public:
@@ -287,7 +286,7 @@ class IVariableMng
    * \warning This method must only be called once.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void build() =0;
+  virtual void build() = 0;
 
   /*!
    * \brief Initializes the instance.
@@ -296,16 +295,15 @@ class IVariableMng
    * \warning This method must only be called once.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
   //! Removes and destroys the variables managed by this manager
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void removeAllVariables() =0;
+  virtual void removeAllVariables() = 0;
 
   //! Detaches variables associated with the mesh \a mesh.
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void detachMeshVariables(IMesh* mesh) =0;
-
+  virtual void detachMeshVariables(IMesh* mesh) = 0;
 
   /*!
    * \brief Adds a reference to a variable.
@@ -317,7 +315,7 @@ class IVariableMng
    * \return the implementation associated with \a var.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void addVariableRef(VariableRef* var) =0;
+  virtual void addVariableRef(VariableRef* var) = 0;
 
   /*!
    * \brief Removes a reference to a variable.
@@ -328,7 +326,7 @@ class IVariableMng
    * \pre var != 0
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void removeVariableRef(VariableRef* var) =0;
+  virtual void removeVariableRef(VariableRef* var) = 0;
 
   /*!
    * \brief Adds a variable.
@@ -342,7 +340,7 @@ class IVariableMng
    * \return the implementation associated with \a var.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void addVariable(IVariable* var) =0;
+  virtual void addVariable(IVariable* var) = 0;
 
   /*!
    * \brief Removes a variable.
@@ -355,7 +353,7 @@ class IVariableMng
    * \pre var must have a single reference.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void removeVariable(IVariable* var) =0;
+  virtual void removeVariable(IVariable* var) = 0;
 
   /*!
    * \brief Initializes the variables.
@@ -366,7 +364,7 @@ class IVariableMng
    * \param is_continue \a true if resuming.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual void initializeVariables(bool is_continue) =0;
+  virtual void initializeVariables(bool is_continue) = 0;
 
  public:
 
@@ -375,12 +373,12 @@ class IVariableMng
    * Temporary internal function to retrieve the sub-domain.
    */
   ARCANE_DEPRECATED_REASON("Y2023: This method is internal to Arcane")
-  virtual ISubDomain* _internalSubDomain() const =0;
+  virtual ISubDomain* _internalSubDomain() const = 0;
 
  public:
 
   //! Internal Arcane API
-  virtual IVariableMngInternal* _internalApi() =0;
+  virtual IVariableMngInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

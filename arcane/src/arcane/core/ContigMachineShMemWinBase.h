@@ -10,10 +10,8 @@
 /* Class allowing the creation of a shared memory window between the         */
 /* processes of the same node.                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_CONTIGMACHINESHMEMWINBASE_H
 #define ARCANE_CORE_CONTIGMACHINESHMEMWINBASE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

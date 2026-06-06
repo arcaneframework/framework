@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -51,17 +51,17 @@ class RealArrayVariant
     _setValue(v.data(), v.size());
   }
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  template<typename LayoutType>
-  RealArrayVariant(const NumArray<Real,MDDim1,LayoutType>& v)
+  template <typename LayoutType>
+  RealArrayVariant(const NumArray<Real, MDDim1, LayoutType>& v)
   : RealArrayVariant(v.mdspan())
   {}
-  template<typename LayoutType>
-  RealArrayVariant(MDSpan<Real,MDDim1,LayoutType> v)
+  template <typename LayoutType>
+  RealArrayVariant(MDSpan<Real, MDDim1, LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.extent0());
   }
-  template<typename LayoutType>
-  RealArrayVariant(MDSpan<const Real,MDDim1,LayoutType> v)
+  template <typename LayoutType>
+  RealArrayVariant(MDSpan<const Real, MDDim1, LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.extent0());
   }
@@ -91,24 +91,24 @@ class RealArrayVariant
     _setValue(reinterpret_cast<Real*>(&r), 3);
     return (*this);
   }
-  
-  Real& operator[](Integer index) 
-  { 
+
+  Real& operator[](Integer index)
+  {
     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
     return m_value[index];
   }
   Real operator[](Integer index) const
-  { 
+  {
     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
     return m_value[index];
   }
-  Real& operator()(Integer index) 
-  { 
+  Real& operator()(Integer index)
+  {
     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
     return m_value[index];
   }
   Real operator()(Integer index) const
-  { 
+  {
     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
     return m_value[index];
   }
@@ -121,10 +121,10 @@ class RealArrayVariant
   operator Real3() const { return Real3(m_value[0], m_value[1], m_value[2]); }
 
 #if defined(ARCANE_HAS_ACCELERATOR_API)
-  operator NumArray<Real,MDDim1>() const
+  operator NumArray<Real, MDDim1>() const
   {
-    NumArray<Real,MDDim1> v(m_nb_value);
-    for( Integer i=0, n=m_nb_value; i<n; ++i )
+    NumArray<Real, MDDim1> v(m_nb_value);
+    for (Integer i = 0, n = m_nb_value; i < n; ++i)
       v[i] = m_value[i];
     return v;
   }
@@ -141,7 +141,7 @@ class RealArrayVariant
   {
     m_nb_value = nb_value;
     ARCANE_ASSERT(nb_value <= MAX_SIZE, ("Size is too large"));
-    for (Integer i = 0 ; i < nb_value; ++i)
+    for (Integer i = 0; i < nb_value; ++i)
       m_value[i] = v[i];
   }
 };

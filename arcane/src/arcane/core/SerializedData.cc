@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISerializedData.h"
+#include "arcane/core/ISerializedData.h"
 
 #include "arccore/base/ReferenceCounterImpl.h"
 
@@ -24,7 +24,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ArrayShape.h"
 
-#include "arcane/ISerializer.h"
+#include "arcane/core/ISerializer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -319,8 +319,8 @@ _serializeRead(ISerializer* sbuf)
 
   // Reading 'm_shape'
   Int32 shape_nb_dim = sbuf->getInt32(); // For m_shape.nbDimension()
-  std::array<Int32,ArrayShape::MAX_NB_DIMENSION> shape_dims_buf;
-  Span<Int32> shape_dims(shape_dims_buf.data(),shape_nb_dim);
+  std::array<Int32, ArrayShape::MAX_NB_DIMENSION> shape_dims_buf;
+  Span<Int32> shape_dims(shape_dims_buf.data(), shape_nb_dim);
   sbuf->getSpan(shape_dims); // For the dimensions
   m_shape.setDimensions(shape_dims);
 

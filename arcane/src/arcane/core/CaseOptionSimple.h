@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,10 +39,11 @@ class StringDictionary;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename Type>
+template <typename Type>
 class CaseOptionTraitsT
 {
  public:
+
   using ContainerType = Type;
   using ReferenceType = Type&;
   using ConstReferenceType = const Type&;
@@ -60,10 +61,11 @@ class CaseOptionTraitsT
  * this type of option, it is forbidden to modify the option values, so
  * the views must necessarily be constant.
  */
-template<typename Type>
-class CaseOptionTraitsT< Array<Type> >
+template <typename Type>
+class CaseOptionTraitsT<Array<Type>>
 {
  public:
+
   using ContainerType = UniqueArray<Type>;
   using ReferenceType = const Array<Type>&;
   using ConstReferenceType = const Array<Type>&;
@@ -84,7 +86,7 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
  public:
 
   explicit CaseOptionSimple(const CaseOptionBuildInfo& cob);
-  CaseOptionSimple(const CaseOptionBuildInfo& cob,const String& physical_unit);
+  CaseOptionSimple(const CaseOptionBuildInfo& cob, const String& physical_unit);
   ~CaseOptionSimple();
 
  public:
@@ -161,15 +163,15 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
  protected:
 
   void _search(bool is_phase1) override;
-  virtual bool _allowPhysicalUnit() =0;
+  virtual bool _allowPhysicalUnit() = 0;
   void _setChangedSinceLastIteration(bool has_changed);
   void _searchFunction(XmlNode& velem);
   void _setPhysicalUnit(const String& value);
   void _setHasValidValue(bool v) { m_has_valid_value = v; }
   XmlNode _element() const { return m_element; }
 
-  static String _convertFunctionRealToString(ICaseFunction* func,Real t);
-  static String _convertFunctionIntegerToString(ICaseFunction* func,Integer t);
+  static String _convertFunctionRealToString(ICaseFunction* func, Real t);
+  static String _convertFunctionIntegerToString(ICaseFunction* func, Integer t);
 
  private:
 
@@ -204,7 +206,7 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
  * Real v = real_option.valueAtParameter(0.3); // value at physical time 0.3
  * \endcode
  */
-template<class T>
+template <class T>
 class CaseOptionSimpleT
 : public CaseOptionSimple
 {
@@ -219,11 +221,11 @@ class CaseOptionSimpleT
  public:
 
   ARCANE_CORE_EXPORT CaseOptionSimpleT(const CaseOptionBuildInfo& cob);
-  ARCANE_CORE_EXPORT CaseOptionSimpleT(const CaseOptionBuildInfo& cob,const String& physical_unit);
+  ARCANE_CORE_EXPORT CaseOptionSimpleT(const CaseOptionBuildInfo& cob, const String& physical_unit);
 
  public:
 
-  ARCANE_CORE_EXPORT virtual void print(const String& lang,std::ostream& o) const;
+  ARCANE_CORE_EXPORT virtual void print(const String& lang, std::ostream& o) const;
 
   //! Returns the value of the option
   const Type& value() const
@@ -257,17 +259,21 @@ class CaseOptionSimpleT
 
   //! Returns the value of the option for the real parameter t.
   ARCANE_DEPRECATED Type operator()(Real t) const
-  { return valueAtParameter(t); }
+  {
+    return valueAtParameter(t);
+  }
 
   //! Returns the value of the option for the integer parameter t.
   ARCANE_DEPRECATED Type operator()(Integer t) const
-  { return valueAtParameter(t); }
+  {
+    return valueAtParameter(t);
+  }
 
   /*!
    * For internal use only
    * \internal
    */
-  ARCANE_CORE_EXPORT virtual void updateFromFunction(Real current_time,Integer current_iteration);
+  ARCANE_CORE_EXPORT virtual void updateFromFunction(Real current_time, Integer current_iteration);
 
   /*!
    * \brief Sets the default value of the option.
@@ -286,14 +292,13 @@ class CaseOptionSimpleT
   }
 
  protected:
-	
+
   ARCANE_CORE_EXPORT virtual void _search(bool is_phase1);
   ARCANE_CORE_EXPORT virtual bool _allowPhysicalUnit();
 
  private:
-	
-  Type m_value; //!< Option value
 
+  Type m_value; //!< Option value
 };
 
 /*---------------------------------------------------------------------------*/
@@ -303,8 +308,10 @@ class ARCANE_CORE_EXPORT CaseOptionMultiSimple
 : public CaseOptionBase
 {
  public:
+
   CaseOptionMultiSimple(const CaseOptionBuildInfo& cob)
-  : CaseOptionBase(cob){}
+  : CaseOptionBase(cob)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -319,7 +326,7 @@ class ARCANE_CORE_EXPORT CaseOptionMultiSimple
  * option values.
  */
 #ifndef SWIG
-template<class T>
+template <class T>
 class CaseOptionMultiSimpleT
 : public CaseOptionMultiSimple
 #ifdef ARCANE_HAS_PRIVATE_CASEOPTIONSMULTISIMPLE_BASE_CLASS
@@ -342,7 +349,7 @@ class CaseOptionMultiSimpleT
  public:
 
   ARCANE_CORE_EXPORT CaseOptionMultiSimpleT(const CaseOptionBuildInfo& cob);
-  ARCANE_CORE_EXPORT CaseOptionMultiSimpleT(const CaseOptionBuildInfo& cob,const String& physical_unit);
+  ARCANE_CORE_EXPORT CaseOptionMultiSimpleT(const CaseOptionBuildInfo& cob, const String& physical_unit);
   ARCANE_CORE_EXPORT ~CaseOptionMultiSimpleT();
 
  public:
@@ -360,11 +367,19 @@ class CaseOptionMultiSimpleT
 
   //! Conversion to the constant view
   ARCCORE_DEPRECATED_2021("Use view() instead")
-  operator ArrayView<T>() { ArrayView<T>* v = this; return *v; }
+  operator ArrayView<T>()
+  {
+    ArrayView<T>* v = this;
+    return *v;
+  }
 
   //! Conversion to the constant view
   ARCCORE_DEPRECATED_2021("Use view() instead")
-  operator ConstArrayView<T>() const { const ArrayView<T>* v = this; return *v; }
+  operator ConstArrayView<T>() const
+  {
+    const ArrayView<T>* v = this;
+    return *v;
+  }
 
   //! Constant view on the option elements
   ConstArrayViewType view() const
@@ -382,22 +397,27 @@ class CaseOptionMultiSimpleT
 
  public:
 
-  ARCANE_CORE_EXPORT void print(const String& lang,std::ostream& o) const override;
+  ARCANE_CORE_EXPORT void print(const String& lang, std::ostream& o) const override;
   ICaseFunction* function() const override { return 0; }
-  void updateFromFunction(Real,Integer) override {}
+  void updateFromFunction(Real, Integer) override {}
 
-  ConstArrayView<T> values() const { const ArrayView<T>* v = this; return *v; }
+  ConstArrayView<T> values() const
+  {
+    const ArrayView<T>* v = this;
+    return *v;
+  }
   const T& value(Integer index) const { return this->operator[](index); }
   Integer size() const { return ArrayView<T>::size(); }
   ARCANE_CORE_EXPORT void visit(ICaseDocumentVisitor* visitor) const override;
   bool isPresent() const { return !m_view.empty(); }
 
  protected:
-	
+
   void _search(bool is_phase1) override;
   virtual bool _allowPhysicalUnit();
 
  private:
+
   ArrayViewType m_view;
 };
 #endif

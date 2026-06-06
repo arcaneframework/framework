@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
@@ -19,16 +19,17 @@
 // The following .h files are only useful for exporting the symbols
 // they contain. This is necessary under Windows and sometimes under
 // unix depending on the chosen options
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ITransferValuesParallelOperation.h"
-#include "arcane/IMeshFactory.h"
-#include "arcane/IMeshUtilities.h"
-#include "arcane/IMeshReader.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ITransferValuesParallelOperation.h"
+#include "arcane/core/IMeshFactory.h"
+#include "arcane/core/IMeshUtilities.h"
+#include "arcane/core/IMeshReader.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,14 +37,21 @@ ARCANE_BEGIN_NAMESPACE
 extern "C++" ARCANE_CORE_EXPORT const char*
 itemKindName(eItemKind kind)
 {
-  switch(kind){
-  case IK_Cell: return "Cell";
-  case IK_Node: return "Node";
-  case IK_Face: return "Face";
-  case IK_Edge: return "Edge";
-  case IK_Particle: return "Particle";
-  case IK_DoF: return "DoF";
-  case IK_Unknown: return "None";
+  switch (kind) {
+  case IK_Cell:
+    return "Cell";
+  case IK_Node:
+    return "Node";
+  case IK_Face:
+    return "Face";
+  case IK_Edge:
+    return "Edge";
+  case IK_Particle:
+    return "Particle";
+  case IK_DoF:
+    return "DoF";
+  case IK_Unknown:
+    return "None";
   }
   return "Invalid";
 }
@@ -54,13 +62,19 @@ itemKindName(eItemKind kind)
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type_id)
 {
-  switch(type_id){
-  case IT_DualNode : return IK_Node;
-  case IT_DualEdge : return IK_Edge;
-  case IT_DualFace : return IK_Face;
-  case IT_DualCell : return IK_Cell;
-  case IT_DualParticle : return IK_Particle;
-  default : return IK_Unknown;
+  switch (type_id) {
+  case IT_DualNode:
+    return IK_Node;
+  case IT_DualEdge:
+    return IK_Edge;
+  case IT_DualFace:
+    return IK_Face;
+  case IT_DualCell:
+    return IK_Cell;
+  case IT_DualParticle:
+    return IK_Particle;
+  default:
+    return IK_Unknown;
   }
 }
 
@@ -68,36 +82,36 @@ dualItemKind(Integer type_id)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<< (std::ostream& ostr,eItemKind item_kind)
+operator<<(std::ostream& ostr, eItemKind item_kind)
 {
   ostr << itemKindName(item_kind);
   return ostr;
 }
 
 extern "C++" ARCANE_CORE_EXPORT std::istream&
-operator>> (std::istream& istr,eItemKind& item_kind)
+operator>>(std::istream& istr, eItemKind& item_kind)
 {
   String buf;
   istr >> buf;
-  if (buf=="Node"){
+  if (buf == "Node") {
     item_kind = IK_Node;
   }
-  else if (buf=="Edge"){
+  else if (buf == "Edge") {
     item_kind = IK_Edge;
   }
-  else if (buf=="Face"){
+  else if (buf == "Face") {
     item_kind = IK_Face;
   }
-  else if (buf=="Cell"){
+  else if (buf == "Cell") {
     item_kind = IK_Cell;
   }
-  else if (buf=="Particle"){
+  else if (buf == "Particle") {
     item_kind = IK_Particle;
   }
-  else if (buf=="DoF"){
+  else if (buf == "DoF") {
     item_kind = IK_DoF;
   }
-  else if (buf=="None"){
+  else if (buf == "None") {
     item_kind = IK_Unknown;
   }
   else
@@ -111,33 +125,36 @@ operator>> (std::istream& istr,eItemKind& item_kind)
 ARCANE_CORE_EXPORT const char*
 timePhaseName(eTimePhase time_phase)
 {
-  switch(time_phase){
-  case TP_Computation: return "Computation";
-  case TP_Communication: return "Communication";
-  case TP_InputOutput: return "InputOutput";
+  switch (time_phase) {
+  case TP_Computation:
+    return "Computation";
+  case TP_Communication:
+    return "Communication";
+  case TP_InputOutput:
+    return "InputOutput";
   }
   return "(Invalid)";
 }
 
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<< (std::ostream& ostr,eTimePhase time_phase)
+operator<<(std::ostream& ostr, eTimePhase time_phase)
 {
   ostr << timePhaseName(time_phase);
   return ostr;
 }
 
 extern "C++" ARCANE_CORE_EXPORT std::istream&
-operator>> (std::istream& istr,eTimePhase& time_phase)
+operator>>(std::istream& istr, eTimePhase& time_phase)
 {
   String buf;
   istr >> buf;
-  if (buf=="Computation"){
+  if (buf == "Computation") {
     time_phase = TP_Communication;
   }
-  else if (buf=="Communication"){
+  else if (buf == "Communication") {
     time_phase = TP_Communication;
   }
-  else if (buf=="InputOutput"){
+  else if (buf == "InputOutput") {
     time_phase = TP_InputOutput;
   }
   else
@@ -145,18 +162,17 @@ operator>> (std::istream& istr,eTimePhase& time_phase)
   return istr;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<<(std::ostream& o,eMeshDirection md)
+operator<<(std::ostream& o, eMeshDirection md)
 {
-  if (md==MD_DirX)
+  if (md == MD_DirX)
     o << "DirX";
-  else if (md==MD_DirY)
+  else if (md == MD_DirY)
     o << "DirY";
-  else if (md==MD_DirZ)
+  else if (md == MD_DirZ)
     o << "DirZ";
   else
     o << "DirUnknown";
@@ -166,7 +182,7 @@ operator<<(std::ostream& o,eMeshDirection md)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ class ARCANE_CORE_EXPORT IVariableParallelOperation
 
  public:
 
-  virtual void build() =0; //!< Constructs the instance
+  virtual void build() = 0; //!< Constructs the instance
 
  public:
 
@@ -53,16 +53,16 @@ class ARCANE_CORE_EXPORT IVariableParallelOperation
    * The family must be positioned before adding variables.
    * It can only be done once.
    */
-  virtual void setItemFamily(IItemFamily* family) =0;
-  
+  virtual void setItemFamily(IItemFamily* family) = 0;
+
   //! Entity family on which the operation is performed
-  virtual IItemFamily* itemFamily() =0;
+  virtual IItemFamily* itemFamily() = 0;
 
   //! Adds a variable to the list of variables concerned by the operation
-  virtual void addVariable(IVariable* variable) =0;
+  virtual void addVariable(IVariable* variable) = 0;
 
   //! Applies the operation.
-  virtual void applyOperation(IDataOperation* operation) =0;
+  virtual void applyOperation(IDataOperation* operation) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

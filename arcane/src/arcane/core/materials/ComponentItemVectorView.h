@@ -31,7 +31,7 @@ namespace ArcaneTest
 {
 class MeshMaterialTesterModule;
 class MaterialHeatTestModule;
-}
+} // namespace ArcaneTest
 namespace Arcane::Accelerator::Impl
 {
 class ConstituentCommandContainerBase;
@@ -67,7 +67,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
  public:
 
- using ValueType = ComponentCell;
+  using ValueType = ComponentCell;
 
  public:
 

@@ -116,7 +116,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
   virtual Real additionalCapacityRatio() const = 0;
 
   //! Indicates whether the accelerator API is used to position the values of ConstituentItemVectorImpl
-  virtual bool isUseAcceleratorForConstituentItemVector() const =0;
+  virtual bool isUseAcceleratorForConstituentItemVector() const = 0;
 
   /*!
    * \brief Run queue for the \a policy.
@@ -135,7 +135,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
    * number of meshes changes. It is used notably for indexed selections
    * (via the ConstituentItemIndexedSelectionView class).
    */
-  virtual SmallSpan<const Int32> identitySelectionView() const =0;
+  virtual SmallSpan<const Int32> identitySelectionView() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

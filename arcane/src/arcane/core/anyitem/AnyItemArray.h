@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 /*                                                                           */
 /* Array of items of arbitrary types.                                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_ANYITEM_ANYITEMARRAY_H 
+#ifndef ARCANE_CORE_ANYITEM_ANYITEMARRAY_H
 #define ARCANE_CORE_ANYITEM_ANYITEMARRAY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,21 +22,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ANYITEM_BEGIN_NAMESPACE
+namespace Arcane::AnyItem
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
  * \brief Array of items of arbitrary types.
- * 
+ *
  * Similar to variables but without defining them
- * 
+ *
  * For example:
  *
  * AnyItem::UniqueArray<Real> array(family.allItems());
@@ -49,55 +45,56 @@ ANYITEM_BEGIN_NAMESPACE
  * \TODO : We could improve the implementation by using the localId in
  * AnyItem::Family with a unique array allocated to maxLocalId
  */
-template<typename DataType>
+template <typename DataType>
 class Array
 {
-public:
-  
+ public:
+
   Array(const Group& group)
   {
-    for(Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
-      if(e.groupIndex() >= m_values.size())
-        m_values.resize(e.groupIndex()+1);
+    for (Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
+      if (e.groupIndex() >= m_values.size())
+        m_values.resize(e.groupIndex() + 1);
     }
-    for(Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
+    for (Group::Enumerator e = group.enumerator(); e.hasNext(); ++e) {
       m_values[e.groupIndex()].resize(e.group().itemFamily()->maxLocalId());
     }
   }
-  
-  //! Filling the array 
-  void fill(const DataType& data) 
+
+  //! Filling the array
+  void fill(const DataType& data)
   {
-    for(Integer i = 0; i < m_values.size(); ++i) {
+    for (Integer i = 0; i < m_values.size(); ++i) {
       m_values[i].fill(data);
     }
   }
-  
+
   //! Accessor
-  template<typename T>
-  inline DataType& operator[](const T& item) { 
+  template <typename T>
+  inline DataType& operator[](const T& item)
+  {
     return m_values[item.groupIndex()][item.varIndex()];
   }
-  
+
   // Accessor
-  template<typename T>
-  inline typename Arcane::UniqueArray<DataType>::ConstReferenceType operator[](const T& item) const { 
+  template <typename T>
+  inline typename Arcane::UniqueArray<DataType>::ConstReferenceType operator[](const T& item) const
+  {
     return m_values[item.groupIndex()][item.varIndex()];
   }
-  
-private:
-  
+
+ private:
+
   //! Container of generic variables
-  Arcane::UniqueArray< Arcane::UniqueArray<DataType> > m_values;
+  Arcane::UniqueArray<Arcane::UniqueArray<DataType>> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ANYITEM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // namespace Arcane::AnyItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_ANYITEM_ANYITEMARRAY_H */
+#endif

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,7 +42,7 @@ operator<<(std::ostream& o, const impl::ItemLocalIdListContainerView& lhs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-}
+} // namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ bool operator==(const ItemLocalIdListView& lhs, const ItemLocalIdListView& rhs)
 void impl::ItemLocalIdListContainerView::
 fillLocalIds(Array<Int32>& ids) const
 {
-  for( Int32 i=0, n=m_size; i<n; ++i )
+  for (Int32 i = 0, n = m_size; i < n; ++i)
     ids.add(localId(i));
 }
 

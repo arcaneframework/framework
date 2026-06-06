@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,13 +43,13 @@ class IUnitTest
   virtual void buildInitializeTest() {}
 
   //! Method called after reading the dataset to initialize the test
-  virtual void initializeTest() =0;
+  virtual void initializeTest() = 0;
 
   //! Method called to execute the test
-  virtual void executeTest() =0;
+  virtual void executeTest() = 0;
 
   //! Method called to release resources at the end of execution
-  virtual void finalizeTest() =0;
+  virtual void finalizeTest() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ class IXmlUnitTest
  public:
 
   virtual void buildInitializeTest() {}
-  virtual void initializeTest() =0;
+  virtual void initializeTest() = 0;
   /*!
    * \brief Executes the test and fills the provided XML node parameter.
    *
@@ -77,7 +77,7 @@ class IXmlUnitTest
    * (useful for having an error in CMake tests...).
    */
   virtual bool executeTest(XmlNode& report) = 0;
-  virtual void finalizeTest() =0;
+  virtual void finalizeTest() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

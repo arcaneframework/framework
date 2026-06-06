@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,16 +32,16 @@ namespace Arcane::Materials
  * \internal
  * \brief Access interface for CellMaterialVariableArrayRef.
  */
-template<typename ItemType,typename DataType>
+template <typename ItemType, typename DataType>
 class IArrayMeshMaterialVariable
 {
  public:
 
-  using ThatInterface = IArrayMeshMaterialVariable<ItemType,DataType>;
+  using ThatInterface = IArrayMeshMaterialVariable<ItemType, DataType>;
   using ItemTypeType = ItemType;
   using DataTypeType = DataType;
   using BuilderType = MeshMaterialVariableBuildTraits<ThatInterface>;
-  using VariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
+  using VariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
   static constexpr int dimension() { return 1; }
 
  public:
@@ -51,11 +51,11 @@ class IArrayMeshMaterialVariable
  public:
 
   virtual ArrayView<Array2View<DataType>> _internalFullValuesView() = 0;
-  virtual VariableRefType* globalVariableReference() const =0;
-  virtual void incrementReference() =0;
-  virtual IMeshMaterialVariable* toMeshMaterialVariable() =0;
+  virtual VariableRefType* globalVariableReference() const = 0;
+  virtual void incrementReference() = 0;
+  virtual IMeshMaterialVariable* toMeshMaterialVariable() = 0;
 
-  virtual void resize(Int32 dim2_size) =0;
+  virtual void resize(Int32 dim2_size) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

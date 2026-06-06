@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ namespace Arcane
 
 class IService;
 class CaseOptionBuildInfo;
-template<typename T> class CaseOptionServiceT;
+template <typename T> class CaseOptionServiceT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,20 +46,21 @@ template<typename T> class CaseOptionServiceT;
 /*!
  * \brief Implementation of the container for a service of type \a InterfaceType.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class CaseOptionServiceContainer
 : public ICaseOptionServiceContainer
 {
  public:
+
   ~CaseOptionServiceContainer() override
   {
     removeInstances();
   }
 
-  bool tryCreateService(Integer index,Internal::IServiceFactory2* factory,const ServiceBuildInfoBase& sbi) override
+  bool tryCreateService(Integer index, Internal::IServiceFactory2* factory, const ServiceBuildInfoBase& sbi) override
   {
-    auto true_factory = dynamic_cast< Internal::IServiceFactory2T<InterfaceType>* >(factory);
-    if (true_factory){
+    auto true_factory = dynamic_cast<Internal::IServiceFactory2T<InterfaceType>*>(factory);
+    if (true_factory) {
       Ref<InterfaceType> sr = true_factory->createServiceReference(sbi);
       InterfaceType* s = sr.get();
       m_services_reference[index] = sr;
@@ -71,8 +72,8 @@ class CaseOptionServiceContainer
 
   bool hasInterfaceImplemented(Internal::IServiceFactory2* factory) const override
   {
-    auto true_factory = dynamic_cast< Internal::IServiceFactory2T<InterfaceType>* >(factory);
-    if (true_factory){
+    auto true_factory = dynamic_cast<Internal::IServiceFactory2T<InterfaceType>*>(factory);
+    if (true_factory) {
       return true;
     }
     return false;
@@ -81,7 +82,7 @@ class CaseOptionServiceContainer
   //! Allocates an array for \a size elements
   void allocate(Integer asize) override
   {
-    m_services.resize(asize,nullptr);
+    m_services.resize(asize, nullptr);
     m_services_reference.resize(asize);
   }
 
@@ -102,15 +103,20 @@ class CaseOptionServiceContainer
   }
 
  public:
+
   //! Removes service instances
   void removeInstances()
   {
     m_services_reference.clear();
     m_services.clear();
   }
+
  public:
+
   ArrayView<InterfaceType*> view() { return m_services; }
+
  private:
+
   UniqueArray<InterfaceType*> m_services;
   UniqueArray<Ref<InterfaceType>> m_services_reference;
 };
@@ -131,8 +137,8 @@ class ARCANE_CORE_EXPORT CaseOptionService
 {
  public:
 
- CaseOptionService(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
-  : m_impl(new CaseOptionServiceImpl(cob,allow_null,is_optional))
+  CaseOptionService(const CaseOptionBuildInfo& cob, bool allow_null, bool is_optional)
+  : m_impl(new CaseOptionServiceImpl(cob, allow_null, is_optional))
   {
   }
 
@@ -146,14 +152,14 @@ class ARCANE_CORE_EXPORT CaseOptionService
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Use toICaseOptions() instead")
-  operator CaseOptions& () { return *_impl(); }
+  operator CaseOptions&() { return *_impl(); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Use toICaseOptions() instead")
-  operator const CaseOptions& () const { return *_impl(); }
+  operator const CaseOptions&() const { return *_impl(); }
 
  public:
 
-   const ICaseOptions* toICaseOptions() { return _impl(); }
+  const ICaseOptions* toICaseOptions() { return _impl(); }
 
  public:
 
@@ -162,9 +168,9 @@ class ARCANE_CORE_EXPORT CaseOptionService
   String serviceName() const { return m_impl->serviceName(); }
   bool isOptional() const { return m_impl->isOptional(); }
   bool isPresent() const { return m_impl->isPresent(); }
-  void addAlternativeNodeName(const String& lang,const String& name)
+  void addAlternativeNodeName(const String& lang, const String& name)
   {
-    m_impl->addAlternativeNodeName(lang,name);
+    m_impl->addAlternativeNodeName(lang, name);
   }
   void getAvailableNames(StringArray& names) const
   {
@@ -189,9 +195,9 @@ class ARCANE_CORE_EXPORT CaseOptionService
   }
 
   //! Adds the default value \a value to the category \a category
-  void addDefaultValue(const String& category,const String& value)
+  void addDefaultValue(const String& category, const String& value)
   {
-    m_impl->addDefaultValue(category,value);
+    m_impl->addDefaultValue(category, value);
   }
 
   /*!
@@ -226,33 +232,40 @@ class ARCANE_CORE_EXPORT CaseOptionService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class InterfaceType>
+template <class InterfaceType>
 class CaseOptionServiceT
 : public CaseOptionService
 {
  public:
-  CaseOptionServiceT(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
-  : CaseOptionService(cob,allow_null,is_optional)
+
+  CaseOptionServiceT(const CaseOptionBuildInfo& cob, bool allow_null, bool is_optional)
+  : CaseOptionService(cob, allow_null, is_optional)
   {
     _impl()->setContainer(&m_container);
   }
   ~CaseOptionServiceT() = default;
+
  public:
+
   InterfaceType* operator()() const { return _instance(); }
   InterfaceType* instance() const { return _instance(); }
   Ref<InterfaceType> instanceRef() const { return _instanceRef(); }
+
  private:
+
   CaseOptionServiceContainer<InterfaceType> m_container;
+
  private:
+
   InterfaceType* _instance() const
   {
-    if (m_container.nbElem()==1)
+    if (m_container.nbElem() == 1)
       return m_container.child(0);
     return nullptr;
   }
   Ref<InterfaceType> _instanceRef() const
   {
-    if (m_container.nbElem()==1)
+    if (m_container.nbElem() == 1)
       return m_container.childRef(0);
     return {};
   }
@@ -268,14 +281,17 @@ class CaseOptionServiceT
 class ARCANE_CORE_EXPORT CaseOptionMultiService
 {
  public:
-  CaseOptionMultiService(const CaseOptionBuildInfo& cob,bool allow_null)
-  : m_impl(new CaseOptionMultiServiceImpl(cob,allow_null))
+
+  CaseOptionMultiService(const CaseOptionBuildInfo& cob, bool allow_null)
+  : m_impl(new CaseOptionMultiServiceImpl(cob, allow_null))
   {
   }
   virtual ~CaseOptionMultiService() = default;
   CaseOptionMultiService(const CaseOptionMultiService&) = delete;
   const CaseOptionMultiService& operator=(const CaseOptionMultiService&) = delete;
+
  public:
+
   XmlNode rootElement() const { return m_impl->toCaseOptions()->configList()->rootElement(); }
   String rootTagName() const { return m_impl->rootTagName(); }
   String name() const { return m_impl->name(); }
@@ -289,9 +305,9 @@ class ARCANE_CORE_EXPORT CaseOptionMultiService
   {
     return m_impl->serviceName(index);
   }
-  void addAlternativeNodeName(const String& lang,const String& name)
+  void addAlternativeNodeName(const String& lang, const String& name)
   {
-    m_impl->addAlternativeNodeName(lang,name);
+    m_impl->addAlternativeNodeName(lang, name);
   }
   /*!
    * \brief Sets the mesh name to which the service will be associated.
@@ -324,21 +340,25 @@ class ARCANE_CORE_EXPORT CaseOptionMultiService
  * \ingroup CaseOption
  * \brief Data set option of the service list type.
  */
-template<typename InterfaceType>
+template <typename InterfaceType>
 class CaseOptionMultiServiceT
 : public CaseOptionMultiService
 , public ArrayView<InterfaceType*>
 {
   typedef CaseOptionMultiServiceT<InterfaceType> ThatClass;
+
  public:
-  CaseOptionMultiServiceT(const CaseOptionBuildInfo& cob,bool allow_null)
-  : CaseOptionMultiService(cob,allow_null)
-  , m_notify_functor(this,&ThatClass::_notify)
+
+  CaseOptionMultiServiceT(const CaseOptionBuildInfo& cob, bool allow_null)
+  : CaseOptionMultiService(cob, allow_null)
+  , m_notify_functor(this, &ThatClass::_notify)
   {
     _impl()->setContainer(&m_container);
     _impl()->_setNotifyAllocateFunctor(&m_notify_functor);
   }
+
  public:
+
   CaseOptionMultiServiceT<InterfaceType>& operator()()
   {
     return *this;
@@ -347,13 +367,17 @@ class CaseOptionMultiServiceT
   {
     return *this;
   }
+
  protected:
+
   // Notification by the implementation
   void _notify()
   {
     this->setArray(m_container.view());
   }
+
  private:
+
   CaseOptionServiceContainer<InterfaceType> m_container;
   FunctorT<ThatClass> m_notify_functor;
 };

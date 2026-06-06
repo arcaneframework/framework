@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class ARCANE_CORE_EXPORT XmlNode
   typedef ConstIterT<XmlNode> const_iter;
 
  public:
-  
+
   /*! \brief NodeType
     An integer indicating which type of node this is.
     \note Numeric codes up to 200 are reserved to W3C for possible future use.
@@ -111,10 +111,19 @@ class ARCANE_CORE_EXPORT XmlNode
 
  public:
 
-  XmlNode(IRessourceMng* m,const dom::Node& node) : m_rm(m), m_node(node) {}
+  XmlNode(IRessourceMng* m, const dom::Node& node)
+  : m_rm(m)
+  , m_node(node)
+  {}
   //TODO: to be removed
-  explicit XmlNode(IRessourceMng* m) : m_rm(m), m_node() {}
-  XmlNode() : m_rm(nullptr), m_node() {}
+  explicit XmlNode(IRessourceMng* m)
+  : m_rm(m)
+  , m_node()
+  {}
+  XmlNode()
+  : m_rm(nullptr)
+  , m_node()
+  {}
 
  public:
 
@@ -125,7 +134,7 @@ class ARCANE_CORE_EXPORT XmlNode
   //! Returns a constant iterator over the first element of the array
   inline const_iterator begin() const;
   //! Returns a constant iterator over the first element after the end of the array
-  inline const_iterator end()   const;
+  inline const_iterator end() const;
 
  public:
 
@@ -137,7 +146,7 @@ class ARCANE_CORE_EXPORT XmlNode
 
   /*! \brief XPath name of the node with its ancestors.
    * \warning Only works for elements.
-   */  
+   */
   String xpathFullName() const;
 
   //! True if the element name is \a name
@@ -157,14 +166,14 @@ class ARCANE_CORE_EXPORT XmlNode
    * If conversion fails, if \a throw_exception
    * is \a false returns 0, otherwise throws an exception.
    */
-  Integer valueAsInteger(bool throw_exception=false) const;
+  Integer valueAsInteger(bool throw_exception = false) const;
 
   /*! \brief Node value converted to 64-bit integer. 0 if conversion fails.
    *
    * If conversion fails, if \a throw_exception
    * is \a false returns 0, otherwise throws an exception.
    */
-  Int64 valueAsInt64(bool throw_exception=false) const;
+  Int64 valueAsInt64(bool throw_exception = false) const;
 
   /*! \brief Node value converted to boolean.
    *
@@ -173,13 +182,13 @@ class ARCANE_CORE_EXPORT XmlNode
    * If conversion fails, if \a throw_exception
    * is \a false returns \a false, otherwise throws an exception.
    */
-  bool valueAsBoolean(bool throw_exception=false) const;
+  bool valueAsBoolean(bool throw_exception = false) const;
 
   /*! \brief Node value converted to real number.
    * If conversion fails, if \a throw_exception
    * is \a false returns 0.0, otherwise throws an exception.
    */
-  Real valueAsReal(bool throw_exception=false) const;
+  Real valueAsReal(bool throw_exception = false) const;
 
   /*! \brief Sets the node value.
    *
@@ -194,10 +203,10 @@ class ARCANE_CORE_EXPORT XmlNode
    * If the attribute does not exist, if \a throw_exception is \a false returns
    * the null string, otherwise throws an exception.
    */
-  String attrValue(const String& name,bool throw_exception=false) const;
+  String attrValue(const String& name, bool throw_exception = false) const;
 
   //! Sets the attribute \a name to the value \a value
-  void setAttrValue(const String& name,const String& value);
+  void setAttrValue(const String& name, const String& value);
 
   /*!
    * \brief Returns the attribute of name \a name.
@@ -205,7 +214,7 @@ class ARCANE_CORE_EXPORT XmlNode
    * If the attribute does not exist, if \a throw_exception is \a false returns
    * a null node, otherwise throws an exception.
    */
-  XmlNode attr(const String& name,bool throw_exception=false) const;
+  XmlNode attr(const String& name, bool throw_exception = false) const;
 
   /*!
    * \brief Returns the attribute of name \a name.
@@ -258,7 +267,7 @@ class ARCANE_CORE_EXPORT XmlNode
   XmlNodeList children() const;
 
   //! Parent of this node (null if none)
-  XmlNode parent() const { return XmlNode(m_rm,m_node.parentNode()); }
+  XmlNode parent() const { return XmlNode(m_rm, m_node.parentNode()); }
 
   /*! \brief Adds \a child_node as a child of this node.
    *
@@ -268,17 +277,17 @@ class ARCANE_CORE_EXPORT XmlNode
   //! Removes the child node \a child_node
   void remove(const XmlNode& child_node);
   //! Replaces the child node \a ref_node with the node \a new_node
-  void replace(const XmlNode& new_node,XmlNode& ref_node);
+  void replace(const XmlNode& new_node, XmlNode& ref_node);
   //! Removes this node from the document
   void remove();
   //! First child
-  XmlNode front() const { return XmlNode(m_rm,m_node.firstChild()); }
+  XmlNode front() const { return XmlNode(m_rm, m_node.firstChild()); }
   //! Last child
-  XmlNode last() const { return XmlNode(m_rm,m_node.lastChild()); }
+  XmlNode last() const { return XmlNode(m_rm, m_node.lastChild()); }
   //! Next node (nextSibling())
-  XmlNode next() const { return XmlNode(m_rm,m_node.nextSibling()); }
+  XmlNode next() const { return XmlNode(m_rm, m_node.nextSibling()); }
   //! Previous node (previousSibling())
-  XmlNode prev() const { return XmlNode(m_rm,m_node.previousSibling()); }
+  XmlNode prev() const { return XmlNode(m_rm, m_node.previousSibling()); }
   //! Returns the next node after this node having the name \a name.
   XmlNode nextWithName(const String& name) const;
   //! Returns the previous node before this node having the name \a name.
@@ -308,20 +317,20 @@ class ARCANE_CORE_EXPORT XmlNode
    * \a ref_node.
    * On success, returns the added node (\a new_child), otherwise the null node.
    */
-  XmlNode insertAfter(const XmlNode& new_child,const XmlNode& ref_node);
+  XmlNode insertAfter(const XmlNode& new_child, const XmlNode& ref_node);
 
   /*!
    * \brief Returns the child of this node having the name \a elem_name and
    * an attribute of name \a attr_name with value \a attr_value.
    */
-  XmlNode childWithAttr(const String& elem_name,const String& attr_name,
-			const String& attr_value) const;
+  XmlNode childWithAttr(const String& elem_name, const String& attr_name,
+                        const String& attr_value) const;
   /*!
    * \brief Returns the child of this node having the name \a elem_name and
    * an attribute of name \c "name" with value \a attr_value.
    */
   XmlNode childWithNameAttr(const String& elem_name,
-			    const String& attr_value) const;
+                            const String& attr_value) const;
 
   /*!
    * \brief Returns a node from an XPath expression.
@@ -341,7 +350,7 @@ class ARCANE_CORE_EXPORT XmlNode
    * \return the created node.
    * \pre type()==DOCUMENT_NODE
    */
-  XmlNode createNode(eType type,const String& name,const String& value);
+  XmlNode createNode(eType type, const String& name, const String& value);
 
   /*!
    * \brief Creates a node of a given type.
@@ -353,7 +362,7 @@ class ARCANE_CORE_EXPORT XmlNode
    * \param name or value of the node in the case where the node has no name.
    * \return the created node.
    */
-  XmlNode createNode(eType type,const String& name_or_value);
+  XmlNode createNode(eType type, const String& name_or_value);
 
   /*!
    * \brief Creates a text node.
@@ -366,9 +375,9 @@ class ARCANE_CORE_EXPORT XmlNode
 
   XmlNode createAndAppendElement(const String& name);
 
-  XmlNode createAndAppendElement(const String& name,const String& value);
+  XmlNode createAndAppendElement(const String& name, const String& value);
 
-  XmlNode ownerDocument() const { return XmlNode(m_rm,m_node.ownerDocument()); }
+  XmlNode ownerDocument() const { return XmlNode(m_rm, m_node.ownerDocument()); }
 
   IRessourceMng* rm() const { return m_rm; }
 
@@ -376,14 +385,14 @@ class ARCANE_CORE_EXPORT XmlNode
 
   IRessourceMng* m_rm;
   dom::Node m_node;
-  
+
  protected:
 
   String _value() const;
   XmlNode _build(const dom::Node& node) const;
   XmlNode _nullNode() const;
   void _setNode(const dom::Node& n) { m_node = n; }
-  inline void _throwBadConvert(const char* type_name,const String& value) const;
+  inline void _throwBadConvert(const char* type_name, const String& value) const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -396,37 +405,38 @@ class ARCANE_CORE_EXPORT XmlElement
 : public XmlNode
 {
  public:
-  /*! \brief Creates a child element of \a parent.
-   * The created element has the name \a name and the value \a value. 
-   * It is added to the end of the list of children of \a parent.
-   */
-  XmlElement(XmlNode& parent,const String& name,const String& value);
+
   /*! \brief Creates a child element of \a parent.
    * The created element has the name \a name and the value \a value.
    * It is added to the end of the list of children of \a parent.
    */
-  XmlElement(XmlNode& parent,const String& name);
+  XmlElement(XmlNode& parent, const String& name, const String& value);
+  /*! \brief Creates a child element of \a parent.
+   * The created element has the name \a name and the value \a value.
+   * It is added to the end of the list of children of \a parent.
+   */
+  XmlElement(XmlNode& parent, const String& name);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 inline bool
-operator==(const XmlNode& n1,const XmlNode& n2)
+operator==(const XmlNode& n1, const XmlNode& n2)
 {
-  return n1.domNode()==n2.domNode();
+  return n1.domNode() == n2.domNode();
 }
 
 inline bool
-operator!=(const XmlNode& n1,const XmlNode& n2)
+operator!=(const XmlNode& n1, const XmlNode& n2)
 {
-  return n1.domNode()!=n2.domNode();
+  return n1.domNode() != n2.domNode();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

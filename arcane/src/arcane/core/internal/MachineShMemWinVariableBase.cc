@@ -10,6 +10,7 @@
 /* Base classes allowing the exploitation of the MachineShMemWinVariable     */
 /* object pointed to the memory area of variables in shared memory.          */
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/core/internal/MachineShMemWinVariableBase.h"
 

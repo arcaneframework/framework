@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,6 +70,7 @@ static constexpr Int32 NB_ARCANE_DATA_TYPE = 17;
 class DataTypeNames
 {
  public:
+
   static constexpr const char* N_BYTE = "Byte";
   static constexpr const char* N_REAL = "Real";
   static constexpr const char* N_INT16 = "Int16";
@@ -98,7 +99,7 @@ dataTypeName(eDataType type);
 
 //! Finds the type associated with \a name
 extern "C++" ARCANE_CORE_EXPORT eDataType
-dataTypeFromName(const char* name,bool& has_error);
+dataTypeFromName(const char* name, bool& has_error);
 
 //! Finds the type associated with \a name. Throws an exception in case of error
 extern "C++" ARCANE_CORE_EXPORT eDataType
@@ -110,12 +111,11 @@ dataTypeSize(eDataType type);
 
 //! Output operator for a float
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<< (std::ostream& ostr,eDataType data_type);
+operator<<(std::ostream& ostr, eDataType data_type);
 
 //! Input operator from a float
 extern "C++" ARCANE_CORE_EXPORT std::istream&
-operator>> (std::istream& istr,eDataType& data_type);
-
+operator>>(std::istream& istr, eDataType& data_type);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -134,14 +134,14 @@ operator>> (std::istream& istr,eDataType& data_type);
 enum eDataInitialisationPolicy
 {
   //! No forced initialization
-  DIP_None =0,
+  DIP_None = 0,
 
   /*!
    * \brief Initialization with the default constructor.
    *
    * For integers, this is the value 0. For reals, this is the value 0.0.
    */
-  DIP_InitWithDefault =1,
+  DIP_InitWithDefault = 1,
 
   /*!
    * \brief Initialization with NaN (Not a Number)
@@ -179,7 +179,7 @@ enum eDataInitialisationPolicy
 /*---------------------------------------------------------------------------*/
 
 //! Sets the initialization policy for variables.
-extern "C++" ARCANE_CORE_EXPORT void 
+extern "C++" ARCANE_CORE_EXPORT void
 setGlobalDataInitialisationPolicy(eDataInitialisationPolicy init_policy);
 
 //! Gets the initialization policy for variables.
@@ -203,31 +203,31 @@ enum eTraceType
 } // End namespace Arcane
 
 // Macro to instantiate a template class for all numeric data types
-#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name)\
-template class class_name <Real>;\
-template class class_name <Real3>;\
-template class class_name <Real3x3>;\
-template class class_name <Real2>;\
-template class class_name <Real2x2>;
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name) \
+  template class class_name<Real>; \
+  template class class_name<Real3>; \
+  template class class_name<Real3x3>; \
+  template class class_name<Real2>; \
+  template class class_name<Real2x2>;
 
 // Macro to instantiate a template class for all numeric data types
-#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name)\
-template class class_name <Int8>;\
-template class class_name <Int16>;\
-template class class_name <Int32>;\
-template class class_name <Int64>;\
-template class class_name <Byte>
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name) \
+  template class class_name<Int8>; \
+  template class class_name<Int16>; \
+  template class class_name<Int32>; \
+  template class class_name<Int64>; \
+  template class class_name<Byte>
 
 // Macro to instantiate a template class for all numeric data types
-#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(class_name)\
-template class class_name <BFloat16>;\
-template class class_name <Float16>;\
-template class class_name <Float32>;
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(class_name) \
+  template class class_name<BFloat16>; \
+  template class class_name<Float16>; \
+  template class class_name<Float32>;
 
 // Macro to instantiate a template class for all numeric data types
-#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(class_name)\
-  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name);\
-  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name);\
+#define ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE(class_name) \
+  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE1(class_name); \
+  ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE2(class_name); \
   ARCANE_INTERNAL_INSTANTIATE_TEMPLATE_FOR_NUMERIC_DATATYPE3(class_name)
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -51,22 +51,22 @@ class ARCANE_CORE_EXPORT IDirectExecution
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
   //! Executes the service operation
-  virtual void execute() =0;
+  virtual void execute() = 0;
 
   //! True if the service is active
-  virtual bool isActive() const =0;
+  virtual bool isActive() const = 0;
 
   /*!
    * \internal.
    * \brief Positions the associated parallelism manager.
    * This method must be called before execute()
    */
-  virtual void setParallelMng(IParallelMng* pm) =0;
+  virtual void setParallelMng(IParallelMng* pm) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

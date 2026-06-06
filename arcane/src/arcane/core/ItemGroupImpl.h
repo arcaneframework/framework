@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -86,13 +86,13 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   /*! \brief Brief: Constructs a group.
    * Constructs an empty group named \a name, associated with the family \a family.
    */
-  ItemGroupImpl(IItemFamily* family,const String& name);
+  ItemGroupImpl(IItemFamily* family, const String& name);
 
   /*! \brief Brief: Constructs a child group of another group.
    * Constructs a group named \a name which is a child of group \a parent. The type of this
    * group is the same as that of the family it belongs to.
    */
-  ItemGroupImpl(IItemFamily* family,ItemGroupImpl* parent,const String& name);
+  ItemGroupImpl(IItemFamily* family, ItemGroupImpl* parent, const String& name);
 
   virtual ~ItemGroupImpl(); //!< Releases resources.
 
@@ -278,17 +278,17 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    * \brief Adds entities with local IDs \a items_local_id.
    * \sa ItemGroup::addItems()
    */
-  void addItems(Int32ConstArrayView items_local_id,bool check_if_present);
+  void addItems(Int32ConstArrayView items_local_id, bool check_if_present);
 
   //! Positions the group entities at \a items_local_id
   void setItems(Int32ConstArrayView items_local_id);
 
   //! Positions the group entities at \a items_local_id, optionally sorting them.
-  void setItems(Int32ConstArrayView items_local_id,bool do_sort);
+  void setItems(Int32ConstArrayView items_local_id, bool do_sort);
 
   //! Removes the entities \a items_local_id from the group
-  void removeItems(Int32ConstArrayView items_local_id,bool check_if_present);
- 
+  void removeItems(Int32ConstArrayView items_local_id, bool check_if_present);
+
   //! Removes and adds the entities \a removed_local_id and \a added_local_id from the group
   void removeAddItems(Int32ConstArrayView removed_local_id,
                       Int32ConstArrayView added_local_id,
@@ -320,7 +320,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    * A transaction allows write access to protected groups.
    * Using this mechanism indicates to Arcane that the user 
    * is aware that they are modifying a group 'at their own risk'.
-   */ 
+   */
   void beginTransaction();
 
   //! Ends a transaction
@@ -361,14 +361,14 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    * \param ref reference of the observer emitter
    * \param obs Observer
    */
-  void attachObserver(const void * ref, IItemGroupObserver * obs);
+  void attachObserver(const void* ref, IItemGroupObserver* obs);
 
   /*!
    * \brief Detaches an observer.
    *
    * \param ref reference of the observer emitter
    */
-  void detachObserver(const void * ref);
+  void detachObserver(const void* ref);
 
   /*!
    * \brief Indicates if the content of this group is observed.
@@ -397,10 +397,10 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
   //! Table of local IDs to a position for all entities in the group
   SharedPtrT<GroupIndexTable> localIdToIndex();
- 
+
   //! Group synchronizer
   IVariableSynchronizer* synchronizer();
-  
+
   //! Indicates if this group has a synchronizer
   bool hasSynchronizer();
 
@@ -454,7 +454,6 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   ARCANE_DEPRECATED_REASON("Y2024: This method is internal to Arcane")
   Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
 
-
  public:
 
   //! Internal
@@ -467,13 +466,13 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Method for calculating sub-groups by type
   void _computeChildrenByType();
   //! Sub-group invalidation
-  void _executeExtend(const Int32ConstArrayView * info);
+  void _executeExtend(const Int32ConstArrayView* info);
   //! Sub-group invalidation
-  void _executeReduce(const Int32ConstArrayView * info);
+  void _executeReduce(const Int32ConstArrayView* info);
   //! Sub-group invalidation
-  void _executeCompact(const Int32ConstArrayView * info);
+  void _executeCompact(const Int32ConstArrayView* info);
   //! Sub-group invalidation
-  void _executeReorder(const Int32ConstArrayView * info);
+  void _executeReorder(const Int32ConstArrayView* info);
   //! Sub-group invalidation
   void _executeInvalidate();
   //! Forced update of the restructuring information flag
@@ -488,7 +487,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 
  private:
 
- ItemGroupInternal* m_p = nullptr; //!< Group implementation
+  ItemGroupInternal* m_p = nullptr; //!< Group implementation
 
  private:
 

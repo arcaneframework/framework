@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,16 +48,16 @@ class IItemConnectivityInfo
  public:
 
   //! Maximum number of nodes per entity
-  virtual Integer maxNodePerItem() const =0;
-  
+  virtual Integer maxNodePerItem() const = 0;
+
   //! Maximum number of edges per entity
-  virtual Integer maxEdgePerItem() const =0;
+  virtual Integer maxEdgePerItem() const = 0;
 
   //! Maximum number of faces per entity
-  virtual Integer maxFacePerItem() const =0;
+  virtual Integer maxFacePerItem() const = 0;
 
   //! Maximum number of cells per entity
-  virtual Integer maxCellPerItem() const =0;
+  virtual Integer maxCellPerItem() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

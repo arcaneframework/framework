@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -75,19 +75,21 @@ class ARCANE_CORE_EXPORT AbstractItemRangeFunctor
 /*!
  * \brief Functor for iterating over a list of entities.
  */
-template<typename InstanceType,typename ItemType>
+template <typename InstanceType, typename ItemType>
 class ItemRangeFunctorT
 : public AbstractItemRangeFunctor
 {
  private:
-  
+
   typedef void (InstanceType::*FunctionType)(ItemVectorViewT<ItemType>);
- 
+
  public:
-  ItemRangeFunctorT(ItemVectorView items_view,InstanceType* instance,
-                    FunctionType function,Integer grain_size = DEFAULT_GRAIN_SIZE)
-  : AbstractItemRangeFunctor(items_view,grain_size), m_instance(instance),
-    m_function(function)
+
+  ItemRangeFunctorT(ItemVectorView items_view, InstanceType* instance,
+                    FunctionType function, Integer grain_size = DEFAULT_GRAIN_SIZE)
+  : AbstractItemRangeFunctor(items_view, grain_size)
+  , m_instance(instance)
+  , m_function(function)
   {
   }
 
@@ -102,7 +104,7 @@ class ItemRangeFunctorT
   {
     //cout << "** BLOCKED RANGE! range=" << range.begin() << " end=" << range.end() << " size=" << range.size() << "\n";
     //CellVectorView sub_view = m_cells.subView(range.begin(),range.size());
-    ItemVectorViewT<ItemType> sub_view(this->_view(begin,size));
+    ItemVectorViewT<ItemType> sub_view(this->_view(begin, size));
     //cout << "** SUB_VIEW v=" << sub_view.size();
     (m_instance->*m_function)(sub_view);
   }
@@ -116,17 +118,19 @@ class ItemRangeFunctorT
  *
  * This class is used with the C++1x lambda function mechanism.
  */
-template<typename LambdaType>
+template <typename LambdaType>
 class LambdaItemRangeFunctorT
 : public AbstractItemRangeFunctor
 {
  public:
-  LambdaItemRangeFunctorT(ItemVectorView items_view,const LambdaType& lambda_function,
+
+  LambdaItemRangeFunctorT(ItemVectorView items_view, const LambdaType& lambda_function,
                           Int32 grain_size = DEFAULT_GRAIN_SIZE)
-  : AbstractItemRangeFunctor(items_view,grain_size), m_lambda_function(lambda_function)
+  : AbstractItemRangeFunctor(items_view, grain_size)
+  , m_lambda_function(lambda_function)
   {
   }
- 
+
  public:
 
   void executeFunctor(Int32 begin, Int32 size) override
@@ -142,7 +146,7 @@ class LambdaItemRangeFunctorT
     else
       m_lambda_function(sub_view, true_begin);
   }
- 
+
  private:
 
   const LambdaType& m_lambda_function;
@@ -173,7 +177,7 @@ class ItemGroupComputeFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

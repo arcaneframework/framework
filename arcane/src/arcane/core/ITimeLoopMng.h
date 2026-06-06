@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,15 +43,15 @@ enum class eTimeLoopEventType
 enum class eTimeLoopStopReason
 {
   //! Indicates that the code is not yet in stop mode.
-  NoStop =0,
+  NoStop = 0,
   //! No specific reason
-  NoReason =1,
+  NoReason = 1,
   //! Stop due to an error
-  Error =2,
+  Error = 2,
   //! Stop because final time was reached
-  FinalTimeReached =3,
+  FinalTimeReached = 3,
   //! Stop because maximum number of iterations specified was reached.
-  MaxIterationReached =4
+  MaxIterationReached = 4
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,33 +77,33 @@ class ITimeLoopMng
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
   //virtual void initialize() =0;
 
  public:
 
   //!< Returns the sub-domain manager
-  virtual ISubDomain* subDomain() const =0;
-  
+  virtual ISubDomain* subDomain() const = 0;
+
   //! Executes the exit entry points
-  virtual void execExitEntryPoints() =0;
+  virtual void execExitEntryPoints() = 0;
 
   //! Executes the build entry points
-  virtual void execBuildEntryPoints() =0;
+  virtual void execBuildEntryPoints() = 0;
 
   /*! \brief Executes the initialization entry points.
    * \param is_continue is true if resuming */
-  virtual void execInitEntryPoints(bool is_continue) =0;
+  virtual void execInitEntryPoints(bool is_continue) = 0;
 
   //! Executes the entry points after load balancing
   //virtual void execLoadBalanceEntryPoints() =0;
 
   //! Executes the entry points after load balancing
-  virtual void execOnMeshChangedEntryPoints() =0;
+  virtual void execOnMeshChangedEntryPoints() = 0;
 
   //! Executes the entry points after refinement
-  virtual void execOnMeshRefinementEntryPoints() =0;
+  virtual void execOnMeshRefinementEntryPoints() = 0;
 
   /*!
    * \brief Indicates that the compute loop must stop.
@@ -112,19 +112,19 @@ class ITimeLoopMng
    * If \a has_error is true, it indicates that the calculation stopped due to an
    * error. In this case, the application return code will be different from 0.
    */
-  virtual void stopComputeLoop(bool is_final_time,bool has_error=false) =0;
+  virtual void stopComputeLoop(bool is_final_time, bool has_error = false) = 0;
 
   //! Returns \a true if the final time has been reached.
-  virtual bool finalTimeReached() const =0;
+  virtual bool finalTimeReached() const = 0;
 
   //! Returns the CPU time used in seconds.
-  virtual Real cpuTimeUsed() const =0;
+  virtual Real cpuTimeUsed() const = 0;
 
   //! Returns the list of 'ComputeLoop' type entry points in the time loop.
-  virtual EntryPointCollection loopEntryPoints() =0;
-      
+  virtual EntryPointCollection loopEntryPoints() = 0;
+
   //! List of all entry points for the current time loop.
-  virtual EntryPointCollection usedTimeLoopEntryPoints() =0;
+  virtual EntryPointCollection usedTimeLoopEntryPoints() = 0;
 
   /*!
    * Executes the next entry point.
@@ -132,13 +132,13 @@ class ITimeLoopMng
    * Returns in \a is_last \e true if the entry point that was just
    * executed is the last one of the iteration.
    */
-  virtual void doExecNextEntryPoint(bool& is_last) =0;
+  virtual void doExecNextEntryPoint(bool& is_last) = 0;
 
   //! Returns the next entry point to execute or 0 if there is none
-  virtual IEntryPoint* nextEntryPoint() =0;
+  virtual IEntryPoint* nextEntryPoint() = 0;
 
   //! Returns the entry point currently being executed or 0 if there is none
-  virtual IEntryPoint* currentEntryPoint() =0;
+  virtual IEntryPoint* currentEntryPoint() = 0;
 
   /*!
    * \brief Starts the execution of a compute loop iteration.
@@ -147,7 +147,7 @@ class ITimeLoopMng
    * \retval >0 if the calculation stops normally.
    * \retval <0 if the calculation stops due to an error.
    */
-  virtual int doOneIteration() =0;
+  virtual int doOneIteration() = 0;
 
   /*!
    * \brief Executes the compute loop.
@@ -158,7 +158,7 @@ class ITimeLoopMng
    * \retval 2 if the code stops normally due to \a max_loop reached
    * \retval <0 if the calculation stops due to an error.
    */
-  virtual int doComputeLoop(Integer max_loop=0) =0;
+  virtual int doComputeLoop(Integer max_loop = 0) = 0;
 
   //@{
   //! Registration and selection of the time loop.
@@ -169,7 +169,7 @@ class ITimeLoopMng
    * If a time loop with the same name as \a time_loop is already referenced,
    * the new one replaces the old one.
    */
-  virtual void registerTimeLoop(ITimeLoop* time_loop) =0;
+  virtual void registerTimeLoop(ITimeLoop* time_loop) = 0;
 
   /*! \brief Positions the time loop to be executed.
    * Selects the time loop named \a name as the one to be
@@ -200,15 +200,15 @@ class ITimeLoopMng
    * \retval true in case of error,
    * \retval false otherwise.
    */
-  virtual void setUsedTimeLoop(const String& name) =0;
+  virtual void setUsedTimeLoop(const String& name) = 0;
   //@}
 
   //! Returns the time loop used
-  virtual ITimeLoop* usedTimeLoop() const =0;
+  virtual ITimeLoop* usedTimeLoop() const = 0;
 
   virtual void setBackwardMng(IBackwardMng* backward_mng) = 0;
 
-  virtual IBackwardMng * getBackwardMng() const = 0;
+  virtual IBackwardMng* getBackwardMng() const = 0;
 
   /*!
    * \brief Performs a backward step.
@@ -221,14 +221,14 @@ class ITimeLoopMng
    * \warning During parallel execution, this method must be
    * called by all sub-domains.
    */
-  virtual void goBackward() =0;
+  virtual void goBackward() = 0;
 
   /*! \brief True if currently in a backward step.
    *
    * A backward step is active as long as the physical time is less than
    * the physical time reached before the backward step trigger.
    */
-  virtual bool isDoingBackward() =0;
+  virtual bool isDoingBackward() = 0;
 
   /*!
    * \brief Schedules a mesh partitioning using the partition tool
@@ -242,18 +242,18 @@ class ITimeLoopMng
    * \warning During parallel execution, this method must be
    * called by all sub-domains.
    */
-  virtual void registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner) =0;
+  virtual void registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner) = 0;
 
   /*!
    * \brief Positions the period between two saves for backward step.
    * If this value is null, backward step is disabled.
    */
-  virtual void setBackwardSavePeriod(Integer n) =0;
+  virtual void setBackwardSavePeriod(Integer n) = 0;
 
   /*!
    * \brief Positions the state of the verification mode
    */
-  virtual void setVerificationActive(bool is_active) =0;
+  virtual void setVerificationActive(bool is_active) = 0;
 
   /*!
    * \brief Performs a verification.
@@ -264,31 +264,31 @@ class ITimeLoopMng
    * whose name is \a name. This name \a name must be unique for
    * given iteration.
    */
-  virtual void doVerification(const String& name) =0;
+  virtual void doVerification(const String& name) = 0;
 
   /*!
    * \brief Returns in \a names the list of time loop names.
    */
-  virtual void timeLoopsName(StringCollection& names) const =0;
+  virtual void timeLoopsName(StringCollection& names) const = 0;
 
   //! Returns in \a time_loops the list of time loops.
-  virtual void timeLoops(TimeLoopCollection& time_loops) const =0;
+  virtual void timeLoops(TimeLoopCollection& time_loops) const = 0;
 
   //! Creates a time loop named \a name.
-  virtual ITimeLoop* createTimeLoop(const String& name) =0;
+  virtual ITimeLoop* createTimeLoop(const String& name) = 0;
 
   //! Number of compute loops performed.
-  virtual Integer nbLoop() const =0;
+  virtual Integer nbLoop() const = 0;
 
   /*!
    * \brief Observable on the instance.
    *
    * The type of the observable is given by \a type
    */
-  virtual IObservable* observable(eTimeLoopEventType type) =0;
+  virtual IObservable* observable(eTimeLoopEventType type) = 0;
 
   //! Positions the reason for stopping the code
-  virtual void setStopReason(eTimeLoopStopReason reason) =0;
+  virtual void setStopReason(eTimeLoopStopReason reason) = 0;
 
   /*!
    * \brief Reason for stopping the code.
@@ -296,13 +296,13 @@ class ITimeLoopMng
    * If the value is eTimeLoopStopReason::NoStop, then the code
    * is not stopping.
    */
-  virtual eTimeLoopStopReason stopReason() const =0;
+  virtual eTimeLoopStopReason stopReason() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

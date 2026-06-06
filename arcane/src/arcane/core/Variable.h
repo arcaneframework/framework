@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ namespace Arcane
 
 class VariableInfo;
 class VariableBuildInfo;
-template<typename T> class IDataTracerT;
+template <typename T> class IDataTracerT;
 class VariablePrivate;
 class MemoryAccessInfo;
 class IParallelMng;
@@ -78,7 +78,7 @@ class ARCANE_CORE_EXPORT Variable
  protected:
 
   //! Creates a variable linked to the reference \a v.
-  Variable(const VariableBuildInfo& v,const VariableInfo& vi);
+  Variable(const VariableBuildInfo& v, const VariableInfo& vi);
 
  public:
 
@@ -116,7 +116,7 @@ class ARCANE_CORE_EXPORT Variable
 
  public:
 
-  void setTraceInfo(Integer,eTraceType) override {}
+  void setTraceInfo(Integer, eTraceType) override {}
 
  public:
 
@@ -149,11 +149,11 @@ class ARCANE_CORE_EXPORT Variable
   Int32 checkIfSame(IDataReader* reader, Integer max_print, bool compare_ghost) final;
 
   eDataType dataType() const override;
-  bool initialize(const ItemGroup& /*group*/,const String& /*value*/) override { return true; }
+  bool initialize(const ItemGroup& /*group*/, const String& /*value*/) override { return true; }
 
   IDataFactoryMng* dataFactoryMng() const final;
-  void serialize(ISerializer* sbuffer,IDataOperation* operation) override;
-  void serialize(ISerializer* sbuffer,Int32ConstArrayView ids,IDataOperation* operation) override;
+  void serialize(ISerializer* sbuffer, IDataOperation* operation) override;
+  void serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operation) override;
 
   void resize(Integer n) override;
   void resizeFromGroup() override;
@@ -169,7 +169,7 @@ class ARCANE_CORE_EXPORT Variable
 
  public:
 
-  void addTag(const String& tagname,const String& tagvalue) override;
+  void addTag(const String& tagname, const String& tagvalue) override;
   void removeTag(const String& tagname) override;
   bool hasTag(const String& tagname) override;
   String tagValue(const String& tagname) override;
@@ -179,8 +179,8 @@ class ARCANE_CORE_EXPORT Variable
   void update() override;
   void setUpToDate() override;
   Int64 modifiedTime() override;
-  void addDepend(IVariable* var,eDependType dt) override;
-  void addDepend(IVariable* var,eDependType dt,const TraceInfo& tinfo) override;
+  void addDepend(IVariable* var, eDependType dt) override;
+  void addDepend(IVariable* var, eDependType dt, const TraceInfo& tinfo) override;
   void removeDepend(IVariable* var) override;
   void setComputeFunction(IVariableComputeFunction* v) override;
   IVariableComputeFunction* computeFunction() override;
@@ -219,7 +219,7 @@ class ARCANE_CORE_EXPORT Variable
 
  protected:
 
-  virtual void _internalResize(const VariableResizeArgs& resize_args) =0;
+  virtual void _internalResize(const VariableResizeArgs& resize_args) = 0;
 
   void _checkSwapIsValid(Variable* rhs);
   // Temporary for memory release test
@@ -230,7 +230,7 @@ class ARCANE_CORE_EXPORT Variable
   void _resize(const VariableResizeArgs& resize_args);
 
   //! Comparison of values between variables
-  virtual VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) =0;
+  virtual VariableComparerResults _compareVariable(const VariableComparerArgs& compare_args) = 0;
 
  private:
 

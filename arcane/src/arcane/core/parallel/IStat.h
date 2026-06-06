@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -55,10 +55,10 @@ class IStat
    * \param elapsed_time time used for the message.
    * \param msg_size size of the sent message.
    */
-  virtual void add(const String& name,double elapsed_time,Int64 msg_size) =0;
-  
+  virtual void add(const String& name, double elapsed_time, Int64 msg_size) = 0;
+
   //! Prints the statistics to \a trace.
-  virtual void print(ITraceMng* trace) =0;
+  virtual void print(ITraceMng* trace) = 0;
 
   /*!
    * \brief Displays the statistics collectively.
@@ -70,22 +70,22 @@ class IStat
   virtual void printCollective(IParallelMng* pm) = 0;
 
   //! Enables or disables the statistics
-  virtual void enable(bool is_enabled) =0;
+  virtual void enable(bool is_enabled) = 0;
 
   //! Outputs the statistics in JSON format
-  virtual void dumpJSON(JSONWriter& writer) =0;
+  virtual void dumpJSON(JSONWriter& writer) = 0;
 
  public:
 
   //! Saves the current values into \a p
-  virtual void saveValues(ITraceMng* tm, Properties* p) =0;
+  virtual void saveValues(ITraceMng* tm, Properties* p) = 0;
 
   //! Merges the current values with those saved in \a p
-  virtual void mergeValues(ITraceMng* tm, Properties* p) =0;
+  virtual void mergeValues(ITraceMng* tm, Properties* p) = 0;
 
  public:
 
-  virtual Arccore::MessagePassing::IStat* toArccoreStat() =0;
+  virtual Arccore::MessagePassing::IStat* toArccoreStat() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

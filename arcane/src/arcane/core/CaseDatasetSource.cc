@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,6 +28,7 @@ namespace Arcane
 class CaseDatasetSource::Impl
 {
  public:
+
   String m_file_name;
   UniqueArray<std::byte> m_content;
 };
@@ -56,7 +57,7 @@ CaseDatasetSource(const CaseDatasetSource& rhs)
 CaseDatasetSource& CaseDatasetSource::
 operator=(const CaseDatasetSource& rhs)
 {
-  if (&rhs!=this){
+  if (&rhs != this) {
     delete m_p;
     m_p = new Impl(*rhs.m_p);
   }
@@ -105,7 +106,7 @@ void CaseDatasetSource::
 setContent(Span<const Byte> bytes)
 {
   auto d = reinterpret_cast<const std::byte*>(bytes.data());
-  m_p->m_content = ByteConstSpan(d,bytes.size());
+  m_p->m_content = ByteConstSpan(d, bytes.size());
 }
 
 /*---------------------------------------------------------------------------*/

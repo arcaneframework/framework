@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,9 +46,9 @@ class ARCANE_CORE_EXPORT VariableFactoryRegisterer
 
  public:
 
- //! Creates a registrar for a VariableFactory for the type \a var_type_info
- //! and for the creation function \a func
-  VariableFactoryRegisterer(VariableFactoryFunc func,const VariableTypeInfo& var_type_info);
+  //! Creates a registrar for a VariableFactory for the type \a var_type_info
+  //! and for the creation function \a func
+  VariableFactoryRegisterer(VariableFactoryFunc func, const VariableTypeInfo& var_type_info);
 
  public:
 
@@ -57,7 +57,7 @@ class ARCANE_CORE_EXPORT VariableFactoryRegisterer
    *
    * The factory must be destroyed by the delete operator when it is
    * no longer used.
-   */  
+   */
   IVariableFactory* createFactory();
 
   //! Previous VariableFactory (0 if the first)
@@ -101,7 +101,7 @@ class ARCANE_CORE_EXPORT VariableFactoryRegisterer
  public:
 
   static VariableFactoryRegisterer* firstVariableFactory();
- 
+
  private:
 
   //! Creation function for IVariableFactoryFactory

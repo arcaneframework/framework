@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ class ARCANE_CORE_EXPORT ModuleFactory
 : public IModuleFactoryInfo
 {
  public:
-  
+
   /*!
    * \brief Constructs a factory for a module.
    *
@@ -51,21 +51,21 @@ class ARCANE_CORE_EXPORT ModuleFactory
    * This instance becomes the owner of \a factory and will destroy it
    * in the destructor.
    */
-  ModuleFactory(Ref<IModuleFactory2> factory,bool is_autoload);
+  ModuleFactory(Ref<IModuleFactory2> factory, bool is_autoload);
   ~ModuleFactory() override;
 
  public:
-  
+
   void addReference() override;
   void removeReference() override;
-  Ref<IModule> createModule(ISubDomain* parent,const MeshHandle& mesh_handle) override;
+  Ref<IModule> createModule(ISubDomain* parent, const MeshHandle& mesh_handle) override;
   bool isAutoload() const override { return m_is_autoload; }
   void initializeModuleFactory(ISubDomain* sub_domain) override;
   String moduleName() const override { return m_name; }
   const IServiceInfo* serviceInfo() const override;
 
  private:
-  
+
   Ref<IModuleFactory2> m_factory;
   bool m_is_autoload;
   String m_name;
@@ -84,8 +84,9 @@ class ARCANE_CORE_EXPORT ModuleFactory2
 {
  public:
 
-  ModuleFactory2(IServiceInfo* service_info,const String& name)
-  : m_service_info(service_info), m_name(name)
+  ModuleFactory2(IServiceInfo* service_info, const String& name)
+  : m_service_info(service_info)
+  , m_name(name)
   {
   }
   ~ModuleFactory2() override;
@@ -115,20 +116,20 @@ class ARCANE_CORE_EXPORT ModuleFactory2
  *
  * This class allows creating a module implemented by the class \a ModuleType.
  */
-template<class ModuleType>
+template <class ModuleType>
 class ModuleFactory2T
 : public ModuleFactory2
 {
  public:
 
-  ModuleFactory2T(IServiceInfo* service_info,const String& name)
-  : ModuleFactory2(service_info,name)
+  ModuleFactory2T(IServiceInfo* service_info, const String& name)
+  : ModuleFactory2(service_info, name)
   {
   }
-  
-  Ref<IModule> createModuleInstance(ISubDomain* sd,const MeshHandle& mesh_handle) override
+
+  Ref<IModule> createModuleInstance(ISubDomain* sd, const MeshHandle& mesh_handle) override
   {
-    auto x = new ModuleType(ModuleBuildInfo(sd,mesh_handle,moduleName()));
+    auto x = new ModuleType(ModuleBuildInfo(sd, mesh_handle, moduleName()));
     return makeRef<IModule>(x);
   }
 
@@ -167,18 +168,17 @@ class ModuleFactory2T
  * \c axl files. If that is not the case, you must use the macro
  * defined in the '.h' file generated from the \c axl file.
  */
-#define ARCANE_REGISTER_MODULE(class_name,a_module_properties) \
-extern "C++" ARCANE_EXPORT Arcane::IModuleFactoryInfo*\
-ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name) (const Arcane::ModuleProperty& properties)  \
-{\
-  const char* module_name = properties.name();\
-  Arcane::ServiceProperty sp(module_name,0);\
-  auto* si = Arcane::Internal::ServiceInfo::create(sp,__FILE__,__LINE__); \
-  Arcane::IModuleFactory2* mf = new Arcane::ModuleFactory2T< class_name >(si,module_name); \
-  return new Arcane::ModuleFactory(Arcane::makeRef(mf), properties.isAutoload()); \
-} \
-Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegisterer##class_name) \
-  (& ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name),a_module_properties)
+#define ARCANE_REGISTER_MODULE(class_name, a_module_properties) \
+  extern "C++" ARCANE_EXPORT Arcane::IModuleFactoryInfo* \
+  ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name)(const Arcane::ModuleProperty& properties) \
+  { \
+    const char* module_name = properties.name(); \
+    Arcane::ServiceProperty sp(module_name, 0); \
+    auto* si = Arcane::Internal::ServiceInfo::create(sp, __FILE__, __LINE__); \
+    Arcane::IModuleFactory2* mf = new Arcane::ModuleFactory2T<class_name>(si, module_name); \
+    return new Arcane::ModuleFactory(Arcane::makeRef(mf), properties.isAutoload()); \
+  } \
+  Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegisterer##class_name)(&ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name), a_module_properties)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -189,19 +189,18 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegist
  *
  * This macro is internal to Arcane and should not be used directly.
  */
-#define ARCANE_REGISTER_AXL_MODULE(class_name,a_module_properties) \
-extern "C++" ARCANE_EXPORT Arcane::IModuleFactoryInfo*\
-ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name) (const Arcane::ModuleProperty& properties)  \
-{\
-  const char* module_name = properties.name();\
-  Arcane::ServiceProperty sp(module_name,0);\
-  auto* si = Arcane::Internal::ServiceInfo::create(sp,__FILE__,__LINE__); \
-  class_name :: fillServiceInfo(si);                            \
-  Arcane::IModuleFactory2* mf = new Arcane::ModuleFactory2T< class_name >(si,module_name); \
-  return new Arcane::ModuleFactory(Arcane::makeRef(mf),properties.isAutoload()); \
-} \
-Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegisterer##class_name) \
-  (& ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name),a_module_properties)
+#define ARCANE_REGISTER_AXL_MODULE(class_name, a_module_properties) \
+  extern "C++" ARCANE_EXPORT Arcane::IModuleFactoryInfo* \
+  ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name)(const Arcane::ModuleProperty& properties) \
+  { \
+    const char* module_name = properties.name(); \
+    Arcane::ServiceProperty sp(module_name, 0); \
+    auto* si = Arcane::Internal::ServiceInfo::create(sp, __FILE__, __LINE__); \
+    class_name ::fillServiceInfo(si); \
+    Arcane::IModuleFactory2* mf = new Arcane::ModuleFactory2T<class_name>(si, module_name); \
+    return new Arcane::ModuleFactory(Arcane::makeRef(mf), properties.isAutoload()); \
+  } \
+  Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegisterer##class_name)(&ARCANE_JOIN_WITH_LINE(arcaneCreateModuleFactory##class_name), a_module_properties)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,8 +213,8 @@ Arcane::ServiceRegisterer ARCANE_EXPORT ARCANE_JOIN_WITH_LINE(globalModuleRegist
  *
  * \deprecated Use ARCANE_REGISTER_MODULE instead.
  */
-#define ARCANE_DEFINE_STANDARD_MODULE(class_name,module_name) \
-  ARCANE_REGISTER_MODULE(class_name,Arcane::ModuleProperty(#module_name))
+#define ARCANE_DEFINE_STANDARD_MODULE(class_name, module_name) \
+  ARCANE_REGISTER_MODULE(class_name, Arcane::ModuleProperty(#module_name))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

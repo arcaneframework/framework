@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,35 +31,43 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataTypeT>
+template <typename DataTypeT>
 class ItemNumericOperation
 {
  public:
+
   typedef ItemVariableScalarRefT<DataTypeT> VarType;
+
  public:
-  static void add(VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
-  static void sub(VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
-  static void mult(VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
-  static void mult(VarType&,const DataTypeT&,const ItemGroup&) { _notSupported(); }
-  static void power(VarType&,const DataTypeT&,const ItemGroup&) { _notSupported(); }
+
+  static void add(VarType&, const VarType&, const ItemGroup&) { _notSupported(); }
+  static void sub(VarType&, const VarType&, const ItemGroup&) { _notSupported(); }
+  static void mult(VarType&, const VarType&, const ItemGroup&) { _notSupported(); }
+  static void mult(VarType&, const DataTypeT&, const ItemGroup&) { _notSupported(); }
+  static void power(VarType&, const DataTypeT&, const ItemGroup&) { _notSupported(); }
   static void _notSupported()
-  { ARCANE_FATAL("ItemNumeraticOperation: operation not supported"); }
+  {
+    ARCANE_FATAL("ItemNumeraticOperation: operation not supported");
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class ItemNumericOperation<Real>
 {
  public:
+
   typedef ItemVariableScalarRefT<Real> VarType;
+
  public:
-  static ARCANE_CORE_EXPORT void add  (VarType& out,const VarType& v,const ItemGroup& group);
-  static ARCANE_CORE_EXPORT void sub  (VarType& out,const VarType& v,const ItemGroup& group);
-  static ARCANE_CORE_EXPORT void mult (VarType& out,const VarType& v,const ItemGroup& group);
-  static ARCANE_CORE_EXPORT void mult (VarType& out,Real v,const ItemGroup& group);
-  static ARCANE_CORE_EXPORT void power(VarType& out,Real v,const ItemGroup& group);
+
+  static ARCANE_CORE_EXPORT void add(VarType& out, const VarType& v, const ItemGroup& group);
+  static ARCANE_CORE_EXPORT void sub(VarType& out, const VarType& v, const ItemGroup& group);
+  static ARCANE_CORE_EXPORT void mult(VarType& out, const VarType& v, const ItemGroup& group);
+  static ARCANE_CORE_EXPORT void mult(VarType& out, Real v, const ItemGroup& group);
+  static ARCANE_CORE_EXPORT void power(VarType& out, Real v, const ItemGroup& group);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,33 +77,33 @@ class ItemNumericOperation<Real>
  * \ingroup Variable
  * \brief Scalar variable on a mesh entity type.
  */
-template<typename DataTypeT>
+template <typename DataTypeT>
 class ItemVariableScalarRefT
 : public PrivateVariableScalarT<DataTypeT>
 {
  public:
-  
+
   typedef DataTypeT DataType;
   typedef UniqueArray<DataTypeT> ValueType;
   typedef const DataTypeT& ConstReturnReferenceType;
   typedef DataTypeT& ReturnReferenceType;
-  
+
   typedef ArrayView<DataTypeT> ArrayBase;
   typedef PrivateVariableScalarT<DataTypeT> BaseClass;
   typedef typename BaseClass::PrivatePartType PrivatePartType;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
-  
+
  public:
 
   //! Constructs a reference to the variable specified in \a vb
-  ARCANE_CORE_EXPORT ItemVariableScalarRefT(const VariableBuildInfo& b,eItemKind ik);
+  ARCANE_CORE_EXPORT ItemVariableScalarRefT(const VariableBuildInfo& b, eItemKind ik);
 
   //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT ItemVariableScalarRefT(IVariable* var);
-   
+
   //! Constructs a reference from \a rhs
   ARCANE_CORE_EXPORT ItemVariableScalarRefT(const ItemVariableScalarRefT<DataTypeT>& rhs);
-  
+
  protected:
 
   //! Positions the instance reference to the variable \a rhs.
@@ -103,78 +111,79 @@ class ItemVariableScalarRefT
 
 #ifdef ARCANE_DOTNET
  public:
+
 #else
  protected:
 #endif
 
   //! Default constructor
   ItemVariableScalarRefT() {}
- 
+
  public:
 
   void add(const ItemVariableScalarRefT<DataTypeT>& v)
   {
-    add(v,this->itemGroup());
+    add(v, this->itemGroup());
   }
   void sub(const ItemVariableScalarRefT<DataTypeT>& v)
   {
-    sub(v,this->itemGroup());
+    sub(v, this->itemGroup());
   }
   void mult(const ItemVariableScalarRefT<DataTypeT>& v)
   {
-    mult(v,this->itemGroup());
+    mult(v, this->itemGroup());
   }
   void mult(const DataTypeT& v)
   {
-    mult(v,this->itemGroup());
+    mult(v, this->itemGroup());
   }
   void copy(const ItemVariableScalarRefT<DataTypeT>& v)
   {
-    copy(v,this->itemGroup());
+    copy(v, this->itemGroup());
   }
   void power(const DataTypeT& v)
   {
-    power(v,this->itemGroup());
+    power(v, this->itemGroup());
   }
 
-  void add(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group)
+  void add(const ItemVariableScalarRefT<DataTypeT>& v, const ItemGroup& group)
   {
-    ItemNumericOperation<DataTypeT>::add(*this,v,group);
+    ItemNumericOperation<DataTypeT>::add(*this, v, group);
   }
-  void sub(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group)
+  void sub(const ItemVariableScalarRefT<DataTypeT>& v, const ItemGroup& group)
   {
-    ItemNumericOperation<DataTypeT>::sub(*this,v,group);
+    ItemNumericOperation<DataTypeT>::sub(*this, v, group);
   }
-  void mult(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group)
+  void mult(const ItemVariableScalarRefT<DataTypeT>& v, const ItemGroup& group)
   {
-    ItemNumericOperation<DataTypeT>::mult(*this,v,group);
+    ItemNumericOperation<DataTypeT>::mult(*this, v, group);
   }
-  void mult(const DataTypeT& v,const ItemGroup& group)
+  void mult(const DataTypeT& v, const ItemGroup& group)
   {
-    ItemNumericOperation<DataTypeT>::mult(*this,v,group);
+    ItemNumericOperation<DataTypeT>::mult(*this, v, group);
   }
-  void power(const DataTypeT& v,const ItemGroup& group)
+  void power(const DataTypeT& v, const ItemGroup& group)
   {
-    ItemNumericOperation<DataTypeT>::power(*this,v,group);
+    ItemNumericOperation<DataTypeT>::power(*this, v, group);
   }
 
   //! Copies the values of \a v into this variable for the entities in \a group.
-  ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,const ItemGroup& group);
+  ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v, const ItemGroup& group);
   ARCANE_CORE_EXPORT void fill(const DataTypeT& value);
-  ARCANE_CORE_EXPORT void fill(const DataTypeT& value,const ItemGroup& group);
+  ARCANE_CORE_EXPORT void fill(const DataTypeT& value, const ItemGroup& group);
 
   /*!
    * \brief Copies the values of \a v into this variable via the \a queue.
    *
    * \a queue may be null.
    */
-  ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v,RunQueue* queue);
+  ARCANE_CORE_EXPORT void copy(const ItemVariableScalarRefT<DataTypeT>& v, RunQueue* queue);
   /*!
    * \brief Fills the instance values with \a value via the \a queue.
    *
    * \a queue may be null.
    */
-  ARCANE_CORE_EXPORT void fill(const DataTypeT& value,RunQueue* queue);
+  ARCANE_CORE_EXPORT void fill(const DataTypeT& value, RunQueue* queue);
 
  public:
 
@@ -192,7 +201,7 @@ class ItemVariableScalarRefT
 
  public:
 
-  static ARCANE_CORE_EXPORT VariableInfo _internalVariableInfo(const VariableBuildInfo& vbi,eItemKind ik);
+  static ARCANE_CORE_EXPORT VariableInfo _internalVariableInfo(const VariableBuildInfo& vbi, eItemKind ik);
   static ARCANE_CORE_EXPORT VariableTypeInfo _internalVariableTypeInfo(eItemKind ik);
 };
 
@@ -203,25 +212,25 @@ class ItemVariableScalarRefT
  * \ingroup Variable
  * \brief Scalar variable on a mesh entity type.
  */
-template<typename ItemTypeT,typename DataTypeT>
+template <typename ItemTypeT, typename DataTypeT>
 class MeshVariableScalarRefT
 : public ItemVariableScalarRefT<DataTypeT>
 {
  public:
-  
+
   typedef DataTypeT DataType;
   typedef ItemTypeT ItemType;
   typedef UniqueArray<DataTypeT> ValueType;
   typedef const DataTypeT& ConstReturnReferenceType;
   typedef DataTypeT& ReturnReferenceType;
- 
+
  protected:
 
   typedef typename ItemType::LocalIdType ItemLocalIdType;
   typedef ItemVariableScalarRefT<DataTypeT> BaseClass;
-  
+
   typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
-  typedef MeshVariableScalarRefT<ItemType,DataTypeT> ThatClass;
+  typedef MeshVariableScalarRefT<ItemType, DataTypeT> ThatClass;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
 
  public:
@@ -231,34 +240,35 @@ class MeshVariableScalarRefT
   //! Constructs a reference from \a var
   explicit ARCANE_CORE_EXPORT MeshVariableScalarRefT(IVariable* var);
   //! Constructs a reference from \a rhs
-  ARCANE_CORE_EXPORT MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs);
+  ARCANE_CORE_EXPORT MeshVariableScalarRefT(const MeshVariableScalarRefT<ItemType, DataTypeT>& rhs);
 
   //! Positions the instance reference to the variable \a rhs.
-  ARCANE_CORE_EXPORT void refersTo(const MeshVariableScalarRefT<ItemType,DataTypeT>& rhs);
+  ARCANE_CORE_EXPORT void refersTo(const MeshVariableScalarRefT<ItemType, DataTypeT>& rhs);
 
   ThatClass& operator=(const ThatClass& rhs) = delete;
 
 #ifdef ARCANE_DOTNET
  public:
+
 #else
  protected:
 #endif
 
   //! Default constructor
-  MeshVariableScalarRefT(){}
+  MeshVariableScalarRefT() {}
   ThatClass& _Internal() { return *this; }
 
  public:
 
   void fill(const DataTypeT& value) { BaseClass::fill(value); }
-  void fill(const DataTypeT& value,RunQueue* queue) { BaseClass::fill(value,queue); }
-  void fill(const DataTypeT& value,const GroupType& group) { BaseClass::fill(value,group); }
+  void fill(const DataTypeT& value, RunQueue* queue) { BaseClass::fill(value, queue); }
+  void fill(const DataTypeT& value, const GroupType& group) { BaseClass::fill(value, group); }
 
-  ARCANE_CORE_EXPORT void swapValues(MeshVariableScalarRefT<ItemType,DataType>& rhs);
+  ARCANE_CORE_EXPORT void swapValues(MeshVariableScalarRefT<ItemType, DataType>& rhs);
 
   //! Group associated with the quantity
   ARCANE_CORE_EXPORT GroupType itemGroup() const;
-   
+
   ARCANE_CORE_EXPORT void setIsSynchronized();
   ARCANE_CORE_EXPORT void setIsSynchronized(const GroupType& group);
 
@@ -286,7 +296,7 @@ class MeshVariableScalarRefT
   {
     return this->_value(i.localId());
   }
-  void setItem(ItemLocalIdType i,const DataTypeT& v)
+  void setItem(ItemLocalIdType i, const DataTypeT& v)
   {
     this->_value(i.localId()) = v;
   }
@@ -295,7 +305,7 @@ class MeshVariableScalarRefT
   {
     return this->_value(i);
   }
-  void setItem(Int32 i,const DataTypeT& v)
+  void setItem(Int32 i, const DataTypeT& v)
   {
     this->_value(i) = v;
   }

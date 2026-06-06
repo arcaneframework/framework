@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class IParallelNonBlockingCollectiveDispatchT;
 
 /*---------------------------------------------------------------------------*/
@@ -72,8 +72,7 @@ class ARCANE_CORE_EXPORT ParallelNonBlockingCollectiveDispatcher
                        IParallelNonBlockingCollectiveDispatchT<Real3>* r3,
                        IParallelNonBlockingCollectiveDispatchT<Real2x2>* r22,
                        IParallelNonBlockingCollectiveDispatchT<Real3x3>* r33,
-                       IParallelNonBlockingCollectiveDispatchT<HPReal>* hpr
-                       );
+                       IParallelNonBlockingCollectiveDispatchT<HPReal>* hpr);
 
   ITimeStats* timeStats();
 
@@ -83,45 +82,47 @@ class ARCANE_CORE_EXPORT ParallelNonBlockingCollectiveDispatcher
 
  public:
 
-#define ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(field,type)          \
-public: \
-  virtual Request allGather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf); \
-  virtual Request gather(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer rank); \
-  virtual Request allGatherVariable(ConstArrayView<type> send_buf,Array<type>& recv_buf); \
-  virtual Request gatherVariable(ConstArrayView<type> send_buf,Array<type>& recv_buf,Integer rank); \
-  virtual Request scatterVariable(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer root); \
-  virtual Request allReduce(eReduceType rt,ConstArrayView<type> send_buf,ArrayView<type> v); \
-  virtual Request broadcast(ArrayView<type> send_buf,Int32 rank); \
-  virtual Request allToAll(ConstArrayView<type> send_buf,ArrayView<type> recv_buf,Integer count); \
-  virtual Request allToAllVariable(ConstArrayView<type> send_buf,Int32ConstArrayView send_count, \
-                                Int32ConstArrayView send_index,ArrayView<type> recv_buf, \
-                                Int32ConstArrayView recv_count,Int32ConstArrayView recv_index); \
-protected:                                                              \
-  IParallelNonBlockingCollectiveDispatchT<type>* field;                                   
-  
+#define ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(field, type) \
+ public: \
+\
+  virtual Request allGather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf); \
+  virtual Request gather(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer rank); \
+  virtual Request allGatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf); \
+  virtual Request gatherVariable(ConstArrayView<type> send_buf, Array<type>& recv_buf, Integer rank); \
+  virtual Request scatterVariable(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer root); \
+  virtual Request allReduce(eReduceType rt, ConstArrayView<type> send_buf, ArrayView<type> v); \
+  virtual Request broadcast(ArrayView<type> send_buf, Int32 rank); \
+  virtual Request allToAll(ConstArrayView<type> send_buf, ArrayView<type> recv_buf, Integer count); \
+  virtual Request allToAllVariable(ConstArrayView<type> send_buf, Int32ConstArrayView send_count, \
+                                   Int32ConstArrayView send_index, ArrayView<type> recv_buf, \
+                                   Int32ConstArrayView recv_count, Int32ConstArrayView recv_index); \
+\
+ protected: \
+\
+  IParallelNonBlockingCollectiveDispatchT<type>* field;
 
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_char,char)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_char,unsigned char)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_signed_char,signed char)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_short,short)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_short,unsigned short)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_int,int)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_int,unsigned int)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_long,long)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_long,unsigned long)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_long_long,long long)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_long_long,unsigned long long)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_float,float)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_double,double)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_long_double,long double)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_char, char)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_char, unsigned char)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_signed_char, signed char)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_short, short)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_short, unsigned short)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_int, int)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_int, unsigned int)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_long, long)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_long, unsigned long)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_long_long, long long)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_unsigned_long_long, unsigned long long)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_float, float)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_double, double)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_long_double, long double)
 #ifdef ARCANE_REAL_NOT_BUILTIN
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real,Real)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real, Real)
 #endif
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real2,Real2)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real3,Real3)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real2x2,Real2x2)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real3x3,Real3x3)
-  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_hpreal,HPReal)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real2, Real2)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real3, Real3)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real2x2, Real2x2)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_real3x3, Real3x3)
+  ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE(m_hpreal, HPReal)
 
 #undef ARCANE_PARALLEL_NONBLOCKINGCOLLECTIVE_DISPATCH_PROTOTYPE
 

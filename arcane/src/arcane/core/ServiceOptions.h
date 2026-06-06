@@ -1,11 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 #ifndef ARCANE_SERVICE_OPTIONS_H
 #define ARCANE_SERVICE_OPTIONS_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <memory>
 #include <iostream>
@@ -207,7 +209,7 @@ struct OptionTools
 
   ////// optionalSimple
   template <typename T, typename... Args>
-  static bool 
+  static bool
   optionalSimple(typename T::type& r, Args&&... args)
   {
     return Internal3<T, 0, Args...>::optionalSimple(r, std::move(args)...);
@@ -220,7 +222,7 @@ struct OptionTools
   template <typename T, int CurN, typename Head, typename... Tail>
   struct Internal3<T, CurN, Head, Tail...>
   {
-    static bool 
+    static bool
     optionalSimple(typename T::type& r, Head&&, Tail&&... args)
     {
       return Internal3<T, CurN, Tail...>::optionalSimple(r, std::move(args)...);
@@ -230,7 +232,7 @@ struct OptionTools
   template <typename T, int CurN, typename... Tail>
   struct Internal3<T, CurN, T, Tail...>
   {
-    static bool 
+    static bool
     optionalSimple(typename T::type& r, T&& t, Tail&&... args)
     {
       r = t.value;
@@ -241,7 +243,7 @@ struct OptionTools
   template <typename T, int CurN>
   struct Internal3<T, CurN>
   {
-    static bool 
+    static bool
     optionalSimple([[maybe_unused]] typename T::type& r)
     {
       static_assert(CurN <= 1, "Invalid required parameter count");
@@ -251,7 +253,7 @@ struct OptionTools
 
   ////// Restrict
   template <typename AllowedTypes, typename... Args>
-  static void 
+  static void
   checkRestriction(const Args&... args)
   {
     return Internal4<AllowedTypes, Args...>::checkRestriction(args...);
@@ -264,7 +266,7 @@ struct OptionTools
   template <typename... AllowedTypes, typename Head, typename... Tail>
   struct Internal4<std::tuple<AllowedTypes...>, Head, Tail...>
   {
-    static void 
+    static void
     checkRestriction([[maybe_unused]] const Head& h, const Tail&... tail)
     {
       static_assert(Internal44<Head, AllowedTypes...>::checkType, "Illegal option");
@@ -419,4 +421,7 @@ struct InstanceRegisterer
   }
 };
 
-#endif //ARCANE_SERVICE_OPTIONS_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

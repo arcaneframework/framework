@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,20 +37,20 @@ class IServiceMng
  public:
 
   //! Associated trace manager
-  virtual ITraceMng* traceMng() const =0;
+  virtual ITraceMng* traceMng() const = 0;
 
   //! Adds a reference to the service \a sv
-  virtual void addSingletonInstance(SingletonServiceInstanceRef sv) =0;
+  virtual void addSingletonInstance(SingletonServiceInstanceRef sv) = 0;
 
   //! Returns the list of singleton services
-  virtual SingletonServiceInstanceCollection singletonServices() const =0;
+  virtual SingletonServiceInstanceCollection singletonServices() const = 0;
 
   /*!
    * Singleton service named \a name.
    *
    * Returns a null reference if no instance of name \a name exists.
    */
-  virtual SingletonServiceInstanceRef singletonServiceReference(const String& name) const =0;
+  virtual SingletonServiceInstanceRef singletonServiceReference(const String& name) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

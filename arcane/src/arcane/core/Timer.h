@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ class ARCANE_CORE_EXPORT Timer
   };
 
  public:
-  
+
   /*!
    * \brief Sentinel for the timer.
    * The sentinel associated with a timer allows it to be triggered
@@ -89,13 +89,21 @@ class ARCANE_CORE_EXPORT Timer
   class ARCANE_CORE_EXPORT Sentry
   {
    public:
+
     //! Associates the timer \a t and starts it
-    Sentry(Timer* t) : m_timer(t)
-      { m_timer->start(); }
+    Sentry(Timer* t)
+    : m_timer(t)
+    {
+      m_timer->start();
+    }
     //! Stops the associated timer
     ~Sentry()
-      { m_timer->stop(); }
+    {
+      m_timer->stop();
+    }
+
    private:
+
     Timer* m_timer; //!< Associated timer
   };
 
@@ -110,15 +118,20 @@ class ARCANE_CORE_EXPORT Timer
   class ARCANE_CORE_EXPORT Action
   {
    public:
-    Action(ISubDomain* sub_domain,const String& action_name,bool print_time=false);
-    Action(ITimeStats* stats,const String& action_name,bool print_time=false);
+
+    Action(ISubDomain* sub_domain, const String& action_name, bool print_time = false);
+    Action(ITimeStats* stats, const String& action_name, bool print_time = false);
     ~Action();
+
    public:
    private:
+
     ITimeStats* m_stats;
     String m_action_name;
     bool m_print_time;
+
    private:
+
     void _init();
   };
 
@@ -129,14 +142,19 @@ class ARCANE_CORE_EXPORT Timer
   {
    public:
    public:
-    Phase(ISubDomain* sub_domain,eTimePhase pt);
-    Phase(ITimeStats* stats,eTimePhase pt);
+
+    Phase(ISubDomain* sub_domain, eTimePhase pt);
+    Phase(ITimeStats* stats, eTimePhase pt);
     ~Phase();
+
    public:
    private:
+
     ITimeStats* m_stats; //!< Sub-domain manager
     eTimePhase m_phase_type;
+
    private:
+
     void _init();
   };
 
@@ -156,15 +174,20 @@ class ARCANE_CORE_EXPORT Timer
   class ARCANE_CORE_EXPORT SimplePrinter
   {
    public:
-    SimplePrinter(ITraceMng* tm,const String& msg);
-    SimplePrinter(ITraceMng* tm,const String& msg,bool is_active);
+
+    SimplePrinter(ITraceMng* tm, const String& msg);
+    SimplePrinter(ITraceMng* tm, const String& msg, bool is_active);
     ~SimplePrinter();
+
    private:
+
     ITraceMng* m_trace_mng;
     Real m_begin_time;
     bool m_is_active;
     String m_message;
+
    private:
+
     void _init();
   };
 
@@ -176,7 +199,7 @@ class ARCANE_CORE_EXPORT Timer
    * Constructs a timer linked to the sub-domain \a sd, with name \a name and
    * type \a type.
    */
-  Timer(ISubDomain* sd,const String& name,eTimerType type);
+  Timer(ISubDomain* sd, const String& name, eTimerType type);
 
   /*!
    * \brief Constructs a timer.
@@ -184,12 +207,12 @@ class ARCANE_CORE_EXPORT Timer
    * Constructs a timer linked to the manager \a tm, with name \a name and
    * type \a type.
    */
-  Timer(ITimerMng* tm,const String& name,eTimerType type);
+  Timer(ITimerMng* tm, const String& name, eTimerType type);
 
   ~Timer(); //!< Frees resources
 
  public:
-	
+
   /*!
    * \brief Activates the timer.
    *
@@ -230,13 +253,18 @@ class ARCANE_CORE_EXPORT Timer
 
   //! Manager associated with this timer.
   ITimerMng* timerMng() const { return m_timer_mng; }
+
  public:
-  static TimeMetricAction phaseAction(ITimeStats* s,eTimePhase phase);
+
+  static TimeMetricAction phaseAction(ITimeStats* s, eTimePhase phase);
+
  public:
+
   //! \internal
   void _setStartTime(Real t) { m_start_time = t; }
   //! \internal
   Real _startTime() const { return m_start_time; }
+
  private:
 
   ITimerMng* m_timer_mng; //!< Timer manager

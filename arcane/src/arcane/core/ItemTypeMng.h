@@ -228,7 +228,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   void _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace);
   //! Reads types from a file named filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
-  void _addPolygonType(Int16 type_id,Int32 nb_node,const String& type_name);
+  void _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name);
 };
 
 /*---------------------------------------------------------------------------*/

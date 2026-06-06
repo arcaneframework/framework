@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ _reorderOrder2(ConstArrayView<Int64> nodes_uid,
   if (need_swap_orientation) {
     for (Integer k = 0; k < nb_node; ++k) {
       Integer index = (nb_node - k + min_node_index + incr) % nb_node;
-      Int32 index2 = ((2*nb_node-1) + incr + min_node_index - k) % nb_node;
+      Int32 index2 = ((2 * nb_node - 1) + incr + min_node_index - k) % nb_node;
       sorted_nodes_uid[k] = nodes_uid[index];
       sorted_nodes_uid[k + nb_node] = nodes_uid[index2 + nb_node];
     }

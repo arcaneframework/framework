@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,10 +36,12 @@ class TimeLoopEntryPointInfo
 
   TimeLoopEntryPointInfo() {}
   explicit TimeLoopEntryPointInfo(const String& aname)
-  : m_name(aname) { }
-  TimeLoopEntryPointInfo(const String& aname,const StringList& modules_depend)
-  : m_name(aname), m_modules_depend(modules_depend)
-  { }
+  : m_name(aname)
+  {}
+  TimeLoopEntryPointInfo(const String& aname, const StringList& modules_depend)
+  : m_name(aname)
+  , m_modules_depend(modules_depend)
+  {}
 
  public:
 
@@ -48,12 +50,12 @@ class TimeLoopEntryPointInfo
 
   bool operator==(const TimeLoopEntryPointInfo& rhs) const
   {
-    if (m_name!=rhs.m_name)
+    if (m_name != rhs.m_name)
       return false;
-    if (m_modules_depend.count()!=rhs.m_modules_depend.count())
+    if (m_modules_depend.count() != rhs.m_modules_depend.count())
       return false;
-    for( Integer i=0, is=m_modules_depend.count(); i<is; ++i )
-      if (m_modules_depend[i]!=rhs.m_modules_depend[i])
+    for (Integer i = 0, is = m_modules_depend.count(); i < is; ++i)
+      if (m_modules_depend[i] != rhs.m_modules_depend[i])
         return false;
     return true;
   }

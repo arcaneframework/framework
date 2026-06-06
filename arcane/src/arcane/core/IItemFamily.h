@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -90,21 +90,21 @@ class ARCANE_CORE_EXPORT IItemFamily
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
   //! Family name
-  virtual String name() const =0;
+  virtual String name() const = 0;
 
   //! Full family name (with the mesh's name)
-  virtual String fullName() const =0;
+  virtual String fullName() const = 0;
 
   //! Entity kind
-  virtual eItemKind itemKind() const =0;
-  
+  virtual eItemKind itemKind() const = 0;
+
   //! Number of entities
-  virtual Integer nbItem() const =0;
+  virtual Integer nbItem() const = 0;
 
   /*!
    * Size required to dimension variables on these entities.
@@ -112,18 +112,18 @@ class ARCANE_CORE_EXPORT IItemFamily
    * This is the maximum of the Item::localId() of the entities in
    * this family plus 1.
    */
-  virtual Int32 maxLocalId() const =0;
+  virtual Int32 maxLocalId() const = 0;
 
  public:
 
   // TODO: to be removed. Use itemInfoListView instead
   //! Internal array of entities
-  virtual ItemInternalArrayView itemsInternal() =0;
+  virtual ItemInternalArrayView itemsInternal() = 0;
 
  public:
 
   //! View on the entity information list
-  virtual ItemInfoListView itemInfoListView() =0;
+  virtual ItemInfoListView itemInfoListView() = 0;
 
   /*!
    * \brief IItemFamily parent
@@ -166,16 +166,16 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * This variable is only used for mesh partitioning.
    */
-  virtual VariableItemInt32& itemsNewOwner() =0;
-  
+  virtual VariableItemInt32& itemsNewOwner() = 0;
+
   //! Check the validity of internal structures (internal)
-  virtual void checkValid() =0;
+  virtual void checkValid() = 0;
 
   /*!
    * \brief Verification of the validity of internal structures concerning
    * connectivity.
    */
-  virtual void checkValidConnectivity() =0;
+  virtual void checkValidConnectivity() = 0;
 
   /*!
    * \brief Checks that the \a unique_ids are truly unique
@@ -187,7 +187,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * This operation is collective and must be called by all subdomains.
    */
-  virtual void checkUniqueIds(Int64ConstArrayView unique_ids) =0;
+  virtual void checkUniqueIds(Int64ConstArrayView unique_ids) = 0;
 
  public:
 
@@ -200,12 +200,12 @@ class ARCANE_CORE_EXPORT IItemFamily
    * If you want to keep a list even after modification, you must
    * use groups (ItemGroup).
    */
-  virtual ItemVectorView view(Int32ConstArrayView local_ids) =0;
+  virtual ItemVectorView view(Int32ConstArrayView local_ids) = 0;
 
   /*!
    * \brief View on all entities in the family.
    */
-  virtual ItemVectorView view() =0;
+  virtual ItemVectorView view() = 0;
 
   /*!
    * \brief Removes entities.
@@ -214,7 +214,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * TODO: To be put in the internal API
    */
-  virtual void removeItems2(mesh::ItemDataList& item_data_list) =0;
+  virtual void removeItems2(mesh::ItemDataList& item_data_list) = 0;
 
   /*!
    * \internal
@@ -228,7 +228,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * TODO: To be put in the internal API
    */
-  virtual void removeNeedRemoveMarkedItems() =0;
+  virtual void removeNeedRemoveMarkedItems() = 0;
 
   /*!
    * \brief Unique ID entity \a unique_id.
@@ -238,14 +238,14 @@ class ARCANE_CORE_EXPORT IItemFamily
    * \pre hasUniqueIdMap()
    */
   ARCANE_DEPRECATED_REASON("Use MeshUtils::findOneItem() instead")
-  virtual ItemInternal* findOneItem(Int64 unique_id) =0;
+  virtual ItemInternal* findOneItem(Int64 unique_id) = 0;
 
   /*! \brief Notifies the end of modification of the entity list.
    *
    * This method must be called after modifying the entity list (after adding or removing). It updates the groups
    * and resizes the variables on this family.
    */
-  virtual void endUpdate() =0;
+  virtual void endUpdate() = 0;
 
   /*!
    * \brief Partial update.
@@ -260,7 +260,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * This method is reserved for experienced users. For others,
    * it is better to use endUpdate().
    */
-  virtual void partialEndUpdate() =0;
+  virtual void partialEndUpdate() = 0;
 
   /*!
    * \brief Updates a group.
@@ -271,8 +271,8 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * \sa partialEndUpdate().
    */
-  virtual void partialEndUpdateGroup(const ItemGroup& group) =0;
-  
+  virtual void partialEndUpdateGroup(const ItemGroup& group) = 0;
+
   /*!
    * \brief Updates a variable.
    *
@@ -282,21 +282,21 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * \sa partialEndUpdate().
    */
-  virtual void partialEndUpdateVariable(IVariable* variable) =0;
+  virtual void partialEndUpdateVariable(IVariable* variable) = 0;
 
   //! Notifies that the entities specific to the family's subdomain have been modified
-  virtual void notifyItemsOwnerChanged() =0;
+  virtual void notifyItemsOwnerChanged() = 0;
 
   //! Notifies that the unique IDs of the entities have been modified
-  virtual void notifyItemsUniqueIdChanged() =0;
+  virtual void notifyItemsUniqueIdChanged() = 0;
 
  public:
 
   //! Information on local connectivity within the subdomain for this family
-  virtual IItemConnectivityInfo* localConnectivityInfos() const =0;
+  virtual IItemConnectivityInfo* localConnectivityInfos() const = 0;
 
   //! Information on global connectivity across all subdomains.
-  virtual IItemConnectivityInfo* globalConnectivityInfos() const =0;
+  virtual IItemConnectivityInfo* globalConnectivityInfos() const = 0;
 
  public:
 
@@ -313,10 +313,10 @@ class ARCANE_CORE_EXPORT IItemFamily
    * The node, edge, face, and cell families of the mesh
    * must have a conversion table.
    */
-  virtual void setHasUniqueIdMap(bool v) =0;
+  virtual void setHasUniqueIdMap(bool v) = 0;
 
   //! Indicates if the family has a uniqueId to localId conversion table.
-  virtual bool hasUniqueIdMap() const =0;
+  virtual bool hasUniqueIdMap() const = 0;
 
  public:
 
@@ -338,7 +338,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       Int64ConstArrayView unique_ids,
-                                      bool do_fatal=true) const =0;
+                                      bool do_fatal = true) const = 0;
 
   /*!
    * \brief Converts an array of unique numbers to local numbers.
@@ -356,7 +356,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    */
   virtual void itemsUniqueIdToLocalId(Int32ArrayView local_ids,
                                       ConstArrayView<ItemUniqueId> unique_ids,
-                                      bool do_fatal=true) const =0;
+                                      bool do_fatal = true) const = 0;
 
  public:
 
@@ -370,7 +370,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * Sorting is performed via the call to compactItems().
    * \sa itemSortFunction()
    */
-  virtual void setItemSortFunction(IItemInternalSortFunction* sort_function) =0;
+  virtual void setItemSortFunction(IItemInternalSortFunction* sort_function) = 0;
 
   /*!
    * \brief Entity sorting function.
@@ -379,30 +379,30 @@ class ARCANE_CORE_EXPORT IItemFamily
    * which must not be destroyed or modified.
    * \sa setItemSortFunction()
    */
-  virtual IItemInternalSortFunction* itemSortFunction() const =0;
+  virtual IItemInternalSortFunction* itemSortFunction() const = 0;
 
  public:
 
   //! Associated sub-domain
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
-  virtual ISubDomain* subDomain() const =0;
+  virtual ISubDomain* subDomain() const = 0;
 
   //! Associated trace manager
-  virtual ITraceMng* traceMng() const =0;
+  virtual ITraceMng* traceMng() const = 0;
 
   //! Associated mesh
-  virtual IMesh* mesh() const =0;
+  virtual IMesh* mesh() const = 0;
 
   //! Associated parallelism manager
-  virtual IParallelMng* parallelMng() const =0;
+  virtual IParallelMng* parallelMng() const = 0;
 
  public:
 
   //! Group of all entities
-  virtual ItemGroup allItems() const =0;
+  virtual ItemGroup allItems() const = 0;
 
   //! Collection of groups in this family
-  virtual ItemGroupCollection groups() const =0;
+  virtual ItemGroupCollection groups() const = 0;
 
  public:
 
@@ -413,7 +413,7 @@ class ARCANE_CORE_EXPORT IItemFamily
     \param name name of the group to search for
     \return the group named \a name or a null group if none exists.
   */
-  virtual ItemGroup findGroup(const String& name) const =0;
+  virtual ItemGroup findGroup(const String& name) const = 0;
 
   /*!
    * \brief Searches for a group
@@ -424,10 +424,9 @@ class ARCANE_CORE_EXPORT IItemFamily
    * \a name and type \a type exists and if \a create_if_needed is false.
    * If \a create_if_needed is true, an empty group named \a name is created and returned.
    */
-  virtual ItemGroup findGroup(const String& name,bool create_if_needed) =0;
-  
+  virtual ItemGroup findGroup(const String& name, bool create_if_needed) = 0;
 
-  /*! 
+  /*!
    * \brief Creates an entity group named \a name containing the entities \a local_ids.
    *
    * \param name name of the group
@@ -437,7 +436,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * an exception is raised.
    * \return the created group
    */
-  virtual ItemGroup createGroup(const String& name,Int32ConstArrayView local_ids,bool do_override=false) =0;
+  virtual ItemGroup createGroup(const String& name, Int32ConstArrayView local_ids, bool do_override = false) = 0;
 
   /*!
    * \brief Creates an entity group named \a name
@@ -447,18 +446,18 @@ class ARCANE_CORE_EXPORT IItemFamily
    * \param name name of the group
    * \return the created group
    */
-  virtual ItemGroup createGroup(const String& name) =0;
+  virtual ItemGroup createGroup(const String& name) = 0;
 
   /*!
    * \brief Deletes all groups in this family.
    */
-  virtual void destroyGroups() =0;
+  virtual void destroyGroups() = 0;
 
   /*!
    * \internal
    * For Internal Use Only
    */
-  virtual ItemGroup createGroup(const String& name,const ItemGroup& parent,bool do_override=false) =0;
+  virtual ItemGroup createGroup(const String& name, const ItemGroup& parent, bool do_override = false) = 0;
 
   //@}
 
@@ -468,35 +467,35 @@ class ARCANE_CORE_EXPORT IItemFamily
    * If no variable with the name \a name exists, and if \a throw_exception is
    * false, returns 0; otherwise, it throws an exception.
    */
-  virtual IVariable* findVariable(const String& name,bool throw_exception=false) =0;
+  virtual IVariable* findVariable(const String& name, bool throw_exception = false) = 0;
 
   /*!
    * \brief Adds the list of variables used by this family to the \a collection.
    */
-  virtual void usedVariables(VariableCollection collection) =0;
+  virtual void usedVariables(VariableCollection collection) = 0;
 
  public:
 
   //! Prepares data for dumping
-  virtual void prepareForDump() =0;
+  virtual void prepareForDump() = 0;
 
   //! Reads data from a dump
-  virtual void readFromDump() =0;
+  virtual void readFromDump() = 0;
 
-  /** 
+  /**
    * Copies the values of entities numbered @a source into entities
    * numbered @a destination
-   * 
+   *
    * @param source list of @b source localIds
    * @param destination list of @b destination localIds
    */
-  virtual void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) =0;
+  virtual void copyItemsValues(Int32ConstArrayView source, Int32ConstArrayView destination) = 0;
 
-  /** 
+  /**
    * Copies the mean values of entities numbered
    * @a first_source and @a second_source into entities numbered
    * @a destination
-   * 
+   *
    * @param first_source list of @b localIds of the 1st source
    * @param second_source list of @b localIds of the 2nd source
    * @param destination list of @b destination localIds
@@ -511,10 +510,10 @@ class ARCANE_CORE_EXPORT IItemFamily
    * by another family. In general, it is safer to use IMesh::clearItems()
    * if you want to delete all elements of the mesh.
    */
-  virtual void clearItems() =0;
+  virtual void clearItems() = 0;
 
   //! Compresses the entities.
-  virtual void compactItems(bool do_sort) =0;
+  virtual void compactItems(bool do_sort) = 0;
 
  public:
 
@@ -523,42 +522,42 @@ class ARCANE_CORE_EXPORT IItemFamily
    *
    * This operation must be performed every time the entities
    * of the mesh change ownership (for example, during a load balancing).
-   
+
    This operation is collective.
   */
-  virtual void computeSynchronizeInfos() =0;
+  virtual void computeSynchronizeInfos() = 0;
 
   //! List of communicating sub-domains for the entities.
-  virtual void getCommunicatingSubDomains(Int32Array& sub_domains) const =0;
+  virtual void getCommunicatingSubDomains(Int32Array& sub_domains) const = 0;
 
   //! @name variable synchronization operations
   //@{
 
   //! Synchronizer on all entities of the family
-  virtual IVariableSynchronizer* allItemsSynchronizer() =0;
-  
+  virtual IVariableSynchronizer* allItemsSynchronizer() = 0;
+
   /*!
    * \brief Synchronizes the variables \a variables.
    *
    * The variables \a variables must all come from
    * this family and must not be partial.
    */
-  virtual void synchronize(VariableCollection variables) =0;
-  
+  virtual void synchronize(VariableCollection variables) = 0;
+
   // TODO: make pure virtual (December 2024)
   /*!
    * \brief Synchronizes the variables \a variables on a list of entities.
    *
    * The variables \a variables must all come from
    * this family and must not be partial.
-   * 
+   *
    * Only the entities listed in \a local_ids will be synchronized. Note:
    * an entity present in this list on one sub-domain must be present
    * in this list for any other sub-domain that possesses this entity.
    */
   virtual void synchronize(VariableCollection variables, Int32ConstArrayView local_ids);
   //@}
-  
+
   /*!
    * \brief Applies a reduction operation from ghost items.
    *
@@ -568,7 +567,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * it shares with other sub-domains, and the reduction operation
    * \a operation is applied to this variable.
    */
-  virtual void reduceFromGhostItems(IVariable* v,IDataOperation* operation) =0;
+  virtual void reduceFromGhostItems(IVariable* v, IDataOperation* operation) = 0;
   /*!
    * \brief Applies a reduction operation from ghost items.
    *
@@ -578,7 +577,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * it shares with other sub-domains, and the reduction operation
    * \a operation is applied to this variable.
    */
-  virtual void reduceFromGhostItems(IVariable* v,Parallel::eReduceType operation) =0;
+  virtual void reduceFromGhostItems(IVariable* v, Parallel::eReduceType operation) = 0;
 
   //! Searches for an adjacency list.
   ARCANE_DEPRECATED_REASON("Y2024: use findAdjacency() instead")
@@ -612,7 +611,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * a particle family (itemKind()==IK_Particle). For other family kinds,
    * 0 is returned.
    */
-  virtual IParticleFamily* toParticleFamily() =0;
+  virtual IParticleFamily* toParticleFamily() = 0;
 
   /*!
    * \brief Returns the interface of the particle family for this family.
@@ -629,8 +628,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * For internal use only. If you want to delete entities
    * from the mesh, you must go through IMeshModifier via the call to IMesh::modifier().
    */
-  virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) =0;
-
+  virtual void internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost = false) = 0;
 
   /*!
    * \name Register/Delete a connectivity manager.
@@ -643,11 +641,11 @@ class ARCANE_CORE_EXPORT IItemFamily
    * \note These methods are internal to %Arcane.
    */
   //@{
-  virtual void addSourceConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void addTargetConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void removeSourceConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void removeTargetConnectivity(IItemConnectivity* connectivity) =0;
-  virtual void setConnectivityMng(IItemConnectivityMng* connectivity_mng) =0;
+  virtual void addSourceConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void addTargetConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void removeSourceConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void removeTargetConnectivity(IItemConnectivity* connectivity) = 0;
+  virtual void setConnectivityMng(IItemConnectivityMng* connectivity_mng) = 0;
   //@}
 
   /*!
@@ -665,15 +663,15 @@ class ARCANE_CORE_EXPORT IItemFamily
     * with the local numbers of the created entities.
     */
   virtual void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items,
-                             Int32ConstArrayView owners) =0;
+                             Int32ConstArrayView owners) = 0;
 
  public:
 
   //! Interface of behaviors/policies associated with this family.
-  virtual IItemFamilyPolicyMng* policyMng() =0;
+  virtual IItemFamilyPolicyMng* policyMng() = 0;
 
   //! Properties associated with this family.
-  virtual Properties* properties() =0;
+  virtual Properties* properties() = 0;
 
  public:
 
@@ -691,7 +689,7 @@ class ARCANE_CORE_EXPORT IItemFamily
    * on entities that are not associated with others (for example, nodes that
    * have just been created).
    */
-  virtual void experimentalChangeUniqueId(ItemLocalId local_id,ItemUniqueId unique_id) =0;
+  virtual void experimentalChangeUniqueId(ItemLocalId local_id, ItemUniqueId unique_id) = 0;
 
  public:
 
@@ -710,7 +708,7 @@ class ARCANE_CORE_EXPORT IItemFamily
  public:
 
   //! Internal Arcane API
-  virtual IItemFamilyInternal* _internalApi() =0;
+  virtual IItemFamilyInternal* _internalApi() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
